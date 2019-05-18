@@ -1,0 +1,21 @@
+[package]
+name = "eruption"
+version = "0.0.1"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4.6"
+pretty_env_logger = "0.3.0"
+ctrlc = { version = "3.1.2", features=["termination"] }
+clap = "2.33.0"
+confy = "0.3.1"
+hidapi = { path = "../../hidapi-rs" }
+udev = "0.2.0"
+evdev-rs = "0.2.0"
+hexdump = "0.1.0"
+itertools = "0.8.0"
+lazy_static = "1.3.0"
+rand = "0.6.5"
+rlua = "0.16.3"
+procinfo = "0.4.2"
