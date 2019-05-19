@@ -15,11 +15,16 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#![feature(clamp)]
+
+use clap::{App, Arg, SubCommand};
 use lazy_static::lazy_static;
 use log::*;
 use pretty_env_logger;
 use std::convert::TryInto;
+use std::env;
 use std::error::Error;
+use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::channel;
@@ -34,18 +39,81 @@ use hidapi;
 mod rvdevice;
 use rvdevice::RvDeviceState;
 
+mod config;
+mod errors;
 mod plugin_manager;
 mod plugins;
 mod scripting;
-mod errors;
 
 lazy_static! {
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 }
 
+fn print_header() {
+    println!(
+        r#"
+    Eruption is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Eruption is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+    
+    "#
+    );
+}
+
+fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
+    App::new("Eruption")
+        .version("0.0.1")
+        .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
+        .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
+        .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("config")
+                .value_name("FILE")
+                .help("Specify a custom config file")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("script")
+                .help("Specify the Lua script to execute")
+                .required(true)
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("v")
+                .short("v")
+                .multiple(true)
+                .help("Sets the level of verbosity"),
+        )
+        .get_matches()
+}
+
 /// Main program entrypoint
 fn main() {
-    pretty_env_logger::init();
+    print_header();
+
+    let matches = parse_commandline();
+
+    let config = matches.value_of("config").unwrap_or("eruption.conf");
+    let script = matches.value_of("script").unwrap();
+    let verbosity = matches.occurrences_of("v");
+
+    // initialize logging
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG_OVERRIDE", "info");
+        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
+    } else {
+        pretty_env_logger::init();
+    }
 
     info!("Starting user-mode driver for ROCCAT Vulcan 100/12x series devices");
 
@@ -85,8 +153,10 @@ fn main() {
                 // spawn a thread for the Lua VM, and then load and execute a script
                 info!("Loading Lua scripts...");
                 let (lua_tx, lua_rx) = channel();
+
+                let script_path = PathBuf::from(script.to_string());
                 thread::spawn(move || {
-                    scripting::run_scripts(rvdevice, &lua_rx)
+                    scripting::run_script(&script_path, rvdevice, &lua_rx)
                         .unwrap_or_else(|e| error!("Could not load script: {}", e));
                 });
 
@@ -145,7 +215,7 @@ fn main() {
                         ))
                         .unwrap();
 
-                    match kbd_rx.recv_timeout(Duration::from_millis(1)) {
+                    match kbd_rx.recv_timeout(Duration::from_millis(0)) {
                         Ok(index) => lua_tx.send(scripting::Message::KeyDown(index)).unwrap(),
 
                         // ignore timeout errors
@@ -154,14 +224,16 @@ fn main() {
                         Err(e) => error!("{}", e.description()),
                     }
 
-                    thread::sleep(Duration::from_millis(19));
+                    thread::sleep(Duration::from_millis(config::MAIN_LOOP_DELAY_MILLIS));
                     // thread::yield_now();
 
                     if quit {
                         break 'MAIN_LOOP;
                     }
 
-                    // trace!("Loop time: {} millis", start_time.elapsed().as_millis());
+                    if start_time.elapsed().as_millis() != config::MAIN_LOOP_DELAY_MILLIS.into() {
+                        warn!("Loop time: {} millis", start_time.elapsed().as_millis());
+                    }
 
                     // cntr += 1;
                     start_time = Instant::now();

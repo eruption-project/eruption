@@ -655,6 +655,29 @@ impl RvDeviceState {
         }
     }
 
+    pub fn set_led_off_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED off pattern...");
+
+        if !self.is_bound {
+            Err(RvDeviceError { code: 4 })
+        } else if !self.is_opened {
+            Err(RvDeviceError { code: 5 })
+        } else if !self.is_initialized {
+            Err(RvDeviceError { code: 6 })
+        } else {
+            let led_map: [RGB; NUM_KEYS] = [RGB {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+            }; NUM_KEYS];
+
+            self.send_led_map(&led_map)?;
+            thread::sleep(Duration::from_millis(150));
+
+            Ok(())
+        }
+    }
+
     pub fn get_name(&self) -> String {
         self.ctrl_hiddev_info
             .as_ref()

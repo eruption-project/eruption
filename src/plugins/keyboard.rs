@@ -18,16 +18,15 @@
 use evdev_rs::enums::EventCode;
 use evdev_rs::Device;
 use log::*;
+use rlua;
+use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;
 use std::error;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
-use rlua;
-use rlua::Context;
 
-use crate::errors;
 use crate::plugins::Plugin;
 use crate::util;
 

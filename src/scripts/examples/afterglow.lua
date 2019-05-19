@@ -25,9 +25,9 @@ color_off = 0x00000000
 color_bright = 0x00ffffff
 color_background = 0x00111111
 
-color_afterglow = 0x00ff0000
-color_step_afterglow = 0x00110000
-afterglow_step = 4
+color_afterglow = rgb_to_color(255, 0, 0)
+color_step_afterglow = rgb_to_color(10, 0, 0)
+afterglow_step = 2
 
 -- global state variables --
 color_map = {}

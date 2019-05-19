@@ -37,14 +37,14 @@ pub struct PluginError {}
 
 /// Register all available plugins
 pub fn register_plugins() -> Result<()> {
-    trace!("Registering all available plugins...");
+    trace!("Registering all available plugins now...");
 
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
 
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()));
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()));
+    plugin_manager.register_plugin(Box::new(SensorsPlugin::new()));
     // plugin_manager.register_plugin(Box::new(AudioPlugin::new()));
-    // plugin_manager.register_plugin(Box::new(SensorsPlugin::new()));
 
     Ok(())
 }
