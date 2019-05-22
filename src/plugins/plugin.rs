@@ -34,7 +34,7 @@ pub trait Plugin: Any {
     fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()>;
 
     /// Called on each iteration of the main loop
-    fn main_loop_hook(&self);
+    fn main_loop_hook(&self, ticks: u64);
 
     /// Event handling entrypoint
     // fn process_event(&mut self, event: Event);

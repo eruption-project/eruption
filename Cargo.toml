@@ -1,8 +1,16 @@
 [package]
 name = "eruption"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
+description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
+repository = "https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git"
+homepage = "https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/"
+license = "GPLv3+"
+readme = "README.md"
+
+[features]
+default = []
 
 [dependencies]
 log = "0.4.6"
@@ -21,3 +29,21 @@ rlua = "0.16.3"
 sysinfo = "0.8.4"
 systemstat = "0.1.4"
 procinfo = "0.4.2"
+
+[profile.dev]
+opt-level = 0
+debug = true
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 8
+panic = 'unwind'
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'

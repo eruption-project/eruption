@@ -15,7 +15,7 @@
 
 -- global script configuration --
 config["script_name"] = "raindrops"
-config["script_description"] = "Show a spreading wave effect after a key has been pressed"
+config["script_description"] = "Show a falling raindrops effect"
 config["script_version"] = "0.0.1"
 config["script_author"] = "The Eruption development team"
 config["min_supported_version"] = "0.0.1"
@@ -25,9 +25,9 @@ color_off = 0x00000000
 color_bright = 0x00ffffff
 color_background = 0x00111111
 
-color_rain_min = 0x001111111
-color_rain_max = 0x003333333
-color_step_raindrop = 0x001111111
+color_rain_min = 0x001111110
+color_rain_max = 0x001111111
+color_step_raindrop = 0x00101010
 
 color_afterglow = rgb_to_color(255, 0, 0)
 color_step_afterglow = rgb_to_color(10, 0, 0)

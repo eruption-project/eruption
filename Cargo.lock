@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "confy 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",

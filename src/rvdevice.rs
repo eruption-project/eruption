@@ -65,6 +65,7 @@ pub struct RGB {
     pub b: u8,
 }
 
+pub const VENDOR_STR: &str = "ROCCAT";
 pub const VENDOR_ID: u16 = 0x1e7d;
 pub const PRODUCT_ID: u16 = 0x3098;
 pub const CTRL_INTERFACE: i32 = 1;

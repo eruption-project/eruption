@@ -15,6 +15,10 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::error;
+use std::error::Error;
+use std::fmt;
+
 mod audio;
 mod keyboard;
 mod plugin;
@@ -33,18 +37,42 @@ use super::plugin_manager;
 
 pub type Result<T> = std::result::Result<T, PluginError>;
 
-pub struct PluginError {}
+#[derive(Debug, Clone)]
+pub struct PluginError {
+    code: u32,
+}
+
+impl error::Error for PluginError {
+    fn description(&self) -> &str {
+        match self.code {
+            0 => "Could not register Lua extensions",
+            _ => "Unknown error",
+        }
+    }
+
+    fn cause(&self) -> Option<&dyn error::Error> {
+        None
+    }
+}
+
+impl fmt::Display for PluginError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
 
 /// Register all available plugins
 pub fn register_plugins() -> Result<()> {
-    trace!("Registering all available plugins now...");
+    trace!("Registering all available plugins...");
 
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
 
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()));
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()));
     plugin_manager.register_plugin(Box::new(SensorsPlugin::new()));
-    // plugin_manager.register_plugin(Box::new(AudioPlugin::new()));
+    plugin_manager.register_plugin(Box::new(AudioPlugin::new()));
+
+    trace!("Done registering plugins");
 
     Ok(())
 }

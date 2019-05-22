@@ -25,7 +25,9 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::thread;
 use sysinfo::{ComponentExt, ProcessExt, SystemExt};
 
 use crate::plugins::Plugin;
@@ -58,6 +60,7 @@ impl fmt::Display for SensorsPluginError {
 }
 
 lazy_static! {
+    static ref DO_REFRESH: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
     static ref SYSTEM: Arc<Mutex<sysinfo::System>> = Arc::new(Mutex::new(sysinfo::System::new()));
 }
 
@@ -68,46 +71,60 @@ impl SensorsPlugin {
         SensorsPlugin {}
     }
 
+    pub fn refresh() {
+        // we need to spawn a thread here, since sensor updating is really slooow
+        thread::spawn(move || {
+            let mut system = SYSTEM.lock().unwrap();
+            system.refresh_all();
+        });
+    }
+
     pub fn get_package_temp() -> f32 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         let components = system.get_components_list();
         components[components.len() - 1].get_temperature()
     }
 
     pub fn get_package_max_temp() -> f32 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         let components = system.get_components_list();
         components[components.len() - 1].get_max()
     }
 
     pub fn get_mem_total_kb() -> u64 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         system.get_total_memory()
     }
 
     pub fn get_mem_used_kb() -> u64 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         system.get_used_memory()
     }
 
     pub fn get_swap_total_kb() -> u64 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         system.get_total_swap()
     }
 
     pub fn get_swap_used_kb() -> u64 {
-        let mut system = SYSTEM.lock().unwrap();
-        system.refresh_all();
+        DO_REFRESH.store(true, Ordering::SeqCst);
+
+        let system = SYSTEM.lock().unwrap();
 
         system.get_used_swap()
     }
@@ -154,7 +171,13 @@ impl Plugin for SensorsPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self) {}
+    fn main_loop_hook(&self, ticks: u64) {
+        // refresh sensor state every other second, but only
+        // if the sensors have been used at least once
+        if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
+            Self::refresh();
+        }
+    }
 
     fn as_any(&self) -> &Any {
         self

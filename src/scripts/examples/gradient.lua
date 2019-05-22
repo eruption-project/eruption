@@ -25,17 +25,23 @@ config["min_supported_version"] = "0.0.2"
 -- repeating linear red to blue gradient
 color_start = rgb_to_color(255, 0, 0)
 color_end = rgb_to_color(0, 0, 255)
-color_divisor = 100
+color_divisor = 256
+animate_gradient = true
+gradient_speed = 1
 
 -- repeating linear red to light cold white gradient
 -- color_start = rgb_to_color(255, 0, 0)
 -- color_end = rgb_to_color(0, 255, 255)
 -- color_divisor = 128
+-- animate_gradient = false
+-- gradient_speed = 1
 
 -- red to light cold white gradient
 -- color_start = rgb_to_color(255, 0, 0)
 -- color_end = rgb_to_color(0, 255, 255)
 -- color_divisor = 256
+-- animate_gradient = false
+-- gradient_speed = 1
 
 -- global constants --
 color_off = 0x00000000
@@ -44,6 +50,7 @@ color_bright = 0x00ffffff
 color_afterglow = rgb_to_color(255, 255, 255)
 color_step_afterglow = rgb_to_color(10, 10, 10)
 afterglow_step = 2
+gradient_step = 1
 
 -- global state variables --
 color_map = {}
@@ -66,6 +73,13 @@ function on_tick(delta)
     ticks = ticks + delta + 1
     
     local num_keys = get_num_keys()
+
+    -- animate gradient
+    if animate_gradient and (ticks % gradient_step == 0) then
+        for i = 0, num_keys do
+            color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
+        end
+    end
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then

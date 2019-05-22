@@ -26,7 +26,6 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 
-use crate::errors;
 use crate::plugins::Plugin;
 use crate::util;
 
@@ -121,7 +120,7 @@ impl Plugin for SystemPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self) {}
+    fn main_loop_hook(&self, ticks: u64) {}
 
     fn as_any(&self) -> &Any {
         self

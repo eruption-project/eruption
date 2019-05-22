@@ -14,26 +14,22 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global script configuration --
-config["script_name"] = "temperature"
-config["script_description"] = "Make the keyboard reflect the system temperature"
+config["script_name"] = "gaming"
+config["script_description"] = "Highlight important keys for gaming mode"
 config["script_version"] = "0.0.1"
 config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.2"
+config["min_supported_version"] = "0.0.3"
 
 -- global constants --
 color_off = 0x000000000
 color_background = 0x00111111
-color_cold = rgb_to_color(0, 128, 0)
-color_hot = rgb_to_color(128, 0, 0)
 color_step = 0x00110000
 
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
+color_afterglow = rgb_to_color(0, 255, 0)
+color_step_afterglow = rgb_to_color(0, 10, 0)
 afterglow_step = 2
 
 -- global state variables --
-temperature = get_package_temp()
-max_temperature = get_package_max_temp()
 color_map = {}
 color_map_pressed = {}
 
@@ -42,7 +38,6 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     init_state()
-    percentage = 0
 end
 
 function on_quit(exit_code)
@@ -55,20 +50,7 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-    -- update the temperature approximately every 2 seconds
-    if ticks % 40 == 0 then
-        temperature = get_package_temp()
-        trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)
-    end
-    
     local num_keys = get_num_keys()
-
-    -- calculate colors
-    local percentage = min(temperature / max_temperature * 100, 100)
-
-    for i = 0, num_keys do
-        color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
-    end
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
@@ -112,4 +94,10 @@ function init_state()
         color_map[i] = color_background
         color_map_pressed[i] = color_off
     end
+
+    -- highlight WASD keys
+    color_map[9]  = rgb_to_color(255, 0, 0)
+    color_map[14] = rgb_to_color(255, 0, 0)
+    color_map[15] = rgb_to_color(255, 0, 0)
+    color_map[21] = rgb_to_color(255, 0, 0)
 end

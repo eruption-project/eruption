@@ -25,11 +25,16 @@ Eruption is a Linux daemon written in Rust, consisting of a core, an integrated 
 ### Arch Linux and derivatives like Manjaro
 
 ```
+$ yay -Sy aur/eruption-roccat-vulcan
+$ sudo systemctl enable --now eruption.service
 ```
 
 ### From Source
 
 ```
+$ git clone https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git
+$ cd eruption-roccat-vulcan
+$ cargo build --all --release
 ```
 
 # Contributing

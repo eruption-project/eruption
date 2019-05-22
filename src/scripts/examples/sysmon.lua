@@ -14,11 +14,11 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global script configuration --
-config["script_name"] = "temperature"
-config["script_description"] = "Make the keyboard reflect the system temperature"
+config["script_name"] = "sysmon"
+config["script_description"] = "Monitor your system using your keyboard"
 config["script_version"] = "0.0.1"
 config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.2"
+config["min_supported_version"] = "0.0.3"
 
 -- global constants --
 color_off = 0x000000000
@@ -55,7 +55,7 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-    -- update the temperature approximately every 2 seconds
+    -- update the system state approximately every 2 seconds
     if ticks % 40 == 0 then
         temperature = get_package_temp()
         trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)

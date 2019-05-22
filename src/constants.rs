@@ -15,4 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub const MAIN_LOOP_DELAY_MILLIS: u64 = 20;
+/// target delay time of main loop iteration
+pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
+
+/// amount of time that has to pass before we can send another command to the LED control device
+pub const DEVICE_SETTLE_MILLIS: u64 = 10;
+
+/// Update sensors every other second
+pub const SENSOR_UPDATE_TICKS: u64 = 60;

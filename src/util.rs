@@ -19,8 +19,39 @@ use log::*;
 // use std::fs::File;
 // use std::io::prelude::*;
 use evdev_rs::enums::EV_KEY;
-use std::io::{Error, ErrorKind, Result};
+use std::error;
+use std::error::Error;
+use std::fmt;
 use udev::{Context, Enumerator};
+
+use crate::rvdevice;
+
+pub type Result<T> = std::result::Result<T, UtilError>;
+
+#[derive(Debug, Clone)]
+pub struct UtilError {
+    code: u32,
+}
+
+impl error::Error for UtilError {
+    fn description(&self) -> &str {
+        match self.code {
+            0 => "No compatible devices found",
+            1 => "Error occured during device enumeration",
+            _ => "Unknown error",
+        }
+    }
+
+    fn cause(&self) -> Option<&dyn error::Error> {
+        None
+    }
+}
+
+impl fmt::Display for UtilError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
 
 /// Get the path of the evdev device of the first keyboard from udev
 pub fn get_evdev_from_udev() -> Result<String> {
@@ -29,18 +60,23 @@ pub fn get_evdev_from_udev() -> Result<String> {
 
     enumerator.match_subsystem("input").unwrap();
 
-    for device in enumerator.scan_devices().unwrap() {
-        if device
-            .properties()
-            .find(|e| e.name() == "ID_VENDOR" && e.value() == "ROCCAT")
-            .is_some()
-            && device.devnode().is_some()
-        {
-            return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
-        }
-    }
+    match enumerator.scan_devices() {
+        Ok(devices) => {
+            for device in devices {
+                if device
+                    .properties()
+                    .any(|e| e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR)
+                    && device.devnode().is_some()
+                {
+                    return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                }
+            }
 
-    Err(Error::from(ErrorKind::NotFound))
+            Err(UtilError { code: 0 })
+        }
+
+        Err(_e) => Err(UtilError { code: 1 }),
+    }
 }
 
 // pub fn get_evdev_from_proc() -> Result<String> {

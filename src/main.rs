@@ -17,7 +17,7 @@
 
 #![feature(clamp)]
 
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg};
 use lazy_static::lazy_static;
 use log::*;
 use pretty_env_logger;
@@ -31,6 +31,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
+use std::u64;
 
 mod util;
 
@@ -39,8 +40,7 @@ use hidapi;
 mod rvdevice;
 use rvdevice::RvDeviceState;
 
-mod config;
-mod errors;
+mod constants;
 mod plugin_manager;
 mod plugins;
 mod scripting;
@@ -52,26 +52,26 @@ lazy_static! {
 fn print_header() {
     println!(
         r#"
-    Eruption is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Eruption is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-    
-    "#
+ Eruption is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ Eruption is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+"#
     );
 }
 
+/// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.1")
+        .version("0.0.3")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -117,6 +117,7 @@ fn main() {
 
     info!("Starting user-mode driver for ROCCAT Vulcan 100/12x series devices");
 
+    // register ctrl-c handler
     let q = QUIT.clone();
     ctrlc::set_handler(move || {
         q.store(true, Ordering::SeqCst);
@@ -167,7 +168,7 @@ fn main() {
                     {
                         // initialize thread local state of the keyboard plugin
                         let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
-                        let mut keyboard_plugin = plugin_manager
+                        let keyboard_plugin = plugin_manager
                             .find_plugin_by_name_mut("Keyboard".to_string())
                             .as_any_mut()
                             .downcast_mut::<plugins::KeyboardPlugin>()
@@ -177,16 +178,18 @@ fn main() {
                     }
 
                     loop {
-                        let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
-                        let mut keyboard_plugin = plugin_manager
+                        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
+                        let keyboard_plugin = plugin_manager
                             .find_plugin_by_name("Keyboard".to_string())
                             .as_any()
                             .downcast_ref::<plugins::KeyboardPlugin>()
                             .unwrap();
 
-                        match keyboard_plugin.get_next_event() {
-                            Ok(event) => kbd_tx.send(event).unwrap(),
-                            _ => (),
+                        if let Ok(event) = keyboard_plugin.get_next_event() {
+                            kbd_tx.send(event).unwrap();
+                        } else {
+                            // ignore spurious events
+                            // error!("Could not get next keyboard event");
                         }
                     }
                 });
@@ -195,26 +198,34 @@ fn main() {
 
                 // trace!("Entering main loop...");
 
-                // let mut cntr = 0;
+                // main loop iterations, monotonic counter
+                let mut ticks = 0;
+
+                // used to calculate frames per second
+                let mut fps_cntr = 0;
+                let mut fps_timer = Instant::now();
+
                 let mut start_time = Instant::now();
 
                 // enter the main loop on the main thread
                 'MAIN_LOOP: loop {
-                    let quit = QUIT.load(Ordering::SeqCst);
-
+                    // prepare to call main loop hook
                     let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
                     let plugins = plugin_manager.get_plugins();
 
+                    // call main loop hook of each registered plugin
                     for plugin in plugins.iter() {
-                        plugin.main_loop_hook();
+                        plugin.main_loop_hook(ticks);
                     }
 
+                    // send timer tick event to the Lua VM
                     lua_tx
                         .send(scripting::Message::Tick(
                             start_time.elapsed().as_millis().try_into().unwrap(),
                         ))
                         .unwrap();
 
+                    // send pending keyboard events
                     match kbd_rx.recv_timeout(Duration::from_millis(0)) {
                         Ok(index) => lua_tx.send(scripting::Message::KeyDown(index)).unwrap(),
 
@@ -224,23 +235,48 @@ fn main() {
                         Err(e) => error!("{}", e.description()),
                     }
 
-                    thread::sleep(Duration::from_millis(config::MAIN_LOOP_DELAY_MILLIS));
-                    // thread::yield_now();
+                    // sync to MAIN_LOOP_DELAY_MILLIS iteration time
+                    let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
+                    let sleep_millis = u64::max(
+                        constants::MAIN_LOOP_DELAY_MILLIS
+                            .checked_sub(elapsed)
+                            .unwrap_or(0),
+                        constants::MAIN_LOOP_DELAY_MILLIS,
+                    );
+                    thread::sleep(Duration::from_millis(sleep_millis));
 
-                    if quit {
+                    let elapsed_after_sleep = start_time.elapsed().as_millis();
+                    if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
+                        warn!(
+                            "Loop took: {} millis, goal: {}",
+                            elapsed_after_sleep,
+                            constants::MAIN_LOOP_DELAY_MILLIS
+                        );
+                    }
+
+                    // calculate and log fps each second
+                    if fps_timer.elapsed().as_millis() >= 1000 {
+                        trace!("FPS: {}", fps_cntr);
+
+                        fps_timer = Instant::now();
+                        fps_cntr = 0;
+                    }
+
+                    // shall we quit the main loop?
+                    if QUIT.load(Ordering::SeqCst) {
                         break 'MAIN_LOOP;
                     }
 
-                    if start_time.elapsed().as_millis() != config::MAIN_LOOP_DELAY_MILLIS.into() {
-                        warn!("Loop time: {} millis", start_time.elapsed().as_millis());
-                    }
+                    fps_cntr += 1;
+                    ticks += 1;
 
-                    // cntr += 1;
                     start_time = Instant::now();
                 }
 
                 // we left the main loop, send a final message to the running Lua VM
-                lua_tx.send(scripting::Message::Quit(0)).unwrap();
+                lua_tx
+                    .send(scripting::Message::Quit(0))
+                    .unwrap_or_else(|e| error!("Could not send quit message: {}", e.description()));
 
                 // TODO: Ugly hack, find a better way to wait for exit of Lua VM
                 thread::sleep(Duration::from_millis(250));

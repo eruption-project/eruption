@@ -144,7 +144,7 @@ impl Plugin for KeyboardPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self) {}
+    fn main_loop_hook(&self, ticks: u64) {}
 
     fn as_any(&self) -> &Any {
         self

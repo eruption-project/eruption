@@ -1,0 +1,56 @@
+# Maintainer: X3n0m0rph59 <x3n0m0rph59@gmail.com>
+pkgname='eruption-roccat-vulcan'
+pkgdesc='Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards'
+pkgver='0.0.3'
+pkgrel='1'
+epoch=
+arch=('i686' 'x86_64')
+url='https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/'
+license=('GPL3+')
+groups=()
+depends=()
+makedepends=('git' 'rust')
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+#install="$pkgname.install"
+changelog=
+source=('git+https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan/tree/master')
+noextract=()
+sha512sums=('SKIP')
+PKGEXT='.pkg.tar.gz'
+
+package() {
+    cd "$pkgname"
+
+    CARGO_INCREMENTAL=0 cargo build --all --release
+}
+
+package() {
+  cd "$pkgname"
+
+  mkdir -p "$pkgdir/usr/bin"
+  mkdir -p "$pkgdir/etc/eruption"
+  mkdir -p "$pkgdir/var/lib/eruption"  
+  mkdir -p "$pkgdir/usr/share/doc/eruption/examples"
+
+  mkdir -p "$pkgdir/usr/lib/systemd/system/"
+  mkdir -p "$pkgdir/usr/lib/systemd/user/"
+  mkdir -p "$pkgdir/usr/lib/systemd/system-preset/"
+  mkdir -p "$pkgdir/usr/lib/systemd/user-preset/"
+
+  mkdir -p "$pkgdir/etc/dbus-1/system.d/"
+  mkdir -p "$pkgdir/usr/share/man/man8/"
+  mkdir -p "$pkgdir/usr/share/man/man5/"
+  mkdir -p "$pkgdir/usr/share/man/man1/"
+
+  mkdir -p "$pkgdir/usr/share/bash-completion/completions/"
+  mkdir -p "$pkgdir/usr/share/zsh/site-functions/"
+  mkdir -p "$pkgdir/usr/share/eruption/i18n/"
+  
+  install -m 755 "target/release/eruption" "$pkgdir/usr/bin/"
+}

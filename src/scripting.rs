@@ -17,11 +17,10 @@
 
 use lazy_static::lazy_static;
 use log::*;
-use rand::{Rng, RngCore};
+use rand::Rng;
 use rlua::{Context, Function, Lua, Result};
 use std::collections::HashMap;
 use std::fs;
-use std::num::*;
 use std::path::Path;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
@@ -29,6 +28,8 @@ use std::vec::Vec;
 
 use crate::plugin_manager;
 use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
+
+use crate::constants;
 
 pub enum Message {
     Startup,
@@ -46,6 +47,7 @@ lazy_static! {
     }; NUM_KEYS]));
 }
 
+/// These functions are intended to be used from within lua scripts
 mod callbacks {
     use log::*;
     use std::convert::TryFrom;
@@ -58,43 +60,36 @@ mod callbacks {
     use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
 
     /// Log a message with severity level `trace`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn log_trace(x: &str) {
         trace!("{}", x);
     }
 
     /// Log a message with severity level `debug`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn log_debug(x: &str) {
         debug!("{}", x);
     }
 
     /// Log a message with severity level `info`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn log_info(x: &str) {
         info!("{}", x);
     }
 
     /// Log a message with severity level `warn`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn log_warn(x: &str) {
         warn!("{}", x);
     }
 
     /// Log a message with severity level `error`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn log_error(x: &str) {
         error!("{}", x);
     }
 
     /// Delay execution of the lua script by `millis` milliseconds.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn delay(millis: u64) {
         thread::sleep(Duration::from_millis(millis));
     }
 
     /// Get RGB components of a 32 bits color value.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn color_to_rgb(c: u32) -> (u8, u8, u8) {
         let r = u8::try_from((c >> 16) & 0xff).unwrap();
         let g = u8::try_from((c >> 8) & 0xff).unwrap();
@@ -104,14 +99,12 @@ mod callbacks {
     }
 
     /// Convert RGB components to a 32 bits color value.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn rgb_to_color(r: u8, g: u8, b: u8) -> u32 {
         (((r as u32) << 16) + ((g as u32) << 8) + (b as u32)) as u32
     }
 
     /// Generate a linear RGB color gradient from start to dest color,
     /// where p must lie in the range from 0..1.
-    /// this function is intended to be used from within lua scripts
     pub fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
         let scr: f64 = ((start >> 16) & 0xff) as f64;
         let scg: f64 = ((start >> 8) & 0xff) as f64;
@@ -129,20 +122,17 @@ mod callbacks {
     }
 
     /// Get the number of keys of the managed device.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn get_num_keys() -> usize {
         NUM_KEYS
     }
 
     /// Get the current color of the key `idx`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn get_key_color(rvdevid: &str, idx: usize) -> u32 {
         error!("{}: {}", rvdevid, idx);
         0
     }
 
     /// Set the color of the key `idx` to `c`.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn set_key_color(rvdev: &Arc<Mutex<RvDeviceState>>, idx: usize, c: u32) {
         match LED_MAP.lock() {
             Ok(mut led_map) => {
@@ -154,7 +144,9 @@ mod callbacks {
 
                 let mut rvdev = rvdev.lock().unwrap();
                 rvdev.send_led_map(&*led_map).unwrap();
-                // thread::sleep(Duration::from_millis(20));
+                thread::sleep(Duration::from_millis(
+                    crate::constants::DEVICE_SETTLE_MILLIS,
+                ));
             }
 
             Err(e) => {
@@ -164,7 +156,6 @@ mod callbacks {
     }
 
     /// Set all leds at once.
-    /// this function is intended to be used from within lua scripts
     pub(crate) fn set_color_map(rvdev: &Arc<Mutex<RvDeviceState>>, map: &[u32]) {
         let mut led_map = [RGB { r: 0, g: 0, b: 0 }; NUM_KEYS];
 
@@ -184,7 +175,9 @@ mod callbacks {
 
         let mut rvdev = rvdev.lock().unwrap();
         rvdev.send_led_map(&led_map).unwrap();
-        // thread::sleep(Duration::from_millis(20));
+        thread::sleep(Duration::from_millis(
+            crate::constants::DEVICE_SETTLE_MILLIS,
+        ));
     }
 }
 
@@ -262,7 +255,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> Resu
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.2");
+    config.insert("daemon_version", "0.0.3");
 
     globals.set("config", config)?;
 
@@ -332,9 +325,15 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> Result<(
     let pow = lua_ctx.create_function(|_, (val, p): (f64, f64)| Ok(val.powf(p)))?;
     globals.set("pow", pow)?;
 
+    let sqrt = lua_ctx.create_function(|_, f: (f64)| Ok(f.sqrt()))?;
+    globals.set("sqrt", sqrt)?;
+
     let rand =
         lua_ctx.create_function(|_, (l, h): (u64, u64)| Ok(rand::thread_rng().gen_range(l, h)))?;
     globals.set("rand", rand)?;
+
+    let trunc = lua_ctx.create_function(|_, f: (f64)| Ok(f.trunc() as i64))?;
+    globals.set("trunc", trunc)?;
 
     // color handling
     let color_to_rgb = lua_ctx.create_function(|_, c: (u32)| Ok(callbacks::color_to_rgb(c)))?;

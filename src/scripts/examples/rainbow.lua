@@ -14,35 +14,43 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global script configuration --
-config["script_name"] = "temperature"
-config["script_description"] = "Make the keyboard reflect the system temperature"
+config["script_name"] = "rainbow"
+config["script_description"] = "Show a rainbow color gradient"
 config["script_version"] = "0.0.1"
 config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.2"
+config["min_supported_version"] = "0.0.3"
+
+-- set gradient stops
+gradient_stops = {
+    [0] = { start = rgb_to_color(255,   0,   0), dest = rgb_to_color(255, 165,   0) },
+    [1] = { start = rgb_to_color(255, 165,   0), dest = rgb_to_color(0,   255, 255) },
+    [2] = { start = rgb_to_color(0,   255, 255), dest = rgb_to_color(0,   255,   0) },
+    [3] = { start = rgb_to_color(0,   255,   0), dest = rgb_to_color(0,     0, 255) },
+    [4] = { start = rgb_to_color(0,     0, 255), dest = rgb_to_color(75,    0, 130) },
+    [5] = { start = rgb_to_color(75,    0, 130), dest = rgb_to_color(238, 130, 238) },
+    [6] = { start = rgb_to_color(238, 130, 238), dest = rgb_to_color(255,   0,   0) },
+    len = 7
+}
+color_divisor = 256
+animate_gradient = true
 
 -- global constants --
-color_off = 0x000000000
-color_background = 0x00111111
-color_cold = rgb_to_color(0, 128, 0)
-color_hot = rgb_to_color(128, 0, 0)
-color_step = 0x00110000
+color_off = 0x00000000
+color_bright = 0x00ffffff
 
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
+color_afterglow = rgb_to_color(255, 255, 255)
+color_step_afterglow = rgb_to_color(10, 10, 10)
 afterglow_step = 2
+gradient_step = 1
 
 -- global state variables --
-temperature = get_package_temp()
-max_temperature = get_package_max_temp()
 color_map = {}
 color_map_pressed = {}
-
 ticks = 0
 
 -- event handler functions --
 function on_startup(config)
     init_state()
-    percentage = 0
 end
 
 function on_quit(exit_code)
@@ -54,32 +62,24 @@ end
 
 function on_tick(delta)
     ticks = ticks + delta + 1
-
-    -- update the temperature approximately every 2 seconds
-    if ticks % 40 == 0 then
-        temperature = get_package_temp()
-        trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)
-    end
     
     local num_keys = get_num_keys()
 
-    -- calculate colors
-    local percentage = min(temperature / max_temperature * 100, 100)
-
-    for i = 0, num_keys do
-        color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
+    -- animate gradient
+    if animate_gradient and (ticks % gradient_step == 0) then
+        for i = 0, num_keys do
+            color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
+        end
     end
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
-            if color_map_pressed[i] >= 0x00000000 then
+        for i = 0, num_keys do
+            if color_map_pressed[i] > color_off then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 
-                if color_map_pressed[i] >= 0x00ffffff then
-                    color_map_pressed[i] = 0x00ffffff
-                elseif color_map_pressed[i] <= 0x00000000 then
-                    color_map_pressed[i] = 0x00000000
+                if color_map_pressed[i] < color_off then
+                    color_map_pressed[i] = color_off
                 end
             end
         end
@@ -91,7 +91,7 @@ function on_tick(delta)
         color_map_combined[i] = color_map[i] + color_map_pressed[i]
 
         -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > 0x00000000 then
+        if color_map_pressed[i] > color_off then
             color_map_combined[i] = color_map_pressed[i]
         end
 
@@ -109,7 +109,23 @@ end
 function init_state()
     local num_keys = get_num_keys()
     for i = 0, num_keys do
-        color_map[i] = color_background
+        color_map[i] = linear_gradient_multi(gradient_stops, (i * num_keys / 100))
         color_map_pressed[i] = color_off
     end
+end
+
+-- support functions
+function linear_gradient_multi(stops, p)
+    local i = clamp(trunc(p / (100 * stops.len)), 0, stops.len - 1)
+
+    -- info("p: " .. p .. " " .. "index: " .. i)
+
+    local s = stops[i].start
+    local e = stops[i].dest
+
+    local result = linear_gradient(s, e, p / color_divisor)
+
+    -- info("result: " .. result)
+
+    return result
 end
