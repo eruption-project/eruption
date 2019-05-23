@@ -43,7 +43,6 @@ pub struct SensorsPluginError {
 impl error::Error for SensorsPluginError {
     fn description(&self) -> &str {
         match self.code {
-            0 => "",
             _ => "Unknown error",
         }
     }

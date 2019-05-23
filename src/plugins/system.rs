@@ -39,7 +39,6 @@ pub struct SystemPluginError {
 impl error::Error for SystemPluginError {
     fn description(&self) -> &str {
         match self.code {
-            0 => "",
             _ => "Unknown error",
         }
     }
@@ -63,23 +62,48 @@ impl SystemPlugin {
     }
 
     pub fn get_current_load_avg_1() -> f32 {
-        procinfo::loadavg().unwrap().load_avg_1_min
+        procinfo::loadavg()
+            .unwrap_or_else(|e| {
+                error!("Could not gather status information: {}", e);
+                panic!();
+            })
+            .load_avg_1_min
     }
 
     pub fn get_current_load_avg_5() -> f32 {
-        procinfo::loadavg().unwrap().load_avg_5_min
+        procinfo::loadavg()
+            .unwrap_or_else(|e| {
+                error!("Could not gather status information: {}", e);
+                panic!();
+            })
+            .load_avg_5_min
     }
 
     pub fn get_current_load_avg_10() -> f32 {
-        procinfo::loadavg().unwrap().load_avg_10_min
+        procinfo::loadavg()
+            .unwrap_or_else(|e| {
+                error!("Could not gather status information: {}", e);
+                panic!();
+            })
+            .load_avg_10_min
     }
 
     pub fn get_runnable_tasks() -> u32 {
-        procinfo::loadavg().unwrap().tasks_runnable
+        procinfo::loadavg()
+            .unwrap_or_else(|e| {
+                error!("Could not gather status information: {}", e);
+                panic!();
+            })
+            .tasks_runnable
     }
 
     pub fn get_total_tasks() -> u32 {
-        procinfo::loadavg().unwrap().tasks_total
+        procinfo::loadavg()
+            .unwrap_or_else(|e| {
+                error!("Could not gather status information: {}", e);
+                panic!();
+            })
+            .tasks_total
     }
 }
 

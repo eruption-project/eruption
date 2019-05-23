@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.0.3"
+version = "0.0.5"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
@@ -15,11 +15,12 @@ default = []
 [dependencies]
 libc = "0.2.55"
 nix = "0.14.0"
+prctl = "1.0.0"
 log = "0.4.6"
 pretty_env_logger = "0.3.0"
 ctrlc = { version = "3.1.2", features=["termination"] }
 clap = "2.33.0"
-confy = "0.3.1"
+config = "0.9.3"
 hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", branch = "master" }
 udev = "0.2.0"
 evdev-rs = "0.2.0"

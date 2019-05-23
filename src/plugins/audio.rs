@@ -38,7 +38,6 @@ pub struct AudioPluginError {
 impl error::Error for AudioPluginError {
     fn description(&self) -> &str {
         match self.code {
-            0 => "",
             _ => "Unknown error",
         }
     }

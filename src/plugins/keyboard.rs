@@ -43,6 +43,9 @@ impl error::Error for KeyboardPluginError {
             0 => "Could not peek evdev event",
             1 => "Could not convert key code",
             2 => "Not a key code",
+            3 => "Could not get the name of the evdev device from udev",
+            4 => "Could not open the evdev device",
+            5 => "Could not create a libevdev device handle",
             _ => "Unknown error",
         }
     }
@@ -71,26 +74,37 @@ impl KeyboardPlugin {
         KeyboardPlugin {}
     }
 
-    pub fn initialize_thread_locals(&mut self) {
-        let filename = crate::util::get_evdev_from_udev().unwrap();
-        let devfile = File::open(filename.clone()).unwrap();
+    pub fn initialize_thread_locals(&mut self) -> Result<()> {
+        match crate::util::get_evdev_from_udev() {
+            Ok(filename) => match File::open(filename.clone()) {
+                Ok(devfile) => match Device::new_from_fd(devfile) {
+                    Ok(device) => {
+                        info!("Now listening on: {}", filename);
 
-        info!("Listening on: {}", filename);
+                        info!(
+                            "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
+                            device.bustype(),
+                            device.vendor_id(),
+                            device.product_id()
+                        );
+                        info!("Evdev version: {:x}", device.driver_version());
+                        info!("Input device name: \"{}\"", device.name().unwrap_or(""));
+                        info!("Physical location: {}", device.phys().unwrap_or(""));
+                        info!("Unique identifier: {}", device.uniq().unwrap_or(""));
 
-        let device = Device::new_from_fd(devfile).unwrap();
+                        DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
 
-        info!(
-            "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
-            device.bustype(),
-            device.vendor_id(),
-            device.product_id()
-        );
-        info!("Evdev version: {:x}", device.driver_version());
-        info!("Input device name: \"{}\"", device.name().unwrap_or(""));
-        info!("Physical location: {}", device.phys().unwrap_or(""));
-        info!("Unique identifier: {}", device.uniq().unwrap_or(""));
+                        Ok(())
+                    }
 
-        DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
+                    Err(_e) => Err(KeyboardPluginError { code: 5 }),
+                },
+
+                Err(_e) => Err(KeyboardPluginError { code: 4 }),
+            },
+
+            Err(_e) => Err(KeyboardPluginError { code: 3 }),
+        }
     }
 
     pub fn get_next_event(&self) -> Result<Option<u8>> {

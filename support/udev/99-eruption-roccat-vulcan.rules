@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", RUN+="/usr/bin/systemctl try-reload-or-restart eruption.service"
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", RUN+="/usr/bin/systemctl try-reload-or-restart eruption.service"

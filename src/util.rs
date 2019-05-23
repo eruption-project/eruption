@@ -136,6 +136,10 @@ pub fn get_evdev_from_udev<'a>() -> Result<'a, String> {
 //     Err(Error::from(ErrorKind::NotFound))
 // }
 
+// pub fn set_process_priority() -> std::result::Result<(), i32> {
+//     Ok(())
+// }
+
 pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
     fs::read_to_string(p)
 }

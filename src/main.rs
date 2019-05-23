@@ -26,7 +26,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -43,6 +43,8 @@ mod constants;
 mod plugin_manager;
 mod plugins;
 mod scripting;
+
+use scripting::Message;
 
 lazy_static! {
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
@@ -70,7 +72,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.3")
+        .version("0.0.5")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -84,7 +86,7 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
         .arg(
             Arg::with_name("script")
                 .help("Specify the Lua script to execute")
-                .required(true)
+                // .required(true)
                 .index(1),
         )
         .arg(
@@ -96,14 +98,115 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
+fn run_main_loop(kbd_rx: &Receiver<Option<u8>>, lua_tx: &Sender<Message>) {
+    trace!("Entering main loop...");
+
+    // main loop iterations, monotonic counter
+    let mut ticks = 0;
+
+    // used to calculate frames per second
+    let mut fps_cntr = 0;
+    let mut fps_timer = Instant::now();
+
+    let mut start_time = Instant::now();
+
+    // enter the main loop on the main thread
+    'MAIN_LOOP: loop {
+        // prepare to call main loop hook
+        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
+        let plugins = plugin_manager.get_plugins();
+
+        // call main loop hook of each registered plugin
+        for plugin in plugins.iter() {
+            plugin.main_loop_hook(ticks);
+        }
+
+        // send timer tick event to the Lua VM
+        lua_tx
+            .send(scripting::Message::Tick(
+                start_time.elapsed().as_millis().try_into().unwrap(),
+            ))
+            .unwrap();
+
+        // send pending keyboard events
+        match kbd_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                Some(index) => lua_tx
+                    .send(scripting::Message::KeyDown(index))
+                    .unwrap_or_else(|e| {
+                        error!("Could not receive a pending keyboard event: {}", e)
+                    }),
+
+                // ignore spurious events
+                None => trace!("Spurious keyboard event ignored"),
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
+        // sync to MAIN_LOOP_DELAY_MILLIS iteration time
+        let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
+        let sleep_millis = u64::max(
+            constants::MAIN_LOOP_DELAY_MILLIS
+                .checked_sub(elapsed)
+                .unwrap_or(0),
+            constants::MAIN_LOOP_DELAY_MILLIS,
+        );
+        thread::sleep(Duration::from_millis(sleep_millis));
+
+        let elapsed_after_sleep = start_time.elapsed().as_millis();
+        if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
+            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 5u64).into() {
+                warn!(
+                    "More than 5 milliseconds of jitter detected! Loop took: {} milliseconds, goal: {}",
+                    elapsed_after_sleep,
+                    constants::MAIN_LOOP_DELAY_MILLIS
+                );
+            } else {
+                trace!(
+                    "Loop took: {} milliseconds, goal: {}",
+                    elapsed_after_sleep,
+                    constants::MAIN_LOOP_DELAY_MILLIS
+                );
+            }
+        }
+
+        // calculate and log fps each second
+        if fps_timer.elapsed().as_millis() >= 1000 {
+            trace!("FPS: {}", fps_cntr);
+
+            fps_timer = Instant::now();
+            fps_cntr = 0;
+        }
+
+        // shall we quit the main loop?
+        if QUIT.load(Ordering::SeqCst) {
+            break 'MAIN_LOOP;
+        }
+
+        fps_cntr += 1;
+        ticks += 1;
+
+        start_time = Instant::now();
+    }
+}
+
 /// Main program entrypoint
 fn main() {
-    print_header();
+    if unsafe { libc::isatty(0) != 0 } {
+        print_header();
+    }
 
     let matches = parse_commandline();
 
     let config_file = matches.value_of("config").unwrap_or("eruption.conf");
-    let script_file = matches.value_of("script").unwrap();
+    let script_file = matches.value_of("script").unwrap_or("/usr/lib/eruption/scripts/shockwave.lua");
     let verbosity = matches.occurrences_of("v");
 
     // initialize logging
@@ -123,6 +226,12 @@ fn main() {
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
+    // try to set timer slack to a low value
+    // prctl::set_timer_slack(1).unwrap_or_else(|e| warn!("Could not set process timer slack: {}", e));
+
+    // request realtime priority
+    // crate::util::set_process_priority();
+
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => match RvDeviceState::enumerate_devices(&hidapi) {
@@ -133,7 +242,7 @@ fn main() {
                     .open(&hidapi)
                     .unwrap_or_else(|e| {
                         error!("Error opening the keyboard device: {}", e);
-                        error!("HINT: This could be a permission problem, or the device is locked by another process?");
+                        error!("This could be a permission problem, or maybe the device is locked by another process?");
                         process::exit(4);
                     });
 
@@ -198,7 +307,12 @@ fn main() {
                             .downcast_mut::<plugins::KeyboardPlugin>()
                             .unwrap();
 
-                        keyboard_plugin.initialize_thread_locals();
+                        keyboard_plugin
+                            .initialize_thread_locals()
+                            .unwrap_or_else(|e| {
+                                error!("Could not initialize the keyboard plugin: {}", e);
+                                panic!()
+                            })
                     }
 
                     loop {
@@ -226,94 +340,8 @@ fn main() {
 
                 lua_tx.send(scripting::Message::Startup).unwrap();
 
-                // trace!("Entering main loop...");
-
-                // main loop iterations, monotonic counter
-                let mut ticks = 0;
-
-                // used to calculate frames per second
-                let mut fps_cntr = 0;
-                let mut fps_timer = Instant::now();
-
-                let mut start_time = Instant::now();
-
-                // enter the main loop on the main thread
-                'MAIN_LOOP: loop {
-                    // prepare to call main loop hook
-                    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
-                    let plugins = plugin_manager.get_plugins();
-
-                    // call main loop hook of each registered plugin
-                    for plugin in plugins.iter() {
-                        plugin.main_loop_hook(ticks);
-                    }
-
-                    // send timer tick event to the Lua VM
-                    lua_tx
-                        .send(scripting::Message::Tick(
-                            start_time.elapsed().as_millis().try_into().unwrap(),
-                        ))
-                        .unwrap();
-
-                    // send pending keyboard events
-                    match kbd_rx.recv_timeout(Duration::from_millis(0)) {
-                        Ok(result) => match result {
-                            Some(index) => lua_tx
-                                .send(scripting::Message::KeyDown(index))
-                                .unwrap_or_else(|e| {
-                                    error!("Could not receive a pending keyboard event: {}", e)
-                                }),
-
-                            // ignore spurious events
-                            None => trace!("Spurious keyboard event ignored"),
-                        },
-
-                        // ignore timeout errors
-                        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-                        Err(e) => {
-                            error!("Channel error: {}", e);
-                            break 'MAIN_LOOP;
-                        }
-                    }
-
-                    // sync to MAIN_LOOP_DELAY_MILLIS iteration time
-                    let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
-                    let sleep_millis = u64::max(
-                        constants::MAIN_LOOP_DELAY_MILLIS
-                            .checked_sub(elapsed)
-                            .unwrap_or(0),
-                        constants::MAIN_LOOP_DELAY_MILLIS,
-                    );
-                    thread::sleep(Duration::from_millis(sleep_millis));
-
-                    let elapsed_after_sleep = start_time.elapsed().as_millis();
-                    if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
-                        warn!(
-                            "Loop took: {} millis, goal: {}",
-                            elapsed_after_sleep,
-                            constants::MAIN_LOOP_DELAY_MILLIS
-                        );
-                    }
-
-                    // calculate and log fps each second
-                    if fps_timer.elapsed().as_millis() >= 1000 {
-                        trace!("FPS: {}", fps_cntr);
-
-                        fps_timer = Instant::now();
-                        fps_cntr = 0;
-                    }
-
-                    // shall we quit the main loop?
-                    if QUIT.load(Ordering::SeqCst) {
-                        break 'MAIN_LOOP;
-                    }
-
-                    fps_cntr += 1;
-                    ticks += 1;
-
-                    start_time = Instant::now();
-                }
+                // enter the main loop
+                run_main_loop(&kbd_rx, &lua_tx);
 
                 // we left the main loop, send a final message to the running Lua VM
                 lua_tx
