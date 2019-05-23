@@ -120,7 +120,7 @@ impl Plugin for SystemPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, ticks: u64) {}
+    fn main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &Any {
         self

@@ -20,13 +20,10 @@ use log::*;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::cell::RefCell;
 use std::error;
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
 use std::sync::{Arc, Mutex};
-use sysinfo::{ComponentExt, ProcessExt, SystemExt};
 
 use crate::plugins::Plugin;
 use crate::util;
@@ -63,8 +60,6 @@ impl AudioPlugin {
     pub fn new() -> Self {
         AudioPlugin {}
     }
-
-    pub fn refresh() {}
 }
 
 impl Plugin for AudioPlugin {
@@ -88,7 +83,7 @@ impl Plugin for AudioPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, ticks: u64) {}
+    fn main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &Any {
         self

@@ -93,7 +93,7 @@ impl KeyboardPlugin {
         DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
     }
 
-    pub fn get_next_event(&self) -> Result<u8> {
+    pub fn get_next_event(&self) -> Result<Option<u8>> {
         let result = DEVICE.with(|dev| {
             let result = dev
                 .borrow()
@@ -104,27 +104,37 @@ impl KeyboardPlugin {
             match result {
                 Ok(k) => {
                     trace!("Key event: {}", k.1.event_code);
-                    Ok(k.1)
+                    Ok(k)
                 }
 
                 Err(e) => {
-                    error!("Could not peek evdev event: {}", e);
-                    Err(KeyboardPluginError { code: 0 })
+                    if e as i32 == libc::ENODEV {
+                        error!("Keyboard device went away: {}", e);
+                        panic!();
+                    } else {
+                        error!("Could not peek evdev event: {}", e);
+                        Err(KeyboardPluginError { code: 0 })
+                    }
                 }
             }
         })?;
 
-        match result.event_code {
-            EventCode::EV_KEY(code) => {
-                let result = util::ev_key_to_key_index(code);
-                if result != 0xff {
-                    Ok(result)
-                } else {
-                    Err(KeyboardPluginError { code: 1 })
-                }
-            }
+        match result.0 {
+            evdev_rs::ReadStatus::Success => match result.1.event_code {
+                EventCode::EV_KEY(code) => {
+                    let result = util::ev_key_to_key_index(code);
 
-            _ => Err(KeyboardPluginError { code: 2 }),
+                    if result != 0xff {
+                        Ok(Some(result))
+                    } else {
+                        Err(KeyboardPluginError { code: 1 })
+                    }
+                }
+
+                _ => Err(KeyboardPluginError { code: 2 }),
+            },
+
+            _ => Ok(None),
         }
     }
 }
@@ -140,11 +150,11 @@ impl Plugin for KeyboardPlugin {
 
     fn initialize(&mut self) {}
 
-    fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
+    fn register_lua_funcs(&self, _lua_ctx: Context) -> rlua::Result<()> {
         Ok(())
     }
 
-    fn main_loop_hook(&self, ticks: u64) {}
+    fn main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &Any {
         self

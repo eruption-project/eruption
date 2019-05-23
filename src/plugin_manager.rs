@@ -27,10 +27,12 @@ lazy_static! {
         Arc::new(RwLock::new(PluginManager::new()));
 }
 
+type PluginType = dyn Plugin + Sync + Send;
+
 /// Plugin manager
 /// Keeps track of registered plugins
 pub struct PluginManager {
-    registered_plugins: HashMap<String, Box<dyn Plugin + Sync + Send>>,
+    registered_plugins: HashMap<String, Box<PluginType>>,
 }
 
 impl PluginManager {
@@ -42,7 +44,7 @@ impl PluginManager {
     }
 
     /// Register a plugin with the system
-    pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Sync + Send>) {
+    pub fn register_plugin(&mut self, mut plugin: Box<PluginType>) {
         info!(
             "Registering plugin: {} - {}",
             plugin.get_name(),
@@ -54,19 +56,19 @@ impl PluginManager {
         self.registered_plugins.insert(plugin.get_name(), plugin);
     }
 
-    pub fn get_plugins(&self) -> Vec<&Box<dyn Plugin + Sync + Send>> {
+    pub fn get_plugins(&self) -> Vec<&Box<PluginType>> {
         self.registered_plugins.values().collect()
     }
 
-    pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<dyn Plugin + Sync + Send>> {
+    pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<PluginType>> {
         self.registered_plugins.values_mut().collect()
     }
 
-    pub fn find_plugin_by_name(&self, name: String) -> &Box<dyn Plugin + Sync + Send> {
-        self.registered_plugins.get(&name).unwrap()
+    pub fn find_plugin_by_name(&self, name: String) -> Option<&Box<PluginType>> {
+        self.registered_plugins.get(&name)
     }
 
-    pub fn find_plugin_by_name_mut(&mut self, name: String) -> &mut Box<dyn Plugin + Sync + Send> {
-        self.registered_plugins.get_mut(&name).unwrap()
+    pub fn find_plugin_by_name_mut(&mut self, name: String) -> Option<&mut Box<PluginType>> {
+        self.registered_plugins.get_mut(&name)
     }
 }

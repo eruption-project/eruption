@@ -18,8 +18,11 @@
 use lazy_static::lazy_static;
 use log::*;
 use rand::Rng;
-use rlua::{Context, Function, Lua, Result};
+use rlua::{Context, Function, Lua};
 use std::collections::HashMap;
+use std::error;
+use std::error::Error;
+use std::fmt;
 use std::fs;
 use std::path::Path;
 use std::sync::mpsc::Receiver;
@@ -45,6 +48,40 @@ lazy_static! {
         g: 0x00,
         b: 0x00,
     }; NUM_KEYS]));
+}
+
+pub type Result<T> = std::result::Result<T, ScriptingError>;
+
+#[derive(Debug)]
+pub struct ScriptingError {
+    code: u32,
+    // cause: Option<Box<dyn error::Error>>,
+}
+
+impl error::Error for ScriptingError {
+    fn description(&self) -> &str {
+        match self.code {
+            0 => "Could not read script file",
+            1 => "Lua errors present",
+            _ => "Unknown error",
+        }
+    }
+
+    fn cause(&self) -> Option<&(dyn error::Error + 'static)> {
+        // match self.cause {
+        //     Some(c) => Some(&c.downcast().unwrap()),
+
+        //     None => None,
+        // }
+
+        None
+    }
+}
+
+impl fmt::Display for ScriptingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
 
 /// These functions are intended to be used from within lua scripts
@@ -143,7 +180,9 @@ mod callbacks {
                 };
 
                 let mut rvdev = rvdev.lock().unwrap();
-                rvdev.send_led_map(&*led_map).unwrap();
+                rvdev.send_led_map(&*led_map).unwrap_or_else(|e| {
+                    error!("Could not send the LED map to the keyboard: {}", e)
+                });
                 thread::sleep(Duration::from_millis(
                     crate::constants::DEVICE_SETTLE_MILLIS,
                 ));
@@ -174,7 +213,9 @@ mod callbacks {
         }
 
         let mut rvdev = rvdev.lock().unwrap();
-        rvdev.send_led_map(&led_map).unwrap();
+        rvdev
+            .send_led_map(&led_map)
+            .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
         thread::sleep(Duration::from_millis(
             crate::constants::DEVICE_SETTLE_MILLIS,
         ));
@@ -184,68 +225,84 @@ mod callbacks {
 /// Loads and runs a lua script.
 /// Initializes a lua environment, loads a script and executes it
 pub fn run_script(file: &Path, rvdevice: RvDeviceState, rx: &Receiver<Message>) -> Result<()> {
-    let lua = Lua::new();
+    match fs::read_to_string(file) {
+        Ok(script) => {
+            let lua = Lua::new();
 
-    let script = fs::read_to_string(file).unwrap();
+            let result: rlua::Result<_> = lua.context(|lua_ctx| {
+                register_support_globals(lua_ctx, &rvdevice)?;
+                register_support_funcs(lua_ctx, rvdevice)?;
 
-    lua.context(|lua_ctx| {
-        register_support_globals(lua_ctx, &rvdevice)?;
-        register_support_funcs(lua_ctx, rvdevice)?;
+                // start execution of the Lua script
+                lua_ctx.load(&script).eval::<()>()?;
 
-        // start execution of the Lua script
-        lua_ctx.load(&script).eval::<()>()?;
+                loop {
+                    if let Ok(msg) = rx.recv() {
+                        match msg {
+                            Message::Startup => {
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_startup")
+                                {
+                                    handler.call::<_, ()>(()).or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        Ok(())
+                                    })?;
+                                }
+                            }
 
-        'EVENT_LOOP: loop {
-            if let Ok(msg) = rx.recv() {
-                match msg {
-                    Message::Startup => {
-                        if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_startup") {
-                            handler.call::<_, ()>(()).or_else(|e| {
-                                error!("{}", e);
-                                Ok(())
-                            })?;
+                            Message::Quit(param) => {
+                                if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit")
+                                {
+                                    handler.call::<_, ()>(param).or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        Ok(())
+                                    })?;
+                                }
+                            }
+
+                            Message::Tick(param) => {
+                                if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_tick")
+                                {
+                                    handler.call::<_, ()>(param).or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        Ok(())
+                                    })?;
+                                }
+                            }
+
+                            Message::KeyDown(param) => {
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_key_down")
+                                {
+                                    handler.call::<_, ()>(param).or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        Ok(())
+                                    })?;
+                                }
+                            }
                         }
                     }
-
-                    Message::Quit(param) => {
-                        if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
-                            handler.call::<_, ()>(param).or_else(|e| {
-                                error!("{}", e);
-                                Ok(())
-                            })?;
-                        }
-                    }
-
-                    Message::Tick(param) => {
-                        if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_tick") {
-                            handler.call::<_, ()>(param).or_else(|e| {
-                                error!("{}", e);
-                                Ok(())
-                            })?;
-                        }
-                    }
-
-                    Message::KeyDown(param) => {
-                        if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_down") {
-                            handler.call::<_, ()>(param).or_else(|e| {
-                                error!("{}", e);
-                                Ok(())
-                            })?;
-                        }
-                    }
-
-                    _ => break 'EVENT_LOOP,
                 }
+            });
+
+            match result {
+                Ok(()) => Ok(()),
+
+                Err(_) => Err(ScriptingError {
+                    code: 1,
+                    // cause: Some(Box::new(e)),
+                }),
             }
         }
 
-        Ok(())
-    })?;
-
-    Ok(())
+        Err(_) => Err(ScriptingError {
+            code: 0,
+            // cause: Some(Box::new(e)),
+        }),
+    }
 }
 
-fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> Result<()> {
+fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua::Result<()> {
     let globals = lua_ctx.globals();
 
     lua_ctx
@@ -262,7 +319,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> Resu
     Ok(())
 }
 
-fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> Result<()> {
+fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> rlua::Result<()> {
     let rvdevid = rvdevice.get_dev_id();
     let rvdev = Arc::new(Mutex::new(rvdevice));
 

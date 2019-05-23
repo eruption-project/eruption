@@ -22,15 +22,18 @@ use evdev_rs::enums::EV_KEY;
 use std::error;
 use std::error::Error;
 use std::fmt;
+use std::fs;
+use std::path::Path;
 use udev::{Context, Enumerator};
 
 use crate::rvdevice;
 
-pub type Result<T> = std::result::Result<T, UtilError>;
+pub type Result<'a, T> = std::result::Result<T, UtilError>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct UtilError {
     code: u32,
+    cause: Option<udev::Error>,
 }
 
 impl error::Error for UtilError {
@@ -38,12 +41,17 @@ impl error::Error for UtilError {
         match self.code {
             0 => "No compatible devices found",
             1 => "Error occured during device enumeration",
+            2 => "Could not enumerate udev devices",
+            3 => "Could not create an udev context",
             _ => "Unknown error",
         }
     }
 
     fn cause(&self) -> Option<&dyn error::Error> {
-        None
+        match self.cause.as_ref() {
+            Some(c) => Some(c),
+            None => None,
+        }
     }
 }
 
@@ -54,28 +62,46 @@ impl fmt::Display for UtilError {
 }
 
 /// Get the path of the evdev device of the first keyboard from udev
-pub fn get_evdev_from_udev() -> Result<String> {
-    let context = Context::new().unwrap();
-    let mut enumerator = Enumerator::new(&context).unwrap();
+pub fn get_evdev_from_udev<'a>() -> Result<'a, String> {
+    match Context::new() {
+        Ok(context) => match Enumerator::new(&context) {
+            Ok(mut enumerator) => {
+                enumerator.match_subsystem("input").unwrap();
 
-    enumerator.match_subsystem("input").unwrap();
+                match enumerator.scan_devices() {
+                    Ok(devices) => {
+                        for device in devices {
+                            if device.properties().any(|e| {
+                                e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR
+                            }) && device.devnode().is_some()
+                            {
+                                return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                            }
+                        }
 
-    match enumerator.scan_devices() {
-        Ok(devices) => {
-            for device in devices {
-                if device
-                    .properties()
-                    .any(|e| e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR)
-                    && device.devnode().is_some()
-                {
-                    return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                        Err(UtilError {
+                            code: 0,
+                            cause: None,
+                        })
+                    }
+
+                    Err(e) => Err(UtilError {
+                        code: 1,
+                        cause: Some(e),
+                    }),
                 }
             }
 
-            Err(UtilError { code: 0 })
-        }
+            Err(e) => Err(UtilError {
+                code: 2,
+                cause: Some(e),
+            }),
+        },
 
-        Err(_e) => Err(UtilError { code: 1 }),
+        Err(e) => Err(UtilError {
+            code: 3,
+            cause: Some(e),
+        }),
     }
 }
 
@@ -109,6 +135,10 @@ pub fn get_evdev_from_udev() -> Result<String> {
 
 //     Err(Error::from(ErrorKind::NotFound))
 // }
+
+pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
+    fs::read_to_string(p)
+}
 
 /// Map evdev event codes to key indices, for ISO variant
 static EV_TO_INDEX_ISO: [u8; 0x2ff + 1] = [

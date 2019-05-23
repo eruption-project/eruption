@@ -34,7 +34,7 @@ impl error::Error for RvDeviceError {
     fn description(&self) -> &str {
         match self.code {
             0 => "Could not enumerate devices",
-            1 => "Could not open the device",
+            1 => "Could not open the device file",
             2 => "Invalid init sequence",
             3 => "Invalid operation",
             4 => "Device not bound",

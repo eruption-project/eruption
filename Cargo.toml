@@ -13,6 +13,8 @@ readme = "README.md"
 default = []
 
 [dependencies]
+libc = "0.2.55"
+nix = "0.14.0"
 log = "0.4.6"
 pretty_env_logger = "0.3.0"
 ctrlc = { version = "3.1.2", features=["termination"] }

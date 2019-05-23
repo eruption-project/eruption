@@ -23,7 +23,6 @@ use log::*;
 use pretty_env_logger;
 use std::convert::TryInto;
 use std::env;
-use std::error::Error;
 use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -103,8 +102,8 @@ fn main() {
 
     let matches = parse_commandline();
 
-    let config = matches.value_of("config").unwrap_or("eruption.conf");
-    let script = matches.value_of("script").unwrap();
+    let config_file = matches.value_of("config").unwrap_or("eruption.conf");
+    let script_file = matches.value_of("script").unwrap();
     let verbosity = matches.occurrences_of("v");
 
     // initialize logging
@@ -132,19 +131,23 @@ fn main() {
                 info!("Opening devices...");
                 rvdevice
                     .open(&hidapi)
-                    .unwrap_or_else(|e| error!("{}", e.description()));
+                    .unwrap_or_else(|e| {
+                        error!("Error opening the keyboard device: {}", e);
+                        error!("HINT: This could be a permission problem, or the device is locked by another process?");
+                        process::exit(4);
+                    });
 
                 // send initialization handshake
                 info!("Initializing devices...");
-                rvdevice.send_init_sequence().unwrap_or_else(|e| {
-                    error!("Could not initialize the device: {}", e.description())
-                });
+                rvdevice
+                    .send_init_sequence()
+                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
 
                 // set leds to a known initial state
                 info!("Configuring LEDs...");
                 rvdevice
                     .set_led_init_pattern()
-                    .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e.description()));
+                    .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
 
                 // initialize plugins
                 // info!("Registering plugins...");
@@ -152,13 +155,30 @@ fn main() {
                     .unwrap_or_else(|_e| error!("Could not register plugin"));
 
                 // spawn a thread for the Lua VM, and then load and execute a script
+                let script_path = PathBuf::from(script_file.to_string());
+
                 info!("Loading Lua scripts...");
+                let result = util::is_file_accessible(&script_path);
+                if result.is_err() {
+                    error!(
+                        "Script file '{}' is not accessible: {}",
+                        script_path.to_string_lossy(),
+                        result.unwrap_err()
+                    );
+                    process::exit(3);
+                }
+
                 let (lua_tx, lua_rx) = channel();
 
-                let script_path = PathBuf::from(script.to_string());
                 thread::spawn(move || {
-                    scripting::run_script(&script_path, rvdevice, &lua_rx)
-                        .unwrap_or_else(|e| error!("Could not load script: {}", e));
+                    scripting::run_script(&script_path, rvdevice, &lua_rx).unwrap_or_else(|e| {
+                        error!(
+                            "Could not load script file '{}': {}",
+                            script_path.to_string_lossy(),
+                            e
+                        );
+                        panic!()
+                    });
                 });
 
                 // spawn a thread to handle keyboard input
@@ -170,6 +190,10 @@ fn main() {
                         let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
                         let keyboard_plugin = plugin_manager
                             .find_plugin_by_name_mut("Keyboard".to_string())
+                            .unwrap_or_else(|| {
+                                error!("Could not find a required plugin");
+                                panic!()
+                            })
                             .as_any_mut()
                             .downcast_mut::<plugins::KeyboardPlugin>()
                             .unwrap();
@@ -181,12 +205,18 @@ fn main() {
                         let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
                         let keyboard_plugin = plugin_manager
                             .find_plugin_by_name("Keyboard".to_string())
+                            .unwrap_or_else(|| {
+                                error!("Could not find a required plugin");
+                                panic!()
+                            })
                             .as_any()
                             .downcast_ref::<plugins::KeyboardPlugin>()
                             .unwrap();
 
                         if let Ok(event) = keyboard_plugin.get_next_event() {
-                            kbd_tx.send(event).unwrap();
+                            kbd_tx.send(event).unwrap_or_else(|e| {
+                                error!("Could not send a keyboard event to the main thread: {}", e)
+                            })
                         } else {
                             // ignore spurious events
                             // error!("Could not get next keyboard event");
@@ -227,12 +257,24 @@ fn main() {
 
                     // send pending keyboard events
                     match kbd_rx.recv_timeout(Duration::from_millis(0)) {
-                        Ok(index) => lua_tx.send(scripting::Message::KeyDown(index)).unwrap(),
+                        Ok(result) => match result {
+                            Some(index) => lua_tx
+                                .send(scripting::Message::KeyDown(index))
+                                .unwrap_or_else(|e| {
+                                    error!("Could not receive a pending keyboard event: {}", e)
+                                }),
+
+                            // ignore spurious events
+                            None => trace!("Spurious keyboard event ignored"),
+                        },
 
                         // ignore timeout errors
                         Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
 
-                        Err(e) => error!("{}", e.description()),
+                        Err(e) => {
+                            error!("Channel error: {}", e);
+                            break 'MAIN_LOOP;
+                        }
                     }
 
                     // sync to MAIN_LOOP_DELAY_MILLIS iteration time
@@ -276,7 +318,7 @@ fn main() {
                 // we left the main loop, send a final message to the running Lua VM
                 lua_tx
                     .send(scripting::Message::Quit(0))
-                    .unwrap_or_else(|e| error!("Could not send quit message: {}", e.description()));
+                    .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
 
                 // TODO: Ugly hack, find a better way to wait for exit of Lua VM
                 thread::sleep(Duration::from_millis(250));
