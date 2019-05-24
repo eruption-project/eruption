@@ -20,12 +20,14 @@ use std::error::Error;
 use std::fmt;
 
 mod audio;
+mod dbus;
 mod keyboard;
 mod plugin;
 mod sensors;
 mod system;
 
 pub use audio::*;
+pub use dbus::*;
 pub use keyboard::*;
 pub use plugin::*;
 pub use sensors::*;
@@ -65,14 +67,18 @@ impl fmt::Display for PluginError {
 pub fn register_plugins() -> Result<()> {
     trace!("Registering all available plugins...");
 
-    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
+    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap_or_else(|e| {
+        error!("Could not lock a shared data structure: {}", e);
+        panic!();
+    });
 
-    plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()));
-    plugin_manager.register_plugin(Box::new(SystemPlugin::new()));
-    plugin_manager.register_plugin(Box::new(SensorsPlugin::new()));
-    plugin_manager.register_plugin(Box::new(AudioPlugin::new()));
+    plugin_manager.register_plugin(Box::new(DbusPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(SensorsPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(AudioPlugin::new()))?;
 
-    trace!("Done registering plugins");
+    trace!("Done registering all available plugins");
 
     Ok(())
 }

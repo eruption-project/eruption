@@ -27,6 +27,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 
+use crate::plugins;
 use crate::plugins::Plugin;
 use crate::util;
 
@@ -88,9 +89,12 @@ impl KeyboardPlugin {
                             device.product_id()
                         );
                         info!("Evdev version: {:x}", device.driver_version());
-                        info!("Input device name: \"{}\"", device.name().unwrap_or(""));
-                        info!("Physical location: {}", device.phys().unwrap_or(""));
-                        info!("Unique identifier: {}", device.uniq().unwrap_or(""));
+                        info!(
+                            "Input device name: \"{}\"",
+                            device.name().unwrap_or("<n/a>")
+                        );
+                        info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
+                        info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                         DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
 
@@ -162,7 +166,9 @@ impl Plugin for KeyboardPlugin {
         "Process keyboard events".to_string()
     }
 
-    fn initialize(&mut self) {}
+    fn initialize(&mut self) -> plugins::Result<()> {
+        Ok(())
+    }
 
     fn register_lua_funcs(&self, _lua_ctx: Context) -> rlua::Result<()> {
         Ok(())

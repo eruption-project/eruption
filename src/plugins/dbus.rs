@@ -16,6 +16,7 @@
 */
 
 use log::*;
+use procinfo;
 use rlua;
 use rlua::Context;
 use std::any::Any;
@@ -23,17 +24,17 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-use crate::plugins::{Plugin, Result};
-use crate::util;
+use crate::plugins;
+use crate::plugins::Plugin;
 
-// pub type Result<T> = std::result::Result<T, AudioPluginError>;
+// pub type Result<T> = std::result::Result<T, DbusPluginError>;
 
 #[derive(Debug, Clone)]
-pub struct AudioPluginError {
+pub struct DbusPluginError {
     code: u32,
 }
 
-impl error::Error for AudioPluginError {
+impl error::Error for DbusPluginError {
     fn description(&self) -> &str {
         match self.code {
             _ => "Unknown error",
@@ -45,40 +46,41 @@ impl error::Error for AudioPluginError {
     }
 }
 
-impl fmt::Display for AudioPluginError {
+impl fmt::Display for DbusPluginError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
 
-pub struct AudioPlugin {}
+/// A plugin that gives Lua scripts access to the systems state like e.g.
+/// the number of runnable processes or the load average
+pub struct DbusPlugin {}
 
-/// A plugin that performs audio-related tasks like playing or capturing sounds
-impl AudioPlugin {
+impl DbusPlugin {
     pub fn new() -> Self {
-        AudioPlugin {}
+        DbusPlugin {}
     }
 }
 
-impl Plugin for AudioPlugin {
+impl Plugin for DbusPlugin {
     fn get_name(&self) -> String {
-        "Audio".to_string()
+        "DBUS".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Audio related functions".to_string()
+        "DBUS support plugin".to_string()
     }
 
-    fn initialize(&mut self) -> Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 
     fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
         let globals = lua_ctx.globals();
 
-        // let get_package_temp =
-        //     lua_ctx.create_function(move |_, ()| Ok(AudioPlugin::get_package_temp()))?;
-        // globals.set("get_package_temp", get_package_temp)?;
+        // let get_current_load_avg_1 =
+        //     lua_ctx.create_function(|_, ()| Ok(DbusPlugin::get_current_load_avg_1()))?;
+        // globals.set("get_current_load_avg_1", get_current_load_avg_1)?;
 
         Ok(())
     }

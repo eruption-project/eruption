@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use log::*;
 // use std::fs::File;
 // use std::io::prelude::*;
 use evdev_rs::enums::EV_KEY;

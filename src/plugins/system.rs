@@ -20,16 +20,14 @@ use procinfo;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::cell::RefCell;
 use std::error;
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
 
+use crate::plugins;
 use crate::plugins::Plugin;
-use crate::util;
 
-pub type Result<T> = std::result::Result<T, SystemPluginError>;
+// pub type Result<T> = std::result::Result<T, SystemPluginError>;
 
 #[derive(Debug, Clone)]
 pub struct SystemPluginError {
@@ -54,6 +52,8 @@ impl fmt::Display for SystemPluginError {
     }
 }
 
+/// A plugin that gives Lua scripts access to the systems state like e.g.
+/// the number of runnable processes or the load average
 pub struct SystemPlugin {}
 
 impl SystemPlugin {
@@ -116,7 +116,9 @@ impl Plugin for SystemPlugin {
         "Basic system information and status".to_string()
     }
 
-    fn initialize(&mut self) {}
+    fn initialize(&mut self) -> plugins::Result<()> {
+        Ok(())
+    }
 
     fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
         let globals = lua_ctx.globals();

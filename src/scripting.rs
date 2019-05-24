@@ -179,7 +179,10 @@ mod callbacks {
                     b: u8::try_from(c & 0xff).unwrap(),
                 };
 
-                let mut rvdev = rvdev.lock().unwrap();
+                let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
+                    error!("Could not lock a shared data structure: {}", e);
+                    panic!();
+                });;
                 rvdev.send_led_map(&*led_map).unwrap_or_else(|e| {
                     error!("Could not send the LED map to the keyboard: {}", e)
                 });
@@ -189,7 +192,7 @@ mod callbacks {
             }
 
             Err(e) => {
-                error!("Could not lock a data structure. {}", e);
+                error!("Could not lock a shared data structure. {}", e);
             }
         }
     }
@@ -212,7 +215,10 @@ mod callbacks {
             }
         }
 
-        let mut rvdev = rvdev.lock().unwrap();
+        let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
         rvdev
             .send_led_map(&led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
@@ -312,7 +318,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.5");
+    config.insert("daemon_version", "0.0.6");
 
     globals.set("config", config)?;
 

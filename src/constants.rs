@@ -15,6 +15,12 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// default path of eruption master configuration file
+pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
+
+/// default effect script
+pub const DEFAULT_EFFECT_SCRIPT: &str = "/usr/lib/eruption/scripts/shockwave.lua";
+
 /// target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
 

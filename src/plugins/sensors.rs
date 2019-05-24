@@ -20,20 +20,18 @@ use log::*;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::cell::RefCell;
 use std::error;
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use sysinfo::{ComponentExt, ProcessExt, SystemExt};
+use sysinfo::{ComponentExt, SystemExt};
 
+use crate::plugins;
 use crate::plugins::Plugin;
-use crate::util;
 
-pub type Result<T> = std::result::Result<T, SensorsPluginError>;
+// pub type Result<T> = std::result::Result<T, SensorsPluginError>;
 
 #[derive(Debug, Clone)]
 pub struct SensorsPluginError {
@@ -65,6 +63,7 @@ lazy_static! {
 
 pub struct SensorsPlugin {}
 
+/// A plugin that gives Lua scripts access to the systems sensor data
 impl SensorsPlugin {
     pub fn new() -> Self {
         SensorsPlugin {}
@@ -72,16 +71,28 @@ impl SensorsPlugin {
 
     pub fn refresh() {
         // we need to spawn a thread here, since sensor updating is really slooow
-        thread::spawn(move || {
-            let mut system = SYSTEM.lock().unwrap();
-            system.refresh_all();
-        });
+        let builder = thread::Builder::new().name("sensors".into());
+        builder
+            .spawn(move || {
+                let mut system = SYSTEM.lock().unwrap_or_else(|e| {
+                    error!("Could not lock a shared data structure: {}", e);
+                    panic!();
+                });
+                system.refresh_all();
+            })
+            .unwrap_or_else(|e| {
+                error!("Could not spawn a thread: {}", e);
+                panic!()
+            });
     }
 
     pub fn get_package_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         let components = system.get_components_list();
         components[components.len() - 1].get_temperature()
@@ -90,7 +101,10 @@ impl SensorsPlugin {
     pub fn get_package_max_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         let components = system.get_components_list();
         components[components.len() - 1].get_max()
@@ -99,7 +113,10 @@ impl SensorsPlugin {
     pub fn get_mem_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         system.get_total_memory()
     }
@@ -107,7 +124,10 @@ impl SensorsPlugin {
     pub fn get_mem_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         system.get_used_memory()
     }
@@ -115,7 +135,10 @@ impl SensorsPlugin {
     pub fn get_swap_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         system.get_total_swap()
     }
@@ -123,7 +146,10 @@ impl SensorsPlugin {
     pub fn get_swap_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap();
+        let system = SYSTEM.lock().unwrap_or_else(|e| {
+            error!("Could not lock a shared data structure: {}", e);
+            panic!();
+        });;
 
         system.get_used_swap()
     }
@@ -138,7 +164,9 @@ impl Plugin for SensorsPlugin {
         "Query system sensor values".to_string()
     }
 
-    fn initialize(&mut self) {}
+    fn initialize(&mut self) -> plugins::Result<()> {
+        Ok(())
+    }
 
     fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
         let globals = lua_ctx.globals();

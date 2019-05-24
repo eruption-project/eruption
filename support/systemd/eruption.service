@@ -1,17 +1,20 @@
 [Unit]
-Description=Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
+Description=Driver for ROCCAT Vulcan 100/12x series keyboards
 Documentation=man:eruption(8) man:eruption.conf(5)
-Wants=multi-user.target
+Wants=basic.target
 
 [Service]
 ExecStart=/usr/sbin/eruption -c /etc/eruption/eruption.conf
 PIDFile=/run/eruption.pid
 Type=exec
-Restart=always
+Restart=no
 Nice=-4
-#PrivateDevices=no
-#PrivateTmp=yes
-#ProtectSystem=full
+ProtectHome=yes
+ProtectSystem=full
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+PrivateDevices=no
+PrivateTmp=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=basic.target

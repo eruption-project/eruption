@@ -1,2 +1,0 @@
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", MODE="660", TAG+="uaccess"
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", MODE="660", TAG+="uaccess"

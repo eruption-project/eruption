@@ -20,7 +20,7 @@ use log::*;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-use crate::plugins::Plugin;
+use crate::plugins::{Plugin, Result};
 
 lazy_static! {
     pub static ref PLUGIN_MANAGER: Arc<RwLock<PluginManager>> =
@@ -44,16 +44,18 @@ impl PluginManager {
     }
 
     /// Register a plugin with the system
-    pub fn register_plugin(&mut self, mut plugin: Box<PluginType>) {
+    pub fn register_plugin(&mut self, mut plugin: Box<PluginType>) -> Result<()> {
         info!(
             "Registering plugin: {} - {}",
             plugin.get_name(),
             plugin.get_description()
         );
 
-        plugin.initialize();
+        plugin.initialize()?;
 
         self.registered_plugins.insert(plugin.get_name(), plugin);
+
+        Ok(())
     }
 
     pub fn get_plugins(&self) -> Vec<&Box<PluginType>> {
