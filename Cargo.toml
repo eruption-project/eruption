@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
@@ -10,7 +10,8 @@ license = "GPLv3+"
 readme = "README.md"
 
 [features]
-default = []
+default = ["dbus"]
+all = ["dbus"]
 
 [dependencies]
 libc = "0.2.55"
@@ -32,6 +33,7 @@ rlua = "0.16.3"
 sysinfo = "0.8.4"
 systemstat = "0.1.4"
 procinfo = "0.4.2"
+dbus = { version = "0.6.4", optional = true }
 
 [profile.dev]
 opt-level = 0

@@ -19,19 +19,17 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-mod audio;
-mod dbus;
-mod keyboard;
-mod plugin;
-mod sensors;
-mod system;
+pub mod audio;
+pub mod keyboard;
+pub mod plugin;
+pub mod sensors;
+pub mod system;
 
-pub use audio::*;
-pub use dbus::*;
-pub use keyboard::*;
-pub use plugin::*;
-pub use sensors::*;
-pub use system::*;
+pub use audio::AudioPlugin;
+pub use keyboard::KeyboardPlugin;
+pub use plugin::Plugin;
+pub use sensors::SensorsPlugin;
+pub use system::SystemPlugin;
 
 use log::*;
 
@@ -72,7 +70,6 @@ pub fn register_plugins() -> Result<()> {
         panic!();
     });
 
-    plugin_manager.register_plugin(Box::new(DbusPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SensorsPlugin::new()))?;

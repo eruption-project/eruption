@@ -67,7 +67,7 @@ pub struct RGB {
 
 pub const VENDOR_STR: &str = "ROCCAT";
 pub const VENDOR_ID: u16 = 0x1e7d;
-pub const PRODUCT_ID: u16 = 0x3098;
+pub const _PRODUCT_ID: u16 = 0x3098;
 pub const CTRL_INTERFACE: i32 = 1;
 pub const LED_INTERFACE: i32 = 3;
 pub const NUM_KEYS: usize = 144;
@@ -656,36 +656,36 @@ impl RvDeviceState {
         }
     }
 
-    pub fn set_led_off_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED off pattern...");
+    // pub fn set_led_off_pattern(&mut self) -> Result<()> {
+    //     trace!("Setting LED off pattern...");
 
-        if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
-        } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
-        } else if !self.is_initialized {
-            Err(RvDeviceError { code: 6 })
-        } else {
-            let led_map: [RGB; NUM_KEYS] = [RGB {
-                r: 0x00,
-                g: 0x00,
-                b: 0x00,
-            }; NUM_KEYS];
+    //     if !self.is_bound {
+    //         Err(RvDeviceError { code: 4 })
+    //     } else if !self.is_opened {
+    //         Err(RvDeviceError { code: 5 })
+    //     } else if !self.is_initialized {
+    //         Err(RvDeviceError { code: 6 })
+    //     } else {
+    //         let led_map: [RGB; NUM_KEYS] = [RGB {
+    //             r: 0x00,
+    //             g: 0x00,
+    //             b: 0x00,
+    //         }; NUM_KEYS];
 
-            self.send_led_map(&led_map)?;
-            thread::sleep(Duration::from_millis(150));
+    //         self.send_led_map(&led_map)?;
+    //         thread::sleep(Duration::from_millis(150));
 
-            Ok(())
-        }
-    }
+    //         Ok(())
+    //     }
+    // }
 
-    pub fn get_name(&self) -> String {
-        self.ctrl_hiddev_info
-            .as_ref()
-            .unwrap()
-            .product_string
-            .as_ref()
-            .unwrap()
-            .clone()
-    }
+    // pub fn get_name(&self) -> String {
+    //     self.ctrl_hiddev_info
+    //         .as_ref()
+    //         .unwrap()
+    //         .product_string
+    //         .as_ref()
+    //         .unwrap()
+    //         .clone()
+    // }
 }

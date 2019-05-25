@@ -92,7 +92,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         let components = system.get_components_list();
         components[components.len() - 1].get_temperature()
@@ -104,7 +104,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         let components = system.get_components_list();
         components[components.len() - 1].get_max()
@@ -116,7 +116,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         system.get_total_memory()
     }
@@ -127,7 +127,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         system.get_used_memory()
     }
@@ -138,7 +138,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         system.get_total_swap()
     }
@@ -149,7 +149,7 @@ impl SensorsPlugin {
         let system = SYSTEM.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
 
         system.get_used_swap()
     }

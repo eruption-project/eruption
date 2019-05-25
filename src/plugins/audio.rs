@@ -15,7 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use log::*;
+// use log::*;
 use rlua;
 use rlua::Context;
 use std::any::Any;
@@ -24,7 +24,6 @@ use std::error::Error;
 use std::fmt;
 
 use crate::plugins::{Plugin, Result};
-use crate::util;
 
 // pub type Result<T> = std::result::Result<T, AudioPluginError>;
 
@@ -74,7 +73,7 @@ impl Plugin for AudioPlugin {
     }
 
     fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
-        let globals = lua_ctx.globals();
+        let _globals = lua_ctx.globals();
 
         // let get_package_temp =
         //     lua_ctx.create_function(move |_, ()| Ok(AudioPlugin::get_package_temp()))?;

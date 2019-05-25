@@ -32,8 +32,6 @@ use std::vec::Vec;
 use crate::plugin_manager;
 use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
 
-use crate::constants;
-
 pub enum Message {
     Startup,
     Quit(u32),
@@ -318,7 +316,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.6");
+    config.insert("daemon_version", "0.0.7");
 
     globals.set("config", config)?;
 

@@ -42,7 +42,6 @@ $ cargo build --all --release
 
 # Available Plugins
 
-* DBUS: Provide support for a DBUS API
 * Keyboard: Process keyboard events, like e.g. "Key pressed"
 * System: Basic system information and status, like e.g. running processes
 * Sensors: Query system sensor values, like e.g. CPU package temperature
@@ -61,14 +60,14 @@ Eruption currently ships with the following effect scripts:
 
 The following scripts are unfinished/still in development, and some of them have known bugs:
 
-| Name        | File           | Progress | Description                   |
-| ----------- | -------------- | -------- | --------------------- |
-| Gaming      | gaming.lua     | Approx. 95% | Highlight a fixed set of keys, like e.g. 'WASD' |
-| Gradient    | gradient.lua   | Approx. 75% | Display a color gradient           |
-| Rainbow     | rainbow.lua    | Approx. 65% | Display a color gradient, supports multiple gradient stops |
-| Shockwave   | shockwave.lua  | Approx. 55% | Like impact, but displays propagating waves when a key has been pressed |
-| Sysmon      | sysmon.lua     | Approx. 10% | System monitor, keyboard reflects system state |
-| Temperature | shockwave.lua  | Approx. 85% | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot' |
+| Name        | File            | Progress | Description                   |
+| ----------- | --------------- | -------- | --------------------- |
+| Gaming      | gaming.lua      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD' |
+| Gradient    | gradient.lua    | Approx. 75% done | Display a color gradient           |
+| Rainbow     | rainbow.lua     | Approx. 65% done | Display a color gradient, supports multiple gradient stops |
+| Shockwave   | shockwave.lua   | Approx. 55% done | Like impact, but displays propagating waves when a key has been pressed |
+| Sysmon      | sysmon.lua      | Approx. 10% done | System monitor, keyboard reflects system state |
+| Temperature | temperature.lua | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot' |
 
 # Further Information
 

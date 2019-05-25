@@ -16,7 +16,7 @@ image: "rustlang/rust:nightly"
 # You will often need this when you (or any of your dependencies) depends on C code.
 before_script:
 - apt-get update -yqq
-- apt-get install -yqq libudev-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev
+- apt-get install -yqq libdbus-1-dev libdbus-1-3 libudev-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev
 
 # Use cargo to test the project
 test:cargo:

@@ -40,11 +40,10 @@ mod rvdevice;
 use rvdevice::RvDeviceState;
 
 mod constants;
+mod dbus_interface;
 mod plugin_manager;
 mod plugins;
 mod scripting;
-
-use scripting::Message;
 
 lazy_static! {
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
@@ -72,7 +71,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.6")
+        .version("0.0.7")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -111,7 +110,90 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-fn run_main_loop(kbd_rx: &Receiver<Option<u8>>, lua_tx: &Sender<Message>) {
+/// Spawn the dbus thread and executes its main loop
+fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("dbus".into());
+    builder
+        .spawn(move || {
+            let dbus = dbus_interface::initialize(dbus_tx).unwrap_or_else(|e| {
+                error!("Could not initialize D-Bus: {}", e);
+                panic!()
+            });
+
+            loop {
+                dbus.get_next_event()
+                    .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
+/// Spawn the keyboard events thread and executes its main loop
+fn spawn_input_thread(kbd_tx: Sender<Option<u8>>) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("events".into());
+    builder
+        .spawn(move || {
+            {
+                // initialize thread local state of the keyboard plugin
+                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
+                let keyboard_plugin = plugin_manager
+                    .find_plugin_by_name_mut("Keyboard".to_string())
+                    .unwrap_or_else(|| {
+                        error!("Could not find a required plugin");
+                        panic!()
+                    })
+                    .as_any_mut()
+                    .downcast_mut::<plugins::KeyboardPlugin>()
+                    .unwrap();
+
+                keyboard_plugin
+                    .initialize_thread_locals()
+                    .unwrap_or_else(|e| {
+                        error!("Could not initialize the keyboard plugin: {}", e);
+                        panic!()
+                    })
+            }
+
+            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
+            let keyboard_plugin = plugin_manager
+                .find_plugin_by_name("Keyboard".to_string())
+                .unwrap_or_else(|| {
+                    error!("Could not find a required plugin");
+                    panic!()
+                })
+                .as_any()
+                .downcast_ref::<plugins::KeyboardPlugin>()
+                .unwrap();
+
+            loop {
+                if let Ok(event) = keyboard_plugin.get_next_event() {
+                    kbd_tx.send(event).unwrap_or_else(|e| {
+                        error!("Could not send a keyboard event to the main thread: {}", e)
+                    });
+                } else {
+                    // ignore spurious events
+                    // error!("Could not get next keyboard event");
+                }
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
+fn run_main_loop(
+    dbus_rx: &Receiver<dbus_interface::Message>,
+    kbd_rx: &Receiver<Option<u8>>,
+    lua_tx: &Sender<scripting::Message>,
+) {
     trace!("Entering main loop...");
 
     // main loop iterations, monotonic counter
@@ -134,21 +216,30 @@ fn run_main_loop(kbd_rx: &Receiver<Option<u8>>, lua_tx: &Sender<Message>) {
             plugin.main_loop_hook(ticks);
         }
 
-        // send a timer tick event to the Lua VM
-        lua_tx
-            .send(scripting::Message::Tick(
-                start_time.elapsed().as_millis().try_into().unwrap(),
-            ))
-            .unwrap();
+        // process D-Bus events
+        #[cfg(feature = "dbus")]
+        match dbus_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                dbus_interface::Message::LoadScript(filename) => {
+                    info!("Loading Script: {}", filename.to_string_lossy())
+                }
+            },
 
-        // send pending keyboard events
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
+        // send pending keyboard events to the Lua VM
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
                 Some(index) => lua_tx
                     .send(scripting::Message::KeyDown(index))
-                    .unwrap_or_else(|e| {
-                        error!("Could not receive a pending keyboard event: {}", e)
-                    }),
+                    .unwrap_or_else(|e| error!("Could not send a pending keyboard event: {}", e)),
 
                 // ignore spurious events
                 None => trace!("Spurious keyboard event ignored"),
@@ -163,6 +254,13 @@ fn run_main_loop(kbd_rx: &Receiver<Option<u8>>, lua_tx: &Sender<Message>) {
             }
         }
 
+        // send a timer tick event to the Lua VM
+        lua_tx
+            .send(scripting::Message::Tick(
+                start_time.elapsed().as_millis().try_into().unwrap(),
+            ))
+            .unwrap();
+
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time
         let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
         let sleep_millis = u64::max(
@@ -175,9 +273,10 @@ fn run_main_loop(kbd_rx: &Receiver<Option<u8>>, lua_tx: &Sender<Message>) {
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
         if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
-            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 5u64).into() {
+            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 10u64).into() {
+                warn!("more than 10 milliseconds of jitter detected!");
                 warn!(
-                    "More than 5 milliseconds of jitter detected! Loop took: {} milliseconds, goal: {}",
+                    "Loop took: {} milliseconds, goal: {}",
                     elapsed_after_sleep,
                     constants::MAIN_LOOP_DELAY_MILLIS
                 );
@@ -287,12 +386,32 @@ fn main() {
                         .set_led_init_pattern()
                         .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
 
+                    // initialize the D-Bus API
+                    #[cfg(feature = "dbus")]
+                    info!("Initializing D-Bus API...");
+
+                    #[cfg(feature = "dbus")]
+                    let (dbus_tx, dbus_rx) = channel();
+                    spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
+
                     // initialize plugins
-                    // info!("Registering plugins...");
+                    info!("Registering plugins...");
                     plugins::register_plugins()
                         .unwrap_or_else(|_e| error!("Could not register plugin"));
 
-                    // spawn a thread for the Lua VM, and then load and execute a script
+                    // spawn a thread to handle keyboard input
+                    info!("Spawning input thread...");
+
+                    let (kbd_tx, kbd_rx) = channel();
+                    spawn_input_thread(kbd_tx).unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
+
+                    // spawn the Lua VM thread, and then load and execute a script
                     let script_path = PathBuf::from(script_file.to_string());
 
                     info!("Loading Lua scripts...");
@@ -326,66 +445,10 @@ fn main() {
                             panic!()
                         });
 
-                    // spawn a thread to handle keyboard input
-                    info!("Spawning input thread...");
-
-                    let (kbd_tx, kbd_rx) = channel();
-                    let builder = thread::Builder::new().name("events".into());
-                    builder
-                        .spawn(move || {
-                            {
-                                // initialize thread local state of the keyboard plugin
-                                let mut plugin_manager =
-                                    plugin_manager::PLUGIN_MANAGER.write().unwrap();
-                                let keyboard_plugin = plugin_manager
-                                    .find_plugin_by_name_mut("Keyboard".to_string())
-                                    .unwrap_or_else(|| {
-                                        error!("Could not find a required plugin");
-                                        panic!()
-                                    })
-                                    .as_any_mut()
-                                    .downcast_mut::<plugins::KeyboardPlugin>()
-                                    .unwrap();
-
-                                keyboard_plugin
-                                    .initialize_thread_locals()
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not initialize the keyboard plugin: {}", e);
-                                        panic!()
-                                    })
-                            }
-
-                            loop {
-                                let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
-                                let keyboard_plugin = plugin_manager
-                                    .find_plugin_by_name("Keyboard".to_string())
-                                    .unwrap_or_else(|| {
-                                        error!("Could not find a required plugin");
-                                        panic!()
-                                    })
-                                    .as_any()
-                                    .downcast_ref::<plugins::KeyboardPlugin>()
-                                    .unwrap();
-
-                                if let Ok(event) = keyboard_plugin.get_next_event() {
-                                    kbd_tx.send(event).unwrap_or_else(|e| {
-                                error!("Could not send a keyboard event to the main thread: {}", e)
-                            })
-                                } else {
-                                    // ignore spurious events
-                                    // error!("Could not get next keyboard event");
-                                }
-                            }
-                        })
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
-
                     lua_tx.send(scripting::Message::Startup).unwrap();
 
                     // enter the main loop
-                    run_main_loop(&kbd_rx, &lua_tx);
+                    run_main_loop(&dbus_rx, &kbd_rx, &lua_tx);
 
                     // we left the main loop, so send a final message to the running Lua VM
                     lua_tx
