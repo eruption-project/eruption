@@ -20,37 +20,18 @@ use procinfo;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::error;
-use std::error::Error;
-use std::fmt;
+// use failure::Fail;
 
 use crate::plugins;
 use crate::plugins::Plugin;
 
 // pub type Result<T> = std::result::Result<T, SystemPluginError>;
 
-#[derive(Debug, Clone)]
-pub struct SystemPluginError {
-    code: u32,
-}
-
-impl error::Error for SystemPluginError {
-    fn description(&self) -> &str {
-        match self.code {
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for SystemPluginError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
+// #[derive(Debug, Fail)]
+// pub enum SystemPluginError {
+//     #[fail(display = "Unknown error: {}", description)]
+//     UnknownError { description: String },
+// }
 
 /// A plugin that gives Lua scripts access to the systems state like e.g.
 /// the number of runnable processes or the load average
@@ -61,6 +42,7 @@ impl SystemPlugin {
         SystemPlugin {}
     }
 
+    /// Get the system's load average of the last minute
     pub fn get_current_load_avg_1() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
@@ -70,6 +52,7 @@ impl SystemPlugin {
             .load_avg_1_min
     }
 
+    /// Get the system's load average of the last 5 minutes
     pub fn get_current_load_avg_5() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
@@ -79,6 +62,7 @@ impl SystemPlugin {
             .load_avg_5_min
     }
 
+    /// Get the system's load average of the last 10 minutes
     pub fn get_current_load_avg_10() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
@@ -88,6 +72,7 @@ impl SystemPlugin {
             .load_avg_10_min
     }
 
+    /// Get the number of runnable tasks
     pub fn get_runnable_tasks() -> u32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
@@ -97,6 +82,7 @@ impl SystemPlugin {
             .tasks_runnable
     }
 
+    /// Get the number of tasks on the system
     pub fn get_total_tasks() -> u32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
@@ -148,11 +134,11 @@ impl Plugin for SystemPlugin {
 
     fn main_loop_hook(&self, _ticks: u64) {}
 
-    fn as_any(&self) -> &Any {
+    fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn as_any_mut(&mut self) -> &mut Any {
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

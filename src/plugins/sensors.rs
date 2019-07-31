@@ -20,11 +20,9 @@ use log::*;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::error;
-use std::error::Error;
-use std::fmt;
+// use failure::Fail;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::thread;
 use sysinfo::{ComponentExt, SystemExt};
 
@@ -33,48 +31,35 @@ use crate::plugins::Plugin;
 
 // pub type Result<T> = std::result::Result<T, SensorsPluginError>;
 
-#[derive(Debug, Clone)]
-pub struct SensorsPluginError {
-    code: u32,
-}
-
-impl error::Error for SensorsPluginError {
-    fn description(&self) -> &str {
-        match self.code {
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for SensorsPluginError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
+// #[derive(Debug, Fail)]
+// pub enum SensorsPluginError {
+//     #[fail(display = "Unknown error: {}", description)]
+//     UnknownError { description: String },
+// }
 
 lazy_static! {
+    /// If set to true, sensors are refreshed every SENSOR_UPDATE_TICKS main loop ticks
     static ref DO_REFRESH: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
-    static ref SYSTEM: Arc<Mutex<sysinfo::System>> = Arc::new(Mutex::new(sysinfo::System::new()));
+
+    /// System state and sensor information
+    static ref SYSTEM: Arc<RwLock<sysinfo::System>> = Arc::new(RwLock::new(sysinfo::System::new()));
 }
 
+/// A plugin that gives Lua scripts access to the systems sensor data
 pub struct SensorsPlugin {}
 
-/// A plugin that gives Lua scripts access to the systems sensor data
 impl SensorsPlugin {
     pub fn new() -> Self {
         SensorsPlugin {}
     }
 
+    /// Refresh state of sensors
     pub fn refresh() {
         // we need to spawn a thread here, since sensor updating is really slooow
         let builder = thread::Builder::new().name("sensors".into());
         builder
             .spawn(move || {
-                let mut system = SYSTEM.lock().unwrap_or_else(|e| {
+                let mut system = SYSTEM.write().unwrap_or_else(|e| {
                     error!("Could not lock a shared data structure: {}", e);
                     panic!();
                 });
@@ -86,10 +71,11 @@ impl SensorsPlugin {
             });
     }
 
+    /// Get the temperature of the CPU package
     pub fn get_package_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -98,10 +84,11 @@ impl SensorsPlugin {
         components[components.len() - 1].get_temperature()
     }
 
+    /// Get the max. temperature of the CPU package
     pub fn get_package_max_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -110,10 +97,11 @@ impl SensorsPlugin {
         components[components.len() - 1].get_max()
     }
 
+    /// Get the total installed memory size
     pub fn get_mem_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -121,10 +109,11 @@ impl SensorsPlugin {
         system.get_total_memory()
     }
 
+    /// Get the amount of used memory
     pub fn get_mem_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -132,10 +121,11 @@ impl SensorsPlugin {
         system.get_used_memory()
     }
 
+    /// Get the total amount of swap space in kilobytes
     pub fn get_swap_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -143,10 +133,11 @@ impl SensorsPlugin {
         system.get_total_swap()
     }
 
+    /// Get the amount of used swap space in kilobytes
     pub fn get_swap_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.lock().unwrap_or_else(|e| {
+        let system = SYSTEM.read().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
         });
@@ -206,11 +197,11 @@ impl Plugin for SensorsPlugin {
         }
     }
 
-    fn as_any(&self) -> &Any {
+    fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn as_any_mut(&mut self) -> &mut Any {
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

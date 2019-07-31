@@ -13,13 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "raindrops"
-config["script_description"] = "Show a falling raindrops effect"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.1"
-
 -- global constants --
 color_off = 0x00000000
 color_bright = 0x00ffffff

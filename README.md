@@ -32,6 +32,8 @@ $ sudo systemctl start eruption.service
 
 Note: You don't have to enable the eruption service, since it is started by an udev rule as soon as a compatible keyboard device is plugged into your system.
 
+*Support for other distributions is coming soon!*
+
 ### From Source
 
 ```
@@ -46,28 +48,30 @@ $ cargo build --all --release
 * System: Basic system information and status, like e.g. running processes
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds
+* Introspection: Provides internal status information of the Eruption daemon
+* Profiles: Switch profiles based on system state
 
 # Available Effects
 
 Eruption currently ships with the following effect scripts:
 
-| Name      | File           | Status | Description                   |
-| --------- | -------------- | ------ | ----------------------------- |
-| Afterglow | afterglow.lua  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out |
-| Breathe   | breathe.lua    | Ready  | Breathing keyboard. The more the system is loaded the faster the breathing effect
-| Impact    | impact.lua     | Ready  | Hit keys and keys in their immediate vicinity are lit for a certain amount of time, then they are faded out |
-| Raindrops | raindrops.lua  | Ready  | Rain effect, randomly light up keys and fade them out again |
+| Name      | File             | Status | Description                                                                                                 |
+| --------- | ---------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| Afterglow | `afterglow.lua`  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                      |
+| Heartbeat | `heartbeat.lua`  | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                             |
+| Impact    | `impact.lua`     | Ready  | Hit keys and keys in their immediate vicinity are lit for a certain amount of time, then they are faded out |
+| Raindrops | `raindrops.lua`  | Ready  | Rain effect, randomly light up keys and fade them out again                                                 |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:
 
-| Name        | File            | Progress | Description                   |
-| ----------- | --------------- | -------- | --------------------- |
-| Gaming      | gaming.lua      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD' |
-| Gradient    | gradient.lua    | Approx. 75% done | Display a color gradient           |
-| Rainbow     | rainbow.lua     | Approx. 65% done | Display a color gradient, supports multiple gradient stops |
-| Shockwave   | shockwave.lua   | Approx. 55% done | Like impact, but displays propagating waves when a key has been pressed |
-| Sysmon      | sysmon.lua      | Approx. 10% done | System monitor, keyboard reflects system state |
-| Temperature | temperature.lua | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot' |
+| Name        | File              | Progress         | Description                                                                                         |
+| ----------- | ----------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
+| Gaming      | `gaming.lua`      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                     |
+| Gradient    | `gradient.lua`    | Approx. 75% done | Display a color gradient                                                                            |
+| Rainbow     | `rainbow.lua`     | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                          |
+| Shockwave   | `shockwave.lua`   | Approx. 55% done | Like impact, but displays propagating waves when a key has been pressed                             |
+| Sysmon      | `sysmon.lua`      | Approx. 10% done | System monitor, keyboard reflects system state                                                      |
+| Temperature | `temperature.lua` | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot'  |
 
 # Further Information
 

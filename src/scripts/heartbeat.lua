@@ -13,29 +13,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "breathe"
-config["script_description"] = "A breathing effect for your keyboard"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.1"
-
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-color_background = 0x00111111
-color_step = 0x00111111
-
-breathe_multiplier = 0.25
-breathe_upper_lim = -10
-breathe_lower_lim = 10
-
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
-afterglow_step = 2
-
 -- global state variables --
-breathe_step = get_runnable_tasks() * breathe_multiplier
+heartbeat_step = get_runnable_tasks() * heartbeat_multiplier
 color_map = {}
 color_map_pressed = {}
 
@@ -59,23 +38,23 @@ function on_tick(delta)
 
     -- update system load indicator approximately every 5 seconds
     if ticks % 250 == 0 then
-        breathe_step = max(min(get_runnable_tasks() * breathe_multiplier, 3.25), 0.25)
-        trace("Runqueue: " .. get_runnable_tasks() .. " Step: " .. breathe_step)
+        heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier, 3.25), 0.25)
+        trace("Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
     end
     
     local num_keys = get_num_keys()
 
-    -- calculate 'fill' percentage for breathing effect
-    percentage = percentage + ((breathe_step * max(delta, 1)) + (easing(percentage) * breathe_step))
-    if percentage >= (100 - breathe_upper_lim) then
-        percentage = 100 - breathe_upper_lim
-        breathe_step = breathe_step * -1
-    elseif percentage <= (0 + breathe_lower_lim) then
-        percentage = 0 + breathe_lower_lim
-        breathe_step = breathe_step * -1
+    -- calculate 'fill' percentage for heartbeat effect
+    percentage = percentage + ((heartbeat_step * max(delta, 1)) + (easing(percentage) * heartbeat_step))
+    if percentage >= (100 - heartbeat_upper_lim) then
+        percentage = 100 - heartbeat_upper_lim
+        heartbeat_step = heartbeat_step * -1
+    elseif percentage <= (0 + heartbeat_lower_lim) then
+        percentage = 0 + heartbeat_lower_lim
+        heartbeat_step = heartbeat_step * -1
     end
     
-    -- generate breathing color map values
+    -- generate heartbeat color map values
     local upper_bound = num_keys * (min(percentage, 100) / 100)
     for i = 0, num_keys do
         if i <= upper_bound then
@@ -126,7 +105,7 @@ function on_tick(delta)
     set_color_map(color_map_combined)
 end
 
--- a simple easing function that mimics breathing
+-- a simple easing function that mimics heartbeat
 function easing(x)    
     return pow(sin(5 * x / 3.14159), 2)
 end

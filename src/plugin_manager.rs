@@ -58,19 +58,22 @@ impl PluginManager {
         Ok(())
     }
 
-    pub fn get_plugins(&self) -> Vec<&Box<PluginType>> {
-        self.registered_plugins.values().collect()
+    pub fn get_plugins(&self) -> Vec<&PluginType> {
+        self.registered_plugins
+            .values()
+            .map(AsRef::as_ref)
+            .collect()
     }
 
     // pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<PluginType>> {
     //     self.registered_plugins.values_mut().collect()
     // }
 
-    pub fn find_plugin_by_name(&self, name: String) -> Option<&Box<PluginType>> {
-        self.registered_plugins.get(&name)
+    pub fn find_plugin_by_name(&self, name: String) -> Option<&PluginType> {
+        self.registered_plugins.get(&name).map(AsRef::as_ref)
     }
 
-    pub fn find_plugin_by_name_mut(&mut self, name: String) -> Option<&mut Box<PluginType>> {
-        self.registered_plugins.get_mut(&name)
+    pub fn find_plugin_by_name_mut(&mut self, name: String) -> Option<&mut PluginType> {
+        self.registered_plugins.get_mut(&name).map(AsMut::as_mut)
     }
 }

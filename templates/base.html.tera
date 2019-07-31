@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+{% block head %}
+<head>
+	<meta charset="utf-8">
+	<title>{{ title }}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Eruption">
+	<meta name="author" content="The Eruption Team">
+
+	<link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="/css/style.css" rel="stylesheet">
+	<link href="/css/themes/{{ theme }}/colors.css" rel="stylesheet">	
+	
+	<link rel="shortcut icon" href="/img/favicon.png">
+</head>
+{% endblock head %}
+
+<body>
+	<div class="navbar-wrapper">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+				</a>
+					<div class="logo">
+						<h1 class="brand">
+							<a href="/">
+								<img class="logo" src="/img/icons/eruption.png" alt="" /> Eruption
+							</a>
+						</h1>
+					</div>
+					<nav class="pull-right nav-collapse collapse">
+						<ul id="menu-main" class="nav">
+							<li><a title="index" href="/">Home</a></li>
+							<li><a title="profiles" href="/profiles">Profiles</a></li>
+							<li><a title="settings" href="/settings">Settings</a></li>
+							<li><a title="documentation" href="/documentation">Documentation</a></li>
+							<li><a title="about" href="/about">About</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<section class="spacer">
+		<div class="container">
+			<div class="row">
+				<div class="span12 alignleft">
+                    {% block header %}
+					    
+                    {% endblock header %}
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section id="maincontent" class="inner animated fadeIn">
+		{% block content %}
+					    
+		{% endblock content %}
+	</section>
+
+	<footer>
+		<div class="container">
+			<div class="row">
+				<div class="span6 offset3">
+					<ul class="social-networks">
+						<li><a target="_blank" href="https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan/"><i class="icon-circled icon-bgdark icon-list icon-2x"></i></a></li>
+					</ul>
+					<p class="copyright">
+						Copyright &copy; 2019 The Eruption Team
+					</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<a href="#" class="scrollup"><i class="icon-angle-up icon-square icon-bgdark icon-2x"></i></a>
+
+	<script src="/js/jquery.js"></script>
+	<script src="/js/jquery.scrollTo.js"></script>
+	<script src="/js/jquery.nav.js"></script>
+	<script src="/js/jquery.localScroll.js"></script>
+	<script src="/js/bootstrap.js"></script>
+	<script src="/js/isotope.js"></script>
+	<script src="/js/jquery.flexslider.js"></script>
+	<script src="/js/inview.js"></script>
+	<script src="/js/animate.js"></script>
+	<script src="/js/custom.js"></script>
+</body>
+
+</html>

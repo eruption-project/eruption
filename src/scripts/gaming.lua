@@ -13,22 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "gaming"
-config["script_description"] = "Highlight important keys for gaming mode"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.3"
-
--- global constants --
-color_off = 0x000000000
-color_background = 0x00111111
-color_step = 0x00110000
-
-color_afterglow = rgb_to_color(0, 255, 0)
-color_step_afterglow = rgb_to_color(0, 10, 0)
-afterglow_step = 2
-
 -- global state variables --
 color_map = {}
 color_map_pressed = {}

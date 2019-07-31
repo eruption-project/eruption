@@ -15,48 +15,63 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use failure::Fail;
 use hexdump;
 use log::*;
-use std::error;
-use std::error::Error;
-use std::fmt;
 use std::time::Duration;
 use std::{thread, time};
 
 pub type Result<T> = std::result::Result<T, RvDeviceError>;
 
-#[derive(Debug, Clone)]
-pub struct RvDeviceError {
-    code: u32,
+#[derive(Debug, Fail)]
+pub enum RvDeviceError {
+    #[fail(display = "Could not enumerate devices")]
+    EnumerationError {},
+
+    #[fail(display = "Could not open the device file")]
+    DeviceOpenError {},
+
+    // #[fail(display = "Invalid init sequence")]
+    // InitSequenceError {},
+
+    // #[fail(display = "Invalid operation")]
+    // InvalidOperation {},
+    #[fail(display = "Device not bound")]
+    DeviceNotBound {},
+
+    #[fail(display = "Device not opened")]
+    DeviceNotOpened {},
+
+    #[fail(display = "Device not initialized")]
+    DeviceNotInitialized {},
+
+    #[fail(display = "Invalid status code")]
+    InvalidStatusCode {},
+
+    #[fail(display = "Invalid result")]
+    InvalidResult {},
+
+    #[fail(display = "Write error")]
+    WriteError {},
+
+    #[fail(display = "Could not close the device")]
+    CloseError {},
+    // #[fail(display = "Unknown error: {}", description)]
+    // UnknownError { description: String },
 }
 
-impl error::Error for RvDeviceError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "Could not enumerate devices",
-            1 => "Could not open the device file",
-            2 => "Invalid init sequence",
-            3 => "Invalid operation",
-            4 => "Device not bound",
-            5 => "Device not opened",
-            6 => "Device not initialized",
-            7 => "Invalid status code",
-            8 => "Invalid result",
-            9 => "Write error",
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for RvDeviceError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
+// 0 => "Could not enumerate devices",
+// 1 => "Could not open the device file",
+// 2 => "Invalid init sequence",
+// 3 => "Invalid operation",
+// 4 => "Device not bound",
+// 5 => "Device not opened",
+// 6 => "Device not initialized",
+// 7 => "Invalid status code",
+// 8 => "Invalid result",
+// 9 => "Write error",
+// 10 => "Could not close the device",
+// _ => "Unknown error",
 
 #[derive(Debug, Copy, Clone)]
 pub struct RGB {
@@ -72,7 +87,7 @@ pub const CTRL_INTERFACE: i32 = 1;
 pub const LED_INTERFACE: i32 = 3;
 pub const NUM_KEYS: usize = 144;
 
-// #[derive(Clone)]
+#[derive(Clone)]
 pub struct RvDeviceState {
     pub is_bound: bool,
     pub ctrl_hiddev_info: Option<hidapi::HidDeviceInfo>,
@@ -109,7 +124,10 @@ impl RvDeviceState {
             trace!("{:#?}", device);
 
             if device.vendor_id == VENDOR_ID && device.interface_number == CTRL_INTERFACE {
-                let product_string = device.product_string.clone().unwrap();
+                let product_string = device.product_string.clone().unwrap_or_else(|| {
+                    error!("Could not query device information");
+                    "<unknown>".into()
+                });
                 let path = device.path.clone();
 
                 found_ctrl_dev = true;
@@ -117,7 +135,10 @@ impl RvDeviceState {
 
                 info!("Found Control interface: {:?}: {}", path, product_string);
             } else if device.vendor_id == VENDOR_ID && device.interface_number == LED_INTERFACE {
-                let product_string = device.product_string.clone().unwrap();
+                let product_string = device.product_string.clone().unwrap_or_else(|| {
+                    error!("Could not query device information");
+                    "<unknown>".into()
+                });
                 let path = device.path.clone();
 
                 found_led_dev = true;
@@ -129,7 +150,7 @@ impl RvDeviceState {
 
         if !found_ctrl_dev || !found_led_dev {
             warn!("At least one required device could not be detected");
-            Err(RvDeviceError { code: 0 })
+            Err(RvDeviceError::EnumerationError {})
         } else {
             let device = Self::bind(&ctrl_device.unwrap(), &led_device.unwrap());
             Ok(device)
@@ -154,22 +175,47 @@ impl RvDeviceState {
         trace!("Opening HID devices now...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else {
-            trace!("Opening Control device...");
+            trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.clone().unwrap().open_device(&api) {
                 Ok(dev) => self.ctrl_hiddev = Some(dev),
-                Err(_) => return Err(RvDeviceError { code: 1 }),
+                Err(_) => return Err(RvDeviceError::DeviceOpenError {}),
             }
 
             trace!("Opening LED device...");
             match self.led_hiddev_info.clone().unwrap().open_device(&api) {
                 Ok(dev) => self.led_hiddev = Some(dev),
-                Err(_) => return Err(RvDeviceError { code: 1 }),
+                Err(_) => return Err(RvDeviceError::DeviceOpenError {}),
             }
 
             self.is_opened = true;
+
+            Ok(())
+        }
+    }
+
+    pub fn close_all(&mut self) -> Result<()> {
+        trace!("Closing HID devices now...");
+
+        if !self.is_bound {
+            Err(RvDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(RvDeviceError::DeviceNotOpened {})
+        } else {
+            trace!("Closing control device...");
+            self.ctrl_hiddev
+                .as_mut()
+                .map(|dev| dev.close().or_else(|_e| Err(RvDeviceError::CloseError {})));
+
+            trace!("Closing LED device...");
+            self.led_hiddev
+                .as_mut()
+                .map(|dev| dev.close().or_else(|_e| Err(RvDeviceError::CloseError {})));
+
+            self.is_opened = false;
+
             Ok(())
         }
     }
@@ -178,9 +224,9 @@ impl RvDeviceState {
         trace!("Sending device init sequence...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else {
             self.query_ctrl_report(0x0f)
                 .unwrap_or_else(|e| error!("{}", e));
@@ -232,9 +278,9 @@ impl RvDeviceState {
         trace!("Querying control device feature report");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else {
             match id {
                 0x0f => {
@@ -250,11 +296,11 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
-                _ => Err(RvDeviceError { code: 7 }),
+                _ => Err(RvDeviceError::InvalidStatusCode {}),
             }
         }
     }
@@ -263,9 +309,9 @@ impl RvDeviceState {
         trace!("Sending control device feature report");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else {
             let ctrl_dev = self.ctrl_hiddev.as_ref().unwrap();
 
@@ -280,7 +326,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -294,7 +340,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -317,7 +363,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -331,7 +377,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -345,7 +391,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -372,7 +418,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -391,7 +437,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -493,7 +539,7 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
@@ -511,11 +557,11 @@ impl RvDeviceState {
                             Ok(())
                         }
 
-                        Err(_) => Err(RvDeviceError { code: 8 }),
+                        Err(_) => Err(RvDeviceError::InvalidResult {}),
                     }
                 }
 
-                _ => Err(RvDeviceError { code: 7 }),
+                _ => Err(RvDeviceError::InvalidStatusCode {}),
             }
         }
     }
@@ -524,9 +570,9 @@ impl RvDeviceState {
         trace!("Waiting for control device to respond...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else {
             loop {
                 thread::sleep(time::Duration::from_millis(150));
@@ -545,7 +591,7 @@ impl RvDeviceState {
                         }
                     }
 
-                    Err(_) => return Err(RvDeviceError { code: 8 }),
+                    Err(_) => return Err(RvDeviceError::InvalidResult {}),
                 }
             }
         }
@@ -555,9 +601,9 @@ impl RvDeviceState {
         trace!("Closing control device...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else {
             self.ctrl_hiddev = None;
 
@@ -569,11 +615,11 @@ impl RvDeviceState {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else if !self.is_initialized {
-            Err(RvDeviceError { code: 6 })
+            Err(RvDeviceError::DeviceNotInitialized {})
         } else {
             match self.led_hiddev.as_ref() {
                 Some(led_dev) => {
@@ -601,11 +647,11 @@ impl RvDeviceState {
                         Ok(len) => {
                             trace!("Wrote: {} bytes", len);
                             if len < 65 {
-                                return Err(RvDeviceError { code: 9 });
+                                return Err(RvDeviceError::WriteError {});
                             }
                         }
 
-                        Err(_) => return Err(RvDeviceError { code: 9 }),
+                        Err(_) => return Err(RvDeviceError::WriteError {}),
                     }
 
                     for bytes in hwmap.chunks(64) {
@@ -617,18 +663,18 @@ impl RvDeviceState {
                             Ok(len) => {
                                 trace!("Wrote: {} bytes", len);
                                 if len < 65 {
-                                    return Err(RvDeviceError { code: 9 });
+                                    return Err(RvDeviceError::WriteError {});
                                 }
                             }
 
-                            Err(_) => return Err(RvDeviceError { code: 9 }),
+                            Err(_) => return Err(RvDeviceError::WriteError {}),
                         }
                     }
 
                     Ok(())
                 }
 
-                None => Err(RvDeviceError { code: 5 }),
+                None => Err(RvDeviceError::DeviceNotOpened {}),
             }
         }
     }
@@ -637,11 +683,11 @@ impl RvDeviceState {
         trace!("Setting LED init pattern...");
 
         if !self.is_bound {
-            Err(RvDeviceError { code: 4 })
+            Err(RvDeviceError::DeviceNotBound {})
         } else if !self.is_opened {
-            Err(RvDeviceError { code: 5 })
+            Err(RvDeviceError::DeviceNotOpened {})
         } else if !self.is_initialized {
-            Err(RvDeviceError { code: 6 })
+            Err(RvDeviceError::DeviceNotInitialized {})
         } else {
             let led_map: [RGB; NUM_KEYS] = [RGB {
                 r: 0x00,
@@ -660,11 +706,11 @@ impl RvDeviceState {
     //     trace!("Setting LED off pattern...");
 
     //     if !self.is_bound {
-    //         Err(RvDeviceError { code: 4 })
+    //         Err(RvDeviceError::DeviceNotBound {})
     //     } else if !self.is_opened {
-    //         Err(RvDeviceError { code: 5 })
+    //         Err(RvDeviceError::DeviceNotOpened {})
     //     } else if !self.is_initialized {
-    //         Err(RvDeviceError { code: 6 })
+    //         Err(RvDeviceError::DeviceNotInitialized {})
     //     } else {
     //         let led_map: [RGB; NUM_KEYS] = [RGB {
     //             r: 0x00,

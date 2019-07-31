@@ -17,15 +17,14 @@
 
 #[cfg(feature = "dbus")]
 use dbus::{tree::EmitsChangedSignal, tree::Factory, BusType, Connection, NameFlag};
+use failure::Fail;
 use log::*;
-use std::error;
-use std::error::Error;
-use std::fmt;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
 use crate::constants;
 
+/// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
 pub enum Message {
     LoadScript(PathBuf),
@@ -33,30 +32,15 @@ pub enum Message {
 
 pub type Result<T> = std::result::Result<T, DbusApiError>;
 
-#[derive(Debug, Clone)]
-pub struct DbusApiError {
-    code: u32,
+#[derive(Debug, Fail)]
+pub enum DbusApiError {
+    #[fail(display = "D-Bus not connected")]
+    BusNotConnected {},
+    // #[fail(display = "Unknown error: {}", description)]
+    // UnknownError { description: String },
 }
 
-impl error::Error for DbusApiError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "D-Bus not connected",
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for DbusApiError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
+/// D-Bus API support
 #[cfg(feature = "dbus")]
 pub struct DbusApi {
     connection: Option<Connection>,
@@ -64,6 +48,7 @@ pub struct DbusApi {
 
 #[cfg(feature = "dbus")]
 impl DbusApi {
+    /// Initialize the D-Bus API
     pub fn new(dbus_tx: Sender<Message>) -> Self {
         let c = Connection::get_private(BusType::System).unwrap();
         c.register_name("org.eruption.control", NameFlag::ReplaceExisting as u32)
@@ -138,6 +123,7 @@ impl DbusApi {
         }
     }
 
+    /// Get the next event from D-Bus
     pub fn get_next_event(&self) -> Result<()> {
         match self.connection {
             Some(ref connection) => {
@@ -152,19 +138,22 @@ impl DbusApi {
                 }
             }
 
-            None => Err(DbusApiError { code: 0 }),
+            None => Err(DbusApiError::BusNotConnected {}),
         }
     }
 }
 
+/// Initialize the Eruption D-Bus API support
 #[cfg(feature = "dbus")]
 pub fn initialize(dbus_tx: Sender<Message>) -> Result<DbusApi> {
     Ok(DbusApi::new(dbus_tx))
 }
 
+/// An empty dummy struct
 #[cfg(not(feature = "dbus"))]
 pub struct DbusApi {}
 
+/// Get an empty dummy implementation of DbusApi
 #[cfg(not(feature = "dbus"))]
 pub fn initialize_dummy() -> DbusApi {
     DbusApi {}

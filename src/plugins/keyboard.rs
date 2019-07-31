@@ -17,49 +17,40 @@
 
 use evdev_rs::enums::EventCode;
 use evdev_rs::Device;
+use failure::Fail;
 use log::*;
 use rlua;
 use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;
-use std::error;
-use std::error::Error;
-use std::fmt;
 use std::fs::File;
 
-use crate::plugins;
-use crate::plugins::Plugin;
+use crate::plugins::{self, Plugin};
 use crate::util;
 
 pub type Result<T> = std::result::Result<T, KeyboardPluginError>;
 
-#[derive(Debug, Clone)]
-pub struct KeyboardPluginError {
-    code: u32,
-}
+#[derive(Debug, Fail)]
+pub enum KeyboardPluginError {
+    #[fail(display = "Could not peek evdev event")]
+    EvdevEventError {},
 
-impl error::Error for KeyboardPluginError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "Could not peek evdev event",
-            1 => "Could not convert key code",
-            2 => "Not a key code",
-            3 => "Could not get the name of the evdev device from udev",
-            4 => "Could not open the evdev device",
-            5 => "Could not create a libevdev device handle",
-            _ => "Unknown error",
-        }
-    }
+    #[fail(display = "Could not convert key code")]
+    KeyCodeConversionError {},
 
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
+    #[fail(display = "Not a key code")]
+    InvalidKeyCode {},
 
-impl fmt::Display for KeyboardPluginError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
+    #[fail(display = "Could not get the name of the evdev device from udev")]
+    UdevError {},
+
+    #[fail(display = "Could not open the evdev device")]
+    EvdevError {},
+
+    #[fail(display = "Could not create a libevdev device handle")]
+    EvdevHandleError {},
+    // #[fail(display = "Unknown error: {}", description)]
+    // UnknownError { description: String },
 }
 
 thread_local! {
@@ -88,26 +79,26 @@ impl KeyboardPlugin {
                             device.vendor_id(),
                             device.product_id()
                         );
-                        info!("Evdev version: {:x}", device.driver_version());
+                        // info!("Evdev version: {:x}", device.driver_version());
                         info!(
                             "Input device name: \"{}\"",
                             device.name().unwrap_or("<n/a>")
                         );
                         info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
-                        info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
+                        // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                         DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
 
                         Ok(())
                     }
 
-                    Err(_e) => Err(KeyboardPluginError { code: 5 }),
+                    Err(_e) => Err(KeyboardPluginError::EvdevHandleError {}),
                 },
 
-                Err(_e) => Err(KeyboardPluginError { code: 4 }),
+                Err(_e) => Err(KeyboardPluginError::EvdevError {}),
             },
 
-            Err(_e) => Err(KeyboardPluginError { code: 3 }),
+            Err(_e) => Err(KeyboardPluginError::UdevError {}),
         }
     }
 
@@ -131,7 +122,7 @@ impl KeyboardPlugin {
                         panic!();
                     } else {
                         error!("Could not peek evdev event: {}", e);
-                        Err(KeyboardPluginError { code: 0 })
+                        Err(KeyboardPluginError::EvdevEventError {})
                     }
                 }
             }
@@ -145,11 +136,11 @@ impl KeyboardPlugin {
                     if result != 0xff {
                         Ok(Some(result))
                     } else {
-                        Err(KeyboardPluginError { code: 1 })
+                        Err(KeyboardPluginError::KeyCodeConversionError {})
                     }
                 }
 
-                _ => Err(KeyboardPluginError { code: 2 }),
+                _ => Err(KeyboardPluginError::InvalidKeyCode {}),
             },
 
             _ => Ok(None),
@@ -176,11 +167,11 @@ impl Plugin for KeyboardPlugin {
 
     fn main_loop_hook(&self, _ticks: u64) {}
 
-    fn as_any(&self) -> &Any {
+    fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn as_any_mut(&mut self) -> &mut Any {
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

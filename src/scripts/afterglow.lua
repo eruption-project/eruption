@@ -13,22 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "afterglow"
-config["script_description"] = "Show an afterglow effect after a key has been pressed"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.1"
-
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-color_background = 0x00111111
-
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
-afterglow_step = 2
-
 -- global state variables --
 color_map = {}
 color_map_pressed = {}

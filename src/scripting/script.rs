@@ -15,33 +15,34 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use rand::Rng;
 use rlua::{Context, Function, Lua};
 use std::collections::HashMap;
-use std::error;
-use std::error::Error;
-use std::fmt;
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::vec::Vec;
 
 use crate::plugin_manager;
 use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
+use crate::scripting::manifest::{ConfigParam, Manifest};
 
 pub enum Message {
-    Startup,
+    // Startup, // Not passed via message but invoked directly
     Quit(u32),
     Tick(u32),
     KeyDown(u8),
+
+    LoadScript(PathBuf),
 }
 
 lazy_static! {
     /// Global LED state of the managed device
-    pub static ref LED_MAP: Arc<Mutex<Vec<RGB>>> = Arc::new(Mutex::new(vec![RGB {
+    pub static ref LED_MAP: Arc<RwLock<Vec<RGB>>> = Arc::new(RwLock::new(vec![RGB {
         r: 0x00,
         g: 0x00,
         b: 0x00,
@@ -50,36 +51,18 @@ lazy_static! {
 
 pub type Result<T> = std::result::Result<T, ScriptingError>;
 
-#[derive(Debug)]
-pub struct ScriptingError {
-    code: u32,
-    // cause: Option<Box<dyn error::Error>>,
-}
+#[derive(Debug, Fail)]
+pub enum ScriptingError {
+    #[fail(display = "Could not read script file")]
+    OpenError {},
 
-impl error::Error for ScriptingError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "Could not read script file",
-            1 => "Lua errors present",
-            _ => "Unknown error",
-        }
-    }
+    #[fail(display = "Lua errors present")]
+    LuaError {},
 
-    fn cause(&self) -> Option<&(dyn error::Error + 'static)> {
-        // match self.cause {
-        //     Some(c) => Some(&c.downcast().unwrap()),
-
-        //     None => None,
-        // }
-
-        None
-    }
-}
-
-impl fmt::Display for ScriptingError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
+    #[fail(display = "Invalid or inaccessible manifest file")]
+    InaccessibleManifest {},
+    // #[fail(display = "Unknown error: {}", description)]
+    // UnknownError { description: String },
 }
 
 /// These functions are intended to be used from within lua scripts
@@ -135,19 +118,19 @@ mod callbacks {
 
     /// Convert RGB components to a 32 bits color value.
     pub(crate) fn rgb_to_color(r: u8, g: u8, b: u8) -> u32 {
-        (((r as u32) << 16) + ((g as u32) << 8) + (b as u32)) as u32
+        (u32::from(r) << 16) + (u32::from(g) << 8) + u32::from(b)
     }
 
     /// Generate a linear RGB color gradient from start to dest color,
     /// where p must lie in the range from 0..1.
     pub fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
-        let scr: f64 = ((start >> 16) & 0xff) as f64;
-        let scg: f64 = ((start >> 8) & 0xff) as f64;
-        let scb: f64 = ((start) & 0xff) as f64;
+        let scr: f64 = f64::from((start >> 16) & 0xff);
+        let scg: f64 = f64::from((start >> 8) & 0xff);
+        let scb: f64 = f64::from((start) & 0xff);
 
-        let dcr: f64 = ((dest >> 16) & 0xff) as f64;
-        let dcg: f64 = ((dest >> 8) & 0xff) as f64;
-        let dcb: f64 = ((dest) & 0xff) as f64;
+        let dcr: f64 = f64::from((dest >> 16) & 0xff);
+        let dcg: f64 = f64::from((dest >> 8) & 0xff);
+        let dcb: f64 = f64::from((dest) & 0xff);
 
         let r: f64 = (scr as f64) + (((dcr - scr) as f64) * p);
         let g: f64 = (scg as f64) + (((dcg - scg) as f64) * p);
@@ -169,7 +152,7 @@ mod callbacks {
 
     /// Set the color of the key `idx` to `c`.
     pub(crate) fn set_key_color(rvdev: &Arc<Mutex<RvDeviceState>>, idx: usize, c: u32) {
-        match LED_MAP.lock() {
+        match LED_MAP.write() {
             Ok(mut led_map) => {
                 led_map[idx] = RGB {
                     r: u8::try_from((c >> 16) & 0xff).unwrap(),
@@ -180,7 +163,7 @@ mod callbacks {
                 let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
                     error!("Could not lock a shared data structure: {}", e);
                     panic!();
-                });;
+                });
                 rvdev.send_led_map(&*led_map).unwrap_or_else(|e| {
                     error!("Could not send the LED map to the keyboard: {}", e)
                 });
@@ -216,7 +199,7 @@ mod callbacks {
         let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
             error!("Could not lock a shared data structure: {}", e);
             panic!();
-        });;
+        });
         rvdev
             .send_led_map(&led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
@@ -226,40 +209,61 @@ mod callbacks {
     }
 }
 
+/// Action requests for `run_script`
+pub enum RunScriptResult {
+    /// Currently running interpreter will be shut down, to execute another Lua script
+    ReExecuteOtherScript(PathBuf),
+}
+
 /// Loads and runs a lua script.
-/// Initializes a lua environment, loads a script and executes it
-pub fn run_script(file: &Path, rvdevice: RvDeviceState, rx: &Receiver<Message>) -> Result<()> {
-    match fs::read_to_string(file) {
+/// Initializes a lua environment, loads the script and executes it
+pub fn run_script(
+    file: PathBuf,
+    rvdevice: RvDeviceState,
+    rx: &Receiver<Message>,
+) -> Result<RunScriptResult> {
+    match fs::read_to_string(file.clone()) {
         Ok(script) => {
             let lua = Lua::new();
 
-            let result: rlua::Result<_> = lua.context(|lua_ctx| {
+            let manifest = Manifest::from(&file);
+            if manifest.is_err() {
+                error!(
+                    "Could not parse manifest file for script '{}': {}",
+                    file.to_string_lossy(),
+                    manifest.clone().unwrap_err()
+                );
+
+                return Err(ScriptingError::InaccessibleManifest {});
+            }
+
+            let rvdevice = rvdevice.clone();
+
+            let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
                 register_support_globals(lua_ctx, &rvdevice)?;
-                register_support_funcs(lua_ctx, rvdevice)?;
+                register_support_funcs(lua_ctx, &rvdevice)?;
+                register_script_config(lua_ctx, &manifest.unwrap())?;
 
                 // start execution of the Lua script
                 lua_ctx.load(&script).eval::<()>()?;
 
+                // call startup event handler, iff present
+                if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_startup") {
+                    handler.call::<_, ()>(()).or_else(|e| {
+                        error!("Lua error: {}", e);
+                        Err(e)
+                    })?;
+                }
+
                 loop {
                     if let Ok(msg) = rx.recv() {
                         match msg {
-                            Message::Startup => {
-                                if let Ok(handler) =
-                                    lua_ctx.globals().get::<_, Function>("on_startup")
-                                {
-                                    handler.call::<_, ()>(()).or_else(|e| {
-                                        error!("Lua error: {}", e);
-                                        Ok(())
-                                    })?;
-                                }
-                            }
-
                             Message::Quit(param) => {
                                 if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit")
                                 {
                                     handler.call::<_, ()>(param).or_else(|e| {
                                         error!("Lua error: {}", e);
-                                        Ok(())
+                                        Err(e)
                                     })?;
                                 }
                             }
@@ -269,7 +273,7 @@ pub fn run_script(file: &Path, rvdevice: RvDeviceState, rx: &Receiver<Message>) 
                                 {
                                     handler.call::<_, ()>(param).or_else(|e| {
                                         error!("Lua error: {}", e);
-                                        Ok(())
+                                        Err(e)
                                     })?;
                                 }
                             }
@@ -280,9 +284,13 @@ pub fn run_script(file: &Path, rvdevice: RvDeviceState, rx: &Receiver<Message>) 
                                 {
                                     handler.call::<_, ()>(param).or_else(|e| {
                                         error!("Lua error: {}", e);
-                                        Ok(())
+                                        Err(e)
                                     })?;
                                 }
+                            }
+
+                            Message::LoadScript(script_path) => {
+                                return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
                             }
                         }
                     }
@@ -290,19 +298,13 @@ pub fn run_script(file: &Path, rvdevice: RvDeviceState, rx: &Receiver<Message>) 
             });
 
             match result {
-                Ok(()) => Ok(()),
+                Ok(action) => Ok(action),
 
-                Err(_) => Err(ScriptingError {
-                    code: 1,
-                    // cause: Some(Box::new(e)),
-                }),
+                Err(_e) => Err(ScriptingError::LuaError {}),
             }
         }
 
-        Err(_) => Err(ScriptingError {
-            code: 0,
-            // cause: Some(Box::new(e)),
-        }),
+        Err(_e) => Err(ScriptingError::OpenError {}),
     }
 }
 
@@ -316,16 +318,16 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.7");
+    config.insert("daemon_version", "0.0.8");
 
     globals.set("config", config)?;
 
     Ok(())
 }
 
-fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> rlua::Result<()> {
+fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::Result<()> {
     let rvdevid = rvdevice.get_dev_id();
-    let rvdev = Arc::new(Mutex::new(rvdevice));
+    let rvdev = Arc::new(Mutex::new(rvdevice.clone()));
 
     let globals = lua_ctx.globals();
 
@@ -374,7 +376,13 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> rlua::Re
     globals.set("min", min)?;
 
     let clamp =
-        lua_ctx.create_function(|_, (val, f1, f2): (f64, f64, f64)| Ok(val.clamp(f1, f2)))?;
+        lua_ctx.create_function(|_, (val, f1, f2): (f64, f64, f64)| {
+            let mut val = val;
+            if val < f1 { val = f1; }
+            if val > f2 { val = f2; }
+            
+            Ok(val)
+        })?;
     globals.set("clamp", clamp)?;
 
     let abs = lua_ctx.create_function(|_, f: f64| Ok(f.abs()))?;
@@ -438,6 +446,38 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: RvDeviceState) -> rlua::Re
 
     for plugin in plugins.iter() {
         plugin.register_lua_funcs(lua_ctx).unwrap();
+    }
+
+    Ok(())
+}
+
+fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result<()> {
+    let globals = lua_ctx.globals();
+
+    for param in manifest.config.iter() {
+        debug!("Applying parameter {:?}", param);
+
+        match param {
+            ConfigParam::Int { name, default, .. } => {
+                globals.raw_set::<&str, i64>(name, *default)?;
+            }
+
+            ConfigParam::Float { name, default, .. } => {
+                globals.raw_set::<&str, f64>(name, *default)?;
+            }
+
+            ConfigParam::Bool { name, default, .. } => {
+                globals.raw_set::<&str, bool>(name, *default)?;
+            }
+
+            ConfigParam::String { name, default, .. } => {
+                globals.raw_set::<&str, &str>(name, default)?;
+            }
+
+            ConfigParam::Color { name, default, .. } => {
+                globals.raw_set::<&str, u32>(name, *default)?;
+            }
+        }
     }
 
     Ok(())

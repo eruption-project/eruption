@@ -13,21 +13,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "gradient"
-config["script_description"] = "Show a linear color gradient"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.2"
-
 -- find example gradients below
-
--- repeating linear red to blue gradient
-color_start = rgb_to_color(255, 0, 0)
-color_end = rgb_to_color(0, 0, 255)
-color_divisor = 256
-animate_gradient = true
-gradient_speed = 1
 
 -- repeating linear red to light cold white gradient
 -- color_start = rgb_to_color(255, 0, 0)

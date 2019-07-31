@@ -1,0 +1,65 @@
+name = "Heartbeat"
+description = "A heartbeat effect, reflecting system load"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.0.1"
+
+[[config]]
+type = 'float'
+name = 'afterglow_step'
+description = 'Step afterglow animation every [n] frames'
+default = 2.0
+
+[[config]]
+type = 'color'
+name = 'color_off'
+description = 'LED off'
+default = 0x00000000
+
+[[config]]
+type = 'color'
+name = 'color_bright'
+description = 'LED bright'
+default = 0x00ffffff
+
+[[config]]
+type = 'color'
+name = 'color_background'
+description = 'Background color'
+default = 0x00111111
+
+[[config]]
+type = 'color'
+name = 'color_afterglow'
+description = 'Afterglow color'
+default = 0x00ff0000
+
+[[config]]
+type = 'color'
+name = 'color_step_afterglow'
+description = 'Color value that gets subtracted from afterglow every [n] frames'
+default = 0x000a0000
+
+[[config]]
+type = 'color'
+name = 'color_step'
+description = 'Color value that gets subtracted every [n] frames'
+default = 0x000a0a0a
+
+[[config]]
+type = 'float'
+name = 'heartbeat_multiplier'
+description = 'Heartbeat speed multiplier'
+default = 0.25
+
+[[config]]
+type = 'float'
+name = 'heartbeat_upper_lim'
+description = 'Heartbeat max extent'
+default = -10
+
+[[config]]
+type = 'float'
+name = 'heartbeat_lower_lim'
+description = 'Heartbeat min extent'
+default = 10

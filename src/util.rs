@@ -18,50 +18,32 @@
 // use std::fs::File;
 // use std::io::prelude::*;
 use evdev_rs::enums::EV_KEY;
-use std::error;
-use std::error::Error;
-use std::fmt;
+use failure::Fail;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use udev::{Context, Enumerator};
 
 use crate::rvdevice;
 
-pub type Result<'a, T> = std::result::Result<T, UtilError>;
+pub type Result<T> = std::result::Result<T, UtilError>;
 
-#[derive(Debug)]
-pub struct UtilError {
-    code: u32,
-    cause: Option<udev::Error>,
-}
+#[derive(Debug, Fail)]
+pub enum UtilError {
+    #[fail(display = "No compatible devices found")]
+    NoDevicesFound {},
 
-impl error::Error for UtilError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "No compatible devices found",
-            1 => "Error occured during device enumeration",
-            2 => "Could not enumerate udev devices",
-            3 => "Could not create an udev context",
-            _ => "Unknown error",
-        }
-    }
+    #[fail(display = "Error occured during device enumeration")]
+    EnumerationError {},
 
-    fn cause(&self) -> Option<&dyn error::Error> {
-        match self.cause.as_ref() {
-            Some(c) => Some(c),
-            None => None,
-        }
-    }
-}
+    #[fail(display = "Could not enumerate udev devices")]
+    UdevError {},
 
-impl fmt::Display for UtilError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
+    #[fail(display = "Could not create an udev context")]
+    UdevContextError {},
 }
 
 /// Get the path of the evdev device of the first keyboard from udev
-pub fn get_evdev_from_udev<'a>() -> Result<'a, String> {
+pub fn get_evdev_from_udev() -> Result<String> {
     match Context::new() {
         Ok(context) => match Enumerator::new(&context) {
             Ok(mut enumerator) => {
@@ -70,37 +52,26 @@ pub fn get_evdev_from_udev<'a>() -> Result<'a, String> {
                 match enumerator.scan_devices() {
                     Ok(devices) => {
                         for device in devices {
-                            if device.properties().any(|e| {
+                            let found_dev = device.properties().any(|e| {
                                 e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR
-                            }) && device.devnode().is_some()
-                            {
+                            }) && device.devnode().is_some();
+
+                            if found_dev {
                                 return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
                             }
                         }
 
-                        Err(UtilError {
-                            code: 0,
-                            cause: None,
-                        })
+                        Err(UtilError::NoDevicesFound {})
                     }
 
-                    Err(e) => Err(UtilError {
-                        code: 1,
-                        cause: Some(e),
-                    }),
+                    Err(_e) => Err(UtilError::EnumerationError {}),
                 }
             }
 
-            Err(e) => Err(UtilError {
-                code: 2,
-                cause: Some(e),
-            }),
+            Err(_e) => Err(UtilError::UdevError {}),
         },
 
-        Err(e) => Err(UtilError {
-            code: 3,
-            cause: Some(e),
-        }),
+        Err(_e) => Err(UtilError::UdevContextError {}),
     }
 }
 
@@ -139,8 +110,26 @@ pub fn get_evdev_from_udev<'a>() -> Result<'a, String> {
 //     Ok(())
 // }
 
+/// Returns the associated manifest path in `PathBuf` for the script `script_path`.
+pub fn get_manifest_for(script_file: &Path) -> PathBuf {
+    let mut manifest_path = script_file.to_path_buf();
+    manifest_path.set_extension("lua.manifest");
+
+    manifest_path
+}
+
 pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
     fs::read_to_string(p)
+}
+
+/// Checks whether a script file is readable
+pub fn is_script_file_accessible(script_file: &Path) -> bool {
+    is_file_accessible(script_file).is_ok()
+}
+
+/// Checks whether a script's manifest file is readable
+pub fn is_manifest_file_accessible(script_file: &Path) -> bool {
+    fs::read_to_string(get_manifest_for(script_file)).is_ok()
 }
 
 /// Map evdev event codes to key indices, for ISO variant

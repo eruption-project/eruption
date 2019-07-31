@@ -16,43 +16,24 @@
 */
 
 // use log::*;
+// use failure::Fail;
 use rlua;
 use rlua::Context;
 use std::any::Any;
-use std::error;
-use std::error::Error;
-use std::fmt;
 
-use crate::plugins::{Plugin, Result};
+use crate::plugins::{self, Plugin};
 
 // pub type Result<T> = std::result::Result<T, AudioPluginError>;
 
-#[derive(Debug, Clone)]
-pub struct AudioPluginError {
-    code: u32,
-}
-
-impl error::Error for AudioPluginError {
-    fn description(&self) -> &str {
-        match self.code {
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for AudioPluginError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-pub struct AudioPlugin {}
+// #[derive(Debug, Fail)]
+// pub enum AudioPluginError {
+//     #[fail(display = "Unknown error: {}", description)]
+//     UnknownError { description: String },
+// }
 
 /// A plugin that performs audio-related tasks like playing or capturing sounds
+pub struct AudioPlugin {}
+
 impl AudioPlugin {
     pub fn new() -> Self {
         AudioPlugin {}
@@ -68,7 +49,7 @@ impl Plugin for AudioPlugin {
         "Audio related functions".to_string()
     }
 
-    fn initialize(&mut self) -> Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 
@@ -84,11 +65,11 @@ impl Plugin for AudioPlugin {
 
     fn main_loop_hook(&self, _ticks: u64) {}
 
-    fn as_any(&self) -> &Any {
+    fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn as_any_mut(&mut self) -> &mut Any {
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

@@ -1,0 +1,105 @@
+{% extends "base" %}
+
+{% block header %}
+	<h2 class="pagetitle"><a class="navi" href="navigator.back();"><i class="icon-arrow-left"></i></a>&nbsp; {{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+			<div class="row span12">
+				<div class="span3">
+					<h4>Description</h4>
+					Name: {{ script.name }} - {{ script.version }}<br/>
+					{{ script.description }}<br/><br/>
+					Author: {{ script.author }}<br/>
+				</div>
+
+				<div class="span8">
+					<h4>Effect Settings</h4>
+					<form id="form" action="/settings/apply/{{ script.id }}" method="post">
+						<div class="accordion span4 float-right" id="accordion2">
+							<div class="accordion-group">
+								<div class="accordion-heading">
+									<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+									<i class="icon-plus"></i> Colors </a>
+								</div>
+								<div id="collapseTwo" class="accordion-body collapse in">
+									<div class="accordion-inner">
+										{% for param in config_params %}
+											{% if param.type == "color" %}
+												<label for="{{ param.name }}">{{ param.name }}</label>
+												<input name="{{ param.name }}" type="color" value="{{ param.default | to_html_color }}" />
+											{% endif %}
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="accordion span4 float-right" id="accordion2">
+							<div class="accordion-group float-right">
+								<div class="accordion-heading">
+									<a class="accordion-toggle active" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+									<i class="icon-minus"></i> Parameters </a>
+								</div>
+								<div id="collapseOne" class="accordion-body collapse in">
+									<div class="accordion-inner">
+										{% for param in config_params %}
+											{% if param.type != "color" %}
+												<label for="{{ param.name }}">{{ param.name }}</label>
+												<input name="{{ param.name }}" type="text" value="{{ param.default }}" />
+											{% endif %}
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="clearfix">
+							<a href="javascript:form.submit()" class="btn btn-primary">Save and Apply</a>
+							<a href="/settings" class="btn btn-cancel">Discard Changes</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	
+	<div class="container">
+		{% set row_index = 0 %}
+		<div class="row">
+		{% for script in scripts %}
+			<div class="span3 float-right">
+				<a class="tile" href="/settings/{{ script.id }}">
+					<div class="tile">
+						<i class="services icon-code"></i>
+						
+						<div>
+							<h5 class="tile">{{ script.name }}</h5>
+							<!--
+							<p class="small">
+								{{ script.script_file }}: {{ script.version }}
+							</p>
+							<p class="tile">
+								{{ script.description }}
+							</p>
+							-->
+						</div>
+					</div>
+				</a>
+			</div>
+			
+			{% if loop.index % 4 == 0 %}
+				</div>
+				
+				{% set_global row_index = row_index + 1 %}
+				
+				{% if row_index % 2 == 0 %}
+					<div class="row">
+				{% else %}
+					<div class="row">
+				{% endif %}		
+			{% endif %}
+		{% endfor %}
+		</div>
+	</div>
+{% endblock content %}

@@ -12,6 +12,8 @@ Eruption provides a small, but hopefully useful library of functions that are in
 * System: Basic system information and status, like e.g. running processes
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds
+* Introspection: Provides internal status information of the Eruption daemon
+* Profiles: Switch profiles based on system state
 
 ## Available Functions
 

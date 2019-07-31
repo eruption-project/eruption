@@ -15,19 +15,21 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![feature(clamp)]
+#![feature(plugin)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
 use clap::{App, Arg};
+use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use pretty_env_logger;
 use std::convert::TryInto;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
 use std::u64;
@@ -43,10 +45,38 @@ mod constants;
 mod dbus_interface;
 mod plugin_manager;
 mod plugins;
+mod profiles;
+mod runtime_state;
 mod scripting;
 
+use profiles::Profile;
+use runtime_state::RuntimeState;
+use scripting::script;
+
+#[cfg(feature = "frontend")]
+mod frontend;
+
+#[cfg(not(feature = "frontend"))]
+mod frontend {
+    // provide a dummy implementation of Message
+    pub enum Message {}
+}
+
 lazy_static! {
+    pub static ref GLOBALS: Arc<RwLock<RuntimeState>> =
+        Arc::new(RwLock::new(RuntimeState::default()));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+}
+
+pub type Result<T> = std::result::Result<T, MainError>;
+
+#[derive(Debug, Fail)]
+pub enum MainError {
+    #[fail(display = "Could not execute Lua script")]
+    ScriptExecError {},
+    // #[fail(display = "Unknown error: {}", description)]
+    // UnknownError { description: String },
 }
 
 fn print_header() {
@@ -71,7 +101,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.7")
+        .version("0.0.8")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -80,6 +110,14 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
                 .long("config")
                 .value_name("FILE")
                 .help("Sets the configuration file to use")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("profile")
+                .short("p")
+                .long("profile")
+                .value_name("profile")
+                .help("Sets the profile to activate")
                 .takes_value(true),
         )
         .arg(
@@ -110,7 +148,30 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-/// Spawn the dbus thread and executes its main loop
+/// Spawns the web-frontend thread
+#[cfg(feature = "frontend")]
+fn spawn_frontend_thread(
+    frontend_tx: Sender<frontend::Message>,
+    profile_path: PathBuf,
+    script_path: PathBuf,
+) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("frontend".into());
+    builder
+        .spawn(move || {
+            frontend::initialize(frontend_tx, profile_path, script_path).unwrap_or_else(|e| {
+                error!("Could not initialize the Web-Frontend: {}", e);
+                panic!()
+            });
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
+/// Spawns the dbus thread and executes it's main loop
 fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("dbus".into());
     builder
@@ -133,7 +194,7 @@ fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Resul
     Ok(())
 }
 
-/// Spawn the keyboard events thread and executes its main loop
+/// Spawns the keyboard events thread and executes it's main loop
 fn spawn_input_thread(kbd_tx: Sender<Option<u8>>) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("events".into());
     builder
@@ -189,10 +250,68 @@ fn spawn_input_thread(kbd_tx: Sender<Option<u8>>) -> plugins::Result<()> {
     Ok(())
 }
 
+fn spawn_lua_thread(
+    lua_rx: Receiver<script::Message>,
+    mut script_path: PathBuf,
+    rvdevice: &RvDeviceState,
+) -> Result<()> {
+    let result = util::is_file_accessible(&script_path);
+    if result.is_err() {
+        error!(
+            "Script file '{}' is not accessible: {}",
+            script_path.to_string_lossy(),
+            result.unwrap_err()
+        );
+        process::exit(3);
+    }
+
+    let result = util::is_file_accessible(util::get_manifest_for(&script_path));
+    if result.is_err() {
+        error!(
+            "Manifest file for script '{}' is not accessible: {}",
+            script_path.to_string_lossy(),
+            result.unwrap_err()
+        );
+        process::exit(3);
+    }
+
+    let rvdevice = rvdevice.clone();
+
+    let builder = thread::Builder::new().name("lua-vm".into());
+    builder
+        .spawn(move || loop {
+            let rvdevice = rvdevice.clone();
+
+            let result =
+                script::run_script(script_path.clone(), rvdevice, &lua_rx).unwrap_or_else(|e| {
+                    error!(
+                        "Could not load script file '{}': {}",
+                        script_path.to_string_lossy(),
+                        e
+                    );
+                    panic!();
+                });
+
+            match result {
+                script::RunScriptResult::ReExecuteOtherScript(script_file) => {
+                    script_path = script_file;
+                    continue;
+                }
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!();
+        });
+
+    Ok(())
+}
+
 fn run_main_loop(
+    frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<u8>>,
-    lua_tx: &Sender<scripting::Message>,
+    lua_tx: &Sender<script::Message>,
 ) {
     trace!("Entering main loop...");
 
@@ -216,12 +335,59 @@ fn run_main_loop(
             plugin.main_loop_hook(ticks);
         }
 
+        // process Web-Frontend events
+        #[cfg(feature = "frontend")]
+        match frontend_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                frontend::Message::LoadScript(script_path) => {
+                    info!("Loading Script: {}", script_path.to_string_lossy());
+
+                    if util::is_script_file_accessible(&script_path)
+                        && util::is_manifest_file_accessible(&script_path)
+                    {
+                        lua_tx
+                            .send(script::Message::LoadScript(script_path))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send an event to the Lua VM: {}", e)
+                            });
+                    } else {
+                        error!(
+                            "Script and/or manifest file '{}' is not accessible: ",
+                            script_path.to_string_lossy()
+                        );
+                    }
+                }
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
         // process D-Bus events
         #[cfg(feature = "dbus")]
         match dbus_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
-                dbus_interface::Message::LoadScript(filename) => {
-                    info!("Loading Script: {}", filename.to_string_lossy())
+                dbus_interface::Message::LoadScript(script_path) => {
+                    info!("Loading Script: {}", script_path.to_string_lossy());
+
+                    match util::is_file_accessible(&script_path) {
+                        Ok(_) => lua_tx
+                            .send(script::Message::LoadScript(script_path))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send an event to the Lua VM: {}", e)
+                            }),
+
+                        Err(e) => error!(
+                            "Script file '{}' is not accessible: {}",
+                            script_path.to_string_lossy(),
+                            e
+                        ),
+                    }
                 }
             },
 
@@ -238,7 +404,7 @@ fn run_main_loop(
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
                 Some(index) => lua_tx
-                    .send(scripting::Message::KeyDown(index))
+                    .send(script::Message::KeyDown(index))
                     .unwrap_or_else(|e| error!("Could not send a pending keyboard event: {}", e)),
 
                 // ignore spurious events
@@ -256,7 +422,7 @@ fn run_main_loop(
 
         // send a timer tick event to the Lua VM
         lua_tx
-            .send(scripting::Message::Tick(
+            .send(script::Message::Tick(
                 start_time.elapsed().as_millis().try_into().unwrap(),
             ))
             .unwrap();
@@ -273,8 +439,8 @@ fn run_main_loop(
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
         if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
-            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 10u64).into() {
-                warn!("more than 10 milliseconds of jitter detected!");
+            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 5u64).into() {
+                warn!("More than 5 milliseconds of jitter detected!");
                 warn!(
                     "Loop took: {} milliseconds, goal: {}",
                     elapsed_after_sleep,
@@ -334,7 +500,7 @@ fn main() {
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
-    // parse configuration file
+    // process configuration file
     let config_file = matches
         .value_of("config")
         .unwrap_or(constants::DEFAULT_CONFIG_FILE);
@@ -347,10 +513,63 @@ fn main() {
             panic!()
         });
 
+    *CONFIG.write().unwrap() = Some(config.clone());
+
+    // default directories
+    let profile_dir = config
+        .get_str("global.profile_dir")
+        .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string());
+    let profile_path = PathBuf::from(&profile_dir);
+
+    let script_dir = config
+        .get_str("global.script_dir")
+        .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
+
+    // active sript file
     let default_script_file = config
         .get_str("global.script_file")
         .unwrap_or_else(|_| constants::DEFAULT_EFFECT_SCRIPT.to_string());
     let script_file = matches.value_of("script").unwrap_or(&default_script_file);
+    let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
+
+    // active runtime profile
+    let default_profile_name = config
+        .get_str("global.profile")
+        .unwrap_or_else(|_| "default".into());
+    let profile_name = matches.value_of("profile").unwrap_or(&default_profile_name);
+    let mut profile_file = PathBuf::from(&profile_name);
+    profile_file.set_extension("profile");
+
+    let profile_file = PathBuf::from(&profile_dir).join(&profile_file);
+
+    // load profile
+    trace!(
+        "Loading profile data from '{}'",
+        profile_file.to_string_lossy()
+    );
+    let profile = Profile::from(&profile_file).unwrap_or_else(|e| {
+        error!(
+            "Error opening the profile file '{}': {}",
+            profile_file.to_string_lossy(),
+            e
+        );
+        process::exit(5);
+    });
+
+    info!("Loaded profile: {}", &profile.name);
+
+    // set globals
+    {
+        let mut globals = GLOBALS.write().unwrap();
+        globals.active_profile = Some(profile);
+    }
+
+    // frontend enable
+    let frontend_enabled = config
+        .get::<bool>("frontend.enabled")
+        .unwrap_or_else(|_| true);
+
+    // others
     let _verbosity = matches.occurrences_of("v");
 
     // try to set timer slack to a low value
@@ -390,8 +609,8 @@ fn main() {
                     #[cfg(feature = "dbus")]
                     info!("Initializing D-Bus API...");
 
-                    #[cfg(feature = "dbus")]
                     let (dbus_tx, dbus_rx) = channel();
+                    #[cfg(feature = "dbus")]
                     spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
                         panic!()
@@ -412,51 +631,51 @@ fn main() {
                     });
 
                     // spawn the Lua VM thread, and then load and execute a script
-                    let script_path = PathBuf::from(script_file.to_string());
+                    info!("Loading Lua script...");
 
-                    info!("Loading Lua scripts...");
-                    let result = util::is_file_accessible(&script_path);
-                    if result.is_err() {
-                        error!(
-                            "Script file '{}' is not accessible: {}",
-                            script_path.to_string_lossy(),
-                            result.unwrap_err()
-                        );
-                        process::exit(3);
-                    }
+                    let script_path_clone = script_path.clone();
 
                     let (lua_tx, lua_rx) = channel();
-                    let builder = thread::Builder::new().name("lua-vm".into());
-                    builder
-                        .spawn(move || {
-                            scripting::run_script(&script_path, rvdevice, &lua_rx).unwrap_or_else(
-                                |e| {
-                                    error!(
-                                        "Could not load script file '{}': {}",
-                                        script_path.to_string_lossy(),
-                                        e
-                                    );
-                                    panic!()
-                                },
-                            );
-                        })
-                        .unwrap_or_else(|e| {
+                    spawn_lua_thread(lua_rx, script_path_clone, &rvdevice).unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
+
+                    // spawn a thread to handle the web-frontend
+                    let (frontend_tx, frontend_rx) = channel();
+
+                    if frontend_enabled {
+                        #[cfg(feature = "frontend")]
+                        info!("Spawning Web-Frontend thread...");
+
+                        let profile_path_clone = profile_path.clone();
+                        let script_path_clone = script_path.clone();
+
+                        #[cfg(feature = "frontend")]
+                        spawn_frontend_thread(frontend_tx, profile_path_clone, script_path_clone).unwrap_or_else(|e| {
                             error!("Could not spawn a thread: {}", e);
                             panic!()
                         });
-
-                    lua_tx.send(scripting::Message::Startup).unwrap();
+                    } else {
+                        info!("Web-Frontend DISABLED by configuration");
+                    }
 
                     // enter the main loop
-                    run_main_loop(&dbus_rx, &kbd_rx, &lua_tx);
+                    run_main_loop(&frontend_rx, &dbus_rx, &kbd_rx, &lua_tx);
 
                     // we left the main loop, so send a final message to the running Lua VM
                     lua_tx
-                        .send(scripting::Message::Quit(0))
+                        .send(script::Message::Quit(0))
                         .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
 
-                    // TODO: Ugly hack, find a better way to wait for exit of Lua VM
+                    // TODO: Ugly hack, find a better way to wait for exit of the Lua VM
                     thread::sleep(Duration::from_millis(250));
+
+                    // close the control and LED devices
+                    info!("Closing devices...");
+                    rvdevice.close_all().unwrap_or_else(|e| {
+                        warn!("Could not close the keyboard device: {}", e);
+                    });
                 }
 
                 Err(_) => {

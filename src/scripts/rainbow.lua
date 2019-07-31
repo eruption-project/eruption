@@ -13,13 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "rainbow"
-config["script_description"] = "Show a rainbow color gradient"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.3"
-
 -- set gradient stops
 gradient_stops = {
     [0] = { start = rgb_to_color(255,   0,   0), dest = rgb_to_color(255, 165,   0) },

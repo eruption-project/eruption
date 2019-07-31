@@ -1,0 +1,29 @@
+{% extends "base" %}
+
+{% block header %}
+	<h2 class="pagetitle">{{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+			<div class="row">
+				<div class="span6">
+					<h4>What is Eruption?</h4>
+					<p>Eruption is a Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards</p>
+					<p>It consists of a daemon written in Rust, the core, an integrated Lua interpreter and additional plugin components. 
+					Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" 
+					and subsequently control the AIMO LEDs on the keyboard. Plugins may export additional functionality to the Lua scripting engine.</p>
+
+					<h4>Contributing</h4>
+					<p>
+						Contributions are welcome!
+						Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end container -->
+{% endblock content %}

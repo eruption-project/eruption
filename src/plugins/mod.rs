@@ -15,19 +15,21 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::error;
-use std::error::Error;
-use std::fmt;
+// use failure::Fail;
 
 pub mod audio;
+pub mod introspection;
 pub mod keyboard;
 pub mod plugin;
+pub mod profiles;
 pub mod sensors;
 pub mod system;
 
 pub use audio::AudioPlugin;
+pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
 pub use plugin::Plugin;
+pub use profiles::ProfilesPlugin;
 pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
 
@@ -35,31 +37,16 @@ use log::*;
 
 use super::plugin_manager;
 
-pub type Result<T> = std::result::Result<T, PluginError>;
+pub type Result<T> = std::result::Result<T, failure::Error>;
 
-#[derive(Debug, Clone)]
-pub struct PluginError {
-    code: u32,
-}
+// #[derive(Debug, Fail)]
+// pub enum PluginError {
+//     // #[fail(display = "Could not register Lua extensions")]
+//     // LuaExtensionError {},
 
-impl error::Error for PluginError {
-    fn description(&self) -> &str {
-        match self.code {
-            0 => "Could not register Lua extensions",
-            _ => "Unknown error",
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
-
-impl fmt::Display for PluginError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
+//     #[fail(display = "Unknown error: {}", description)]
+//     UnknownError { description: String },
+// }
 
 /// Register all available plugins
 pub fn register_plugins() -> Result<()> {
@@ -71,6 +58,8 @@ pub fn register_plugins() -> Result<()> {
     });
 
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(IntrospectionPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(ProfilesPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SensorsPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(AudioPlugin::new()))?;

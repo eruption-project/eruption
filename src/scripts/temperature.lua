@@ -13,13 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global script configuration --
-config["script_name"] = "temperature"
-config["script_description"] = "Make the keyboard reflect the system temperature"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.2"
-
 -- global constants --
 color_off = 0x000000000
 color_background = 0x00111111

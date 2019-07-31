@@ -18,26 +18,6 @@
 -- Please see: https://github.com/duncanthrax/roccat-vulcan
 -------------------------------------------------------------------------------
 
--- global script configuration --
-config["script_name"] = "impact"
-config["script_description"] = "Highlight neighbouring keys when a key has been pressed"
-config["script_version"] = "0.0.1"
-config["script_author"] = "The Eruption development team"
-config["min_supported_version"] = "0.0.1"
-
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-color_background = 0x00111111
-
-color_impact = rgb_to_color(255, 0, 0)
-color_step_impact = rgb_to_color(11, 0, 0)
-impact_step = 1
-
-color_afterglow = rgb_to_color(255, 255, 255)
-color_step_afterglow = rgb_to_color(10, 10, 10)
-afterglow_step = 2
-
 -- global state variables --
 color_map = {}
 color_map_pressed = {}

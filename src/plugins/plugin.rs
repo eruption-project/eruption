@@ -42,8 +42,8 @@ pub trait Plugin: Any {
     // fn process_event(&mut self, event: Event);
 
     /// Downcast support
-    fn as_any(&self) -> &Any;
+    fn as_any(&self) -> &dyn Any;
 
     /// Downcast support (mutable)
-    fn as_any_mut(&mut self) -> &mut Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }

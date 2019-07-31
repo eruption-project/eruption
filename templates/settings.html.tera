@@ -1,0 +1,48 @@
+{% extends "base" %}
+
+{% block header %}
+	<h2 class="pagetitle">{{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+		{% set row_index = 0 %}
+		<div class="row animated fadeInLeft">
+		{% for script in scripts %}
+			<div class="span3 float-right">
+				<a class="tile" href="/settings/{{ script.id }}">
+					<div class="tile">
+						<i class="services icon-code"></i>
+						
+						<div>
+							<h5 class="tile">{{ script.name }}</h5>
+							<!--
+							<p class="small">
+								{{ script.script_file }}: {{ script.version }}
+							</p>
+							<p class="tile">
+								{{ script.description }}
+							</p>
+							-->
+						</div>
+					</div>
+				</a>
+			</div>
+			
+			{% if loop.index % 4 == 0 %}
+				</div>
+				
+				{% set_global row_index = row_index + 1 %}
+				
+				{% if row_index % 2 == 0 %}
+					<div class="row animated fadeInLeft">
+				{% else %}
+					<div class="row animated fadeInRight">
+				{% endif %}		
+			{% endif %}
+		{% endfor %}
+		</div>
+	</div>
+{% endblock content %}

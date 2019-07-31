@@ -1,0 +1,31 @@
+{% extends "base" %}
+
+{% block header %}
+	<h2 class="pagetitle">{{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+			<div class="row">
+				<div class="span6">
+					<h4>Profiles</h4>
+
+					<h5>Active</h5>
+
+					<i>{{ active_profile.name }} - {{ active_profile.description }}</i><br/>
+
+					<h5>Available</h5>
+
+					{% for profile in profiles %}
+						<i>{{ profile.name }} - {{ profile.description }}</i><br/>
+					{% endfor %}
+
+					<h4>Profile Switcher</h4>					
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end container -->
+{% endblock content %}
