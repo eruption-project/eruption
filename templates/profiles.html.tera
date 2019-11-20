@@ -2,6 +2,15 @@
 
 {% block header %}
 	<h2 class="pagetitle">{{ heading }}</h2>
+
+	<script>
+		function activate_profile(profile_name) {
+			var request = new XMLHttpRequest();
+
+			request.open("POST", "profiles/active/" + profile_name);
+			request.send();
+		}
+	</script>
 {% endblock header %}
 
 {% block content %}
@@ -19,7 +28,7 @@
 					<h5>Available</h5>
 
 					{% for profile in profiles %}
-						<i>{{ profile.name }} - {{ profile.description }}</i><br/>
+						<i><a href="javascript: activate_profile('{{ profile.id }}')">{{ profile.name }} - {{ profile.description }}</a></i><br/>
 					{% endfor %}
 
 					<h4>Profile Switcher</h4>					

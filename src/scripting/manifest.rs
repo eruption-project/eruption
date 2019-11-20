@@ -35,7 +35,6 @@ pub enum ManifestError {
 
     #[fail(display = "Could not enumerate script files")]
     ScriptEnumerationError {},
-
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -101,7 +100,7 @@ impl Manifest {
                 // parse manifest
                 match toml::de::from_str::<Self>(&toml) {
                     Ok(mut result) => {
-                        // fill in required fields
+                        // fill in required fields, after parsing
                         result.id = id;
                         result.script_file = script.to_path_buf();
 
@@ -158,7 +157,7 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
                 errors_present = true;
                 error!(
                     "Could not process manifest file for script '{}': {}",
-                    script_file.to_string_lossy(),
+                    script_file.display(),
                     e
                 );
             }

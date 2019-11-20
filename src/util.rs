@@ -32,7 +32,7 @@ pub enum UtilError {
     #[fail(display = "No compatible devices found")]
     NoDevicesFound {},
 
-    #[fail(display = "Error occured during device enumeration")]
+    #[fail(display = "Error occurred during device enumeration")]
     EnumerationError {},
 
     #[fail(display = "Could not enumerate udev devices")]

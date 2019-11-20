@@ -37,15 +37,17 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
+use uuid::Uuid;
 
 use crate::constants;
-use crate::scripting::manifest;
 use crate::profiles;
+use crate::scripting::manifest;
 
 /// Web-Frontend messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
 pub enum Message {
     LoadScript(PathBuf),
+    SwitchProfile(PathBuf),
 }
 
 pub type Result<T> = std::result::Result<T, WebFrontendError>;
@@ -58,8 +60,14 @@ pub enum WebFrontendError {
     #[fail(display = "Could not enumerate script files")]
     ScriptEnumerationError {},
 
+    #[fail(display = "Could not enumerate profile files")]
+    ProfileEnumerationError {},
+
     #[fail(display = "Could not load script files")]
     ScriptLoadError {},
+
+    #[fail(display = "Could not switch to a different profile")]
+    ProfileSwitchError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -80,7 +88,10 @@ lazy_static! {
 #[cfg(feature = "frontend")]
 impl WebFrontend {
     pub fn new(frontend_tx: Sender<Message>, profile_path: PathBuf, script_path: PathBuf) -> Self {
-        let frontend = WebFrontend { profile_path, script_path };
+        let frontend = WebFrontend {
+            profile_path,
+            script_path,
+        };
 
         *WEB_FRONTEND.lock().unwrap() = Some(frontend.clone());
         *MESSAGE_TX.lock().unwrap() = Some(frontend_tx);
@@ -108,7 +119,8 @@ impl WebFrontend {
                 "/",
                 routes![
                     index,
-                    profiles,
+                    profiles_selection,
+                    activate_profile,
                     settings,
                     settings_of_id,
                     settings_apply,
@@ -128,7 +140,11 @@ impl WebFrontend {
 
 /// Initialize the Eruption Web-Frontend support
 #[cfg(feature = "frontend")]
-pub fn initialize(frontend_tx: Sender<Message>, profile_path: PathBuf, script_path: PathBuf) -> Result<WebFrontend> {
+pub fn initialize(
+    frontend_tx: Sender<Message>,
+    profile_path: PathBuf,
+    script_path: PathBuf,
+) -> Result<WebFrontend> {
     Ok(WebFrontend::new(frontend_tx, profile_path, script_path))
 }
 
@@ -154,8 +170,8 @@ fn request_load_script_by_id(script_id: usize) -> Result<()> {
         Some(frontend) => {
             let base_path = frontend.script_path.parent().unwrap();
             match manifest::get_script_files(base_path) {
-                Ok(ref script_file) => {
-                    match tx.send(Message::LoadScript(script_file[script_id].to_path_buf())) {
+                Ok(ref script_files) => {
+                    match tx.send(Message::LoadScript(script_files[script_id].to_path_buf())) {
                         Ok(()) => Ok(()),
 
                         Err(e) => {
@@ -166,6 +182,39 @@ fn request_load_script_by_id(script_id: usize) -> Result<()> {
                 }
 
                 Err(_e) => Err(WebFrontendError::ScriptEnumerationError {}),
+            }
+        }
+
+        None => {
+            error!("Web frontend went away");
+            Err(WebFrontendError::FrontendInaccessible {})
+        }
+    }
+}
+
+/// Request the main thread to load the profile with the name `profile_name`.
+fn request_switch_profile_by_id(profile_id: Uuid) -> Result<()> {
+    let tx = MESSAGE_TX.lock().unwrap();
+    let tx = tx.as_ref().unwrap();
+
+    let frontend = WEB_FRONTEND.lock().unwrap();
+    let frontend = frontend.as_ref();
+
+    match frontend {
+        Some(frontend) => {
+            let base_path = &frontend.profile_path;
+            if let Some(profile_path) = profiles::find_path_by_uuid(profile_id, base_path) {
+                match tx.send(Message::SwitchProfile(profile_path)) {
+                    Ok(()) => Ok(()),
+
+                    Err(e) => {
+                        error!("Could not send an event to the main thread: {}", e);
+                        Err(WebFrontendError::ProfileSwitchError {})
+                    }
+                }
+            } else {
+                error!("Could not enumerated profile files");
+                Err(WebFrontendError::ProfileEnumerationError {})
             }
         }
 
@@ -189,26 +238,32 @@ fn to_html_color(value: Value, _: HashMap<String, Value>) -> tera::Result<Value>
 }
 
 #[get("/")]
-fn index() -> templates::Template {
-    let mut context = Context::new();
+fn index() -> manifest::Result<Redirect> {
+    let globals = crate::GLOBALS.read().unwrap();
 
     let config = crate::CONFIG.read().unwrap();
-    let frontend_theme = config
+    let script_dir = config
         .as_ref()
         .unwrap()
-        .get_str("frontend.theme")
-        .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
+        .get_str("global.script_dir")
+        .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
+    let script_path = PathBuf::from(&script_dir);
 
-    context.insert("theme", &frontend_theme);
+    let scripts = manifest::get_scripts(&script_path)?;
+    let active_script_id = globals.active_script.as_ref().and_then(|active| {
+        scripts
+            .iter()
+            .position(|e| e.script_file == active.script_file)
+    });
 
-    context.insert("title", "Eruption: Home");
-    context.insert("heading", "Home");
-
-    templates::Template::render("index", &context)
+    Ok(Redirect::to(format!(
+        "/settings/{}",
+        active_script_id.unwrap()
+    )))
 }
 
 #[get("/profiles")]
-fn profiles() -> templates::Template {
+fn profiles_selection() -> templates::Template {
     let mut context = Context::new();
 
     let globals = crate::GLOBALS.read().unwrap();
@@ -249,17 +304,34 @@ fn profiles() -> templates::Template {
     }
 }
 
+#[post("/profiles/active/<profile_id>")]
+fn activate_profile(profile_id: Option<String>) -> Redirect {
+    request_switch_profile_by_id(Uuid::parse_str(&profile_id.unwrap()).unwrap()).unwrap();
+
+    Redirect::to("/profiles")
+}
+
 #[get("/settings")]
 fn settings() -> manifest::Result<templates::Template> {
     let mut context = Context::new();
 
+    let globals = crate::GLOBALS.read().unwrap();
+
     let config = crate::CONFIG.read().unwrap();
-    let script_dir = config.as_ref().unwrap()
+    let script_dir = config
+        .as_ref()
+        .unwrap()
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
     let script_path = PathBuf::from(&script_dir);
 
     let scripts = manifest::get_scripts(&script_path)?;
+
+    let active_script_id = globals.active_script.as_ref().and_then(|active| {
+        scripts
+            .iter()
+            .position(|e| e.script_file == active.script_file)
+    });
 
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
@@ -274,6 +346,7 @@ fn settings() -> manifest::Result<templates::Template> {
     context.insert("heading", "Select Effect");
 
     context.insert("scripts", &scripts);
+    context.insert("active_script_id", &active_script_id.ok_or(-1).unwrap());
 
     Ok(templates::Template::render("settings", &context))
 }
@@ -291,26 +364,31 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
 
     context.insert("theme", &frontend_theme);
 
-    let script_dir = config.as_ref().unwrap()
+    let script_dir = config
+        .as_ref()
+        .unwrap()
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
     let script_path = PathBuf::from(&script_dir);
 
-    if script_id.is_some() {
+    if let Some(script_id) = script_id {
         let scripts = manifest::get_scripts(&script_path)?;
 
         // apply effect script
-        request_load_script_by_id(script_id.unwrap()).unwrap_or_else(|e| {
+        request_load_script_by_id(script_id).unwrap_or_else(|e| {
             error!("Request to load a script has failed: {}", e);
         });
 
         context.insert("title", "Eruption: Settings");
         context.insert("heading", "Effect Settings");
-        context.insert("script", &scripts[script_id.unwrap()]);
+        context.insert("script", &scripts[script_id]);
 
-        context.insert("config_params", &scripts[script_id.unwrap()].config);
+        context.insert("config_params", &scripts[script_id].config);
 
         context.insert("scripts", &scripts);
+
+        let active_script_id = scripts.iter().position(|e| e.id == script_id);
+        context.insert("active_script_id", &active_script_id.ok_or(-1).unwrap());
 
         Ok(templates::Template::render("detail", &context))
     } else {
@@ -328,6 +406,22 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
 #[post("/settings/apply/<script_id>", data = "<params>")]
 fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Redirect {
     info!("{:?}", params);
+
+    let mut globals = crate::GLOBALS.write().unwrap();
+    let script_name = globals.active_script.as_ref().unwrap().name.clone();
+    let profile = globals.active_profile.as_mut().unwrap();
+
+    // Form(ValueMap { store: {"color_step_afterglow": "#0a0000", "color_afterglow": "#ff0000",
+    //                         "color_bright": "#ffffff", "impact_step": "1", "color_background": "#111111",
+    //                         "color_off": "#000001", "color_step_impact": "#0a0000", "afterglow_step": "2",
+    //                         "color_impact": "#ff0000"} })
+
+    for (k, v) in &params.store {
+        if k.starts_with("color_") {
+            let val = u32::from_str_radix(&v[1..], 16).unwrap();
+            profile.set_color_value(&script_name, k, val).unwrap();
+        }
+    }
 
     Redirect::to(format!("/settings/{}", script_id))
 }

@@ -190,7 +190,7 @@ impl Plugin for SensorsPlugin {
     }
 
     fn main_loop_hook(&self, ticks: u64) {
-        // refresh sensor state every other second, but only
+        // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
             Self::refresh();

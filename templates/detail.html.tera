@@ -8,56 +8,80 @@
 	{{ super() }}
 
 	<div class="container">
-			<div class="row span12">
-				<div class="span3">
+			<div class="row">
+				<div class="col lg-3">
 					<h4>Description</h4>
 					Name: {{ script.name }} - {{ script.version }}<br/>
 					{{ script.description }}<br/><br/>
 					Author: {{ script.author }}<br/>
 				</div>
-
-				<div class="span8">
-					<h4>Effect Settings</h4>
+			</div>
+			<div class="row mt-4">
+				<div class="col lg-6">
 					<form id="form" action="/settings/apply/{{ script.id }}" method="post">
-						<div class="accordion span4 float-right" id="accordion2">
+						<div class="accordion" id="accordion2">
 							<div class="accordion-group">
 								<div class="accordion-heading">
-									<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+									<a class="btn btn-primary btn-custom" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
 									<i class="icon-plus"></i> Colors </a>
 								</div>
-								<div id="collapseTwo" class="accordion-body collapse in">
+								<div id="collapseTwo" class="card card-body bg-semitransparent">
 									<div class="accordion-inner">
-										{% for param in config_params %}
-											{% if param.type == "color" %}
-												<label for="{{ param.name }}">{{ param.name }}</label>
-												<input name="{{ param.name }}" type="color" value="{{ param.default | to_html_color }}" />
-											{% endif %}
-										{% endfor %}
+										<table>
+										<tbody>
+											{% for param in config_params %}
+											<tr>
+												{% if param.type == "color" %}
+													<td>{{ param.description }}</td>
+													<td>
+														<label for="{{ param.name }}">{{ param.name }}</label>
+													</td>
+													<td>
+														<input name="{{ param.name }}" type="color" value="{{ param.default | to_html_color }}" />
+													</td>
+												{% endif %}
+											</tr>
+											{% endfor %}
+										</tbody>
+										</table>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="accordion span4 float-right" id="accordion2">
-							<div class="accordion-group float-right">
+					</div>
+					<div class="col lg-6">
+						<div class="accordion" id="accordion2">
+							<div class="accordion-group">
 								<div class="accordion-heading">
-									<a class="accordion-toggle active" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+									<a class="btn btn-primary btn-custom" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
 									<i class="icon-minus"></i> Parameters </a>
 								</div>
-								<div id="collapseOne" class="accordion-body collapse in">
+								<div id="collapseOne" class="card card-body bg-semitransparent collapse">
 									<div class="accordion-inner">
-										{% for param in config_params %}
-											{% if param.type != "color" %}
-												<label for="{{ param.name }}">{{ param.name }}</label>
-												<input name="{{ param.name }}" type="text" value="{{ param.default }}" />
-											{% endif %}
-										{% endfor %}
+										<table>
+										<tbody>
+											{% for param in config_params %}
+											<tr>
+												{% if param.type != "color" %}
+													<td>{{ param.description }}</td>
+													<td>
+														<label for="{{ param.name }}">{{ param.name }}</label>
+													</td>
+													<td>
+														<input name="{{ param.name }}" type="text" value="{{ param.default }}" />
+													</td>
+												{% endif %}
+											</tr>
+											{% endfor %}
+										</tbody>
+										</table>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="clearfix">
-							<a href="javascript:form.submit()" class="btn btn-primary">Save and Apply</a>
-							<a href="/settings" class="btn btn-cancel">Discard Changes</a>
+						<div class="clearfix mt-4">
+							<a href="javascript:form.submit()" class="btn btn-success">Save and Apply</a>
+							<a href="/settings" class="btn btn-danger">Discard Changes</a>
 						</div>
 					</form>
 				</div>
@@ -65,41 +89,45 @@
 		</div>
 	
 	<div class="container">
-		{% set row_index = 0 %}
-		<div class="row">
-		{% for script in scripts %}
-			<div class="span3 float-right">
-				<a class="tile" href="/settings/{{ script.id }}">
-					<div class="tile">
-						<i class="services icon-code"></i>
+		<div class="row mt-4">
+			<div class="col lg-12">
+				<h3>Available Effects</h3>
+				<table>
+					<tbody>
+					{% set row_index = 0 %}
+					<tr class="animated fadeInLeft">
+					{% for script in scripts %}
+						<td>
+						<a href="/settings/{{ script.id }}">
+						{% if script.id == active_script_id %}
+							<div class="card bg-success" style="width: 14rem; height: 10rem">
+						{% else %}
+							<div class="card bg-primary" style="width: 14rem; height: 10rem">
+						{% endif %}
+								<div class="card-body">
+									<h5 class="card-title text-light">{{ script.name }}: {{ script.version }}</h5>
+									<p class="card-text text-light">{{ script.description }}</p>
+									{# <p class="card-text text-light">{{ script.script_file }}: {{ script.version }}</p> #}
+								</div>
+							</div>
+						</a>
+						</td>
 						
-						<div>
-							<h5 class="tile">{{ script.name }}</h5>
-							<!--
-							<p class="small">
-								{{ script.script_file }}: {{ script.version }}
-							</p>
-							<p class="tile">
-								{{ script.description }}
-							</p>
-							-->
-						</div>
-					</div>
-				</a>
+						{% if loop.index % 4 == 0 %}
+							</tr>
+							
+							{% set_global row_index = row_index + 1 %}
+							
+							{% if row_index % 2 == 0 %}
+								<tr class="animated fadeInLeft">
+							{% else %}
+								<tr class="animated fadeInRight">
+							{% endif %}		
+						{% endif %}
+					{% endfor %}
+					<tbody>
+				</table>
 			</div>
-			
-			{% if loop.index % 4 == 0 %}
-				</div>
-				
-				{% set_global row_index = row_index + 1 %}
-				
-				{% if row_index % 2 == 0 %}
-					<div class="row">
-				{% else %}
-					<div class="row">
-				{% endif %}		
-			{% endif %}
-		{% endfor %}
 		</div>
 	</div>
 {% endblock content %}

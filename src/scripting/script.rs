@@ -31,6 +31,8 @@ use crate::plugin_manager;
 use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
+use crate::GLOBALS;
+
 pub enum Message {
     // Startup, // Not passed via message but invoked directly
     Quit(u32),
@@ -123,7 +125,7 @@ mod callbacks {
 
     /// Generate a linear RGB color gradient from start to dest color,
     /// where p must lie in the range from 0..1.
-    pub fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
+    pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
         let scr: f64 = f64::from((start >> 16) & 0xff);
         let scg: f64 = f64::from((start >> 8) & 0xff);
         let scb: f64 = f64::from((start) & 0xff);
@@ -227,17 +229,18 @@ pub fn run_script(
             let lua = Lua::new();
 
             let manifest = Manifest::from(&file);
-            if manifest.is_err() {
+            if let Err(error) = manifest {
                 error!(
                     "Could not parse manifest file for script '{}': {}",
-                    file.to_string_lossy(),
-                    manifest.clone().unwrap_err()
+                    file.display(),
+                    error
                 );
 
                 return Err(ScriptingError::InaccessibleManifest {});
+            } else {
+                let mut globals = GLOBALS.write().unwrap();
+                globals.active_script = manifest.clone().ok();
             }
-
-            let rvdevice = rvdevice.clone();
 
             let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
                 register_support_globals(lua_ctx, &rvdevice)?;
@@ -375,14 +378,17 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let min = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.min(f2)))?;
     globals.set("min", min)?;
 
-    let clamp =
-        lua_ctx.create_function(|_, (val, f1, f2): (f64, f64, f64)| {
-            let mut val = val;
-            if val < f1 { val = f1; }
-            if val > f2 { val = f2; }
-            
-            Ok(val)
-        })?;
+    let clamp = lua_ctx.create_function(|_, (val, f1, f2): (f64, f64, f64)| {
+        let mut val = val;
+        if val < f1 {
+            val = f1;
+        }
+        if val > f2 {
+            val = f2;
+        }
+
+        Ok(val)
+    })?;
     globals.set("clamp", clamp)?;
 
     let abs = lua_ctx.create_function(|_, f: f64| Ok(f.abs()))?;
@@ -394,18 +400,18 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let pow = lua_ctx.create_function(|_, (val, p): (f64, f64)| Ok(val.powf(p)))?;
     globals.set("pow", pow)?;
 
-    let sqrt = lua_ctx.create_function(|_, f: (f64)| Ok(f.sqrt()))?;
+    let sqrt = lua_ctx.create_function(|_, f: f64| Ok(f.sqrt()))?;
     globals.set("sqrt", sqrt)?;
 
     let rand =
         lua_ctx.create_function(|_, (l, h): (u64, u64)| Ok(rand::thread_rng().gen_range(l, h)))?;
     globals.set("rand", rand)?;
 
-    let trunc = lua_ctx.create_function(|_, f: (f64)| Ok(f.trunc() as i64))?;
+    let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
     globals.set("trunc", trunc)?;
 
     // color handling
-    let color_to_rgb = lua_ctx.create_function(|_, c: (u32)| Ok(callbacks::color_to_rgb(c)))?;
+    let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
     globals.set("color_to_rgb", color_to_rgb)?;
 
     let rgb_to_color = lua_ctx
@@ -421,7 +427,7 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;
     globals.set("get_num_keys", get_num_keys)?;
 
-    let rvdevid_tmp = rvdevid.clone();
+    let rvdevid_tmp = rvdevid;
     let get_key_color = lua_ctx
         .create_function(move |_, idx: usize| Ok(callbacks::get_key_color(&rvdevid_tmp, idx)))?;
     globals.set("get_key_color", get_key_color)?;
@@ -433,8 +439,8 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     })?;
     globals.set("set_key_color", set_key_color)?;
 
-    let rvdev_tmp = rvdev.clone();
-    let set_color_map = lua_ctx.create_function(move |_, map: (Vec<u32>)| {
+    let rvdev_tmp = rvdev;
+    let set_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
         callbacks::set_color_map(&rvdev_tmp, &map);
         Ok(())
     })?;
@@ -452,6 +458,12 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
 }
 
 fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result<()> {
+    let globals = GLOBALS
+        .read()
+        .expect("Could not read a shared data structure");
+
+    let profile = globals.active_profile.as_ref();
+
     let globals = lua_ctx.globals();
 
     for param in manifest.config.iter() {
@@ -459,23 +471,63 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
 
         match param {
             ConfigParam::Int { name, default, .. } => {
-                globals.raw_set::<&str, i64>(name, *default)?;
+                if let Some(profile) = profile {
+                    if let Some(val) = profile.get_int_value(name) {
+                        globals.raw_set::<&str, i64>(name, *val)?;
+                    } else {
+                        globals.raw_set::<&str, i64>(name, *default)?;
+                    }
+                } else {
+                    globals.raw_set::<&str, i64>(name, *default)?;
+                }
             }
 
             ConfigParam::Float { name, default, .. } => {
-                globals.raw_set::<&str, f64>(name, *default)?;
+                if let Some(profile) = profile {
+                    if let Some(val) = profile.get_float_value(name) {
+                        globals.raw_set::<&str, f64>(name, *val)?;
+                    } else {
+                        globals.raw_set::<&str, f64>(name, *default)?;
+                    }
+                } else {
+                    globals.raw_set::<&str, f64>(name, *default)?;
+                }
             }
 
             ConfigParam::Bool { name, default, .. } => {
-                globals.raw_set::<&str, bool>(name, *default)?;
+                if let Some(profile) = profile {
+                    if let Some(val) = profile.get_bool_value(name) {
+                        globals.raw_set::<&str, bool>(name, *val)?;
+                    } else {
+                        globals.raw_set::<&str, bool>(name, *default)?;
+                    }
+                } else {
+                    globals.raw_set::<&str, bool>(name, *default)?;
+                }
             }
 
             ConfigParam::String { name, default, .. } => {
-                globals.raw_set::<&str, &str>(name, default)?;
+                if let Some(profile) = profile {
+                    if let Some(val) = profile.get_str_value(name) {
+                        globals.raw_set::<&str, &str>(name, &*val)?;
+                    } else {
+                        globals.raw_set::<&str, &str>(name, &*default)?;
+                    }
+                } else {
+                    globals.raw_set::<&str, &str>(name, &*default)?;
+                }
             }
 
             ConfigParam::Color { name, default, .. } => {
-                globals.raw_set::<&str, u32>(name, *default)?;
+                if let Some(profile) = profile {
+                    if let Some(val) = profile.get_color_value(name) {
+                        globals.raw_set::<&str, u32>(name, *val)?;
+                    } else {
+                        globals.raw_set::<&str, u32>(name, *default)?;
+                    }
+                } else {
+                    globals.raw_set::<&str, u32>(name, *default)?;
+                }
             }
         }
     }

@@ -101,7 +101,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.8")
+        .version("0.0.9")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -256,21 +256,21 @@ fn spawn_lua_thread(
     rvdevice: &RvDeviceState,
 ) -> Result<()> {
     let result = util::is_file_accessible(&script_path);
-    if result.is_err() {
+    if let Err(result) = result {
         error!(
             "Script file '{}' is not accessible: {}",
-            script_path.to_string_lossy(),
-            result.unwrap_err()
+            script_path.display(),
+            result
         );
         process::exit(3);
     }
 
     let result = util::is_file_accessible(util::get_manifest_for(&script_path));
-    if result.is_err() {
+    if let Err(result) = result {
         error!(
             "Manifest file for script '{}' is not accessible: {}",
-            script_path.to_string_lossy(),
-            result.unwrap_err()
+            script_path.display(),
+            result
         );
         process::exit(3);
     }
@@ -286,7 +286,7 @@ fn spawn_lua_thread(
                 script::run_script(script_path.clone(), rvdevice, &lua_rx).unwrap_or_else(|e| {
                     error!(
                         "Could not load script file '{}': {}",
-                        script_path.to_string_lossy(),
+                        script_path.display(),
                         e
                     );
                     panic!();
@@ -307,6 +307,7 @@ fn spawn_lua_thread(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 fn run_main_loop(
     frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
@@ -340,7 +341,7 @@ fn run_main_loop(
         match frontend_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
                 frontend::Message::LoadScript(script_path) => {
-                    info!("Loading Script: {}", script_path.to_string_lossy());
+                    info!("Loading Script: {}", script_path.display());
 
                     if util::is_script_file_accessible(&script_path)
                         && util::is_manifest_file_accessible(&script_path)
@@ -353,7 +354,33 @@ fn run_main_loop(
                     } else {
                         error!(
                             "Script and/or manifest file '{}' is not accessible: ",
-                            script_path.to_string_lossy()
+                            script_path.display()
+                        );
+                    }
+                }
+
+                frontend::Message::SwitchProfile(profile_path) => {
+                    info!("Loading Profile: {}", profile_path.display());
+
+                    let profile = profiles::Profile::from(&profile_path).unwrap();
+
+                    let mut globals = GLOBALS.write().unwrap();
+                    globals.active_profile = Some(profile);
+
+                    let script_path = &globals.active_script.as_ref().unwrap().script_file;
+
+                    if util::is_script_file_accessible(&script_path)
+                        && util::is_manifest_file_accessible(&script_path)
+                    {
+                        lua_tx
+                            .send(script::Message::LoadScript(script_path.to_path_buf()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send an event to the Lua VM: {}", e)
+                            });
+                    } else {
+                        error!(
+                            "Script and/or manifest file '{}' is not accessible: ",
+                            script_path.display()
                         );
                     }
                 }
@@ -373,7 +400,7 @@ fn run_main_loop(
         match dbus_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
                 dbus_interface::Message::LoadScript(script_path) => {
-                    info!("Loading Script: {}", script_path.to_string_lossy());
+                    info!("Loading Script: {}", script_path.display());
 
                     match util::is_file_accessible(&script_path) {
                         Ok(_) => lua_tx
@@ -384,7 +411,7 @@ fn run_main_loop(
 
                         Err(e) => error!(
                             "Script file '{}' is not accessible: {}",
-                            script_path.to_string_lossy(),
+                            script_path.display(),
                             e
                         ),
                     }
@@ -430,9 +457,7 @@ fn run_main_loop(
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time
         let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
         let sleep_millis = u64::max(
-            constants::MAIN_LOOP_DELAY_MILLIS
-                .checked_sub(elapsed)
-                .unwrap_or(0),
+            constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
             constants::MAIN_LOOP_DELAY_MILLIS,
         );
         thread::sleep(Duration::from_millis(sleep_millis));
@@ -543,17 +568,15 @@ fn main() {
     let profile_file = PathBuf::from(&profile_dir).join(&profile_file);
 
     // load profile
-    trace!(
-        "Loading profile data from '{}'",
-        profile_file.to_string_lossy()
-    );
+    trace!("Loading profile data from '{}'", profile_file.display());
     let profile = Profile::from(&profile_file).unwrap_or_else(|e| {
-        error!(
+        warn!(
             "Error opening the profile file '{}': {}",
-            profile_file.to_string_lossy(),
+            profile_file.display(),
             e
         );
-        process::exit(5);
+
+        Profile::default()
     });
 
     info!("Loaded profile: {}", &profile.name);
@@ -648,14 +671,12 @@ fn main() {
                         #[cfg(feature = "frontend")]
                         info!("Spawning Web-Frontend thread...");
 
-                        let profile_path_clone = profile_path.clone();
-                        let script_path_clone = script_path.clone();
-
                         #[cfg(feature = "frontend")]
-                        spawn_frontend_thread(frontend_tx, profile_path_clone, script_path_clone).unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
+                        spawn_frontend_thread(frontend_tx, profile_path, script_path)
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
                     } else {
                         info!("Web-Frontend DISABLED by configuration");
                     }

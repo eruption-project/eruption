@@ -9,7 +9,7 @@
 	<meta name="description" content="Eruption">
 	<meta name="author" content="The Eruption Team">
 
-	<link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="/css/bootstrap.min.css" rel="stylesheet">
 	<link href="/css/style.css" rel="stylesheet">
 	<link href="/css/themes/{{ theme }}/colors.css" rel="stylesheet">	
 	
@@ -18,37 +18,36 @@
 {% endblock head %}
 
 <body>
-	<div class="navbar-wrapper">
-		<div class="navbar navbar-inverse navbar-fixed-top">
-			<div class="navbar-inner">
-				<div class="container">
-					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-				</a>
-					<div class="logo">
-						<h1 class="brand">
-							<a href="/">
-								<img class="logo" src="/img/icons/eruption.png" alt="" /> Eruption
-							</a>
-						</h1>
-					</div>
-					<nav class="pull-right nav-collapse collapse">
-						<ul id="menu-main" class="nav">
-							<li><a title="index" href="/">Home</a></li>
-							<li><a title="profiles" href="/profiles">Profiles</a></li>
-							<li><a title="settings" href="/settings">Settings</a></li>
-							<li><a title="documentation" href="/documentation">Documentation</a></li>
-							<li><a title="about" href="/about">About</a></li>
-						</ul>
-					</nav>
-				</div>
-			</div>
-		</div>
+	<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+	<a class="navbar-brand" href="/"><img class="navbar-brand logo" src="/img/icons/eruption.png" alt="logo" /> Eruption</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+		<li class="nav-item">
+			<a class="nav-link" href="/profiles">Profiles</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/settings">Settings</a>
+		</li>
+		<li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Help
+			</a>
+			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			<a class="dropdown-item" href="/documentation">Documentation</a>
+			<a class="dropdown-item" href="/about">About</a>
+		</li>
+		</ul>
 	</div>
+	</nav>
 
 	<section class="spacer">
 		<div class="container">
 			<div class="row">
-				<div class="span12 alignleft">
+				<div class="col lg-12 alignleft">
                     {% block header %}
 					    
                     {% endblock header %}
@@ -66,28 +65,20 @@
 	<footer>
 		<div class="container">
 			<div class="row">
-				<div class="span6 offset3">
+				<div class="col lg-12">
 					<ul class="social-networks">
-						<li><a target="_blank" href="https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan/"><i class="icon-circled icon-bgdark icon-list icon-2x"></i></a></li>
+						<li><a target="_blank" href="https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan/"><i class="fab fa-gitlab"></i></a></li>
 					</ul>
 					<p class="copyright">
-						Copyright &copy; 2019 The Eruption Team
+						Copyright &copy; 2019-2020 The Eruption Team
 					</p>
 				</div>
 			</div>
 		</div>
 	</footer>
 
-	<a href="#" class="scrollup"><i class="icon-angle-up icon-square icon-bgdark icon-2x"></i></a>
-
 	<script src="/js/jquery.js"></script>
-	<script src="/js/jquery.scrollTo.js"></script>
-	<script src="/js/jquery.nav.js"></script>
-	<script src="/js/jquery.localScroll.js"></script>
-	<script src="/js/bootstrap.js"></script>
-	<script src="/js/isotope.js"></script>
-	<script src="/js/jquery.flexslider.js"></script>
-	<script src="/js/inview.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
 	<script src="/js/animate.js"></script>
 	<script src="/js/custom.js"></script>
 </body>

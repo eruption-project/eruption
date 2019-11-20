@@ -1,0 +1,40 @@
+target/release/eruption usr/sbin
+
+support/config/eruption.conf etc/eruption/
+
+support/systemd/eruption.service usr/lib/systemd/system/
+support/systemd/eruption.preset usr/lib/systemd/system-preset/
+
+support/udev/99-eruption-roccat-vulcan.rules usr/lib/udev/rules.d/
+
+support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
+
+support/man/eruption.8 usr/share/man/man8/
+support/man/eruption.conf.5 usr/share/man/man5/
+
+support/profiles/default.profile var/lib/eruption/profiles
+support/profiles/profile2.profile var/lib/eruption/profiles
+support/profiles/profile3.profile var/lib/eruption/profiles
+
+src/scripts/afterglow.lua usr/lib/eruption/scripts/
+src/scripts/afterglow.lua.manifest usr/lib/eruption/scripts/
+src/scripts/examples usr/lib/eruption/scripts/
+src/scripts/examples/simple.lua usr/lib/eruption/scripts/
+src/scripts/gaming.lua usr/lib/eruption/scripts/
+src/scripts/gaming.lua.manifest usr/lib/eruption/scripts/
+src/scripts/gradient.lua usr/lib/eruption/scripts/
+src/scripts/gradient.lua.manifest usr/lib/eruption/scripts/
+src/scripts/heartbeat.lua usr/lib/eruption/scripts/
+src/scripts/heartbeat.lua.manifest usr/lib/eruption/scripts/
+src/scripts/impact.lua usr/lib/eruption/scripts/
+src/scripts/impact.lua.manifest usr/lib/eruption/scripts/
+src/scripts/rainbow.lua usr/lib/eruption/scripts/
+src/scripts/rainbow.lua.manifest usr/lib/eruption/scripts/
+src/scripts/raindrops.lua usr/lib/eruption/scripts/
+src/scripts/raindrops.lua.manifest usr/lib/eruption/scripts/
+src/scripts/shockwave.lua usr/lib/eruption/scripts/
+src/scripts/shockwave.lua.manifest usr/lib/eruption/scripts/
+src/scripts/sysmon.lua usr/lib/eruption/scripts/
+src/scripts/sysmon.lua.manifest usr/lib/eruption/scripts/
+src/scripts/temperature.lua usr/lib/eruption/scripts/
+src/scripts/temperature.lua.manifest usr/lib/eruption/scripts/

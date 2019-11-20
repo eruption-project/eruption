@@ -9,10 +9,12 @@
 
 	<div class="container">
 			<div class="row">
-				<div class="span6">
+				<div class="col lg-12">
 					<h4>Documentation</h4>
 
-					<h4>Further Documentation</h4>
+					<p>More documentation comming soon...</p>
+
+					<h4>Further Reading</h4>
 					<div class="tbl-header">
 						<table cellpadding="0" cellspacing="0">
 							<thead>

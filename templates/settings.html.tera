@@ -8,41 +8,44 @@
 	{{ super() }}
 
 	<div class="container">
-		{% set row_index = 0 %}
-		<div class="row animated fadeInLeft">
-		{% for script in scripts %}
-			<div class="span3 float-right">
-				<a class="tile" href="/settings/{{ script.id }}">
-					<div class="tile">
-						<i class="services icon-code"></i>
+		<div class="row">
+			<div class="col lg-12">
+				<table>
+					<tbody>
+					{% set row_index = 0 %}
+					<tr class="animated fadeInLeft">
+					{% for script in scripts %}
+						<td>
+						<a href="/settings/{{ script.id }}">
+						{% if script.id == active_script_id %}
+							<div class="card bg-success" style="width: 14rem; height: 10rem">
+						{% else %}
+							<div class="card bg-primary" style="width: 14rem; height: 10rem">
+						{% endif %}
+								<div class="card-body">
+									<h5 class="card-title text-light">{{ script.name }}: {{ script.version }}</h5>
+									<p class="card-text text-light">{{ script.description }}</p>
+									{# <p class="card-text text-light">{{ script.script_file }}: {{ script.version }}</p> #}
+								</div>
+							</div>
+						</a>
+						</td>
 						
-						<div>
-							<h5 class="tile">{{ script.name }}</h5>
-							<!--
-							<p class="small">
-								{{ script.script_file }}: {{ script.version }}
-							</p>
-							<p class="tile">
-								{{ script.description }}
-							</p>
-							-->
-						</div>
-					</div>
-				</a>
+						{% if loop.index % 4 == 0 %}
+							</tr>
+							
+							{% set_global row_index = row_index + 1 %}
+							
+							{% if row_index % 2 == 0 %}
+								<tr class="animated fadeInLeft">
+							{% else %}
+								<tr class="animated fadeInRight">
+							{% endif %}		
+						{% endif %}
+					{% endfor %}
+					<tbody>
+				</table>
 			</div>
-			
-			{% if loop.index % 4 == 0 %}
-				</div>
-				
-				{% set_global row_index = row_index + 1 %}
-				
-				{% if row_index % 2 == 0 %}
-					<div class="row animated fadeInLeft">
-				{% else %}
-					<div class="row animated fadeInRight">
-				{% endif %}		
-			{% endif %}
-		{% endfor %}
 		</div>
 	</div>
 {% endblock content %}
