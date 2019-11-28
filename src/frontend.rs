@@ -30,10 +30,12 @@ use rocket_contrib::{
     templates::{Engines, Template},
 };
 
+use crate::profiles::GetAttr;
 use failure::Fail;
 use lazy_static::*;
 use log::*;
 use std::collections::HashMap;
+use std::iter::FromIterator;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -42,6 +44,9 @@ use uuid::Uuid;
 use crate::constants;
 use crate::profiles;
 use crate::scripting::manifest;
+use crate::scripting::manifest::GetAttr as GetAttrManifest;
+use crate::scripting::manifest::ParseConfig;
+use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPT};
 
 /// Web-Frontend messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -50,7 +55,7 @@ pub enum Message {
     SwitchProfile(PathBuf),
 }
 
-pub type Result<T> = std::result::Result<T, WebFrontendError>;
+pub type Result<T> = std::result::Result<T, failure::Error>;
 
 #[derive(Debug, Fail)]
 pub enum WebFrontendError {
@@ -176,18 +181,18 @@ fn request_load_script_by_id(script_id: usize) -> Result<()> {
 
                         Err(e) => {
                             error!("Could not send an event to the main thread: {}", e);
-                            Err(WebFrontendError::ScriptLoadError {})
+                            Err(WebFrontendError::ScriptLoadError {}.into())
                         }
                     }
                 }
 
-                Err(_e) => Err(WebFrontendError::ScriptEnumerationError {}),
+                Err(_e) => Err(WebFrontendError::ScriptEnumerationError {}.into()),
             }
         }
 
         None => {
             error!("Web frontend went away");
-            Err(WebFrontendError::FrontendInaccessible {})
+            Err(WebFrontendError::FrontendInaccessible {}.into())
         }
     }
 }
@@ -209,18 +214,18 @@ fn request_switch_profile_by_id(profile_id: Uuid) -> Result<()> {
 
                     Err(e) => {
                         error!("Could not send an event to the main thread: {}", e);
-                        Err(WebFrontendError::ProfileSwitchError {})
+                        Err(WebFrontendError::ProfileSwitchError {}.into())
                     }
                 }
             } else {
                 error!("Could not enumerated profile files");
-                Err(WebFrontendError::ProfileEnumerationError {})
+                Err(WebFrontendError::ProfileEnumerationError {}.into())
             }
         }
 
         None => {
             error!("Web frontend went away");
-            Err(WebFrontendError::FrontendInaccessible {})
+            Err(WebFrontendError::FrontendInaccessible {}.into())
         }
     }
 }
@@ -239,8 +244,6 @@ fn to_html_color(value: Value, _: HashMap<String, Value>) -> tera::Result<Value>
 
 #[get("/")]
 fn index() -> manifest::Result<Redirect> {
-    let globals = crate::GLOBALS.read().unwrap();
-
     let config = crate::CONFIG.read().unwrap();
     let script_dir = config
         .as_ref()
@@ -250,7 +253,7 @@ fn index() -> manifest::Result<Redirect> {
     let script_path = PathBuf::from(&script_dir);
 
     let scripts = manifest::get_scripts(&script_path)?;
-    let active_script_id = globals.active_script.as_ref().and_then(|active| {
+    let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
         scripts
             .iter()
             .position(|e| e.script_file == active.script_file)
@@ -266,8 +269,7 @@ fn index() -> manifest::Result<Redirect> {
 fn profiles_selection() -> templates::Template {
     let mut context = Context::new();
 
-    let globals = crate::GLOBALS.read().unwrap();
-    let active_profile = globals.active_profile.as_ref().unwrap();
+    let active_profile = &*ACTIVE_PROFILE.read().unwrap();
 
     let frontend = WEB_FRONTEND.lock().unwrap_or_else(|e| {
         error!("Could not lock a shared data structure: {}", e);
@@ -315,8 +317,6 @@ fn activate_profile(profile_id: Option<String>) -> Redirect {
 fn settings() -> manifest::Result<templates::Template> {
     let mut context = Context::new();
 
-    let globals = crate::GLOBALS.read().unwrap();
-
     let config = crate::CONFIG.read().unwrap();
     let script_dir = config
         .as_ref()
@@ -327,7 +327,7 @@ fn settings() -> manifest::Result<templates::Template> {
 
     let scripts = manifest::get_scripts(&script_path)?;
 
-    let active_script_id = globals.active_script.as_ref().and_then(|active| {
+    let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
         scripts
             .iter()
             .position(|e| e.script_file == active.script_file)
@@ -383,6 +383,39 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
         context.insert("heading", "Effect Settings");
         context.insert("script", &scripts[script_id]);
 
+        let active_profile = &*ACTIVE_PROFILE.read().unwrap();
+        let profile = active_profile.as_ref().unwrap();
+        let script_name = scripts[script_id].name.clone();
+
+        // get config values from current profile
+        let mut config_values: HashMap<String, String> = HashMap::from_iter(
+            profile
+                .config
+                .as_ref()
+                .unwrap_or(&HashMap::new())
+                .get(&script_name)
+                .unwrap_or(&vec![])
+                .iter()
+                .map(|e| (e.get_name().clone(), e.get_value())),
+        );
+
+        // insert missing config values, by using the respective
+        // defaults from the manifest file
+        scripts[script_id].config.iter().for_each(|se| {
+            let result = config_values
+                .iter()
+                .find(|(ce_k, _ce_v)| *ce_k == se.get_name());
+
+            if result.is_none() {
+                config_values.insert(se.get_name().to_owned(), se.get_default());
+
+                warn!("some");
+            } else {
+                warn!("none");
+            }
+        });
+
+        context.insert("config_values", &config_values);
         context.insert("config_params", &scripts[script_id].config);
 
         context.insert("scripts", &scripts);
@@ -404,26 +437,66 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
 }
 
 #[post("/settings/apply/<script_id>", data = "<params>")]
-fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Redirect {
+fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Result<Redirect> {
     info!("{:?}", params);
 
-    let mut globals = crate::GLOBALS.write().unwrap();
-    let script_name = globals.active_script.as_ref().unwrap().name.clone();
-    let profile = globals.active_profile.as_mut().unwrap();
+    let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+    let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
 
-    // Form(ValueMap { store: {"color_step_afterglow": "#0a0000", "color_afterglow": "#ff0000",
-    //                         "color_bright": "#ffffff", "impact_step": "1", "color_background": "#111111",
-    //                         "color_off": "#000001", "color_step_impact": "#0a0000", "afterglow_step": "2",
-    //                         "color_impact": "#ff0000"} })
+    let script = active_script.as_ref().unwrap();
+    let mut profile = active_profile.as_mut().unwrap().clone();
+
+    info!("{:?}", profile);
+
+    let mut default_map = HashMap::new();
+    let mut default_config = vec![];
+
+    let script_name = script.name.clone();
+    let config = profile
+        .config
+        .as_mut()
+        .unwrap_or(&mut default_map)
+        .get_mut(&script_name)
+        .unwrap_or(&mut default_config);
 
     for (k, v) in &params.store {
-        if k.starts_with("color_") {
-            let val = u32::from_str_radix(&v[1..], 16).unwrap();
-            profile.set_color_value(&script_name, k, val).unwrap();
+        // does our profile already store this parameter?
+        let result = config.iter_mut().find(|param| param.get_name() == k);
+
+        let param = script.config.parse_config_param(k, v).unwrap();
+        if let Some(result) = result {
+            // modify existing param
+            *result = param;
+        } else {
+            // param is currently not listed in the profile
+            // if the param is "the default value", then don't store it in the profile
+            let manifest_param = script
+                .config
+                .iter()
+                .find(|p| p.get_name() == param.get_name())
+                .unwrap();
+
+            if param.get_value() != manifest_param.get_default() {
+                config.push(param);
+            }
         }
     }
 
-    Redirect::to(format!("/settings/{}", script_id))
+    let mut default_map = HashMap::new();
+
+    active_profile
+        .as_mut()
+        .unwrap()
+        .config
+        .as_mut()
+        .unwrap_or(&mut default_map)
+        .insert(script_name, config.clone());
+
+    active_profile.as_mut().unwrap().save()?;
+
+    warn!("{:?}", active_profile);
+
+    Ok(Redirect::to(format!("/settings/{}", script_id)))
 }
 
 #[get("/documentation")]
@@ -490,7 +563,7 @@ where
     K: std::hash::Hash + Eq + std::convert::From<String>,
     V: std::convert::From<String>,
 {
-    type Error = WebFrontendError;
+    type Error = failure::Error;
 
     fn from_form(it: &mut FormItems<'f>, _strict: bool) -> Result<Self> {
         let mut params = Self::new();

@@ -31,7 +31,7 @@ use crate::plugin_manager;
 use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
-use crate::GLOBALS;
+use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPT};
 
 pub enum Message {
     // Startup, // Not passed via message but invoked directly
@@ -238,8 +238,7 @@ pub fn run_script(
 
                 return Err(ScriptingError::InaccessibleManifest {});
             } else {
-                let mut globals = GLOBALS.write().unwrap();
-                globals.active_script = manifest.clone().ok();
+                *ACTIVE_SCRIPT.write().unwrap() = manifest.clone().ok();
             }
 
             let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
@@ -458,11 +457,7 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
 }
 
 fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result<()> {
-    let globals = GLOBALS
-        .read()
-        .expect("Could not read a shared data structure");
-
-    let profile = globals.active_profile.as_ref();
+    let profile = &*ACTIVE_PROFILE.read().unwrap();
 
     let globals = lua_ctx.globals();
 

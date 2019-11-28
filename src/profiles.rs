@@ -16,6 +16,7 @@
 */
 
 use crate::constants;
+use crate::ACTIVE_SCRIPT;
 use failure::Fail;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -57,6 +58,41 @@ pub enum ConfigParam {
     Color { name: String, value: u32 },
 }
 
+pub trait GetAttr {
+    fn get_name(&self) -> &String;
+    fn get_value(&self) -> String;
+}
+
+impl GetAttr for ConfigParam {
+    fn get_name(&self) -> &String {
+        match self {
+            ConfigParam::Int { ref name, .. } => name,
+
+            ConfigParam::Float { ref name, .. } => name,
+
+            ConfigParam::Bool { ref name, .. } => name,
+
+            ConfigParam::String { ref name, .. } => name,
+
+            ConfigParam::Color { ref name, .. } => name,
+        }
+    }
+
+    fn get_value(&self) -> String {
+        match self {
+            ConfigParam::Int { ref value, .. } => format!("{}", value),
+
+            ConfigParam::Float { ref value, .. } => format!("{}", value),
+
+            ConfigParam::Bool { ref value, .. } => format!("{}", value),
+
+            ConfigParam::String { ref value, .. } => value.to_owned(),
+
+            ConfigParam::Color { ref value, .. } => format!("#{:06x}", value),
+        }
+    }
+}
+
 fn default_id() -> Uuid {
     Uuid::new_v4()
 }
@@ -65,7 +101,7 @@ fn default_profile_file() -> PathBuf {
     "".into()
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Profile {
     #[serde(default = "default_id")]
     pub id: Uuid,
@@ -80,9 +116,9 @@ pub struct Profile {
     pub config: Option<HashMap<String, Vec<ConfigParam>>>,
 }
 
-trait FindConfig {
-    fn find_config_param(&self, name: &str) -> Option<&ConfigParam>;
-    fn find_config_param_mut(&mut self, name: &str) -> Option<&mut ConfigParam>;
+pub trait FindConfig {
+    fn find_config_param(&self, param: &str) -> Option<&ConfigParam>;
+    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam>;
 }
 
 impl FindConfig for Vec<ConfigParam> {
@@ -246,8 +282,8 @@ impl Profile {
     }
 
     pub fn get_int_value(&self, name: &str) -> Option<&i64> {
-        let globals = crate::GLOBALS.read().unwrap();
-        let script_name = &globals.active_script.as_ref().unwrap().name;
+        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &active_script.as_ref().unwrap().name;
 
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
@@ -268,9 +304,50 @@ impl Profile {
         }
     }
 
+    pub fn set_int_value(&mut self, script_name: &str, name: &str, val: i64) -> Result<()> {
+        if let Some(ref mut config) = self.config {
+            if let Some(ref mut cfg) = config.get_mut(script_name) {
+                match cfg.find_config_param_mut(name) {
+                    Some(ref mut param) => match param {
+                        ConfigParam::Int { ref mut value, .. } => {
+                            *value = val;
+                            Ok(())
+                        }
+
+                        _ => Err(ProfileError::SetValueError {
+                            msg: "Invalid data type".into(),
+                        }),
+                    },
+
+                    _ => {
+                        cfg.push(ConfigParam::Int {
+                            name: name.to_string(),
+                            value: val,
+                        });
+                        Ok(())
+                    }
+                }
+            } else {
+                config.insert(
+                    script_name.into(),
+                    vec![ConfigParam::Int {
+                        name: name.to_string(),
+                        value: val,
+                    }],
+                );
+
+                Ok(())
+            }
+        } else {
+            Err(ProfileError::SetValueError {
+                msg: "Could not get config".into(),
+            })
+        }
+    }
+
     pub fn get_float_value(&self, name: &str) -> Option<&f64> {
-        let globals = crate::GLOBALS.read().unwrap();
-        let script_name = &globals.active_script.as_ref().unwrap().name;
+        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &active_script.as_ref().unwrap().name;
 
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
@@ -289,9 +366,50 @@ impl Profile {
         }
     }
 
+    pub fn set_float_value(&mut self, script_name: &str, name: &str, val: f64) -> Result<()> {
+        if let Some(ref mut config) = self.config {
+            if let Some(ref mut cfg) = config.get_mut(script_name) {
+                match cfg.find_config_param_mut(name) {
+                    Some(ref mut param) => match param {
+                        ConfigParam::Float { ref mut value, .. } => {
+                            *value = val;
+                            Ok(())
+                        }
+
+                        _ => Err(ProfileError::SetValueError {
+                            msg: "Invalid data type".into(),
+                        }),
+                    },
+
+                    _ => {
+                        cfg.push(ConfigParam::Float {
+                            name: name.to_string(),
+                            value: val,
+                        });
+                        Ok(())
+                    }
+                }
+            } else {
+                config.insert(
+                    script_name.into(),
+                    vec![ConfigParam::Float {
+                        name: name.to_string(),
+                        value: val,
+                    }],
+                );
+
+                Ok(())
+            }
+        } else {
+            Err(ProfileError::SetValueError {
+                msg: "Could not get config".into(),
+            })
+        }
+    }
+
     pub fn get_bool_value(&self, name: &str) -> Option<&bool> {
-        let globals = crate::GLOBALS.read().unwrap();
-        let script_name = &globals.active_script.as_ref().unwrap().name;
+        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &active_script.as_ref().unwrap().name;
 
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
@@ -312,9 +430,50 @@ impl Profile {
         }
     }
 
+    pub fn set_bool_value(&mut self, script_name: &str, name: &str, val: bool) -> Result<()> {
+        if let Some(ref mut config) = self.config {
+            if let Some(ref mut cfg) = config.get_mut(script_name) {
+                match cfg.find_config_param_mut(name) {
+                    Some(ref mut param) => match param {
+                        ConfigParam::Bool { ref mut value, .. } => {
+                            *value = val;
+                            Ok(())
+                        }
+
+                        _ => Err(ProfileError::SetValueError {
+                            msg: "Invalid data type".into(),
+                        }),
+                    },
+
+                    _ => {
+                        cfg.push(ConfigParam::Bool {
+                            name: name.to_string(),
+                            value: val,
+                        });
+                        Ok(())
+                    }
+                }
+            } else {
+                config.insert(
+                    script_name.into(),
+                    vec![ConfigParam::Bool {
+                        name: name.to_string(),
+                        value: val,
+                    }],
+                );
+
+                Ok(())
+            }
+        } else {
+            Err(ProfileError::SetValueError {
+                msg: "Could not get config".into(),
+            })
+        }
+    }
+
     pub fn get_str_value(&self, name: &str) -> Option<&str> {
-        let globals = crate::GLOBALS.read().unwrap();
-        let script_name = &globals.active_script.as_ref().unwrap().name;
+        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &active_script.as_ref().unwrap().name;
 
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
@@ -335,9 +494,50 @@ impl Profile {
         }
     }
 
+    pub fn set_str_value(&mut self, script_name: &str, name: &str, val: String) -> Result<()> {
+        if let Some(ref mut config) = self.config {
+            if let Some(ref mut cfg) = config.get_mut(script_name) {
+                match cfg.find_config_param_mut(name) {
+                    Some(ref mut param) => match param {
+                        ConfigParam::String { ref mut value, .. } => {
+                            *value = val;
+                            Ok(())
+                        }
+
+                        _ => Err(ProfileError::SetValueError {
+                            msg: "Invalid data type".into(),
+                        }),
+                    },
+
+                    _ => {
+                        cfg.push(ConfigParam::String {
+                            name: name.to_string(),
+                            value: val,
+                        });
+                        Ok(())
+                    }
+                }
+            } else {
+                config.insert(
+                    script_name.into(),
+                    vec![ConfigParam::String {
+                        name: name.to_string(),
+                        value: val,
+                    }],
+                );
+
+                Ok(())
+            }
+        } else {
+            Err(ProfileError::SetValueError {
+                msg: "Could not get config".into(),
+            })
+        }
+    }
+
     pub fn get_color_value(&self, name: &str) -> Option<&u32> {
-        let globals = crate::GLOBALS.read().unwrap();
-        let script_name = &globals.active_script.as_ref().unwrap().name;
+        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &active_script.as_ref().unwrap().name;
 
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {

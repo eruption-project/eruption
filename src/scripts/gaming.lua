@@ -80,8 +80,8 @@ function init_state()
     end
 
     -- highlight WASD keys
-    color_map[9]  = rgb_to_color(255, 0, 0)
-    color_map[14] = rgb_to_color(255, 0, 0)
-    color_map[15] = rgb_to_color(255, 0, 0)
-    color_map[21] = rgb_to_color(255, 0, 0)
+    color_map[9]  = color_highlight
+    color_map[14] = color_highlight
+    color_map[15] = color_highlight
+    color_map[21] = color_highlight
 end

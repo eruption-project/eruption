@@ -37,7 +37,7 @@
 														<label for="{{ param.name }}">{{ param.name }}</label>
 													</td>
 													<td>
-														<input name="{{ param.name }}" type="color" value="{{ param.default | to_html_color }}" />
+														<input name="{{ param.name }}" type="color" value="{{ config_values[param.name] }}" />
 													</td>
 												{% endif %}
 											</tr>
@@ -68,7 +68,7 @@
 														<label for="{{ param.name }}">{{ param.name }}</label>
 													</td>
 													<td>
-														<input name="{{ param.name }}" type="text" value="{{ param.default }}" />
+														<input name="{{ param.name }}" type="text" value="{{ config_values[param.name] }}" />
 													</td>
 												{% endif %}
 											</tr>
@@ -98,19 +98,19 @@
 					<tr class="animated fadeInLeft">
 					{% for script in scripts %}
 						<td>
-						<a href="/settings/{{ script.id }}">
-						{% if script.id == active_script_id %}
-							<div class="card bg-success" style="width: 14rem; height: 10rem">
-						{% else %}
-							<div class="card bg-primary" style="width: 14rem; height: 10rem">
-						{% endif %}
-								<div class="card-body">
-									<h5 class="card-title text-light">{{ script.name }}: {{ script.version }}</h5>
-									<p class="card-text text-light">{{ script.description }}</p>
-									{# <p class="card-text text-light">{{ script.script_file }}: {{ script.version }}</p> #}
+							<a href="/settings/{{ script.id }}">
+								{% if script.id == active_script_id %}
+									<div class="card bg-success" style="width: 14rem; height: 10rem">
+								{% else %}
+									<div class="card bg-primary" style="width: 14rem; height: 10rem">
+								{% endif %}
+									<div class="card-body">
+										<h5 class="card-title text-light">{{ script.name }}: {{ script.version }}</h5>
+										<p class="card-text text-light">{{ script.description }}</p>
+										{# <p class="card-text text-light">{{ script.script_file }}: {{ script.version }}</p> #}
+									</div>
 								</div>
-							</div>
-						</a>
+							</a>
 						</td>
 						
 						{% if loop.index % 4 == 0 %}

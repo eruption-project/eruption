@@ -32,10 +32,16 @@ default = 0x00111111
 type = 'color'
 name = 'color_afterglow'
 description = 'Afterglow color'
-default = 0x00ff0000
+default = 0x00ffffff
 
 [[config]]
 type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0000
+default = 0x000a0a0a
+
+[[config]]
+type = 'color'
+name = 'color_highlight'
+description = 'LED Highlight Color'
+default = 0x00ff0000

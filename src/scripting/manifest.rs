@@ -20,7 +20,9 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
+use crate::profiles;
 use crate::util;
 
 pub type Result<T> = std::result::Result<T, ManifestError>;
@@ -35,6 +37,9 @@ pub enum ManifestError {
 
     #[fail(display = "Could not enumerate script files")]
     ScriptEnumerationError {},
+
+    #[fail(display = "Could not parse param value")]
+    ParseParamError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -75,6 +80,114 @@ pub enum ConfigParam {
         description: String,
         default: u32,
     },
+}
+
+pub trait ParseConfig {
+    fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam>;
+}
+
+impl ParseConfig for Vec<ConfigParam> {
+    fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam> {
+        for p in self.iter() {
+            match &p {
+                ConfigParam::Int { name, .. } => {
+                    if name == param {
+                        let value =
+                            i64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+
+                        return Ok(profiles::ConfigParam::Int {
+                            name: name.to_string(),
+                            value,
+                        });
+                    }
+                }
+
+                ConfigParam::Float { name, .. } => {
+                    if name == param {
+                        let value =
+                            f64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+
+                        return Ok(profiles::ConfigParam::Float {
+                            name: name.to_string(),
+                            value,
+                        });
+                    }
+                }
+
+                ConfigParam::Bool { name, .. } => {
+                    if name == param {
+                        let value =
+                            bool::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+
+                        return Ok(profiles::ConfigParam::Bool {
+                            name: name.to_string(),
+                            value,
+                        });
+                    }
+                }
+
+                ConfigParam::String { name, .. } => {
+                    if name == param {
+                        let value = val.to_owned();
+
+                        return Ok(profiles::ConfigParam::String {
+                            name: name.to_string(),
+                            value,
+                        });
+                    }
+                }
+
+                ConfigParam::Color { name, .. } => {
+                    if name == param {
+                        let value = u32::from_str_radix(&val[1..], 16)
+                            .map_err(|_e| ManifestError::ParseParamError {})?;
+
+                        return Ok(profiles::ConfigParam::Color {
+                            name: name.to_string(),
+                            value,
+                        });
+                    }
+                }
+            }
+        }
+
+        Err(ManifestError::ParseParamError {})
+    }
+}
+
+pub trait GetAttr {
+    fn get_name(&self) -> &String;
+    fn get_default(&self) -> String;
+}
+
+impl GetAttr for ConfigParam {
+    fn get_name(&self) -> &String {
+        match self {
+            ConfigParam::Int { ref name, .. } => name,
+
+            ConfigParam::Float { ref name, .. } => name,
+
+            ConfigParam::Bool { ref name, .. } => name,
+
+            ConfigParam::String { ref name, .. } => name,
+
+            ConfigParam::Color { ref name, .. } => name,
+        }
+    }
+
+    fn get_default(&self) -> String {
+        match self {
+            ConfigParam::Int { ref default, .. } => format!("{}", default),
+
+            ConfigParam::Float { ref default, .. } => format!("{}", default),
+
+            ConfigParam::Bool { ref default, .. } => format!("{}", default),
+
+            ConfigParam::String { ref default, .. } => default.to_owned(),
+
+            ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

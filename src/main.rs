@@ -51,6 +51,7 @@ mod scripting;
 
 use profiles::Profile;
 use runtime_state::RuntimeState;
+use scripting::manifest::Manifest;
 use scripting::script;
 
 #[cfg(feature = "frontend")]
@@ -65,6 +66,8 @@ mod frontend {
 lazy_static! {
     pub static ref GLOBALS: Arc<RwLock<RuntimeState>> =
         Arc::new(RwLock::new(RuntimeState::default()));
+    pub static ref ACTIVE_PROFILE: Arc<RwLock<Option<Profile>>> = Arc::new(RwLock::new(None));
+    pub static ref ACTIVE_SCRIPT: Arc<RwLock<Option<Manifest>>> = Arc::new(RwLock::new(None));
     pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 }
@@ -364,10 +367,10 @@ fn run_main_loop(
 
                     let profile = profiles::Profile::from(&profile_path).unwrap();
 
-                    let mut globals = GLOBALS.write().unwrap();
-                    globals.active_profile = Some(profile);
+                    *ACTIVE_PROFILE.write().unwrap() = Some(profile);
 
-                    let script_path = &globals.active_script.as_ref().unwrap().script_file;
+                    let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+                    let script_path = &active_script.as_ref().unwrap().script_file;
 
                     if util::is_script_file_accessible(&script_path)
                         && util::is_manifest_file_accessible(&script_path)
@@ -581,11 +584,7 @@ fn main() {
 
     info!("Loaded profile: {}", &profile.name);
 
-    // set globals
-    {
-        let mut globals = GLOBALS.write().unwrap();
-        globals.active_profile = Some(profile);
-    }
+    *ACTIVE_PROFILE.write().unwrap() = Some(profile);
 
     // frontend enable
     let frontend_enabled = config

@@ -15,21 +15,12 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::profiles::Profile;
-use crate::scripting::manifest::Manifest;
-
-pub struct RuntimeState {
-    pub active_script: Option<Manifest>,
-    pub active_profile: Option<Profile>,
-}
+pub struct RuntimeState {}
 
 impl RuntimeState {}
 
 impl Default for RuntimeState {
     fn default() -> Self {
-        RuntimeState {
-            active_script: None,
-            active_profile: None,
-        }
+        RuntimeState {}
     }
 }
