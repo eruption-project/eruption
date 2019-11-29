@@ -106,7 +106,7 @@ impl WebFrontend {
             .address(constants::WEB_FRONTEND_LISTEN_ADDR)
             .port(constants::WEB_FRONTEND_PORT)
             .log_level(LoggingLevel::Off)
-            .root("/usr/share/eruption/".into())
+            .root(Path::new("/usr/share/eruption/"))
             .workers(2)
             .finalize()
             .unwrap();
