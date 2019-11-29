@@ -137,6 +137,7 @@ impl WebFrontend {
             .attach(Template::custom(|engines: &mut Engines| {
                 engines.tera.register_filter("to_html_color", to_html_color);
             }))
+            // .attach(security::CsrfProtection)
             .launch();
 
         frontend
@@ -244,25 +245,27 @@ fn to_html_color(value: Value, _: HashMap<String, Value>) -> tera::Result<Value>
 
 #[get("/")]
 fn index() -> manifest::Result<Redirect> {
-    let config = crate::CONFIG.read().unwrap();
-    let script_dir = config
-        .as_ref()
-        .unwrap()
-        .get_str("global.script_dir")
-        .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
-    let script_path = PathBuf::from(&script_dir);
+    // let config = crate::CONFIG.read().unwrap();
+    // let script_dir = config
+    //     .as_ref()
+    //     .unwrap()
+    //     .get_str("global.script_dir")
+    //     .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
+    // let script_path = PathBuf::from(&script_dir);
 
-    let scripts = manifest::get_scripts(&script_path)?;
-    let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
-        scripts
-            .iter()
-            .position(|e| e.script_file == active.script_file)
-    });
+    // let scripts = manifest::get_scripts(&script_path)?;
+    // let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
+    //     scripts
+    //         .iter()
+    //         .position(|e| e.script_file == active.script_file)
+    // });
 
-    Ok(Redirect::to(format!(
-        "/settings/{}",
-        active_script_id.unwrap()
-    )))
+    // Ok(Redirect::to(format!(
+    //     "/settings/{}",
+    //     active_script_id.unwrap()
+    // )))
+
+    Ok(Redirect::to("/settings"))
 }
 
 #[get("/profiles")]
@@ -408,10 +411,7 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
 
             if result.is_none() {
                 config_values.insert(se.get_name().to_owned(), se.get_default());
-
-                warn!("some");
             } else {
-                warn!("none");
             }
         });
 
@@ -438,15 +438,11 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
 
 #[post("/settings/apply/<script_id>", data = "<params>")]
 fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Result<Redirect> {
-    info!("{:?}", params);
-
     let active_script = &*ACTIVE_SCRIPT.read().unwrap();
     let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
 
     let script = active_script.as_ref().unwrap();
     let mut profile = active_profile.as_mut().unwrap().clone();
-
-    info!("{:?}", profile);
 
     let mut default_map = HashMap::new();
     let mut default_config = vec![];
@@ -493,8 +489,6 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
         .insert(script_name, config.clone());
 
     active_profile.as_mut().unwrap().save()?;
-
-    warn!("{:?}", active_profile);
 
     Ok(Redirect::to(format!("/settings/{}", script_id)))
 }
@@ -576,3 +570,72 @@ where
         Ok(params)
     }
 }
+
+// #[cfg(feature = "frontend")]
+// mod security {
+//     use rocket::fairing::{Fairing, Info, Kind};
+//     use rocket::http::uri::Origin;
+//     use rocket::http::Status;
+//     use rocket::http::{Cookie, Method, StatusClass};
+//     use rocket::*;
+//     use rocket::{Data, Request, Response, Rocket};
+//     use uuid::Uuid;
+
+//     const XSRF_TOKEN: &str = "XSRF-TOKEN";
+//     const X_XSRF_TOKEN: &str = "X-XSRF-TOKEN";
+
+//     #[get("/403")]
+//     fn error_403() -> Result<(), Status> {
+//         Err(Status::Forbidden)
+//     }
+
+//     pub struct CsrfProtection;
+
+//     impl Fairing for CsrfProtection {
+//         fn info(&self) -> Info {
+//             Info {
+//                 name: "CSRF Protection",
+//                 kind: Kind::Request | Kind::Response | Kind::Attach,
+//             }
+//         }
+
+//         fn on_request(&self, request: &mut Request, _: &Data) {
+//             match request.method() {
+//                 Method::Post | Method::Put | Method::Patch | Method::Delete => {
+//                     let result = !request
+//                         .cookies()
+//                         .get(XSRF_TOKEN)
+//                         .map(Cookie::value)
+//                         .and_then(|cookie_token| {
+//                             request
+//                                 .headers()
+//                                 .get_one(X_XSRF_TOKEN)
+//                                 .map(|header_token| cookie_token == header_token)
+//                         })
+//                         .unwrap_or(false);
+
+//                     if result {
+//                         // let new_uri = format!("/403#{}", &request.uri());
+//                         request.set_uri(Origin::parse("/403").unwrap());
+//                         request.set_method(Method::Get);
+//                     }
+//                 }
+//                 _ => (),
+//             }
+//         }
+
+//         fn on_response(&self, _request: &Request, response: &mut Response) {
+//             if response.status().class() == StatusClass::Success {
+//                 response.set_header(
+//                     &Cookie::build(XSRF_TOKEN, Uuid::new_v4().to_string())
+//                         .path("/")
+//                         .finish(),
+//                 );
+//             }
+//         }
+
+//         fn on_attach(&self, rocket: Rocket) -> Result<Rocket, Rocket> {
+//             Ok(rocket.mount("/", routes![error_403]))
+//         }
+//     }
+// }

@@ -46,11 +46,9 @@ mod dbus_interface;
 mod plugin_manager;
 mod plugins;
 mod profiles;
-mod runtime_state;
 mod scripting;
 
 use profiles::Profile;
-use runtime_state::RuntimeState;
 use scripting::manifest::Manifest;
 use scripting::script;
 
@@ -64,8 +62,6 @@ mod frontend {
 }
 
 lazy_static! {
-    pub static ref GLOBALS: Arc<RwLock<RuntimeState>> =
-        Arc::new(RwLock::new(RuntimeState::default()));
     pub static ref ACTIVE_PROFILE: Arc<RwLock<Option<Profile>>> = Arc::new(RwLock::new(None));
     pub static ref ACTIVE_SCRIPT: Arc<RwLock<Option<Manifest>>> = Arc::new(RwLock::new(None));
     pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
