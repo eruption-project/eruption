@@ -36,7 +36,7 @@ use lazy_static::*;
 use log::*;
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
