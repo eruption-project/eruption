@@ -92,6 +92,8 @@ package() {
     # Web-Frontend
     mkdir -p "$pkgdir/usr/share/eruption/templates"
     mkdir -p "$pkgdir/usr/share/eruption/static/css"
+    mkdir -p "$pkgdir/usr/share/eruption/static/css/themes/eruption"
+    mkdir -p "$pkgdir/usr/share/eruption/static/css/themes/metal"
     mkdir -p "$pkgdir/usr/share/eruption/static/js"
     mkdir -p "$pkgdir/usr/share/eruption/static/font"
     mkdir -p "$pkgdir/usr/share/eruption/static/img"
