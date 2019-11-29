@@ -120,6 +120,12 @@ impl WebFrontend {
             .finalize()
             .unwrap();
 
+        #[cfg(not(debug_assertions))]
+        let static_files = StaticFiles::from("/usr/share/eruption/static/");
+
+        #[cfg(debug_assertions)]
+        let static_files = StaticFiles::from("static");
+
         rocket::custom(config)
             .mount(
                 "/",
@@ -134,7 +140,7 @@ impl WebFrontend {
                     about
                 ],
             )
-            .mount("/", StaticFiles::from("static"))
+            .mount("/", static_files)
             .attach(Template::custom(|engines: &mut Engines| {
                 engines.tera.register_filter("to_html_color", to_html_color);
             }))
