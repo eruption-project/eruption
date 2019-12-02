@@ -281,28 +281,30 @@ fn index() -> manifest::Result<Redirect> {
 fn profiles_selection() -> templates::Template {
     let mut context = Context::new();
 
-    let active_profile = &*ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
 
+    let active_profile = &*ACTIVE_PROFILE.read().unwrap();
     let frontend = WEB_FRONTEND.lock().unwrap_or_else(|e| {
         error!("Could not lock a shared data structure: {}", e);
         panic!()
     });
-
     match *frontend {
         Some(ref frontend) => {
             let base_path = frontend.profile_path.as_ref();
             let profiles = profiles::get_profiles(&base_path).unwrap();
-
             let config = crate::CONFIG.read().unwrap();
             let frontend_theme = config
                 .as_ref()
                 .unwrap()
                 .get_str("frontend.theme")
                 .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
-
             context.insert("theme", &frontend_theme);
-
             context.insert("title", "Eruption: Profiles");
+            context.insert("active_profile_name", &profile_name);
+            context.insert("active_script_name", &script_name);
             context.insert("heading", "Profiles");
 
             context.insert("active_profile", &active_profile);
@@ -329,6 +331,11 @@ fn activate_profile(profile_id: Option<String>) -> Redirect {
 fn settings() -> manifest::Result<templates::Template> {
     let mut context = Context::new();
 
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
+
     let config = crate::CONFIG.read().unwrap();
     let script_dir = config
         .as_ref()
@@ -336,25 +343,22 @@ fn settings() -> manifest::Result<templates::Template> {
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
     let script_path = PathBuf::from(&script_dir);
-
     let scripts = manifest::get_scripts(&script_path)?;
-
     let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
         scripts
             .iter()
             .position(|e| e.script_file == active.script_file)
     });
-
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
         .as_ref()
         .unwrap()
         .get_str("frontend.theme")
         .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
-
     context.insert("theme", &frontend_theme);
-
     context.insert("title", "Eruption: Settings");
+    context.insert("active_profile_name", &profile_name);
+    context.insert("active_script_name", &script_name);
     context.insert("heading", "Select Effect");
 
     context.insert("scripts", &scripts);
@@ -391,6 +395,13 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
             error!("Request to load a script has failed: {}", e);
             e
         })?;
+
+        {
+            let profile = ACTIVE_PROFILE.read().unwrap();
+            let profile_name = &profile.as_ref().unwrap().name;
+            context.insert("active_profile_name", &profile_name);
+            context.insert("active_script_name", &scripts[script_id].name);
+        }
 
         context.insert("title", "Eruption: Settings");
         context.insert("heading", "Effect Settings");
@@ -442,7 +453,14 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
     } else {
         let scripts = manifest::get_scripts(&script_path)?;
 
+        let profile = ACTIVE_PROFILE.read().unwrap();
+        let profile_name = &profile.as_ref().unwrap().name;
+        let script = ACTIVE_SCRIPT.read().unwrap();
+        let script_name = &script.as_ref().unwrap().name;
+
         context.insert("title", "Eruption: Settings");
+        context.insert("active_profile_name", &profile_name);
+        context.insert("active_script_name", &script_name);
         context.insert("heading", "Select Effect");
 
         context.insert("scripts", &scripts);
@@ -512,16 +530,21 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
 fn documentation() -> templates::Template {
     let mut context = Context::new();
 
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
+
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
         .as_ref()
         .unwrap()
         .get_str("frontend.theme")
         .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
-
     context.insert("theme", &frontend_theme);
-
     context.insert("title", "Eruption: Documentation");
+    context.insert("active_profile_name", &profile_name);
+    context.insert("active_script_name", &script_name);
     context.insert("heading", "Documentation");
 
     templates::Template::render("documentation", &context)
@@ -530,6 +553,11 @@ fn documentation() -> templates::Template {
 #[get("/about")]
 fn about() -> templates::Template {
     let mut context = Context::new();
+
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
 
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
@@ -541,6 +569,8 @@ fn about() -> templates::Template {
     context.insert("theme", &frontend_theme);
 
     context.insert("title", "Eruption: About");
+    context.insert("active_profile_name", &profile_name);
+    context.insert("active_script_name", &script_name);
     context.insert("heading", "About");
 
     templates::Template::render("about", &context)

@@ -56,7 +56,7 @@
 									<a class="btn btn-primary btn-custom" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
 									<i class="icon-minus"></i> Parameters </a>
 								</div>
-								<div id="collapseOne" class="card card-body bg-semitransparent collapse">
+								<div id="collapseOne" class="card card-body bg-semitransparent">
 									<div class="accordion-inner">
 										<table>
 										<tbody>

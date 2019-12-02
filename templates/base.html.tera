@@ -42,6 +42,10 @@
 		</li>
 		</ul>
 	</div>
+
+	<div class="justify-content-right align-middle">
+		<h3>{{ active_profile_name }} <span class="dark">//</span> <span class="darker">{{ active_script_name }}</span></h3>
+	</div>
 	</nav>
 
 	<section class="spacer">

@@ -63,6 +63,14 @@ img.logo {
     width: 45px;
 }
 
+.darker {
+    color: grey;
+}
+
+.dark {
+    color: darkgrey;
+}
+
 .home-slide-content {
     font-family: 'Cute Font';
 }
