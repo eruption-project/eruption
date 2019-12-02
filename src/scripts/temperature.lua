@@ -39,6 +39,8 @@ function on_startup(config)
 end
 
 function on_quit(exit_code)
+    init_state()
+    set_color_map(color_map)
 end
 
 function on_key_down(key_index)

@@ -58,6 +58,7 @@ Eruption currently ships with the following effect scripts:
 | Name      | File             | Status | Description                                                                                                 |
 | --------- | ---------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
 | Afterglow | `afterglow.lua`  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                      |
+| Batique   | `batique.lua`    | Ready  | Batique effect, based on the OpenSimplexNoise function that serves as input to get a HSL color-space color  |
 | Heartbeat | `heartbeat.lua`  | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                             |
 | Impact    | `impact.lua`     | Ready  | Hit keys and keys in their immediate vicinity are lit for a certain amount of time, then they are faded out |
 | Raindrops | `raindrops.lua`  | Ready  | Rain effect, randomly light up keys and fade them out again                                                 |
@@ -66,10 +67,11 @@ The following scripts are unfinished/still in development, and some of them have
 
 | Name        | File              | Progress         | Description                                                                                         |
 | ----------- | ----------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
+| Fire        | `fire.lua`        | Approx. 25% done | Shows a bonfire effect on the Keyboard                                                              |
 | Gaming      | `gaming.lua`      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                     |
 | Gradient    | `gradient.lua`    | Approx. 75% done | Display a color gradient                                                                            |
 | Rainbow     | `rainbow.lua`     | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                          |
-| Shockwave   | `shockwave.lua`   | Approx. 55% done | Like impact, but displays propagating waves when a key has been pressed                             |
+| Shockwave   | `shockwave.lua`   | Approx. 55% done | Like impact, but shows propagating waves when a key has been pressed                                |
 | Sysmon      | `sysmon.lua`      | Approx. 10% done | System monitor, keyboard reflects system state                                                      |
 | Temperature | `temperature.lua` | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot'  |
 

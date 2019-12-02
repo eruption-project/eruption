@@ -59,7 +59,7 @@ pub enum ScriptingError {
     OpenError {},
 
     #[fail(display = "Lua errors present")]
-    LuaError {},
+    LuaError { e: rlua::Error },
 
     #[fail(display = "Invalid or inaccessible manifest file")]
     InaccessibleManifest {},
@@ -70,6 +70,9 @@ pub enum ScriptingError {
 /// These functions are intended to be used from within lua scripts
 mod callbacks {
     use log::*;
+    use noise::{NoiseFn, OpenSimplex};
+    use palette::ConvertFrom;
+    use palette::{Hsl, Srgb};
     use std::convert::TryFrom;
     use std::sync::{Arc, Mutex};
     use std::thread;
@@ -123,6 +126,17 @@ mod callbacks {
         (u32::from(r) << 16) + (u32::from(g) << 8) + u32::from(b)
     }
 
+    /// Convert HSL components to a 32 bits color value.
+    pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
+        let rgb = Srgb::convert_from(Hsl::new(h, s, l));
+        let rgb = rgb.into_components();
+        rgb_to_color(
+            (rgb.0 * 255.0) as u8,
+            (rgb.1 * 255.0) as u8,
+            (rgb.2 * 255.0) as u8,
+        )
+    }
+
     /// Generate a linear RGB color gradient from start to dest color,
     /// where p must lie in the range from 0..1.
     pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
@@ -139,6 +153,12 @@ mod callbacks {
         let b: f64 = (scb as f64) + (((dcb - scb) as f64) * p);
 
         rgb_to_color(r.round() as u8, g.round() as u8, b.round() as u8)
+    }
+
+    /// Compute 3-dimensional OpenSimplex noise
+    pub(crate) fn open_simplex_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = OpenSimplex::new();
+        noise.get([f1, f2, f3])
     }
 
     /// Get the number of keys of the managed device.
@@ -302,7 +322,7 @@ pub fn run_script(
             match result {
                 Ok(action) => Ok(action),
 
-                Err(_e) => Err(ScriptingError::LuaError {}),
+                Err(e) => Err(ScriptingError::LuaError { e }),
             }
         }
 
@@ -320,7 +340,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.8");
+    config.insert("daemon_version", "0.0.9");
 
     globals.set("config", config)?;
 
@@ -409,6 +429,10 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
     globals.set("trunc", trunc)?;
 
+    let lerp =
+        lua_ctx.create_function(|_, (a0, a1, w): (f64, f64, f64)| Ok((1.0 - w) * a0 + w * a1))?;
+    globals.set("lerp", lerp)?;
+
     // color handling
     let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
     globals.set("color_to_rgb", color_to_rgb)?;
@@ -417,10 +441,20 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
         .create_function(|_, (r, g, b): (u8, u8, u8)| Ok(callbacks::rgb_to_color(r, g, b)))?;
     globals.set("rgb_to_color", rgb_to_color)?;
 
+    let hsl_to_color = lua_ctx
+        .create_function(|_, (h, s, l): (f64, f64, f64)| Ok(callbacks::hsl_to_color(h, s, l)))?;
+    globals.set("hsl_to_color", hsl_to_color)?;
+
     let linear_gradient = lua_ctx.create_function(|_, (start, dest, p): (u32, u32, f64)| {
         Ok(callbacks::linear_gradient(start, dest, p))
     })?;
     globals.set("linear_gradient", linear_gradient)?;
+
+    // noise utilities
+    let noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::open_simplex_noise(f1, f2, f3))
+    })?;
+    globals.set("noise", noise)?;
 
     // device related
     let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;

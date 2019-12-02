@@ -284,7 +284,7 @@ fn spawn_lua_thread(
             let result =
                 script::run_script(script_path.clone(), rvdevice, &lua_rx).unwrap_or_else(|e| {
                     error!(
-                        "Could not load script file '{}': {}",
+                        "Could not load script file '{}': {:?}",
                         script_path.display(),
                         e
                     );
