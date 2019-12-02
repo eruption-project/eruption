@@ -55,19 +55,21 @@ $ cargo build --all --release
 
 Eruption currently ships with the following effect scripts:
 
-| Name      | File             | Status | Description                                                                                                 |
-| --------- | ---------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
-| Afterglow | `afterglow.lua`  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                      |
-| Batique   | `batique.lua`    | Ready  | Batique effect, based on the OpenSimplexNoise function that serves as input to get a HSL color-space color  |
-| Heartbeat | `heartbeat.lua`  | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                             |
-| Impact    | `impact.lua`     | Ready  | Hit keys and keys in their immediate vicinity are lit for a certain amount of time, then they are faded out |
-| Raindrops | `raindrops.lua`  | Ready  | Rain effect, randomly light up keys and fade them out again                                                 |
+| Name      | File             | Status | Description                                                                                                  |
+| --------- | ---------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| Afterglow | `afterglow.lua`  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                       |
+| Afterhue  | `afterhue.lua`   | Ready  | Hit keys cycle through the HSL color-space, using a linearly decreasing hue angle                            |
+| Batique   | `batique.lua`    | Ready  | Batique effect, based on the OpenSimplexNoise function that serves as input to get a HSL color-space color   |
+| Heartbeat | `heartbeat.lua`  | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                              |
+| Impact    | `impact.lua`     | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out |
+| Raindrops | `raindrops.lua`  | Ready  | Rain effect, randomly light up keys and fade them out again                                                  |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:
 
 | Name        | File              | Progress         | Description                                                                                         |
 | ----------- | ----------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
 | Fire        | `fire.lua`        | Approx. 25% done | Shows a bonfire effect on the Keyboard                                                              |
+| Water       | `water.lua`       | Approx. 15% done | Shows a waterfall effect on the Keyboard                                                            |
 | Gaming      | `gaming.lua`      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                     |
 | Gradient    | `gradient.lua`    | Approx. 75% done | Display a color gradient                                                                            |
 | Rainbow     | `rainbow.lua`     | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                          |

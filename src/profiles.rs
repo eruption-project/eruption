@@ -101,6 +101,10 @@ fn default_profile_file() -> PathBuf {
     "".into()
 }
 
+fn default_script_file() -> PathBuf {
+    constants::DEFAULT_EFFECT_SCRIPT.into()
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Profile {
     #[serde(default = "default_id")]
@@ -112,6 +116,9 @@ pub struct Profile {
 
     pub name: String,
     pub description: String,
+
+    #[serde(default = "default_script_file")]
+    pub active_script: PathBuf,
 
     pub config: Option<HashMap<String, Vec<ConfigParam>>>,
 }
@@ -618,6 +625,7 @@ impl Default for Profile {
             profile_file,
             name: "Default".into(),
             description: "Auto-generated profile".into(),
+            active_script: PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT),
             config,
         }
     }

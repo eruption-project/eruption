@@ -361,12 +361,18 @@ fn run_main_loop(
                 frontend::Message::SwitchProfile(profile_path) => {
                     info!("Loading Profile: {}", profile_path.display());
 
+                    let config = CONFIG.read().unwrap();
+                    let script_dir = PathBuf::from(
+                        config
+                            .as_ref()
+                            .unwrap()
+                            .get_str("global.script_dir")
+                            .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
+                    );
+
                     let profile = profiles::Profile::from(&profile_path).unwrap();
-
-                    *ACTIVE_PROFILE.write().unwrap() = Some(profile);
-
-                    let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-                    let script_path = &active_script.as_ref().unwrap().script_file;
+                    let script_file = profile.active_script.clone();
+                    let script_path = script_dir.join(script_file);
 
                     if util::is_script_file_accessible(&script_path)
                         && util::is_manifest_file_accessible(&script_path)
@@ -550,11 +556,11 @@ fn main() {
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
 
     // active sript file
-    let default_script_file = config
-        .get_str("global.script_file")
-        .unwrap_or_else(|_| constants::DEFAULT_EFFECT_SCRIPT.to_string());
-    let script_file = matches.value_of("script").unwrap_or(&default_script_file);
-    let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
+    // let default_script_file = config
+    //     .get_str("global.script_file")
+    //     .unwrap_or_else(|_| constants::DEFAULT_EFFECT_SCRIPT.to_string());
+    // let script_file = matches.value_of("script").unwrap_or(&default_script_file);
+    // let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
 
     // active runtime profile
     let default_profile_name = config
@@ -577,6 +583,9 @@ fn main() {
 
         Profile::default()
     });
+
+    let script_file = &profile.active_script;
+    let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
 
     info!("Loaded profile: {}", &profile.name);
 

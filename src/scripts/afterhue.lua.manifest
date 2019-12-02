@@ -1,5 +1,5 @@
-name = "Fire"
-description = "Fire Effect"
+name = "Afterhue"
+description = "Show an afterglow effect with a linearly decreasing hue angle (in HSL color-space), after a key has been pressed"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.9"
@@ -8,7 +8,7 @@ min_supported_version = "0.0.9"
 type = 'float'
 name = 'afterglow_step'
 description = 'Step afterglow animation every [n] frames'
-default = 2.0
+default = 1.0
 
 [[config]]
 type = 'color'
@@ -29,25 +29,7 @@ description = 'Background color'
 default = 0x00111111
 
 [[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0a0a
-
-[[config]]
-type = 'color'
-name = 'color_highlight'
-description = 'LED Highlight Color'
-default = 0x00ff0000
-
-[[config]]
 type = 'float'
-name = 'fire_speed'
-description = 'Step fire animation every [n] frames'
-default = 2.0
+name = 'hue_step_afterglow'
+description = 'Angle value that gets subtracted from afterglow every [n] frames'
+default = 10

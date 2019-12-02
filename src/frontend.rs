@@ -36,9 +36,7 @@ use lazy_static::*;
 use log::*;
 use std::collections::HashMap;
 use std::iter::FromIterator;
-#[cfg(not(debug_assertions))]
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
@@ -174,7 +172,7 @@ pub fn initialize_dummy() -> WebFrontend {
 }
 
 /// Request the main thread to load a script with id `script_id`.
-fn request_load_script_by_id(script_id: usize) -> Result<()> {
+fn request_load_script_by_id(script_id: usize) -> Result<PathBuf> {
     let tx = MESSAGE_TX.lock().unwrap();
     let tx = tx.as_ref().unwrap();
 
@@ -186,8 +184,10 @@ fn request_load_script_by_id(script_id: usize) -> Result<()> {
             let base_path = frontend.script_path.parent().unwrap();
             match manifest::get_script_files(base_path) {
                 Ok(ref script_files) => {
-                    match tx.send(Message::LoadScript(script_files[script_id].to_path_buf())) {
-                        Ok(()) => Ok(()),
+                    let script_path = script_files[script_id].to_path_buf();
+
+                    match tx.send(Message::LoadScript(script_path.clone())) {
+                        Ok(()) => Ok(script_path),
 
                         Err(e) => {
                             error!("Could not send an event to the main thread: {}", e);
@@ -364,7 +364,7 @@ fn settings() -> manifest::Result<templates::Template> {
 }
 
 #[get("/settings/<script_id>")]
-fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Template> {
+fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
     let mut context = Context::new();
 
     let config = crate::CONFIG.read().unwrap();
@@ -387,17 +387,23 @@ fn settings_of_id(script_id: Option<usize>) -> manifest::Result<templates::Templ
         let scripts = manifest::get_scripts(&script_path)?;
 
         // apply effect script
-        request_load_script_by_id(script_id).unwrap_or_else(|e| {
+        let script_path = request_load_script_by_id(script_id).map_err(|e| {
             error!("Request to load a script has failed: {}", e);
-        });
+            e
+        })?;
 
         context.insert("title", "Eruption: Settings");
         context.insert("heading", "Effect Settings");
         context.insert("script", &scripts[script_id]);
 
-        let active_profile = &*ACTIVE_PROFILE.read().unwrap();
-        let profile = active_profile.as_ref().unwrap();
+        let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
+        let profile = active_profile.as_mut().unwrap();
         let script_name = scripts[script_id].name.clone();
+
+        if profile.active_script != script_path {
+            profile.active_script = Path::new(script_path.file_name().unwrap()).to_owned();
+            profile.save()?
+        }
 
         // get config values from current profile
         let mut config_values: HashMap<String, String> = HashMap::from_iter(

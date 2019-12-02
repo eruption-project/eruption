@@ -25,7 +25,7 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/lib/eruption/scripts/";
 
 /// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "shockwave.lua";
+pub const DEFAULT_EFFECT_SCRIPT: &str = "impact.lua";
 
 /// Target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
