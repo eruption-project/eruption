@@ -39,3 +39,21 @@ type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
 default = 0x000a0000
+
+[[config]]
+type = 'color'
+name = 'color_cold'
+description = 'Cold color'
+default = 0x0000ff00
+
+[[config]]
+type = 'color'
+name = 'color_hot'
+description = 'Hot color'
+default = 0x00ff0000
+
+[[config]]
+type = 'color'
+name = 'color_step'
+description = 'Color step'
+default = 0x00110000

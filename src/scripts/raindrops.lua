@@ -14,19 +14,9 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-color_background = 0x00111111
-
 color_rain_min = 0x001111110
 color_rain_max = 0x001111111
 color_step_raindrop = 0x00101010
-
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
-
-afterglow_step = 2
-raindrop_step = 3
 
 -- global state variables --
 color_map = {}
@@ -54,7 +44,7 @@ function on_tick(delta)
     local num_keys = get_num_keys()
 
     -- let it rain
-    if ticks % rand(5, 25) == 0 then
+    if ticks % rand(1, rain_intensity_divisor) == 0 then
         place_raindrop()
     end
 

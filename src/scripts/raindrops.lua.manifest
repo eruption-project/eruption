@@ -39,3 +39,15 @@ type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
 default = 0x000a0000
+
+[[config]]
+type = 'float'
+name = 'raindrop_step'
+description = 'Step rain animation every [n] frames'
+default = 3.0
+
+[[config]]
+type = 'int'
+name = 'rain_intensity_divisor'
+description = 'Rain intensity'
+default = 25

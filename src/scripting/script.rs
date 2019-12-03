@@ -121,6 +121,18 @@ mod callbacks {
         (r, g, b)
     }
 
+    /// Get HSL components of a 32 bits color value.
+    #[allow(clippy::many_single_char_names)]
+    pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
+        let (r, g, b) = color_to_rgb(c);
+        let rgb =
+            Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)));
+
+        let (h, s, l) = Hsl::from(rgb).into_components();
+
+        (h.into(), s, l)
+    }
+
     /// Convert RGB components to a 32 bits color value.
     pub(crate) fn rgb_to_color(r: u8, g: u8, b: u8) -> u32 {
         (u32::from(r) << 16) + (u32::from(g) << 8) + u32::from(b)
@@ -138,7 +150,7 @@ mod callbacks {
     }
 
     /// Generate a linear RGB color gradient from start to dest color,
-    /// where p must lie in the range from 0..1.
+    /// where p must lie in the range from [0.0..1.0].
     pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
         let scr: f64 = f64::from((start >> 16) & 0xff);
         let scg: f64 = f64::from((start >> 8) & 0xff);
@@ -155,7 +167,7 @@ mod callbacks {
         rgb_to_color(r.round() as u8, g.round() as u8, b.round() as u8)
     }
 
-    /// Compute 3-dimensional OpenSimplex noise
+    /// Compute OpenSimplex noise
     pub(crate) fn open_simplex_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = OpenSimplex::new();
         noise.get([f1, f2, f3])
@@ -340,7 +352,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.9");
+    config.insert("daemon_version", "0.0.10");
 
     globals.set("config", config)?;
 
@@ -436,6 +448,9 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     // color handling
     let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
     globals.set("color_to_rgb", color_to_rgb)?;
+
+    let color_to_hsl = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_hsl(c)))?;
+    globals.set("color_to_hsl", color_to_hsl)?;
 
     let rgb_to_color = lua_ctx
         .create_function(|_, (r, g, b): (u8, u8, u8)| Ok(callbacks::rgb_to_color(r, g, b)))?;

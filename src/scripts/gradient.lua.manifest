@@ -66,6 +66,12 @@ default = true
 
 [[config]]
 type = 'float'
+name = 'gradient_step'
+description = 'Update gradient every [n] frames'
+default = 1
+
+[[config]]
+type = 'float'
 name = 'gradient_speed'
 description = 'Animation speed'
 default = 1

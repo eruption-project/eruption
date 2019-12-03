@@ -100,7 +100,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.9")
+        .version("0.0.10")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -388,6 +388,10 @@ fn run_main_loop(
                             script_path.display()
                         );
                     }
+
+                    // set global active profile
+                    let mut active_profile = ACTIVE_PROFILE.write().unwrap();
+                    *active_profile = Some(profile);
                 }
             },
 

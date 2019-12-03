@@ -71,6 +71,14 @@ img.logo {
     color: darkgrey;
 }
 
+a.btn {
+    color: white !important;
+}
+
+input[type="text"] {
+    width: 150px;
+}
+
 .home-slide-content {
     font-family: 'Cute Font';
 }
@@ -100,9 +108,15 @@ p {
     text-align: justify;
 }
 
-p.tile {
+.card-title {
     text-align: center;
-    font-size: 0.75em;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-text {
+    text-align: center;
+    font-size: 0.85rem;
 }
 
 .group:after {
@@ -195,7 +209,6 @@ th {
     padding: 20px 15px;
     text-align: left;
     font-weight: 500;
-    font-size: 12px;
     text-transform: uppercase;
 }
 
@@ -204,7 +217,6 @@ td {
     text-align: left;
     vertical-align: middle;
     font-weight: 300;
-    font-size: 12px;
 }
 
 #maincontent {
@@ -238,7 +250,7 @@ td {
 
 #services .fa,
 .fas {
-    font-size: 8rem;
+    font-size: 7rem;
     padding: 20px;
 }
 

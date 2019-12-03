@@ -13,17 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global constants --
-color_off = 0x000000000
-color_background = 0x00111111
-color_cold = rgb_to_color(0, 128, 0)
-color_hot = rgb_to_color(128, 0, 0)
-color_step = 0x00110000
-
-color_afterglow = rgb_to_color(255, 0, 0)
-color_step_afterglow = rgb_to_color(10, 0, 0)
-afterglow_step = 2
-
 -- global state variables --
 temperature = get_package_temp()
 max_temperature = get_package_max_temp()
@@ -50,8 +39,8 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-    -- update the temperature approximately every 2 seconds
-    if ticks % 40 == 0 then
+    -- update the temperature
+    if ticks % 5 == 0 then
         temperature = get_package_temp()
         trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)
     end

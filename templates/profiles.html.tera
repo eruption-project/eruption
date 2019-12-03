@@ -7,6 +7,12 @@
 		function activate_profile(profile_name) {
 			var request = new XMLHttpRequest();
 
+			request.onreadystatechange = function() {
+				if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+					window.setTimeout(function() { location.reload(); }, 200);
+				}
+			}
+
 			request.open("POST", "profiles/active/" + profile_name);
 			request.send();
 		}

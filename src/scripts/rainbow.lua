@@ -13,29 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- set gradient stops
-gradient_stops = {
-    [0] = { start = rgb_to_color(255,   0,   0), dest = rgb_to_color(255, 165,   0) },
-    [1] = { start = rgb_to_color(255, 165,   0), dest = rgb_to_color(0,   255, 255) },
-    [2] = { start = rgb_to_color(0,   255, 255), dest = rgb_to_color(0,   255,   0) },
-    [3] = { start = rgb_to_color(0,   255,   0), dest = rgb_to_color(0,     0, 255) },
-    [4] = { start = rgb_to_color(0,     0, 255), dest = rgb_to_color(75,    0, 130) },
-    [5] = { start = rgb_to_color(75,    0, 130), dest = rgb_to_color(238, 130, 238) },
-    [6] = { start = rgb_to_color(238, 130, 238), dest = rgb_to_color(255,   0,   0) },
-    len = 7
-}
-color_divisor = 256
-animate_gradient = true
-
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-
-color_afterglow = rgb_to_color(255, 255, 255)
-color_step_afterglow = rgb_to_color(10, 10, 10)
-afterglow_step = 2
-gradient_step = 1
-
 -- global state variables --
 color_map = {}
 color_map_pressed = {}
@@ -61,9 +38,9 @@ function on_tick(delta)
     local num_keys = get_num_keys()
 
     -- animate gradient
-    if animate_gradient and (ticks % gradient_step == 0) then
+    if ticks % gradient_speed == 0 then
         for i = 0, num_keys do
-            color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
+            color_map[i] = hsl_to_color((i * hue_multiplier) + ticks, color_saturation, color_lightness)
         end
     end
 
@@ -104,23 +81,7 @@ end
 function init_state()
     local num_keys = get_num_keys()
     for i = 0, num_keys do
-        color_map[i] = linear_gradient_multi(gradient_stops, (i * num_keys / 100))
+        color_map[i] = color_off
         color_map_pressed[i] = color_off
     end
-end
-
--- support functions
-function linear_gradient_multi(stops, p)
-    local i = clamp(trunc(p / (100 * stops.len)), 0, stops.len - 1)
-
-    -- info("p: " .. p .. " " .. "index: " .. i)
-
-    local s = stops[i].start
-    local e = stops[i].dest
-
-    local result = linear_gradient(s, e, p / color_divisor)
-
-    -- info("result: " .. result)
-
-    return result
 end

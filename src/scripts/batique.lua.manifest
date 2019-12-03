@@ -66,8 +66,8 @@ default = 1.0
 
 [[config]]
 type = 'float'
-name = 'color_luminance'
-description = 'Luminance in the range 0.0 .. 0.5; above 0.5 == whiten color'
+name = 'color_lightness'
+description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
 default = 0.5
 
 [[config]]

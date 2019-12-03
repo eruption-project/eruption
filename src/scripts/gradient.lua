@@ -35,8 +35,6 @@ color_bright = 0x00ffffff
 
 color_afterglow = rgb_to_color(255, 255, 255)
 color_step_afterglow = rgb_to_color(10, 10, 10)
-afterglow_step = 2
-gradient_step = 1
 
 -- global state variables --
 color_map = {}

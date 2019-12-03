@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
@@ -16,7 +16,7 @@ frontend = ["rocket", "rocket_contrib"]
 
 [dependencies]
 libc = "0.2.66"
-nix = "0.15.0"
+nix = "0.16.0"
 prctl = "1.0.0"
 log = "0.4.8"
 pretty_env_logger = "0.3.1"
