@@ -11,6 +11,12 @@ description = 'Step afterglow animation every [n] frames'
 default = 2.0
 
 [[config]]
+type = 'float'
+name = 'shockwave_step'
+description = 'Step shockwave animation every [n] frames'
+default = 1.0
+
+[[config]]
 type = 'color'
 name = 'color_off'
 description = 'LED off'
@@ -39,3 +45,51 @@ type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
 default = 0x000a0000
+
+[[config]]
+type = 'color'
+name = 'color_shockwave'
+description = 'Color of the shockwave'
+default = 0x00ff0000
+
+[[config]]
+type = 'color'
+name = 'color_step_shockwave'
+description = 'Color value that gets subtracted from the shockwave every [n] frames'
+default = 0x000a0000
+
+[[config]]
+type = 'bool'
+name = 'enable_ghost_typing'
+description = 'Enable ghost typing'
+default = true
+
+[[config]]
+type = 'color'
+name = 'color_ghost'
+description = 'Color of ghost typing'
+default = 0x00404040
+
+[[config]]
+type = 'color'
+name = 'color_step_ghost'
+description = 'Color value that gets subtracted from the ghost typing every [n] frames'
+default = 0x00040404
+
+[[config]]
+type = 'float'
+name = 'ghost_step'
+description = 'Step ghost animation every [n] frames'
+default = 2.0
+
+[[config]]
+type = 'int'
+name = 'ghost_probability'
+description = 'Amount of ghost keystrokes'
+default = 150
+
+[[config]]
+type = 'int'
+name = 'ghost_starts_after'
+description = 'Ghost starts after [n] frames'
+default = 240

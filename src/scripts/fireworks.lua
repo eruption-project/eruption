@@ -13,19 +13,13 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global constants --
-color_rain_min = 0x000050505
-color_rain_max = 0x000101010
-color_step_raindrop = 0x00101010
-
 -- global state variables --
 color_map = {}
 color_map_pressed = {}
-color_map_raindrops = {}
-color_map_water = {}
+color_map_fireworks = {}
 
--- holds a scalar field to simulate water
-water_grid = {}
+-- holds a scalar field to simulate fireworks
+fireworks_grid = {}
 ticks = 0
 
 -- Keyboard topology maps --
@@ -423,26 +417,43 @@ function on_key_down(key_index)
       local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
 
       if neigh_key ~= 0xff then
-          water_grid[neigh_key + 1] = 0.5
+          fireworks_grid[neigh_key + 1] = 1.0
       end
     end
 end
 
-function compute_water(ticks)
+function compute_fireworks(ticks)
     local num_keys = get_num_keys()
 
-    if ticks % flow_speed == 0 then
-        -- compute wave effect
-        for key_index = 1, get_num_keys() do
-            local epsilon = 0.1
-            if water_grid[key_index] >= epsilon then
-                water_grid[key_index - 1] = water_grid[key_index] - 0.1
-            else
-                water_grid[key_index - 1] = 0.0
+    if ticks % animation_speed == 0 then
+        -- compute fireworks effect
+        for key_index = 1, get_num_keys() - 1 do
+			local avg = (fireworks_grid[key_index - 1] + fireworks_grid[key_index + 1]) / 2
+            fireworks_grid[key_index - 1] = (fireworks_grid[key_index] - 0.25) + (avg * 0.5)
+			
+			local epsilon = 0.1
+            if fireworks_grid[key_index] <= epsilon or fireworks_grid[key_index] >= (1.0 - epsilon) then
+                fireworks_grid[key_index] = 0.0
             end
+        end
 
-            -- compute color
-            color_map_water[key_index] = hsl_to_color(lerp(120, 220, sin(water_grid[key_index])) + 1.25, 1.0, 0.5)
+        for y = 0, num_rows - 1 do
+            for x = 0, max_keys_per_row - 1 do
+                local idx = y * max_keys_per_row + x
+                
+                if fireworks_grid[idx] > 0 then
+                    fireworks_grid[idx] = fireworks_grid[idx] - (fireworks_grid[idx] * 0.25)
+                end
+                
+                local epsilon = 0.1
+                if fireworks_grid[idx] <= epsilon then
+                    fireworks_grid[idx] = 0.0
+                end
+
+                -- compute color
+                local hue = lerp(0, 360, sin(fireworks_grid[idx] + 10.0))
+                color_map_fireworks[idx] = hsl_to_color(hue, 1.0, 0.5)
+            end
         end
     end
 end
@@ -450,15 +461,10 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-	local num_keys = get_num_keys()
-	
-    -- let it rain
-    if ticks % rand(1, rain_intensity_divisor) == 0 then
-        place_raindrop()
-    end
+    local num_keys = get_num_keys()
 
-    -- calculate water effect
-    compute_water(ticks)
+    -- calculate fireworks effect
+    compute_fireworks(ticks)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
@@ -474,24 +480,11 @@ function on_tick(delta)
             end
         end
     end
-     
-    -- fade out raindrops
-    if ticks % raindrop_step == 0 then
-        for i = 0, num_keys do
-            if color_map_raindrops[i] > color_off then
-                color_map_raindrops[i] = color_map_raindrops[i] - color_step_raindrop
-
-                if color_map_raindrops[i] < color_off then
-                    color_map_raindrops[i] = color_off
-                end
-            end
-        end
-    end
 
     -- now combine all the color maps to a final map
     local color_map_combined = {}
     for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_water[i] + color_map_raindrops[i] + color_map_pressed[i]
+        color_map_combined[i] = color_map[i] + color_map_fireworks[i] + color_map_pressed[i]
 
         -- let the afterglow effect override all other effects
         if color_map_pressed[i] > 0x00000000 then
@@ -508,25 +501,17 @@ function on_tick(delta)
     set_color_map(color_map_combined)
 end
 
-function place_raindrop()
-    local num_keys = get_num_keys()
-    local key = rand(0, num_keys)
-
-    color_map_raindrops[key] = rand(color_rain_min, color_rain_max)
-end
-
 -- init global state
 function init_state()
     local num_keys = get_num_keys()
     for i = 0, num_keys do
         color_map[i] = color_background
         color_map_pressed[i] = color_off
-        color_map_raindrops[i] = color_off
-        color_map_water[i] = color_off
+        color_map_fireworks[i] = color_off
     end
 
-    -- initialize water scalar field
-    for i = 0, num_keys do
-        water_grid[i] = 0.0
+    -- initialize fireworks scalar field
+    for i = 0, get_num_keys() do
+        fireworks_grid[i] = 0.0
     end
 end

@@ -42,7 +42,7 @@ Eruption currently ships with the following library functions:
 | `rgb_to_color(r, g, b) -> color`    | _core_  | Color  | since before 0.0.9 | Returns a color, constructed fom r, g and b components |
 | `hsl_to_color(h, s, l) -> color`    | _core_  | Color  | since 0.0.9 | Returns a color, constructed fom hue [0..360), saturation [0.0...1.0] and lightness [0.0..0.5], (0.5..1.0] components |
 | `linear_gradient(start_color, end_color, p) -> color`    | _core_  | Color  | since before 0.0.9 | Returns the interpolated color at position `p` located between `start_color`..`end_color`. The value of `p` should lie in the range of 0..1 |
-| `noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.9 | Computes an OpenSimplexNoise value |
+| `noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.9 | Computes an Open Simplex Noise value |
 | `get_num_keys() -> i`    | _core_  | Hw  | since before 0.0.9 | Returns the number of keys of the connected device (Approx. 144) |
 | `get_key_color(key_index) -> color`    | _core_  | Hw  | since before 0.0.9 | Returns the current color of the key `key_index` |
 | `set_key_color(key_index, color)`    | _core_  | Hw  | since before 0.0.9 | Sets the current color of the key `key_index` to `color` |

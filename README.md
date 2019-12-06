@@ -59,7 +59,7 @@ Eruption currently ships with the following effect scripts:
 | --------- | ---------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
 | Afterglow | `afterglow.lua`  | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                       |
 | Afterhue  | `afterhue.lua`   | Ready  | Hit keys cycle through the HSL color-space, using a linearly decreasing hue angle                            |
-| Batique   | `batique.lua`    | Ready  | Batique effect, based on the OpenSimplexNoise function that serves as input to get a HSL color-space color   |
+| Batique   | `batique.lua`    | Ready  | Batique effect, based on the Open Simplex Noise function that serves as input to get a HSL color-space color |
 | Heartbeat | `heartbeat.lua`  | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                              |
 | Impact    | `impact.lua`     | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out |
 | Raindrops | `raindrops.lua`  | Ready  | Rain effect, randomly light up keys and fade them out again                                                  |
@@ -68,9 +68,10 @@ The following scripts are unfinished/still in development, and some of them have
 
 | Name        | File              | Progress         | Description                                                                                         |
 | ----------- | ----------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
-| Fire        | `fire.lua`        | Approx. 25% done | Shows a bonfire effect on the Keyboard                                                              |
-| Water       | `water.lua`       | Approx. 15% done | Shows a waterfall effect on the Keyboard                                                            |
-| Gaming      | `gaming.lua`      | Approx. 95% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                     |
+| Fire        | `fire.lua`        | Approx. 45% done | Shows a bonfire effect on the keyboard                                                              |
+| Fireworks   | `fireworks.lua`   | Approx. 45% done | Shows a fireworks effect on the keyboard                                                            |
+| Water       | `water.lua`       | Approx. 95% done | Shows a waterfall effect on the keyboard                                                            |
+| Gaming      | `gaming.lua`      | Approx. 75% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                     |
 | Gradient    | `gradient.lua`    | Approx. 75% done | Display a color gradient                                                                            |
 | Rainbow     | `rainbow.lua`     | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                          |
 | Shockwave   | `shockwave.lua`   | Approx. 55% done | Like impact, but shows propagating waves when a key has been pressed                                |

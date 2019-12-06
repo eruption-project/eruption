@@ -18,26 +18,6 @@
 -- Please see: https://github.com/duncanthrax/roccat-vulcan
 -------------------------------------------------------------------------------
 
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-color_background = 0x00111111
-
-color_shockwave = rgb_to_color(255, 0, 0)
-color_step_shockwave = rgb_to_color(16, 0, 0)
-shockwave_step = 1
-
-enable_ghost_typing = true
-color_ghost = rgb_to_color(64, 64, 64)
-color_step_ghost = rgb_to_color(4, 4, 4)
-ghost_step = 2						-- decay speed of ghost color
-ghost_propability = 150 			-- amount of ghost keystrokes
-ghost_starts_after = 30 * 8 		-- start after the keyboard was idle for 8 seconds 
-
-color_afterglow = rgb_to_color(255, 255, 255)
-color_step_afterglow = rgb_to_color(10, 10, 10)
-afterglow_step = 2
-
 key_state = {
 	invalid = 0,
 	idle = 1,
@@ -142,12 +122,12 @@ cols_topology = {
 	0x81, 0x82, 0x83, 0xff, 0xff, 0xff
 }
 
--- neighbour tables
+-- neighbor tables
 max_neigh = 10
-neighbour_topology = {
+neighbor_topology = {
 
     -- ISO model
-    -- 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- sentinel
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- sentinel
 	0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x00
 	0x00, 0x02, 0x06, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x01
 	0x01, 0x03, 0x06, 0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x02
@@ -294,7 +274,7 @@ neighbour_topology = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x8f
 
     -- ANSI model
-    -- 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- sentinel
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- sentinel
 	0x01, 0x06, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x00
 	0x00, 0x02, 0x06, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x01
 	0x01, 0x03, 0x06, 0x07, 0x0c, 0xff, 0xff, 0xff, 0xff, 0xff, -- 0x02
@@ -470,8 +450,8 @@ function on_tick(delta)
 		ghost_postponed_for = ghost_postponed_for - (delta + 1)
 	else
 		ghost_postponed_for = 0
-		if enable_ghost_typing and (ticks % rand(1, ghost_propability) == 0) then
-			local key = rand(1, num_keys)
+		if enable_ghost_typing and (ticks % rand(1, ghost_probability) == 0) then
+			local key = rand(0, num_keys)
 			ghost_key(key)
 		end
 	end
@@ -508,8 +488,9 @@ function on_tick(delta)
             color_map_combined[i] = 0x00000000
         end
     end
-
+	
 	if enable_debug then
+		debug_print_state_map()
 		set_color_map(color_map_debug)
 
 		if check_invariants() then
@@ -542,12 +523,18 @@ end
 function impact(key_index)
 	local num_keys = get_num_keys()
 
-	state_map[key_index] = key_state.shockwave_origin
+	for i = 0, max_neigh do
+		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+  
+		if neigh_key ~= 0xff then
+			state_map[neigh_key + 1] = key_state.shockwave_origin
+		end
+	end
 end
 
 function ghost_key(key_index)
     for i = 0, max_neigh do
-        local neigh_key = neighbour_topology[(key_index * max_neigh) + i + table_offset] 
+        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
 
         if neigh_key ~=nil and neigh_key ~= 0xff then
             color_map_ghost[neigh_key + 1] = color_ghost
@@ -559,7 +546,7 @@ function step_shockwave(ticks)
 	local num_keys = get_num_keys()
 	
 	-- propagate the shockwave
-	for i = 0, num_keys do
+	for i = 1, num_keys do		
 		-- decrease key ttl
 		if state_map[i] > key_state.shockwave_sentinel then
 			state_map[i] = state_map[i] - shockwave_ttl_decrease
@@ -568,34 +555,23 @@ function step_shockwave(ticks)
 			end
 		end
 
+		-- propagate wave effect
+		if state_map[i] >= key_state.shockwave_sentinel then
+			state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
+		else
+			state_map[i - 1] = key_state.idle
+		end
+
 		-- compute shockwave color
+		if state_map[i] >= key_state.shockwave_sentinel then
+			color_map_shockwave[i] = color_shockwave - color_step_shockwave
+		end
+
 		if color_map_shockwave[i] > color_off then
 			color_map_shockwave[i] = color_map_shockwave[i] - color_step_shockwave
 
 			if color_map_shockwave[i] < color_off then
 				color_map_shockwave[i] = color_off
-			end
-		end
-
-		-- if one of our neighbour keys is part of a propagating shockwave, 
-		-- then propagate the shockwave to the current key too
-		for j = 0, max_neigh do
-			local neigh_key = neighbour_topology[(i * max_neigh) + j + table_offset]
-
-			if (neigh_key ~= nil and neigh_key ~= 0xff) and 
-				(state_map[neigh_key] >= key_state.shockwave_sentinel) then
-
-				if state_map[neigh_key] >= key_state.shockwave_sentinel then					
-					state_map[neigh_key] = state_map[neigh_key] - shockwave_ttl_decrease
-					if state_map[neigh_key] <= key_state.shockwave_sentinel then
-						state_map[neigh_key] = key_state.idle
-					end
-				end
-
-				if state_map[neigh_key] >= key_state.shockwave_sentinel then
-					state_map[i] = state_map[neigh_key]
-					color_map_shockwave[i] = color_shockwave - color_step_shockwave
-				end
 			end
 		end
 	end
@@ -612,10 +588,6 @@ function step_shockwave(ticks)
             end
         end
     end
-end
-
-function easing(x)    
-    return pow(sin(5 * x / 3.14159), 2)
 end
 
 -- debugging helper
@@ -646,4 +618,25 @@ function check_invariants()
 
 		return errors_present
 	end
+end
+
+function debug_print_state_map()
+    info("*********************************************************************************************************")
+
+    local row = ""
+
+    for i = 0, get_num_keys() - 1 do
+
+        if i % 21 == 0 then
+            info(row)
+            row = ""
+        else
+            local val = state_map[i]
+            if val == nil then val = "nil" end
+
+            row = row .. " | " .. val
+        end
+    end
+    
+    info("*********************************************************************************************************")
 end

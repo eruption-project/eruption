@@ -167,7 +167,7 @@ mod callbacks {
         rgb_to_color(r.round() as u8, g.round() as u8, b.round() as u8)
     }
 
-    /// Compute OpenSimplex noise
+    /// Compute Open Simplex noise
     pub(crate) fn open_simplex_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = OpenSimplex::new();
         noise.get([f1, f2, f3])

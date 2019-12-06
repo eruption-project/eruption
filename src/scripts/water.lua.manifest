@@ -51,3 +51,15 @@ type = 'float'
 name = 'flow_speed'
 description = 'Step water animation every [n] frames'
 default = 2.0
+
+[[config]]
+type = 'float'
+name = 'raindrop_step'
+description = 'Step rain animation every [n] frames'
+default = 3.0
+
+[[config]]
+type = 'int'
+name = 'rain_intensity_divisor'
+description = 'Rain intensity'
+default = 25
