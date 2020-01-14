@@ -18,6 +18,7 @@ BuildRequires: systemd-devel
 BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
+BuildRequires: libusbx-devel
 
 Requires: systemd
 Requires: dbus
