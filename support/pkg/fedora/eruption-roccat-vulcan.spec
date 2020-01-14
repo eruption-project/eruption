@@ -14,7 +14,7 @@ Source0: https://gitlab.com/X3n0m0rph59/%{OrigName}/-/archive/master/%{OrigName}
 BuildRoot: %{_tmppath}/%{name}-build
 
 BuildRequires: cargo
-BuildRequires: systemd
+BuildRequires: systemd-devel
 BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
