@@ -15,7 +15,7 @@ BuildRoot: %{_tmppath}/%{name}-build
 
 BuildRequires: cargo
 BuildRequires: systemd
-BuildRequires: dbus-1-devel
+BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 
