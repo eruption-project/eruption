@@ -173,6 +173,61 @@ mod callbacks {
         noise.get([f1, f2, f3])
     }
 
+    use nalgebra as na;
+
+    fn clamp(val: f64, f1: usize, f2: usize) -> usize {
+        let mut val = val;
+        if val < f1 as f64 {
+            val = f1 as f64;
+        }
+        if val > f2 as f64 {
+            val = f2 as f64;
+        }
+
+        val as usize
+    }
+
+    pub(crate) fn rotate(map: &[u32], theta: f64, sizes: (usize, usize)) -> Vec<u32> {
+        let mut result = vec![0; map.len()];
+
+        let m_rot = na::Matrix3::new_rotation(theta);
+
+        for i in 0..map.len() {
+            let x = (i / sizes.0) as f64;
+            let y = (i / sizes.1) as f64;
+
+            let point = na::Vector2::new(x, y).to_homogeneous();
+            let t = m_rot * point;
+
+            let idx = (t.x * sizes.0 as f64 + t.y).round();
+            let idx = clamp(idx, 0, sizes.0 * sizes.1) as usize;
+
+            // println!("{} -> {}: {}", point, t, idx);
+
+            result[i] = map[idx];
+        }
+
+        result
+    }
+
+    #[test]
+    fn test_rotate() {
+        let data: Vec<_> = (1..=100u32).collect();
+
+        let x_size = 10;
+        let y_size = 10;
+
+        let result = rotate(&data, 90.0 * std::f64::consts::PI / 180.0, (x_size, y_size));
+
+        for l in 0..y_size {
+            let s = l * y_size;
+            println!("{:2?}", &result[s..s + x_size]);
+        }
+
+        println!("{:2?}", &data);
+        println!("{:2?}", &result);
+    }
+
     /// Get the number of keys of the managed device.
     pub(crate) fn get_num_keys() -> usize {
         NUM_KEYS
@@ -470,6 +525,12 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
         Ok(callbacks::open_simplex_noise(f1, f2, f3))
     })?;
     globals.set("noise", noise)?;
+
+    // transformation utilities
+    let rotate = lua_ctx.create_function(|_, (map, theta): (Vec<u32>, f64)| {
+        Ok(callbacks::rotate(&map, theta, (22, 6)))
+    })?;
+    globals.set("rotate", rotate)?;
 
     // device related
     let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;

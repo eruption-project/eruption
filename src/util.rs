@@ -21,7 +21,7 @@ use evdev_rs::enums::EV_KEY;
 use failure::Fail;
 use std::fs;
 use std::path::{Path, PathBuf};
-use udev::{Context, Enumerator};
+use udev::Enumerator;
 
 use crate::rvdevice;
 
@@ -37,41 +37,34 @@ pub enum UtilError {
 
     #[fail(display = "Could not enumerate udev devices")]
     UdevError {},
-
-    #[fail(display = "Could not create an udev context")]
-    UdevContextError {},
 }
 
 /// Get the path of the evdev device of the first keyboard from udev
 pub fn get_evdev_from_udev() -> Result<String> {
-    match Context::new() {
-        Ok(context) => match Enumerator::new(&context) {
-            Ok(mut enumerator) => {
-                enumerator.match_subsystem("input").unwrap();
+    match Enumerator::new() {
+        Ok(mut enumerator) => {
+            enumerator.match_subsystem("input").unwrap();
 
-                match enumerator.scan_devices() {
-                    Ok(devices) => {
-                        for device in devices {
-                            let found_dev = device.properties().any(|e| {
-                                e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR
-                            }) && device.devnode().is_some();
+            match enumerator.scan_devices() {
+                Ok(devices) => {
+                    for device in devices {
+                        let found_dev = device.properties().any(|e| {
+                            e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR
+                        }) && device.devnode().is_some();
 
-                            if found_dev {
-                                return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
-                            }
+                        if found_dev {
+                            return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
                         }
-
-                        Err(UtilError::NoDevicesFound {})
                     }
 
-                    Err(_e) => Err(UtilError::EnumerationError {}),
+                    Err(UtilError::NoDevicesFound {})
                 }
+
+                Err(_e) => Err(UtilError::EnumerationError {}),
             }
+        }
 
-            Err(_e) => Err(UtilError::UdevError {}),
-        },
-
-        Err(_e) => Err(UtilError::UdevContextError {}),
+        Err(_e) => Err(UtilError::UdevError {}),
     }
 }
 

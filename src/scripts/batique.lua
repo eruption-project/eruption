@@ -43,9 +43,9 @@ function on_tick(delta)
         for i = 0, num_keys do
             local x = i / 6
             local y = i / 22
-            
-            local val = noise(x / coord_scale, 
-                              y / coord_scale, 
+
+            local val = noise(x / coord_scale,
+                              y / coord_scale,
                               ticks / time_scale)
                   val = lerp(0, 360, val)
 
@@ -55,7 +55,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
+        for i = 0, num_keys do
             if color_map_pressed[i] >= 0x00000000 then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 
