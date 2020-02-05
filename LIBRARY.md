@@ -64,11 +64,9 @@ Eruption currently ships with the following library functions:
 | `get_mem_used_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the amount of used memory |
 | `get_swap_total_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the total size of the swap space |
 | `get_swap_used_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the amount of used swap space |
-
 | `get_audio_loudness() -> i`    | Audio | Hw  | since 0.0.11 | Returns the current RMS loudness of the configured audio input |
 | `get_audio_spectrum() -> Vec<f>`    | Audio | Hw  | since 0.0.11 | Returns a vector of floats containing results of a fourier transform (FFT) of the configured audio input |
 | `get_audio_raw_data() -> Vec<i>`    | Audio | Hw  | since 0.0.11 | Returns a buffer of 16bit wide signed integer values, containing samples from the configured audio input |
-| ...    | |   | ... |
 _Non-exhaustive, more documentation coming soon_
 
 ## Available Callback Functions (Events)
