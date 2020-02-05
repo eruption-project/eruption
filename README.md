@@ -23,6 +23,8 @@ may export additional functionality to the Lua scripting engine.
 
 # Installation
 
+> Please note that you need rust-nightly to successfully compile eruption!
+
 ### Arch Linux and derivatives like Manjaro
 
 ```
@@ -59,9 +61,8 @@ eruption is running. This will open the eruption GUI in your browser:
 
 If you want eruption to be able to play back sound effects, or use one of the
 audio visualizer Lua scripts, then you have to perform a few additional steps.
-
-This will allow the eruption daemon to access the PulseAudio server of the
-current user, for playback and for capturing of audio signals as well.
+The following steps will allow the eruption daemon to access the PulseAudio
+server of the current user, for playback and for capturing of audio signals.
 
 Create the PulseAudio config directory and edit the server configuration file
 for your user account:
@@ -72,14 +73,14 @@ $ cp /etc/pulse/default.pa ~/.config/pulse/default.pa
 $ nano ~/.config/pulse/default.pa
 ```
 
-then add the following line:
+then add the following line at the end of the file:
 
 ```
 load-module module-native-protocol-unix auth-group=root socket=/tmp/pulse-server
 ```
 
-Create the PulseAudio config directory and edit the client configuration file
-in `~/.config/pulse/client.conf` for the user that eruption runs as
+Create the PulseAudio configuration directory and edit the client configuration
+file in `/root/.config/pulse/client.conf` for the user that eruption runs as
 (default: root)
 
 ```
