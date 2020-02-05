@@ -40,7 +40,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
+        for i = 0, num_keys do
             if color_map_pressed[i] >= 0x00000000 then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 

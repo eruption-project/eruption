@@ -1,8 +1,9 @@
 name = "Multi Gradient"
-description = "Show a gradient with multiple color stops"
+description = "Display a gradient with multiple color stops"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.2"
+tags = ['Vendor', 'Gradient']
 
 [[config]]
 type = 'float'

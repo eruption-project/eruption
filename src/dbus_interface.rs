@@ -16,7 +16,10 @@
 */
 
 #[cfg(feature = "dbus")]
-use dbus::{tree::EmitsChangedSignal, tree::Factory, ffidisp::Connection, ffidisp::BusType, ffidisp::NameFlag};
+use dbus::{
+    ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, tree::EmitsChangedSignal,
+    tree::Factory,
+};
 use failure::Fail;
 use log::*;
 use std::path::PathBuf;

@@ -3,6 +3,7 @@ description = "Show an afterglow effect after a key has been pressed"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.1"
+tags = ['Vendor']
 
 [[config]]
 type = 'float'

@@ -3,6 +3,7 @@ description = "Monitor your system using your keyboard"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.3"
+tags = ['Vendor', 'Demo']
 
 [[config]]
 type = 'float'

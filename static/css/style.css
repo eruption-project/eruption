@@ -51,12 +51,22 @@
     font-weight: 900;
 }
 
-html {
-    font-family: 'Roboto';
+body {
+    font-family: 'Cute Font';
+		font-size: 2rem;
+		line-height: 1.20rem;
 }
 
-.brand {
+div#collapseOne,
+div#collapseTwo {
+    font-family: 'Roboto';
+		font-size: 1rem;
+		line-height: 1.20rem;
+}
+
+.navbar-brand {
     font-family: 'Cute Font';
+		font-size: 4rem;
 }
 
 img.logo {
@@ -108,15 +118,35 @@ p {
     text-align: justify;
 }
 
+a.card-feedback > div.card {
+	transform: scale(1.0) !important;
+	transition: transform .2s ease;
+}
+
+a.card-feedback:hover > div.card {
+	transform: scale(1.125) !important;
+}
+
+a.card-feedback:hover {
+	text-decoration: none;
+}
+
+a.dropdown-item {
+	font-size: 2rem;
+	line-height: 2rem;
+}
+
 .card-title {
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 2.0rem;
+		line-height: 0.75em;
     font-weight: bold;
 }
 
 .card-text {
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 1.35rem;
+		line-height: 0.75em;
 }
 
 .group:after {
@@ -134,41 +164,41 @@ h4,
 h5,
 h6 {
     font-weight: 400;
-    line-height: 1.1em;
+    line-height: 0.7em;
 }
 
 h1 {
-    font-size: 36px;
+    font-size: 5rem;
     margin-bottom: 20px;
 }
 
 h2 {
-    font-size: 30px;
+    font-size: 4rem;
     margin-bottom: 20px;
 }
 
 h3 {
-    font-size: 26px;
+    font-size: 3rem;
     margin-bottom: 20px;
 }
 
 h4 {
-    font-size: 22px;
+    font-size: 2rem;
     margin-bottom: 20px;
 }
 
 h5 {
-    font-size: 18px;
+    font-size: 2rem;
     margin-bottom: 15px;
 }
 
 h6 {
-    font-size: 16px;
+    font-size: 2rem;
     margin-bottom: 10px;
 }
 
 h2.pagetitle {
-    font-size: 30px;
+    font-size: 4rem;
     padding-top: 30px;
 }
 
@@ -178,7 +208,11 @@ a:hover.navi {
 }
 
 p {
-    line-height: 1.70em;
+    line-height: 1.20em;
+}
+
+i ~ p {
+    line-height: 0.8em;
 }
 
 a {
@@ -262,9 +296,14 @@ section#services p {
     padding-top: 20px;
 }
 
+a.btn,
+.btn-custom {
+		font-size: 2rem;
+    text-align: left;
+}
+
 .btn-custom {
     width: 24rem;
-    text-align: left;
 }
 
 footer {

@@ -1,8 +1,9 @@
 name = "Rainbow"
-description = "Show a rainbow color gradient"
+description = "Display a rainbow color gradient"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.2"
+tags = ['Vendor', 'Gradient']
 
 [[config]]
 type = 'float'

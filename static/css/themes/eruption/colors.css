@@ -70,8 +70,32 @@ a:visited {
 	color: rgba(249, 47, 57, 1);
 }
 
-a:hover, a:active { 
+a:hover, a:active {
 	color: rgba(249, 47, 57, 1);
+}
+
+div .bg-success {
+	background: rgba(50, 195, 50, 1.0) !important;
+}
+
+div .vendor {
+	background: rgba(0, 132, 255, 1.0);
+}
+
+div .demo {
+	background: rgba(30, 162, 255, 1.0);
+}
+
+div .gradient {
+	background: linear-gradient(0deg, rgba(253,29,29,1.0) 0%, rgba(252,176,69,1.0) 100%);
+}
+
+div .noise {
+	background: linear-gradient(to right, rgba(76,76,76,1) 0%, rgba(89,89,89,1) 12%, rgba(102,102,102,1) 25%, rgba(71,71,71,1) 39%, rgba(17,17,17,1) 53%, rgba(43,43,43,1) 76%, rgba(28,28,28,1) 91%, rgba(19,19,19,1) 100%);
+}
+
+div .audio-visualization {
+	background: radial-gradient(circle, rgba(63,94,251,1.0) 0%, rgba(252,70,107,1.0) 100%);
 }
 
 .tbl-header{

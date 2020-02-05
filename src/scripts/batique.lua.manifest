@@ -1,8 +1,9 @@
 name = "Batique"
-description = "Compute Open Simplex Noise, color-mapped to the HSL color space"
+description = "Compute Open Simplex Noise, mapped to the HSL color space"
 version = "0.0.1"
 author = "The Eruption development team"
-min_supported_version = "0.0.9"
+min_supported_version = "0.0.11"
+tags = ['Vendor', 'Noise']
 
 [[config]]
 type = 'float'

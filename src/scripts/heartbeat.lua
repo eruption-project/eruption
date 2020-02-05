@@ -43,7 +43,7 @@ function on_tick(delta)
         heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier, 3.25), 0.25)
         trace("Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
     end
-    
+
     local num_keys = get_num_keys()
 
     -- calculate 'fill' percentage for heartbeat effect
@@ -55,7 +55,7 @@ function on_tick(delta)
         percentage = 0 + heartbeat_lower_lim
         heartbeat_step = heartbeat_step * -1
     end
-    
+
     -- generate heartbeat color map values
     local upper_bound = num_keys * (min(percentage, 100) / 100)
     for i = 0, num_keys do
@@ -74,7 +74,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
+        for i = 0, num_keys do
             if color_map_pressed[i] >= 0x00000000 then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 
@@ -108,7 +108,7 @@ function on_tick(delta)
 end
 
 -- a simple easing function that mimics heartbeat
-function easing(x)    
+function easing(x)
     return pow(sin(5 * x / 3.14159), 2)
 end
 

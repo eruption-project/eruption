@@ -48,9 +48,10 @@ pub fn get_evdev_from_udev() -> Result<String> {
             match enumerator.scan_devices() {
                 Ok(devices) => {
                     for device in devices {
-                        let found_dev = device.properties().any(|e| {
-                            e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR
-                        }) && device.devnode().is_some();
+                        let found_dev = device
+                            .properties()
+                            .any(|e| e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR)
+                            && device.devnode().is_some();
 
                         if found_dev {
                             return Ok(device.devnode().unwrap().to_str().unwrap().to_string());

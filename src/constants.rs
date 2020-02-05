@@ -45,5 +45,5 @@ pub const WEB_FRONTEND_LISTEN_ADDR: &str = "localhost";
 /// Default port of the web frontend
 pub const WEB_FRONTEND_PORT: u16 = 8059;
 
-/// Default web frontend theme
-pub const DEFAULT_FRONTEND_THEME: &str = "metal";
+/// Default web frontend theme. Available themese are "eruption" and "metal"
+pub const DEFAULT_FRONTEND_THEME: &str = "eruption";

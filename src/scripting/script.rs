@@ -38,6 +38,7 @@ pub enum Message {
     Quit(u32),
     Tick(u32),
     KeyDown(u8),
+    KeyUp(u8),
 
     LoadScript(PathBuf),
 }
@@ -63,6 +64,7 @@ pub enum ScriptingError {
 
     #[fail(display = "Invalid or inaccessible manifest file")]
     InaccessibleManifest {},
+
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -70,7 +72,7 @@ pub enum ScriptingError {
 /// These functions are intended to be used from within lua scripts
 mod callbacks {
     use log::*;
-    use noise::{NoiseFn, OpenSimplex};
+    use noise::{NoiseFn, Perlin, OpenSimplex, Billow, Worley, Fbm, RidgedMulti};
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
     use std::convert::TryFrom;
@@ -165,6 +167,36 @@ mod callbacks {
         let b: f64 = (scb as f64) + (((dcb - scb) as f64) * p);
 
         rgb_to_color(r.round() as u8, g.round() as u8, b.round() as u8)
+    }
+
+    /// Compute Perlin noise
+    pub(crate) fn perlin_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = Perlin::new();
+        noise.get([f1, f2, f3])
+    }
+
+    /// Compute Billow noise
+    pub(crate) fn billow_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = Billow::new();
+        noise.get([f1, f2, f3])
+    }
+
+    /// Compute Worley (Voronoi) noise
+    pub(crate) fn voronoi_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = Worley::new();
+        noise.get([f1, f2, f3])
+    }
+
+    /// Compute Fractal Brownian Motion noise
+    pub(crate) fn fractal_brownian_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = Fbm::new();
+        noise.get([f1, f2, f3])
+    }
+
+    /// Compute Ridged Multifractal noise
+    pub(crate) fn ridged_multifractal_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = RidgedMulti::new();
+        noise.get([f1, f2, f3])
     }
 
     /// Compute Open Simplex noise
@@ -378,6 +410,17 @@ pub fn run_script(
                                 }
                             }
 
+                            Message::KeyUp(param) => {
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_key_up")
+                                {
+                                    handler.call::<_, ()>(param).or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        Err(e)
+                                    })?;
+                                }
+                            }
+
                             Message::LoadScript(script_path) => {
                                 return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
                             }
@@ -407,7 +450,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.10");
+    config.insert("daemon_version", "0.0.11");
 
     globals.set("config", config)?;
 
@@ -521,10 +564,36 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     globals.set("linear_gradient", linear_gradient)?;
 
     // noise utilities
-    let noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+    let perlin_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::perlin_noise(f1, f2, f3))
+    })?;
+    globals.set("perlin_noise", perlin_noise)?;
+
+    let billow_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::billow_noise(f1, f2, f3))
+    })?;
+    globals.set("billow_noise", billow_noise)?;
+
+    let voronoi_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::voronoi_noise(f1, f2, f3))
+    })?;
+    globals.set("voronoi_noise", voronoi_noise)?;
+
+    let fractal_brownian_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::fractal_brownian_noise(f1, f2, f3))
+    })?;
+    globals.set("fractal_brownian_noise", fractal_brownian_noise)?;
+
+    let ridged_multifractal_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::ridged_multifractal_noise(f1, f2, f3))
+    })?;
+    globals.set("ridged_multifractal_noise", ridged_multifractal_noise)?;
+
+    let open_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
         Ok(callbacks::open_simplex_noise(f1, f2, f3))
     })?;
-    globals.set("noise", noise)?;
+    globals.set("open_simplex_noise", open_simplex_noise)?;
+
 
     // transformation utilities
     let rotate = lua_ctx.create_function(|_, (map, theta): (Vec<u32>, f64)| {

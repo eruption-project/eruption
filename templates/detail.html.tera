@@ -14,6 +14,8 @@
 					Name: {{ script.name }} - {{ script.version }}<br/>
 					{{ script.description }}<br/><br/>
 					Author: {{ script.author }}<br/>
+
+					Tags: {{ script.tags }}<br/>
 				</div>
 			</div>
 			<div class="row mt-4">
@@ -87,7 +89,7 @@
 				</div>
 			</div>
 		</div>
-	
+
 	<div class="container">
 		<div class="row mt-4">
 			<div class="col lg-12">
@@ -98,31 +100,32 @@
 					<tr class="animated fadeInLeft">
 					{% for script in scripts %}
 						<td>
-							<a href="/settings/{{ script.id }}">
+							<a class="card-feedback" href="/settings/{{ script.id }}">
 								{% if script.id == active_script_id %}
-									<div class="card bg-success" style="width: 14rem; height: 10rem">
+									<div class="card bg-success {{ script.html_class }}" style="width: 14rem; height: 10rem">
 								{% else %}
-									<div class="card bg-primary" style="width: 14rem; height: 10rem">
+									<div class="card bg-primary {{ script.html_class }}" style="width: 14rem; height: 10rem">
 								{% endif %}
 									<div class="card-body">
-										<h5 class="card-title text-light">{{ script.name }}: {{ script.version }}</h5>
+										<h5 class="card-title text-light">{{ script.name }}</h5>
+										<!-- <h6>{{ script.version }}</h6> -->
 										<p class="card-text text-light">{{ script.description }}</p>
 										{# <p class="card-text text-light">{{ script.script_file }}: {{ script.version }}</p> #}
 									</div>
 								</div>
 							</a>
 						</td>
-						
+
 						{% if loop.index % 4 == 0 %}
 							</tr>
-							
+
 							{% set_global row_index = row_index + 1 %}
-							
+
 							{% if row_index % 2 == 0 %}
 								<tr class="animated fadeInLeft">
 							{% else %}
 								<tr class="animated fadeInRight">
-							{% endif %}		
+							{% endif %}
 						{% endif %}
 					{% endfor %}
 					<tbody>

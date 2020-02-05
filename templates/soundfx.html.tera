@@ -1,0 +1,40 @@
+{% extends "base" %}
+
+{% block header %}
+	<h2 class="pagetitle">{{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+		<div class="row">
+			<div class="col lg-12">
+				<form action="/soundfx" method="post">
+					<table>
+						<tbody>
+							{% for param in config_params %}
+							<tr>
+								{% if param.type == "bool" %}
+									<td>{{ param.description }}</td>
+									<td>
+										<label for="{{ param.name }}">{{ param.name }}</label>
+									</td>
+									<td>
+										{% if param.value %}
+											<input name="{{ param.name }}" type="checkbox" value="true" checked />
+										{% else %}
+											<input name="{{ param.name }}" type="checkbox" value="true" />
+										{% endif %}
+									</td>
+								{% endif %}
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				<input type="submit"></input>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock content %}

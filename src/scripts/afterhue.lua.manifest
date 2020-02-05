@@ -3,6 +3,7 @@ description = "Show an afterglow effect with a linearly decreasing hue angle (in
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.9"
+tags = ['Vendor', 'Demo']
 
 [[config]]
 type = 'float'

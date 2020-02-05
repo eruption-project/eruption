@@ -1,8 +1,9 @@
 name = "Raindrops"
-description = "A rain effect"
+description = "Shows a rain effect, with afterglow"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.1"
+tags = ['Vendor', 'Demo']
 
 [[config]]
 type = 'float'

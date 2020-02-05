@@ -123,7 +123,10 @@ impl RvDeviceState {
         for device in api.devices() {
             trace!("{:#?}", device);
 
-            if device.vendor_id == VENDOR_ID && PRODUCT_ID.contains(&device.product_id) && device.interface_number == CTRL_INTERFACE {
+            if device.vendor_id == VENDOR_ID
+                && PRODUCT_ID.contains(&device.product_id)
+                && device.interface_number == CTRL_INTERFACE
+            {
                 let product_string = device.product_string.clone().unwrap_or_else(|| {
                     error!("Could not query device information");
                     "<unknown>".into()
@@ -134,7 +137,10 @@ impl RvDeviceState {
                 ctrl_device = Some(device);
 
                 info!("Found Control interface: {:?}: {}", path, product_string);
-            } else if device.vendor_id == VENDOR_ID && PRODUCT_ID.contains(&device.product_id) && device.interface_number == LED_INTERFACE {
+            } else if device.vendor_id == VENDOR_ID
+                && PRODUCT_ID.contains(&device.product_id)
+                && device.interface_number == LED_INTERFACE
+            {
                 let product_string = device.product_string.clone().unwrap_or_else(|| {
                     error!("Could not query device information");
                     "<unknown>".into()

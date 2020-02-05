@@ -17,6 +17,7 @@
 
 #![feature(plugin)]
 #![feature(proc_macro_hygiene, decl_macro)]
+#![feature(vec_into_raw_parts)]
 
 use clap::{App, Arg};
 use failure::Fail;
@@ -43,6 +44,7 @@ use rvdevice::RvDeviceState;
 
 mod constants;
 mod dbus_interface;
+mod events;
 mod plugin_manager;
 mod plugins;
 mod profiles;
@@ -85,12 +87,12 @@ fn print_header() {
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  Eruption is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 "#
@@ -100,7 +102,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.10")
+        .version("0.0.11")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -194,7 +196,7 @@ fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Resul
 }
 
 /// Spawns the keyboard events thread and executes it's main loop
-fn spawn_input_thread(kbd_tx: Sender<Option<u8>>) -> plugins::Result<()> {
+fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("events".into());
     builder
         .spawn(move || {
@@ -310,7 +312,7 @@ fn spawn_lua_thread(
 fn run_main_loop(
     frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
-    kbd_rx: &Receiver<Option<u8>>,
+    kbd_rx: &Receiver<Option<(u8, bool)>>,
     lua_tx: &Sender<script::Message>,
 ) {
     trace!("Entering main loop...");
@@ -436,12 +438,36 @@ fn run_main_loop(
             }
         }
 
-        // send pending keyboard events to the Lua VM
+        // send pending keyboard events to the Lua VM and to the event dispatcher
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
-                Some(index) => lua_tx
-                    .send(script::Message::KeyDown(index))
-                    .unwrap_or_else(|e| error!("Could not send a pending keyboard event: {}", e)),
+                Some((index, pressed)) => {
+                    if pressed {
+                        lua_tx
+                            .send(script::Message::KeyDown(index))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending keyboard event: {}", e)
+                            });
+
+                        events::notify_observers(events::Event::KeyDown(index))
+                            .unwrap_or_else(|e| {
+                                error!("{}", e)
+                            });
+
+                    } else {
+                        lua_tx
+                            .send(script::Message::KeyUp(index))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending keyboard event: {}", e)
+                            });
+
+                        events::notify_observers(events::Event::KeyUp(index))
+                            .unwrap_or_else(|e| {
+                                error!("{}", e)
+                            });
+
+                    }
+                }
 
                 // ignore spurious events
                 None => trace!("Spurious keyboard event ignored"),

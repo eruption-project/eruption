@@ -37,11 +37,13 @@ use log::*;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::constants;
+use crate::plugins::audio::ENABLE_SFX;
 use crate::profiles;
 use crate::scripting::manifest;
 use crate::scripting::manifest::GetAttr as GetAttrManifest;
@@ -62,9 +64,8 @@ pub enum WebFrontendError {
     #[fail(display = "Web frontend inaccessible")]
     FrontendInaccessible {},
 
-    #[fail(display = "Could not enumerate script files")]
-    ScriptEnumerationError {},
-
+    //#[fail(display = "Could not enumerate script files")]
+    //ScriptEnumerationError {},
     #[fail(display = "Could not enumerate profile files")]
     ProfileEnumerationError {},
 
@@ -73,6 +74,9 @@ pub enum WebFrontendError {
 
     #[fail(display = "Could not switch to a different profile")]
     ProfileSwitchError {},
+
+    #[fail(display = "Could not parse a parameter value")]
+    ParseParamError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -116,6 +120,7 @@ impl WebFrontend {
             .address(constants::WEB_FRONTEND_LISTEN_ADDR)
             .port(constants::WEB_FRONTEND_PORT)
             .log_level(LoggingLevel::Normal)
+            .root(Path::new(env!("PWD")))
             .workers(2)
             .finalize()
             .unwrap();
@@ -136,6 +141,8 @@ impl WebFrontend {
                     settings,
                     settings_of_id,
                     settings_apply,
+                    soundfx,
+                    soundfx_apply,
                     documentation,
                     about
                 ],
@@ -182,21 +189,20 @@ fn request_load_script_by_id(script_id: usize) -> Result<PathBuf> {
     match frontend {
         Some(frontend) => {
             let base_path = frontend.script_path.parent().unwrap();
-            match manifest::get_script_files(base_path) {
-                Ok(ref script_files) => {
-                    let script_path = script_files[script_id].to_path_buf();
+            let script_files: Vec<PathBuf> = manifest::get_scripts(&base_path)?
+                .iter()
+                .map(|e| e.script_file.clone())
+                .collect();
 
-                    match tx.send(Message::LoadScript(script_path.clone())) {
-                        Ok(()) => Ok(script_path),
+            let script_path = script_files[script_id].to_path_buf();
 
-                        Err(e) => {
-                            error!("Could not send an event to the main thread: {}", e);
-                            Err(WebFrontendError::ScriptLoadError {}.into())
-                        }
-                    }
+            match tx.send(Message::LoadScript(script_path.clone())) {
+                Ok(()) => Ok(script_path),
+
+                Err(e) => {
+                    error!("Could not send an event to the main thread: {}", e);
+                    Err(WebFrontendError::ScriptLoadError {}.into())
                 }
-
-                Err(_e) => Err(WebFrontendError::ScriptEnumerationError {}.into()),
             }
         }
 
@@ -526,6 +532,57 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
     Ok(Redirect::to(format!("/settings/{}", script_id)))
 }
 
+#[get("/soundfx")]
+fn soundfx() -> manifest::Result<templates::Template> {
+    let mut context = Context::new();
+
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
+
+    let config = crate::CONFIG.read().unwrap();
+    let frontend_theme = config
+        .as_ref()
+        .unwrap()
+        .get_str("frontend.theme")
+        .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
+    context.insert("theme", &frontend_theme);
+    context.insert("title", "Eruption: Settings");
+    context.insert("active_profile_name", &profile_name);
+    context.insert("active_script_name", &script_name);
+    context.insert("heading", "SoundFX");
+
+    let mut config_params = vec![];
+
+    config_params.push(util::ConfigParam::Bool {
+        name: "enable_sfx".into(),
+        description: "Enable sound effects globally".into(),
+        default: false,
+        value: ENABLE_SFX.load(Ordering::SeqCst),
+    });
+
+    context.insert("config_params", &config_params);
+
+    Ok(templates::Template::render("soundfx", &context))
+}
+
+#[post("/soundfx", data = "<params>")]
+fn soundfx_apply(params: Form<ValueMap<String, String>>) -> Result<Redirect> {
+    let default = "false".to_owned();
+
+    let enable_sfx = params
+        .store
+        .get("enable_sfx")
+        .unwrap_or(&default)
+        .parse::<bool>()
+        .unwrap();
+
+    ENABLE_SFX.store(enable_sfx, Ordering::SeqCst);
+
+    Ok(Redirect::to("/soundfx"))
+}
+
 #[get("/documentation")]
 fn documentation() -> templates::Template {
     let mut context = Context::new();
@@ -684,3 +741,154 @@ where
 //         }
 //     }
 // }
+
+mod util {
+    use serde::{Deserialize, Serialize};
+    use std::str::FromStr;
+
+    use super::Result;
+    use super::WebFrontendError;
+
+    #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+    #[serde(tag = "type", rename_all = "lowercase")]
+    pub enum ConfigParam {
+        //Int {
+        //name: String,
+        //description: String,
+        //default: i64,
+        //value: i64,
+        //},
+        //Float {
+        //name: String,
+        //description: String,
+        //default: f64,
+        //value: f64,
+        //},
+        Bool {
+            name: String,
+            description: String,
+            default: bool,
+            value: bool,
+        },
+        //String {
+        //name: String,
+        //description: String,
+        //default: String,
+        //value: String,
+        //},
+        //Color {
+        //name: String,
+        //description: String,
+        //default: u32,
+        //value: u32,
+        //},
+    }
+
+    pub trait ParseConfig {
+        fn parse_config_param(&self, param: &str, val: &str) -> Result<ConfigParam>;
+    }
+
+    impl ParseConfig for Vec<ConfigParam> {
+        fn parse_config_param(&self, param: &str, val: &str) -> Result<ConfigParam> {
+            for p in self.iter() {
+                match &p {
+                    //ConfigParam::Int { name, .. } => {
+                    //if name == param {
+                    //let value =
+                    //i64::from_str(&val).map_err(|_e| WebFrontendError::ParseParamError {})?;
+
+                    //return Ok(ConfigParam::Int {
+                    //name: name.to_string(),
+                    //value,
+                    //});
+                    //}
+                    //}
+
+                    //ConfigParam::Float { name, .. } => {
+                    //if name == param {
+                    //let value =
+                    //f64::from_str(&val).map_err(|_e| WebFrontendError::ParseParamError {})?;
+
+                    //return Ok(ConfigParam::Float {
+                    //name: name.to_string(),
+                    //value,
+                    //});
+                    //}
+                    //}
+                    ConfigParam::Bool {
+                        name,
+                        description,
+                        default,
+                        ..
+                    } => {
+                        if name == param {
+                            let value = bool::from_str(&val)
+                                .map_err(|_e| WebFrontendError::ParseParamError {})?;
+
+                            return Ok(ConfigParam::Bool {
+                                name: name.to_string(),
+                                description: description.to_string(),
+                                default: default.clone(),
+                                value,
+                            });
+                        }
+                    } //ConfigParam::String { name, .. } => {
+                      //if name == param {
+                      //let value = val.to_owned();
+
+                      //return Ok(ConfigParam::String {
+                      //name: name.to_string(),
+                      //value,
+                      //});
+                      //}
+                      //}
+
+                      //ConfigParam::Color { name, .. } => {
+                      //if name == param {
+                      //let value = u32::from_str_radix(&val[1..], 16)
+                      //.map_err(|_e| WebFrontendError::ParseParamError {})?;
+
+                      //return Ok(ConfigParam::Color {
+                      //name: name.to_string(),
+                      //value,
+                      //});
+                      //}
+                      //}
+                }
+            }
+
+            Err(WebFrontendError::ParseParamError {}.into())
+        }
+    }
+
+    pub trait GetAttr {
+        fn get_name(&self) -> &String;
+        fn get_default(&self) -> String;
+    }
+
+    impl GetAttr for ConfigParam {
+        fn get_name(&self) -> &String {
+            match self {
+                //ConfigParam::Int { ref name, .. } => name,
+
+                //ConfigParam::Float { ref name, .. } => name,
+                ConfigParam::Bool { ref name, .. } => name,
+                //ConfigParam::String { ref name, .. } => name,
+
+                //ConfigParam::Color { ref name, .. } => name,
+            }
+        }
+
+        fn get_default(&self) -> String {
+            match self {
+                //ConfigParam::Int { ref default, .. } => format!("{}", default),
+
+                //ConfigParam::Float { ref default, .. } => format!("{}", default),
+                ConfigParam::Bool { ref default, .. } => format!("{}", default),
+                //ConfigParam::String { ref default, .. } => default.to_owned(),
+
+                //ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
+            }
+        }
+    }
+}

@@ -102,7 +102,7 @@ impl KeyboardPlugin {
         }
     }
 
-    pub fn get_next_event(&self) -> Result<Option<u8>> {
+    pub fn get_next_event(&self) -> Result<Option<(u8, bool)>> {
         let result = DEVICE.with(|dev| {
             let result = dev
                 .borrow()
@@ -112,7 +112,7 @@ impl KeyboardPlugin {
 
             match result {
                 Ok(k) => {
-                    trace!("Key event: {}", k.1.event_code);
+                    debug!("Key event: {:?}", k.1);
                     Ok(k)
                 }
 
@@ -131,10 +131,16 @@ impl KeyboardPlugin {
         match result.0 {
             evdev_rs::ReadStatus::Success => match result.1.event_code {
                 EventCode::EV_KEY(code) => {
-                    let result = util::ev_key_to_key_index(code);
+                    // ignore repetitions
+                    if result.1.value > 1 {
+                        return Ok(None);
+                    }
 
-                    if result != 0xff {
-                        Ok(Some(result))
+                    let is_pressed = result.1.value > 0;
+                    let index = util::ev_key_to_key_index(code);
+
+                    if index != 0xff {
+                        Ok(Some((index, is_pressed)))
                     } else {
                         Err(KeyboardPluginError::KeyCodeConversionError {})
                     }

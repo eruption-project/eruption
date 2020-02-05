@@ -1,8 +1,9 @@
 name = "Fireworks"
-description = "Fireworks Effect"
+description = "Shows a fireworks effect on the keyboard"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.0.9"
+tags = ['Vendor']
 
 [[config]]
 type = 'float'

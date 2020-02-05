@@ -420,7 +420,7 @@ function on_key_down(key_index)
     color_map_pressed[key_index] = color_afterglow
 
     for i = 0, max_neigh do
-      local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+      local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset]
 
       if neigh_key ~= 0xff then
           water_grid[neigh_key + 1] = 0.5
@@ -451,7 +451,7 @@ function on_tick(delta)
     ticks = ticks + delta + 1
 
 	local num_keys = get_num_keys()
-	
+
     -- let it rain
     if ticks % rand(1, rain_intensity_divisor) == 0 then
         place_raindrop()
@@ -462,7 +462,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
+        for i = 0, num_keys do
             if color_map_pressed[i] >= 0x00000000 then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 
@@ -474,7 +474,7 @@ function on_tick(delta)
             end
         end
     end
-     
+
     -- fade out raindrops
     if ticks % raindrop_step == 0 then
         for i = 0, num_keys do

@@ -52,7 +52,11 @@ fn default_script_file() -> PathBuf {
     "".into()
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+fn default_html_class() -> String {
+    "badge-default".into()
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ConfigParam {
     Int {
@@ -190,7 +194,7 @@ impl GetAttr for ConfigParam {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
     #[serde(default = "default_id")]
     pub id: usize,
@@ -202,7 +206,17 @@ pub struct Manifest {
     pub version: String,
     pub author: String,
     pub min_supported_version: String,
+    pub tags: Option<Vec<ScriptTag>>,
     pub config: Vec<ConfigParam>,
+
+    #[serde(default = "default_html_class")]
+    pub html_class: String,
+}
+
+impl std::cmp::PartialOrd for Manifest {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+       Some(self.name.cmp(&other.name))
+    }
 }
 
 impl Manifest {
@@ -216,6 +230,16 @@ impl Manifest {
                         // fill in required fields, after parsing
                         result.id = id;
                         result.script_file = script.to_path_buf();
+
+                        if let Some(tags) = &result.tags {
+                            result.html_class.clear();
+
+                            for tag in tags {
+                                result
+                                    .html_class
+                                    .push_str(&format!(" {}", tag.get_css_class()));
+                            }
+                        }
 
                         Ok(result)
                     }
@@ -237,7 +261,7 @@ impl Manifest {
 }
 
 /// Get a `Vec` of `PathBufs` of available script files in the directory `script_path`.
-pub fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
+fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
     match fs::read_dir(script_path) {
         Ok(paths) => Ok(paths
             .map(|p| p.unwrap().path())
@@ -281,5 +305,89 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
         warn!("An error occurred during processing of manifest files");
     }
 
+    // sort and group by tags, then by name
+    result.sort_by(|a, b| {
+        let empty_vec = vec![];
+
+        let tags_a = a.tags.as_ref().unwrap_or(&empty_vec);
+        let tags_b = b.tags.as_ref().unwrap_or(&empty_vec);
+
+        let result = tags_a.cmp(&tags_b);
+        if result == std::cmp::Ordering::Equal {
+            return a.name.cmp(&b.name);
+        } else {
+            return result;
+        }
+    });
+
+    // update ids
+    let mut cntr = 0;
+    for mut s in &mut result {
+        s.id = cntr;
+        cntr += 1;
+    }
+
     Ok(result)
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+pub enum ScriptTag {
+    /// Script is of pre-release quality
+    BetaVersion,
+
+    /// Script is vendor-supplied
+    Vendor,
+
+    /// Script is from a 3rd party
+    ThirdParty,
+
+    /// Some kind of noise function
+    Noise,
+
+    /// Some kind of gradient
+    Gradient,
+
+    /// Script visualizes audio in some way
+    AudioVisualization,
+
+    /// Script should be considered a technology demo
+    Demo,
+}
+
+impl ScriptTag {
+    pub fn get_description(&self) -> String {
+        match *self {
+            ScriptTag::BetaVersion => "Beta version".into(),
+            ScriptTag::Demo => "Technology demo".into(),
+            ScriptTag::Vendor => "Vendor supplied".into(),
+            ScriptTag::ThirdParty => "3rd party script".into(),
+            ScriptTag::Noise => "Some random noise function".into(),
+            ScriptTag::Gradient => "Some kind of gradient".into(),
+            ScriptTag::AudioVisualization => "Script visualizes audio in some way".into(),
+        }
+    }
+
+    pub fn get_css_class(&self) -> String {
+        match *self {
+            ScriptTag::BetaVersion => "beta-version".into(),
+            ScriptTag::Demo => "demo".into(),
+            ScriptTag::Vendor => "vendor".into(),
+            ScriptTag::ThirdParty => "3rd-party".into(),
+            ScriptTag::Noise => "noise".into(),
+            ScriptTag::Gradient => "gradient".into(),
+            ScriptTag::AudioVisualization => "audio-visualization".into(),
+        }
+    }
+
+    pub fn get_badge_css_class(&self) -> String {
+        match *self {
+            ScriptTag::BetaVersion => "badge-beta-version".into(),
+            ScriptTag::Demo => "badge-demo".into(),
+            ScriptTag::Vendor => "badge-vendor".into(),
+            ScriptTag::ThirdParty => "badge-3rd-party".into(),
+            ScriptTag::Noise => "badge-noise".into(),
+            ScriptTag::Gradient => "badge-gradient".into(),
+            ScriptTag::AudioVisualization => "badge-audio-visualization".into(),
+        }
+    }
 }

@@ -430,7 +430,7 @@ function compute_fireworks(ticks)
         for key_index = 1, get_num_keys() - 1 do
 			local avg = (fireworks_grid[key_index - 1] + fireworks_grid[key_index + 1]) / 2
             fireworks_grid[key_index - 1] = (fireworks_grid[key_index] - 0.25) + (avg * 0.5)
-			
+
 			local epsilon = 0.1
             if fireworks_grid[key_index] <= epsilon or fireworks_grid[key_index] >= (1.0 - epsilon) then
                 fireworks_grid[key_index] = 0.0
@@ -440,11 +440,11 @@ function compute_fireworks(ticks)
         for y = 0, num_rows - 1 do
             for x = 0, max_keys_per_row - 1 do
                 local idx = y * max_keys_per_row + x
-                
+
                 if fireworks_grid[idx] > 0 then
                     fireworks_grid[idx] = fireworks_grid[idx] - (fireworks_grid[idx] * 0.25)
                 end
-                
+
                 local epsilon = 0.1
                 if fireworks_grid[idx] <= epsilon then
                     fireworks_grid[idx] = 0.0
@@ -468,7 +468,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do        
+        for i = 0, num_keys do
             if color_map_pressed[i] >= 0x00000000 then
                 color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
 
