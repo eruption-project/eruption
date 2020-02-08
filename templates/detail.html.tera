@@ -84,6 +84,7 @@
 						<div class="clearfix mt-4">
 							<a href="javascript:form.submit()" class="btn btn-success">Save and Apply</a>
 							<a href="/settings" class="btn btn-danger">Discard Changes</a>
+							<a href="/preview/{{ active_script_id }}" class="btn btn-primary">Source Code</a>
 						</div>
 					</form>
 				</div>

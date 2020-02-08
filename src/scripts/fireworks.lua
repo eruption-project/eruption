@@ -414,10 +414,10 @@ function on_key_down(key_index)
     color_map_pressed[key_index] = color_afterglow
 
     for i = 0, max_neigh do
-      local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+      local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
       if neigh_key ~= 0xff then
-          fireworks_grid[neigh_key + 1] = 1.0
+          fireworks_grid[neigh_key] = 1.0
       end
     end
 end

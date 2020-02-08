@@ -14,12 +14,12 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global state variables --
-max_loudness = 64
 color_map = {}
 color_map_pressed = {}
 
 ticks = 0
 column = 0
+power_envelope = 2000.0
 
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model
@@ -413,22 +413,31 @@ function on_key_down(key_index)
     color_map_pressed[key_index] = color_afterglow
 end
 
-function compute_spectrum()
+function compute_spectrum(ticks)
 		local spectrum = get_audio_spectrum()
-    local num_keys = get_num_keys()
+		local num_buckets = 32
+		local num_rows = max_keys_per_col
 
-    for i = 1, max_keys_per_row - 2 do
-      local key = cols_topology[i]
+		for col = 1, num_cols + 1 do
+			local bucket = trunc((num_buckets / (num_cols + 1)) * col)
+			local val = spectrum[bucket]
+			if val == nil then val = 0 end
 
-			if key ~= nil and key ~= 0xff then
-				for j = 1, max_keys_per_col - 2 do
-					local freq = spectrum[i * j]
-					color_map[key + j] = linear_gradient(rgb_to_color(255, 0, 0),
-																							 rgb_to_color(0, 255, 0),
-																							 max_keys_per_col / j * (freq * 0.1))
+			local p = max(num_rows - (val / power_envelope), 0)
+
+			-- debug("Value: " .. val .. " Envelope: " .. power_envelope ..
+			-- " Bucket: " .. bucket .. " col: " .. col .. " p: " .. p)
+
+			for i = num_rows - 1, p, -1 do
+				local index = rows_topology[(col + 1) + i * max_keys_per_row] + 1
+
+				if index ~= nil then
+					color_map[index] = linear_gradient(color_cold, color_hot, i / num_rows)
+				else
+					--error("Invalid index")
 				end
 			end
-    end
+		end
 end
 
 function on_tick(delta)
@@ -436,8 +445,25 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-    -- update the state
-		compute_spectrum()
+		-- fade out previously lit keys
+    if ticks % 4 == 0 then
+			for i = 0, get_num_keys() - 1 do
+					if color_map[i] >= 0x00000000 then
+							color_map[i] = color_map_pressed[i] - 0x00010101
+
+							if color_map[i] >= 0x00ffffff then
+									color_map[i] = 0x00ffffff
+							elseif color_map[i] <= 0x00000000 then
+									color_map[i] = color_background
+							end
+					end
+			end
+		end
+
+		-- update the state
+    if ticks % 1 == 0 then
+			compute_spectrum(ticks)
+		end
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then

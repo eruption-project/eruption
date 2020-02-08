@@ -1,9 +1,9 @@
-name = "Audio Visualizer #3 (Spectrum Analyzer)"
-description = "Spectrum analyzer audio visualization"
+name = "Stripes"
+description = "Display horizontal stripes of multiple colors (HSL color space)"
 version = "0.0.1"
 author = "The Eruption development team"
-min_supported_version = "0.0.11"
-tags = ['Vendor', 'Demo', 'AudioVisualization']
+min_supported_version = "0.0.2"
+tags = ['Vendor', 'Gradient']
 
 [[config]]
 type = 'float'
@@ -33,24 +33,34 @@ default = 0x00111111
 type = 'color'
 name = 'color_afterglow'
 description = 'Afterglow color'
-default = 0x00ff0000
+default = 0x00ffffff
 
 [[config]]
 type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0000
+default = 0x000a0a0a
 
 [[config]]
-type = 'color'
-name = 'color_cold'
-description = 'Cold color'
-default = 0x0000ff00
+type = 'float'
+name = 'gradient_step'
+description = 'Update gradient every [n] frames'
+default = 1
 
 [[config]]
-type = 'color'
-name = 'color_hot'
-description = 'Hot color'
-default = 0x00ff0000
+type = 'float'
+name = 'gradient_speed'
+description = 'Animation speed'
+default = 1
 
+[[config]]
+type = 'int'
+name = 'color_divisor'
+description = 'Divisor'
+default = 256
 
+[[config]]
+type = 'bool'
+name = 'animate_gradient'
+description = 'Enable animation'
+default = true

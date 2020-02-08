@@ -10,6 +10,8 @@ Build-Depends: debhelper (>= 11),
 		libevdev-dev (>= 1.6.0),
 		libudev-dev (>= 240),
 		libdbus-1-dev (>= 1.12.12),
+		libasound2-dev (>= 1.1.8-1),
+		libpulse-dev (>= 12.2-4+deb10u1),
 Standards-Version: 4.1.3
 Homepage: <insert the upstream URL, if relevant>
 #Vcs-Browser: https://salsa.debian.org/debian/eruption-roccat-vulcan-git

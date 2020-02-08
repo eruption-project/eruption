@@ -215,7 +215,7 @@ pub struct Manifest {
 
 impl std::cmp::PartialOrd for Manifest {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-       Some(self.name.cmp(&other.name))
+        Some(self.name.cmp(&other.name))
     }
 }
 

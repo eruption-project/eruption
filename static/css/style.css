@@ -57,6 +57,16 @@ body {
 		line-height: 1.20rem;
 }
 
+pre {
+		overflow: hidden;
+}
+
+.code {
+    font-family: 'Source Code Pro', 'Open Sans';
+		font-size: 1rem;
+		line-height: 1.55rem;
+}
+
 div#collapseOne,
 div#collapseTwo {
     font-family: 'Roboto';
@@ -85,29 +95,20 @@ a.btn {
     color: white !important;
 }
 
+input {
+	padding: 8px;
+}
+
 input[type="text"] {
-    width: 150px;
+	width: 150px;
+}
+
+input[type=color] {
+	padding: 0px;
 }
 
 .home-slide-content {
     font-family: 'Cute Font';
-}
-
-div:hover.tile {
-    transform: scale(1.025);
-    transition: all 0.25s ease-in-out;
-}
-
-div.tile {
-    text-align: center;
-    padding: 12px;
-    border-radius: 12px;
-    transition: all 0.05s ease-in-out;
-
-    max-width: 150px;
-
-    min-height: 100px;
-    max-height: 150px;
 }
 
 .bg-semitransparent {
@@ -120,7 +121,7 @@ p {
 
 a.card-feedback > div.card {
 	transform: scale(1.0) !important;
-	transition: transform .2s ease;
+	transition: transform .15s ease;
 }
 
 a.card-feedback:hover > div.card {
@@ -145,8 +146,8 @@ a.dropdown-item {
 
 .card-text {
     text-align: center;
-    font-size: 1.35rem;
-		line-height: 0.75em;
+    font-size: 1.30rem;
+		line-height: 0.70em;
 }
 
 .group:after {

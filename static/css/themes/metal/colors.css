@@ -22,6 +22,11 @@ ul#menu-main > li > a:focus,ul#menu-main > li > a:active, ul#menu-main > li > a.
     color: #fff;
 }
 
+input {
+	color: white;
+	background: rgb(42, 48, 54);
+}
+
 #header-wrapper input[type=submit] {
 	background: rgba(249, 47, 57, 1) !important;
 }
@@ -75,6 +80,7 @@ a:hover, a:active {
 }
 
 div .bg-success {
+	border: 10px outset #fd4d1c;
 	background: rgba(50, 195, 50, 1.0) !important;
 }
 

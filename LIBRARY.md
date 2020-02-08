@@ -4,7 +4,10 @@ _This document is a work-in-progress draft_
 
 ## Overview
 
-Eruption provides a small, but hopefully useful library of functions that are intended to be used by Lua scripts. Functions can be provided either by the daemon proper, or by plugins. Plugin specific functions are only available if the respective plugin is loaded.
+Eruption provides a small, but hopefully useful library of functions that are
+intended to be used by Lua scripts. Functions can be provided either by the
+daemon proper, or by plugins. Plugin specific functions are only available
+if the respective plugin is loaded.
 
 ## Available Plugins
 
@@ -39,7 +42,7 @@ Eruption currently ships with the following library functions:
 | `clamp(f, l, h) -> f`    | _core_  | Math  | since before 0.0.9 | Clamp `f` to range `l..h` |
 | `color_to_rgb(color) -> (r, g, b)` | _core_  | Color | since before 0.0.9 | Returns the red, green and blue components of `color` |
 | `color_to_hsl(color) -> (h, s, l)` | _core_  | Color | since 0.0.10 | Returns the hue, saturation and lightness components of `color` |
-| `rgb_to_color(r, g, b) -> color`    | _core_  | Color  | since before 0.0.9 | Returns a color, constructed fom r, g and b components |
+| `rgb_to_color(r, g, b) -> color`    | _core_  | Color  | since before 0.0.9 | Returns a color, constructed fom the r, g and b components |
 | `hsl_to_color(h, s, l) -> color`    | _core_  | Color  | since 0.0.9 | Returns a color, constructed fom hue [0..360), saturation [0.0...1.0] and lightness [0.0..0.5], (0.5..1.0] components |
 | `linear_gradient(start_color, end_color, p) -> color`    | _core_  | Color  | since before 0.0.9 | Returns the interpolated color at position `p` located between `start_color`..`end_color`. The value of `p` should lie in the range of 0..1 |
 | `noise(f1, f2, f3) -> f`    | _core_  | Noise | removed in 0.0.11 | Computes an Open Simplex Noise value |
@@ -53,9 +56,9 @@ Eruption currently ships with the following library functions:
 | `get_key_color(key_index) -> color`    | _core_  | Hw  | since before 0.0.9 | Returns the current color of the key `key_index` |
 | `set_key_color(key_index, color)`    | _core_  | Hw  | since before 0.0.9 | Sets the current color of the key `key_index` to `color` |
 | `set_color_map([color_map])`    | _core_  | Hw  | since before 0.0.9 | Set all LEDs at once, to the colors specified in the array `color_map` |
-| `get_current_load_avg_1() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last n minutes |
-| `get_current_load_avg_5() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last n minutes |
-| `get_current_load_avg_10() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last n minutes |
+| `get_current_load_avg_1() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 1 minute |
+| `get_current_load_avg_5() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 5 minutes |
+| `get_current_load_avg_10() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 10 minutes |
 | `get_runnable_tasks() -> i`    | System  | Sys  | since before 0.0.9 | Returns the number of runnable tasks on the system |
 | `get_total_tasks() -> i`    | System  | Sys  | since before 0.0.9 | Returns the total number of tasks on the system |
 | `get_package_temp() -> f`    | Sensors  | Hw  | since before 0.0.9 | Returns the temperature of the CPU package |
@@ -64,9 +67,9 @@ Eruption currently ships with the following library functions:
 | `get_mem_used_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the amount of used memory |
 | `get_swap_total_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the total size of the swap space |
 | `get_swap_used_kb() -> i`    | Sensors  | Hw  | since before 0.0.9 | Returns the amount of used swap space |
-| `get_audio_loudness() -> i`    | Audio | Hw  | since 0.0.11 | Returns the current RMS loudness of the configured audio input |
-| `get_audio_spectrum() -> Vec<f>`    | Audio | Hw  | since 0.0.11 | Returns a vector of floats containing results of a fourier transform (FFT) of the configured audio input |
-| `get_audio_raw_data() -> Vec<i>`    | Audio | Hw  | since 0.0.11 | Returns a buffer of 16bit wide signed integer values, containing samples from the configured audio input |
+| `get_audio_loudness() -> i`    | Audio | dsp  | since 0.0.11 | Returns the current RMS loudness of the configured audio input |
+| `get_audio_spectrum() -> [f]`    | Audio | dsp  | since 0.0.11 | Returns a vector of 1024 floats, containing results of a fourier transform (FFT) of the configured audio input |
+| `get_audio_raw_data() -> [i]`    | Audio | dsp  | since 0.0.11 | Returns a buffer of 16-bit wide signed integer values, containing samples from the configured audio input |
 _Non-exhaustive, more documentation coming soon_
 
 ## Available Callback Functions (Events)
@@ -84,7 +87,8 @@ Exhaustive listing of all currently available event callbacks
 
 ## Example Code
 
-The following code will change a key's color to bright red after it was pressed.
+The following code will change a key's color to bright red after it has been
+pressed.
 
 #### Listing 01
 ```lua

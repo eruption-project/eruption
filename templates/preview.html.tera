@@ -1,0 +1,33 @@
+{% extends "base" %}
+
+{% block custom_head %}
+	<link rel="stylesheet" href="/css/styles/tomorrow-night.css">
+	<script src="/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+{% endblock custom_head %}
+
+{% block header %}
+	<h2 class="pagetitle">{{ heading }}</h2>
+{% endblock header %}
+
+{% block content %}
+	{{ super() }}
+
+	<div class="container">
+		<div class="row">
+			<div class="col lg-12">
+				<pre>
+					<h6 class="mb-0">Listing: {{ filename }}</h6>
+					<code class="code lua">
+						{{ code }}
+					</code>
+
+					<h6 class="mb-0">Manifest file</h6>
+					<code class="code toml">
+						{{ manifest }}
+					</code>
+				</pre>
+			</div>
+		</div>
+	</div>
+{% endblock content %}

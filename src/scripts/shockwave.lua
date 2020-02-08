@@ -21,12 +21,12 @@
 key_state = {
 	invalid = 0,
 	idle = 1,
-	
+
 	shockwave_sentinel = 16,
 	shockwave_origin = 32,
 }
 
--- max ttl of a shockwave cell 
+-- max ttl of a shockwave cell
 shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
 shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / 6
 
@@ -52,7 +52,7 @@ table_offset = 0
 num_rows = 6
 max_keys_per_row = 22
 rows_topology = {
-	
+
 	-- ISO model
 	0x00, 0x0b, 0x11, 0x17, 0x1c, 0x30, 0x35, 0x3b, 0x41, 0x4e, 0x54, 0x55, 0x56, 0x63, 0x67, 0x6c, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0x01, 0x06, 0x0c, 0x12, 0x18, 0x1d, 0x21, 0x31, 0x36, 0x3c, 0x42, 0x48, 0x4f, 0x57, 0x64, 0x68, 0x6d, 0x71, 0x77, 0x7c, 0x81, 0xff,
@@ -524,20 +524,20 @@ function impact(key_index)
 	local num_keys = get_num_keys()
 
 	for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
   
 		if neigh_key ~= 0xff then
-			state_map[neigh_key + 1] = key_state.shockwave_origin
+			state_map[neigh_key] = key_state.shockwave_origin
 		end
 	end
 end
 
 function ghost_key(key_index)
     for i = 0, max_neigh do
-        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
         if neigh_key ~=nil and neigh_key ~= 0xff then
-            color_map_ghost[neigh_key + 1] = color_ghost
+            color_map_ghost[neigh_key] = color_ghost
         end
     end
 end

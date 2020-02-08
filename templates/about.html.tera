@@ -12,59 +12,47 @@
 				<div class="col lg-12">
 					<h4>What is Eruption?</h4>
 					<p>Eruption is a Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards</p>
-					<p>It consists of a daemon written in Rust, the core, an integrated Lua interpreter and additional plugin components. 
-					Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" 
+
+					<p>It consists of a daemon written in Rust, the core, an integrated Lua interpreter and additional plugin components.
+					Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed"
 					and subsequently control the AIMO LEDs on the keyboard. Plugins may export additional functionality to the Lua scripting engine.</p>
 
-					<h4>Contributing</h4>
+					<section id="services" class="section services animated">
+						<div class="container">
+							<div class="row">
+								<div class="col lg-3 animated-fast zoomIn">
+									<div class="service-box">
+										<i class="fa fa-code"></i>
+										<h2>Integrated Lua Interpreter</h2>
+									</div>
+								</div>
+								<div class="col lg-3 animated zoomIn">
+									<div class="service-box">
+										<i class="fas fa-lightbulb"></i>
+										<h2>AIMO LED Control</h2>
+									</div>
+								</div>
+								<div class="col lg-3 animated-fast zoomIn">
+									<div class="service-box">
+										<i class="fa fa-bolt"></i>
+										<h2>Event-Based Architecture</h2>
+									</div>
+								</div>
+								<div class="col lg-3 animated-slow zoomIn">
+									<div class="service-box">
+										<i class="fa fa-plus"></i>
+										<h2>Support for Plugins</h2>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
 					<p>
 						Contributions are welcome!
 						Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
 					</p>
 				</div>
-
-				<section id="services" class="section services animated">
-					<div class="container">
-						<div class="row">
-							<div class="col lg-3 animated-fast zoomIn">
-								<div class="service-box">
-									<i class="fa fa-code"></i>
-									<h2>Integrated Lua Interpreter</h2>
-									<p>
-										The integrated Lua virtual machine is responsible for executing the selected effects script.
-									</p>
-								</div>
-							</div>
-							<div class="col lg-3 animated zoomIn">
-								<div class="service-box">
-									<i class="fas fa-lightbulb"></i>
-									<h2>AIMO LED Control</h2>
-									<p>
-										Control LED effects via Lua scripts.
-									</p>
-								</div>
-							</div>
-							<div class="col lg-3 animated-fast zoomIn">
-								<div class="service-box">
-									<i class="fa fa-bolt"></i>
-									<h2>Event-Based Architecture</h2>
-									<p>
-										React to events on your system such as e.g. "Key pressed", and subsequently trigger effects from within Lua scripts.
-									</p>
-								</div>
-							</div>
-							<div class="col lg-3 animated-slow zoomIn">
-								<div class="service-box">
-									<i class="fa fa-plus"></i>
-									<h2>Support for Plugins</h2>
-									<p>
-										Extend Eruption with additional Plugins, extending the capabilities of the Lua virtual machine further
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
 			</div>
 		</div>
 	</div>

@@ -23,10 +23,12 @@ use rlua::Context;
 use std::any::Any;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
+use itertools::Itertools;
 
+use rustfft::algorithm::Radix4;
 use rustfft::num_complex::Complex;
 use rustfft::num_traits::Zero;
-use rustfft::FFTplanner;
+use rustfft::FFT;
 
 use crate::events;
 use crate::plugins::{self, Plugin};
@@ -54,7 +56,7 @@ pub enum AudioPluginError {
 pub const MAX_IN_FLIGHT_SFX: usize = 2;
 
 /// The allocated size of the audio grabber buffer
-pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 / 16 / 2;
+pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 30;
 
 /// Thread termination request flag of the audio player thread
 pub static AUDIO_PLAYBACK_THREAD_TERMINATED: AtomicBool = AtomicBool::new(false);
@@ -93,10 +95,12 @@ fn try_start_audio_backend() -> Result<()> {
     AUDIO_BACKEND
         .lock()
         .unwrap()
-        .replace(Box::new(backends::PulseAudioBackend::new().map_err(|e| {
-            error!("Could not initialize the audio backend: {}", e);
-            e
-        })?));
+        .replace(Box::new(backends::PulseAudioBackend::new().map_err(
+            |e| {
+                error!("Could not initialize the audio backend: {}", e);
+                e
+            },
+        )?));
 
     Ok(())
 }
@@ -138,29 +142,45 @@ impl AudioPlugin {
         try_start_audio_grabber()
             .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
 
-        const FFT_STEP: usize = 1;
-        const FFT_SIZE: usize = AUDIO_GRABBER_BUFFER_SIZE / 2 / FFT_STEP;
+        const FFT_SIZE: usize = 1024;
 
         let raw_data = Self::get_audio_raw_data();
         let mut data: Vec<Complex<f32>> = raw_data
             .iter()
-            .step_by(FFT_STEP)
+            .take(FFT_SIZE)
             .map(|e| Complex::from(*e as f32))
             .collect();
         let mut output = vec![Complex::zero(); FFT_SIZE];
 
-        let inverse = false;
-        let mut planner = FFTplanner::new(inverse);
-        let fft = planner.plan_fft(FFT_SIZE);
+        let fft = Radix4::new(FFT_SIZE, false);
         fft.process(&mut data, &mut output);
 
+        // normalize and smooth datapoints
         let one_over_fft_len_sqrt = 1.0 / (FFT_SIZE as f32).sqrt();
-        let result = output
+
+        const SMOOTH_DATAPOINTS: usize = 4;
+        let mut counter = 0;
+        let mut accum = 0.0;
+
+        let result: Vec<f32> = output[8..(output.len() / 8) + 8]
             .iter()
             .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
+            .coalesce(|x, y| {
+                counter += 1;
+                accum += x + y;
+
+                if counter % SMOOTH_DATAPOINTS == 0 {
+                    counter = 0;
+                    accum = 0.0;
+
+                    Err((x, y))
+                } else {
+                    Ok(accum / SMOOTH_DATAPOINTS as f32)
+                }
+            })
             .collect();
 
-        //debug!("{:?}", result);
+        //debug!("Length: {}", result.len());
 
         result
     }
@@ -533,14 +553,14 @@ mod backends {
                 //return Err(AudioPluginError::GrabberError{ description: "Thread already running".into() });
             }
 
+            AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
+
             let host = self.host.clone();
             let event_loop = self.event_loop_grabber.clone();
 
             let builder = thread::Builder::new().name("audio/grabber".into());
             builder
                 .spawn(move || -> Result<()> {
-                    AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
-
                     let device = host
                         .default_input_device()
                         .expect("Failed to get default input device");
@@ -742,11 +762,11 @@ mod backends {
                 //return Err(AudioPluginError::GrabberError{ description: "Thread already running".into() });
             }
 
+            AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
+
             let builder = thread::Builder::new().name("audio/grabber".into());
             builder
                 .spawn(move || -> Result<()> {
-                    AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
-
                     let grabber = Self::init_grabber().unwrap();
 
                     'RECORDER_LOOP: loop {

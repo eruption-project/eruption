@@ -481,10 +481,10 @@ end
 -- support functions
 function impact(key_index)
     for i = 0, max_neigh do
-        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] 
+        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
         if neigh_key ~= 0xff then
-            color_map_impact[neigh_key + 1] = color_impact
+            color_map_impact[neigh_key] = color_impact
         end
     end
 end

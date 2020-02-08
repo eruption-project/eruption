@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.0.11
-Release: 1%{?dist}
+Release: 3%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -59,6 +59,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/templates
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css
+%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/styles
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/eruption
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/metal
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/js
@@ -160,6 +161,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/raindrops.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/stripes.lua
+%{_datarootdir}/%{ShortName}/scripts/stripes.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua
@@ -177,10 +180,12 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/templates/profiles.html.tera
 %{_datarootdir}/%{ShortName}/templates/soundfx.html.tera
 %{_datarootdir}/%{ShortName}/templates/settings.html.tera
+%{_datarootdir}/%{ShortName}/templates/preview.html.tera
 %{_datarootdir}/%{ShortName}/static/css/animate.css
 %{_datarootdir}/%{ShortName}/static/css/style.css
 %{_datarootdir}/%{ShortName}/static/css/themes/eruption/colors.css
 %{_datarootdir}/%{ShortName}/static/css/themes/metal/colors.css
+%{_datarootdir}/%{ShortName}/static/css/styles/tomorrow-night.css
 %{_datarootdir}/%{ShortName}/static/css/bootstrap.css
 %{_datarootdir}/%{ShortName}/static/css/bootstrap.css.map
 %{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css
@@ -230,10 +235,6 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js.map
 %{_datarootdir}/%{ShortName}/static/js/jquery.js
 %{_datarootdir}/%{ShortName}/static/js/fontawesome.min.js
+%{_datarootdir}/%{ShortName}/static/js/highlight.pack.js
 
 %changelog
-* Tue Jan 14 2020 X3n0m0rph59 <x3n0m0rph59@gmail.com> - 0.0.10-1
-- rebuilt
-
-* Mon Dec 23 2019 X3n0m0rph59 <x3n0m0rph59@gmail.com> - 0.0.10-0
-- rebuilt

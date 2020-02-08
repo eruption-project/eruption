@@ -1,4 +1,4 @@
-target/release/eruption usr/sbin
+target/release/eruption usr/sbin/
 
 support/config/eruption.conf etc/eruption/
 
@@ -15,11 +15,33 @@ support/man/eruption.conf.5 usr/share/man/man5/
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
 support/profiles/profile3.profile var/lib/eruption/profiles
+support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
+support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 
 src/scripts/afterglow.lua usr/lib/eruption/scripts/
 src/scripts/afterglow.lua.manifest usr/lib/eruption/scripts/
-src/scripts/examples usr/lib/eruption/scripts/
-src/scripts/examples/simple.lua usr/lib/eruption/scripts/
+src/scripts/afterhue.lua usr/lib/eruption/scripts/
+src/scripts/afterhue.lua.manifest usr/lib/eruption/scripts/
+src/scripts/audioviz1.lua usr/lib/eruption/scripts/
+src/scripts/audioviz1.lua.manifest usr/lib/eruption/scripts/
+src/scripts/audioviz2.lua usr/lib/eruption/scripts/
+src/scripts/audioviz2.lua.manifest usr/lib/eruption/scripts/
+src/scripts/audioviz3.lua usr/lib/eruption/scripts/
+src/scripts/audioviz3.lua.manifest usr/lib/eruption/scripts/
+src/scripts/audioviz4.lua usr/lib/eruption/scripts/
+src/scripts/audioviz4.lua.manifest usr/lib/eruption/scripts/
+src/scripts/audioviz5.lua usr/lib/eruption/scripts/
+src/scripts/audioviz5.lua.manifest usr/lib/eruption/scripts/
+src/scripts/batique.lua usr/lib/eruption/scripts/
+src/scripts/batique.lua.manifest usr/lib/eruption/scripts/
+src/scripts/billow.lua usr/lib/eruption/scripts/
+src/scripts/billow.lua.manifest usr/lib/eruption/scripts/
+src/scripts/fbm.lua usr/lib/eruption/scripts/
+src/scripts/fbm.lua.manifest usr/lib/eruption/scripts/
+src/scripts/fire.lua usr/lib/eruption/scripts/
+src/scripts/fire.lua.manifest usr/lib/eruption/scripts/
+src/scripts/fireworks.lua usr/lib/eruption/scripts/
+src/scripts/fireworks.lua.manifest usr/lib/eruption/scripts/
 src/scripts/gaming.lua usr/lib/eruption/scripts/
 src/scripts/gaming.lua.manifest usr/lib/eruption/scripts/
 src/scripts/gradient.lua usr/lib/eruption/scripts/
@@ -28,6 +50,10 @@ src/scripts/heartbeat.lua usr/lib/eruption/scripts/
 src/scripts/heartbeat.lua.manifest usr/lib/eruption/scripts/
 src/scripts/impact.lua usr/lib/eruption/scripts/
 src/scripts/impact.lua.manifest usr/lib/eruption/scripts/
+src/scripts/multigradient.lua usr/lib/eruption/scripts/
+src/scripts/multigradient.lua.manifest usr/lib/eruption/scripts/
+src/scripts/perlin.lua usr/lib/eruption/scripts/
+src/scripts/perlin.lua.manifest usr/lib/eruption/scripts/
 src/scripts/rainbow.lua usr/lib/eruption/scripts/
 src/scripts/rainbow.lua.manifest usr/lib/eruption/scripts/
 src/scripts/raindrops.lua usr/lib/eruption/scripts/
@@ -38,3 +64,13 @@ src/scripts/sysmon.lua usr/lib/eruption/scripts/
 src/scripts/sysmon.lua.manifest usr/lib/eruption/scripts/
 src/scripts/temperature.lua usr/lib/eruption/scripts/
 src/scripts/temperature.lua.manifest usr/lib/eruption/scripts/
+src/scripts/voronoi.lua usr/lib/eruption/scripts/
+src/scripts/voronoi.lua.manifest usr/lib/eruption/scripts/
+src/scripts/water.lua usr/lib/eruption/scripts/
+src/scripts/water.lua.manifest usr/lib/eruption/scripts/
+src/scripts/examples usr/lib/eruption/scripts/
+src/scripts/examples/simple.lua usr/lib/eruption/scripts/
+
+support/sfx/typewriter1.wav usr/share/eruption/sfx/
+support/sfx/phaser1.wav usr/share/eruption/sfx/
+support/sfx/phaser2.wav usr/share/eruption/sfx/

@@ -16,7 +16,7 @@ frontend = ["rocket", "rocket_contrib"]
 
 [dependencies]
 libc = "0.2.66"
-nix = "0.16.1"
+nix = "0.17.0"
 prctl = "1.0.0"
 log = "0.4.8"
 pretty_env_logger = "0.4.0"

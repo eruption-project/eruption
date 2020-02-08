@@ -64,7 +64,6 @@ pub enum ScriptingError {
 
     #[fail(display = "Invalid or inaccessible manifest file")]
     InaccessibleManifest {},
-
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -72,7 +71,7 @@ pub enum ScriptingError {
 /// These functions are intended to be used from within lua scripts
 mod callbacks {
     use log::*;
-    use noise::{NoiseFn, Perlin, OpenSimplex, Billow, Worley, Fbm, RidgedMulti};
+    use noise::{Billow, Fbm, NoiseFn, OpenSimplex, Perlin, RidgedMulti, Worley};
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
     use std::convert::TryFrom;
@@ -584,16 +583,16 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     })?;
     globals.set("fractal_brownian_noise", fractal_brownian_noise)?;
 
-    let ridged_multifractal_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::ridged_multifractal_noise(f1, f2, f3))
-    })?;
+    let ridged_multifractal_noise =
+        lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+            Ok(callbacks::ridged_multifractal_noise(f1, f2, f3))
+        })?;
     globals.set("ridged_multifractal_noise", ridged_multifractal_noise)?;
 
     let open_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
         Ok(callbacks::open_simplex_noise(f1, f2, f3))
     })?;
     globals.set("open_simplex_noise", open_simplex_noise)?;
-
 
     // transformation utilities
     let rotate = lua_ctx.create_function(|_, (map, theta): (Vec<u32>, f64)| {

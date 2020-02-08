@@ -450,10 +450,7 @@ fn run_main_loop(
                             });
 
                         events::notify_observers(events::Event::KeyDown(index))
-                            .unwrap_or_else(|e| {
-                                error!("{}", e)
-                            });
-
+                            .unwrap_or_else(|e| error!("{}", e));
                     } else {
                         lua_tx
                             .send(script::Message::KeyUp(index))
@@ -462,10 +459,7 @@ fn run_main_loop(
                             });
 
                         events::notify_observers(events::Event::KeyUp(index))
-                            .unwrap_or_else(|e| {
-                                error!("{}", e)
-                            });
-
+                            .unwrap_or_else(|e| error!("{}", e));
                     }
                 }
 

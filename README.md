@@ -88,7 +88,7 @@ $ sudo mkdir -p /root/.config/pulse/
 $ EDITOR=nano sudoedit /root/.config/pulse/client.conf
 ```
 
-And then add the following lines:
+and then add the following lines:
 
 ```
 autospawn = no
@@ -144,11 +144,11 @@ The following scripts are unfinished/still in development, and some of them have
 | Shockwave   | `shockwave.lua`   | Approx. 75% done | Like Impact, but shows propagating waves when a key has been pressed                                |
 | Sysmon      | `sysmon.lua`      | Approx. 10% done | System monitor, keyboard reflects system state                                                      |
 | Temperature | `temperature.lua` | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot'  |
-| Audio Visualizer #1 | `audioviz1.lua` | Approx 85% done | Shows the current loudness of the configured audio source as a color gradient                  |
-| Audio Visualizer #2 | `audioviz2.lua` | Approx 65% done | Shows the current loudness of the configured audio source as HSL colors progressively          |
-| Audio Visualizer #3 | `audioviz3.lua` | Approx 25% done | Shows spectrum visualization of the configured audio source                                    |
-| Audio Visualizer #4 | `audioviz4.lua` | Approx 85% done | VU meter heartbeat effect                                                                      |
-| Audio Visualizer #5 | `audioviz5.lua` | Approx 75% done | Like Batique, but with additional audio feedback                                               |
+| Audio Visualizer 1 | `audioviz1.lua` | Approx 85% done | Shows the current loudness of the configured audio source as a color gradient                   |
+| Audio Visualizer 2 | `audioviz2.lua` | Approx 65% done | Shows the current loudness of the configured audio source as HSL colors progressively           |
+| Audio Visualizer 3 | `audioviz3.lua` | Approx 35% done | Shows a spectrum visualization of the configured audio source                                   |
+| Audio Visualizer 4 | `audioviz4.lua` | Approx 85% done | VU-meter like heartbeat effect                                                                  |
+| Audio Visualizer 5 | `audioviz5.lua` | Approx 75% done | Like Batique, but with additional audio feedback                                                |
 
 # Further Information
 

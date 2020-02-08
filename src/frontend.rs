@@ -141,6 +141,7 @@ impl WebFrontend {
                     settings,
                     settings_of_id,
                     settings_apply,
+                    preview_script,
                     soundfx,
                     soundfx_apply,
                     documentation,
@@ -530,6 +531,51 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
     active_profile.as_mut().unwrap().save()?;
 
     Ok(Redirect::to(format!("/settings/{}", script_id)))
+}
+
+#[get("/preview/<script_id>")]
+fn preview_script(script_id: Option<usize>) -> Result<templates::Template> {
+    let mut context = Context::new();
+
+    let config = crate::CONFIG.read().unwrap();
+    let frontend_theme = config
+        .as_ref()
+        .unwrap()
+        .get_str("frontend.theme")
+        .unwrap_or_else(|_| constants::DEFAULT_FRONTEND_THEME.to_string());
+
+    context.insert("theme", &frontend_theme);
+
+    let script_dir = config
+        .as_ref()
+        .unwrap()
+        .get_str("global.script_dir")
+        .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
+    let script_path = PathBuf::from(&script_dir);
+
+    let scripts = manifest::get_scripts(&script_path)?;
+
+    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile_name = &profile.as_ref().unwrap().name;
+    let script = ACTIVE_SCRIPT.read().unwrap();
+    let script_name = &script.as_ref().unwrap().name;
+
+    context.insert("title", "Eruption: Settings");
+    context.insert("active_profile_name", &profile_name);
+    context.insert("active_script_name", &script_name);
+    context.insert("heading", "Source Code");
+
+    let script_file = &scripts[script_id.unwrap()].script_file;
+    let manifest_file = crate::util::get_manifest_for(&scripts[script_id.unwrap()].script_file);
+
+    let code = std::fs::read_to_string(&script_file).unwrap();
+    let manifest = std::fs::read_to_string(&manifest_file).unwrap();
+
+    context.insert("filename", &script_file);
+    context.insert("code", &code);
+    context.insert("manifest", &manifest);
+
+    Ok(templates::Template::render("preview", &context))
 }
 
 #[get("/soundfx")]

@@ -139,6 +139,8 @@ impl KeyboardPlugin {
                     let is_pressed = result.1.value > 0;
                     let index = util::ev_key_to_key_index(code);
 
+                    debug!("Key index: {:#x}", index);
+
                     if index != 0xff {
                         Ok(Some((index, is_pressed)))
                     } else {
