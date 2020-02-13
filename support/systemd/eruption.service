@@ -4,7 +4,7 @@ Documentation=man:eruption(8) man:eruption.conf(5)
 Wants=basic.target
 
 [Service]
-ExecStart=/usr/sbin/eruption -c /etc/eruption/eruption.conf
+ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
 PIDFile=/run/eruption.pid
 Type=exec
 Restart=no
