@@ -523,13 +523,38 @@ fn run_main_loop(
             lua_tx.send(script::Message::RealizeColorMap).unwrap();
 
             // yield to thread
-            thread::sleep(Duration::from_millis(0));
+            //thread::sleep(Duration::from_millis(0));
 
-            // guarantee right order of execution for the alpha blend operations
-            // to work out correctly, so wait for the current Lua VM to
-            // complete its blending code, before continuing
-            let pending = COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
-            let _result = COLOR_MAPS_READY_CONDITION.1.wait(pending).unwrap();
+            // guarantee right order of execution for the alpha blend operations,
+            // so wait for the current Lua VM to complete its blending code,
+            // before continuing
+            let saved_pending = *COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
+            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
+
+            let mut cntr = 0;
+            loop {
+                if cntr > 0 {
+                    warn!("Spurious wakeup detected!");
+                }
+
+                let result = COLOR_MAPS_READY_CONDITION
+                    .1
+                    .wait_timeout(pending, Duration::from_millis(500))
+                    .unwrap();
+
+                if result.1.timed_out() {
+                    error!("Thread deadlock detected!");
+                    break;
+                }
+
+                pending = result.0;
+                if *pending != saved_pending {
+                    break;  // blend operation has completed,
+                            // in the thread that we waited on
+                }
+
+                cntr += 1;
+            }
         }
 
         // yield main thread

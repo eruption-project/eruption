@@ -570,7 +570,7 @@ pub fn run_script(
 
                                 // signal readiness / notify the main thread that we are done
                                 *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap() -= 1;
-                                crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
+                                crate::COLOR_MAPS_READY_CONDITION.1.notify_all();
                             }
 
                             Message::KeyDown(param) => {
