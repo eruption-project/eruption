@@ -332,6 +332,16 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum ScriptTag {
+    // Script "classes"
+    /// Script may be categorized as a "background"
+    Background,
+
+    /// Script filters data, input/processing/output
+    Filter,
+
+    /// Script may be categorized as an "effect"
+    Effect,
+
     /// Script is of pre-release quality
     BetaVersion,
 
@@ -357,6 +367,9 @@ pub enum ScriptTag {
 impl ScriptTag {
     pub fn get_description(&self) -> String {
         match *self {
+            ScriptTag::Background => "Background".into(),
+            ScriptTag::Filter => "Filter".into(),
+            ScriptTag::Effect => "Effect".into(),
             ScriptTag::BetaVersion => "Beta version".into(),
             ScriptTag::Demo => "Technology demo".into(),
             ScriptTag::Vendor => "Vendor supplied".into(),
@@ -369,6 +382,9 @@ impl ScriptTag {
 
     pub fn get_css_class(&self) -> String {
         match *self {
+            ScriptTag::Background => "class-background".into(),
+            ScriptTag::Filter => "class-filter".into(),
+            ScriptTag::Effect => "class-effect".into(),
             ScriptTag::BetaVersion => "beta-version".into(),
             ScriptTag::Demo => "demo".into(),
             ScriptTag::Vendor => "vendor".into(),
@@ -381,6 +397,9 @@ impl ScriptTag {
 
     pub fn get_badge_css_class(&self) -> String {
         match *self {
+            ScriptTag::Background => "badge-background".into(),
+            ScriptTag::Filter => "badge-filter".into(),
+            ScriptTag::Effect => "badge-effect".into(),
             ScriptTag::BetaVersion => "badge-beta-version".into(),
             ScriptTag::Demo => "badge-demo".into(),
             ScriptTag::Vendor => "badge-vendor".into(),

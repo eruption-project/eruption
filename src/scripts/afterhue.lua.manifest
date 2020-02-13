@@ -1,9 +1,9 @@
 name = "Afterhue"
 description = "Show an afterglow effect with a linearly decreasing hue angle (in HSL color-space), after a key has been pressed"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.9"
-tags = ['Vendor', 'Demo']
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor', 'Demo']
 
 [[config]]
 type = 'float'
@@ -12,25 +12,13 @@ description = 'Step afterglow animation every [n] frames'
 default = 1.0
 
 [[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
 type = 'float'
 name = 'hue_step_afterglow'
 description = 'Angle value that gets subtracted from afterglow every [n] frames'
 default = 10
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 0.5

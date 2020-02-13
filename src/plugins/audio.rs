@@ -16,6 +16,7 @@
 */
 
 use failure::Fail;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::*;
 use rlua;
@@ -23,7 +24,6 @@ use rlua::Context;
 use std::any::Any;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
-use itertools::Itertools;
 
 use rustfft::algorithm::Radix4;
 use rustfft::num_complex::Complex;

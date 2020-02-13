@@ -48,7 +48,7 @@ use crate::profiles;
 use crate::scripting::manifest;
 use crate::scripting::manifest::GetAttr as GetAttrManifest;
 use crate::scripting::manifest::ParseConfig;
-use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPT};
+use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
 
 /// Web-Frontend messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -86,7 +86,7 @@ pub enum WebFrontendError {
 #[derive(Debug, Clone)]
 pub struct WebFrontend {
     profile_path: PathBuf,
-    script_path: PathBuf,
+    script_paths: Vec<PathBuf>,
 }
 
 lazy_static! {
@@ -96,10 +96,14 @@ lazy_static! {
 
 #[cfg(feature = "frontend")]
 impl WebFrontend {
-    pub fn new(frontend_tx: Sender<Message>, profile_path: PathBuf, script_path: PathBuf) -> Self {
+    pub fn new(
+        frontend_tx: Sender<Message>,
+        profile_path: PathBuf,
+        script_paths: Vec<PathBuf>,
+    ) -> Self {
         let frontend = WebFrontend {
             profile_path,
-            script_path,
+            script_paths,
         };
 
         *WEB_FRONTEND.lock().unwrap() = Some(frontend.clone());
@@ -164,9 +168,9 @@ impl WebFrontend {
 pub fn initialize(
     frontend_tx: Sender<Message>,
     profile_path: PathBuf,
-    script_path: PathBuf,
+    script_paths: Vec<PathBuf>,
 ) -> Result<WebFrontend> {
-    Ok(WebFrontend::new(frontend_tx, profile_path, script_path))
+    Ok(WebFrontend::new(frontend_tx, profile_path, script_paths))
 }
 
 /// An empty dummy struct
@@ -189,7 +193,8 @@ fn request_load_script_by_id(script_id: usize) -> Result<PathBuf> {
 
     match frontend {
         Some(frontend) => {
-            let base_path = frontend.script_path.parent().unwrap();
+            // TODO: find better way to handle base path
+            let base_path = frontend.script_paths[0].parent().unwrap();
             let script_files: Vec<PathBuf> = manifest::get_scripts(&base_path)?
                 .iter()
                 .map(|e| e.script_file.clone())
@@ -261,26 +266,6 @@ fn to_html_color(value: Value, _: HashMap<String, Value>) -> tera::Result<Value>
 
 #[get("/")]
 fn index() -> manifest::Result<Redirect> {
-    // let config = crate::CONFIG.read().unwrap();
-    // let script_dir = config
-    //     .as_ref()
-    //     .unwrap()
-    //     .get_str("global.script_dir")
-    //     .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
-    // let script_path = PathBuf::from(&script_dir);
-
-    // let scripts = manifest::get_scripts(&script_path)?;
-    // let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
-    //     scripts
-    //         .iter()
-    //         .position(|e| e.script_file == active.script_file)
-    // });
-
-    // Ok(Redirect::to(format!(
-    //     "/settings/{}",
-    //     active_script_id.unwrap()
-    // )))
-
     Ok(Redirect::to("/settings"))
 }
 
@@ -290,8 +275,7 @@ fn profiles_selection() -> templates::Template {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
 
     let active_profile = &*ACTIVE_PROFILE.read().unwrap();
     let frontend = WEB_FRONTEND.lock().unwrap_or_else(|e| {
@@ -311,7 +295,7 @@ fn profiles_selection() -> templates::Template {
             context.insert("theme", &frontend_theme);
             context.insert("title", "Eruption: Profiles");
             context.insert("active_profile_name", &profile_name);
-            context.insert("active_script_name", &script_name);
+            //context.insert("active_scripts", &active_scripts);
             context.insert("heading", "Profiles");
 
             context.insert("active_profile", &active_profile);
@@ -340,8 +324,7 @@ fn settings() -> manifest::Result<templates::Template> {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
 
     let config = crate::CONFIG.read().unwrap();
     let script_dir = config
@@ -351,11 +334,12 @@ fn settings() -> manifest::Result<templates::Template> {
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
     let script_path = PathBuf::from(&script_dir);
     let scripts = manifest::get_scripts(&script_path)?;
-    let active_script_id = ACTIVE_SCRIPT.read().unwrap().as_ref().and_then(|active| {
-        scripts
-            .iter()
-            .position(|e| e.script_file == active.script_file)
-    });
+    let active_script_ids = ACTIVE_SCRIPTS
+        .read()
+        .unwrap()
+        .iter()
+        .map(|s| s.id)
+        .collect::<Vec<usize>>();
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
         .as_ref()
@@ -365,11 +349,11 @@ fn settings() -> manifest::Result<templates::Template> {
     context.insert("theme", &frontend_theme);
     context.insert("title", "Eruption: Settings");
     context.insert("active_profile_name", &profile_name);
-    context.insert("active_script_name", &script_name);
+    //context.insert("active_scripts", &active_scripts);
     context.insert("heading", "Select Effect");
 
     context.insert("scripts", &scripts);
-    context.insert("active_script_id", &active_script_id.ok_or(-1).unwrap());
+    context.insert("active_script_ids", &active_script_ids);
 
     Ok(templates::Template::render("settings", &context))
 }
@@ -407,7 +391,7 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
             let profile = ACTIVE_PROFILE.read().unwrap();
             let profile_name = &profile.as_ref().unwrap().name;
             context.insert("active_profile_name", &profile_name);
-            context.insert("active_script_name", &scripts[script_id].name);
+            //context.insert("active_scripts", &active_scripts);
         }
 
         context.insert("title", "Eruption: Settings");
@@ -418,8 +402,10 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
         let profile = active_profile.as_mut().unwrap();
         let script_name = scripts[script_id].name.clone();
 
-        if profile.active_script != script_path {
-            profile.active_script = Path::new(script_path.file_name().unwrap()).to_owned();
+        if !profile.active_scripts.contains(&script_path) {
+            profile
+                .active_scripts
+                .push(Path::new(script_path.file_name().unwrap()).to_path_buf());
             profile.save()?
         }
 
@@ -462,12 +448,12 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
 
         let profile = ACTIVE_PROFILE.read().unwrap();
         let profile_name = &profile.as_ref().unwrap().name;
-        let script = ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &script.as_ref().unwrap().name;
+        //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+        //let script_name = &script.as_ref().unwrap().name;
 
         context.insert("title", "Eruption: Settings");
         context.insert("active_profile_name", &profile_name);
-        context.insert("active_script_name", &script_name);
+        //context.insert("active_scripts", &active_scripts);
         context.insert("heading", "Select Effect");
 
         context.insert("scripts", &scripts);
@@ -478,21 +464,20 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
 
 #[post("/settings/apply/<script_id>", data = "<params>")]
 fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Result<Redirect> {
-    let active_script = &*ACTIVE_SCRIPT.read().unwrap();
+    let active_scripts = &*ACTIVE_SCRIPTS.read().unwrap();
     let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
 
-    let script = active_script.as_ref().unwrap();
     let mut profile = active_profile.as_mut().unwrap().clone();
 
     let mut default_map = HashMap::new();
     let mut default_config = vec![];
 
-    let script_name = script.name.clone();
+    let script = active_scripts.iter().find(|e| e.id == script_id).unwrap();
     let config = profile
         .config
         .as_mut()
         .unwrap_or(&mut default_map)
-        .get_mut(&script_name)
+        .get_mut(&script.name)
         .unwrap_or(&mut default_config);
 
     for (k, v) in &params.store {
@@ -526,7 +511,7 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
         .config
         .as_mut()
         .unwrap_or(&mut default_map)
-        .insert(script_name, config.clone());
+        .insert(script.name.clone(), config.clone());
 
     active_profile.as_mut().unwrap().save()?;
 
@@ -557,12 +542,12 @@ fn preview_script(script_id: Option<usize>) -> Result<templates::Template> {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let script_name = &active_scripts.iter().find(|s| s.id == script_id).unwrap().name;
 
     context.insert("title", "Eruption: Settings");
     context.insert("active_profile_name", &profile_name);
-    context.insert("active_script_name", &script_name);
+    //context.insert("active_scripts", &active_scripts);
     context.insert("heading", "Source Code");
 
     let script_file = &scripts[script_id.unwrap()].script_file;
@@ -584,8 +569,7 @@ fn soundfx() -> manifest::Result<templates::Template> {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
 
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
@@ -596,7 +580,7 @@ fn soundfx() -> manifest::Result<templates::Template> {
     context.insert("theme", &frontend_theme);
     context.insert("title", "Eruption: Settings");
     context.insert("active_profile_name", &profile_name);
-    context.insert("active_script_name", &script_name);
+    //context.insert("active_scripts", &active_scripts);
     context.insert("heading", "SoundFX");
 
     let mut config_params = vec![];
@@ -635,8 +619,7 @@ fn documentation() -> templates::Template {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
 
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
@@ -647,7 +630,7 @@ fn documentation() -> templates::Template {
     context.insert("theme", &frontend_theme);
     context.insert("title", "Eruption: Documentation");
     context.insert("active_profile_name", &profile_name);
-    context.insert("active_script_name", &script_name);
+    //context.insert("active_scripts", &active_scripts);
     context.insert("heading", "Documentation");
 
     templates::Template::render("documentation", &context)
@@ -659,8 +642,7 @@ fn about() -> templates::Template {
 
     let profile = ACTIVE_PROFILE.read().unwrap();
     let profile_name = &profile.as_ref().unwrap().name;
-    let script = ACTIVE_SCRIPT.read().unwrap();
-    let script_name = &script.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
 
     let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
@@ -673,7 +655,7 @@ fn about() -> templates::Template {
 
     context.insert("title", "Eruption: About");
     context.insert("active_profile_name", &profile_name);
-    context.insert("active_script_name", &script_name);
+    //context.insert("active_scripts", &active_scripts);
     context.insert("heading", "About");
 
     templates::Template::render("about", &context)

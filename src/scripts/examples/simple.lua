@@ -19,17 +19,17 @@ color_map = {}
 function on_startup()
     -- turn off all key LEDs
     for i = 0, get_num_keys() do
-        color_map[i] = rgb_to_color(0, 0, 0)
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
 
     -- update keyboard LED state
-    set_color_map(color_map)
+    submit_color_map(color_map)
 end
 
 function on_key_down(key_index)
     info("Pressed key: " .. key_index)
 
     -- set color of pressed key to red
-    color_map[key_index] = rgb_to_color(255, 0, 0)
-    set_color_map(color_map)
+    color_map[key_index] = rgba_to_color(255, 0, 0, 255)
+    submit_color_map(color_map)
 end

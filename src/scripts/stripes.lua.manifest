@@ -7,42 +7,6 @@ tags = ['Vendor', 'Gradient']
 
 [[config]]
 type = 'float'
-name = 'afterglow_step'
-description = 'Step afterglow animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0a0a
-
-[[config]]
-type = 'float'
 name = 'gradient_step'
 description = 'Update gradient every [n] frames'
 default = 1
@@ -64,3 +28,9 @@ type = 'bool'
 name = 'animate_gradient'
 description = 'Enable animation'
 default = true
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 0.5

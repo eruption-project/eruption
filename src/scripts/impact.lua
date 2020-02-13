@@ -20,8 +20,6 @@
 
 -- global state variables --
 color_map = {}
-color_map_pressed = {}
-color_map_impact = {}
 ticks = 0
 
 -- Keyboard topology maps --
@@ -404,87 +402,43 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
-
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
+		local num_keys = get_num_keys()
+		for i = 0, num_keys do
+				color_map[i] = rgba_to_color(0, 0, 0, 0)
+		end
 end
 
 function on_key_down(key_index)
-    color_map_pressed[key_index] = color_afterglow
-    impact(key_index)
-end
+		color_map[key_index] = rgba_to_color(255, 255, 255, 255)
 
-function on_tick(delta)
-    ticks = ticks + delta + 1
-    
-    local num_keys = get_num_keys()
-
-    -- compute impact effect
-    if ticks % impact_step == 0 then
-        for i = 0, num_keys do
-            if color_map_impact[i] > color_off then
-                color_map_impact[i] = color_map_impact[i] - color_step_impact
-
-                if color_map_impact[i] < color_off then
-                    color_map_impact[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] > color_off then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] < color_off then
-                    color_map_pressed[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_impact[i] + color_map_pressed[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > color_off then
-            color_map_combined[i] = color_map_pressed[i]
-        end
-
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-
-    set_color_map(color_map_combined)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_background
-        color_map_pressed[i] = color_off
-        color_map_impact[i] = color_off
-    end
-end
-
--- support functions
-function impact(key_index)
     for i = 0, max_neigh do
         local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
         if neigh_key ~= 0xff then
-            color_map_impact[neigh_key] = color_impact
+            color_map[neigh_key] = color_impact
         end
     end
+end
+
+function on_tick(delta)
+    ticks = ticks + delta + 1
+
+		local num_keys = get_num_keys()
+
+		-- compute impact effect
+		if ticks % impact_step == 0 then
+				for i = 0, num_keys do
+					color = color_map[i]
+					if color ~= nil then
+						r, g, b, alpha = color_to_rgba(color)
+						color_map[i] = rgba_to_color(r, g, b, max(alpha - alpha_step_impact, 0))
+
+						if alpha < 1 then
+							color_map[i] = rgba_to_color(0, 0, 0, 0)
+						end
+					end
+				end
+		end
+
+    submit_color_map(color_map)
 end

@@ -1,60 +1,30 @@
 name = "Audio Visualizer #1 (Gradient)"
 description = "Audio visualization using a color gradient"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.11"
-tags = ['Vendor', 'Demo', 'AudioVisualization']
-
-[[config]]
-type = 'float'
-name = 'afterglow_step'
-description = 'Step afterglow animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ff0000
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0000
+min_supported_version = "0.0.12"
+tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']
 
 [[config]]
 type = 'color'
 name = 'color_silence'
 description = 'Silence color'
-default = 0x0000ff00
+default = 0xff00ff00
 
 [[config]]
 type = 'color'
 name = 'color_loud'
 description = 'Loud color'
-default = 0x00ff0000
+default = 0xffff0000
 
 [[config]]
 type = 'color'
 name = 'color_step'
 description = 'Color step'
 default = 0x00110000
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 0.5

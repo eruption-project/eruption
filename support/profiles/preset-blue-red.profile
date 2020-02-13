@@ -1,7 +1,10 @@
 id = '5dc62fa6-e965-45cb-a0da-e87d29713100'
 name = 'Preset: Blue and Red'
 description = '''Presets for a 'blue and red' color scheme'''
-active_script = 'batique.lua'
+active_scripts = [
+	'batique.lua',
+	'shockwave.lua'
+]
 
 [[config.Batique]]
 type = 'float'

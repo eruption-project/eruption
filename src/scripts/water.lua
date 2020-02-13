@@ -13,16 +13,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- global constants --
-color_rain_min = 0x000050505
-color_rain_max = 0x000101010
-color_step_raindrop = 0x00101010
-
 -- global state variables --
 color_map = {}
-color_map_pressed = {}
-color_map_raindrops = {}
-color_map_water = {}
 
 -- holds a scalar field to simulate water
 water_grid = {}
@@ -408,17 +400,18 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
+    local num_keys = get_num_keys()
+    for i = 0, num_keys do
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
+    end
 
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
+    -- initialize water scalar field
+    for i = 0, num_keys do
+        water_grid[i] = 0.0
+    end
 end
 
 function on_key_down(key_index)
-    color_map_pressed[key_index] = color_afterglow
-
     for i = 0, max_neigh do
       local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
@@ -428,8 +421,10 @@ function on_key_down(key_index)
     end
 end
 
-function compute_water(ticks)
-    local num_keys = get_num_keys()
+function on_tick(delta)
+    ticks = ticks + delta + 1
+
+		local num_keys = get_num_keys()
 
     if ticks % flow_speed == 0 then
         -- compute wave effect
@@ -442,70 +437,12 @@ function compute_water(ticks)
             end
 
             -- compute color
-            color_map_water[key_index] = hsl_to_color(lerp(120, 220, sin(water_grid[key_index])) + 1.25, 1.0, 0.5)
-        end
-    end
-end
-
-function on_tick(delta)
-    ticks = ticks + delta + 1
-
-	local num_keys = get_num_keys()
-
-    -- let it rain
-    if ticks % rand(1, rain_intensity_divisor) == 0 then
-        place_raindrop()
-    end
-
-    -- calculate water effect
-    compute_water(ticks)
-
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] >= 0x00000000 then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] >= 0x00ffffff then
-                    color_map_pressed[i] = 0x00ffffff
-                elseif color_map_pressed[i] <= 0x00000000 then
-                    color_map_pressed[i] = 0x00000000
-                end
-            end
-        end
-    end
-
-    -- fade out raindrops
-    if ticks % raindrop_step == 0 then
-        for i = 0, num_keys do
-            if color_map_raindrops[i] > color_off then
-                color_map_raindrops[i] = color_map_raindrops[i] - color_step_raindrop
-
-                if color_map_raindrops[i] < color_off then
-                    color_map_raindrops[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_water[i] + color_map_raindrops[i] + color_map_pressed[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > 0x00000000 then
-            color_map_combined[i] = color_map_pressed[i]
+            color_map[key_index] = hsla_to_color(lerp(120, 220, sin(water_grid[key_index])) + 1.25, 1.0, 0.5,
+																								 lerp(0, 255, sin(water_grid[key_index])))
         end
 
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
+				submit_color_map(color_map)
     end
-
-    set_color_map(color_map_combined)
 end
 
 function place_raindrop()
@@ -513,20 +450,4 @@ function place_raindrop()
     local key = rand(0, num_keys)
 
     color_map_raindrops[key] = rand(color_rain_min, color_rain_max)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_background
-        color_map_pressed[i] = color_off
-        color_map_raindrops[i] = color_off
-        color_map_water[i] = color_off
-    end
-
-    -- initialize water scalar field
-    for i = 0, num_keys do
-        water_grid[i] = 0.0
-    end
 end

@@ -80,8 +80,12 @@ impl SensorsPlugin {
             panic!();
         });
 
-        let components = system.get_components_list();
-        components[components.len() - 1].get_temperature()
+        let components = system.get_components();
+        if components.len() > 1 {
+            components[components.len().saturating_sub(1)].get_temperature()
+        } else {
+            0.0
+        }
     }
 
     /// Get the max. temperature of the CPU package
@@ -93,8 +97,12 @@ impl SensorsPlugin {
             panic!();
         });
 
-        let components = system.get_components_list();
-        components[components.len() - 1].get_max()
+        let components = system.get_components();
+        if components.len() > 1 {
+            components[components.len().saturating_sub(1)].get_max()
+        } else {
+            0.0
+        }
     }
 
     /// Get the total installed memory size

@@ -20,18 +20,19 @@ use lazy_static::lazy_static;
 use log::*;
 use rand::Rng;
 use rlua::{Context, Function, Lua};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 use std::vec::Vec;
 
 use crate::plugin_manager;
-use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
+use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGBA};
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
-use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPT};
+use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
 
 pub enum Message {
     // Startup, // Not passed via message but invoked directly
@@ -41,15 +42,29 @@ pub enum Message {
     KeyUp(u8),
 
     LoadScript(PathBuf),
+
+    /// blend LOCAL_LED_MAP with LED_MAP ("realize" the color map)
+    RealizeColorMap,
 }
 
 lazy_static! {
     /// Global LED state of the managed device
-    pub static ref LED_MAP: Arc<RwLock<Vec<RGB>>> = Arc::new(RwLock::new(vec![RGB {
+    pub static ref LED_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA {
         r: 0x00,
         g: 0x00,
         b: 0x00,
+        a: 0x00,
     }; NUM_KEYS]));
+}
+
+thread_local! {
+    /// LED color map to be realized on the next render frame
+    pub static LOCAL_LED_MAP: RefCell<Vec<RGBA>> = RefCell::new(vec![RGBA {
+        r: 0x00,
+        g: 0x00,
+        b: 0x00,
+        a: 0x00,
+    }; NUM_KEYS]);
 }
 
 pub type Result<T> = std::result::Result<T, ScriptingError>;
@@ -70,6 +85,7 @@ pub enum ScriptingError {
 
 /// These functions are intended to be used from within lua scripts
 mod callbacks {
+    use byteorder::{ByteOrder, LittleEndian};
     use log::*;
     use noise::{Billow, Fbm, NoiseFn, OpenSimplex, Perlin, RidgedMulti, Worley};
     use palette::ConvertFrom;
@@ -79,9 +95,9 @@ mod callbacks {
     use std::thread;
     use std::time::Duration;
 
-    use super::LED_MAP;
+    use super::{LED_MAP, LOCAL_LED_MAP};
 
-    use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGB};
+    use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGBA};
 
     /// Log a message with severity level `trace`.
     pub(crate) fn log_trace(x: &str) {
@@ -122,6 +138,16 @@ mod callbacks {
         (r, g, b)
     }
 
+    /// Get RGB components of a 32 bits color value.
+    pub(crate) fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
+        let a = u8::try_from((c >> 24) & 0xff).unwrap();
+        let r = u8::try_from((c >> 16) & 0xff).unwrap();
+        let g = u8::try_from((c >> 8) & 0xff).unwrap();
+        let b = u8::try_from(c & 0xff).unwrap();
+
+        (r, g, b, a)
+    }
+
     /// Get HSL components of a 32 bits color value.
     #[allow(clippy::many_single_char_names)]
     pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
@@ -136,27 +162,47 @@ mod callbacks {
 
     /// Convert RGB components to a 32 bits color value.
     pub(crate) fn rgb_to_color(r: u8, g: u8, b: u8) -> u32 {
-        (u32::from(r) << 16) + (u32::from(g) << 8) + u32::from(b)
+        LittleEndian::read_u32(&[b, g, r, 255])
+    }
+
+    /// Convert RGBA components to a 32 bits color value.
+    pub(crate) fn rgba_to_color(r: u8, g: u8, b: u8, a: u8) -> u32 {
+        LittleEndian::read_u32(&[b, g, r, a])
     }
 
     /// Convert HSL components to a 32 bits color value.
     pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
         let rgb = Srgb::convert_from(Hsl::new(h, s, l));
         let rgb = rgb.into_components();
-        rgb_to_color(
+        rgba_to_color(
             (rgb.0 * 255.0) as u8,
             (rgb.1 * 255.0) as u8,
             (rgb.2 * 255.0) as u8,
+            255,
+        )
+    }
+
+    /// Convert HSLA components to a 32 bits color value.
+    pub(crate) fn hsla_to_color(h: f64, s: f64, l: f64, a: u8) -> u32 {
+        let rgb = Srgb::convert_from(Hsl::new(h, s, l));
+        let rgb = rgb.into_components();
+        rgba_to_color(
+            (rgb.0 * 255.0) as u8,
+            (rgb.1 * 255.0) as u8,
+            (rgb.2 * 255.0) as u8,
+            a,
         )
     }
 
     /// Generate a linear RGB color gradient from start to dest color,
     /// where p must lie in the range from [0.0..1.0].
     pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
+        let sca: f64 = f64::from((start >> 24) & 0xff);
         let scr: f64 = f64::from((start >> 16) & 0xff);
         let scg: f64 = f64::from((start >> 8) & 0xff);
         let scb: f64 = f64::from((start) & 0xff);
 
+        let dca: f64 = f64::from((dest >> 24) & 0xff);
         let dcr: f64 = f64::from((dest >> 16) & 0xff);
         let dcg: f64 = f64::from((dest >> 8) & 0xff);
         let dcb: f64 = f64::from((dest) & 0xff);
@@ -164,8 +210,14 @@ mod callbacks {
         let r: f64 = (scr as f64) + (((dcr - scr) as f64) * p);
         let g: f64 = (scg as f64) + (((dcg - scg) as f64) * p);
         let b: f64 = (scb as f64) + (((dcb - scb) as f64) * p);
+        let a: f64 = (sca as f64) + (((dca - sca) as f64) * p);
 
-        rgb_to_color(r.round() as u8, g.round() as u8, b.round() as u8)
+        rgba_to_color(
+            r.round() as u8,
+            g.round() as u8,
+            b.round() as u8,
+            a.round() as u8,
+        )
     }
 
     /// Compute Perlin noise
@@ -272,9 +324,10 @@ mod callbacks {
 
     /// Set the color of the key `idx` to `c`.
     pub(crate) fn set_key_color(rvdev: &Arc<Mutex<RvDeviceState>>, idx: usize, c: u32) {
-        match LED_MAP.write() {
+        match LED_MAP.lock() {
             Ok(mut led_map) => {
-                led_map[idx] = RGB {
+                led_map[idx] = RGBA {
+                    a: u8::try_from((c >> 24) & 0xff).unwrap(),
                     r: u8::try_from((c >> 16) & 0xff).unwrap(),
                     g: u8::try_from((c >> 8) & 0xff).unwrap(),
                     b: u8::try_from(c & 0xff).unwrap(),
@@ -298,13 +351,46 @@ mod callbacks {
         }
     }
 
-    /// Set all leds at once.
+    /// Get state of all LEDs
+    pub(crate) fn get_color_map() -> Vec<u32> {
+        match LED_MAP.lock() {
+            Ok(global_led_map) => {
+                let result = global_led_map
+                    .iter()
+                    .map(|v| {
+                        ((v.r as u32).overflowing_shl(16).0
+                            + (v.g as u32).overflowing_shl(8).0
+                            + v.b as u32) as u32
+                    })
+                    .collect::<Vec<u32>>();
+
+                assert!(result.len() == NUM_KEYS);
+
+                result
+            }
+
+            Err(e) => {
+                error!("Could not lock a shared data structure. {}", e);
+                panic!();
+            }
+        }
+    }
+
+    /// Set all LEDs at once.
     pub(crate) fn set_color_map(rvdev: &Arc<Mutex<RvDeviceState>>, map: &[u32]) {
-        let mut led_map = [RGB { r: 0, g: 0, b: 0 }; NUM_KEYS];
+        assert!(map.len() == NUM_KEYS);
+
+        let mut led_map = [RGBA {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0,
+        }; NUM_KEYS];
 
         let mut i = 0;
         loop {
-            led_map[i] = RGB {
+            led_map[i] = RGBA {
+                a: u8::try_from((map[i] >> 24) & 0xff).unwrap(),
                 r: u8::try_from((map[i] >> 16) & 0xff).unwrap(),
                 g: u8::try_from((map[i] >> 8) & 0xff).unwrap(),
                 b: u8::try_from(map[i] & 0xff).unwrap(),
@@ -316,16 +402,57 @@ mod callbacks {
             }
         }
 
-        let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
-        rvdev
-            .send_led_map(&led_map)
-            .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
-        thread::sleep(Duration::from_millis(
-            crate::constants::DEVICE_SETTLE_MILLIS,
-        ));
+        match LED_MAP.lock() {
+            Ok(mut global_led_map) => {
+                *global_led_map = led_map.to_vec();
+
+                let mut rvdev = rvdev.lock().unwrap_or_else(|e| {
+                    error!("Could not lock a shared data structure: {}", e);
+                    panic!();
+                });
+                rvdev.send_led_map(&led_map).unwrap_or_else(|e| {
+                    error!("Could not send the LED map to the keyboard: {}", e)
+                });
+                thread::sleep(Duration::from_millis(
+                    crate::constants::DEVICE_SETTLE_MILLIS,
+                ));
+            }
+
+            Err(e) => {
+                error!("Could not lock a shared data structure. {}", e);
+            }
+        }
+    }
+
+    /// Submit LED color map for later realization, as soon as the
+    /// next frame is rendered
+    pub(crate) fn submit_color_map(map: &[u32]) {
+        //debug!("submit_color_map: {}/{}", map.len(), NUM_KEYS);
+        assert!(map.len() == NUM_KEYS);
+
+        let mut led_map = [RGBA {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0,
+        }; NUM_KEYS];
+
+        let mut i = 0;
+        loop {
+            led_map[i] = RGBA {
+                a: u8::try_from((map[i] >> 24) & 0xff).unwrap(),
+                r: u8::try_from((map[i] >> 16) & 0xff).unwrap(),
+                g: u8::try_from((map[i] >> 8) & 0xff).unwrap(),
+                b: u8::try_from(map[i] & 0xff).unwrap(),
+            };
+
+            i += 1;
+            if i >= NUM_KEYS - 1 {
+                break;
+            }
+        }
+
+        LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
     }
 }
 
@@ -356,7 +483,10 @@ pub fn run_script(
 
                 return Err(ScriptingError::InaccessibleManifest {});
             } else {
-                *ACTIVE_SCRIPT.write().unwrap() = manifest.clone().ok();
+                ACTIVE_SCRIPTS
+                    .write()
+                    .unwrap()
+                    .push(manifest.as_ref().unwrap().clone());
             }
 
             let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
@@ -396,6 +526,51 @@ pub fn run_script(
                                         Err(e)
                                     })?;
                                 }
+                            }
+
+                            Message::RealizeColorMap => {
+                                match LED_MAP.lock() {
+                                    Ok(mut background) => {
+                                        LOCAL_LED_MAP.with(|foreground| {
+                                            for (idx, background) in
+                                                background.iter_mut().enumerate()
+                                            {
+                                                let bg = background.clone();
+                                                let fg = foreground.borrow()[idx];
+
+                                                let color = RGBA {
+                                                    r: (((fg.a as f64) * fg.r as f64
+                                                        + (255 - fg.a) as f64 * bg.r as f64)
+                                                        .abs()
+                                                        as u32
+                                                        >> 8)
+                                                        as u8,
+                                                    g: (((fg.a as f64) * fg.g as f64
+                                                        + (255 - fg.a) as f64 * bg.g as f64)
+                                                        .abs()
+                                                        as u32
+                                                        >> 8)
+                                                        as u8,
+                                                    b: (((fg.a as f64) * fg.b as f64
+                                                        + (255 - fg.a) as f64 * bg.b as f64)
+                                                        .abs()
+                                                        as u32
+                                                        >> 8)
+                                                        as u8,
+                                                    a: fg.a as u8,
+                                                };
+
+                                                *background = color;
+                                            }
+                                        });
+                                    }
+
+                                    Err(e) => error!("Could not realize the color map: {}", e),
+                                }
+
+                                // signal readiness / notify the main thread that we are done
+                                *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap() -= 1;
+                                crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
                             }
 
                             Message::KeyDown(param) => {
@@ -449,7 +624,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.11");
+    config.insert("daemon_version", "0.0.12");
 
     globals.set("config", config)?;
 
@@ -546,6 +721,9 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
     globals.set("color_to_rgb", color_to_rgb)?;
 
+    let color_to_rgba = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgba(c)))?;
+    globals.set("color_to_rgba", color_to_rgba)?;
+
     let color_to_hsl = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_hsl(c)))?;
     globals.set("color_to_hsl", color_to_hsl)?;
 
@@ -553,9 +731,19 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
         .create_function(|_, (r, g, b): (u8, u8, u8)| Ok(callbacks::rgb_to_color(r, g, b)))?;
     globals.set("rgb_to_color", rgb_to_color)?;
 
+    let rgba_to_color = lua_ctx.create_function(|_, (r, g, b, a): (u8, u8, u8, u8)| {
+        Ok(callbacks::rgba_to_color(r, g, b, a))
+    })?;
+    globals.set("rgba_to_color", rgba_to_color)?;
+
     let hsl_to_color = lua_ctx
         .create_function(|_, (h, s, l): (f64, f64, f64)| Ok(callbacks::hsl_to_color(h, s, l)))?;
     globals.set("hsl_to_color", hsl_to_color)?;
+
+    let hsla_to_color = lua_ctx.create_function(|_, (h, s, l, a): (f64, f64, f64, u8)| {
+        Ok(callbacks::hsla_to_color(h, s, l, a))
+    })?;
+    globals.set("hsla_to_color", hsla_to_color)?;
 
     let linear_gradient = lua_ctx.create_function(|_, (start, dest, p): (u32, u32, f64)| {
         Ok(callbacks::linear_gradient(start, dest, p))
@@ -616,12 +804,21 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     })?;
     globals.set("set_key_color", set_key_color)?;
 
+    let get_color_map = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_color_map()))?;
+    globals.set("get_color_map", get_color_map)?;
+
     let rvdev_tmp = rvdev;
     let set_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
         callbacks::set_color_map(&rvdev_tmp, &map);
         Ok(())
     })?;
     globals.set("set_color_map", set_color_map)?;
+
+    let submit_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
+        callbacks::submit_color_map(&map);
+        Ok(())
+    })?;
+    globals.set("submit_color_map", submit_color_map)?;
 
     // finally, register Lua functions supplied by eruption plugins
     let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
@@ -636,6 +833,7 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
 
 fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result<()> {
     let profile = &*ACTIVE_PROFILE.read().unwrap();
+    let script_name = &manifest.name;
 
     let globals = lua_ctx.globals();
 
@@ -645,7 +843,7 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
         match param {
             ConfigParam::Int { name, default, .. } => {
                 if let Some(profile) = profile {
-                    if let Some(val) = profile.get_int_value(name) {
+                    if let Some(val) = profile.get_int_value(script_name, name) {
                         globals.raw_set::<&str, i64>(name, *val)?;
                     } else {
                         globals.raw_set::<&str, i64>(name, *default)?;
@@ -657,7 +855,7 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
 
             ConfigParam::Float { name, default, .. } => {
                 if let Some(profile) = profile {
-                    if let Some(val) = profile.get_float_value(name) {
+                    if let Some(val) = profile.get_float_value(script_name, name) {
                         globals.raw_set::<&str, f64>(name, *val)?;
                     } else {
                         globals.raw_set::<&str, f64>(name, *default)?;
@@ -669,7 +867,7 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
 
             ConfigParam::Bool { name, default, .. } => {
                 if let Some(profile) = profile {
-                    if let Some(val) = profile.get_bool_value(name) {
+                    if let Some(val) = profile.get_bool_value(script_name, name) {
                         globals.raw_set::<&str, bool>(name, *val)?;
                     } else {
                         globals.raw_set::<&str, bool>(name, *default)?;
@@ -681,7 +879,7 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
 
             ConfigParam::String { name, default, .. } => {
                 if let Some(profile) = profile {
-                    if let Some(val) = profile.get_str_value(name) {
+                    if let Some(val) = profile.get_str_value(script_name, name) {
                         globals.raw_set::<&str, &str>(name, &*val)?;
                     } else {
                         globals.raw_set::<&str, &str>(name, &*default)?;
@@ -693,7 +891,7 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
 
             ConfigParam::Color { name, default, .. } => {
                 if let Some(profile) = profile {
-                    if let Some(val) = profile.get_color_value(name) {
+                    if let Some(val) = profile.get_color_value(script_name, name) {
                         globals.raw_set::<&str, u32>(name, *val)?;
                     } else {
                         globals.raw_set::<&str, u32>(name, *default)?;

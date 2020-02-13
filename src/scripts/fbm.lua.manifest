@@ -1,45 +1,9 @@
 name = "Fractal Brownian Motion"
 description = "Compute Fractal Brownian Noise, mapped to the HSL color space"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.11"
-tags = ['Vendor', 'Noise']
-
-[[config]]
-type = 'float'
-name = 'afterglow_step'
-description = 'Step afterglow animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0a0a
+min_supported_version = "0.0.12"
+tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
 type = 'float'
@@ -82,3 +46,9 @@ type = 'float'
 name = 'color_offset'
 description = 'Offset resulting hue angle by color_offset. Final value will be mapped to the interval [0..360)'
 default = 0.0
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 0.5

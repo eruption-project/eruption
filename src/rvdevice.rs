@@ -74,10 +74,11 @@ pub enum RvDeviceError {
 // _ => "Unknown error",
 
 #[derive(Debug, Copy, Clone)]
-pub struct RGB {
+pub struct RGBA {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+    pub a: u8,
 }
 
 pub const VENDOR_STR: &str = "ROCCAT";
@@ -617,7 +618,7 @@ impl RvDeviceState {
         }
     }
 
-    pub fn send_led_map(&mut self, led_map: &[RGB]) -> Result<()> {
+    pub fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -695,10 +696,11 @@ impl RvDeviceState {
         } else if !self.is_initialized {
             Err(RvDeviceError::DeviceNotInitialized {})
         } else {
-            let led_map: [RGB; NUM_KEYS] = [RGB {
+            let led_map: [RGBA; NUM_KEYS] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
+                a: 0x00,
             }; NUM_KEYS];
 
             self.send_led_map(&led_map)?;
@@ -718,10 +720,11 @@ impl RvDeviceState {
     //     } else if !self.is_initialized {
     //         Err(RvDeviceError::DeviceNotInitialized {})
     //     } else {
-    //         let led_map: [RGB; NUM_KEYS] = [RGB {
+    //         let led_map: [RGBA; NUM_KEYS] = [RGBA {
     //             r: 0x00,
     //             g: 0x00,
     //             b: 0x00,
+    //             a: 0x00,
     //         }; NUM_KEYS];
 
     //         self.send_led_map(&led_map)?;

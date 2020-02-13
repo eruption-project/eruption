@@ -25,7 +25,7 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/lib/eruption/scripts/";
 
 /// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "impact.lua";
+pub const DEFAULT_EFFECT_SCRIPT: &str = "batique.lua";
 
 /// Target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
@@ -39,11 +39,16 @@ pub const SENSOR_UPDATE_TICKS: u64 = 60;
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 10000;
 
+// Browser-based GUI
+
 /// Default listen address of the web frontend
+#[cfg(feature = "frontend")]
 pub const WEB_FRONTEND_LISTEN_ADDR: &str = "localhost";
 
 /// Default port of the web frontend
+#[cfg(feature = "frontend")]
 pub const WEB_FRONTEND_PORT: u16 = 8059;
 
 /// Default web frontend theme. Available themese are "eruption" and "metal"
+#[cfg(feature = "frontend")]
 pub const DEFAULT_FRONTEND_THEME: &str = "eruption";

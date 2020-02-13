@@ -16,7 +16,6 @@
 */
 
 use crate::constants;
-use crate::ACTIVE_SCRIPT;
 use failure::Fail;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -101,8 +100,8 @@ fn default_profile_file() -> PathBuf {
     "".into()
 }
 
-fn default_script_file() -> PathBuf {
-    constants::DEFAULT_EFFECT_SCRIPT.into()
+fn default_script_file() -> Vec<PathBuf> {
+    vec![constants::DEFAULT_EFFECT_SCRIPT.into()]
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -118,7 +117,7 @@ pub struct Profile {
     pub description: String,
 
     #[serde(default = "default_script_file")]
-    pub active_script: PathBuf,
+    pub active_scripts: Vec<PathBuf>,
 
     pub config: Option<HashMap<String, Vec<ConfigParam>>>,
 }
@@ -294,10 +293,7 @@ impl Profile {
         Ok(())
     }
 
-    pub fn get_int_value(&self, name: &str) -> Option<&i64> {
-        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &active_script.as_ref().unwrap().name;
-
+    pub fn get_int_value(&self, script_name: &str, name: &str) -> Option<&i64> {
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
                 match cfg.find_config_param(name) {
@@ -358,10 +354,7 @@ impl Profile {
         }
     }
 
-    pub fn get_float_value(&self, name: &str) -> Option<&f64> {
-        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &active_script.as_ref().unwrap().name;
-
+    pub fn get_float_value(&self, script_name: &str, name: &str) -> Option<&f64> {
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
                 match cfg.find_config_param(name) {
@@ -420,10 +413,7 @@ impl Profile {
         }
     }
 
-    pub fn get_bool_value(&self, name: &str) -> Option<&bool> {
-        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &active_script.as_ref().unwrap().name;
-
+    pub fn get_bool_value(&self, script_name: &str, name: &str) -> Option<&bool> {
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
                 match cfg.find_config_param(name) {
@@ -484,10 +474,7 @@ impl Profile {
         }
     }
 
-    pub fn get_str_value(&self, name: &str) -> Option<&str> {
-        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &active_script.as_ref().unwrap().name;
-
+    pub fn get_str_value(&self, script_name: &str, name: &str) -> Option<&str> {
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
                 match cfg.find_config_param(name) {
@@ -548,10 +535,7 @@ impl Profile {
         }
     }
 
-    pub fn get_color_value(&self, name: &str) -> Option<&u32> {
-        let active_script = &*ACTIVE_SCRIPT.read().unwrap();
-        let script_name = &active_script.as_ref().unwrap().name;
-
+    pub fn get_color_value(&self, script_name: &str, name: &str) -> Option<&u32> {
         if let Some(config) = &self.config {
             if let Some(cfg) = config.get(script_name) {
                 match cfg.find_config_param(name) {
@@ -625,7 +609,7 @@ impl Default for Profile {
             profile_file,
             name: "Default".into(),
             description: "Auto-generated profile".into(),
-            active_script: PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT),
+            active_scripts: vec![PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT)],
             config,
         }
     }

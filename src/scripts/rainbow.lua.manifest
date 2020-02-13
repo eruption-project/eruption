@@ -1,45 +1,9 @@
 name = "Rainbow"
 description = "Display a rainbow color gradient"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.2"
-tags = ['Vendor', 'Gradient']
-
-[[config]]
-type = 'float'
-name = 'afterglow_step'
-description = 'Step afterglow animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0a0a
+min_supported_version = "0.0.12"
+tags = ['Background', 'Vendor', 'Gradient']
 
 [[config]]
 type = 'float'
@@ -63,4 +27,10 @@ default = 1.0
 type = 'float'
 name = 'color_lightness'
 description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
+default = 0.5
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
 default = 0.5

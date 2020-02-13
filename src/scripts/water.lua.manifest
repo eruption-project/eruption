@@ -1,51 +1,15 @@
 name = "Water"
 description = "Shows a water effect on the keyboard"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.9"
-tags = ['Vendor']
-
-[[config]]
-type = 'float'
-name = 'afterglow_step'
-description = 'Step afterglow animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
-type = 'color'
-name = 'color_afterglow'
-description = 'Afterglow color'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0a0a
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor']
 
 [[config]]
 type = 'color'
 name = 'color_highlight'
 description = 'LED Highlight Color'
-default = 0x00ff0000
+default = 0xffff0000
 
 [[config]]
 type = 'float'
@@ -55,12 +19,6 @@ default = 2.0
 
 [[config]]
 type = 'float'
-name = 'raindrop_step'
-description = 'Step rain animation every [n] frames'
-default = 3.0
-
-[[config]]
-type = 'int'
-name = 'rain_intensity_divisor'
-description = 'Rain intensity'
-default = 25
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0

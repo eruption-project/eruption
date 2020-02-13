@@ -29,35 +29,21 @@
 -- animate_gradient = false
 -- gradient_speed = 1
 
--- global constants --
-color_off = 0x00000000
-color_bright = 0x00ffffff
-
-color_afterglow = rgb_to_color(255, 255, 255)
-color_step_afterglow = rgb_to_color(10, 10, 10)
-
 -- global state variables --
 color_map = {}
-color_map_pressed = {}
 ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
-
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
-end
-
-function on_key_down(key_index)
-    color_map_pressed[key_index] = color_afterglow
+    local num_keys = get_num_keys()
+    for i = 0, num_keys do
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
+    end
 end
 
 function on_tick(delta)
     ticks = ticks + delta + 1
-    
+
     local num_keys = get_num_keys()
 
     -- animate gradient
@@ -67,44 +53,5 @@ function on_tick(delta)
         end
     end
 
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] > color_off then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] < color_off then
-                    color_map_pressed[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_pressed[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > color_off then
-            color_map_combined[i] = color_map_pressed[i]
-        end
-
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-
-    set_color_map(color_map_combined)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = linear_gradient(color_start, color_end, (i * (num_keys / 100)) / color_divisor)
-        color_map_pressed[i] = color_off
-    end
+    submit_color_map(color_map)
 end

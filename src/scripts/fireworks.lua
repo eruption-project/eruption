@@ -15,8 +15,6 @@
 
 -- global state variables --
 color_map = {}
-color_map_pressed = {}
-color_map_fireworks = {}
 
 -- holds a scalar field to simulate fireworks
 fireworks_grid = {}
@@ -402,16 +400,20 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
+    local num_keys = get_num_keys()
 
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
+    for i = 0, num_keys do
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
+    end
+
+    -- initialize fireworks scalar field
+    for i = 0, num_keys do
+        fireworks_grid[i] = 0.0
+    end
 end
 
 function on_key_down(key_index)
-    color_map_pressed[key_index] = color_afterglow
+    color_map[key_index] = rgba_to_color(255, 255, 255, 255)
 
     for i = 0, max_neigh do
       local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
@@ -422,12 +424,15 @@ function on_key_down(key_index)
     end
 end
 
-function compute_fireworks(ticks)
+function on_tick(delta)
+    ticks = ticks + delta + 1
+
+    -- calculate fireworks effect
     local num_keys = get_num_keys()
 
     if ticks % animation_speed == 0 then
         -- compute fireworks effect
-        for key_index = 1, get_num_keys() - 1 do
+      for key_index = 1, num_keys - 1 do
 			local avg = (fireworks_grid[key_index - 1] + fireworks_grid[key_index + 1]) / 2
             fireworks_grid[key_index - 1] = (fireworks_grid[key_index] - 0.25) + (avg * 0.5)
 
@@ -435,7 +440,7 @@ function compute_fireworks(ticks)
             if fireworks_grid[key_index] <= epsilon or fireworks_grid[key_index] >= (1.0 - epsilon) then
                 fireworks_grid[key_index] = 0.0
             end
-        end
+			end
 
         for y = 0, num_rows - 1 do
             for x = 0, max_keys_per_row - 1 do
@@ -452,66 +457,10 @@ function compute_fireworks(ticks)
 
                 -- compute color
                 local hue = lerp(0, 360, sin(fireworks_grid[idx] + 10.0))
-                color_map_fireworks[idx] = hsl_to_color(hue, 1.0, 0.5)
+                color_map[idx] = hsla_to_color(hue, 1.0, 0.5, lerp(0, 255, opacity))
             end
         end
-    end
-end
 
-function on_tick(delta)
-    ticks = ticks + delta + 1
-
-    local num_keys = get_num_keys()
-
-    -- calculate fireworks effect
-    compute_fireworks(ticks)
-
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] >= 0x00000000 then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] >= 0x00ffffff then
-                    color_map_pressed[i] = 0x00ffffff
-                elseif color_map_pressed[i] <= 0x00000000 then
-                    color_map_pressed[i] = 0x00000000
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_fireworks[i] + color_map_pressed[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > 0x00000000 then
-            color_map_combined[i] = color_map_pressed[i]
-        end
-
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-
-    set_color_map(color_map_combined)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_background
-        color_map_pressed[i] = color_off
-        color_map_fireworks[i] = color_off
-    end
-
-    -- initialize fireworks scalar field
-    for i = 0, get_num_keys() do
-        fireworks_grid[i] = 0.0
+			submit_color_map(color_map)
     end
 end

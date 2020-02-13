@@ -14,24 +14,8 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global state variables --
-color_map = {}
-color_map_pressed = {}
-
 ticks = 0
-
--- event handler functions --
-function on_startup(config)
-    init_state()
-end
-
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
-end
-
-function on_key_down(key_index)
-    color_map_pressed[key_index] = color_afterglow
-end
+color_map = {}
 
 function on_tick(delta)
     ticks = ticks + delta + 1
@@ -49,50 +33,11 @@ function on_tick(delta)
 																							 ticks / time_scale)
                   val = lerp(0, 360, val)
 
-            color_map[i] = hsl_to_color((val / color_divisor) + color_offset, color_saturation, color_lightness)
-        end
-    end
-
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] >= 0x00000000 then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] >= 0x00ffffff then
-                    color_map_pressed[i] = 0x00ffffff
-                elseif color_map_pressed[i] <= 0x00000000 then
-                    color_map_pressed[i] = 0x00000000
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > 0x00000000 then
-            color_map_combined[i] = color_map_pressed[i]
+						color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
+																	color_saturation, color_lightness,
+																	lerp(0, 255, opacity))
         end
 
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-
-    set_color_map(color_map_combined)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_off
-        color_map_pressed[i] = color_off
+			submit_color_map(color_map)
     end
 end

@@ -15,9 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![feature(plugin)]
-#![feature(proc_macro_hygiene, decl_macro)]
-#![feature(vec_into_raw_parts)]
+// enable these if you want to compile-in the frontend (browser-based GUI)
+
+//#![feature(plugin)]
+//#![feature(proc_macro_hygiene, decl_macro)]
+//#![feature(vec_into_raw_parts)]
 
 use clap::{App, Arg};
 use failure::Fail;
@@ -26,11 +28,12 @@ use log::*;
 use pretty_env_logger;
 use std::convert::TryInto;
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, RwLock};
+use std::sync::{Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use std::u64;
@@ -64,10 +67,19 @@ mod frontend {
 }
 
 lazy_static! {
+    /// The currently active profile
     pub static ref ACTIVE_PROFILE: Arc<RwLock<Option<Profile>>> = Arc::new(RwLock::new(None));
-    pub static ref ACTIVE_SCRIPT: Arc<RwLock<Option<Manifest>>> = Arc::new(RwLock::new(None));
+
+    /// The current "pipeline" of scripts
+    pub static ref ACTIVE_SCRIPTS: Arc<RwLock<Vec<Manifest>>> = Arc::new(RwLock::new(vec![]));
+
+    /// Global configuration
     pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
+
+    // Flags
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 }
 
 pub type Result<T> = std::result::Result<T, MainError>;
@@ -102,7 +114,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.11")
+        .version("0.0.12")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -122,8 +134,9 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("script")
-                .help("The Lua script to execute")
+            Arg::with_name("scripts")
+                .help("The Lua scripts to execute")
+                .multiple(true)
                 // .required(true)
                 .index(1),
         )
@@ -133,12 +146,10 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
                 .multiple(true)
                 .help("Sets the level of verbosity"),
         )
-        .subcommand(
-            App::new("list-effects").about("Display a listing of all available effects scripts"),
-        )
+        .subcommand(App::new("list-scripts").about("Display a listing of all available scripts"))
         .subcommand(
             App::new("check-syntax")
-                .about("Validate a Lua effect script for syntactical correctness")
+                .about("Validate a Lua script for syntactical correctness")
                 .arg(
                     Arg::with_name("script")
                         .help("The Lua script to check")
@@ -154,12 +165,12 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
 fn spawn_frontend_thread(
     frontend_tx: Sender<frontend::Message>,
     profile_path: PathBuf,
-    script_path: PathBuf,
+    script_paths: Vec<PathBuf>,
 ) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("frontend".into());
     builder
         .spawn(move || {
-            frontend::initialize(frontend_tx, profile_path, script_path).unwrap_or_else(|e| {
+            frontend::initialize(frontend_tx, profile_path, script_paths).unwrap_or_else(|e| {
                 error!("Could not initialize the Web-Frontend: {}", e);
                 panic!()
             });
@@ -252,6 +263,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()>
 }
 
 fn spawn_lua_thread(
+    thread_idx: usize,
     lua_rx: Receiver<script::Message>,
     mut script_path: PathBuf,
     rvdevice: &RvDeviceState,
@@ -278,7 +290,7 @@ fn spawn_lua_thread(
 
     let rvdevice = rvdevice.clone();
 
-    let builder = thread::Builder::new().name("lua-vm".into());
+    let builder = thread::Builder::new().name(format!("lua-vm/{}", thread_idx).into());
     builder
         .spawn(move || loop {
             let rvdevice = rvdevice.clone();
@@ -286,7 +298,7 @@ fn spawn_lua_thread(
             let result =
                 script::run_script(script_path.clone(), rvdevice, &lua_rx).unwrap_or_else(|e| {
                     error!(
-                        "Could not load script file '{}': {:?}",
+                        "Could not execute script file '{}': {:?}",
                         script_path.display(),
                         e
                     );
@@ -310,10 +322,11 @@ fn spawn_lua_thread(
 
 #[allow(clippy::cognitive_complexity)]
 fn run_main_loop(
-    frontend_rx: &Receiver<frontend::Message>,
+    rvdevice: &mut RvDeviceState,
+    #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<(u8, bool)>>,
-    lua_tx: &Sender<script::Message>,
+    lua_txs: &Vec<Sender<script::Message>>,
 ) {
     trace!("Entering main loop...");
 
@@ -347,7 +360,7 @@ fn run_main_loop(
                     if util::is_script_file_accessible(&script_path)
                         && util::is_manifest_file_accessible(&script_path)
                     {
-                        lua_tx
+                        lua_txs[0]
                             .send(script::Message::LoadScript(script_path))
                             .unwrap_or_else(|e| {
                                 error!("Could not send an event to the Lua VM: {}", e)
@@ -373,16 +386,17 @@ fn run_main_loop(
                     );
 
                     let profile = profiles::Profile::from(&profile_path).unwrap();
-                    let script_file = profile.active_script.clone();
-                    let script_path = script_dir.join(script_file);
+                    let script_files = profile.active_scripts.clone();
+                    let script_path = script_dir.join(&script_files[0]);
 
                     if util::is_script_file_accessible(&script_path)
                         && util::is_manifest_file_accessible(&script_path)
                     {
-                        lua_tx
+                        // TODO: Implement this correctly
+                        lua_txs[0]
                             .send(script::Message::LoadScript(script_path.to_path_buf()))
                             .unwrap_or_else(|e| {
-                                error!("Could not send an event to the Lua VM: {}", e)
+                                error!("Could not send an event to a Lua VM: {}", e)
                             });
                     } else {
                         error!(
@@ -414,10 +428,10 @@ fn run_main_loop(
                     info!("Loading Script: {}", script_path.display());
 
                     match util::is_file_accessible(&script_path) {
-                        Ok(_) => lua_tx
+                        Ok(_) => lua_txs[0]
                             .send(script::Message::LoadScript(script_path))
                             .unwrap_or_else(|e| {
-                                error!("Could not send an event to the Lua VM: {}", e)
+                                error!("Could not send an event to a Lua VM: {}", e)
                             }),
 
                         Err(e) => error!(
@@ -438,25 +452,29 @@ fn run_main_loop(
             }
         }
 
-        // send pending keyboard events to the Lua VM and to the event dispatcher
+        // send pending keyboard events to the Lua VMs and to the event dispatcher
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
                 Some((index, pressed)) => {
                     if pressed {
-                        lua_tx
-                            .send(script::Message::KeyDown(index))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending keyboard event: {}", e)
-                            });
+                        for lua_tx in lua_txs {
+                            lua_tx
+                                .send(script::Message::KeyDown(index))
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send a pending keyboard event: {}", e)
+                                });
+                        }
 
                         events::notify_observers(events::Event::KeyDown(index))
                             .unwrap_or_else(|e| error!("{}", e));
                     } else {
-                        lua_tx
-                            .send(script::Message::KeyUp(index))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending keyboard event: {}", e)
-                            });
+                        for lua_tx in lua_txs {
+                            lua_tx
+                                .send(script::Message::KeyUp(index))
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send a pending keyboard event: {}", e)
+                                });
+                        }
 
                         events::notify_observers(events::Event::KeyUp(index))
                             .unwrap_or_else(|e| error!("{}", e));
@@ -476,16 +494,58 @@ fn run_main_loop(
             }
         }
 
-        // send a timer tick event to the Lua VM
-        lua_tx
-            .send(script::Message::Tick(
-                start_time.elapsed().as_millis().try_into().unwrap(),
-            ))
+        // send timer tick events to the Lua VMs
+        for lua_tx in lua_txs {
+            lua_tx
+                .send(script::Message::Tick(
+                    start_time.elapsed().as_millis().try_into().unwrap(),
+                ))
+                .unwrap();
+        }
+
+        // execute render "pipeline" now
+
+        // first, clear the canvas
+        script::LED_MAP.lock().unwrap().copy_from_slice(
+            &[rvdevice::RGBA {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            }; rvdevice::NUM_KEYS],
+        );
+
+        // instruct Lua VMs to realize their color maps, e.g. to blend their
+        // local color maps with the canvas
+        *COLOR_MAPS_READY_CONDITION.0.lock().unwrap() = lua_txs.len();
+
+        for lua_tx in lua_txs {
+            lua_tx.send(script::Message::RealizeColorMap).unwrap();
+
+            // yield to thread
+            thread::sleep(Duration::from_millis(0));
+
+            // guarantee right order of execution for the alpha blend operations
+            // to work out correctly, so wait for the current Lua VM to
+            // complete its blending code, before continuing
+            let pending = COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
+            let _result = COLOR_MAPS_READY_CONDITION.1.wait(pending).unwrap();
+        }
+
+        // yield main thread
+        //thread::sleep(Duration::from_millis(0));
+
+        // number of pending blend ops should have reached zero by now
+        assert!(*COLOR_MAPS_READY_CONDITION.0.lock().unwrap() == 0);
+
+        // send the final (combined) color map to the keyboard
+        rvdevice
+            .send_led_map(&script::LED_MAP.lock().unwrap())
             .unwrap();
 
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time
         let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
-        let sleep_millis = u64::max(
+        let sleep_millis = u64::min(
             constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
             constants::MAIN_LOOP_DELAY_MILLIS,
         );
@@ -579,13 +639,6 @@ fn main() {
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
 
-    // active sript file
-    // let default_script_file = config
-    //     .get_str("global.script_file")
-    //     .unwrap_or_else(|_| constants::DEFAULT_EFFECT_SCRIPT.to_string());
-    // let script_file = matches.value_of("script").unwrap_or(&default_script_file);
-    // let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
-
     // active runtime profile
     let default_profile_name = config
         .get_str("global.profile")
@@ -608,10 +661,30 @@ fn main() {
         Profile::default()
     });
 
-    let script_file = &profile.active_script;
-    let script_path = PathBuf::from(&script_dir).join(Path::new(&script_file));
-
     info!("Loaded profile: {}", &profile.name);
+
+    // active sript files
+    //let default_script_files: Vec<PathBuf> = config
+    //.get_array("global.script_files")
+    //.unwrap_or_else(|_| vec![constants::DEFAULT_EFFECT_SCRIPT.into()])
+    //.iter()
+    //.map(|v| PathBuf::from(v.clone().into_str().unwrap()))
+    //.collect();
+
+    let script_files = if profile.active_scripts.len() < 1 {
+        matches
+            .values_of("scripts")
+            .unwrap_or_default()
+            .map(|p| PathBuf::from(p.to_owned()))
+            .collect::<Vec<PathBuf>>()
+    } else {
+        profile.active_scripts.clone()
+    };
+
+    let script_paths: Vec<PathBuf> = script_files
+        .iter()
+        .map(|p| PathBuf::from(&script_dir).join(p).to_owned())
+        .collect();
 
     *ACTIVE_PROFILE.write().unwrap() = Some(profile);
 
@@ -681,18 +754,26 @@ fn main() {
                         panic!()
                     });
 
-                    // spawn the Lua VM thread, and then load and execute a script
-                    info!("Loading Lua script...");
+                    // spawn Lua VM threads
+                    info!("Loading Lua scripts...");
 
-                    let script_path_clone = script_path.clone();
+                    let mut lua_txs = vec![];
 
-                    let (lua_tx, lua_rx) = channel();
-                    spawn_lua_thread(lua_rx, script_path_clone, &rvdevice).unwrap_or_else(|e| {
-                        error!("Could not spawn a thread: {}", e);
-                        panic!()
-                    });
+                    for (thread_idx, script_path) in script_paths.iter().enumerate() {
+                        let script_path = script_path.clone();
+
+                        let (lua_tx, lua_rx) = channel();
+                        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice)
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
+
+                        lua_txs.push(lua_tx);
+                    }
 
                     // spawn a thread to handle the web-frontend
+                    #[cfg(feature = "frontend")]
                     let (frontend_tx, frontend_rx) = channel();
 
                     if frontend_enabled {
@@ -700,7 +781,7 @@ fn main() {
                         info!("Spawning Web-Frontend thread...");
 
                         #[cfg(feature = "frontend")]
-                        spawn_frontend_thread(frontend_tx, profile_path, script_path)
+                        spawn_frontend_thread(frontend_tx, profile_path, script_paths)
                             .unwrap_or_else(|e| {
                                 error!("Could not spawn a thread: {}", e);
                                 panic!()
@@ -710,14 +791,23 @@ fn main() {
                     }
 
                     // enter the main loop
-                    run_main_loop(&frontend_rx, &dbus_rx, &kbd_rx, &lua_tx);
+                    run_main_loop(
+                        &mut rvdevice,
+                        #[cfg(feature = "frontend")]
+                        &frontend_rx,
+                        &dbus_rx,
+                        &kbd_rx,
+                        &lua_txs,
+                    );
 
-                    // we left the main loop, so send a final message to the running Lua VM
-                    lua_tx
-                        .send(script::Message::Quit(0))
-                        .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
+                    // we left the main loop, so send a final message to the running Lua VMs
+                    for lua_tx in lua_txs {
+                        lua_tx
+                            .send(script::Message::Quit(0))
+                            .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
+                    }
 
-                    // TODO: Ugly hack, find a better way to wait for exit of the Lua VM
+                    // TODO: Ugly hack, find a better way to wait for exit of the Lua VMs
                     thread::sleep(Duration::from_millis(250));
 
                     // close the control and LED devices

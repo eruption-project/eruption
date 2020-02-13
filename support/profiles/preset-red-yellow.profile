@@ -1,7 +1,10 @@
 id = '5dc62fa6-e965-45cb-a0da-e87d29713099'
 name = 'Preset: Red and Yellow'
 description = '''Presets for a 'red and yellow' color scheme'''
-active_script = 'batique.lua'
+active_scripts = [
+	'batique.lua',
+	'shockwave.lua'
+]
 
 [[config.Perlin]]
 type = 'float'

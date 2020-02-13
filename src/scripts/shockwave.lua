@@ -31,17 +31,9 @@ shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
 shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / 6
 
 -- global state variables --
-enable_debug = false
-
 color_map = {}
-color_map_pressed = {}
-color_map_shockwave = {}
-color_map_ghost = {}
-color_map_debug = {}
 ticks = 0
-
 state_map = {}
-ghost_postponed_for = 0
 
 -- Keyboard topology maps --
 -- table_offset = get_num_keys() + 1
@@ -423,220 +415,61 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
+		local num_keys = get_num_keys()
 
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
+    for i = 0, num_keys do
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
+				state_map[i] = key_state.idle
+    end
 end
 
 function on_key_down(key_index)
-	color_map_pressed[key_index] = color_afterglow
-	
-	impact(key_index)
-	
-	-- the user pressed a key, so postpone ghost typing until we are idle again
-	ghost_postponed_for = ghost_starts_after
-end
-
-function on_tick(delta)
-    ticks = ticks + delta + 1
-    
-    local num_keys = get_num_keys()
-
-	-- randomly place ghost typing keystrokes, when the keyboard is idle for a certain amount of time
-	if ghost_postponed_for > 0 then
-		ghost_postponed_for = ghost_postponed_for - (delta + 1)
-	else
-		ghost_postponed_for = 0
-		if enable_ghost_typing and (ticks % rand(1, ghost_probability) == 0) then
-			local key = rand(0, num_keys)
-			ghost_key(key)
-		end
-	end
-
-    -- calculate shockwave effect
-    step_shockwave(ticks)
-
-    -- calculate afterglow effect for pressed keys
-    if ticks % afterglow_step == 0 then
-        for i = 0, num_keys do
-            if color_map_pressed[i] > color_off then
-                color_map_pressed[i] = color_map_pressed[i] - color_step_afterglow
-
-                if color_map_pressed[i] < color_off then
-                    color_map_pressed[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_shockwave[i] + color_map_pressed[i] + color_map_ghost[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > color_off then
-            color_map_combined[i] = color_map_pressed[i]
-        end
-
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-	
-	if enable_debug then
-		debug_print_state_map()
-		set_color_map(color_map_debug)
-
-		if check_invariants() then
-			warn("Check of global invariants failed")
-		end
-	else
-		set_color_map(color_map_combined)
-	end
-end
-
--- init global state
-function init_state()
-	local num_keys = get_num_keys()
-	
-    for i = 0, num_keys do
-        color_map[i] = color_background
-        color_map_pressed[i] = color_off
-        color_map_shockwave[i] = color_off
-		color_map_ghost[i] = color_off
-		
-		state_map[i] = key_state.idle
-
-		if enable_debug then
-			color_map_debug[i] = color_bright
-		end
-    end
-end
-
--- support functions
-function impact(key_index)
-	local num_keys = get_num_keys()
+	color_map[key_index] = rgba_to_color(255, 0, 0, 255)
 
 	for i = 0, max_neigh do
 		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
-  
+
 		if neigh_key ~= 0xff then
 			state_map[neigh_key] = key_state.shockwave_origin
 		end
 	end
 end
 
-function ghost_key(key_index)
-    for i = 0, max_neigh do
-        local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+function on_tick(delta)
+    ticks = ticks + delta + 1
 
-        if neigh_key ~=nil and neigh_key ~= 0xff then
-            color_map_ghost[neigh_key] = color_ghost
-        end
-    end
-end
+    local num_keys = get_num_keys()
 
-function step_shockwave(ticks)
-	local num_keys = get_num_keys()
-	
-	-- propagate the shockwave
-	for i = 1, num_keys do		
-		-- decrease key ttl
-		if state_map[i] > key_state.shockwave_sentinel then
-			state_map[i] = state_map[i] - shockwave_ttl_decrease
-			if state_map[i] <= key_state.shockwave_sentinel then
-				state_map[i] = key_state.idle
+		-- propagate the shockwave
+		for i = 1, num_keys do
+			-- decrease key ttl
+			if state_map[i] > key_state.shockwave_sentinel then
+				state_map[i] = state_map[i] - shockwave_ttl_decrease
+				if state_map[i] <= key_state.shockwave_sentinel then
+					state_map[i] = key_state.idle
+				end
+			end
+
+			-- propagate wave effect
+			if state_map[i] >= key_state.shockwave_sentinel then
+				state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
+			else
+				state_map[i - 1] = key_state.idle
+			end
+
+			-- compute shockwave color
+			if state_map[i] >= key_state.shockwave_sentinel then
+				color_map[i] = color_shockwave - color_step_shockwave
+			end
+
+			if color_map[i] > rgba_to_color(0, 0, 0, 0) then
+				color_map[i] = color_map[i] - color_step_shockwave
+
+				if color_map[i] < rgba_to_color(0, 0, 0, 0) then
+					color_map[i] = rgba_to_color(0, 0, 0, 0)
+				end
 			end
 		end
 
-		-- propagate wave effect
-		if state_map[i] >= key_state.shockwave_sentinel then
-			state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
-		else
-			state_map[i - 1] = key_state.idle
-		end
-
-		-- compute shockwave color
-		if state_map[i] >= key_state.shockwave_sentinel then
-			color_map_shockwave[i] = color_shockwave - color_step_shockwave
-		end
-
-		if color_map_shockwave[i] > color_off then
-			color_map_shockwave[i] = color_map_shockwave[i] - color_step_shockwave
-
-			if color_map_shockwave[i] < color_off then
-				color_map_shockwave[i] = color_off
-			end
-		end
-	end
-
-    -- compute ghost effect
-    if ticks % ghost_step == 0 then
-        for i = 0, num_keys do
-            if color_map_ghost[i] > color_off then
-                color_map_ghost[i] = color_map_ghost[i] - color_step_ghost
-
-                if color_map_ghost[i] < color_off then
-                    color_map_ghost[i] = color_off
-                end
-            end
-        end
-    end
-end
-
--- debugging helper
-function check_invariants()
-	if enable_debug then
-		local errors_present = false
-		local num_keys = get_num_keys()
-
-		for i = 0, num_keys do
-			if state_map[i] == key_state.invalid then
-				color_map_debug[i] = rgb_to_color(0, 0, 255)
-			elseif state_map[i] == key_state.idle then
-				color_map_debug[i] = rgb_to_color(10, 10, 10)			
-			elseif state_map[i] >= key_state.shockwave_sentinel and state_map[i] <= key_state.shockwave_origin then
-				color_map_debug[i] = rgb_to_color(clamp(state_map[i], 0, 255), 0, 0)
-			end
-
-			if state_map[i] == key_state.invalid then
-				error("Invalid key state detected at: " .. i .. " val: " .. state_map[i])
-				errors_present = true
-			end
-
-			-- if state_map[i] >= key_state.shockwave_sentinel and color_map_shockwave[i] < color_shockwave then
-			-- 	error("Invalid state detected in color_map_shockwave[" .. i .. "] val: " .. state_map[i])
-			-- 	errors_present = true
-			-- end
-		end
-
-		return errors_present
-	end
-end
-
-function debug_print_state_map()
-    info("*********************************************************************************************************")
-
-    local row = ""
-
-    for i = 0, get_num_keys() - 1 do
-
-        if i % 21 == 0 then
-            info(row)
-            row = ""
-        else
-            local val = state_map[i]
-            if val == nil then val = "nil" end
-
-            row = row .. " | " .. val
-        end
-    end
-    
-    info("*********************************************************************************************************")
+    submit_color_map(color_map)
 end

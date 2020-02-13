@@ -1,15 +1,15 @@
-name = "Fireworks"
-description = "Shows a fireworks effect on the keyboard"
+name = "Solid Color"
+description = "Display a solid color (HSL color space)"
 version = "0.0.2"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
-tags = ['Effect', 'Vendor']
+tags = ['Background', 'Vendor', 'Demo']
 
 [[config]]
-type = 'float'
-name = 'animation_speed'
-description = 'Step fireworks animation every [n] frames'
-default = 2.0
+type = 'color'
+name = 'color_background'
+description = 'Background color'
+default = 0xffff1010
 
 [[config]]
 type = 'float'

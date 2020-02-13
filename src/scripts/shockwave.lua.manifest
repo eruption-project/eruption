@@ -1,9 +1,9 @@
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
-min_supported_version = "0.0.3"
-tags = ['Vendor']
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor']
 
 [[config]]
 type = 'float'
@@ -19,45 +19,27 @@ default = 1.0
 
 [[config]]
 type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0x00ffffff
-
-[[config]]
-type = 'color'
-name = 'color_background'
-description = 'Background color'
-default = 0x00111111
-
-[[config]]
-type = 'color'
 name = 'color_afterglow'
 description = 'Afterglow color'
-default = 0x00ff0000
+default = 0xffff0000
 
 [[config]]
 type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x000a0000
+default = 0x0f0a0000
 
 [[config]]
 type = 'color'
 name = 'color_shockwave'
 description = 'Color of the shockwave'
-default = 0x00ff0000
+default = 0xffff0000
 
 [[config]]
 type = 'color'
 name = 'color_step_shockwave'
 description = 'Color value that gets subtracted from the shockwave every [n] frames'
-default = 0x000a0000
+default = 0x0a0a0000
 
 [[config]]
 type = 'bool'
@@ -69,13 +51,13 @@ default = true
 type = 'color'
 name = 'color_ghost'
 description = 'Color of ghost typing'
-default = 0x00404040
+default = 0xff404040
 
 [[config]]
 type = 'color'
 name = 'color_step_ghost'
 description = 'Color value that gets subtracted from the ghost typing every [n] frames'
-default = 0x00040404
+default = 0x0a040404
 
 [[config]]
 type = 'float'

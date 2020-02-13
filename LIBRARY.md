@@ -43,7 +43,11 @@ Eruption currently ships with the following library functions:
 | `color_to_rgb(color) -> (r, g, b)` | _core_  | Color | since before 0.0.9 | Returns the red, green and blue components of `color` |
 | `color_to_hsl(color) -> (h, s, l)` | _core_  | Color | since 0.0.10 | Returns the hue, saturation and lightness components of `color` |
 | `rgb_to_color(r, g, b) -> color`    | _core_  | Color  | since before 0.0.9 | Returns a color, constructed fom the r, g and b components |
-| `hsl_to_color(h, s, l) -> color`    | _core_  | Color  | since 0.0.9 | Returns a color, constructed fom hue [0..360), saturation [0.0...1.0] and lightness [0.0..0.5], (0.5..1.0] components |
+| `hsl_to_color(h, s, l) -> color`    | _core_  | Color  | since 0.0.9 | Returns a color, constructed fom hue [0..360), saturation [0.0...1.0] and lightness [0.0..0.5] and (0.5..1.0] components |
+| `color_to_rgba(color) -> (r, g, b, a)` | _core_  | Color | since 0.0.12 | Returns the red, green blue and alpha components of `color` |
+| `color_to_hsla(color) -> (h, s, l, a)` | _core_  | Color | since 0.0.12 | Returns the hue, saturation, lightness and alpha components of `color` |
+| `rgba_to_color(r, g, b, a) -> color`    | _core_  | Color  | since 0.0.12 | Returns a color, constructed fom the r, g, b and alpha components |
+| `hsla_to_color(h, s, l, a) -> color`    | _core_  | Color  | since 0.0.12 | Returns a color, constructed fom hue [0..360), saturation [0.0...1.0], lightness [0.0..0.5], (0.5..1.0] an dalpha components |
 | `linear_gradient(start_color, end_color, p) -> color`    | _core_  | Color  | since before 0.0.9 | Returns the interpolated color at position `p` located between `start_color`..`end_color`. The value of `p` should lie in the range of 0..1 |
 | `noise(f1, f2, f3) -> f`    | _core_  | Noise | removed in 0.0.11 | Computes an Open Simplex Noise value |
 | `perlin_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes a Perlin noise value |
@@ -55,7 +59,8 @@ Eruption currently ships with the following library functions:
 | `get_num_keys() -> i`    | _core_  | Hw  | since before 0.0.9 | Returns the number of keys of the connected device (Approx. 144) |
 | `get_key_color(key_index) -> color`    | _core_  | Hw  | since before 0.0.9 | Returns the current color of the key `key_index` |
 | `set_key_color(key_index, color)`    | _core_  | Hw  | since before 0.0.9 | Sets the current color of the key `key_index` to `color` |
-| `set_color_map([color_map])`    | _core_  | Hw  | since before 0.0.9 | Set all LEDs at once, to the colors specified in the array `color_map` |
+| `set_color_map([color_map])`    | _core_  | Hw  | since before 0.0.9 | Set all LEDs at once to the colors specified in the array `color_map`. This will directly access the keyboard. Please see also: submit_color_map() |
+| `submit_color_map([color_map])`    | _core_  | Hw  | since 0.0.12 | Set all LEDs at once to the colors specified in the array `color_map`. Color maps of all scripts will be alpha blended together. and then sent to the keyboard once for each render frame. |
 | `get_current_load_avg_1() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 1 minute |
 | `get_current_load_avg_5() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 5 minutes |
 | `get_current_load_avg_10() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 10 minutes |
@@ -72,13 +77,19 @@ Eruption currently ships with the following library functions:
 | `get_audio_raw_data() -> [i]`    | Audio | dsp  | since 0.0.11 | Returns a buffer of 16-bit wide signed integer values, containing samples from the configured audio input |
 _Non-exhaustive, more documentation coming soon_
 
+Please Note:
+* All color values should lie in the range [0..255] unless otherwise specified
+* Some API calls currently involve bringing up of threads for each call,
+	especially the `System` and `Sensor` ones, so better don't call them in a
+	tight loop
+
 ## Available Callback Functions (Events)
 
 Eruption currently calls the following event handler functions, if they are present in a Lua script:
 
 | Name        | Plugin  | Parameters | Description                   |
 | ----------- | ------- | ------     | ----------------------------- |
-| `on_startup`  | _core_  | _n/a_    | Sent on daemon startup |
+| `on_startup`  | _core_  | _n/a_    | Sent on startup, e.g. when a script is loaded |
 | `on_quit`     | _core_  | _n/a_    | Sent on daemon exit |
 | `on_tick(delta)`     | _core_  | delta: Timer delta since last tick |  |
 | `on_key_down(key_index)` | _core_  | key_index: Key index (column major order) |  |
@@ -87,7 +98,7 @@ Exhaustive listing of all currently available event callbacks
 
 ## Example Code
 
-The following code will change a key's color to bright red after it has been
+The following code will change a key's color to `bright red` after it has been
 pressed.
 
 #### Listing 01
@@ -99,19 +110,19 @@ color_map = {}
 function on_startup()
     -- turn off all key LEDs
     for i = 0, get_num_keys() do
-        color_map[i] = rgb_to_color(0, 0, 0)
+        color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
 
     -- update keyboard LED state
-    set_color_map(color_map)
+    submit_color_map(color_map)
 end
 
 function on_key_down(key_index)
     info("Pressed key: " .. key_index)
 
     -- set color of pressed key to red
-    color_map[key_index] = rgb_to_color(255, 0, 0)
-    set_color_map(color_map)
+    color_map[key_index] = rgb_to_color(255, 0, 0, 255)
+    submit_color_map(color_map)
 end
 ```
 

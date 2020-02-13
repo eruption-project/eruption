@@ -14,43 +14,15 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global state variables --
-max_loudness = 64
 color_map = {}
 ticks = 0
 
--- event handler functions --
-function on_startup(config)
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_background
-    end
-end
-
 function on_tick(delta)
-    ticks = ticks + delta + 1
-
-    -- update the state
-		loudness = get_audio_loudness()
-		if loudness > max_loudness then
-			max_loudness = loudness
-		end
-
-		max_loudness = max_loudness * 0.999
-		if max_loudness < 8 then
-			max_loudness = 8
-		end
-
-		--debug("Loudness  " .. loudness .. " / " .. max_loudness)
-
     local num_keys = get_num_keys()
-
-    -- calculate colors
-    local percentage = min(loudness / max_loudness * 100, 100)
-
-		color = linear_gradient(color_silence, color_loud, percentage / 100)
     for i = 0, num_keys do
-        color_map[i] = color
-		end
+				r, g, b, alpha = color_to_rgba(color_background)
+        color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+    end
 
-    submit_color_map(color_map)
+		submit_color_map(color_map)
 end

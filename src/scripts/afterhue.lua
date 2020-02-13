@@ -15,77 +15,37 @@
 
 -- global state variables --
 color_map = {}
-color_map_pressed = {}
 hue_map = {}
 ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    init_state()
-end
-
-function on_quit(exit_code)
-    init_state()
-    set_color_map(color_map)
+    local num_keys = get_num_keys()
+    for i = 0, num_keys do
+        hue_map[i] = 0
+				color_map[i] = hsla_to_color(0.0, 0.0, 0.0, 0.0)
+    end
 end
 
 function on_key_down(key_index)
     hue_map[key_index] = 359
-    color_map_pressed[key_index] = hsl_to_color(hue_map[key_index], 1.0, 0.5)
+    color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5, lerp(0, 255, opacity))
 end
 
 function on_tick(delta)
     ticks = ticks + delta + 1
-    
-    local num_keys = get_num_keys()
 
-    -- calculate afterglow effect for pressed keys
+    -- calculate afterhue effect for pressed keys
     if ticks % afterglow_step == 0 then
+				local num_keys = get_num_keys()
         for i = 0, num_keys do
-            if color_map_pressed[i] > color_off then
-                hue_map[i] = hue_map[i] - hue_step_afterglow
-                
-                color_map_pressed[i] = hsl_to_color(hue_map[i], 1.0, 0.5)
-                
-                if color_map_pressed[i] < color_off then
-                    color_map_pressed[i] = color_off
-                end
-
-                if hue_map[i] <= 0 then
-                    hue_map[i] = 0
-                    color_map_pressed[i] = color_off
-                end
-            end
-        end
-    end
-
-    -- now combine all the color maps to a final map
-    local color_map_combined = {}
-    for i = 0, num_keys do
-        color_map_combined[i] = color_map[i] + color_map_pressed[i]
-
-        -- let the afterglow effect override all other effects
-        if color_map_pressed[i] > color_off then
-            color_map_combined[i] = color_map_pressed[i]
+						if hue_map[i] > 0 then
+							hue_map[i] = hue_map[i] - hue_step_afterglow
+							r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
+							color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+						end
         end
 
-        if color_map_combined[i] >= 0x00ffffff then
-            color_map_combined[i] = 0x00ffffff
-        elseif color_map_combined[i] <= 0x00000000 then
-            color_map_combined[i] = 0x00000000
-        end
-    end
-
-    set_color_map(color_map_combined)
-end
-
--- init global state
-function init_state()
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_background
-        color_map_pressed[i] = color_off
-
-        hue_map[i] = hsl_to_color(0.0, 0.0, 0.0)
+	    submit_color_map(color_map)
     end
 end

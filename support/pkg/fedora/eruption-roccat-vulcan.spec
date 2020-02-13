@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.0.11
-Release: 3%{?dist}
+Version: 0.0.12
+Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -57,16 +57,16 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/templates
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/styles
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/eruption
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/metal
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/js
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/font
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/bg
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/icons
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/templates
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/styles
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/eruption
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/metal
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/js
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/font
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/bg
+#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/icons
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
@@ -76,16 +76,17 @@ cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rul
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
-cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
-cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+#cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
+#cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
+#cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
 cp -ra %{_builddir}/%{name}-%{version}/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
-cp -ra %{_builddir}/%{name}-%{version}/templates %{buildroot}%{_datarootdir}/%{ShortName}/
-cp -ra %{_builddir}/%{name}-%{version}/static %{buildroot}%{_datarootdir}/%{ShortName}/
+#cp -ra %{_builddir}/%{name}-%{version}/templates %{buildroot}%{_datarootdir}/%{ShortName}/
+#cp -ra %{_builddir}/%{name}-%{version}/static %{buildroot}%{_datarootdir}/%{ShortName}/
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 
@@ -109,6 +110,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
+%{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile3.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
@@ -161,6 +163,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/raindrops.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/solid.lua
+%{_datarootdir}/%{ShortName}/scripts/solid.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua
@@ -169,72 +173,72 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/water.lua
 %{_datarootdir}/%{ShortName}/scripts/water.lua.manifest
-%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
-%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
-%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+#%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
+#%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
+#%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
 # Web-Frontend
-%{_datarootdir}/%{ShortName}/templates/about.html.tera
-%{_datarootdir}/%{ShortName}/templates/base.html.tera
-%{_datarootdir}/%{ShortName}/templates/detail.html.tera
-%{_datarootdir}/%{ShortName}/templates/documentation.html.tera
-%{_datarootdir}/%{ShortName}/templates/profiles.html.tera
-%{_datarootdir}/%{ShortName}/templates/soundfx.html.tera
-%{_datarootdir}/%{ShortName}/templates/settings.html.tera
-%{_datarootdir}/%{ShortName}/templates/preview.html.tera
-%{_datarootdir}/%{ShortName}/static/css/animate.css
-%{_datarootdir}/%{ShortName}/static/css/style.css
-%{_datarootdir}/%{ShortName}/static/css/themes/eruption/colors.css
-%{_datarootdir}/%{ShortName}/static/css/themes/metal/colors.css
-%{_datarootdir}/%{ShortName}/static/css/styles/tomorrow-night.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap.css.map
-%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css.map
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css.map
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css.map
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css.map
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css
-%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css.map
-%{_datarootdir}/%{ShortName}/static/css/fontawesome.min.css
-%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.eot
-%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.svg
-%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.ttf
-%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff
-%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff2
-%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.eot
-%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.svg
-%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.ttf
-%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff
-%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff2
-%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.eot
-%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.svg
-%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.ttf
-%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff
-%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff2
-%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.ttf
-%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.ttf
-%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.woff2
-%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.woff2
-%{_datarootdir}/%{ShortName}/static/img/bg_direction_nav.png
-%{_datarootdir}/%{ShortName}/static/img/glyphicons-halflings.png
-%{_datarootdir}/%{ShortName}/static/img/bg/bg-1.jpg
-%{_datarootdir}/%{ShortName}/static/img/icons/eruption.png
-%{_datarootdir}/%{ShortName}/static/img/favicon.png
-%{_datarootdir}/%{ShortName}/static/js/animate.js
-%{_datarootdir}/%{ShortName}/static/js/custom.js
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js.map
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js.map
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.js
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.js.map
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js
-%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js.map
-%{_datarootdir}/%{ShortName}/static/js/jquery.js
-%{_datarootdir}/%{ShortName}/static/js/fontawesome.min.js
-%{_datarootdir}/%{ShortName}/static/js/highlight.pack.js
+#%{_datarootdir}/%{ShortName}/templates/about.html.tera
+#%{_datarootdir}/%{ShortName}/templates/base.html.tera
+#%{_datarootdir}/%{ShortName}/templates/detail.html.tera
+#%{_datarootdir}/%{ShortName}/templates/documentation.html.tera
+#%{_datarootdir}/%{ShortName}/templates/profiles.html.tera
+#%{_datarootdir}/%{ShortName}/templates/soundfx.html.tera
+#%{_datarootdir}/%{ShortName}/templates/settings.html.tera
+#%{_datarootdir}/%{ShortName}/templates/preview.html.tera
+#%{_datarootdir}/%{ShortName}/static/css/animate.css
+#%{_datarootdir}/%{ShortName}/static/css/style.css
+#%{_datarootdir}/%{ShortName}/static/css/themes/eruption/colors.css
+#%{_datarootdir}/%{ShortName}/static/css/themes/metal/colors.css
+#%{_datarootdir}/%{ShortName}/static/css/styles/tomorrow-night.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap.css.map
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css.map
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css.map
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css.map
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css.map
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css
+#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css.map
+#%{_datarootdir}/%{ShortName}/static/css/fontawesome.min.css
+#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.eot
+#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.svg
+#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.ttf
+#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff
+#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff2
+#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.eot
+#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.svg
+#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.ttf
+#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff
+#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff2
+#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.eot
+#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.svg
+#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.ttf
+#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff
+#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff2
+#%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.ttf
+#%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.ttf
+#%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.woff2
+#%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.woff2
+#%{_datarootdir}/%{ShortName}/static/img/bg_direction_nav.png
+#%{_datarootdir}/%{ShortName}/static/img/glyphicons-halflings.png
+#%{_datarootdir}/%{ShortName}/static/img/bg/bg-1.jpg
+#%{_datarootdir}/%{ShortName}/static/img/icons/eruption.png
+#%{_datarootdir}/%{ShortName}/static/img/favicon.png
+#%{_datarootdir}/%{ShortName}/static/js/animate.js
+#%{_datarootdir}/%{ShortName}/static/js/custom.js
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js.map
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js.map
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.js
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.js.map
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js
+#%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js.map
+#%{_datarootdir}/%{ShortName}/static/js/jquery.js
+#%{_datarootdir}/%{ShortName}/static/js/fontawesome.min.js
+#%{_datarootdir}/%{ShortName}/static/js/highlight.pack.js
 
 %changelog

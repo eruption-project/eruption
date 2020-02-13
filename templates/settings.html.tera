@@ -17,11 +17,7 @@
 					{% for script in scripts %}
 						<td>
 							<a class="card-feedback" href="/settings/{{ script.id }}">
-								{% if script.id == active_script_id %}
-									<div class="card bg-success {{ script.html_class }}" style="width: 14rem; height: 10rem">
-								{% else %}
 									<div class="card bg-primary {{ script.html_class }}" style="width: 14rem; height: 10rem;">
-								{% endif %}
 									<div class="card-body">
 										<h5 class="card-title text-light">{{ script.name }}</h5>
 										<!-- <h6>{{ script.version }}</h6> -->
