@@ -28,7 +28,7 @@ use log::*;
 use parking_lot::{Condvar, Mutex};
 use std::convert::TryInto;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -79,12 +79,20 @@ lazy_static! {
 
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
+
+    static ref LUA_TXS: Arc<Mutex<Vec<Sender<script::Message>>>> = Arc::new(Mutex::new(vec![]));
 }
 
 pub type Result<T> = std::result::Result<T, MainError>;
 
 #[derive(Debug, Fail)]
 pub enum MainError {
+    #[fail(display = "Could not spawn a thread")]
+    ThreadSpawnError {},
+
+    #[fail(display = "Could not switch profiles")]
+    SwitchProfileError {},
+
     #[fail(display = "Could not execute Lua script")]
     ScriptExecError {},
     // #[fail(display = "Unknown error: {}", description)]
@@ -171,13 +179,9 @@ fn spawn_frontend_thread(
         .spawn(move || {
             frontend::initialize(frontend_tx, profile_path, script_paths).unwrap_or_else(|e| {
                 error!("Could not initialize the Web-Frontend: {}", e);
-                panic!()
             });
         })
-        .unwrap_or_else(|e| {
-            error!("Could not spawn a thread: {}", e);
-            panic!()
-        });
+        .map_err(|e| MainError::ThreadSpawnError {})?;
 
     Ok(())
 }
@@ -186,21 +190,16 @@ fn spawn_frontend_thread(
 fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("dbus".into());
     builder
-        .spawn(move || {
-            let dbus = dbus_interface::initialize(dbus_tx).unwrap_or_else(|e| {
-                error!("Could not initialize D-Bus: {}", e);
-                panic!()
-            });
+        .spawn(move || -> Result<()> {
+            let dbus =
+                dbus_interface::initialize(dbus_tx).map_err(|_e| MainError::ThreadSpawnError {})?;
 
             loop {
                 dbus.get_next_event()
                     .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
             }
         })
-        .unwrap_or_else(|e| {
-            error!("Could not spawn a thread: {}", e);
-            panic!()
-        });
+        .map_err(|_e| MainError::ThreadSpawnError {})?;
 
     Ok(())
 }
@@ -264,7 +263,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()>
 fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
-    mut script_path: PathBuf,
+    script_path: PathBuf,
     rvdevice: &RvDeviceState,
 ) -> Result<()> {
     let result = util::is_file_accessible(&script_path);
@@ -274,7 +273,8 @@ fn spawn_lua_thread(
             script_path.display(),
             result
         );
-        process::exit(3);
+
+        return Err(MainError::ScriptExecError {});
     }
 
     let result = util::is_file_accessible(util::get_manifest_for(&script_path));
@@ -284,41 +284,107 @@ fn spawn_lua_thread(
             script_path.display(),
             result
         );
-        process::exit(3);
+
+        return Err(MainError::ScriptExecError {});
     }
 
     let rvdevice = rvdevice.clone();
 
     let builder = thread::Builder::new().name(format!(
-        "lua-vm/{}-{}",
+        "{}/{}",
+        script_path.clone().file_name().unwrap().to_string_lossy(),
         thread_idx,
-        script_path.clone().file_name().unwrap().to_string_lossy()
     ));
     builder
-        .spawn(move || loop {
-            let rvdevice = rvdevice.clone();
+        .spawn(move || -> Result<()> {
+            loop {
+                let rvdevice = rvdevice.clone();
 
-            let result =
-                script::run_script(script_path.clone(), rvdevice, &lua_rx).unwrap_or_else(|e| {
-                    error!(
-                        "Could not execute script file '{}': {:?}",
-                        script_path.display(),
-                        e
-                    );
-                    panic!();
-                });
+                let result = script::run_script(script_path.clone(), rvdevice, &lua_rx)
+                    .map_err(|_e| MainError::ScriptExecError {})?;
 
-            match result {
-                script::RunScriptResult::ReExecuteOtherScript(script_file) => {
-                    script_path = script_file;
-                    continue;
+                match result {
+                    //script::RunScriptResult::ReExecuteOtherScript(script_file) => {
+                    //script_path = script_file;
+                    //continue;
+                    //}
+                    script::RunScriptResult::TerminatedGracefully => break,
                 }
             }
+
+            Ok(())
         })
-        .unwrap_or_else(|e| {
+        .map_err(|_e| MainError::ThreadSpawnError {})?;
+
+    Ok(())
+}
+
+/// Switches the currently active profile to the profile file `profile_path`
+fn switch_profile<P: AsRef<Path>>(profile_file: P, rvdevice: &RvDeviceState) -> Result<()> {
+    let script_dir = PathBuf::from(
+        CONFIG
+            .lock()
+            .as_ref()
+            .unwrap()
+            .get_str("global.script_dir")
+            .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
+    );
+
+    let profile_dir = PathBuf::from(
+        CONFIG
+            .lock()
+            .as_ref()
+            .unwrap()
+            .get_str("global.profile_dir")
+            .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
+    );
+
+    let profile_path = profile_dir.join(&profile_file);
+    let profile =
+        profiles::Profile::from(&profile_path).map_err(|_e| MainError::SwitchProfileError {})?;
+
+    // verify script files first; better fail early if we can
+    let script_files = profile.active_scripts.clone();
+    for script_file in script_files.iter() {
+        let script_path = script_dir.join(&script_file);
+
+        if !util::is_script_file_accessible(&script_path)
+            || !util::is_manifest_file_accessible(&script_path)
+        {
+            error!(
+                "Script file or manifest inaccessible: {}",
+                script_path.display()
+            );
+            return Err(MainError::SwitchProfileError {});
+        }
+    }
+
+    // now request termination of all Lua VMs
+    let mut lua_txs = LUA_TXS.lock();
+
+    for lua_tx in lua_txs.iter() {
+        lua_tx
+            .send(script::Message::Unload)
+            .unwrap_or_else(|e| error!("Could not send an event to a Lua VM: {}", e));
+    }
+
+    // be safe and clear any leftover channels
+    lua_txs.clear();
+
+    // now spawn a new set of Lua VMs, with scripts from the new profile
+    for (thread_idx, script_file) in script_files.iter().enumerate() {
+        let script_path = script_dir.join(&script_file);
+
+        let (lua_tx, lua_rx) = channel();
+        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice).unwrap_or_else(|e| {
             error!("Could not spawn a thread: {}", e);
-            panic!();
         });
+
+        lua_txs.push(lua_tx);
+    }
+
+    // finally assign the globally active profile
+    *ACTIVE_PROFILE.lock() = Some(profile);
 
     Ok(())
 }
@@ -329,7 +395,6 @@ fn run_main_loop(
     #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<(u8, bool)>>,
-    lua_txs: &[Sender<script::Message>],
 ) {
     trace!("Entering main loop...");
 
@@ -360,57 +425,13 @@ fn run_main_loop(
                 frontend::Message::LoadScript(script_path) => {
                     info!("Loading Script: {}", script_path.display());
 
-                    if util::is_script_file_accessible(&script_path)
-                        && util::is_manifest_file_accessible(&script_path)
-                    {
-                        lua_txs[0]
-                            .send(script::Message::LoadScript(script_path))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send an event to the Lua VM: {}", e)
-                            });
-                    } else {
-                        error!(
-                            "Script and/or manifest file '{}' is not accessible: ",
-                            script_path.display()
-                        );
-                    }
+                    // TODO: Implement this
                 }
 
                 frontend::Message::SwitchProfile(profile_path) => {
                     info!("Loading Profile: {}", profile_path.display());
 
-                    let config = CONFIG.lock();
-                    let script_dir = PathBuf::from(
-                        config
-                            .as_ref()
-                            .unwrap()
-                            .get_str("global.script_dir")
-                            .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
-                    );
-
-                    let profile = profiles::Profile::from(&profile_path).unwrap();
-                    let script_files = profile.active_scripts.clone();
-                    let script_path = script_dir.join(&script_files[0]);
-
-                    if util::is_script_file_accessible(&script_path)
-                        && util::is_manifest_file_accessible(&script_path)
-                    {
-                        // TODO: Implement this correctly
-                        lua_txs[0]
-                            .send(script::Message::LoadScript(script_path.to_path_buf()))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send an event to a Lua VM: {}", e)
-                            });
-                    } else {
-                        error!(
-                            "Script and/or manifest file '{}' is not accessible: ",
-                            script_path.display()
-                        );
-                    }
-
-                    // set global active profile
-                    let mut active_profile = ACTIVE_PROFILE.lock().unwrap();
-                    *active_profile = Some(profile);
+                    // TODO: Implement this
                 }
             },
 
@@ -427,22 +448,11 @@ fn run_main_loop(
         #[cfg(feature = "dbus")]
         match dbus_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
-                dbus_interface::Message::LoadScript(script_path) => {
-                    info!("Loading Script: {}", script_path.display());
+                dbus_interface::Message::SwitchProfile(profile_path) => {
+                    info!("Loading Profile: {}", profile_path.display());
 
-                    match util::is_file_accessible(&script_path) {
-                        Ok(_) => lua_txs[0]
-                            .send(script::Message::LoadScript(script_path))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send an event to a Lua VM: {}", e)
-                            }),
-
-                        Err(e) => error!(
-                            "Script file '{}' is not accessible: {}",
-                            script_path.display(),
-                            e
-                        ),
-                    }
+                    switch_profile(&profile_path, &rvdevice)
+                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
                 }
             },
 
@@ -460,7 +470,7 @@ fn run_main_loop(
             Ok(result) => match result {
                 Some((index, pressed)) => {
                     if pressed {
-                        for lua_tx in lua_txs {
+                        for lua_tx in LUA_TXS.lock().iter() {
                             lua_tx
                                 .send(script::Message::KeyDown(index))
                                 .unwrap_or_else(|e| {
@@ -471,7 +481,7 @@ fn run_main_loop(
                         events::notify_observers(events::Event::KeyDown(index))
                             .unwrap_or_else(|e| error!("{}", e));
                     } else {
-                        for lua_tx in lua_txs {
+                        for lua_tx in LUA_TXS.lock().iter() {
                             lua_tx
                                 .send(script::Message::KeyUp(index))
                                 .unwrap_or_else(|e| {
@@ -498,12 +508,12 @@ fn run_main_loop(
         }
 
         // send timer tick events to the Lua VMs
-        for lua_tx in lua_txs {
+        for lua_tx in LUA_TXS.lock().iter() {
             lua_tx
                 .send(script::Message::Tick(
                     start_time.elapsed().as_millis().try_into().unwrap(),
                 ))
-                .unwrap();
+                .unwrap_or_else(|e| error!("Send error: {}", e));
         }
 
         // execute render "pipeline" now
@@ -520,17 +530,19 @@ fn run_main_loop(
 
         // instruct Lua VMs to realize their color maps, e.g. to blend their
         // local color maps with the canvas
-        *COLOR_MAPS_READY_CONDITION.0.lock() = lua_txs.len();
+        *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len();
 
         let mut drop_frame = false;
 
-        for lua_tx in lua_txs {
-            // guarantee right order of execution for the alpha blend operations,
-            // so wait for the current Lua VM to complete its blending code,
-            // before continuing
+        for lua_tx in LUA_TXS.lock().iter() {
+            // guarantee the right order of execution for the alpha blend
+            // operations, so we have to wait for the current Lua VM to
+            // complete its blending code, before continuing
             let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
 
-            lua_tx.send(script::Message::RealizeColorMap).unwrap();
+            lua_tx
+                .send(script::Message::RealizeColorMap)
+                .unwrap_or_else(|e| error!("Send error: {}", e));
 
             // yield to thread
             //thread::sleep(Duration::from_millis(0));
@@ -554,7 +566,9 @@ fn run_main_loop(
 
         // send the final (combined) color map to the keyboard
         if !drop_frame {
-            rvdevice.send_led_map(&script::LED_MAP.lock()).unwrap();
+            rvdevice
+                .send_led_map(&script::LED_MAP.lock())
+                .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
         }
 
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time
@@ -604,13 +618,14 @@ fn run_main_loop(
 }
 
 mod thread_util {
+    use crate::Result;
     use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() {
+    pub(crate) fn deadlock_detector() -> Result<()> {
         thread::Builder::new()
             .name("deadlockd".to_owned())
             .spawn(move || loop {
@@ -629,7 +644,9 @@ mod thread_util {
                     }
                 }
             })
-            .unwrap();
+            .map_err(|_e| crate::MainError::ThreadSpawnError {})?;
+
+        Ok(())
     }
 }
 
@@ -640,7 +657,8 @@ fn main() {
     }
 
     // start the thread deadlock detector
-    thread_util::deadlock_detector();
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     let matches = parse_commandline();
 
@@ -671,7 +689,7 @@ fn main() {
         .merge(config::File::new(&config_file, config::FileFormat::Toml))
         .unwrap_or_else(|e| {
             error!("Could not parse configuration file: {}", e);
-            panic!()
+            process::exit(4);
         });
 
     *CONFIG.lock() = Some(config.clone());
@@ -761,7 +779,7 @@ fn main() {
                     .unwrap_or_else(|e| {
                         error!("Error opening the keyboard device: {}", e);
                         error!("This could be a permission problem, or maybe the device is locked by another process?");
-                        process::exit(4);
+                        process::exit(3);
                     });
 
                     // send initialization handshake
@@ -784,13 +802,12 @@ fn main() {
                     #[cfg(feature = "dbus")]
                     spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
-                        panic!()
                     });
 
                     // initialize plugins
                     info!("Registering plugins...");
                     plugins::register_plugins()
-                        .unwrap_or_else(|_e| error!("Could not register plugin"));
+                        .unwrap_or_else(|_e| error!("Could not register one or more plugins"));
 
                     // spawn a thread to handle keyboard input
                     info!("Spawning input thread...");
@@ -804,19 +821,18 @@ fn main() {
                     // spawn Lua VM threads
                     info!("Loading Lua scripts...");
 
-                    let mut lua_txs = vec![];
-
                     for (thread_idx, script_path) in script_paths.iter().enumerate() {
                         let script_path = script_path.clone();
 
                         let (lua_tx, lua_rx) = channel();
-                        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
+                        let result =
+                            spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice);
 
-                        lua_txs.push(lua_tx);
+                        if result.is_err() {
+                            error!("Could not spawn a Lua VM thread");
+                        } else {
+                            LUA_TXS.lock().push(lua_tx);
+                        }
                     }
 
                     // spawn a thread to handle the web-frontend
@@ -829,10 +845,7 @@ fn main() {
 
                         #[cfg(feature = "frontend")]
                         spawn_frontend_thread(frontend_tx, profile_path, script_paths)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
+                            .map_err(|_e| MainError::ThreadSpawnError {})?;
                     } else {
                         info!("Web-Frontend DISABLED by configuration");
                     }
@@ -844,11 +857,10 @@ fn main() {
                         &frontend_rx,
                         &dbus_rx,
                         &kbd_rx,
-                        &lua_txs,
                     );
 
                     // we left the main loop, so send a final message to the running Lua VMs
-                    for lua_tx in lua_txs {
+                    for lua_tx in LUA_TXS.lock().iter() {
                         lua_tx
                             .send(script::Message::Quit(0))
                             .unwrap_or_else(|e| error!("Could not send quit message: {}", e));

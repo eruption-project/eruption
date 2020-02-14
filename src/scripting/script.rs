@@ -42,7 +42,8 @@ pub enum Message {
     KeyDown(u8),
     KeyUp(u8),
 
-    LoadScript(PathBuf),
+    //LoadScript(PathBuf),
+    Unload,
 
     /// blend LOCAL_LED_MAP with LED_MAP ("realize" the color map)
     RealizeColorMap,
@@ -438,8 +439,10 @@ mod callbacks {
 
 /// Action requests for `run_script`
 pub enum RunScriptResult {
-    /// Currently running interpreter will be shut down, to execute another Lua script
-    ReExecuteOtherScript(PathBuf),
+    /// Script terminated gracefully
+    TerminatedGracefully,
+    // Currently running interpreter will be shut down, to execute another Lua script
+    //ReExecuteOtherScript(PathBuf),
 }
 
 /// Loads and runs a lua script.
@@ -532,7 +535,14 @@ pub fn run_script(
                                 });
 
                                 // signal readiness / notify the main thread that we are done
-                                *crate::COLOR_MAPS_READY_CONDITION.0.lock() -= 1;
+                                crate::COLOR_MAPS_READY_CONDITION
+                                    .0
+                                    .lock()
+                                    .checked_sub(1)
+                                    .unwrap_or_else(|| {
+                                        warn!("Incorrect state in locking code detected");
+                                        0
+                                    });
                                 crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
                             }
 
@@ -558,8 +568,22 @@ pub fn run_script(
                                 }
                             }
 
-                            Message::LoadScript(script_path) => {
-                                return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
+                            //Message::LoadScript(script_path) => {
+                            //return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
+                            //}
+                            Message::Unload => {
+                                debug!("TerminatedGracefully");
+
+                                //if let Ok(handler) =
+                                //lua_ctx.globals().get::<_, Function>("on_quit")
+                                //{
+                                //handler.call::<_, ()>(()).or_else(|e| {
+                                //error!("Lua error: {}", e);
+                                //Err(e)
+                                //})?;
+                                //}
+
+                                return Ok(RunScriptResult::TerminatedGracefully);
                             }
                         }
                     }

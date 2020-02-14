@@ -30,7 +30,8 @@ use crate::constants;
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
 pub enum Message {
-    LoadScript(PathBuf),
+    SwitchProfile(PathBuf),
+    //LoadScript(PathBuf),
 }
 
 pub type Result<T> = std::result::Result<T, DbusApiError>;
@@ -76,35 +77,35 @@ impl DbusApi {
                     ),
                 ),
             )
+            //.add(
+            //f.object_path("/script", ()).introspectable().add(
+            //f.interface("org.eruption.control.Script", ()).add_p(
+            //f.property::<&str, _>("Name", ())
+            //.emits_changed(EmitsChangedSignal::False)
+            //.on_get(|i, _m| {
+            //let result = "test";
+            //i.append(result);
+            //Ok(())
+            //})
+            //// .on_set(
+            ////  |i, m| {
+            ////     let b: bool = try!(i.read());
+            ////     i.append(result);
+            ////     Ok(())
+            //// }
+            //// ),
+            //),
+            //),
+            //)
             .add(
-                f.object_path("/script", ()).introspectable().add(
-                    f.interface("org.eruption.control.Script", ()).add_p(
-                         f.property::<&str, _>("Name", ())
-                            .emits_changed(EmitsChangedSignal::False)
-                            .on_get(|i, _m| {
-                                let result = "test";
-                                i.append(result);
-                                Ok(())
-                            })
-                            // .on_set(
-                            //  |i, m| {
-                            //     let b: bool = try!(i.read());
-                            //     i.append(result);
-                            //     Ok(())
-                            // }   
-                            // ),
-                    ),
-                ),
-            )
-            .add(
-                f.object_path("/script", ()).introspectable().add(
-                    f.interface("org.eruption.control.Script", ()).add_m(
-                        f.method("ChangeScript", (), move |m| {
+                f.object_path("/profile", ()).introspectable().add(
+                    f.interface("org.eruption.control.Profile", ()).add_m(
+                        f.method("SwitchProfile", (), move |m| {
                             let n: &str = m.msg.read1()?;
                             // let result = DbusApi::load_script(n);
 
                             dbus_tx
-                                .send(Message::LoadScript(PathBuf::from(n)))
+                                .send(Message::SwitchProfile(PathBuf::from(n)))
                                 .unwrap_or_else(|e| {
                                     error!("Could not send a pending D-Bus event: {}", e)
                                 });
@@ -131,11 +132,11 @@ impl DbusApi {
         match self.connection {
             Some(ref connection) => {
                 if let Some(item) = connection.incoming(constants::DBUS_TIMEOUT_MILLIS).next() {
-                    trace!("Message: {:?}", item);
+                    debug!("Message: {:?}", item);
 
                     Ok(())
                 } else {
-                    trace!("Received a timeout message");
+                    debug!("Received a timeout message");
 
                     Ok(())
                 }
