@@ -16,7 +16,6 @@
 */
 
 use failure::Fail;
-use hexdump;
 use log::*;
 use std::time::Duration;
 use std::{thread, time};

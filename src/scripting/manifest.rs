@@ -314,17 +314,15 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
 
         let result = tags_a.cmp(&tags_b);
         if result == std::cmp::Ordering::Equal {
-            return a.name.cmp(&b.name);
+            a.name.cmp(&b.name)
         } else {
-            return result;
+            result
         }
     });
 
     // update ids
-    let mut cntr = 0;
-    for mut s in &mut result {
+    for (cntr, mut s) in result.iter_mut().enumerate() {
         s.id = cntr;
-        cntr += 1;
     }
 
     Ok(result)
@@ -342,6 +340,7 @@ pub enum ScriptTag {
     /// Script may be categorized as an "effect"
     Effect,
 
+    // other effects
     /// Script is of pre-release quality
     BetaVersion,
 
@@ -367,9 +366,12 @@ pub enum ScriptTag {
 impl ScriptTag {
     pub fn get_description(&self) -> String {
         match *self {
+            // "classes"
             ScriptTag::Background => "Background".into(),
             ScriptTag::Filter => "Filter".into(),
             ScriptTag::Effect => "Effect".into(),
+
+            // other tags
             ScriptTag::BetaVersion => "Beta version".into(),
             ScriptTag::Demo => "Technology demo".into(),
             ScriptTag::Vendor => "Vendor supplied".into(),
@@ -382,9 +384,12 @@ impl ScriptTag {
 
     pub fn get_css_class(&self) -> String {
         match *self {
+            // "classes"
             ScriptTag::Background => "class-background".into(),
             ScriptTag::Filter => "class-filter".into(),
             ScriptTag::Effect => "class-effect".into(),
+
+            // other tags
             ScriptTag::BetaVersion => "beta-version".into(),
             ScriptTag::Demo => "demo".into(),
             ScriptTag::Vendor => "vendor".into(),
@@ -397,9 +402,12 @@ impl ScriptTag {
 
     pub fn get_badge_css_class(&self) -> String {
         match *self {
+            // "classes"
             ScriptTag::Background => "badge-background".into(),
             ScriptTag::Filter => "badge-filter".into(),
             ScriptTag::Effect => "badge-effect".into(),
+
+            // other tags
             ScriptTag::BetaVersion => "badge-beta-version".into(),
             ScriptTag::Demo => "badge-demo".into(),
             ScriptTag::Vendor => "badge-vendor".into(),

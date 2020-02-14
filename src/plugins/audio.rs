@@ -19,11 +19,11 @@ use failure::Fail;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::*;
-use rlua;
+use parking_lot::Mutex;
 use rlua::Context;
 use std::any::Any;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use rustfft::algorithm::Radix4;
 use rustfft::num_complex::Complex;
@@ -94,7 +94,6 @@ lazy_static! {
 fn try_start_audio_backend() -> Result<()> {
     AUDIO_BACKEND
         .lock()
-        .unwrap()
         .replace(Box::new(backends::PulseAudioBackend::new().map_err(
             |e| {
                 error!("Could not initialize the audio backend: {}", e);
@@ -107,13 +106,13 @@ fn try_start_audio_backend() -> Result<()> {
 
 #[inline]
 fn try_start_audio_grabber() -> Result<()> {
-    let start_backend = AUDIO_BACKEND.lock().unwrap().is_none();
+    let start_backend = AUDIO_BACKEND.lock().is_none();
     if start_backend {
         try_start_audio_backend()?;
     }
 
     // start the audio grabber thread
-    if let Some(backend) = AUDIO_BACKEND.lock().unwrap().as_ref() {
+    if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
         backend.start_audio_grabber()?;
         Ok(())
     } else {
@@ -189,7 +188,7 @@ impl AudioPlugin {
         try_start_audio_grabber()
             .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
 
-        AUDIO_GRABBER_BUFFER.lock().unwrap().to_vec()
+        AUDIO_GRABBER_BUFFER.lock().to_vec()
     }
 }
 
@@ -214,7 +213,7 @@ impl Plugin for AudioPlugin {
                     {
                         let mut start_backend = false;
 
-                        if let Some(backend) = AUDIO_BACKEND.lock().unwrap().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
                             backend
                                 .play_sfx(&SFX_KEY_DOWN.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
@@ -235,7 +234,7 @@ impl Plugin for AudioPlugin {
                     {
                         let mut start_backend = false;
 
-                        if let Some(backend) = AUDIO_BACKEND.lock().unwrap().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
                             backend
                                 .play_sfx(&SFX_KEY_UP.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
@@ -289,7 +288,6 @@ mod util {
     use super::AudioPluginError;
     use super::Result;
     use byteorder::{LittleEndian, WriteBytesExt};
-    use hound;
     use std::path::{Path, PathBuf};
 
     pub fn load_sfx<P: AsRef<Path>>(path: P) -> Result<Vec<u8>> {
@@ -335,7 +333,6 @@ mod backends {
     use super::ENABLE_SFX;
 
     use lazy_static::lazy_static;
-    #[allow(unused)]
     use log::{debug, error};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
@@ -401,7 +398,7 @@ mod backends {
     #[allow(unused)]
     impl AudioBackend for AlsaBackend {
         fn play_sfx(&self, data: &'static [u8]) -> Result<()> {
-            if ENABLE_SFX.load(Ordering::SeqCst) == false {
+            if !ENABLE_SFX.load(Ordering::SeqCst) {
                 return Ok(());
             }
 
@@ -471,7 +468,7 @@ mod backends {
                                     }
                                 };
 
-                                if AUDIO_PLAYBACK_THREAD_TERMINATED.load(Ordering::SeqCst) == true {
+                                if AUDIO_PLAYBACK_THREAD_TERMINATED.load(Ordering::SeqCst) {
                                     return;
                                 }
 
@@ -506,11 +503,10 @@ mod backends {
                                     } => {
                                         let mut di = data
                                             .chunks_exact(2)
-                                            .map(|c| u16::from_ne_bytes([c[0], c[1]]))
-                                            .map(|c| f32::from(c));
+                                            .map(|c| u16::from_ne_bytes([c[0], c[1]]));
 
                                         for elem in buffer.iter_mut() {
-                                            *elem = di.next().unwrap_or(0.0);
+                                            *elem = di.next().unwrap_or(0).into();
                                         }
                                     }
 
@@ -597,11 +593,11 @@ mod backends {
                             }
                         };
 
-                        if AUDIO_GRABBER_THREAD_TERMINATED.load(Ordering::SeqCst) == true {
+                        if AUDIO_GRABBER_THREAD_TERMINATED.load(Ordering::SeqCst) {
                             return;
                         }
 
-                        let mut buffer = AUDIO_GRABBER_BUFFER.lock().unwrap();
+                        let mut buffer = AUDIO_GRABBER_BUFFER.lock();
 
                         match stream_data {
                             StreamData::Input {
@@ -720,7 +716,7 @@ mod backends {
 
     impl AudioBackend for PulseAudioBackend {
         fn play_sfx(&self, data: &'static [u8]) -> Result<()> {
-            if ENABLE_SFX.load(Ordering::SeqCst) == false {
+            if !ENABLE_SFX.load(Ordering::SeqCst) {
                 return Ok(());
             }
 
@@ -770,8 +766,10 @@ mod backends {
                     let grabber = Self::init_grabber().unwrap();
 
                     'RECORDER_LOOP: loop {
-                        let mut tmp: Vec<u8> = Vec::with_capacity(AUDIO_GRABBER_BUFFER_SIZE);
-                        tmp.resize(AUDIO_GRABBER_BUFFER_SIZE, 0);
+                        //let mut tmp: Vec<u8> = Vec::with_capacity(AUDIO_GRABBER_BUFFER_SIZE);
+                        //tmp.resize(AUDIO_GRABBER_BUFFER_SIZE, 0);
+
+                        let mut tmp: Vec<u8> = vec![0; AUDIO_GRABBER_BUFFER_SIZE];
 
                         grabber
                             .read(&mut tmp)
@@ -779,7 +777,7 @@ mod backends {
                                 description: format!("Error during recording: {}", e),
                             })?;
 
-                        let mut buffer = AUDIO_GRABBER_BUFFER.lock().unwrap();
+                        let mut buffer = AUDIO_GRABBER_BUFFER.lock();
                         buffer.clear();
                         buffer.extend(
                             tmp.chunks_exact(2)

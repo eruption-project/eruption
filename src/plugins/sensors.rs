@@ -17,12 +17,12 @@
 
 use lazy_static::lazy_static;
 use log::*;
-use rlua;
 use rlua::Context;
 use std::any::Any;
 // use failure::Fail;
+use parking_lot::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::thread;
 use sysinfo::{ComponentExt, SystemExt};
 
@@ -42,7 +42,7 @@ lazy_static! {
     static ref DO_REFRESH: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 
     /// System state and sensor information
-    static ref SYSTEM: Arc<RwLock<sysinfo::System>> = Arc::new(RwLock::new(sysinfo::System::new()));
+    static ref SYSTEM: Arc<Mutex<sysinfo::System>> = Arc::new(Mutex::new(sysinfo::System::new()));
 }
 
 /// A plugin that gives Lua scripts access to the systems sensor data
@@ -59,10 +59,7 @@ impl SensorsPlugin {
         let builder = thread::Builder::new().name("sensors".into());
         builder
             .spawn(move || {
-                let mut system = SYSTEM.write().unwrap_or_else(|e| {
-                    error!("Could not lock a shared data structure: {}", e);
-                    panic!();
-                });
+                let mut system = SYSTEM.lock();
                 system.refresh_all();
             })
             .unwrap_or_else(|e| {
@@ -75,10 +72,7 @@ impl SensorsPlugin {
     pub fn get_package_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
+        let system = SYSTEM.lock();
 
         let components = system.get_components();
         if components.len() > 1 {
@@ -92,10 +86,7 @@ impl SensorsPlugin {
     pub fn get_package_max_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
+        let system = SYSTEM.lock();
 
         let components = system.get_components();
         if components.len() > 1 {
@@ -109,11 +100,7 @@ impl SensorsPlugin {
     pub fn get_mem_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
-
+        let system = SYSTEM.lock();
         system.get_total_memory()
     }
 
@@ -121,11 +108,7 @@ impl SensorsPlugin {
     pub fn get_mem_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
-
+        let system = SYSTEM.lock();
         system.get_used_memory()
     }
 
@@ -133,11 +116,7 @@ impl SensorsPlugin {
     pub fn get_swap_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
-
+        let system = SYSTEM.lock();
         system.get_total_swap()
     }
 
@@ -145,11 +124,7 @@ impl SensorsPlugin {
     pub fn get_swap_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.read().unwrap_or_else(|e| {
-            error!("Could not lock a shared data structure: {}", e);
-            panic!();
-        });
-
+        let system = SYSTEM.lock();
         system.get_used_swap()
     }
 }

@@ -52,10 +52,7 @@ pub type Result<T> = std::result::Result<T, failure::Error>;
 pub fn register_plugins() -> Result<()> {
     trace!("Registering all available plugins...");
 
-    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap_or_else(|e| {
-        error!("Could not lock a shared data structure: {}", e);
-        panic!();
-    });
+    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(IntrospectionPlugin::new()))?;

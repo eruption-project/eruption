@@ -19,7 +19,6 @@ use evdev_rs::enums::EventCode;
 use evdev_rs::Device;
 use failure::Fail;
 use log::*;
-use rlua;
 use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;

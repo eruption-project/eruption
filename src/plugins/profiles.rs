@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use rlua;
 use rlua::Context;
 use std::any::Any;
 // use failure::Fail;

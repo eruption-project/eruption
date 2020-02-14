@@ -16,7 +16,6 @@
 */
 
 // use failure::Fail;
-use rlua;
 use rlua::Context;
 use std::any::Any;
 

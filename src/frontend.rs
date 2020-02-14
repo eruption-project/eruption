@@ -34,12 +34,13 @@ use crate::profiles::GetAttr;
 use failure::Fail;
 use lazy_static::*;
 use log::*;
+use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::constants;

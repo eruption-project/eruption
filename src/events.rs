@@ -17,7 +17,8 @@
 
 use failure::Error;
 use lazy_static::lazy_static;
-use std::sync::{Arc, RwLock};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -32,9 +33,11 @@ pub enum EventClass {
     Keyboard,
 }
 
+pub type Callback = dyn Fn(&Event) -> Result<bool> + Sync + Send + 'static;
+
 lazy_static! {
-    pub static ref KEYBOARD_OBSERVERS: Arc<RwLock<Vec<Box<dyn Fn(&Event) -> Result<bool> + Sync + Send + 'static>>>> =
-        Arc::new(RwLock::new(vec![]));
+    pub static ref KEYBOARD_OBSERVERS: Arc<Mutex<Vec<Box<Callback>>>> =
+        Arc::new(Mutex::new(vec![]));
 }
 
 pub fn register_observer<C>(event_class: EventClass, callback: C)
@@ -42,19 +45,12 @@ where
     C: Fn(&Event) -> Result<bool> + Sync + Send + 'static,
 {
     match event_class {
-        EventClass::Keyboard => KEYBOARD_OBSERVERS
-            .write()
-            .expect("Could not lock a shared data structure")
-            .push(Box::from(callback)),
+        EventClass::Keyboard => KEYBOARD_OBSERVERS.lock().push(Box::from(callback)),
     }
 }
 
 pub fn notify_observers(event: Event) -> Result<()> {
-    for callback in KEYBOARD_OBSERVERS
-        .read()
-        .expect("Could not lock a shared data structure")
-        .iter()
-    {
+    for callback in KEYBOARD_OBSERVERS.lock().iter() {
         callback(&event)?;
     }
 

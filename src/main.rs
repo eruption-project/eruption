@@ -25,22 +25,19 @@ use clap::{App, Arg};
 use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
-use pretty_env_logger;
+use parking_lot::{Condvar, Mutex};
 use std::convert::TryInto;
 use std::env;
 use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, RwLock};
-use std::sync::{Condvar, Mutex};
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use std::u64;
 
 mod util;
-
-use hidapi;
 
 mod rvdevice;
 use rvdevice::RvDeviceState;
@@ -68,16 +65,17 @@ mod frontend {
 
 lazy_static! {
     /// The currently active profile
-    pub static ref ACTIVE_PROFILE: Arc<RwLock<Option<Profile>>> = Arc::new(RwLock::new(None));
+    pub static ref ACTIVE_PROFILE: Arc<Mutex<Option<Profile>>> = Arc::new(Mutex::new(None));
 
     /// The current "pipeline" of scripts
-    pub static ref ACTIVE_SCRIPTS: Arc<RwLock<Vec<Manifest>>> = Arc::new(RwLock::new(vec![]));
+    pub static ref ACTIVE_SCRIPTS: Arc<Mutex<Vec<Manifest>>> = Arc::new(Mutex::new(vec![]));
 
     /// Global configuration
-    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
+    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
 
     // Flags
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 }
@@ -213,7 +211,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()>
         .spawn(move || {
             {
                 // initialize thread local state of the keyboard plugin
-                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
+                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
                 let keyboard_plugin = plugin_manager
                     .find_plugin_by_name_mut("Keyboard".to_string())
                     .unwrap_or_else(|| {
@@ -232,7 +230,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()>
                     })
             }
 
-            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
+            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
             let keyboard_plugin = plugin_manager
                 .find_plugin_by_name("Keyboard".to_string())
                 .unwrap_or_else(|| {
@@ -290,7 +288,11 @@ fn spawn_lua_thread(
 
     let rvdevice = rvdevice.clone();
 
-    let builder = thread::Builder::new().name(format!("lua-vm/{}", thread_idx).into());
+    let builder = thread::Builder::new().name(format!(
+        "lua-vm/{}-{}",
+        thread_idx,
+        script_path.clone().file_name().unwrap().to_string_lossy()
+    ));
     builder
         .spawn(move || loop {
             let rvdevice = rvdevice.clone();
@@ -326,7 +328,7 @@ fn run_main_loop(
     #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<(u8, bool)>>,
-    lua_txs: &Vec<Sender<script::Message>>,
+    lua_txs: &[Sender<script::Message>],
 ) {
     trace!("Entering main loop...");
 
@@ -342,7 +344,7 @@ fn run_main_loop(
     // enter the main loop on the main thread
     'MAIN_LOOP: loop {
         // prepare to call main loop hook
-        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
+        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
         let plugins = plugin_manager.get_plugins();
 
         // call main loop hook of each registered plugin
@@ -376,7 +378,7 @@ fn run_main_loop(
                 frontend::Message::SwitchProfile(profile_path) => {
                     info!("Loading Profile: {}", profile_path.display());
 
-                    let config = CONFIG.read().unwrap();
+                    let config = CONFIG.lock();
                     let script_dir = PathBuf::from(
                         config
                             .as_ref()
@@ -406,7 +408,7 @@ fn run_main_loop(
                     }
 
                     // set global active profile
-                    let mut active_profile = ACTIVE_PROFILE.write().unwrap();
+                    let mut active_profile = ACTIVE_PROFILE.lock().unwrap();
                     *active_profile = Some(profile);
                 }
             },
@@ -506,7 +508,7 @@ fn run_main_loop(
         // execute render "pipeline" now
 
         // first, clear the canvas
-        script::LED_MAP.lock().unwrap().copy_from_slice(
+        script::LED_MAP.lock().copy_from_slice(
             &[rvdevice::RGBA {
                 r: 0,
                 g: 0,
@@ -517,7 +519,9 @@ fn run_main_loop(
 
         // instruct Lua VMs to realize their color maps, e.g. to blend their
         // local color maps with the canvas
-        *COLOR_MAPS_READY_CONDITION.0.lock().unwrap() = lua_txs.len();
+        *COLOR_MAPS_READY_CONDITION.0.lock() = lua_txs.len();
+
+        let mut drop_frame = false;
 
         for lua_tx in lua_txs {
             lua_tx.send(script::Message::RealizeColorMap).unwrap();
@@ -528,32 +532,15 @@ fn run_main_loop(
             // guarantee right order of execution for the alpha blend operations,
             // so wait for the current Lua VM to complete its blending code,
             // before continuing
-            let saved_pending = *COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
-            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
+            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
+            let result = COLOR_MAPS_READY_CONDITION
+                .1
+                .wait_for(&mut pending, Duration::from_millis(50));
 
-            let mut cntr = 0;
-            loop {
-                if cntr > 0 {
-                    warn!("Spurious wakeup detected!");
-                }
-
-                let result = COLOR_MAPS_READY_CONDITION
-                    .1
-                    .wait_timeout(pending, Duration::from_millis(500))
-                    .unwrap();
-
-                if result.1.timed_out() {
-                    error!("Thread deadlock detected!");
-                    break;
-                }
-
-                pending = result.0;
-                if *pending != saved_pending {
-                    break;  // blend operation has completed,
-                            // in the thread that we waited on
-                }
-
-                cntr += 1;
+            if result.timed_out() {
+                drop_frame = true;
+                warn!("Frame dropped: Timeout while waiting for a lock!");
+                break;
             }
         }
 
@@ -561,12 +548,12 @@ fn run_main_loop(
         //thread::sleep(Duration::from_millis(0));
 
         // number of pending blend ops should have reached zero by now
-        assert!(*COLOR_MAPS_READY_CONDITION.0.lock().unwrap() == 0);
+        //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
 
         // send the final (combined) color map to the keyboard
-        rvdevice
-            .send_led_map(&script::LED_MAP.lock().unwrap())
-            .unwrap();
+        if !drop_frame {
+            rvdevice.send_led_map(&script::LED_MAP.lock()).unwrap();
+        }
 
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time
         let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
@@ -578,8 +565,8 @@ fn run_main_loop(
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
         if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
-            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 5u64).into() {
-                warn!("More than 5 milliseconds of jitter detected!");
+            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 15u64).into() {
+                warn!("More than 15 milliseconds of jitter detected!");
                 warn!(
                     "Loop took: {} milliseconds, goal: {}",
                     elapsed_after_sleep,
@@ -614,11 +601,44 @@ fn run_main_loop(
     }
 }
 
+mod thread_util {
+    use log::*;
+    use parking_lot::deadlock;
+    use std::thread;
+    use std::time::Duration;
+
+    /// Creates a background thread which checks for deadlocks every 5 seconds
+    pub(crate) fn deadlock_detector() {
+        thread::Builder::new()
+            .name("deadlockd".to_owned())
+            .spawn(move || loop {
+                thread::sleep(Duration::from_secs(5));
+                let deadlocks = deadlock::check_deadlock();
+                if !deadlocks.is_empty() {
+                    error!("{} deadlocks detected", deadlocks.len());
+
+                    for (i, threads) in deadlocks.iter().enumerate() {
+                        error!("Deadlock #{}", i);
+
+                        for t in threads {
+                            error!("Thread Id {:#?}", t.thread_id());
+                            error!("{:#?}", t.backtrace());
+                        }
+                    }
+                }
+            })
+            .unwrap();
+    }
+}
+
 /// Main program entrypoint
 fn main() {
     if unsafe { libc::isatty(0) != 0 } {
         print_header();
     }
+
+    // start the thread deadlock detector
+    thread_util::deadlock_detector();
 
     let matches = parse_commandline();
 
@@ -652,13 +672,13 @@ fn main() {
             panic!()
         });
 
-    *CONFIG.write().unwrap() = Some(config.clone());
+    *CONFIG.lock() = Some(config.clone());
 
     // default directories
     let profile_dir = config
         .get_str("global.profile_dir")
         .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string());
-    let profile_path = PathBuf::from(&profile_dir);
+    let _profile_path = PathBuf::from(&profile_dir);
 
     let script_dir = config
         .get_str("global.script_dir")
@@ -696,7 +716,7 @@ fn main() {
     //.map(|v| PathBuf::from(v.clone().into_str().unwrap()))
     //.collect();
 
-    let script_files = if profile.active_scripts.len() < 1 {
+    let script_files = if profile.active_scripts.is_empty() {
         matches
             .values_of("scripts")
             .unwrap_or_default()
@@ -708,10 +728,10 @@ fn main() {
 
     let script_paths: Vec<PathBuf> = script_files
         .iter()
-        .map(|p| PathBuf::from(&script_dir).join(p).to_owned())
+        .map(|p| PathBuf::from(&script_dir).join(p))
         .collect();
 
-    *ACTIVE_PROFILE.write().unwrap() = Some(profile);
+    *ACTIVE_PROFILE.lock() = Some(profile);
 
     // frontend enable
     let frontend_enabled = config

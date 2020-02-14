@@ -17,8 +17,9 @@
 
 use lazy_static::lazy_static;
 use log::*;
+use parking_lot::RwLock;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use crate::plugins::{Plugin, Result};
 
