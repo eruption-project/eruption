@@ -26,6 +26,7 @@ alpha blending function, prior to sending it to the keyboard.
 * Event-based architecture
 * Daemon plugins may export functions to Lua
 * May be run as a Linux user process or as a system daemon
+* Profiles may be switched at runtime via a D-Bus method
 
 
 # Installation
@@ -143,6 +144,14 @@ that, display the shockwave effect from `shockwave.lua` when a key has been
 pressed. Configuration values may be overriden on a per-profile basis. If a
 configuration value is not listed in the `.profile` file, the default value
 will be taken from the script's `.manifest` file.
+
+### Switching profiles at runtime
+
+You may switch to `default.profile` with the following command:
+
+```
+$ dbus-send --system --type=method_call --dest=org.eruption.control /profile org.eruption.control.Profile.SwitchProfile string:"default.profile"
+```
 
 ## Lua Scripts and Manifests
 

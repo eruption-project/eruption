@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.1.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -76,11 +76,14 @@ cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rul
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 #cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
 #cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
 #cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
@@ -110,11 +113,14 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
+%{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
+%{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile3.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
+%{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua
