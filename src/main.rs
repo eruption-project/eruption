@@ -524,15 +524,16 @@ fn run_main_loop(
         let mut drop_frame = false;
 
         for lua_tx in lua_txs {
+            // guarantee right order of execution for the alpha blend operations,
+            // so wait for the current Lua VM to complete its blending code,
+            // before continuing
+            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
+
             lua_tx.send(script::Message::RealizeColorMap).unwrap();
 
             // yield to thread
             //thread::sleep(Duration::from_millis(0));
 
-            // guarantee right order of execution for the alpha blend operations,
-            // so wait for the current Lua VM to complete its blending code,
-            // before continuing
-            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
             let result = COLOR_MAPS_READY_CONDITION
                 .1
                 .wait_for(&mut pending, Duration::from_millis(50));
