@@ -1,4 +1,4 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713100'
+id = '5dc62fa6-e965-45cb-a0da-e87d29713102'
 name = 'Gaming'
 description = 'Gaming profile'
 active_scripts = [
