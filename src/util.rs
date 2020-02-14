@@ -117,11 +117,13 @@ pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
 }
 
 /// Checks whether a script file is readable
+#[allow(dead_code)]
 pub fn is_script_file_accessible(script_file: &Path) -> bool {
     is_file_accessible(script_file).is_ok()
 }
 
 /// Checks whether a script's manifest file is readable
+#[allow(dead_code)]
 pub fn is_manifest_file_accessible(script_file: &Path) -> bool {
     fs::read_to_string(get_manifest_for(script_file)).is_ok()
 }

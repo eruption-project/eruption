@@ -261,6 +261,7 @@ impl Manifest {
 }
 
 /// Get a `Vec` of `PathBufs` of available script files in the directory `script_path`.
+#[allow(dead_code)]
 fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
     match fs::read_dir(script_path) {
         Ok(paths) => Ok(paths
@@ -278,6 +279,7 @@ fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
     }
 }
 
+#[allow(dead_code)]
 pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
     let script_files = get_script_files(script_path).unwrap();
 

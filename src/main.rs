@@ -58,6 +58,7 @@ use scripting::script;
 mod frontend;
 
 #[cfg(not(feature = "frontend"))]
+#[allow(dead_code)]
 mod frontend {
     // provide a dummy implementation of Message
     pub enum Message {}
@@ -112,7 +113,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.0.12")
+        .version("0.1.0")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(

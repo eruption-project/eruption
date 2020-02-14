@@ -615,6 +615,7 @@ impl Default for Profile {
     }
 }
 
+#[allow(dead_code)]
 pub fn get_profiles(profile_path: &Path) -> Result<Vec<Profile>> {
     let profile_files = get_profile_files(&profile_path).unwrap();
 
@@ -660,6 +661,7 @@ pub fn get_profile_files(profile_path: &Path) -> Result<Vec<PathBuf>> {
         .collect())
 }
 
+#[allow(dead_code)]
 pub fn find_path_by_uuid(uuid: Uuid, profile_path: &Path) -> Option<PathBuf> {
     let profile_files = get_profile_files(&profile_path).unwrap();
 

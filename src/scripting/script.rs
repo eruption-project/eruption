@@ -587,7 +587,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.0.12");
+    config.insert("daemon_version", "0.1.0");
 
     globals.set("config", config)?;
 
