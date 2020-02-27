@@ -15,20 +15,20 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//use failure::Fail;
 use rlua::Context;
 use std::any::Any;
-// use failure::Fail;
 
 use crate::plugins;
 use crate::plugins::Plugin;
 
-// pub type Result<T> = std::result::Result<T, ProfilesPluginError>;
+//pub type Result<T> = std::result::Result<T, ProfilesPluginError>;
 
-// #[derive(Debug, Fail)]
-// pub enum ProfilesPluginError {
-//     #[fail(display = "Unknown error: {}", description)]
-//     UnknownError { description: String },
-// }
+//#[derive(Debug, Fail)]
+//pub enum ProfilesPluginError {
+////#[fail(display = "Unknown error: {}", description)]
+////UnknownError { description: String },
+//}
 
 /// A plugin that enables Eruption to switch profiles, based on the current system state
 pub struct ProfilesPlugin {}

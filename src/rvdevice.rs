@@ -17,6 +17,8 @@
 
 use failure::Fail;
 use log::*;
+use parking_lot::Mutex;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{thread, time};
 
@@ -52,9 +54,9 @@ pub enum RvDeviceError {
 
     #[fail(display = "Write error")]
     WriteError {},
+    //#[fail(display = "Could not close the device")]
+    //CloseError {},
 
-    #[fail(display = "Could not close the device")]
-    CloseError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
 }
@@ -94,8 +96,8 @@ pub struct RvDeviceState {
     pub led_hiddev_info: Option<hidapi::HidDeviceInfo>,
 
     pub is_opened: bool,
-    pub ctrl_hiddev: Option<hidapi::HidDevice>,
-    pub led_hiddev: Option<hidapi::HidDevice>,
+    pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+    pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub is_initialized: bool,
 }
@@ -170,8 +172,8 @@ impl RvDeviceState {
             led_hiddev_info: Some(led_dev.clone()),
 
             is_opened: false,
-            ctrl_hiddev: None,
-            led_hiddev: None,
+            ctrl_hiddev: Arc::new(Mutex::new(None)),
+            led_hiddev: Arc::new(Mutex::new(None)),
 
             is_initialized: false,
         }
@@ -186,13 +188,14 @@ impl RvDeviceState {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.clone().unwrap().open_device(&api) {
-                Ok(dev) => self.ctrl_hiddev = Some(dev),
+                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
                 Err(_) => return Err(RvDeviceError::DeviceOpenError {}),
             }
 
             trace!("Opening LED device...");
+
             match self.led_hiddev_info.clone().unwrap().open_device(&api) {
-                Ok(dev) => self.led_hiddev = Some(dev),
+                Ok(dev) => *self.led_hiddev.lock() = Some(dev),
                 Err(_) => return Err(RvDeviceError::DeviceOpenError {}),
             }
 
@@ -211,14 +214,10 @@ impl RvDeviceState {
             Err(RvDeviceError::DeviceNotOpened {})
         } else {
             trace!("Closing control device...");
-            self.ctrl_hiddev
-                .as_mut()
-                .map(|dev| dev.close().or_else(|_e| Err(RvDeviceError::CloseError {})));
+            *self.ctrl_hiddev.lock() = None;
 
             trace!("Closing LED device...");
-            self.led_hiddev
-                .as_mut()
-                .map(|dev| dev.close().or_else(|_e| Err(RvDeviceError::CloseError {})));
+            *self.led_hiddev.lock() = None;
 
             self.is_opened = false;
 
@@ -293,7 +292,8 @@ impl RvDeviceState {
                     let mut buf: [u8; 256] = [0; 256];
                     buf[0] = id;
 
-                    let ctrl_dev = self.ctrl_hiddev.as_ref().unwrap();
+                    let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                    let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
                     match ctrl_dev.get_feature_report(&mut buf) {
                         Ok(_result) => {
@@ -319,7 +319,8 @@ impl RvDeviceState {
         } else if !self.is_opened {
             Err(RvDeviceError::DeviceNotOpened {})
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match id {
                 0x15 => {
@@ -388,7 +389,14 @@ impl RvDeviceState {
                 }
 
                 0x0b => {
-                    let buf: [u8; 8] = [0x0a, 0x08, 0x00, 0xff, 0xf1, 0x00, 0x02, 0x02];
+                    let buf: [u8; 65] = [
+                        0x0b, 0x41, 0x00, 0x1e, 0x00, 0x00, 0x1f, 0x00, 0x00, 0x20, 0x00, 0x00,
+                        0x21, 0x00, 0x00, 0x22, 0x00, 0x00, 0x14, 0x00, 0x00, 0x1a, 0x00, 0x00,
+                        0x08, 0x00, 0x00, 0x15, 0x00, 0x00, 0x17, 0x00, 0x00, 0x04, 0x00, 0x00,
+                        0x16, 0x00, 0x00, 0x07, 0x00, 0x00, 0x09, 0x00, 0x00, 0x0a, 0x00, 0x00,
+                        0x1d, 0x00, 0x00, 0x1b, 0x00, 0x00, 0x06, 0x00, 0x00, 0x19, 0x00, 0x00,
+                        0x05, 0x00, 0x00, 0xde, 0x01,
+                    ];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -586,7 +594,8 @@ impl RvDeviceState {
                 let mut buf: [u8; 4] = [0; 4];
                 buf[0] = 0x04;
 
-                let ctrl_dev = self.ctrl_hiddev.as_ref().unwrap();
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
                 match ctrl_dev.get_feature_report(&mut buf) {
                     Ok(_result) => {
@@ -611,7 +620,7 @@ impl RvDeviceState {
         } else if !self.is_opened {
             Err(RvDeviceError::DeviceNotOpened {})
         } else {
-            self.ctrl_hiddev = None;
+            *self.ctrl_hiddev.lock() = None;
 
             Ok(())
         }
@@ -627,7 +636,7 @@ impl RvDeviceState {
         } else if !self.is_initialized {
             Err(RvDeviceError::DeviceNotInitialized {})
         } else {
-            match self.led_hiddev.as_ref() {
+            match &*self.led_hiddev.as_ref().lock() {
                 Some(led_dev) => {
                     let mut hwmap: [u8; 444] = [0; 444];
 

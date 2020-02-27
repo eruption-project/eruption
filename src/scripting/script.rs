@@ -25,6 +25,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
@@ -94,12 +95,14 @@ mod callbacks {
     use palette::{Hsl, Srgb};
     use parking_lot::Mutex;
     use std::convert::TryFrom;
+    use std::sync::atomic::Ordering;
     use std::sync::Arc;
     use std::thread;
     use std::time::Duration;
 
     use super::{LED_MAP, LOCAL_LED_MAP};
 
+    use crate::plugins::macros;
     use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGBA};
 
     /// Log a message with severity level `trace`.
@@ -130,6 +133,21 @@ mod callbacks {
     /// Delay execution of the lua script by `millis` milliseconds.
     pub(crate) fn delay(millis: u64) {
         thread::sleep(Duration::from_millis(millis));
+    }
+
+    /// Inject a key on the eruption virtual keyboard.
+    pub(crate) fn inject_key(ev_key: u32, down: bool) {
+        // calling inject_key(..) from Lua will drop the current input;
+        // the original key event from the hardware keyboard will not be
+        // mirrored on the virtual keyboard.
+        macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
+
+        macros::UINPUT_TX
+            .lock()
+            .as_ref()
+            .unwrap()
+            .send(macros::Message::InjectKey { key: ev_key, down })
+            .unwrap();
     }
 
     /// Get RGB components of a 32 bits color value.
@@ -516,17 +534,13 @@ pub fn run_script(
                                         let bg = &background;
                                         let fg = foreground.borrow()[idx];
 
+                                        let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
                                         #[rustfmt::skip]
                                         let color = RGBA {
-                                            r: (((fg.a as f64) * fg.r as f64
-                                                + (255 - fg.a) as f64 * bg.r as f64)
-                                                .abs() as u32 >> 8) as u8,
-                                            g: (((fg.a as f64) * fg.g as f64
-                                                + (255 - fg.a) as f64 * bg.g as f64)
-                                                .abs() as u32 >> 8) as u8,
-                                            b: (((fg.a as f64) * fg.b as f64
-                                                + (255 - fg.a) as f64 * bg.b as f64)
-                                                .abs() as u32 >> 8) as u8,
+                                            r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                                            g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                                            b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
                                             a: fg.a as u8,
                                         };
 
@@ -555,6 +569,9 @@ pub fn run_script(
                                         Err(e)
                                     })?;
                                 }
+
+                                *crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
                             }
 
                             Message::KeyUp(param) => {
@@ -566,6 +583,9 @@ pub fn run_script(
                                         Err(e)
                                     })?;
                                 }
+
+                                *crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
                             }
 
                             //Message::LoadScript(script_path) => {
@@ -611,7 +631,8 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
-    config.insert("daemon_version", "0.1.0");
+    config.insert("daemon_version", "0.1.1");
+    config.insert("api_level", "0.1.1");
 
     globals.set("config", config)?;
 
@@ -703,6 +724,13 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let lerp =
         lua_ctx.create_function(|_, (a0, a1, w): (f64, f64, f64)| Ok((1.0 - w) * a0 + w * a1))?;
     globals.set("lerp", lerp)?;
+
+    // keyboard state and macros
+    let inject_key = lua_ctx.create_function(|_, (ev_key, down): (u32, bool)| {
+        callbacks::inject_key(ev_key, down);
+        Ok(())
+    })?;
+    globals.set("inject_key", inject_key)?;
 
     // color handling
     let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
@@ -823,68 +851,69 @@ fn register_script_config(lua_ctx: Context, manifest: &Manifest) -> rlua::Result
     let script_name = &manifest.name;
 
     let globals = lua_ctx.globals();
+    if let Some(config) = &manifest.config {
+        for param in config.iter() {
+            debug!("Applying parameter {:?}", param);
 
-    for param in manifest.config.iter() {
-        debug!("Applying parameter {:?}", param);
-
-        match param {
-            ConfigParam::Int { name, default, .. } => {
-                if let Some(profile) = profile {
-                    if let Some(val) = profile.get_int_value(script_name, name) {
-                        globals.raw_set::<&str, i64>(name, *val)?;
+            match param {
+                ConfigParam::Int { name, default, .. } => {
+                    if let Some(profile) = profile {
+                        if let Some(val) = profile.get_int_value(script_name, name) {
+                            globals.raw_set::<&str, i64>(name, *val)?;
+                        } else {
+                            globals.raw_set::<&str, i64>(name, *default)?;
+                        }
                     } else {
                         globals.raw_set::<&str, i64>(name, *default)?;
                     }
-                } else {
-                    globals.raw_set::<&str, i64>(name, *default)?;
                 }
-            }
 
-            ConfigParam::Float { name, default, .. } => {
-                if let Some(profile) = profile {
-                    if let Some(val) = profile.get_float_value(script_name, name) {
-                        globals.raw_set::<&str, f64>(name, *val)?;
+                ConfigParam::Float { name, default, .. } => {
+                    if let Some(profile) = profile {
+                        if let Some(val) = profile.get_float_value(script_name, name) {
+                            globals.raw_set::<&str, f64>(name, *val)?;
+                        } else {
+                            globals.raw_set::<&str, f64>(name, *default)?;
+                        }
                     } else {
                         globals.raw_set::<&str, f64>(name, *default)?;
                     }
-                } else {
-                    globals.raw_set::<&str, f64>(name, *default)?;
                 }
-            }
 
-            ConfigParam::Bool { name, default, .. } => {
-                if let Some(profile) = profile {
-                    if let Some(val) = profile.get_bool_value(script_name, name) {
-                        globals.raw_set::<&str, bool>(name, *val)?;
+                ConfigParam::Bool { name, default, .. } => {
+                    if let Some(profile) = profile {
+                        if let Some(val) = profile.get_bool_value(script_name, name) {
+                            globals.raw_set::<&str, bool>(name, *val)?;
+                        } else {
+                            globals.raw_set::<&str, bool>(name, *default)?;
+                        }
                     } else {
                         globals.raw_set::<&str, bool>(name, *default)?;
                     }
-                } else {
-                    globals.raw_set::<&str, bool>(name, *default)?;
                 }
-            }
 
-            ConfigParam::String { name, default, .. } => {
-                if let Some(profile) = profile {
-                    if let Some(val) = profile.get_str_value(script_name, name) {
-                        globals.raw_set::<&str, &str>(name, &*val)?;
+                ConfigParam::String { name, default, .. } => {
+                    if let Some(profile) = profile {
+                        if let Some(val) = profile.get_str_value(script_name, name) {
+                            globals.raw_set::<&str, &str>(name, &*val)?;
+                        } else {
+                            globals.raw_set::<&str, &str>(name, &*default)?;
+                        }
                     } else {
                         globals.raw_set::<&str, &str>(name, &*default)?;
                     }
-                } else {
-                    globals.raw_set::<&str, &str>(name, &*default)?;
                 }
-            }
 
-            ConfigParam::Color { name, default, .. } => {
-                if let Some(profile) = profile {
-                    if let Some(val) = profile.get_color_value(script_name, name) {
-                        globals.raw_set::<&str, u32>(name, *val)?;
+                ConfigParam::Color { name, default, .. } => {
+                    if let Some(profile) = profile {
+                        if let Some(val) = profile.get_color_value(script_name, name) {
+                            globals.raw_set::<&str, u32>(name, *val)?;
+                        } else {
+                            globals.raw_set::<&str, u32>(name, *default)?;
+                        }
                     } else {
                         globals.raw_set::<&str, u32>(name, *default)?;
                     }
-                } else {
-                    globals.raw_set::<&str, u32>(name, *default)?;
                 }
             }
         }

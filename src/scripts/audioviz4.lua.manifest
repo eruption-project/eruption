@@ -21,4 +21,4 @@ default = 1.0
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
-default = 0.5
+default = 1.0

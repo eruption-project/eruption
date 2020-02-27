@@ -60,7 +60,7 @@ function on_tick(delta)
     -- animate gradient
     if ticks % gradient_step == 0 then
         for i = num_rows, 0, -1 do
-					local color = hsla_to_color((i + ticks * 2) + (10 * i), 1.0, 0.5,
+					local color = hsla_to_color((i + ticks * gradient_speed) + (10 * i), 1.0, 0.5,
 																			lerp(0, 255, opacity))
 
 					for j = 1, max_keys_per_row do

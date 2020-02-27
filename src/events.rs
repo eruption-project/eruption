@@ -24,33 +24,33 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Event {
+    DaemonStartup,
+    DaemonShutdown,
+
+    FileSystemEvent(crate::FileSystemEvent),
+
+    RawKeyboardEvent(evdev_rs::InputEvent),
+
     KeyDown(u8),
     KeyUp(u8),
-}
-
-#[derive(Debug)]
-pub enum EventClass {
-    Keyboard,
 }
 
 pub type Callback = dyn Fn(&Event) -> Result<bool> + Sync + Send + 'static;
 
 lazy_static! {
-    pub static ref KEYBOARD_OBSERVERS: Arc<Mutex<Vec<Box<Callback>>>> =
+    static ref INTERNAL_EVENT_OBSERVERS: Arc<Mutex<Vec<Box<Callback>>>> =
         Arc::new(Mutex::new(vec![]));
 }
 
-pub fn register_observer<C>(event_class: EventClass, callback: C)
+pub fn register_observer<C>(callback: C)
 where
     C: Fn(&Event) -> Result<bool> + Sync + Send + 'static,
 {
-    match event_class {
-        EventClass::Keyboard => KEYBOARD_OBSERVERS.lock().push(Box::from(callback)),
-    }
+    INTERNAL_EVENT_OBSERVERS.lock().push(Box::from(callback));
 }
 
 pub fn notify_observers(event: Event) -> Result<()> {
-    for callback in KEYBOARD_OBSERVERS.lock().iter() {
+    for callback in INTERNAL_EVENT_OBSERVERS.lock().iter() {
         callback(&event)?;
     }
 

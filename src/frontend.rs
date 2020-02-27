@@ -54,7 +54,7 @@ use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
 /// Web-Frontend messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
 pub enum Message {
-    LoadScript(PathBuf),
+    //LoadScript(PathBuf),
     SwitchProfile(PathBuf),
 }
 
@@ -107,8 +107,8 @@ impl WebFrontend {
             script_paths,
         };
 
-        *WEB_FRONTEND.lock().unwrap() = Some(frontend.clone());
-        *MESSAGE_TX.lock().unwrap() = Some(frontend_tx);
+        *WEB_FRONTEND.lock() = Some(frontend.clone());
+        *MESSAGE_TX.lock() = Some(frontend_tx);
 
         #[cfg(not(debug_assertions))]
         let config = Config::build(Environment::Production)
@@ -184,55 +184,21 @@ pub fn initialize_dummy() -> WebFrontend {
     WebFrontend {}
 }
 
-/// Request the main thread to load a script with id `script_id`.
-fn request_load_script_by_id(script_id: usize) -> Result<PathBuf> {
-    let tx = MESSAGE_TX.lock().unwrap();
-    let tx = tx.as_ref().unwrap();
-
-    let frontend = WEB_FRONTEND.lock().unwrap();
-    let frontend = frontend.as_ref();
-
-    match frontend {
-        Some(frontend) => {
-            // TODO: find better way to handle base path
-            let base_path = frontend.script_paths[0].parent().unwrap();
-            let script_files: Vec<PathBuf> = manifest::get_scripts(&base_path)?
-                .iter()
-                .map(|e| e.script_file.clone())
-                .collect();
-
-            let script_path = script_files[script_id].to_path_buf();
-
-            match tx.send(Message::LoadScript(script_path.clone())) {
-                Ok(()) => Ok(script_path),
-
-                Err(e) => {
-                    error!("Could not send an event to the main thread: {}", e);
-                    Err(WebFrontendError::ScriptLoadError {}.into())
-                }
-            }
-        }
-
-        None => {
-            error!("Web frontend went away");
-            Err(WebFrontendError::FrontendInaccessible {}.into())
-        }
-    }
-}
-
 /// Request the main thread to load the profile with the name `profile_name`.
 fn request_switch_profile_by_id(profile_id: Uuid) -> Result<()> {
-    let tx = MESSAGE_TX.lock().unwrap();
+    let tx = MESSAGE_TX.lock();
     let tx = tx.as_ref().unwrap();
 
-    let frontend = WEB_FRONTEND.lock().unwrap();
+    let frontend = WEB_FRONTEND.lock();
     let frontend = frontend.as_ref();
 
     match frontend {
         Some(frontend) => {
             let base_path = &frontend.profile_path;
             if let Some(profile_path) = profiles::find_path_by_uuid(profile_id, base_path) {
-                match tx.send(Message::SwitchProfile(profile_path)) {
+                match tx.send(Message::SwitchProfile(
+                    profile_path.file_name().unwrap().into(),
+                )) {
                     Ok(()) => Ok(()),
 
                     Err(e) => {
@@ -274,20 +240,16 @@ fn index() -> manifest::Result<Redirect> {
 fn profiles_selection() -> templates::Template {
     let mut context = Context::new();
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
-    let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    let active_profile = &*ACTIVE_PROFILE.lock();
+    let profile_name = &active_profile.as_ref().unwrap().name;
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
 
-    let active_profile = &*ACTIVE_PROFILE.read().unwrap();
-    let frontend = WEB_FRONTEND.lock().unwrap_or_else(|e| {
-        error!("Could not lock a shared data structure: {}", e);
-        panic!()
-    });
+    let frontend = WEB_FRONTEND.lock();
     match *frontend {
         Some(ref frontend) => {
             let base_path = frontend.profile_path.as_ref();
             let profiles = profiles::get_profiles(&base_path).unwrap();
-            let config = crate::CONFIG.read().unwrap();
+            let config = crate::CONFIG.lock();
             let frontend_theme = config
                 .as_ref()
                 .unwrap()
@@ -323,11 +285,11 @@ fn activate_profile(profile_id: Option<String>) -> Redirect {
 fn settings() -> manifest::Result<templates::Template> {
     let mut context = Context::new();
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.lock();
     let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let script_dir = config
         .as_ref()
         .unwrap()
@@ -336,12 +298,10 @@ fn settings() -> manifest::Result<templates::Template> {
     let script_path = PathBuf::from(&script_dir);
     let scripts = manifest::get_scripts(&script_path)?;
     let active_script_ids = ACTIVE_SCRIPTS
-        .read()
-        .unwrap()
+        .lock()
         .iter()
         .map(|s| s.id)
         .collect::<Vec<usize>>();
-    let config = crate::CONFIG.read().unwrap();
     let frontend_theme = config
         .as_ref()
         .unwrap()
@@ -363,7 +323,7 @@ fn settings() -> manifest::Result<templates::Template> {
 fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
     let mut context = Context::new();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let frontend_theme = config
         .as_ref()
         .unwrap()
@@ -382,14 +342,8 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
     if let Some(script_id) = script_id {
         let scripts = manifest::get_scripts(&script_path)?;
 
-        // apply effect script
-        let script_path = request_load_script_by_id(script_id).map_err(|e| {
-            error!("Request to load a script has failed: {}", e);
-            e
-        })?;
-
         {
-            let profile = ACTIVE_PROFILE.read().unwrap();
+            let profile = ACTIVE_PROFILE.lock();
             let profile_name = &profile.as_ref().unwrap().name;
             context.insert("active_profile_name", &profile_name);
             //context.insert("active_scripts", &active_scripts);
@@ -399,7 +353,7 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
         context.insert("heading", "Effect Settings");
         context.insert("script", &scripts[script_id]);
 
-        let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
+        let active_profile = &mut *ACTIVE_PROFILE.lock();
         let profile = active_profile.as_mut().unwrap();
         let script_name = scripts[script_id].name.clone();
 
@@ -447,9 +401,9 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
     } else {
         let scripts = manifest::get_scripts(&script_path)?;
 
-        let profile = ACTIVE_PROFILE.read().unwrap();
+        let profile = ACTIVE_PROFILE.lock();
         let profile_name = &profile.as_ref().unwrap().name;
-        //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+        //let active_scripts = ACTIVE_SCRIPTS.lock();
         //let script_name = &script.as_ref().unwrap().name;
 
         context.insert("title", "Eruption: Settings");
@@ -465,8 +419,8 @@ fn settings_of_id(script_id: Option<usize>) -> Result<templates::Template> {
 
 #[post("/settings/apply/<script_id>", data = "<params>")]
 fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> Result<Redirect> {
-    let active_scripts = &*ACTIVE_SCRIPTS.read().unwrap();
-    let active_profile = &mut *ACTIVE_PROFILE.write().unwrap();
+    let active_scripts = &*ACTIVE_SCRIPTS.lock();
+    let active_profile = &mut *ACTIVE_PROFILE.lock();
 
     let mut profile = active_profile.as_mut().unwrap().clone();
 
@@ -523,7 +477,7 @@ fn settings_apply(script_id: usize, params: Form<ValueMap<String, String>>) -> R
 fn preview_script(script_id: Option<usize>) -> Result<templates::Template> {
     let mut context = Context::new();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let frontend_theme = config
         .as_ref()
         .unwrap()
@@ -541,9 +495,9 @@ fn preview_script(script_id: Option<usize>) -> Result<templates::Template> {
 
     let scripts = manifest::get_scripts(&script_path)?;
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.lock();
     let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
     //let script_name = &active_scripts.iter().find(|s| s.id == script_id).unwrap().name;
 
     context.insert("title", "Eruption: Settings");
@@ -568,11 +522,11 @@ fn preview_script(script_id: Option<usize>) -> Result<templates::Template> {
 fn soundfx() -> manifest::Result<templates::Template> {
     let mut context = Context::new();
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.lock();
     let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let frontend_theme = config
         .as_ref()
         .unwrap()
@@ -618,11 +572,11 @@ fn soundfx_apply(params: Form<ValueMap<String, String>>) -> Result<Redirect> {
 fn documentation() -> templates::Template {
     let mut context = Context::new();
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.lock();
     let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let frontend_theme = config
         .as_ref()
         .unwrap()
@@ -641,11 +595,11 @@ fn documentation() -> templates::Template {
 fn about() -> templates::Template {
     let mut context = Context::new();
 
-    let profile = ACTIVE_PROFILE.read().unwrap();
+    let profile = ACTIVE_PROFILE.lock();
     let profile_name = &profile.as_ref().unwrap().name;
-    //let active_scripts = ACTIVE_SCRIPTS.read().unwrap();
+    //let active_scripts = ACTIVE_SCRIPTS.lock();
 
-    let config = crate::CONFIG.read().unwrap();
+    let config = crate::CONFIG.lock();
     let frontend_theme = config
         .as_ref()
         .unwrap()

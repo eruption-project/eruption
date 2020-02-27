@@ -24,11 +24,14 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 /// Default script directory
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/lib/eruption/scripts/";
 
+/// State directory
+pub const STATE_DIR: &str = "/var/lib/eruption/";
+
 /// Default effect script
 pub const DEFAULT_EFFECT_SCRIPT: &str = "batique.lua";
 
 /// Target delay time of main loop iteration
-pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
+pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 100.0) as u64;
 
 /// Amount of time that has to pass before we can send another command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 10;
@@ -37,7 +40,7 @@ pub const DEVICE_SETTLE_MILLIS: u64 = 10;
 pub const SENSOR_UPDATE_TICKS: u64 = 60;
 
 /// Timeout value to use for D-Bus connections
-pub const DBUS_TIMEOUT_MILLIS: u32 = 10000;
+pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 
 // Browser-based GUI
 

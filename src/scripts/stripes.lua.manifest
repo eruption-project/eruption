@@ -15,7 +15,7 @@ default = 1
 type = 'float'
 name = 'gradient_speed'
 description = 'Animation speed'
-default = 1
+default = 0.5
 
 [[config]]
 type = 'int'
@@ -33,4 +33,4 @@ default = true
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
-default = 0.5
+default = 1.0

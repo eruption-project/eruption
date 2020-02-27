@@ -15,17 +15,18 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use evdev_rs::enums::EventCode;
-use evdev_rs::Device;
+use evdev_rs::{Device, GrabMode};
 use failure::Fail;
 use log::*;
 use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fs::File;
+use std::sync::atomic::Ordering;
+
+use crate::plugins::macros;
 
 use crate::plugins::{self, Plugin};
-use crate::util;
 
 pub type Result<T> = std::result::Result<T, KeyboardPluginError>;
 
@@ -33,12 +34,6 @@ pub type Result<T> = std::result::Result<T, KeyboardPluginError>;
 pub enum KeyboardPluginError {
     #[fail(display = "Could not peek evdev event")]
     EvdevEventError {},
-
-    #[fail(display = "Could not convert key code")]
-    KeyCodeConversionError {},
-
-    #[fail(display = "Not a key code")]
-    InvalidKeyCode {},
 
     #[fail(display = "Could not get the name of the evdev device from udev")]
     UdevError {},
@@ -69,7 +64,7 @@ impl KeyboardPlugin {
         match crate::util::get_evdev_from_udev() {
             Ok(filename) => match File::open(filename.clone()) {
                 Ok(devfile) => match Device::new_from_fd(devfile) {
-                    Ok(device) => {
+                    Ok(mut device) => {
                         info!("Now listening on: {}", filename);
 
                         info!(
@@ -78,13 +73,18 @@ impl KeyboardPlugin {
                             device.vendor_id(),
                             device.product_id()
                         );
-                        // info!("Evdev version: {:x}", device.driver_version());
+                        info!("Driver version: {:x}", device.driver_version());
                         info!(
                             "Input device name: \"{}\"",
                             device.name().unwrap_or("<n/a>")
                         );
                         info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
                         // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
+
+                        info!("Grabbing the device exclusively");
+                        device
+                            .grab(GrabMode::Grab)
+                            .expect("Could not grab the device, terminating now.");
 
                         DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
 
@@ -101,7 +101,7 @@ impl KeyboardPlugin {
         }
     }
 
-    pub fn get_next_event(&self) -> Result<Option<(u8, bool)>> {
+    pub fn get_next_event(&self) -> Result<Option<evdev_rs::InputEvent>> {
         let result = DEVICE.with(|dev| {
             let result = dev
                 .borrow()
@@ -112,6 +112,10 @@ impl KeyboardPlugin {
             match result {
                 Ok(k) => {
                     debug!("Key event: {:?}", k.1);
+
+                    // reset "to be dropped" flag
+                    macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
+
                     Ok(k)
                 }
 
@@ -128,27 +132,7 @@ impl KeyboardPlugin {
         })?;
 
         match result.0 {
-            evdev_rs::ReadStatus::Success => match result.1.event_code {
-                EventCode::EV_KEY(code) => {
-                    // ignore repetitions
-                    if result.1.value > 1 {
-                        return Ok(None);
-                    }
-
-                    let is_pressed = result.1.value > 0;
-                    let index = util::ev_key_to_key_index(code);
-
-                    debug!("Key index: {:#x}", index);
-
-                    if index != 0xff {
-                        Ok(Some((index, is_pressed)))
-                    } else {
-                        Err(KeyboardPluginError::KeyCodeConversionError {})
-                    }
-                }
-
-                _ => Err(KeyboardPluginError::InvalidKeyCode {}),
-            },
+            evdev_rs::ReadStatus::Success => Ok(Some(result.1)),
 
             _ => Ok(None),
         }

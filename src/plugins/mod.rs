@@ -20,6 +20,7 @@
 pub mod audio;
 pub mod introspection;
 pub mod keyboard;
+pub mod macros;
 pub mod plugin;
 pub mod profiles;
 pub mod sensors;
@@ -28,6 +29,7 @@ pub mod system;
 pub use audio::AudioPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
+pub use macros::MacrosPlugin;
 pub use plugin::Plugin;
 pub use profiles::ProfilesPlugin;
 pub use sensors::SensorsPlugin;
@@ -55,6 +57,7 @@ pub fn register_plugins() -> Result<()> {
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
+    plugin_manager.register_plugin(Box::new(MacrosPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(IntrospectionPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(ProfilesPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;

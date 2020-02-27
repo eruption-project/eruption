@@ -1,18 +1,27 @@
 .\" Manpage for Eruption.
-.TH man 8 "14. February 2020" "0.1.0" "eruption man page"
+.TH man 8 "18. February 2020" "0.1.1" "eruption man page"
 .SH NAME
  Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .SH SYNOPSIS
- eruption [FLAGS] [OPTIONS]
-.SH DESCRIPTION
- Eruption is a Linux user-mode driver for the ROCCAT Vulcan 100/12x series
- keyboards.
+ eruption [FLAGS] [OPTIONS] [scripts]... [SUBCOMMAND]
+
 .SH FLAGS
- -h, --help          Prints help information
- -v                  Sets the level of log verbosity
- -V, --version       Prints version information
+    -h, --help       Prints help information
+    -v               Sets the level of verbosity
+    -V, --version    Prints version information
+
 .SH OPTIONS
- -c, --config <FILE> Location of the configuration file
+    -c, --config <FILE>        Sets the configuration file to use
+    -p, --profile <profile>    Sets the profile to activate
+
+.SH ARGS
+    <scripts>...    The Lua scripts to execute
+
+.SH SUBCOMMANDS
+    check-syntax    Validate a Lua script for syntactical correctness
+    help            Prints this message or the help of the given subcommand(s)
+    list-scripts    Display a listing of all available scripts
+
 .SH SEE ALSO
  eruption.conf(5)
 .SH BUGS

@@ -23,6 +23,10 @@
 
 use clap::{App, Arg};
 use failure::Fail;
+use hotwatch::{
+    blocking::{Flow, Hotwatch},
+    Event,
+};
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Condvar, Mutex};
@@ -30,7 +34,7 @@ use std::convert::TryInto;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
@@ -49,7 +53,9 @@ mod plugin_manager;
 mod plugins;
 mod profiles;
 mod scripting;
+mod state;
 
+use plugins::macros;
 use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
@@ -75,10 +81,24 @@ lazy_static! {
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
 
     // Flags
+
+    /// Global "quit" status flag
     pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 
+    // Color maps of Lua VMs ready?
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
+
+    // All upcalls (event handlers) in Lua VM completed?
+    pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    // Other state
+
+    /// Global "keyboard brightness" modifier
+    pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
     static ref LUA_TXS: Arc<Mutex<Vec<Sender<script::Message>>>> = Arc::new(Mutex::new(vec![]));
 }
@@ -97,6 +117,12 @@ pub enum MainError {
     ScriptExecError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
+}
+
+#[derive(Debug)]
+pub enum FileSystemEvent {
+    ProfilesChanged,
+    ScriptsChanged,
 }
 
 fn print_header() {
@@ -121,7 +147,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.1.0")
+        .version("0.1.1")
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
@@ -179,15 +205,27 @@ fn spawn_frontend_thread(
         .spawn(move || {
             frontend::initialize(frontend_tx, profile_path, script_paths).unwrap_or_else(|e| {
                 error!("Could not initialize the Web-Frontend: {}", e);
+                panic!();
             });
         })
-        .map_err(|e| MainError::ThreadSpawnError {})?;
+        .map_err(|_e| MainError::ThreadSpawnError {})?;
 
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+pub enum DbusApiEvent {
+    ProfilesChanged,
+    ActiveProfileChanged,
+}
+
 /// Spawns the dbus thread and executes it's main loop
-fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Result<()> {
+#[cfg(feature = "dbus")]
+fn spawn_dbus_thread(
+    dbus_tx: Sender<dbus_interface::Message>,
+) -> plugins::Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = channel();
+
     let builder = thread::Builder::new().name("dbus".into());
     builder
         .spawn(move || -> Result<()> {
@@ -195,17 +233,34 @@ fn spawn_dbus_thread(dbus_tx: Sender<dbus_interface::Message>) -> plugins::Resul
                 dbus_interface::initialize(dbus_tx).map_err(|_e| MainError::ThreadSpawnError {})?;
 
             loop {
+                // process events, destined for the dbus api
+                match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
+                    Ok(result) => match result {
+                        DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed(),
+
+                        DbusApiEvent::ActiveProfileChanged => dbus.notify_active_profile_changed(),
+                    },
+
+                    // ignore timeout errors
+                    Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+                    Err(e) => {
+                        // print warning but continue
+                        warn!("Channel error: {}", e);
+                    }
+                }
+
                 dbus.get_next_event()
                     .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
             }
         })
         .map_err(|_e| MainError::ThreadSpawnError {})?;
 
-    Ok(())
+    Ok(dbus_api_tx)
 }
 
 /// Spawns the keyboard events thread and executes it's main loop
-fn spawn_input_thread(kbd_tx: Sender<Option<(u8, bool)>>) -> plugins::Result<()> {
+fn spawn_input_thread(kbd_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::Result<()> {
     let builder = thread::Builder::new().name("events".into());
     builder
         .spawn(move || {
@@ -291,9 +346,9 @@ fn spawn_lua_thread(
     let rvdevice = rvdevice.clone();
 
     let builder = thread::Builder::new().name(format!(
-        "{}/{}",
-        script_path.clone().file_name().unwrap().to_string_lossy(),
+        "{}:{}",
         thread_idx,
+        script_path.clone().file_name().unwrap().to_string_lossy(),
     ));
     builder
         .spawn(move || -> Result<()> {
@@ -320,7 +375,11 @@ fn spawn_lua_thread(
 }
 
 /// Switches the currently active profile to the profile file `profile_path`
-fn switch_profile<P: AsRef<Path>>(profile_file: P, rvdevice: &RvDeviceState) -> Result<()> {
+fn switch_profile<P: AsRef<Path>>(
+    profile_file: P,
+    rvdevice: &RvDeviceState,
+    #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
+) -> Result<()> {
     let script_dir = PathBuf::from(
         CONFIG
             .lock()
@@ -386,17 +445,26 @@ fn switch_profile<P: AsRef<Path>>(profile_file: P, rvdevice: &RvDeviceState) -> 
     // finally assign the globally active profile
     *ACTIVE_PROFILE.lock() = Some(profile);
 
+    #[cfg(feature = "dbus")]
+    dbus_api_tx
+        .send(DbusApiEvent::ActiveProfileChanged)
+        .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
     Ok(())
 }
 
 #[allow(clippy::cognitive_complexity)]
 fn run_main_loop(
     rvdevice: &mut RvDeviceState,
+    #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
     #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
-    kbd_rx: &Receiver<Option<(u8, bool)>>,
+    kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    fsevents_rx: &Receiver<FileSystemEvent>,
 ) {
     trace!("Entering main loop...");
+
+    events::notify_observers(events::Event::DaemonStartup).unwrap();
 
     // main loop iterations, monotonic counter
     let mut ticks = 0;
@@ -418,20 +486,143 @@ fn run_main_loop(
             plugin.main_loop_hook(ticks);
         }
 
+        // send pending keyboard events to the Lua VMs and to the event dispatcher
+        match kbd_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                Some(raw_event) => {
+                    // notify all observers of raw events
+                    events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone()))
+                        .unwrap();
+
+                    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
+                        let is_pressed = raw_event.value > 0;
+                        let index = util::ev_key_to_key_index(code.clone());
+
+                        trace!("Key index: {:#x}", index);
+
+                        if is_pressed {
+                            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.lock().len();
+
+                            for lua_tx in LUA_TXS.lock().iter() {
+                                lua_tx
+                                    .send(script::Message::KeyDown(index))
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not send a pending keyboard event: {}", e)
+                                    });
+                            }
+
+                            // yield to thread
+                            //thread::sleep(Duration::from_millis(0));
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_DOWN
+                                    .1
+                                    .wait_for(&mut pending, Duration::from_millis(50));
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyDown(index))
+                                .unwrap_or_else(|e| error!("{}", e));
+                        } else {
+                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.lock().len();
+
+                            for lua_tx in LUA_TXS.lock().iter() {
+                                lua_tx
+                                    .send(script::Message::KeyUp(index))
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not send a pending keyboard event: {}", e)
+                                    });
+                            }
+
+                            // yield to thread
+                            //thread::sleep(Duration::from_millis(0));
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_UP
+                                    .1
+                                    .wait_for(&mut pending, Duration::from_millis(50));
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyUp(index))
+                                .unwrap_or_else(|e| error!("{}", e));
+                        }
+                    }
+
+                    // handler for Message::MirrorKey will drop the key if a Lua VM
+                    // called inject_key(..), so that the key won't be reported twice
+                    macros::UINPUT_TX
+                        .lock()
+                        .as_ref()
+                        .unwrap()
+                        .send(macros::Message::MirrorKey(raw_event.clone()))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending keyboard event: {}", e)
+                        });
+                }
+
+                // ignore spurious events
+                None => trace!("Spurious keyboard event ignored"),
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
+        // process file system related events
+        match fsevents_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                FileSystemEvent::ProfilesChanged => {
+                    events::notify_observers(events::Event::FileSystemEvent(
+                        FileSystemEvent::ProfilesChanged,
+                    ))
+                    .unwrap_or_else(|e| error!("{}", e));
+
+                    #[cfg(feature = "dbus")]
+                    dbus_api_tx
+                        .send(DbusApiEvent::ProfilesChanged)
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
+                }
+                FileSystemEvent::ScriptsChanged => {}
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                // print warning but continue
+                warn!("Channel error: {}", e);
+            }
+        }
+
         // process Web-Frontend events
         #[cfg(feature = "frontend")]
         match frontend_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
-                frontend::Message::LoadScript(script_path) => {
-                    info!("Loading Script: {}", script_path.display());
-
-                    // TODO: Implement this
-                }
-
                 frontend::Message::SwitchProfile(profile_path) => {
                     info!("Loading Profile: {}", profile_path.display());
 
-                    // TODO: Implement this
+                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
                 }
             },
 
@@ -451,51 +642,9 @@ fn run_main_loop(
                 dbus_interface::Message::SwitchProfile(profile_path) => {
                     info!("Loading Profile: {}", profile_path.display());
 
-                    switch_profile(&profile_path, &rvdevice)
+                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
                         .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
                 }
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
-            }
-        }
-
-        // send pending keyboard events to the Lua VMs and to the event dispatcher
-        match kbd_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                Some((index, pressed)) => {
-                    if pressed {
-                        for lua_tx in LUA_TXS.lock().iter() {
-                            lua_tx
-                                .send(script::Message::KeyDown(index))
-                                .unwrap_or_else(|e| {
-                                    error!("Could not send a pending keyboard event: {}", e)
-                                });
-                        }
-
-                        events::notify_observers(events::Event::KeyDown(index))
-                            .unwrap_or_else(|e| error!("{}", e));
-                    } else {
-                        for lua_tx in LUA_TXS.lock().iter() {
-                            lua_tx
-                                .send(script::Message::KeyUp(index))
-                                .unwrap_or_else(|e| {
-                                    error!("Could not send a pending keyboard event: {}", e)
-                                });
-                        }
-
-                        events::notify_observers(events::Event::KeyUp(index))
-                            .unwrap_or_else(|e| error!("{}", e));
-                    }
-                }
-
-                // ignore spurious events
-                None => trace!("Spurious keyboard event ignored"),
             },
 
             // ignore timeout errors
@@ -599,7 +748,7 @@ fn run_main_loop(
 
         // calculate and log fps each second
         if fps_timer.elapsed().as_millis() >= 1000 {
-            trace!("FPS: {}", fps_cntr);
+            debug!("FPS: {}", fps_cntr);
 
             fps_timer = Instant::now();
             fps_cntr = 0;
@@ -615,6 +764,75 @@ fn run_main_loop(
 
         start_time = Instant::now();
     }
+
+    events::notify_observers(events::Event::DaemonShutdown).unwrap();
+}
+
+/// Watch profiles and script directory, as well as our
+/// main configuration file for changes
+pub fn register_filesystem_watcher(
+    fsevents_tx: Sender<FileSystemEvent>,
+    config_file: PathBuf,
+    profile_dir: PathBuf,
+    script_dir: PathBuf,
+) -> Result<()> {
+    debug!("Registering filesystem watcher...");
+
+    thread::Builder::new()
+        .name("hotwatch".to_owned())
+        .spawn(
+            move || match Hotwatch::new_with_custom_delay(Duration::from_millis(2000)) {
+                Err(e) => error!("Could not initialize filesystem watcher: {}", e),
+
+                Ok(ref mut hotwatch) => {
+                    hotwatch
+                        .watch(config_file, move |_event: Event| {
+                            info!("Configuration File changed on disk, please restart eruption for the changes to take effect!");
+
+                            Flow::Continue
+                        })
+                        .unwrap_or_else(|e| error!("Could not register file watch: {}", e));
+
+                    let fsevents_tx_c = fsevents_tx.clone();
+
+                    hotwatch
+                        .watch(profile_dir, move |event: Event| {
+                            if let Event::Write(event) = event {
+                                info!("Existing profile modified: {:?}", event);
+                            } else if let Event::Create(event) = event {
+                                info!("New profile created: {:?}", event);
+                            } else if let Event::Rename(from, to) = event {
+                                info!("Profile file renamed: {:?}", (from, to));
+                            } else if let Event::Remove(event) = event {
+                                info!("Profile deleted: {:?}", event);
+                            }
+
+                            fsevents_tx_c.send(FileSystemEvent::ProfilesChanged).unwrap();
+
+                            Flow::Continue
+                        })
+                        .unwrap_or_else(|e| error!("Could not register directory watch: {}", e));
+
+                    let fsevents_tx_c = fsevents_tx.clone();
+
+                    hotwatch
+                        .watch(script_dir, move |event: Event| {
+                            info!("Script file changed: {:?}", event);
+
+                            fsevents_tx_c.send(FileSystemEvent::ScriptsChanged).unwrap();
+
+                            Flow::Continue
+                        })
+                        .unwrap_or_else(|e| error!("Could not register directory watch: {}", e));
+
+
+                    hotwatch.run();
+                }
+            },
+        )
+        .map_err(|_e| MainError::ThreadSpawnError {})?;
+
+    Ok(())
 }
 
 mod thread_util {
@@ -651,6 +869,7 @@ mod thread_util {
 }
 
 /// Main program entrypoint
+#[allow(clippy::cognitive_complexity)]
 fn main() {
     if unsafe { libc::isatty(0) != 0 } {
         print_header();
@@ -694,11 +913,16 @@ fn main() {
 
     *CONFIG.lock() = Some(config.clone());
 
+    // load and initialize global runtime state
+    debug!("Loading saved state...");
+    state::init_global_runtime_state()
+        .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
     // default directories
     let profile_dir = config
         .get_str("global.profile_dir")
         .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string());
-    let _profile_path = PathBuf::from(&profile_dir);
+    let profile_path = PathBuf::from(&profile_dir);
 
     let script_dir = config
         .get_str("global.script_dir")
@@ -714,7 +938,17 @@ fn main() {
 
     let profile_file = PathBuf::from(&profile_dir).join(&profile_file);
 
-    // load profile
+    // try to load saved profile state
+    let state = state::STATE.read();
+    let saved_profile = state
+        .as_ref()
+        .unwrap()
+        .get("profile")
+        .unwrap_or_else(|_| profile_file);
+
+    let profile_file = PathBuf::from(&profile_dir).join(saved_profile);
+
+    // finally, load the profile
     trace!("Loading profile data from '{}'", profile_file.display());
     let profile = Profile::from(&profile_file).unwrap_or_else(|e| {
         warn!(
@@ -800,8 +1034,9 @@ fn main() {
 
                     let (dbus_tx, dbus_rx) = channel();
                     #[cfg(feature = "dbus")]
-                    spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
+                    let dbus_api_tx = spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
+                        panic!()
                     });
 
                     // initialize plugins
@@ -844,19 +1079,34 @@ fn main() {
                         info!("Spawning Web-Frontend thread...");
 
                         #[cfg(feature = "frontend")]
-                        spawn_frontend_thread(frontend_tx, profile_path, script_paths)
-                            .map_err(|_e| MainError::ThreadSpawnError {})?;
+                        spawn_frontend_thread(frontend_tx, profile_path.clone(), script_paths)
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
                     } else {
                         info!("Web-Frontend DISABLED by configuration");
                     }
 
+                    let (fsevents_tx, fsevents_rx) = channel();
+                    register_filesystem_watcher(
+                        fsevents_tx,
+                        PathBuf::from(&config_file),
+                        profile_path,
+                        PathBuf::from(&script_dir),
+                    )
+                    .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
+
                     // enter the main loop
                     run_main_loop(
                         &mut rvdevice,
+                        #[cfg(feature = "dbus")]
+                        &dbus_api_tx,
                         #[cfg(feature = "frontend")]
                         &frontend_rx,
                         &dbus_rx,
                         &kbd_rx,
+                        &fsevents_rx,
                     );
 
                     // we left the main loop, so send a final message to the running Lua VMs
@@ -888,6 +1138,10 @@ fn main() {
             process::exit(1);
         }
     }
+
+    // save state
+    debug!("Saving state...");
+    state::save_runtime_state().unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
 
     info!("Exiting now");
 }

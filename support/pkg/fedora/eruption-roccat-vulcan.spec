@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.0
-Release: 1%{?dist}
+Version: 0.1.1
+Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -81,12 +81,15 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-#cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
-#cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
-#cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
+cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
+cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+ln -s phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-down.wav
+ln -s phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 cp -ra %{_builddir}/%{name}-%{version}/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
 #cp -ra %{_builddir}/%{name}-%{version}/templates %{buildroot}%{_datarootdir}/%{ShortName}/
 #cp -ra %{_builddir}/%{name}-%{version}/static %{buildroot}%{_datarootdir}/%{ShortName}/
@@ -118,11 +121,14 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile3.profile
+%{_sharedstatedir}/%{ShortName}/profiles/profile4.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
+%{_datarootdir}/%{ShortName}/scripts/macros.lua
+%{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterhue.lua
@@ -179,9 +185,11 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/water.lua
 %{_datarootdir}/%{ShortName}/scripts/water.lua.manifest
-#%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
-#%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
-#%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
+%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
+%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+%{_datarootdir}/%{ShortName}/sfx/key-down.wav
+%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 # Web-Frontend
 #%{_datarootdir}/%{ShortName}/templates/about.html.tera
 #%{_datarootdir}/%{ShortName}/templates/base.html.tera

@@ -411,7 +411,7 @@ function on_startup(config)
     end
 end
 
-function on_key_down(key_index)
+function on_key_up(key_index)
     for i = 0, max_neigh do
       local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
@@ -443,11 +443,4 @@ function on_tick(delta)
 
 				submit_color_map(color_map)
     end
-end
-
-function place_raindrop()
-    local num_keys = get_num_keys()
-    local key = rand(0, num_keys)
-
-    color_map_raindrops[key] = rand(color_rain_min, color_rain_max)
 end

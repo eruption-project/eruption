@@ -615,7 +615,6 @@ impl Default for Profile {
     }
 }
 
-#[allow(dead_code)]
 pub fn get_profiles(profile_path: &Path) -> Result<Vec<Profile>> {
     let profile_files = get_profile_files(&profile_path).unwrap();
 

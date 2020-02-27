@@ -40,39 +40,3 @@ type = 'color'
 name = 'color_step_shockwave'
 description = 'Color value that gets subtracted from the shockwave every [n] frames'
 default = 0x0a0a0000
-
-[[config]]
-type = 'bool'
-name = 'enable_ghost_typing'
-description = 'Enable ghost typing'
-default = true
-
-[[config]]
-type = 'color'
-name = 'color_ghost'
-description = 'Color of ghost typing'
-default = 0xff404040
-
-[[config]]
-type = 'color'
-name = 'color_step_ghost'
-description = 'Color value that gets subtracted from the ghost typing every [n] frames'
-default = 0x0a040404
-
-[[config]]
-type = 'float'
-name = 'ghost_step'
-description = 'Step ghost animation every [n] frames'
-default = 2.0
-
-[[config]]
-type = 'int'
-name = 'ghost_probability'
-description = 'Amount of ghost keystrokes'
-default = 150
-
-[[config]]
-type = 'int'
-name = 'ghost_starts_after'
-description = 'Ghost starts after [n] frames'
-default = 240

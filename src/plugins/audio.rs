@@ -85,12 +85,11 @@ lazy_static! {
 
     // Sound FX audio buffers
     /// Key down SFX
-    pub static ref SFX_KEY_DOWN: Option<Vec<u8>> = util::load_sfx("typewriter1.wav").ok();
+    pub static ref SFX_KEY_DOWN: Option<Vec<u8>> = util::load_sfx("key-down.wav").ok();
     /// Key up SFX
-    pub static ref SFX_KEY_UP: Option<Vec<u8>> = util::load_sfx("typewriter1.wav").ok();
+    pub static ref SFX_KEY_UP: Option<Vec<u8>> = util::load_sfx("key-up.wav").ok();
 }
 
-#[inline]
 fn try_start_audio_backend() -> Result<()> {
     AUDIO_BACKEND
         .lock()
@@ -104,7 +103,6 @@ fn try_start_audio_backend() -> Result<()> {
     Ok(())
 }
 
-#[inline]
 fn try_start_audio_grabber() -> Result<()> {
     let start_backend = AUDIO_BACKEND.lock().is_none();
     if start_backend {
@@ -202,10 +200,8 @@ impl Plugin for AudioPlugin {
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
-        // NOTE: Due to limitations of the plugin system, we can not
-        //       capture `self` in the event handler closure below.
-        events::register_observer(events::EventClass::Keyboard, |event| {
-            match *event {
+        events::register_observer(|event: &events::Event| {
+            match event {
                 events::Event::KeyDown(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst)
                         && SFX_KEY_DOWN.is_some()
@@ -247,6 +243,8 @@ impl Plugin for AudioPlugin {
                         }
                     }
                 }
+
+                _ => (),
             };
 
             Ok(true) // event has been processed

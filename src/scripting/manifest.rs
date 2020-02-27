@@ -207,7 +207,7 @@ pub struct Manifest {
     pub author: String,
     pub min_supported_version: String,
     pub tags: Option<Vec<ScriptTag>>,
-    pub config: Vec<ConfigParam>,
+    pub config: Option<Vec<ConfigParam>>,
 
     #[serde(default = "default_html_class")]
     pub html_class: String,
@@ -342,6 +342,9 @@ pub enum ScriptTag {
     /// Script may be categorized as an "effect"
     Effect,
 
+    /// Script may be categorized as a collection of macros
+    Macros,
+
     // other effects
     /// Script is of pre-release quality
     BetaVersion,
@@ -372,6 +375,7 @@ impl ScriptTag {
             ScriptTag::Background => "Background".into(),
             ScriptTag::Filter => "Filter".into(),
             ScriptTag::Effect => "Effect".into(),
+            ScriptTag::Macros => "Macros".into(),
 
             // other tags
             ScriptTag::BetaVersion => "Beta version".into(),
@@ -390,6 +394,7 @@ impl ScriptTag {
             ScriptTag::Background => "class-background".into(),
             ScriptTag::Filter => "class-filter".into(),
             ScriptTag::Effect => "class-effect".into(),
+            ScriptTag::Macros => "class-macros".into(),
 
             // other tags
             ScriptTag::BetaVersion => "beta-version".into(),
@@ -408,6 +413,7 @@ impl ScriptTag {
             ScriptTag::Background => "badge-background".into(),
             ScriptTag::Filter => "badge-filter".into(),
             ScriptTag::Effect => "badge-effect".into(),
+            ScriptTag::Macros => "badge-macros".into(),
 
             // other tags
             ScriptTag::BetaVersion => "badge-beta-version".into(),
