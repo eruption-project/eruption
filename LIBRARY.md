@@ -61,6 +61,7 @@ Eruption currently ships with the following library functions:
 | `set_key_color(key_index, color)`    | _core_  | Hw  | since before 0.0.9 | Sets the current color of the key `key_index` to `color` |
 | `set_color_map([color_map])`    | _core_  | Hw  | since before 0.0.9 | Set all LEDs at once to the colors specified in the array `color_map`. This will directly access the keyboard. Please see also: submit_color_map() |
 | `submit_color_map([color_map])`    | _core_  | Hw  | since 0.0.12 | Set all LEDs at once to the colors specified in the array `color_map`. Color maps of all scripts will be alpha blended together. and then sent to the keyboard once for each render frame. |
+| `inject_key(ev_key, down)`    | _core_  | Hw  | since 0.1.1 | Inject a key event on the virtual keyboard |
 | `get_current_load_avg_1() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 1 minute |
 | `get_current_load_avg_5() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 5 minutes |
 | `get_current_load_avg_10() -> f`    | System  | Sys  | since before 0.0.9 | Returns the system load average of the last 10 minutes |

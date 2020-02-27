@@ -1,20 +1,20 @@
 # Table of Contents
 
-- <a href="eruption">Eruption</a>
-- <a href="important">Important</a>
-- <a href="overview">Overview</a>
-- <a href="features">Features</a>
-- <a href="installation">Installation</a>
-- <a href="config">Configuration and Usage</a>
-- <a href="profiles">Profiles</a>
-- <a href="scripts">Lua Scripts and Manifests</a>
-- <a href="gui">Browser based GUI</a>
-- <a href="audio">Support for Audio Playback and Capture </a>
-- <a href="macros">Support for Macros </a>
-- <a href="plugins">Available Plugins</a>
-- <a href="effects">Available Effects</a>
-- <a href="info">Info</a>
-- <a href="contributing">Contributing</a>
+- <a href="#eruption">Eruption</a>
+- <a href="#important">Important</a>
+- <a href="#overview">Overview</a>
+- <a href="#features">Features</a>
+- <a href="#installation">Installation</a>
+- <a href="#config">Configuration and Usage</a>
+- <a href="#profiles">Profiles</a>
+- <a href="#scripts">Lua Scripts and Manifests</a>
+- <a href="#gui">Browser based GUI</a>
+- <a href="#audio">Support for Audio Playback and Capture </a>
+- <a href="#macros">Support for Macros </a>
+- <a href="#plugins">Available Plugins</a>
+- <a href="#effects">Available Effects</a>
+- <a href="#info">Info</a>
+- <a href="#contributing">Contributing</a>
 
 # Eruption <a name="eruption"></a>
 
