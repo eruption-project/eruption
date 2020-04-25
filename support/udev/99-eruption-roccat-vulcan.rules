@@ -1,5 +1,5 @@
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", RUN+="/usr/bin/systemctl start eruption.service"
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", RUN+="/usr/bin/systemctl start eruption.service"
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", TAG+="systemd", ENV{SYSTEMD_WANTS}="eruption.service"
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", TAG+="systemd", ENV{SYSTEMD_WANTS}="eruption.service"
 
 #ACTION=="change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", RUN+="/usr/bin/systemctl try-reload-or-restart eruption.service"
 #ACTION=="change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", RUN+="/usr/bin/systemctl try-reload-or-restart eruption.service"
