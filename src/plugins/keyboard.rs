@@ -120,7 +120,7 @@ impl KeyboardPlugin {
                 }
 
                 Err(e) => {
-                    if e as i32 == libc::ENODEV {
+                    if e.raw_os_error().unwrap() == libc::ENODEV {
                         error!("Keyboard device went away: {}", e);
                         panic!();
                     } else {

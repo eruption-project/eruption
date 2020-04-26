@@ -147,7 +147,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
     App::new("Eruption")
-        .version("0.1.1")
+        .version(env!("CARGO_PKG_VERSION"))
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
