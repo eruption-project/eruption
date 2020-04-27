@@ -413,18 +413,18 @@ end
 
 function on_key_up(key_index)
     for i = 0, max_neigh do
-      local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-      if neigh_key ~= 0xff then
-          water_grid[neigh_key] = 0.5
-      end
+		if neigh_key ~= 0xff then
+			water_grid[neigh_key] = 0.5
+		end
     end
 end
 
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-		local num_keys = get_num_keys()
+	local num_keys = get_num_keys()
 
     if ticks % flow_speed == 0 then
         -- compute wave effect
@@ -438,9 +438,9 @@ function on_tick(delta)
 
             -- compute color
             color_map[key_index] = hsla_to_color(lerp(120, 220, sin(water_grid[key_index])) + 1.25, 1.0, 0.5,
-																								 lerp(0, 255, sin(water_grid[key_index])))
+																	lerp(0, 255, sin(water_grid[key_index])))
         end
 
-				submit_color_map(color_map)
+		submit_color_map(color_map)
     end
 end

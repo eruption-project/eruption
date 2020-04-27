@@ -415,11 +415,10 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-		local num_keys = get_num_keys()
-
+	local num_keys = get_num_keys()
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
-				state_map[i] = key_state.idle
+		state_map[i] = key_state.idle
     end
 end
 
@@ -440,36 +439,36 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-		-- propagate the shockwave
-		for i = 1, num_keys do
-			-- decrease key ttl
-			if state_map[i] > key_state.shockwave_sentinel then
-				state_map[i] = state_map[i] - shockwave_ttl_decrease
-				if state_map[i] <= key_state.shockwave_sentinel then
-					state_map[i] = key_state.idle
-				end
-			end
-
-			-- propagate wave effect
-			if state_map[i] >= key_state.shockwave_sentinel then
-				state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
-			else
-				state_map[i - 1] = key_state.idle
-			end
-
-			-- compute shockwave color
-			if state_map[i] >= key_state.shockwave_sentinel then
-				color_map[i] = color_shockwave - color_step_shockwave
-			end
-
-			if color_map[i] > rgba_to_color(0, 0, 0, 0) then
-				color_map[i] = color_map[i] - color_step_shockwave
-
-				if color_map[i] < rgba_to_color(0, 0, 0, 0) then
-					color_map[i] = rgba_to_color(0, 0, 0, 0)
-				end
+	-- propagate the shockwave
+	for i = 1, num_keys do
+		-- decrease key ttl
+		if state_map[i] > key_state.shockwave_sentinel then
+			state_map[i] = state_map[i] - shockwave_ttl_decrease
+			if state_map[i] <= key_state.shockwave_sentinel then
+				state_map[i] = key_state.idle
 			end
 		end
+
+		-- propagate wave effect
+		if state_map[i] >= key_state.shockwave_sentinel then
+			state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
+		else
+			state_map[i - 1] = key_state.idle
+		end
+
+		-- compute shockwave color
+		if state_map[i] >= key_state.shockwave_sentinel then
+			color_map[i] = color_shockwave - color_step_shockwave
+		end
+
+		if color_map[i] > rgba_to_color(0, 0, 0, 0) then
+			color_map[i] = color_map[i] - color_step_shockwave
+
+			if color_map[i] < rgba_to_color(0, 0, 0, 0) then
+				color_map[i] = rgba_to_color(0, 0, 0, 0)
+			end
+		end
+	end
 
     submit_color_map(color_map)
 end

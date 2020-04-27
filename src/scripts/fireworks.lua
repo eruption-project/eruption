@@ -432,7 +432,7 @@ function on_tick(delta)
 
     if ticks % animation_speed == 0 then
         -- compute fireworks effect
-      for key_index = 1, num_keys - 1 do
+      	for key_index = 1, num_keys - 1 do
 			local avg = (fireworks_grid[key_index - 1] + fireworks_grid[key_index + 1]) / 2
             fireworks_grid[key_index - 1] = (fireworks_grid[key_index] - 0.25) + (avg * 0.5)
 
@@ -440,7 +440,7 @@ function on_tick(delta)
             if fireworks_grid[key_index] <= epsilon or fireworks_grid[key_index] >= (1.0 - epsilon) then
                 fireworks_grid[key_index] = 0.0
             end
-			end
+		end
 
         for y = 0, num_rows - 1 do
             for x = 0, max_keys_per_row - 1 do
@@ -461,6 +461,6 @@ function on_tick(delta)
             end
         end
 
-			submit_color_map(color_map)
+		submit_color_map(color_map)
     end
 end

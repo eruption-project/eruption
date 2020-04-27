@@ -53,46 +53,46 @@ rows_topology = {
 
 -- event handler functions --
 function on_startup(config)
-  local num_keys = get_num_keys()
+  	local num_keys = get_num_keys()
 	for i = 0, num_keys do
-			color_map[i] = rgba_to_color(0, 0, 0, 255)
+		color_map[i] = rgba_to_color(0, 0, 0, 255)
 	end
 end
 
 function on_tick(delta)
     --ticks = ticks + delta + 1
 
-		local num_keys = get_num_keys()
-		for i = 0, num_keys do
-				color_map[i] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
-		end
+	local num_keys = get_num_keys()
+	for i = 0, num_keys do
+			color_map[i] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
+	end
 
-		local spectrum = get_audio_spectrum()
-		local num_buckets = 32
-		local num_rows = max_keys_per_col
+	local spectrum = get_audio_spectrum()
+	local num_buckets = 32
+	local num_rows = max_keys_per_col
 
-		for col = 1, num_cols + 1 do
-			local bucket = trunc(num_buckets / num_cols * col)
-			local val = spectrum[bucket]
-			if val == nil then val = 0 end
+	for col = 1, num_cols + 1 do
+		local bucket = trunc(num_buckets / num_cols * col)
+		local val = spectrum[bucket]
+		if val == nil then val = 0 end
 
-			local p = trunc(max(num_rows - (val / power_envelope), 0))
+		local p = trunc(max(num_rows - (val / power_envelope), 0))
 
-			--debug("Col: " .. col .. " Value: " .. val .. " Envelope: " .. power_envelope ..
-			--" Bucket: " .. bucket .. " p: " .. p)
+		--debug("Col: " .. col .. " Value: " .. val .. " Envelope: " .. power_envelope ..
+		--" Bucket: " .. bucket .. " p: " .. p)
 
-			for i = num_rows - 1, p, -1 do
-				local index = rows_topology[col + i * max_keys_per_row] + 1
-				color_map[index] = linear_gradient(color_hot, color_cold, i / num_rows)
+		for i = num_rows - 1, p, -1 do
+			local index = rows_topology[col + i * max_keys_per_row] + 1
+			color_map[index] = linear_gradient(color_hot, color_cold, i / num_rows)
 
-				local peak_index = rows_topology[col + p * max_keys_per_row] + 1
-				if i == p then
-					color_map[peak_index] = rgba_to_color(255, 15, 15, lerp(0, 255, opacity))
-				else
-					color_map[peak_index] = rgba_to_color(0, 0, 0, 0)
-				end
+			local peak_index = rows_topology[col + p * max_keys_per_row] + 1
+			if i == p then
+				color_map[peak_index] = rgba_to_color(255, 15, 15, lerp(0, 255, opacity))
+			else
+				color_map[peak_index] = rgba_to_color(0, 0, 0, 0)
 			end
 		end
+	end
 
     submit_color_map(color_map)
 end

@@ -33,8 +33,8 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-		adaptive_offset = get_audio_loudness() / 50000
-		debug("Adaptive offset: " .. adaptive_offset)
+    adaptive_offset = get_audio_loudness() / 50000
+    debug("Adaptive offset: " .. adaptive_offset)
 
 
     -- calculate batique effect
@@ -44,13 +44,13 @@ function on_tick(delta)
             local y = i / 22
 
             local val = open_simplex_noise(x / coord_scale + adaptive_offset,
-                              						 y / coord_scale + adaptive_offset,
-                              						 ticks / time_scale)
-                  val = lerp(0, 360, val)
+                                            y / coord_scale + adaptive_offset,
+                                            ticks / time_scale)
+            val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-																				color_saturation, color_lightness,
-																				lerp(0, 255, opacity))
+                                            color_saturation, color_lightness,
+                                            lerp(0, 255, opacity))
         end
     end
 

@@ -42,7 +42,7 @@ function on_startup(config)
      -- initialize palette
     for i = 0, 255 do
         color_palette[i] = hsla_to_color(i / 3, 1.0, min(0.5, ((i * 1.45) / 256)),
-																				 lerp(0, 255, opacity))
+                                        lerp(0, 255, opacity))
     end
 end
 
@@ -63,16 +63,16 @@ function on_tick(delta)
             for x = 0, fire_grid_cols - 1 do
                 fire_grid[y * fire_grid_cols + x] =
                                 ((fire_grid[((y + 1) % fire_grid_rows) *
-																fire_grid_cols + ((x - 1 + fire_grid_cols) % fire_grid_cols)]
+                                fire_grid_cols + ((x - 1 + fire_grid_cols) % fire_grid_cols)]
 
                                 + fire_grid[((y + 1) % fire_grid_rows) *
-																fire_grid_cols + ((x) % fire_grid_cols)]
+                                    fire_grid_cols + ((x) % fire_grid_cols)]
 
                                 + fire_grid[((y + 1) % fire_grid_rows) *
-																fire_grid_cols + ((x + 1) % fire_grid_cols)]
+                                    fire_grid_cols + ((x + 1) % fire_grid_cols)]
 
-																+ fire_grid[((y + 2) % fire_grid_rows) *
-																fire_grid_cols + ((x) % fire_grid_cols)])
+                                + fire_grid[((y + 2) % fire_grid_rows) *
+                                    fire_grid_cols + ((x) % fire_grid_cols)])
                                 * 32) / 129;
             end
         end
@@ -101,6 +101,6 @@ function on_tick(delta)
             end
         end
 
-			submit_color_map(color_map)
+        submit_color_map(color_map)
     end
 end

@@ -402,14 +402,14 @@ neighbor_topology = {
 
 -- event handler functions --
 function on_startup(config)
-		local num_keys = get_num_keys()
-		for i = 0, num_keys do
-				color_map[i] = rgba_to_color(0, 0, 0, 0)
-		end
+	local num_keys = get_num_keys()
+	for i = 0, num_keys do
+		color_map[i] = rgba_to_color(0, 0, 0, 0)
+	end
 end
 
 function on_key_down(key_index)
-		color_map[key_index] = rgba_to_color(255, 255, 255, 255)
+	color_map[key_index] = rgba_to_color(255, 255, 255, 255)
 
     for i = 0, max_neigh do
         local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
@@ -423,22 +423,22 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-		local num_keys = get_num_keys()
+	local num_keys = get_num_keys()
 
-		-- compute impact effect
-		if ticks % impact_step == 0 then
-				for i = 0, num_keys do
-					color = color_map[i]
-					if color ~= nil then
-						r, g, b, alpha = color_to_rgba(color)
-						color_map[i] = rgba_to_color(r, g, b, max(alpha - alpha_step_impact, 0))
+	-- compute impact effect
+	if ticks % impact_step == 0 then
+		for i = 0, num_keys do
+			color = color_map[i]
+			if color ~= nil then
+				r, g, b, alpha = color_to_rgba(color)
+				color_map[i] = rgba_to_color(r, g, b, max(alpha - alpha_step_impact, 0))
 
-						if alpha < 1 then
-							color_map[i] = rgba_to_color(0, 0, 0, 0)
-						end
-					end
+				if alpha < 1 then
+					color_map[i] = rgba_to_color(0, 0, 0, 0)
 				end
+			end
 		end
+	end
 
     submit_color_map(color_map)
 end

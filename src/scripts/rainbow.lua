@@ -37,6 +37,6 @@ function on_tick(delta)
 											color_saturation, color_lightness, lerp(0, 255, opacity))
         end
 
-			submit_color_map(color_map)
+        submit_color_map(color_map)
     end
 end

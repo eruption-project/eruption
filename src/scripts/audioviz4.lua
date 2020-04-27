@@ -33,7 +33,7 @@ function on_tick(delta)
     local num_keys = get_num_keys()
 
     -- calculate 'fill' percentage for heartbeat effect
-		percentage = min((get_audio_loudness() / 100) * loudness_scale_factor, 100.0)
+    percentage = min((get_audio_loudness() / 100) * loudness_scale_factor, 100.0)
 
     -- generate heartbeat color map values
     local upper_bound = num_keys * (min(percentage, 100) / 100)

@@ -39,11 +39,11 @@ function on_tick(delta)
     if ticks % afterglow_step == 0 then
 				local num_keys = get_num_keys()
         for i = 0, num_keys do
-						if hue_map[i] > 0 then
-							hue_map[i] = hue_map[i] - hue_step_afterglow
-							r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
-							color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
-						end
+            if hue_map[i] > 0 then
+                hue_map[i] = hue_map[i] - hue_step_afterglow
+                r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
+                color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+            end
         end
 
 	    submit_color_map(color_map)

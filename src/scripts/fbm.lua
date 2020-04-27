@@ -29,15 +29,15 @@ function on_tick(delta)
             local y = i / 22
 
             local val = fractal_brownian_noise(x / coord_scale,
-																							 y / coord_scale,
-																							 ticks / time_scale)
-                  val = lerp(0, 360, val)
+                                                y / coord_scale,
+                                                ticks / time_scale)
+            val = lerp(0, 360, val)
 
-						color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-																	color_saturation, color_lightness,
-																	lerp(0, 255, opacity))
+            color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
+                                            color_saturation, color_lightness,
+                                            lerp(0, 255, opacity))
         end
 
-			submit_color_map(color_map)
+        submit_color_map(color_map)
     end
 end

@@ -19,7 +19,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-		local num_keys = get_num_keys()
+    local num_keys = get_num_keys()
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
@@ -39,8 +39,8 @@ function on_tick(delta)
     if ticks % raindrop_step == 0 then
         for i = 0, num_keys do
             if color_map[i] > rgba_to_color(0, 0, 0, 0) then
-							  r, g, b, alpha = color_to_rgba(color_map[i])
-								alpha = alpha - 10
+                r, g, b, alpha = color_to_rgba(color_map[i])
+                alpha = alpha - 10
                 color_map[i] = rgba_to_color(r, g, b, max(alpha, 0))
 
                 if color_map[i] < rgba_to_color(0, 0, 0, 0) then
