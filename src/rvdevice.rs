@@ -92,8 +92,8 @@ pub const NUM_KEYS: usize = 144;
 #[derive(Clone)]
 pub struct RvDeviceState {
     pub is_bound: bool,
-    pub ctrl_hiddev_info: Option<hidapi::HidDeviceInfo>,
-    pub led_hiddev_info: Option<hidapi::HidDeviceInfo>,
+    pub ctrl_hiddev_info: Option<hidapi::DeviceInfo>,
+    pub led_hiddev_info: Option<hidapi::DeviceInfo>,
 
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
@@ -107,7 +107,7 @@ impl RvDeviceState {
         self.led_hiddev_info
             .clone()
             .unwrap()
-            .path
+            .path()
             .to_str()
             .unwrap()
             .to_string()
@@ -122,32 +122,30 @@ impl RvDeviceState {
         let mut ctrl_device = None;
         let mut led_device = None;
 
-        for device in api.devices() {
-            trace!("{:#?}", device);
-
-            if device.vendor_id == VENDOR_ID
-                && PRODUCT_ID.contains(&device.product_id)
-                && device.interface_number == CTRL_INTERFACE
+        for device in api.device_list() {
+            if device.vendor_id() == VENDOR_ID
+                && PRODUCT_ID.contains(&device.product_id())
+                && device.interface_number() == CTRL_INTERFACE
             {
-                let product_string = device.product_string.clone().unwrap_or_else(|| {
+                let product_string = device.product_string().clone().unwrap_or_else(|| {
                     error!("Could not query device information");
                     "<unknown>".into()
                 });
-                let path = device.path.clone();
+                let path = device.path().clone();
 
                 found_ctrl_dev = true;
                 ctrl_device = Some(device);
 
                 info!("Found Control interface: {:?}: {}", path, product_string);
-            } else if device.vendor_id == VENDOR_ID
-                && PRODUCT_ID.contains(&device.product_id)
-                && device.interface_number == LED_INTERFACE
+            } else if device.vendor_id() == VENDOR_ID
+                && PRODUCT_ID.contains(&device.product_id())
+                && device.interface_number() == LED_INTERFACE
             {
-                let product_string = device.product_string.clone().unwrap_or_else(|| {
+                let product_string = device.product_string().clone().unwrap_or_else(|| {
                     error!("Could not query device information");
                     "<unknown>".into()
                 });
-                let path = device.path.clone();
+                let path = device.path().clone();
 
                 found_led_dev = true;
                 led_device = Some(device);
@@ -165,7 +163,7 @@ impl RvDeviceState {
         }
     }
 
-    pub fn bind(ctrl_dev: &hidapi::HidDeviceInfo, led_dev: &hidapi::HidDeviceInfo) -> Self {
+    pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
         RvDeviceState {
             is_bound: true,
             ctrl_hiddev_info: Some(ctrl_dev.clone()),

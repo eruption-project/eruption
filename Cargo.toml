@@ -16,16 +16,16 @@ all = ["dbus"]
 frontend = ["rocket", "rocket_contrib"]
 
 [dependencies]
-libc = "0.2.66"
+libc = "0.2.69"
 nix = "0.17.0"
 prctl = "1.0.0"
 log = "0.4.8"
-parking_lot = { version = "0.10.0", features = ["deadlock_detection"] }
+parking_lot = { version = "0.10.2", features = ["deadlock_detection"] }
 pretty_env_logger = "0.4.0"
-failure = "0.1.6"
-toml = "0.5.5"
-serde = { version = "1.0.104", features = ["derive"] }
-ctrlc = { version = "3.1.3", features = ["termination"] }
+failure = "0.1.7"
+toml = "0.5.6"
+serde = { version = "1.0.106", features = ["derive"] }
+ctrlc = { version = "3.1.4", features = ["termination"] }
 clap = "2.33.0"
 hotwatch = "0.4.3"
 config = "0.10.1"
@@ -34,11 +34,11 @@ udev = "0.4.0"
 evdev-rs = "0.4.0"
 hexdump = "0.1.0"
 bytevec = "0.2.0"
-byteorder = "1.3.2"
+byteorder = "1.3.4"
 itertools = "0.9.0"
 rayon = "1.3.0"
 lazy_static = "1.4.0"
-rand = "0.7.2"
+rand = "0.7.3"
 palette = "0.5.0"
 nalgebra = "0.21.0"
 noise = "0.6.0"
@@ -50,12 +50,12 @@ procinfo = "0.4.2"
 rustfft = "3.0.1"
 hound = "3.4.0"
 cpal = "0.11.0"
-libpulse-binding = "2.15"
-libpulse-simple-binding = "2.15"
+libpulse-binding = "2.16"
+libpulse-simple-binding = "2.16"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
-dbus = { version = "0.8.1", optional = true }
-rocket = { version = "0.4.2", optional = true }
-rocket_contrib = { version = "0.4.2", optional = true, features = ["tera_templates"] }
+dbus = { version = "0.8.2", optional = true }
+rocket = { version = "0.4.4", optional = true }
+rocket_contrib = { version = "0.4.4", optional = true, features = ["tera_templates"] }
 
 [profile.dev]
 opt-level = 0
