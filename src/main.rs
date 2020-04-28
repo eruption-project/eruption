@@ -486,8 +486,148 @@ fn run_main_loop(
             plugin.main_loop_hook(ticks);
         }
 
+        // process file system related events
+        match fsevents_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                FileSystemEvent::ProfilesChanged => {
+                    events::notify_observers(events::Event::FileSystemEvent(
+                        FileSystemEvent::ProfilesChanged,
+                    ))
+                    .unwrap_or_else(|e| error!("{}", e));
+
+                    #[cfg(feature = "dbus")]
+                    dbus_api_tx
+                        .send(DbusApiEvent::ProfilesChanged)
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
+                }
+                FileSystemEvent::ScriptsChanged => {}
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                // print warning but continue
+                warn!("Channel error: {}", e);
+            }
+        }
+
+        // process Web-Frontend events
+        #[cfg(feature = "frontend")]
+        match frontend_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                frontend::Message::SwitchProfile(profile_path) => {
+                    info!("Loading Profile: {}", profile_path.display());
+
+                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+                }
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
+        // process D-Bus events
+        #[cfg(feature = "dbus")]
+        match dbus_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => match result {
+                dbus_interface::Message::SwitchProfile(profile_path) => {
+                    info!("Loading Profile: {}", profile_path.display());
+
+                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+                }
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                break 'MAIN_LOOP;
+            }
+        }
+
+        // execute render "pipeline" now
+
+        // send timer tick events to the Lua VMs
+        for lua_tx in LUA_TXS.lock().iter() {
+            lua_tx
+                .send(script::Message::Tick(
+                    start_time.elapsed().as_millis().try_into().unwrap(),
+                ))
+                .unwrap_or_else(|e| error!("Send error: {}", e));
+        }
+
+        let mut drop_frame = false;
+
+        // execute render "pipeline" now
+        // first, clear the canvas
+        script::LED_MAP.lock().copy_from_slice(
+            &[rvdevice::RGBA {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            }; rvdevice::NUM_KEYS],
+        );
+
+        // instruct Lua VMs to realize their color maps, e.g. to blend their
+        // local color maps with the canvas
+        *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len();
+
+        for lua_tx in LUA_TXS.lock().iter() {
+            // guarantee the right order of execution for the alpha blend
+            // operations, so we have to wait for the current Lua VM to
+            // complete its blending code, before continuing
+            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
+
+            lua_tx
+                .send(script::Message::RealizeColorMap)
+                .unwrap_or_else(|e| error!("Send error: {}", e));
+
+            // yield to thread
+            //thread::sleep(Duration::from_millis(0));
+
+            let result = COLOR_MAPS_READY_CONDITION
+                .1
+                .wait_for(&mut pending, Duration::from_millis(50));
+
+            if result.timed_out() {
+                drop_frame = true;
+                warn!("Frame dropped: Timeout while waiting for a lock!");
+                break;
+            }
+        }
+
+        // yield main thread
+        //thread::sleep(Duration::from_millis(0));
+        // number of pending blend ops should have reached zero by now
+        //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
+        // send the final (combined) color map to the keyboard
+        if !drop_frame {
+            rvdevice
+                .send_led_map(&script::LED_MAP.lock())
+                .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
+        }
+
+        // sync to MAIN_LOOP_DELAY_MILLIS iteration time
+        let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
+        let sleep_millis = u64::min(
+            constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
+            constants::MAIN_LOOP_DELAY_MILLIS,
+        );
+
         // send pending keyboard events to the Lua VMs and to the event dispatcher
-        match kbd_rx.recv_timeout(Duration::from_millis(0)) {
+        match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
             Ok(result) => match result {
                 Some(raw_event) => {
                     // notify all observers of raw events
@@ -585,148 +725,6 @@ fn run_main_loop(
                 break 'MAIN_LOOP;
             }
         }
-
-        // process file system related events
-        match fsevents_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                FileSystemEvent::ProfilesChanged => {
-                    events::notify_observers(events::Event::FileSystemEvent(
-                        FileSystemEvent::ProfilesChanged,
-                    ))
-                    .unwrap_or_else(|e| error!("{}", e));
-
-                    #[cfg(feature = "dbus")]
-                    dbus_api_tx
-                        .send(DbusApiEvent::ProfilesChanged)
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending dbus API event: {}", e)
-                        });
-                }
-                FileSystemEvent::ScriptsChanged => {}
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                // print warning but continue
-                warn!("Channel error: {}", e);
-            }
-        }
-
-        // process Web-Frontend events
-        #[cfg(feature = "frontend")]
-        match frontend_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                frontend::Message::SwitchProfile(profile_path) => {
-                    info!("Loading Profile: {}", profile_path.display());
-
-                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
-                }
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
-            }
-        }
-
-        // process D-Bus events
-        #[cfg(feature = "dbus")]
-        match dbus_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                dbus_interface::Message::SwitchProfile(profile_path) => {
-                    info!("Loading Profile: {}", profile_path.display());
-
-                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
-                }
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
-            }
-        }
-
-        // send timer tick events to the Lua VMs
-        for lua_tx in LUA_TXS.lock().iter() {
-            lua_tx
-                .send(script::Message::Tick(
-                    start_time.elapsed().as_millis().try_into().unwrap(),
-                ))
-                .unwrap_or_else(|e| error!("Send error: {}", e));
-        }
-
-        // execute render "pipeline" now
-
-        // first, clear the canvas
-        script::LED_MAP.lock().copy_from_slice(
-            &[rvdevice::RGBA {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            }; rvdevice::NUM_KEYS],
-        );
-
-        // instruct Lua VMs to realize their color maps, e.g. to blend their
-        // local color maps with the canvas
-        *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len();
-
-        let mut drop_frame = false;
-
-        for lua_tx in LUA_TXS.lock().iter() {
-            // guarantee the right order of execution for the alpha blend
-            // operations, so we have to wait for the current Lua VM to
-            // complete its blending code, before continuing
-            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
-
-            lua_tx
-                .send(script::Message::RealizeColorMap)
-                .unwrap_or_else(|e| error!("Send error: {}", e));
-
-            // yield to thread
-            //thread::sleep(Duration::from_millis(0));
-
-            let result = COLOR_MAPS_READY_CONDITION
-                .1
-                .wait_for(&mut pending, Duration::from_millis(50));
-
-            if result.timed_out() {
-                drop_frame = true;
-                warn!("Frame dropped: Timeout while waiting for a lock!");
-                break;
-            }
-        }
-
-        // yield main thread
-        //thread::sleep(Duration::from_millis(0));
-
-        // number of pending blend ops should have reached zero by now
-        //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
-
-        // send the final (combined) color map to the keyboard
-        if !drop_frame {
-            rvdevice
-                .send_led_map(&script::LED_MAP.lock())
-                .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
-        }
-
-        // sync to MAIN_LOOP_DELAY_MILLIS iteration time
-        let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
-        let sleep_millis = u64::min(
-            constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
-            constants::MAIN_LOOP_DELAY_MILLIS,
-        );
-        thread::sleep(Duration::from_millis(sleep_millis));
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
         if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
@@ -889,7 +887,10 @@ fn main() {
         pretty_env_logger::init();
     }
 
-    info!("Starting user-mode driver for ROCCAT Vulcan 100/12x series devices");
+    info!(
+        "Starting user-mode driver for ROCCAT Vulcan 100/12x series keyboards: Version {}",
+        env!("CARGO_PKG_VERSION")
+    );
 
     // register ctrl-c handler
     let q = QUIT.clone();

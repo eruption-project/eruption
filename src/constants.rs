@@ -31,7 +31,7 @@ pub const STATE_DIR: &str = "/var/lib/eruption/";
 pub const DEFAULT_EFFECT_SCRIPT: &str = "batique.lua";
 
 /// Target delay time of main loop iteration
-pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 100.0) as u64;
+pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
 
 /// Amount of time that has to pass before we can send another command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 10;

@@ -15,7 +15,7 @@ default = 0xffff0000
 type = 'float'
 name = 'flow_speed'
 description = 'Step water animation every [n] frames'
-default = 4.0
+default = 1.0
 
 [[config]]
 type = 'float'

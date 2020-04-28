@@ -9,7 +9,7 @@ tags = ['Effect', 'Vendor']
 type = 'float'
 name = 'afterglow_step'
 description = 'Step afterglow animation every [n] frames'
-default = 2.0
+default = 1.0
 
 [[config]]
 type = 'color'
