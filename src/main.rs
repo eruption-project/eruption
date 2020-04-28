@@ -815,7 +815,7 @@ pub fn register_filesystem_watcher(
 
                     hotwatch
                         .watch(script_dir, move |event: Event| {
-                            info!("Script file changed: {:?}", event);
+                            info!("Script file or manifest changed: {:?}", event);
 
                             fsevents_tx_c.send(FileSystemEvent::ScriptsChanged).unwrap();
 
