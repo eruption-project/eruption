@@ -20,6 +20,9 @@ color_map_pressed = {}
 ticks = 0
 adaptive_offset = 0
 
+num_rows = 6
+num_cols = 22
+
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
@@ -40,8 +43,8 @@ function on_tick(delta)
     -- calculate batique effect
     if ticks % animation_delay == 0 then
         for i = 0, num_keys do
-            local x = i / 6
-            local y = i / 22
+            local x = i / num_rows
+            local y = i / num_cols
 
             local val = open_simplex_noise(x / coord_scale + adaptive_offset,
                                             y / coord_scale + adaptive_offset,

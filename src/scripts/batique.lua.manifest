@@ -1,8 +1,8 @@
 name = "Batique"
-description = "Compute Open Simplex Noise, mapped to the HSL color space"
-version = "0.0.2"
+description = "Compute Super Simplex Noise, mapped to the HSL color space"
+version = "0.0.4"
 author = "The Eruption development team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.4"
 tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
@@ -15,7 +15,7 @@ default = 1.0
 type = 'float'
 name = 'time_scale'
 description = 'Scale of time axis (3rd coordinate of the noise function)'
-default = 125.0
+default = 250.0
 
 [[config]]
 type = 'float'

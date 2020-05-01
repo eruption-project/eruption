@@ -1,8 +1,8 @@
-name = "Billow Noise"
-description = "Compute Billow Noise, mapped to the HSL color space"
-version = "0.0.3"
+name = "Organic"
+description = "Compute Super Simplex Noise, mapped to the HSL color space"
+version = "0.0.1"
 author = "The Eruption development team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.4"
 tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
@@ -15,13 +15,13 @@ default = 1.0
 type = 'float'
 name = 'time_scale'
 description = 'Scale of time axis (3rd coordinate of the noise function)'
-default = 250.0
+default = 400.0
 
 [[config]]
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
-default = 50.0
+default = 15.0
 
 [[config]]
 type = 'float'

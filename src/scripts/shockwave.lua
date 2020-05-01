@@ -437,7 +437,7 @@ end
 function on_tick(delta)
     ticks = ticks + delta + 1
 
-    local num_keys = get_num_keys()
+	local num_keys = get_num_keys()
 
 	-- propagate the shockwave
 	for i = 1, num_keys do
@@ -447,6 +447,7 @@ function on_tick(delta)
 			if state_map[i] <= key_state.shockwave_sentinel then
 				state_map[i] = key_state.idle
 			end
+
 		end
 
 		-- propagate wave effect
@@ -470,5 +471,5 @@ function on_tick(delta)
 		end
 	end
 
-    submit_color_map(color_map)
+	submit_color_map(color_map)
 end

@@ -2,7 +2,7 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.3
+Version: 0.1.4
 Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
@@ -78,10 +78,15 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/fireworks.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/psychedelic.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/twinkle.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -118,10 +123,15 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
+%{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
+%{_sharedstatedir}/%{ShortName}/profiles/batique.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile3.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile4.profile
+%{_sharedstatedir}/%{ShortName}/profiles/psychedelic.profile
+%{_sharedstatedir}/%{ShortName}/profiles/twinkle.profile
+%{_sharedstatedir}/%{ShortName}/profiles/rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
@@ -145,12 +155,16 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/audioviz5.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/billow.lua
 %{_datarootdir}/%{ShortName}/scripts/billow.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/organic.lua
+%{_datarootdir}/%{ShortName}/scripts/organic.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/batique.lua
 %{_datarootdir}/%{ShortName}/scripts/batique.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/fbm.lua
 %{_datarootdir}/%{ShortName}/scripts/fbm.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/perlin.lua
 %{_datarootdir}/%{ShortName}/scripts/perlin.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/psychedelic.lua
+%{_datarootdir}/%{ShortName}/scripts/psychedelic.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/voronoi.lua

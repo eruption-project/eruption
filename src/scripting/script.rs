@@ -90,7 +90,7 @@ pub enum ScriptingError {
 mod callbacks {
     use byteorder::{ByteOrder, LittleEndian};
     use log::*;
-    use noise::{Billow, Fbm, NoiseFn, OpenSimplex, Perlin, RidgedMulti, Worley};
+    use noise::{Billow, Fbm, NoiseFn, OpenSimplex, Perlin, RidgedMulti, SuperSimplex, Worley};
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
     use parking_lot::Mutex;
@@ -273,9 +273,27 @@ mod callbacks {
         noise.get([f1, f2, f3])
     }
 
-    /// Compute Open Simplex noise
-    pub(crate) fn open_simplex_noise(f1: f64, f2: f64, f3: f64) -> f64 {
+    /// Compute Open Simplex noise (2D)
+    pub(crate) fn open_simplex_noise_2d(f1: f64, f2: f64) -> f64 {
         let noise = OpenSimplex::new();
+        noise.get([f1, f2])
+    }
+
+    /// Compute Open Simplex noise (3D)
+    pub(crate) fn open_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = OpenSimplex::new();
+        noise.get([f1, f2, f3])
+    }
+
+    /// Compute Open Simplex noise (4D)
+    pub(crate) fn open_simplex_noise_4d(f1: f64, f2: f64, f3: f64, f4: f64) -> f64 {
+        let noise = OpenSimplex::new();
+        noise.get([f1, f2, f3, f4])
+    }
+
+    /// Compute Super Simplex noise (3D)
+    pub(crate) fn super_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
+        let noise = SuperSimplex::new();
         noise.get([f1, f2, f3])
     }
 
@@ -426,7 +444,7 @@ mod callbacks {
     /// Submit LED color map for later realization, as soon as the
     /// next frame is rendered
     pub(crate) fn submit_color_map(map: &[u32]) {
-        //debug!("submit_color_map: {}/{}", map.len(), NUM_KEYS);
+        // debug!("submit_color_map: {}/{}", map.len(), NUM_KEYS);
         assert!(map.len() == NUM_KEYS);
 
         let mut led_map = [RGBA {
@@ -708,6 +726,9 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let sin = lua_ctx.create_function(|_, a: f64| Ok(a.sin()))?;
     globals.set("sin", sin)?;
 
+    let cos = lua_ctx.create_function(|_, a: f64| Ok(a.cos()))?;
+    globals.set("cos", cos)?;
+
     let pow = lua_ctx.create_function(|_, (val, p): (f64, f64)| Ok(val.powf(p)))?;
     globals.set("pow", pow)?;
 
@@ -793,9 +814,24 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     globals.set("ridged_multifractal_noise", ridged_multifractal_noise)?;
 
     let open_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::open_simplex_noise(f1, f2, f3))
+        Ok(callbacks::open_simplex_noise_3d(f1, f2, f3))
     })?;
     globals.set("open_simplex_noise", open_simplex_noise)?;
+
+    let open_simplex_noise_2d = lua_ctx
+        .create_function(|_, (f1, f2): (f64, f64)| Ok(callbacks::open_simplex_noise_2d(f1, f2)))?;
+    globals.set("open_simplex_noise_2d", open_simplex_noise_2d)?;
+
+    let open_simplex_noise_4d =
+        lua_ctx.create_function(|_, (f1, f2, f3, f4): (f64, f64, f64, f64)| {
+            Ok(callbacks::open_simplex_noise_4d(f1, f2, f3, f4))
+        })?;
+    globals.set("open_simplex_noise_4d", open_simplex_noise_4d)?;
+
+    let super_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
+        Ok(callbacks::super_simplex_noise_3d(f1, f2, f3))
+    })?;
+    globals.set("super_simplex_noise", super_simplex_noise)?;
 
     // transformation utilities
     let rotate = lua_ctx.create_function(|_, (map, theta): (Vec<u32>, f64)| {

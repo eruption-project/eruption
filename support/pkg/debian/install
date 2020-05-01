@@ -15,10 +15,15 @@ support/man/eruption.conf.5 usr/share/man/man5/
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles
+support/profiles/fireworks.profile var/lib/eruption/profiles
 support/profiles/gaming.profile var/lib/eruption/profiles
+support/profiles/batique.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
 support/profiles/profile3.profile var/lib/eruption/profiles
 support/profiles/profile4.profile var/lib/eruption/profiles
+support/profiles/psychedelic.profile var/lib/eruption/profiles
+support/profiles/twinkle.profile var/lib/eruption/profiles
+support/profiles/rainbow.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
@@ -37,6 +42,8 @@ src/scripts/audioviz4.lua usr/share/eruption/scripts/
 src/scripts/audioviz4.lua.manifest usr/share/eruption/scripts/
 src/scripts/audioviz5.lua usr/share/eruption/scripts/
 src/scripts/audioviz5.lua.manifest usr/share/eruption/scripts/
+src/scripts/organic.lua usr/share/eruption/scripts/
+src/scripts/organic.lua.manifest usr/share/eruption/scripts/
 src/scripts/batique.lua usr/share/eruption/scripts/
 src/scripts/batique.lua.manifest usr/share/eruption/scripts/
 src/scripts/billow.lua usr/share/eruption/scripts/
@@ -59,6 +66,8 @@ src/scripts/multigradient.lua usr/share/eruption/scripts/
 src/scripts/multigradient.lua.manifest usr/share/eruption/scripts/
 src/scripts/perlin.lua usr/share/eruption/scripts/
 src/scripts/perlin.lua.manifest usr/share/eruption/scripts/
+src/scripts/psychedelic.lua usr/share/eruption/scripts/
+src/scripts/psychedelic.lua.manifest usr/share/eruption/scripts/
 src/scripts/rainbow.lua usr/share/eruption/scripts/
 src/scripts/rainbow.lua.manifest usr/share/eruption/scripts/
 src/scripts/raindrops.lua usr/share/eruption/scripts/

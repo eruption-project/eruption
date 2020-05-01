@@ -25,20 +25,26 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-    -- calculate batique effect
+    -- calculate organic effect
     if ticks % animation_delay == 0 then
+		local angle = open_simplex_noise_2d(ticks / time_scale, 42)	
+
         for i = 0, num_keys do
-            local x = i / num_rows
+			local x = i / num_rows
             local y = i / num_cols
 
-            local val = ridged_multifractal_noise(x / coord_scale,
-                                                    y / coord_scale,
-                                                    ticks / time_scale)
+            local x2 = (cos(angle) * x) - (sin(angle) * y)
+			local y2 = (sin(angle) * x) + (cos(angle) * y)
+			
+            local val = super_simplex_noise(x2 / coord_scale,
+							 			    y2 / coord_scale, 
+										    ticks / time_scale)
+
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                            color_saturation, color_lightness,
-                                            lerp(0, 255, opacity))
+                                         color_saturation, color_lightness,
+                                         lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

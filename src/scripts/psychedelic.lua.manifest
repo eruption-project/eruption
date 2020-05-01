@@ -1,8 +1,8 @@
-name = "Billow Noise"
-description = "Compute Billow Noise, mapped to the HSL color space"
-version = "0.0.3"
+name = "Psychedelic"
+description = "Compute Super Simplex Noise, mapped to the HSL color space"
+version = "0.0.1"
 author = "The Eruption development team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.4"
 tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
@@ -21,13 +21,19 @@ default = 250.0
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
-default = 50.0
+default = 15.0
 
 [[config]]
 type = 'float'
 name = 'color_saturation'
 description = 'Saturation in the range 0.0 .. 1.0'
 default = 1.0
+
+[[config]]
+type = 'float'
+name = 'saturation_boost'
+description = 'Saturation boost factor'
+default = 2.0
 
 [[config]]
 type = 'float'
@@ -46,6 +52,12 @@ type = 'float'
 name = 'color_offset'
 description = 'Offset resulting hue angle by color_offset. Final value will be mapped to the interval [0..360)'
 default = 0.0
+
+[[config]]
+type = 'float'
+name = 'color_boost'
+description = 'Color boost factor'
+default = 2.0
 
 [[config]]
 type = 'float'

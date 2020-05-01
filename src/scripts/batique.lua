@@ -17,6 +17,9 @@
 ticks = 0
 color_map = {}
 
+num_rows = 6
+num_cols = 22
+
 function on_tick(delta)
     ticks = ticks + delta + 1
 
@@ -25,10 +28,10 @@ function on_tick(delta)
     -- calculate batique effect
     if ticks % animation_delay == 0 then
         for i = 0, num_keys do
-            local x = i / 6
-            local y = i / 22
+            local x = i / num_rows
+            local y = i / num_cols
 
-            local val = open_simplex_noise(x / coord_scale,
+            local val = super_simplex_noise(x / coord_scale,
                                             y / coord_scale,
                                             ticks / time_scale)
             val = lerp(0, 360, val)

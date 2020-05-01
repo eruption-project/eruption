@@ -32,6 +32,7 @@ Eruption currently ships with the following library functions:
 | `delay(millis)`    | _core_  | Std  | since before 0.0.9 | Delay script execution for `millis` milliseconds |
 | `abs(f) -> f`    | _core_  | Math  | since before 0.0.9 | Returns the absolute value of `f` |
 | `sin(a) -> f`    | _core_  | Math  | since before 0.0.9 | Returns the sine of angle `a` |
+| `cos(a) -> f`    | _core_  | Math  | since 0.1.4 | Returns the cosine of angle `a` |
 | `pow(f, p) -> f`    | _core_  | Math  | since before 0.0.9 | Returns `f` to the power of `p` |
 | `sqrt(f) -> f`    | _core_  | Math  | since before 0.0.9 | Returns the square root of `f` |
 | `rand(l, h) -> f`    | _core_  | Math  | since before 0.0.9 | Returns a random number in the range `l..h` |
@@ -55,7 +56,10 @@ Eruption currently ships with the following library functions:
 | `voronoi_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes a Voronoi noise value |
 | `fractal_brownian_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes a Fractal Brownian Motion noise value |
 | `ridged_multifractal_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes a Ridged Multifractal noise value |
-| `open_simplex_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes an Open Simplex Noise value |
+| `open_simplex_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.0.11 | Computes an Open Simplex Noise value (3 dimensions) |
+| `open_simplex_noise_2d(f1, f2) -> f`    | _core_  | Noise | since 0.1.4 | Computes an Open Simplex Noise value (2 dimensions) |
+| `open_simplex_noise_4d(f1, f2, f3, f4) -> f`    | _core_  | Noise | since 0.1.4 | Computes an Open Simplex Noise value (4 dimensions) |
+| `super_simplex_noise(f1, f2, f3) -> f`    | _core_  | Noise | since 0.1.4 | Computes a Super Simplex Noise value |
 | `get_num_keys() -> i`    | _core_  | Hw  | since before 0.0.9 | Returns the number of keys of the connected device (Approx. 144) |
 | `get_key_color(key_index) -> color`    | _core_  | Hw  | since before 0.0.9 | Returns the current color of the key `key_index` |
 | `set_key_color(key_index, color)`    | _core_  | Hw  | since before 0.0.9 | Sets the current color of the key `key_index` to `color` |
