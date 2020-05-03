@@ -21,6 +21,9 @@
 -- global state variables --
 color_map = {}
 ticks = 0
+max_effect_ttl = 50
+
+effect_ttl = 0
 
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model
@@ -408,7 +411,7 @@ function on_startup(config)
 	end
 end
 
-function on_key_down(key_index)
+function on_key_down(key_index)	
 	color_map[key_index] = rgba_to_color(255, 255, 255, 255)
 
     for i = 0, max_neigh do
@@ -417,11 +420,15 @@ function on_key_down(key_index)
         if neigh_key ~= 0xff then
             color_map[neigh_key] = color_impact
         end
-    end
+	end
+	
+	effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+	ticks = ticks + delta + 1
+	
+	if effect_ttl <= 0 then return end
 
 	local num_keys = get_num_keys()
 
@@ -438,7 +445,9 @@ function on_tick(delta)
 				end
 			end
 		end
+
+		effect_ttl = effect_ttl - 1
 	end
 
-    submit_color_map(color_map)
+	submit_color_map(color_map)
 end

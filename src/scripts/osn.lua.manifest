@@ -1,5 +1,5 @@
-name = "Organic"
-description = "Compute Super Simplex Noise, mapped to the HSL color space"
+name = "Open Simplex Noise"
+description = "Compute Open Simplex Noise, mapped to the HSL color space"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.1.4"
@@ -21,7 +21,7 @@ default = 250.0
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
-default = 15.0
+default = 25.0
 
 [[config]]
 type = 'float'

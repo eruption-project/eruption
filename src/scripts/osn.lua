@@ -31,9 +31,9 @@ function on_tick(delta)
             local x = i / num_rows
             local y = i / num_cols
 
-            local val = gradient_noise_3d(x / coord_scale,
-                                            y / coord_scale,
-                                            ticks / time_scale)
+            local val = open_simplex_noise(x / coord_scale,
+                                           y / coord_scale,
+                                           ticks / time_scale)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

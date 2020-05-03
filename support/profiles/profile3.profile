@@ -1,5 +1,5 @@
 id = '5dc62fa6-e965-45cb-a0da-e87d29713097'
-name = "Profile 3"
+name = "Profile 3 (Spectrum Analyzer)"
 description = "Profile #3"
 active_scripts = [
 	'macros.lua',

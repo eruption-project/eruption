@@ -2,7 +2,7 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.4
+Version: 0.1.5
 Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
@@ -125,6 +125,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
+%{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile3.profile
@@ -135,6 +136,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
+%{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
@@ -177,12 +179,16 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/gaming.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/gradient.lua
 %{_datarootdir}/%{ShortName}/scripts/gradient.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/linear-gradient.lua
+%{_datarootdir}/%{ShortName}/scripts/linear-gradient.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/heartbeat.lua
 %{_datarootdir}/%{ShortName}/scripts/heartbeat.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/impact.lua
 %{_datarootdir}/%{ShortName}/scripts/impact.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/osn.lua
+%{_datarootdir}/%{ShortName}/scripts/osn.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rainbow.lua
 %{_datarootdir}/%{ShortName}/scripts/rainbow.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/raindrops.lua
@@ -197,6 +203,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/turbulence.lua
+%{_datarootdir}/%{ShortName}/scripts/turbulence.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/water.lua
 %{_datarootdir}/%{ShortName}/scripts/water.lua.manifest
 %{_datarootdir}/%{ShortName}/sfx/typewriter1.wav

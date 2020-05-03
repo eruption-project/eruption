@@ -15,4 +15,4 @@ value = 4.0
 [[config.Batique]]
 type = 'float'
 name = 'color_offset'
-value = 320.0
+value = 260.0

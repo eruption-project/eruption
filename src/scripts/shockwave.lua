@@ -26,6 +26,9 @@ key_state = {
 	shockwave_origin = 32,
 }
 
+max_effect_ttl = 50
+effect_ttl = 0
+
 -- max ttl of a shockwave cell
 shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
 shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / 6
@@ -432,10 +435,14 @@ function on_key_down(key_index)
 			state_map[neigh_key] = key_state.shockwave_origin
 		end
 	end
+
+	effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+	ticks = ticks + delta + 1
+	
+	if effect_ttl <= 0 then return end
 
 	local num_keys = get_num_keys()
 
@@ -470,6 +477,8 @@ function on_tick(delta)
 			end
 		end
 	end
+
+	effect_ttl = effect_ttl - 1
 
 	submit_color_map(color_map)
 end

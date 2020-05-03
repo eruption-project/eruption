@@ -17,6 +17,9 @@
 color_map = {}
 color_map_glow = {}
 ticks = 0
+max_effect_ttl = 50
+
+effect_ttl = 0
 
 -- event handler functions --
 function on_startup(config)
@@ -27,10 +30,14 @@ end
 
 function on_key_down(key_index)
    color_map[key_index] = rgba_to_color(255, 255, 255, 255) -- color_afterglow
+
+   effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+	ticks = ticks + delta + 1
+	
+	if effect_ttl <= 0 then return end
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
@@ -44,6 +51,8 @@ function on_tick(delta)
 				color_map[i] = 0x000000000
 			end
 		end
+
+		effect_ttl = effect_ttl - 1
 
 		submit_color_map(color_map)
     end

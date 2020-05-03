@@ -1,0 +1,42 @@
+name = "Gradient"
+description = "Display a linear color gradient"
+version = "0.0.2"
+author = "The Eruption development team"
+min_supported_version = "0.0.12"
+tags = ['Background', 'Vendor', 'Gradient']
+
+[[config]]
+type = 'color'
+name = 'color_start'
+description = 'Gradient start'
+default = 0xffff0000
+
+[[config]]
+type = 'color'
+name = 'color_end'
+description = 'Gradient stop'
+default = 0xff0000ff
+
+[[config]]
+type = 'int'
+name = 'color_divisor'
+description = 'Divisor'
+default = 256
+
+[[config]]
+type = 'bool'
+name = 'animate_gradient'
+description = 'Enable animation'
+default = true
+
+[[config]]
+type = 'float'
+name = 'gradient_step'
+description = 'Update gradient every [n] frames'
+default = 1
+
+[[config]]
+type = 'float'
+name = 'gradient_speed'
+description = 'Animation speed'
+default = 1

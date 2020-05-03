@@ -38,8 +38,7 @@ function on_tick(delta)
 			
             local val = super_simplex_noise(x2 / coord_scale,
 							 			    y2 / coord_scale, 
-										    ticks / time_scale)
-
+                                            ticks / time_scale)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

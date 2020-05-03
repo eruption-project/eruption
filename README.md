@@ -285,20 +285,23 @@ Eruption currently ships with the following Lua scripts:
 | --------- | ---------- |----------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Afterglow | Effect     | `afterglow.lua` | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                         |
 | Afterhue  | Effect     | `afterhue.lua`  | Ready  | Hit keys cycle through the HSL color-space, using a linearly decreasing hue angle                              |
-| Batique   | Background | `batique.lua`   | Ready  | Batique effect, based on the Super Simplex Noise function that serves as input to get a HSL color             |
-| Billow    | Background | `billow.lua`    | Ready  | Effect based on the Billow noise function that serves as input to produce a HSL color                        |
-| Fractal Brownian Motion | Background | `fbm.lua` | Ready | Effect based on the Fractal Brownian Motion noise function that serves as input to produce a HSL color |
-| Organic   | Background | `organic.lua`   | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                |
-| Perlin Noise | Background | `perlin.lua` | Ready | Effect based on the Perlin Noise function that serves as input to produce a HSL color                          |
-| Psychedelic | Background | `psychedelic.lua`     | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color          |
+| Batique   | Background | `batique.lua`   | Ready  | Batique effect, based on the Super Simplex Noise function that serves as input to get a HSL color              |
+| Open Simplex Noise | Background | `osn.lua`   | Ready  | Effect based on the Open simplex noise function that serves as input to produce a HSL color               |
+| Billow    | Background | `billow.lua`    | Ready  | Effect based on the Billow noise function that serves as input to produce a HSL color                          |
+| Fractal Brownian Motion | Background | `fbm.lua` | Ready | Effect based on the Fractal Brownian Motion noise function that serves as input to produce a HSL color  |
+| Organic   | Background | `organic.lua`   | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                   |
+| Perlin Noise | Background | `perlin.lua` | Ready | Effect based on the Perlin Noise function that serves as input to produce a HSL color                           |
+| Psychedelic | Background | `psychedelic.lua`     | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color           |
 | Ridged Multifractal Noise | Background |  `rmf.lua` | Ready | Effect based on the Ridged Multifractal noise function that serves as input to produce a HSL color   |
-| Voronoi | Background | `voronoi.lua` | Ready | Effect based on the Voronoi noise function that serves as input to produce a HSL color                             |
+| Voronoi | Background | `voronoi.lua` | Ready | Effect based on the Voronoi noise function that serves as input to produce a HSL color                              |
 | Heartbeat | Effect     | `heartbeat.lua` | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                                |
 | Impact    | Effect     | `impact.lua`    | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out   |
 | Raindrops | Effect     | `raindrops.lua` | Ready  | Rain effect, randomly light up keys and fade them out again                                                    |
-| Solid     | Background | `solid.lua`    | Ready  | Display a solid color                                                                                        |
-| Rainbow   | Background | `rainbow.lua`  | Ready  | Display a rainbow color gradient                                                                             |
-| Stripes   | Background | `stripes.lua`  | Ready  | Display horizontal stripes of multiple colors                                                                |
+| Solid     | Background | `solid.lua`    | Ready  | Display a solid color                                                                                           |
+| Rainbow   | Background | `rainbow.lua`  | Ready  | Display a rainbow color gradient                                                                                |
+| Stripes   | Background | `stripes.lua`  | Ready  | Display horizontal stripes of multiple colors                                                                   |
+| Gradient   | Background | `gradient.lua`  | Ready  | Gradient Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                     |
+| Turbulence | Background | `turbulence.lua`  | Ready  | Turbulence Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                 |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:
 
@@ -308,7 +311,7 @@ The following scripts are unfinished/still in development, and some of them have
 | Fireworks   | Background |`fireworks.lua`   | Approx. 85% done | Shows a fireworks effect on the keyboard                                                             |
 | Water       | Effect     |`water.lua`       | Approx. 95% done | Shows a water effect on the keyboard                                                                 |
 | Gaming      | Effect     |`gaming.lua`      | Approx. 85% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                      |
-| Gradient    | Background | `gradient.lua`    | Approx. 95% done | Display a color gradient                                                                            |
+| Linear Gradient | Background | `linear-gradient.lua`    | Approx. 95% done | Display a color gradient                                                                            |
 | Multi Gradient | Background | `multigradient.lua` | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                     |
 | Shockwave   | Effect     |`shockwave.lua`   | Approx. 85% done | Like Impact, but shows propagating waves when a key has been pressed                                 |
 | Sysmon      | Background | `sysmon.lua`      | Approx. 10% done | System monitor, keyboard reflects system state                                                      |

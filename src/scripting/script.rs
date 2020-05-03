@@ -90,7 +90,7 @@ pub enum ScriptingError {
 mod callbacks {
     use byteorder::{ByteOrder, LittleEndian};
     use log::*;
-    use noise::{Billow, Fbm, NoiseFn, OpenSimplex, Perlin, RidgedMulti, SuperSimplex, Worley};
+    use noise::NoiseFn;
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
     use parking_lot::Mutex;
@@ -243,57 +243,77 @@ mod callbacks {
         )
     }
 
+    /// Compute Gradient noise (SIMD)
+    pub(crate) fn gradient_noise_2d_simd(f1: f32, f2: f32) -> f32 {
+        simdnoise::NoiseBuilder::gradient_2d_offset(f1, 2, f2, 2).generate_scaled(0.0, 1.0)[0]
+    }
+
+    pub(crate) fn gradient_noise_3d_simd(f1: f32, f2: f32, f3: f32) -> f32 {
+        simdnoise::NoiseBuilder::gradient_3d_offset(f1, 2, f2, 2, f3, 2).generate_scaled(0.0, 1.0)
+            [0]
+    }
+
+    /// Compute Turbulence noise (SIMD)
+    pub(crate) fn turbulence_noise_2d_simd(f1: f32, f2: f32) -> f32 {
+        simdnoise::NoiseBuilder::turbulence_2d_offset(f1, 2, f2, 2).generate_scaled(0.0, 1.0)[0]
+    }
+
+    pub(crate) fn turbulence_noise_3d_simd(f1: f32, f2: f32, f3: f32) -> f32 {
+        simdnoise::NoiseBuilder::turbulence_3d_offset(f1, 2, f2, 2, f3, 2).generate_scaled(0.0, 1.0)
+            [0]
+    }
+
     /// Compute Perlin noise
     pub(crate) fn perlin_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = Perlin::new();
+        let noise = noise::Perlin::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Billow noise
     pub(crate) fn billow_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = Billow::new();
+        let noise = noise::Billow::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Worley (Voronoi) noise
     pub(crate) fn voronoi_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = Worley::new();
+        let noise = noise::Worley::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Fractal Brownian Motion noise
     pub(crate) fn fractal_brownian_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = Fbm::new();
+        let noise = noise::Fbm::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Ridged Multifractal noise
     pub(crate) fn ridged_multifractal_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = RidgedMulti::new();
+        let noise = noise::RidgedMulti::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Open Simplex noise (2D)
     pub(crate) fn open_simplex_noise_2d(f1: f64, f2: f64) -> f64 {
-        let noise = OpenSimplex::new();
+        let noise = noise::OpenSimplex::new();
         noise.get([f1, f2])
     }
 
     /// Compute Open Simplex noise (3D)
     pub(crate) fn open_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = OpenSimplex::new();
+        let noise = noise::OpenSimplex::new();
         noise.get([f1, f2, f3])
     }
 
     /// Compute Open Simplex noise (4D)
     pub(crate) fn open_simplex_noise_4d(f1: f64, f2: f64, f3: f64, f4: f64) -> f64 {
-        let noise = OpenSimplex::new();
+        let noise = noise::OpenSimplex::new();
         noise.get([f1, f2, f3, f4])
     }
 
     /// Compute Super Simplex noise (3D)
     pub(crate) fn super_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = SuperSimplex::new();
+        let noise = noise::SuperSimplex::new();
         noise.get([f1, f2, f3])
     }
 
@@ -650,7 +670,7 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
     config.insert("daemon_version", env!("CARGO_PKG_VERSION"));
-    config.insert("api_level", "0.1.1");
+    config.insert("api_level", env!("CARGO_PKG_VERSION"));
 
     globals.set("config", config)?;
 
@@ -787,6 +807,28 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     globals.set("linear_gradient", linear_gradient)?;
 
     // noise utilities
+
+    // fast implementations (SIMD implementation)
+    let gradient_noise_2d = lua_ctx
+        .create_function(|_, (f1, f2): (f32, f32)| Ok(callbacks::gradient_noise_2d_simd(f1, f2)))?;
+    globals.set("gradient_noise_2d", gradient_noise_2d)?;
+
+    let gradient_noise_3d = lua_ctx.create_function(|_, (f1, f2, f3): (f32, f32, f32)| {
+        Ok(callbacks::gradient_noise_3d_simd(f1, f2, f3))
+    })?;
+    globals.set("gradient_noise_3d", gradient_noise_3d)?;
+
+    let turbulence_noise_2d = lua_ctx.create_function(|_, (f1, f2): (f32, f32)| {
+        Ok(callbacks::turbulence_noise_2d_simd(f1, f2))
+    })?;
+    globals.set("turbulence_noise_2d", turbulence_noise_2d)?;
+
+    let turbulence_noise_3d = lua_ctx.create_function(|_, (f1, f2, f3): (f32, f32, f32)| {
+        Ok(callbacks::turbulence_noise_3d_simd(f1, f2, f3))
+    })?;
+    globals.set("turbulence_noise_3d", turbulence_noise_3d)?;
+
+    // slow implementations (without use of SIMD)
     let perlin_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
         Ok(callbacks::perlin_noise(f1, f2, f3))
     })?;

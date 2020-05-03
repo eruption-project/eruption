@@ -31,7 +31,7 @@ function on_tick(delta)
             local x = i / num_rows
             local y = i / num_cols
 
-            local val = gradient_noise_3d(x / coord_scale,
+            local val = turbulence_noise_3d(x / coord_scale,
                                             y / coord_scale,
                                             ticks / time_scale)
             val = lerp(0, 360, val)

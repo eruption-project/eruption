@@ -15,6 +15,9 @@
 
 -- global state variables --
 color_map = {}
+max_effect_ttl = 50
+
+effect_ttl = 0
 
 -- holds a scalar field to simulate fireworks
 fireworks_grid = {}
@@ -345,11 +348,15 @@ function on_key_down(key_index)
       if neigh_key ~= 0xff then
           fireworks_grid[neigh_key] = 1.0
       end
-    end
+	end
+	
+	effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+	ticks = ticks + delta + 1
+	
+	if effect_ttl <= 0 then return end
 
     -- calculate fireworks effect
     local num_keys = get_num_keys()
@@ -388,6 +395,8 @@ function on_tick(delta)
 				end
             end
         end
+
+		effect_ttl = effect_ttl - 1
 
 		submit_color_map(color_map)
     end

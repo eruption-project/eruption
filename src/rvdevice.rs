@@ -129,9 +129,9 @@ impl RvDeviceState {
             {
                 let product_string = device.product_string().clone().unwrap_or_else(|| {
                     error!("Could not query device information");
-                    "<unknown>".into()
+                    "<unknown>"
                 });
-                let path = device.path().clone();
+                let path = device.path();
 
                 found_ctrl_dev = true;
                 ctrl_device = Some(device);
@@ -143,9 +143,9 @@ impl RvDeviceState {
             {
                 let product_string = device.product_string().clone().unwrap_or_else(|| {
                     error!("Could not query device information");
-                    "<unknown>".into()
+                    "<unknown>"
                 });
-                let path = device.path().clone();
+                let path = device.path();
 
                 found_led_dev = true;
                 led_device = Some(device);

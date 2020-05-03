@@ -17,6 +17,7 @@ support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles
 support/profiles/fireworks.profile var/lib/eruption/profiles
 support/profiles/gaming.profile var/lib/eruption/profiles
+support/profiles/gradient-noise.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
 support/profiles/profile3.profile var/lib/eruption/profiles
@@ -27,6 +28,7 @@ support/profiles/rainbow.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
+support/profiles/turbulence.profile var/lib/eruption/profiles
 
 src/scripts/afterglow.lua usr/share/eruption/scripts/
 src/scripts/afterglow.lua.manifest usr/share/eruption/scripts/
@@ -58,12 +60,16 @@ src/scripts/gaming.lua usr/share/eruption/scripts/
 src/scripts/gaming.lua.manifest usr/share/eruption/scripts/
 src/scripts/gradient.lua usr/share/eruption/scripts/
 src/scripts/gradient.lua.manifest usr/share/eruption/scripts/
+src/scripts/linear-gradient.lua usr/share/eruption/scripts/
+src/scripts/linear-gradient.lua.manifest usr/share/eruption/scripts/
 src/scripts/heartbeat.lua usr/share/eruption/scripts/
 src/scripts/heartbeat.lua.manifest usr/share/eruption/scripts/
 src/scripts/impact.lua usr/share/eruption/scripts/
 src/scripts/impact.lua.manifest usr/share/eruption/scripts/
 src/scripts/multigradient.lua usr/share/eruption/scripts/
 src/scripts/multigradient.lua.manifest usr/share/eruption/scripts/
+src/scripts/osn.lua usr/share/eruption/scripts/
+src/scripts/osn.lua.manifest usr/share/eruption/scripts/
 src/scripts/perlin.lua usr/share/eruption/scripts/
 src/scripts/perlin.lua.manifest usr/share/eruption/scripts/
 src/scripts/psychedelic.lua usr/share/eruption/scripts/
@@ -82,6 +88,8 @@ src/scripts/sysmon.lua usr/share/eruption/scripts/
 src/scripts/sysmon.lua.manifest usr/share/eruption/scripts/
 src/scripts/temperature.lua usr/share/eruption/scripts/
 src/scripts/temperature.lua.manifest usr/share/eruption/scripts/
+src/scripts/turbulence.lua usr/share/eruption/scripts/
+src/scripts/turbulence.lua.manifest usr/share/eruption/scripts/
 src/scripts/voronoi.lua usr/share/eruption/scripts/
 src/scripts/voronoi.lua.manifest usr/share/eruption/scripts/
 src/scripts/water.lua usr/share/eruption/scripts/

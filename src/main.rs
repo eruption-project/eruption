@@ -348,7 +348,7 @@ fn spawn_lua_thread(
     let builder = thread::Builder::new().name(format!(
         "{}:{}",
         thread_idx,
-        script_path.clone().file_name().unwrap().to_string_lossy(),
+        script_path.file_name().unwrap().to_string_lossy(),
     ));
     builder
         .spawn(move || -> Result<()> {

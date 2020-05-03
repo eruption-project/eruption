@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
@@ -22,7 +22,7 @@ prctl = "1.0.0"
 log = "0.4.8"
 parking_lot = { version = "0.10.2", features = ["deadlock_detection"] }
 pretty_env_logger = "0.4.0"
-failure = "0.1.7"
+failure = "0.1.8"
 toml = "0.5.6"
 serde = { version = "1.0.106", features = ["derive"] }
 ctrlc = { version = "3.1.4", features = ["termination"] }
@@ -42,6 +42,7 @@ rand = "0.7.3"
 palette = "0.5.0"
 nalgebra = "0.21.0"
 noise = "0.6.0"
+simdnoise = "3.1.4"
 interpolation = "0.2.0"
 rlua = "0.17.0"
 sysinfo = "0.14.1"
