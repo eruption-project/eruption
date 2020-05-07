@@ -22,8 +22,10 @@ function on_startup(config)
       r, g, b, alpha = color_to_rgba(color_background)
       color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
   end
-end
 
-function on_tick(delta)
   submit_color_map(color_map)
 end
+
+-- function on_tick(delta)
+--   submit_color_map(color_map)
+-- end

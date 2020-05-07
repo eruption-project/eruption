@@ -25,7 +25,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
@@ -58,6 +58,9 @@ lazy_static! {
         b: 0x00,
         a: 0x00,
     }; NUM_KEYS]));
+
+    // Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
+    pub static ref FRAME_GENERATION_COUNTER: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
 }
 
 thread_local! {
@@ -266,55 +269,55 @@ mod callbacks {
     /// Compute Perlin noise
     pub(crate) fn perlin_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::Perlin::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Billow noise
     pub(crate) fn billow_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::Billow::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Worley (Voronoi) noise
     pub(crate) fn voronoi_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::Worley::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Fractal Brownian Motion noise
     pub(crate) fn fractal_brownian_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::Fbm::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Ridged Multifractal noise
     pub(crate) fn ridged_multifractal_noise(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::RidgedMulti::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Open Simplex noise (2D)
     pub(crate) fn open_simplex_noise_2d(f1: f64, f2: f64) -> f64 {
         let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2])
+        noise.get([f1, f2]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Open Simplex noise (3D)
     pub(crate) fn open_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Open Simplex noise (4D)
     pub(crate) fn open_simplex_noise_4d(f1: f64, f2: f64, f3: f64, f4: f64) -> f64 {
         let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2, f3, f4])
+        noise.get([f1, f2, f3, f4]).abs() // / 2.0 + 0.5
     }
 
     /// Compute Super Simplex noise (3D)
     pub(crate) fn super_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
         let noise = noise::SuperSimplex::new();
-        noise.get([f1, f2, f3])
+        noise.get([f1, f2, f3]).abs() // / 2.0 + 0.5
     }
 
     use nalgebra as na;
@@ -490,6 +493,7 @@ mod callbacks {
         }
 
         LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
+        super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
     }
 }
 
@@ -762,8 +766,8 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
     globals.set("trunc", trunc)?;
 
-    let lerp =
-        lua_ctx.create_function(|_, (a0, a1, w): (f64, f64, f64)| Ok((1.0 - w) * a0 + w * a1))?;
+    // let lerp = lua_ctx.create_function(|_, (a0, a1, w): (f64, f64, f64)| Ok((1.0 - w) * a0 + w * a1))?; // precise version
+    let lerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| Ok(v0 + t * (v1 - v0)))?;
     globals.set("lerp", lerp)?;
 
     // keyboard state and macros

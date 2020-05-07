@@ -21,7 +21,7 @@
 -- global state variables --
 color_map = {}
 ticks = 0
-max_effect_ttl = 50
+max_effect_ttl = 60
 
 effect_ttl = 0
 

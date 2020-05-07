@@ -25,15 +25,16 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-    -- calculate batique effect
+    -- calculate perlin noise effect
     if ticks % animation_delay == 0 then
         for i = 0, num_keys do
             local x = i / num_rows
             local y = i / num_cols
 
             local val = perlin_noise(x / coord_scale,
-                                        y / coord_scale,
-                                        ticks / time_scale)
+                                     y / coord_scale,
+                                     ticks / time_scale)
+
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

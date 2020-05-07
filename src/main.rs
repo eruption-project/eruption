@@ -34,7 +34,7 @@ use std::convert::TryInto;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process;
-use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
@@ -469,6 +469,9 @@ fn run_main_loop(
     // main loop iterations, monotonic counter
     let mut ticks = 0;
 
+    // stores the generation number of the frame that is currently visible on the keyboard
+    let saved_frame_generation = AtomicUsize::new(0);
+
     // used to calculate frames per second
     let mut fps_cntr = 0;
     let mut fps_timer = Instant::now();
@@ -567,56 +570,66 @@ fn run_main_loop(
                 .unwrap_or_else(|e| error!("Send error: {}", e));
         }
 
-        let mut drop_frame = false;
+        let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
 
-        // execute render "pipeline" now
-        // first, clear the canvas
-        script::LED_MAP.lock().copy_from_slice(
-            &[rvdevice::RGBA {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            }; rvdevice::NUM_KEYS],
-        );
+        // instruct the Lua VMs to realize their color maps, but only if at least one VM
+        // submitted a new map (performed a frame generation increment)
+        if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+            let mut drop_frame = false;
+            // execute render "pipeline" now
+            // first, clear the canvas
+            script::LED_MAP.lock().copy_from_slice(
+                &[rvdevice::RGBA {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    a: 0,
+                }; rvdevice::NUM_KEYS],
+            );
 
-        // instruct Lua VMs to realize their color maps, e.g. to blend their
-        // local color maps with the canvas
-        *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len();
+            // instruct Lua VMs to realize their color maps, e.g. to blend their
+            // local color maps with the canvas
+            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len();
 
-        for lua_tx in LUA_TXS.lock().iter() {
-            // guarantee the right order of execution for the alpha blend
-            // operations, so we have to wait for the current Lua VM to
-            // complete its blending code, before continuing
-            let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
+            for lua_tx in LUA_TXS.lock().iter() {
+                // guarantee the right order of execution for the alpha blend
+                // operations, so we have to wait for the current Lua VM to
+                // complete its blending code, before continuing
+                let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
 
-            lua_tx
-                .send(script::Message::RealizeColorMap)
-                .unwrap_or_else(|e| error!("Send error: {}", e));
+                lua_tx
+                    .send(script::Message::RealizeColorMap)
+                    .unwrap_or_else(|e| error!("Send error: {}", e));
 
-            // yield to thread
+                // yield to thread
+                //thread::sleep(Duration::from_millis(0));
+
+                let result = COLOR_MAPS_READY_CONDITION
+                    .1
+                    .wait_for(&mut pending, Duration::from_millis(50));
+
+                if result.timed_out() {
+                    drop_frame = true;
+                    warn!("Frame dropped: Timeout while waiting for a lock!");
+                    break;
+                }
+            }
+
+            // yield main thread
             //thread::sleep(Duration::from_millis(0));
 
-            let result = COLOR_MAPS_READY_CONDITION
-                .1
-                .wait_for(&mut pending, Duration::from_millis(50));
+            // number of pending blend ops should have reached zero by now
+            //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
 
-            if result.timed_out() {
-                drop_frame = true;
-                warn!("Frame dropped: Timeout while waiting for a lock!");
-                break;
+            // send the final (combined) color map to the keyboard
+            if !drop_frame {
+                rvdevice
+                    .send_led_map(&script::LED_MAP.lock())
+                    .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
+
+                // we successfully updated the keyboard state, so store the current frame generation as the "currently active" one
+                saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
             }
-        }
-
-        // yield main thread
-        //thread::sleep(Duration::from_millis(0));
-        // number of pending blend ops should have reached zero by now
-        //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
-        // send the final (combined) color map to the keyboard
-        if !drop_frame {
-            rvdevice
-                .send_led_map(&script::LED_MAP.lock())
-                .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
         }
 
         // sync to MAIN_LOOP_DELAY_MILLIS iteration time

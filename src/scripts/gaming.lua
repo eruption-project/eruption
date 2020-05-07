@@ -23,12 +23,7 @@ function on_startup(config)
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
-end
 
-function on_tick(delta)
-    ticks = ticks + delta + 1
-
-    local num_keys = get_num_keys()
 
     -- highlight WASD keys
     color_map[9]  = color_highlight
@@ -38,3 +33,8 @@ function on_tick(delta)
 
     submit_color_map(color_map)
 end
+
+-- function on_tick(delta)
+--     ticks = ticks + delta + 1
+--     submit_color_map(color_map)
+-- end
