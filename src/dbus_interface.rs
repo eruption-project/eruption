@@ -30,6 +30,7 @@ use std::sync::Arc;
 use crate::constants;
 use crate::plugins::audio;
 use crate::profiles;
+use crate::script;
 use crate::CONFIG;
 
 /// D-Bus messages and signals that are processed by the main thread
@@ -132,6 +133,8 @@ impl DbusApi {
             })
             .on_set(|i, _m| {
                 crate::BRIGHTNESS.store(i.read::<i64>()? as isize, Ordering::SeqCst);
+                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
                 Ok(())
             });
 
