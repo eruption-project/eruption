@@ -950,7 +950,7 @@ fn main() {
     let mut profile_file = PathBuf::from(&profile_name);
     profile_file.set_extension("profile");
 
-    let profile_file = PathBuf::from(&profile_dir).join(&profile_file);
+    let config_profile_file = PathBuf::from(&profile_dir).join(&profile_file);
 
     // try to load saved profile state
     let state = state::STATE.read();
@@ -958,9 +958,18 @@ fn main() {
         .as_ref()
         .unwrap()
         .get("profile")
-        .unwrap_or_else(|_| profile_file);
+        .unwrap_or_else(|_| config_profile_file.clone());
 
-    let profile_file = PathBuf::from(&profile_dir).join(saved_profile);
+    let saved_profile_file = PathBuf::from(&profile_dir).join(saved_profile);
+
+    let profile_file = if matches.value_of("profile").is_none() {
+        // no command line arguments specified, so use the saved state or fall
+        // back to values from the .conf file and otherwise to 'default.profile'
+        saved_profile_file
+    } else {
+        // use the command line argument or .conf file entry
+        config_profile_file
+    };
 
     // finally, load the profile
     trace!("Loading profile data from '{}'", profile_file.display());
@@ -976,7 +985,7 @@ fn main() {
 
     info!("Loaded profile: {}", &profile.name);
 
-    // active sript files
+    // active script files
     //let default_script_files: Vec<PathBuf> = config
     //.get_array("global.script_files")
     //.unwrap_or_else(|_| vec![constants::DEFAULT_EFFECT_SCRIPT.into()])
