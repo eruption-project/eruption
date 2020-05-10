@@ -18,7 +18,7 @@
 use failure::{Error, Fail};
 
 use lazy_static::lazy_static;
-//use log::*;
+use log::*;
 use parking_lot::RwLock;
 use serde::Serialize;
 use std::fs;
@@ -48,12 +48,23 @@ lazy_static! {
 #[derive(Serialize)]
 #[serde(rename_all = "lowercase")]
 struct State {
-    profile: String,
+    active_slot: usize,
+    profiles: Vec<PathBuf>,
     enable_sfx: bool,
     brightness: i64,
 }
 
 pub fn init_global_runtime_state() -> Result<()> {
+    // initialize runtime state to sane defaults
+    let mut profiles = crate::SLOT_PROFILES.lock();
+    profiles.replace(vec![
+        PathBuf::from("profile1.profile"),
+        PathBuf::from("profile2.profile"),
+        PathBuf::from("profile3.profile"),
+        PathBuf::from("profile4.profile"),
+    ]);
+
+    // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
     let state = config::Config::default();
@@ -63,14 +74,16 @@ pub fn init_global_runtime_state() -> Result<()> {
         .write()
         .as_mut()
         .unwrap()
-        .set_default("profile", "default.profile")
+        .set_default("active_slot", 0)
         .unwrap();
+
     STATE
         .write()
         .as_mut()
         .unwrap()
         .set_default("enable_sfx", false)
         .unwrap();
+
     STATE
         .write()
         .as_mut()
@@ -98,6 +111,27 @@ pub fn init_global_runtime_state() -> Result<()> {
         Ordering::SeqCst,
     );
 
+    STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get("profiles")
+        .and_then(|p| {
+            profiles.replace(p);
+            Ok(())
+        })
+        .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
+
+    crate::ACTIVE_SLOT.store(
+        STATE
+            .read()
+            .as_ref()
+            .unwrap()
+            .get::<usize>("active_slot")
+            .unwrap() as usize,
+        Ordering::SeqCst,
+    );
+
     crate::BRIGHTNESS.store(
         STATE
             .read()
@@ -115,16 +149,8 @@ pub fn save_runtime_state() -> Result<()> {
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
     let config = State {
-        profile: crate::ACTIVE_PROFILE
-            .lock()
-            .as_ref()
-            .unwrap()
-            .profile_file
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_owned(),
+        active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
+        profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
     };

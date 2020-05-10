@@ -17,12 +17,17 @@
 
 use evdev_rs::{Device, GrabMode};
 use failure::Fail;
+use lazy_static::lazy_static;
 use log::*;
 use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fs::File;
 use std::sync::atomic::Ordering;
+use std::sync::{Arc, RwLock};
+
+use crate::rvdevice;
+use crate::util;
 
 use crate::plugins::macros;
 
@@ -45,6 +50,11 @@ pub enum KeyboardPluginError {
     EvdevHandleError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
+}
+
+lazy_static! {
+    static ref KEY_STATES: Arc<RwLock<Vec<bool>>> =
+        Arc::new(RwLock::new(vec![false; rvdevice::NUM_KEYS]));
 }
 
 thread_local! {
@@ -116,6 +126,16 @@ impl KeyboardPlugin {
                     // reset "to be dropped" flag
                     macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
 
+                    // update our internal representation of the keyboard state
+                    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
+                        let is_pressed = k.1.value > 0;
+                        let index = util::ev_key_to_key_index(code.clone()) as usize;
+
+                        KEY_STATES.write().unwrap()[index] = is_pressed;
+                    } else {
+                        // error!("Invalid event code received")
+                    }
+
                     Ok(k)
                 }
 
@@ -137,6 +157,10 @@ impl KeyboardPlugin {
             _ => Ok(None),
         }
     }
+
+    pub(crate) fn get_key_state(key_index: usize) -> bool {
+        KEY_STATES.read().unwrap()[key_index]
+    }
 }
 
 impl Plugin for KeyboardPlugin {
@@ -152,7 +176,13 @@ impl Plugin for KeyboardPlugin {
         Ok(())
     }
 
-    fn register_lua_funcs(&self, _lua_ctx: Context) -> rlua::Result<()> {
+    fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
+        let globals = lua_ctx.globals();
+
+        let get_key_state = lua_ctx
+            .create_function(|_, key_index: usize| Ok(KeyboardPlugin::get_key_state(key_index)))?;
+        globals.set("get_key_state", get_key_state)?;
+
         Ok(())
     }
 

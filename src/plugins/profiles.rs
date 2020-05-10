@@ -18,6 +18,7 @@
 //use failure::Fail;
 use rlua::Context;
 use std::any::Any;
+use std::sync::atomic::Ordering;
 
 use crate::plugins;
 use crate::plugins::Plugin;
@@ -37,6 +38,16 @@ impl ProfilesPlugin {
     pub fn new() -> Self {
         ProfilesPlugin {}
     }
+
+    pub(crate) fn get_current_slot() -> usize {
+        crate::ACTIVE_SLOT.load(Ordering::SeqCst)
+    }
+
+    pub(crate) fn switch_to_slot(index: usize) {
+        // the main loop will switch the active profile when it
+        // detects, that ACTIVE_SLOT has been changed
+        crate::ACTIVE_SLOT.store(index, Ordering::SeqCst);
+    }
 }
 
 impl Plugin for ProfilesPlugin {
@@ -52,8 +63,16 @@ impl Plugin for ProfilesPlugin {
         Ok(())
     }
 
-    fn register_lua_funcs(&self, _lua_ctx: Context) -> rlua::Result<()> {
-        // let globals = lua_ctx.globals();
+    fn register_lua_funcs(&self, lua_ctx: Context) -> rlua::Result<()> {
+        let globals = lua_ctx.globals();
+
+        let get_current_slot =
+            lua_ctx.create_function(move |_, ()| Ok(ProfilesPlugin::get_current_slot()))?;
+        globals.set("get_current_slot", get_current_slot)?;
+
+        let switch_to_slot = lua_ctx
+            .create_function(move |_, index: usize| Ok(ProfilesPlugin::switch_to_slot(index)))?;
+        globals.set("switch_to_slot", switch_to_slot)?;
 
         Ok(())
     }

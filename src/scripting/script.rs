@@ -634,7 +634,7 @@ pub fn run_script(
                             //return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
                             //}
                             Message::Unload => {
-                                debug!("TerminatedGracefully");
+                                debug!("Terminated gracefully");
 
                                 //if let Ok(handler) =
                                 //lua_ctx.globals().get::<_, Function>("on_quit")

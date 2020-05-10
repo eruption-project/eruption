@@ -20,6 +20,8 @@ use rlua::Context;
 use std::any::Any;
 // use failure::Fail;
 
+use std::process::Command;
+
 use crate::plugins;
 use crate::plugins::Plugin;
 
@@ -41,7 +43,7 @@ impl SystemPlugin {
     }
 
     /// Get the system's load average of the last minute
-    pub fn get_current_load_avg_1() -> f32 {
+    pub(crate) fn get_current_load_avg_1() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
                 error!("Could not gather status information: {}", e);
@@ -51,7 +53,7 @@ impl SystemPlugin {
     }
 
     /// Get the system's load average of the last 5 minutes
-    pub fn get_current_load_avg_5() -> f32 {
+    pub(crate) fn get_current_load_avg_5() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
                 error!("Could not gather status information: {}", e);
@@ -61,7 +63,7 @@ impl SystemPlugin {
     }
 
     /// Get the system's load average of the last 10 minutes
-    pub fn get_current_load_avg_10() -> f32 {
+    pub(crate) fn get_current_load_avg_10() -> f32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
                 error!("Could not gather status information: {}", e);
@@ -71,7 +73,7 @@ impl SystemPlugin {
     }
 
     /// Get the number of runnable tasks
-    pub fn get_runnable_tasks() -> u32 {
+    pub(crate) fn get_runnable_tasks() -> u32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
                 error!("Could not gather status information: {}", e);
@@ -81,13 +83,23 @@ impl SystemPlugin {
     }
 
     /// Get the number of tasks on the system
-    pub fn get_total_tasks() -> u32 {
+    pub(crate) fn get_total_tasks() -> u32 {
         procinfo::loadavg()
             .unwrap_or_else(|e| {
                 error!("Could not gather status information: {}", e);
                 panic!();
             })
             .tasks_total
+    }
+
+    /// Execute a shell command
+    pub(crate) fn system(command: &String, args: &Vec<String>) -> i32 {
+        Command::new(command)
+            .args(args)
+            // .envs(&envs)
+            .status()
+            .map_or(Ok(std::i32::MIN), |v| v.code().ok_or(std::i32::MIN))
+            .unwrap()
     }
 }
 
@@ -126,6 +138,11 @@ impl Plugin for SystemPlugin {
         let get_total_tasks =
             lua_ctx.create_function(|_, ()| Ok(SystemPlugin::get_total_tasks()))?;
         globals.set("get_total_tasks", get_total_tasks)?;
+
+        let system = lua_ctx.create_function(|_, (command, args): (String, Vec<String>)| {
+            Ok(SystemPlugin::system(&command, &args))
+        })?;
+        globals.set("system", system)?;
 
         Ok(())
     }

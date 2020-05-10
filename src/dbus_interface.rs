@@ -87,17 +87,15 @@ impl DbusApi {
             .on_get(|i, _m| {
                 let result = crate::ACTIVE_PROFILE.lock();
 
-                let result = result
+                result
                     .as_ref()
-                    .unwrap()
-                    .profile_file
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .ok_or_else(|| MethodErr::failed("Method failed"))?;
-
-                i.append(result);
-                Ok(())
+                    .and_then(|p| {
+                        p.profile_file.file_name().and_then(|v| {
+                            i.append(&*v.to_string_lossy());
+                            Some(())
+                        })
+                    })
+                    .ok_or_else(|| MethodErr::failed("Method failed"))
             });
 
         let active_profile_property_clone = Arc::new(active_profile_property);

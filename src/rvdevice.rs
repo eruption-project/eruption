@@ -82,7 +82,7 @@ pub struct RGBA {
     pub a: u8,
 }
 
-pub const VENDOR_STR: &str = "ROCCAT";
+// pub const VENDOR_STR: &str = "ROCCAT";
 pub const VENDOR_ID: u16 = 0x1e7d;
 pub const PRODUCT_ID: [u16; 2] = [0x3098, 0x307a];
 pub const CTRL_INTERFACE: i32 = 1;
@@ -124,33 +124,31 @@ impl RvDeviceState {
 
         for device in api.device_list() {
             if device.vendor_id() == VENDOR_ID
-                && PRODUCT_ID.contains(&device.product_id())
-                && device.interface_number() == CTRL_INTERFACE
+                && PRODUCT_ID.iter().any(|p| *p == device.product_id())
             {
-                let product_string = device.product_string().clone().unwrap_or_else(|| {
-                    error!("Could not query device information");
-                    "<unknown>"
-                });
-                let path = device.path();
+                if device.interface_number() == CTRL_INTERFACE {
+                    let product_string = device.product_string().clone().unwrap_or_else(|| {
+                        error!("Could not query device information");
+                        "<unknown>"
+                    });
+                    let path = device.path();
 
-                found_ctrl_dev = true;
-                ctrl_device = Some(device);
+                    found_ctrl_dev = true;
+                    ctrl_device = Some(device);
 
-                info!("Found Control interface: {:?}: {}", path, product_string);
-            } else if device.vendor_id() == VENDOR_ID
-                && PRODUCT_ID.contains(&device.product_id())
-                && device.interface_number() == LED_INTERFACE
-            {
-                let product_string = device.product_string().clone().unwrap_or_else(|| {
-                    error!("Could not query device information");
-                    "<unknown>"
-                });
-                let path = device.path();
+                    info!("Found Control interface: {:?}: {}", path, product_string);
+                } else if device.interface_number() == LED_INTERFACE {
+                    let product_string = device.product_string().clone().unwrap_or_else(|| {
+                        error!("Could not query device information");
+                        "<unknown>"
+                    });
+                    let path = device.path();
 
-                found_led_dev = true;
-                led_device = Some(device);
+                    found_led_dev = true;
+                    led_device = Some(device);
 
-                info!("Found LED interface: {:?}: {}", path, product_string);
+                    info!("Found LED interface: {:?}: {}", path, product_string);
+                }
             }
         }
 

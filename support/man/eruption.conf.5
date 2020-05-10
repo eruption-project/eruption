@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 5 "18. February 2020" "0.1.1" "eruption.conf man page"
+.TH man 5 "10. May 2020" "0.1.8" "eruption.conf man page"
 .SH NAME
  Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .SH SYNOPSIS
@@ -19,7 +19,7 @@ profile = "default"
 
 script_dir = "/usr/share/eruption/scripts/"
 .br
-script_files = ["batique.lua"]
+script_files = ["macros.lua", "organic.lua"]
 .br
 .br
 
@@ -40,7 +40,7 @@ enabled = true
 
 .SH Section [global]
 .br
-profile = The profile to load, when the daemon is started; this is what you most likely want to customize.
+profile = The profile to load, when the daemon is started, and no previous saved state is found.
 .br
 keyboard_variant = Switch between sub-variants of your device. (Only partially supported)
 .br

@@ -23,6 +23,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use udev::Enumerator;
 
+// use log::*;
+
 use crate::rvdevice;
 
 pub type Result<T> = std::result::Result<T, UtilError>;
@@ -48,10 +50,17 @@ pub fn get_evdev_from_udev() -> Result<String> {
             match enumerator.scan_devices() {
                 Ok(devices) => {
                     for device in devices {
-                        let found_dev = device
-                            .properties()
-                            .any(|e| e.name() == "ID_VENDOR" && e.value() == rvdevice::VENDOR_STR)
-                            && device.devnode().is_some();
+                        let found_dev = device.properties().any(|e| {
+                            e.name() == "ID_VENDOR_ID"
+                                && e.value().to_string_lossy()
+                                    == format!("{:x}", rvdevice::VENDOR_ID)
+                        }) && device.properties().any(|e| {
+                            e.name() == "ID_MODEL_ID"
+                                && rvdevice::PRODUCT_ID
+                                    .iter()
+                                    .map(|v| format!("{:x}", v))
+                                    .any(|v| v == e.value().to_string_lossy())
+                        }) && device.devnode().is_some();
 
                         if found_dev {
                             return Ok(device.devnode().unwrap().to_str().unwrap().to_string());

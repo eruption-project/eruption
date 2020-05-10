@@ -71,6 +71,12 @@ mod frontend {
 }
 
 lazy_static! {
+    /// The currently active slot (1-4)
+    pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
+
+    /// The slot to profile associations
+    pub static ref SLOT_PROFILES: Arc<Mutex<Option<Vec<PathBuf>>>> = Arc::new(Mutex::new(None));
+
     /// The currently active profile
     pub static ref ACTIVE_PROFILE: Arc<Mutex<Option<Profile>>> = Arc::new(Mutex::new(None));
 
@@ -119,7 +125,7 @@ pub enum MainError {
     // UnknownError { description: String },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FileSystemEvent {
     ProfilesChanged,
     ScriptsChanged,
@@ -157,38 +163,6 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
                 .value_name("FILE")
                 .help("Sets the configuration file to use")
                 .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("profile")
-                .short("p")
-                .long("profile")
-                .value_name("profile")
-                .help("Sets the profile to activate")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("scripts")
-                .help("The Lua scripts to execute")
-                .multiple(true)
-                // .required(true)
-                .index(1),
-        )
-        .arg(
-            Arg::with_name("v")
-                .short("v")
-                .multiple(true)
-                .help("Sets the level of verbosity"),
-        )
-        .subcommand(App::new("list-scripts").about("Display a listing of all available scripts"))
-        .subcommand(
-            App::new("check-syntax")
-                .about("Validate a Lua script for syntactical correctness")
-                .arg(
-                    Arg::with_name("script")
-                        .help("The Lua script to check")
-                        .required(true)
-                        .index(1),
-                ),
         )
         .get_matches()
 }
@@ -303,7 +277,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::
                     });
                 } else {
                     // ignore spurious events
-                    // error!("Could not get next keyboard event");
+                    error!("Could not get next keyboard event");
                 }
             }
         })
@@ -380,6 +354,8 @@ fn switch_profile<P: AsRef<Path>>(
     rvdevice: &RvDeviceState,
     #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
+    info!("Switching to profile: {}", &profile_file.as_ref().display());
+
     let script_dir = PathBuf::from(
         CONFIG
             .lock()
@@ -450,6 +426,10 @@ fn switch_profile<P: AsRef<Path>>(
         .send(DbusApiEvent::ActiveProfileChanged)
         .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
+    let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+    let mut slot_profiles = SLOT_PROFILES.lock();
+    slot_profiles.as_mut().unwrap()[active_slot] = profile_file.as_ref().into();
+
     Ok(())
 }
 
@@ -469,6 +449,9 @@ fn run_main_loop(
     // main loop iterations, monotonic counter
     let mut ticks = 0;
 
+    // used to detect changes of the active slot
+    let mut saved_slot = 0;
+
     // stores the generation number of the frame that is currently visible on the keyboard
     let saved_frame_generation = AtomicUsize::new(0);
 
@@ -480,6 +463,20 @@ fn run_main_loop(
 
     // enter the main loop on the main thread
     'MAIN_LOOP: loop {
+        // slot changed?
+        let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+        if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
+            let profile_path = {
+                let slot_profiles = SLOT_PROFILES.lock();
+                slot_profiles.as_ref().unwrap()[active_slot].clone()
+            };
+
+            switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+
+            saved_slot = active_slot;
+        }
+
         // prepare to call main loop hook
         let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
         let plugins = plugin_manager.get_plugins();
@@ -942,81 +939,10 @@ fn main() {
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
 
-    // active runtime profile
-    let default_profile_name = config
-        .get_str("global.profile")
-        .unwrap_or_else(|_| "default".into());
-    let profile_name = matches.value_of("profile").unwrap_or(&default_profile_name);
-    let mut profile_file = PathBuf::from(&profile_name);
-    profile_file.set_extension("profile");
-
-    let config_profile_file = PathBuf::from(&profile_dir).join(&profile_file);
-
-    // try to load saved profile state
-    let state = state::STATE.read();
-    let saved_profile = state
-        .as_ref()
-        .unwrap()
-        .get("profile")
-        .unwrap_or_else(|_| config_profile_file.clone());
-
-    let saved_profile_file = PathBuf::from(&profile_dir).join(saved_profile);
-
-    let profile_file = if matches.value_of("profile").is_none() {
-        // no command line arguments specified, so use the saved state or fall
-        // back to values from the .conf file and otherwise to 'default.profile'
-        saved_profile_file
-    } else {
-        // use the command line argument or .conf file entry
-        config_profile_file
-    };
-
-    // finally, load the profile
-    trace!("Loading profile data from '{}'", profile_file.display());
-    let profile = Profile::from(&profile_file).unwrap_or_else(|e| {
-        warn!(
-            "Error opening the profile file '{}': {}",
-            profile_file.display(),
-            e
-        );
-
-        Profile::default()
-    });
-
-    info!("Loaded profile: {}", &profile.name);
-
-    // active script files
-    //let default_script_files: Vec<PathBuf> = config
-    //.get_array("global.script_files")
-    //.unwrap_or_else(|_| vec![constants::DEFAULT_EFFECT_SCRIPT.into()])
-    //.iter()
-    //.map(|v| PathBuf::from(v.clone().into_str().unwrap()))
-    //.collect();
-
-    let script_files = if profile.active_scripts.is_empty() {
-        matches
-            .values_of("scripts")
-            .unwrap_or_default()
-            .map(|p| PathBuf::from(p.to_owned()))
-            .collect::<Vec<PathBuf>>()
-    } else {
-        profile.active_scripts.clone()
-    };
-
-    let script_paths: Vec<PathBuf> = script_files
-        .iter()
-        .map(|p| PathBuf::from(&script_dir).join(p))
-        .collect();
-
-    *ACTIVE_PROFILE.lock() = Some(profile);
-
     // frontend enable
     let frontend_enabled = config
         .get::<bool>("frontend.enabled")
         .unwrap_or_else(|_| true);
-
-    // others
-    let _verbosity = matches.occurrences_of("v");
 
     // try to set timer slack to a low value
     // prctl::set_timer_slack(1).unwrap_or_else(|e| warn!("Could not set process timer slack: {}", e));
@@ -1077,21 +1003,21 @@ fn main() {
                     });
 
                     // spawn Lua VM threads
-                    info!("Loading Lua scripts...");
+                    // info!("Loading Lua scripts...");
 
-                    for (thread_idx, script_path) in script_paths.iter().enumerate() {
-                        let script_path = script_path.clone();
+                    // for (thread_idx, script_path) in script_paths.iter().enumerate() {
+                    //     let script_path = script_path.clone();
 
-                        let (lua_tx, lua_rx) = channel();
-                        let result =
-                            spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice);
+                    //     let (lua_tx, lua_rx) = channel();
+                    //     let result =
+                    //         spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice);
 
-                        if result.is_err() {
-                            error!("Could not spawn a Lua VM thread");
-                        } else {
-                            LUA_TXS.lock().push(lua_tx);
-                        }
-                    }
+                    //     if result.is_err() {
+                    //         error!("Could not spawn a Lua VM thread");
+                    //     } else {
+                    //         LUA_TXS.lock().push(lua_tx);
+                    //     }
+                    // }
 
                     // spawn a thread to handle the web-frontend
                     #[cfg(feature = "frontend")]

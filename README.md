@@ -4,6 +4,7 @@
 - <a href="#important">Important</a>
 - <a href="#overview">Overview</a>
 - <a href="#features">Features</a>
+- <a href="#missing">Missing Features</a>
 - <a href="#installation">Installation</a>
 - <a href="#config">Configuration and Usage</a>
 - <a href="#profiles">Profiles</a>
@@ -48,6 +49,9 @@ alpha blending function, prior to sending it to the keyboard.
 
 # Features <a name="features"></a>
 
+
+Overview:
+
 * Integrated Lua interpreter
 * AIMO LED Control via Lua scripts
 * Multiple Lua scripts may be executed in parallel, with their outputs combined
@@ -57,10 +61,25 @@ alpha blending function, prior to sending it to the keyboard.
 * May be run as a Linux user process or as a system daemon
 * Profiles may be switched at runtime via a D-Bus method
 
+Supported features:
+
+* Volume control knob is working
+* Media keys (via `FN` modifier key) are working with the latest firmware update applied
+* Macro keys are working, pogrammable via Lua scripts. (But no `FN` modifier key, please see below)
+* GNOME profile switcher extension is available
+
+
+# Missing Features <a name="missing"></a>
+
+* Support for `FN` key is missing, `MODIFIER` key is used instead (`right alt`)
+* Support for "Game Mode" is missing, "Easy Shift" ist active all the time
+* The GUI is not ready yet, a browser-based frontend is in development
+* ...
+
 
 # Installation <a name="installation"></a>
 
-### Arch Linux and derivatives like Manjaro
+### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
 $ yay -Sy aur/eruption-roccat-vulcan-git
@@ -113,7 +132,7 @@ profile_dir = "/var/lib/eruption/profiles/"
 profile = "default"
 
 script_dir = "/usr/share/eruption/scripts/"
-script_files = ["organic.lua"]
+script_files = ["macros.lua", "organic.lua"]
 
 # select your keyboard variant
 # keyboard_variant = "ANSI"
@@ -146,7 +165,7 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713095'
 name = 'Default'
 description = 'The default profile'
 active_scripts = [
-# 'macros.lua',
+  'macros.lua',
   'organic.lua',
   'shockwave.lua',
   'impact.lua',
@@ -160,7 +179,7 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713099'
 name = 'Preset: Red and Yellow'
 description = '''Presets for a 'red and yellow' color scheme'''
 active_scripts = [
-#	'macros.lua',
+ 	'macros.lua',
 	'batique.lua',
 	'shockwave.lua'
 ]
@@ -256,24 +275,30 @@ $ sudo systemctl restart eruption.service
 ## Support for Macros <a name="macros"></a>
 
 Eruption 0.1.1 added the infrastructure to support injection of keystrokes
-("macros").
+(to support "macros").
 
 This is achieved by adding a "virtual keyboard" to the system that injects
 keystroke sequences as needed. The "real hardware" keyboard will be grabbed
-exclusively on startup of the daemon, so keystrokes won't be reported twice.
+exclusively on startup of the daemon. This allows to filter out keystrokes, so they won't be reported twice.
+
+Eruption 0.1.8 introduced support for dynamic switching of slots via `MODIFIER + F1-F4` keys.
+
+NOTE: `MODIFIER` is a placeholder for the modifier key. It is set to the `right alt` key by default, but can be re-mapped to e.g. the `right shift` key.
+
+Eruption 0.1.8 also added support for the macro keys (INSERT - PAGEDOWN) in conjunction with the aforementioned `MODIFIER` key. So if you want to play back `Macro #1` you just have to press `MODIFIER` + `INSERT [M1]` key.
 
 
 # Available Plugins <a name="plugins"></a>
 
 * Keyboard: Process keyboard events, like e.g. "Key pressed"
-* System: Basic system information and status, like e.g. running processes
+* System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 * Sensors: Query system sensor values, like e.g. CPU package temperature
-* Audio: Audio related tasks, like playing sounds
+* Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 * Introspection: Provides internal status information of the Eruption daemon
-* Profiles: Switch profiles based on system state
+* Profiles: Switch slots, switch profiles based on system state, ...
 
 
-# Available Effects <a name="effects"></a>
+# Available Effects Scripts <a name="effects"></a>
 
 Eruption currently ships with the following Lua scripts:
 
@@ -318,8 +343,7 @@ The following scripts are unfinished/still in development, and some of them have
 | Audio Visualizer 4 | Background | `audioviz4.lua`       | Approx 85% done  | VU-meter like heartbeat effect                                                                     |
 | Audio Visualizer 5 | Background | `audioviz5.lua`       | Approx 75% done  | Like Batique, but with additional audio feedback                                                   |
 
-You may combine multiple scripts to so called "effect pipelines" using a profile.
-E.g.: You may use one or more backgrounds, and then stack multiple
+Scripts are combined to so called "effect pipelines" using a `.profile` file. E.g.: You may use one or more backgrounds, and then stack multiple
 effects scripts on top of that.
 
 

@@ -13,18 +13,39 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-LEFT_SHIFT = 0
-RIGHT_SHIFT = 1
-LEFT_CTRL = 2
-RIGHT_CTRL = 3
-LEFT_ALT = 4
-RIGHT_ALTGR = 5
+-- available modifier keys
+CAPS_LOCK = 0
+LEFT_SHIFT = 1
+RIGHT_SHIFT = 2
+LEFT_CTRL = 3
+RIGHT_CTRL = 4
+LEFT_ALT = 5
+RIGHT_ALT = 6
 
-modifier_map = {}
+-- change this to the modifier keys you want to use; default is "right alt" key
+MODIFIER_KEY = RIGHT_ALT	-- this is just a hack, it is needed until we support the FN key
+MODIFIER_KEY_EV_CODE = 100  -- the EV_KEY code of the modifier key; has to match the key defined above
 
-macro_sequence_1 = {}
+-- or use this if you prefer "right shift" as the modifier key
+-- MODIFIER_KEY = RIGHT_SHIFT  -- this is just a hack, it is needed until we support the FN key
+-- MODIFIER_KEY_EV_CODE = 54   -- the EV_KEY code of the modifier key; has to match the key defined above
 
--- Key index to EV_KEY mapping
+
+-- change the table below to perform a simple one-to-one mapping
+-- convention is: REMAPPING_TABLE[key_index] = EV_KEY_CONSTANT
+
+-- build remapping tables
+REMAPPING_TABLE = {}			-- level 1 remapping table (No modifier keys applied)
+EASY_SHIFT_REMAPPING_TABLE = {} -- level 4 remapping table (Easy Shift+ layer)
+
+-- find some examples below:
+-- REMAPPING_TABLE[35]			=  44  -- Remap: 'z' => 'y'
+
+EASY_SHIFT_REMAPPING_TABLE[1]   = 113  -- Remap: ESC => MUTE (Audio), while easy shift is activated
+
+-- ****************************************************************************
+-- Table of "key index" to EV_KEY mappings
+-- ****************************************************************************
 -- 0 => EV_KEY::KEY_RESERVED
 -- 1 => EV_KEY::KEY_ESC
 -- 2 => EV_KEY::KEY_1
@@ -571,59 +592,212 @@ macro_sequence_1 = {}
 -- 741 => EV_KEY::BTN_TRIGGER_HAPPY38
 -- 742 => EV_KEY::BTN_TRIGGER_HAPPY39
 -- 743 => EV_KEY::BTN_TRIGGER_HAPPY40
+-- ****************************************************************************
+
+modifier_map = {} -- holds the state of modifier keys
+game_mode_enabled = true  -- keyboard can be in "game mode" or in "normal mode";
+						  -- until support for game mode is in place, just pretend
+						  -- that we are in game mode, all the time
 
 -- event handler functions --
 function on_startup(config)
-	modifier_map[LEFT_SHIFT] = false
-	modifier_map[RIGHT_SHIFT] = false
-	modifier_map[LEFT_CTRL] = false
-	modifier_map[RIGHT_CTRL] = false
-	modifier_map[LEFT_ALT] = false
-	modifier_map[RIGHT_ALTGR] = false
+	modifier_map[CAPS_LOCK] = get_key_state(4)
+	modifier_map[LEFT_SHIFT] = get_key_state(5)
+	modifier_map[RIGHT_SHIFT] = get_key_state(83)
+	modifier_map[LEFT_CTRL] = get_key_state(6)
+	modifier_map[RIGHT_CTRL] = get_key_state(90)
+	modifier_map[LEFT_ALT] = get_key_state(17)
+	modifier_map[RIGHT_ALT] = get_key_state(71)
 end
 
 function on_key_down(key_index)
-	--warn("Key down: Index: " .. key_index)
+	debug("Key down: Index: " .. key_index)
 
-	-- update modifier_map
-	if key_index == 5 then modifier_map[LEFT_SHIFT] = true end
-	if key_index == 83 then modifier_map[RIGHT_SHIFT] = true end
-	if key_index == 6 then modifier_map[LEFT_CTRL] = true end
-	if key_index == 90 then modifier_map[RIGHT_CTRL] = true end
-	if key_index == 17 then modifier_map[LEFT_ALT] = true end
-	if key_index == 71 then modifier_map[RIGHT_ALTGR] = true end
+	-- update the modifier_map
+	if key_index == 4 then 
+		modifier_map[CAPS_LOCK] = true
+
+		-- eat CAPS_LOCK key while in game mode
+ 		if game_mode_enabled then 
+			inject_key(0, false)
+		end
+	end
+
+	if key_index == 5 then 
+		modifier_map[LEFT_SHIFT] = true
+	elseif key_index == 83 then
+		modifier_map[RIGHT_SHIFT] = true
+	elseif key_index == 6 then
+		modifier_map[LEFT_CTRL] = true
+	elseif key_index == 90 then
+		modifier_map[RIGHT_CTRL] = true
+	elseif key_index == 17 then
+		modifier_map[LEFT_ALT] = true
+	elseif key_index == 71 then
+		modifier_map[RIGHT_ALT] = true
+	end
+
+	-- slot keys (F1 - F4)
+	if modifier_map[MODIFIER_KEY] and key_index == 12 then
+		switch_slot(0)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 18 then
+		switch_slot(1)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 24 then
+		switch_slot(2)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 29 then
+		switch_slot(3)
+	end
+
+	-- macro keys (INSERT - PAGEDOWN)
+	if modifier_map[MODIFIER_KEY] and key_index == 101 then
+		play_macro(0)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 105 then
+		play_macro(1)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 110 then
+		play_macro(2)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 102 then
+		play_macro(3)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 106 then
+		play_macro(4)
+	elseif modifier_map[MODIFIER_KEY] and key_index == 111 then
+		play_macro(5)
+	end
 
 	-- media keys (F9 - F12)
-	if modifier_map[RIGHT_CTRL] and key_index == 79 then
-		inject_key(165, true) -- EV_KEY::PREVSONG
-	elseif modifier_map[RIGHT_CTRL] and key_index == 85 then
-		inject_key(166, true) -- EV_KEY::STOPCD
-	elseif modifier_map[RIGHT_CTRL] and key_index == 86 then
-		inject_key(164, true) -- EV_KEY::PLAYPAUSE
-	elseif modifier_map[RIGHT_CTRL] and key_index == 87 then
-		inject_key(163, true) -- EV_KEY::NEXTSONG
-	end
+	-- if modifier_map[MODIFIER_KEY] and key_index == 79 then
+	-- 	inject_key(165, true) -- EV_KEY::PREVSONG
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 85 then
+	-- 	inject_key(166, true) -- EV_KEY::STOPCD
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 86 then
+	-- 	inject_key(164, true) -- EV_KEY::PLAYPAUSE
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 87 then
+	-- 	inject_key(163, true) -- EV_KEY::NEXTSONG
+	-- end
+
+	simple_remapping(key_index, true)
 end
 
 function on_key_up(key_index)
-	--warn("Key up: Index: " .. key_index)
+	debug("Key up: Index: " .. key_index)
 
-	-- update modifier_map
-	if key_index == 5 then modifier_map[LEFT_SHIFT] = false end
-	if key_index == 83 then modifier_map[RIGHT_SHIFT] = false end
-	if key_index == 6 then modifier_map[LEFT_CTRL] = false end
-	if key_index == 90 then modifier_map[RIGHT_CTRL] = false end
-	if key_index == 17 then modifier_map[LEFT_ALT] = false end
-	if key_index == 71 then modifier_map[RIGHT_ALTGR] = false end
+	-- update the modifier_map
+	if key_index == 4 then 
+		modifier_map[CAPS_LOCK] = false
+
+		-- eat CAPS_LOCK key while in game mode
+		if game_mode_enabled then 
+			inject_key(0, false)
+		end
+	end
+
+	if key_index == 5 then
+		modifier_map[LEFT_SHIFT] = false
+	elseif key_index == 83 then
+		modifier_map[RIGHT_SHIFT] = false
+	elseif key_index == 6 then
+		modifier_map[LEFT_CTRL] = false
+	elseif key_index == 90 then
+		modifier_map[RIGHT_CTRL] = false
+	elseif key_index == 17 then
+		modifier_map[LEFT_ALT] = false
+	elseif key_index == 71 then
+		modifier_map[RIGHT_ALT] = false
+	end
 
 	-- media keys (F9 - F12)
-	if modifier_map[RIGHT_CTRL] and key_index == 79 then
-		inject_key(165, false) -- EV_KEY::PREVSONG
-	elseif modifier_map[RIGHT_CTRL] and key_index == 85 then
-		inject_key(166, false) -- EV_KEY::STOPCD
-	elseif modifier_map[RIGHT_CTRL] and key_index == 86 then
-		inject_key(164, false) -- EV_KEY::PLAYPAUSE
-	elseif modifier_map[RIGHT_CTRL] and key_index == 87 then
-		inject_key(163, false) -- EV_KEY::NEXTSONG
+	-- if modifier_map[MODIFIER_KEY] and key_index == 79 then
+	-- 	inject_key(165, false) -- EV_KEY::PREVSONG
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 85 then
+	-- 	inject_key(166, false) -- EV_KEY::STOPCD
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 86 then
+	-- 	inject_key(164, false) -- EV_KEY::PLAYPAUSE
+	-- elseif modifier_map[MODIFIER_KEY] and key_index == 87 then
+	-- 	inject_key(163, false) -- EV_KEY::NEXTSONG
+	-- end
+
+	simple_remapping(key_index, false)
+end
+
+-- perform a simple remapping
+function simple_remapping(key_index, down)
+	if modifier_map[CAPS_LOCK] then
+		code = EASY_SHIFT_REMAPPING_TABLE[key_index]
+		if code ~= nil then
+			inject_key(code, down)
+		end
+	else
+		code = REMAPPING_TABLE[key_index]
+		if code ~= nil then
+			inject_key(code, down)
+		end
 	end
+end
+
+function play_macro(index)
+	info("Playing back macro #" .. index + 1)
+
+	-- NOTE:
+	-- We filter by slots, if you want to enable macros on all slots equally,
+	-- just remove the 'and get_current_slot() == 0' part in each if statement.
+
+	if index == 0 and get_current_slot() == 0 then
+		-- if we are in slot #1, the macro key #1 will write the
+		-- string "Hello!" on the virtual keyboard
+
+		inject_key(MODIFIER_KEY_EV_CODE, false)  -- modifier key up
+
+		inject_key(42, true)  	-- shift down
+		
+		inject_key(35, true)  	-- 'h' down
+		inject_key(35, false)  	-- 'h' up
+		
+		inject_key(42, false) 	-- shift up
+
+		inject_key(18, true)  	-- 'e' down
+		inject_key(18, false)  	-- 'e' up
+
+		inject_key(38, true)  	-- 'l' down
+		inject_key(38, false)  	-- 'l' up
+
+		inject_key(38, true)  	-- 'l' down
+		inject_key(38, false)  	-- 'l' up
+
+		inject_key(24, true)  	-- 'o' down
+		inject_key(24, false)  	-- 'o' up
+
+		inject_key(42, true)  	-- shift down
+		
+		inject_key(2, true)  	-- '1' down
+		inject_key(2, false)  	-- '1' up
+		
+		inject_key(42, false) 	-- shift up
+
+	elseif index == 3 and get_current_slot() == 0 then
+		-- if we are in slot #1, the macro key #4 will write the
+		-- string "Test message from eruption" to the system journal
+
+		-- eat the original keystroke
+		inject_key(0, false)
+
+		result = system("logger", { "-i", "Test message from eruption" })
+		if result ~= 0 then
+			error("Command execution failed with result: " .. result)
+		end
+
+		-- NOTE: does not work as the 'root' user
+		-- system("notify-send", { "Title", "Test message from eruption" })
+	else
+		-- no match, just eat the original keystroke and do nothing
+		inject_key(0, false)
+	end
+end
+
+function switch_slot(index)
+	info("Switching to slot #" .. index + 1)
+
+	-- eat the keystroke
+	inject_key(0, false)
+
+	-- tell the eruption core to switch to a different slot
+	switch_to_slot(index)
 end

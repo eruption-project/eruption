@@ -2,7 +2,7 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713106'
 name = 'FX2'
 description = 'Effects Profile #2'
 active_scripts = [
-#	  'macros.lua',
+    'macros.lua',
     'solid.lua',
     'impact.lua',
     'shockwave.lua',
