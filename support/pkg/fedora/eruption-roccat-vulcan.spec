@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.1.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -95,6 +95,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow.profile %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
