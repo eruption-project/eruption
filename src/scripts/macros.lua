@@ -13,6 +13,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- available modifier keys
 CAPS_LOCK = 0
 LEFT_SHIFT = 1
@@ -21,578 +24,26 @@ LEFT_CTRL = 3
 RIGHT_CTRL = 4
 LEFT_ALT = 5
 RIGHT_ALT = 6
+RIGHT_MENU = 7
 
--- change this to the modifier keys you want to use; default is "right alt" key
-MODIFIER_KEY = RIGHT_ALT	-- this is just a hack, it is needed until we support the FN key
-MODIFIER_KEY_EV_CODE = 100  -- the EV_KEY code of the modifier key; has to match the key defined above
+-- import user configuration
+require "macros/modifiers"
 
--- or use this if you prefer "right shift" as the modifier key
--- MODIFIER_KEY = RIGHT_SHIFT  -- this is just a hack, it is needed until we support the FN key
--- MODIFIER_KEY_EV_CODE = 54   -- the EV_KEY code of the modifier key; has to match the key defined above
-
-
--- change the table below to perform a simple one-to-one mapping
--- convention is: REMAPPING_TABLE[key_index] = EV_KEY_CONSTANT
-
--- build remapping tables
+-- initialize remapping tables
 REMAPPING_TABLE = {}			-- level 1 remapping table (No modifier keys applied)
+
 EASY_SHIFT_REMAPPING_TABLE = {} -- level 4 remapping table (Easy Shift+ layer)
+EASY_SHIFT_MACRO_TABLE = {} 	-- level 4 macro table (Easy Shift+ layer)
 
--- find some examples below:
--- REMAPPING_TABLE[35]			=  44  -- Remap: 'z' => 'y'
+-- import custom macro definitions sub-modules
+require(requires)
 
-EASY_SHIFT_REMAPPING_TABLE[1]   = 113  -- Remap: ESC => MUTE (Audio), while easy shift is activated
+-- global state variables --
+ticks = 0
+color_map = {}
 
--- ****************************************************************************
--- Table of "key index" to EV_KEY mappings
--- ****************************************************************************
--- 0 => EV_KEY::KEY_RESERVED
--- 1 => EV_KEY::KEY_ESC
--- 2 => EV_KEY::KEY_1
--- 3 => EV_KEY::KEY_2
--- 4 => EV_KEY::KEY_3
--- 5 => EV_KEY::KEY_4
--- 6 => EV_KEY::KEY_5
--- 7 => EV_KEY::KEY_6
--- 8 => EV_KEY::KEY_7
--- 9 => EV_KEY::KEY_8
--- 10 => EV_KEY::KEY_9
--- 11 => EV_KEY::KEY_0
--- 12 => EV_KEY::KEY_MINUS
--- 13 => EV_KEY::KEY_EQUAL
--- 14 => EV_KEY::KEY_BACKSPACE
--- 15 => EV_KEY::KEY_TAB
--- 16 => EV_KEY::KEY_Q
--- 17 => EV_KEY::KEY_W
--- 18 => EV_KEY::KEY_E
--- 19 => EV_KEY::KEY_R
--- 20 => EV_KEY::KEY_T
--- 21 => EV_KEY::KEY_Y
--- 22 => EV_KEY::KEY_U
--- 23 => EV_KEY::KEY_I
--- 24 => EV_KEY::KEY_O
--- 25 => EV_KEY::KEY_P
--- 26 => EV_KEY::KEY_LEFTBRACE
--- 27 => EV_KEY::KEY_RIGHTBRACE
--- 28 => EV_KEY::KEY_ENTER
--- 29 => EV_KEY::KEY_LEFTCTRL
--- 30 => EV_KEY::KEY_A
--- 31 => EV_KEY::KEY_S
--- 32 => EV_KEY::KEY_D
--- 33 => EV_KEY::KEY_F
--- 34 => EV_KEY::KEY_G
--- 35 => EV_KEY::KEY_H
--- 36 => EV_KEY::KEY_J
--- 37 => EV_KEY::KEY_K
--- 38 => EV_KEY::KEY_L
--- 39 => EV_KEY::KEY_SEMICOLON
--- 40 => EV_KEY::KEY_APOSTROPHE
--- 41 => EV_KEY::KEY_GRAVE
--- 42 => EV_KEY::KEY_LEFTSHIFT
--- 43 => EV_KEY::KEY_BACKSLASH
--- 44 => EV_KEY::KEY_Z
--- 45 => EV_KEY::KEY_X
--- 46 => EV_KEY::KEY_C
--- 47 => EV_KEY::KEY_V
--- 48 => EV_KEY::KEY_B
--- 49 => EV_KEY::KEY_N
--- 50 => EV_KEY::KEY_M
--- 51 => EV_KEY::KEY_COMMA
--- 52 => EV_KEY::KEY_DOT
--- 53 => EV_KEY::KEY_SLASH
--- 54 => EV_KEY::KEY_RIGHTSHIFT
--- 55 => EV_KEY::KEY_KPASTERISK
--- 56 => EV_KEY::KEY_LEFTALT
--- 57 => EV_KEY::KEY_SPACE
--- 58 => EV_KEY::KEY_CAPSLOCK
--- 59 => EV_KEY::KEY_F1
--- 60 => EV_KEY::KEY_F2
--- 61 => EV_KEY::KEY_F3
--- 62 => EV_KEY::KEY_F4
--- 63 => EV_KEY::KEY_F5
--- 64 => EV_KEY::KEY_F6
--- 65 => EV_KEY::KEY_F7
--- 66 => EV_KEY::KEY_F8
--- 67 => EV_KEY::KEY_F9
--- 68 => EV_KEY::KEY_F10
--- 69 => EV_KEY::KEY_NUMLOCK
--- 70 => EV_KEY::KEY_SCROLLLOCK
--- 71 => EV_KEY::KEY_KP7
--- 72 => EV_KEY::KEY_KP8
--- 73 => EV_KEY::KEY_KP9
--- 74 => EV_KEY::KEY_KPMINUS
--- 75 => EV_KEY::KEY_KP4
--- 76 => EV_KEY::KEY_KP5
--- 77 => EV_KEY::KEY_KP6
--- 78 => EV_KEY::KEY_KPPLUS
--- 79 => EV_KEY::KEY_KP1
--- 80 => EV_KEY::KEY_KP2
--- 81 => EV_KEY::KEY_KP3
--- 82 => EV_KEY::KEY_KP0
--- 83 => EV_KEY::KEY_KPDOT
--- 85 => EV_KEY::KEY_ZENKAKUHANKAKU
--- 86 => EV_KEY::KEY_102ND
--- 87 => EV_KEY::KEY_F11
--- 88 => EV_KEY::KEY_F12
--- 89 => EV_KEY::KEY_RO
--- 90 => EV_KEY::KEY_KATAKANA
--- 91 => EV_KEY::KEY_HIRAGANA
--- 92 => EV_KEY::KEY_HENKAN
--- 93 => EV_KEY::KEY_KATAKANAHIRAGANA
--- 94 => EV_KEY::KEY_MUHENKAN
--- 95 => EV_KEY::KEY_KPJPCOMMA
--- 96 => EV_KEY::KEY_KPENTER
--- 97 => EV_KEY::KEY_RIGHTCTRL
--- 98 => EV_KEY::KEY_KPSLASH
--- 99 => EV_KEY::KEY_SYSRQ
--- 100 => EV_KEY::KEY_RIGHTALT
--- 101 => EV_KEY::KEY_LINEFEED
--- 102 => EV_KEY::KEY_HOME
--- 103 => EV_KEY::KEY_UP
--- 104 => EV_KEY::KEY_PAGEUP
--- 105 => EV_KEY::KEY_LEFT
--- 106 => EV_KEY::KEY_RIGHT
--- 107 => EV_KEY::KEY_END
--- 108 => EV_KEY::KEY_DOWN
--- 109 => EV_KEY::KEY_PAGEDOWN
--- 110 => EV_KEY::KEY_INSERT
--- 111 => EV_KEY::KEY_DELETE
--- 112 => EV_KEY::KEY_MACRO
--- 113 => EV_KEY::KEY_MUTE
--- 114 => EV_KEY::KEY_VOLUMEDOWN
--- 115 => EV_KEY::KEY_VOLUMEUP
--- 116 => EV_KEY::KEY_POWER
--- 117 => EV_KEY::KEY_KPEQUAL
--- 118 => EV_KEY::KEY_KPPLUSMINUS
--- 119 => EV_KEY::KEY_PAUSE
--- 120 => EV_KEY::KEY_SCALE
--- 121 => EV_KEY::KEY_KPCOMMA
--- 122 => EV_KEY::KEY_HANGEUL
--- 123 => EV_KEY::KEY_HANJA
--- 124 => EV_KEY::KEY_YEN
--- 125 => EV_KEY::KEY_LEFTMETA
--- 126 => EV_KEY::KEY_RIGHTMETA
--- 127 => EV_KEY::KEY_COMPOSE
--- 128 => EV_KEY::KEY_STOP
--- 129 => EV_KEY::KEY_AGAIN
--- 130 => EV_KEY::KEY_PROPS
--- 131 => EV_KEY::KEY_UNDO
--- 132 => EV_KEY::KEY_FRONT
--- 133 => EV_KEY::KEY_COPY
--- 134 => EV_KEY::KEY_OPEN
--- 135 => EV_KEY::KEY_PASTE
--- 136 => EV_KEY::KEY_FIND
--- 137 => EV_KEY::KEY_CUT
--- 138 => EV_KEY::KEY_HELP
--- 139 => EV_KEY::KEY_MENU
--- 140 => EV_KEY::KEY_CALC
--- 141 => EV_KEY::KEY_SETUP
--- 142 => EV_KEY::KEY_SLEEP
--- 143 => EV_KEY::KEY_WAKEUP
--- 144 => EV_KEY::KEY_FILE
--- 145 => EV_KEY::KEY_SENDFILE
--- 146 => EV_KEY::KEY_DELETEFILE
--- 147 => EV_KEY::KEY_XFER
--- 148 => EV_KEY::KEY_PROG1
--- 149 => EV_KEY::KEY_PROG2
--- 150 => EV_KEY::KEY_WWW
--- 151 => EV_KEY::KEY_MSDOS
--- 152 => EV_KEY::KEY_COFFEE
--- 153 => EV_KEY::KEY_ROTATE_DISPLAY
--- 154 => EV_KEY::KEY_CYCLEWINDOWS
--- 155 => EV_KEY::KEY_MAIL
--- 156 => EV_KEY::KEY_BOOKMARKS
--- 157 => EV_KEY::KEY_COMPUTER
--- 158 => EV_KEY::KEY_BACK
--- 159 => EV_KEY::KEY_FORWARD
--- 160 => EV_KEY::KEY_CLOSECD
--- 161 => EV_KEY::KEY_EJECTCD
--- 162 => EV_KEY::KEY_EJECTCLOSECD
--- 163 => EV_KEY::KEY_NEXTSONG
--- 164 => EV_KEY::KEY_PLAYPAUSE
--- 165 => EV_KEY::KEY_PREVIOUSSONG
--- 166 => EV_KEY::KEY_STOPCD
--- 167 => EV_KEY::KEY_RECORD
--- 168 => EV_KEY::KEY_REWIND
--- 169 => EV_KEY::KEY_PHONE
--- 170 => EV_KEY::KEY_ISO
--- 171 => EV_KEY::KEY_CONFIG
--- 172 => EV_KEY::KEY_HOMEPAGE
--- 173 => EV_KEY::KEY_REFRESH
--- 174 => EV_KEY::KEY_EXIT
--- 175 => EV_KEY::KEY_MOVE
--- 176 => EV_KEY::KEY_EDIT
--- 177 => EV_KEY::KEY_SCROLLUP
--- 178 => EV_KEY::KEY_SCROLLDOWN
--- 179 => EV_KEY::KEY_KPLEFTPAREN
--- 180 => EV_KEY::KEY_KPRIGHTPAREN
--- 181 => EV_KEY::KEY_NEW
--- 182 => EV_KEY::KEY_REDO
--- 183 => EV_KEY::KEY_F13
--- 184 => EV_KEY::KEY_F14
--- 185 => EV_KEY::KEY_F15
--- 186 => EV_KEY::KEY_F16
--- 187 => EV_KEY::KEY_F17
--- 188 => EV_KEY::KEY_F18
--- 189 => EV_KEY::KEY_F19
--- 190 => EV_KEY::KEY_F20
--- 191 => EV_KEY::KEY_F21
--- 192 => EV_KEY::KEY_F22
--- 193 => EV_KEY::KEY_F23
--- 194 => EV_KEY::KEY_F24
--- 200 => EV_KEY::KEY_PLAYCD
--- 201 => EV_KEY::KEY_PAUSECD
--- 202 => EV_KEY::KEY_PROG3
--- 203 => EV_KEY::KEY_PROG4
--- 204 => EV_KEY::KEY_DASHBOARD
--- 205 => EV_KEY::KEY_SUSPEND
--- 206 => EV_KEY::KEY_CLOSE
--- 207 => EV_KEY::KEY_PLAY
--- 208 => EV_KEY::KEY_FASTFORWARD
--- 209 => EV_KEY::KEY_BASSBOOST
--- 210 => EV_KEY::KEY_PRINT
--- 211 => EV_KEY::KEY_HP
--- 212 => EV_KEY::KEY_CAMERA
--- 213 => EV_KEY::KEY_SOUND
--- 214 => EV_KEY::KEY_QUESTION
--- 215 => EV_KEY::KEY_EMAIL
--- 216 => EV_KEY::KEY_CHAT
--- 217 => EV_KEY::KEY_SEARCH
--- 218 => EV_KEY::KEY_CONNECT
--- 219 => EV_KEY::KEY_FINANCE
--- 220 => EV_KEY::KEY_SPORT
--- 221 => EV_KEY::KEY_SHOP
--- 222 => EV_KEY::KEY_ALTERASE
--- 223 => EV_KEY::KEY_CANCEL
--- 224 => EV_KEY::KEY_BRIGHTNESSDOWN
--- 225 => EV_KEY::KEY_BRIGHTNESSUP
--- 226 => EV_KEY::KEY_MEDIA
--- 227 => EV_KEY::KEY_SWITCHVIDEOMODE
--- 228 => EV_KEY::KEY_KBDILLUMTOGGLE
--- 229 => EV_KEY::KEY_KBDILLUMDOWN
--- 230 => EV_KEY::KEY_KBDILLUMUP
--- 231 => EV_KEY::KEY_SEND
--- 232 => EV_KEY::KEY_REPLY
--- 233 => EV_KEY::KEY_FORWARDMAIL
--- 234 => EV_KEY::KEY_SAVE
--- 235 => EV_KEY::KEY_DOCUMENTS
--- 236 => EV_KEY::KEY_BATTERY
--- 237 => EV_KEY::KEY_BLUETOOTH
--- 238 => EV_KEY::KEY_WLAN
--- 239 => EV_KEY::KEY_UWB
--- 240 => EV_KEY::KEY_UNKNOWN
--- 241 => EV_KEY::KEY_VIDEO_NEXT
--- 242 => EV_KEY::KEY_VIDEO_PREV
--- 243 => EV_KEY::KEY_BRIGHTNESS_CYCLE
--- 244 => EV_KEY::KEY_BRIGHTNESS_AUTO
--- 245 => EV_KEY::KEY_DISPLAY_OFF
--- 246 => EV_KEY::KEY_WWAN
--- 247 => EV_KEY::KEY_RFKILL
--- 248 => EV_KEY::KEY_MICMUTE
--- 352 => EV_KEY::KEY_OK
--- 353 => EV_KEY::KEY_SELECT
--- 354 => EV_KEY::KEY_GOTO
--- 355 => EV_KEY::KEY_CLEAR
--- 356 => EV_KEY::KEY_POWER2
--- 357 => EV_KEY::KEY_OPTION
--- 358 => EV_KEY::KEY_INFO
--- 359 => EV_KEY::KEY_TIME
--- 360 => EV_KEY::KEY_VENDOR
--- 361 => EV_KEY::KEY_ARCHIVE
--- 362 => EV_KEY::KEY_PROGRAM
--- 363 => EV_KEY::KEY_CHANNEL
--- 364 => EV_KEY::KEY_FAVORITES
--- 365 => EV_KEY::KEY_EPG
--- 366 => EV_KEY::KEY_PVR
--- 367 => EV_KEY::KEY_MHP
--- 368 => EV_KEY::KEY_LANGUAGE
--- 369 => EV_KEY::KEY_TITLE
--- 370 => EV_KEY::KEY_SUBTITLE
--- 371 => EV_KEY::KEY_ANGLE
--- 372 => EV_KEY::KEY_ZOOM
--- 373 => EV_KEY::KEY_MODE
--- 374 => EV_KEY::KEY_KEYBOARD
--- 375 => EV_KEY::KEY_SCREEN
--- 376 => EV_KEY::KEY_PC
--- 377 => EV_KEY::KEY_TV
--- 378 => EV_KEY::KEY_TV2
--- 379 => EV_KEY::KEY_VCR
--- 380 => EV_KEY::KEY_VCR2
--- 381 => EV_KEY::KEY_SAT
--- 382 => EV_KEY::KEY_SAT2
--- 383 => EV_KEY::KEY_CD
--- 384 => EV_KEY::KEY_TAPE
--- 385 => EV_KEY::KEY_RADIO
--- 386 => EV_KEY::KEY_TUNER
--- 387 => EV_KEY::KEY_PLAYER
--- 388 => EV_KEY::KEY_TEXT
--- 389 => EV_KEY::KEY_DVD
--- 390 => EV_KEY::KEY_AUX
--- 391 => EV_KEY::KEY_MP3
--- 392 => EV_KEY::KEY_AUDIO
--- 393 => EV_KEY::KEY_VIDEO
--- 394 => EV_KEY::KEY_DIRECTORY
--- 395 => EV_KEY::KEY_LIST
--- 396 => EV_KEY::KEY_MEMO
--- 397 => EV_KEY::KEY_CALENDAR
--- 398 => EV_KEY::KEY_RED
--- 399 => EV_KEY::KEY_GREEN
--- 400 => EV_KEY::KEY_YELLOW
--- 401 => EV_KEY::KEY_BLUE
--- 402 => EV_KEY::KEY_CHANNELUP
--- 403 => EV_KEY::KEY_CHANNELDOWN
--- 404 => EV_KEY::KEY_FIRST
--- 405 => EV_KEY::KEY_LAST
--- 406 => EV_KEY::KEY_AB
--- 407 => EV_KEY::KEY_NEXT
--- 408 => EV_KEY::KEY_RESTART
--- 409 => EV_KEY::KEY_SLOW
--- 410 => EV_KEY::KEY_SHUFFLE
--- 411 => EV_KEY::KEY_BREAK
--- 412 => EV_KEY::KEY_PREVIOUS
--- 413 => EV_KEY::KEY_DIGITS
--- 414 => EV_KEY::KEY_TEEN
--- 415 => EV_KEY::KEY_TWEN
--- 416 => EV_KEY::KEY_VIDEOPHONE
--- 417 => EV_KEY::KEY_GAMES
--- 418 => EV_KEY::KEY_ZOOMIN
--- 419 => EV_KEY::KEY_ZOOMOUT
--- 420 => EV_KEY::KEY_ZOOMRESET
--- 421 => EV_KEY::KEY_WORDPROCESSOR
--- 422 => EV_KEY::KEY_EDITOR
--- 423 => EV_KEY::KEY_SPREADSHEET
--- 424 => EV_KEY::KEY_GRAPHICSEDITOR
--- 425 => EV_KEY::KEY_PRESENTATION
--- 426 => EV_KEY::KEY_DATABASE
--- 427 => EV_KEY::KEY_NEWS
--- 428 => EV_KEY::KEY_VOICEMAIL
--- 429 => EV_KEY::KEY_ADDRESSBOOK
--- 430 => EV_KEY::KEY_MESSENGER
--- 431 => EV_KEY::KEY_DISPLAYTOGGLE
--- 432 => EV_KEY::KEY_SPELLCHECK
--- 433 => EV_KEY::KEY_LOGOFF
--- 434 => EV_KEY::KEY_DOLLAR
--- 435 => EV_KEY::KEY_EURO
--- 436 => EV_KEY::KEY_FRAMEBACK
--- 437 => EV_KEY::KEY_FRAMEFORWARD
--- 438 => EV_KEY::KEY_CONTEXT_MENU
--- 439 => EV_KEY::KEY_MEDIA_REPEAT
--- 440 => EV_KEY::KEY_10CHANNELSUP
--- 441 => EV_KEY::KEY_10CHANNELSDOWN
--- 442 => EV_KEY::KEY_IMAGES
--- 448 => EV_KEY::KEY_DEL_EOL
--- 449 => EV_KEY::KEY_DEL_EOS
--- 450 => EV_KEY::KEY_INS_LINE
--- 451 => EV_KEY::KEY_DEL_LINE
--- 464 => EV_KEY::KEY_FN
--- 465 => EV_KEY::KEY_FN_ESC
--- 466 => EV_KEY::KEY_FN_F1
--- 467 => EV_KEY::KEY_FN_F2
--- 468 => EV_KEY::KEY_FN_F3
--- 469 => EV_KEY::KEY_FN_F4
--- 470 => EV_KEY::KEY_FN_F5
--- 471 => EV_KEY::KEY_FN_F6
--- 472 => EV_KEY::KEY_FN_F7
--- 473 => EV_KEY::KEY_FN_F8
--- 474 => EV_KEY::KEY_FN_F9
--- 475 => EV_KEY::KEY_FN_F10
--- 476 => EV_KEY::KEY_FN_F11
--- 477 => EV_KEY::KEY_FN_F12
--- 478 => EV_KEY::KEY_FN_1
--- 479 => EV_KEY::KEY_FN_2
--- 480 => EV_KEY::KEY_FN_D
--- 481 => EV_KEY::KEY_FN_E
--- 482 => EV_KEY::KEY_FN_F
--- 483 => EV_KEY::KEY_FN_S
--- 484 => EV_KEY::KEY_FN_B
--- 497 => EV_KEY::KEY_BRL_DOT1
--- 498 => EV_KEY::KEY_BRL_DOT2
--- 499 => EV_KEY::KEY_BRL_DOT3
--- 500 => EV_KEY::KEY_BRL_DOT4
--- 501 => EV_KEY::KEY_BRL_DOT5
--- 502 => EV_KEY::KEY_BRL_DOT6
--- 503 => EV_KEY::KEY_BRL_DOT7
--- 504 => EV_KEY::KEY_BRL_DOT8
--- 505 => EV_KEY::KEY_BRL_DOT9
--- 506 => EV_KEY::KEY_BRL_DOT10
--- 512 => EV_KEY::KEY_NUMERIC_0
--- 513 => EV_KEY::KEY_NUMERIC_1
--- 514 => EV_KEY::KEY_NUMERIC_2
--- 515 => EV_KEY::KEY_NUMERIC_3
--- 516 => EV_KEY::KEY_NUMERIC_4
--- 517 => EV_KEY::KEY_NUMERIC_5
--- 518 => EV_KEY::KEY_NUMERIC_6
--- 519 => EV_KEY::KEY_NUMERIC_7
--- 520 => EV_KEY::KEY_NUMERIC_8
--- 521 => EV_KEY::KEY_NUMERIC_9
--- 522 => EV_KEY::KEY_NUMERIC_STAR
--- 523 => EV_KEY::KEY_NUMERIC_POUND
--- 524 => EV_KEY::KEY_NUMERIC_A
--- 525 => EV_KEY::KEY_NUMERIC_B
--- 526 => EV_KEY::KEY_NUMERIC_C
--- 527 => EV_KEY::KEY_NUMERIC_D
--- 528 => EV_KEY::KEY_CAMERA_FOCUS
--- 529 => EV_KEY::KEY_WPS_BUTTON
--- 530 => EV_KEY::KEY_TOUCHPAD_TOGGLE
--- 531 => EV_KEY::KEY_TOUCHPAD_ON
--- 532 => EV_KEY::KEY_TOUCHPAD_OFF
--- 533 => EV_KEY::KEY_CAMERA_ZOOMIN
--- 534 => EV_KEY::KEY_CAMERA_ZOOMOUT
--- 535 => EV_KEY::KEY_CAMERA_UP
--- 536 => EV_KEY::KEY_CAMERA_DOWN
--- 537 => EV_KEY::KEY_CAMERA_LEFT
--- 538 => EV_KEY::KEY_CAMERA_RIGHT
--- 539 => EV_KEY::KEY_ATTENDANT_ON
--- 540 => EV_KEY::KEY_ATTENDANT_OFF
--- 541 => EV_KEY::KEY_ATTENDANT_TOGGLE
--- 542 => EV_KEY::KEY_LIGHTS_TOGGLE
--- 560 => EV_KEY::KEY_ALS_TOGGLE
--- 561 => EV_KEY::KEY_ROTATE_LOCK_TOGGLE
--- 576 => EV_KEY::KEY_BUTTONCONFIG
--- 577 => EV_KEY::KEY_TASKMANAGER
--- 578 => EV_KEY::KEY_JOURNAL
--- 579 => EV_KEY::KEY_CONTROLPANEL
--- 580 => EV_KEY::KEY_APPSELECT
--- 581 => EV_KEY::KEY_SCREENSAVER
--- 582 => EV_KEY::KEY_VOICECOMMAND
--- 583 => EV_KEY::KEY_ASSISTANT
--- 592 => EV_KEY::KEY_BRIGHTNESS_MIN
--- 593 => EV_KEY::KEY_BRIGHTNESS_MAX
--- 608 => EV_KEY::KEY_KBDINPUTASSIST_PREV
--- 609 => EV_KEY::KEY_KBDINPUTASSIST_NEXT
--- 610 => EV_KEY::KEY_KBDINPUTASSIST_PREVGROUP
--- 611 => EV_KEY::KEY_KBDINPUTASSIST_NEXTGROUP
--- 612 => EV_KEY::KEY_KBDINPUTASSIST_ACCEPT
--- 613 => EV_KEY::KEY_KBDINPUTASSIST_CANCEL
--- 614 => EV_KEY::KEY_RIGHT_UP
--- 615 => EV_KEY::KEY_RIGHT_DOWN
--- 616 => EV_KEY::KEY_LEFT_UP
--- 617 => EV_KEY::KEY_LEFT_DOWN
--- 618 => EV_KEY::KEY_ROOT_MENU
--- 619 => EV_KEY::KEY_MEDIA_TOP_MENU
--- 620 => EV_KEY::KEY_NUMERIC_11
--- 621 => EV_KEY::KEY_NUMERIC_12
--- 622 => EV_KEY::KEY_AUDIO_DESC
--- 623 => EV_KEY::KEY_3D_MODE
--- 624 => EV_KEY::KEY_NEXT_FAVORITE
--- 625 => EV_KEY::KEY_STOP_RECORD
--- 626 => EV_KEY::KEY_PAUSE_RECORD
--- 627 => EV_KEY::KEY_VOD
--- 628 => EV_KEY::KEY_UNMUTE
--- 629 => EV_KEY::KEY_FASTREVERSE
--- 630 => EV_KEY::KEY_SLOWREVERSE
--- 631 => EV_KEY::KEY_DATA
--- 632 => EV_KEY::KEY_ONSCREEN_KEYBOARD
--- 767 => EV_KEY::KEY_MAX
--- 256 => EV_KEY::BTN_0
--- 257 => EV_KEY::BTN_1
--- 258 => EV_KEY::BTN_2
--- 259 => EV_KEY::BTN_3
--- 260 => EV_KEY::BTN_4
--- 261 => EV_KEY::BTN_5
--- 262 => EV_KEY::BTN_6
--- 263 => EV_KEY::BTN_7
--- 264 => EV_KEY::BTN_8
--- 265 => EV_KEY::BTN_9
--- 272 => EV_KEY::BTN_LEFT
--- 273 => EV_KEY::BTN_RIGHT
--- 274 => EV_KEY::BTN_MIDDLE
--- 275 => EV_KEY::BTN_SIDE
--- 276 => EV_KEY::BTN_EXTRA
--- 277 => EV_KEY::BTN_FORWARD
--- 278 => EV_KEY::BTN_BACK
--- 279 => EV_KEY::BTN_TASK
--- 288 => EV_KEY::BTN_TRIGGER
--- 289 => EV_KEY::BTN_THUMB
--- 290 => EV_KEY::BTN_THUMB2
--- 291 => EV_KEY::BTN_TOP
--- 292 => EV_KEY::BTN_TOP2
--- 293 => EV_KEY::BTN_PINKIE
--- 294 => EV_KEY::BTN_BASE
--- 295 => EV_KEY::BTN_BASE2
--- 296 => EV_KEY::BTN_BASE3
--- 297 => EV_KEY::BTN_BASE4
--- 298 => EV_KEY::BTN_BASE5
--- 299 => EV_KEY::BTN_BASE6
--- 303 => EV_KEY::BTN_DEAD
--- 304 => EV_KEY::BTN_SOUTH
--- 305 => EV_KEY::BTN_EAST
--- 306 => EV_KEY::BTN_C
--- 307 => EV_KEY::BTN_NORTH
--- 308 => EV_KEY::BTN_WEST
--- 309 => EV_KEY::BTN_Z
--- 310 => EV_KEY::BTN_TL
--- 311 => EV_KEY::BTN_TR
--- 312 => EV_KEY::BTN_TL2
--- 313 => EV_KEY::BTN_TR2
--- 314 => EV_KEY::BTN_SELECT
--- 315 => EV_KEY::BTN_START
--- 316 => EV_KEY::BTN_MODE
--- 317 => EV_KEY::BTN_THUMBL
--- 318 => EV_KEY::BTN_THUMBR
--- 320 => EV_KEY::BTN_TOOL_PEN
--- 321 => EV_KEY::BTN_TOOL_RUBBER
--- 322 => EV_KEY::BTN_TOOL_BRUSH
--- 323 => EV_KEY::BTN_TOOL_PENCIL
--- 324 => EV_KEY::BTN_TOOL_AIRBRUSH
--- 325 => EV_KEY::BTN_TOOL_FINGER
--- 326 => EV_KEY::BTN_TOOL_MOUSE
--- 327 => EV_KEY::BTN_TOOL_LENS
--- 328 => EV_KEY::BTN_TOOL_QUINTTAP
--- 329 => EV_KEY::BTN_STYLUS3
--- 330 => EV_KEY::BTN_TOUCH
--- 331 => EV_KEY::BTN_STYLUS
--- 332 => EV_KEY::BTN_STYLUS2
--- 333 => EV_KEY::BTN_TOOL_DOUBLETAP
--- 334 => EV_KEY::BTN_TOOL_TRIPLETAP
--- 335 => EV_KEY::BTN_TOOL_QUADTAP
--- 336 => EV_KEY::BTN_GEAR_DOWN
--- 337 => EV_KEY::BTN_GEAR_UP
--- 544 => EV_KEY::BTN_DPAD_UP
--- 545 => EV_KEY::BTN_DPAD_DOWN
--- 546 => EV_KEY::BTN_DPAD_LEFT
--- 547 => EV_KEY::BTN_DPAD_RIGHT
--- 704 => EV_KEY::BTN_TRIGGER_HAPPY1
--- 705 => EV_KEY::BTN_TRIGGER_HAPPY2
--- 706 => EV_KEY::BTN_TRIGGER_HAPPY3
--- 707 => EV_KEY::BTN_TRIGGER_HAPPY4
--- 708 => EV_KEY::BTN_TRIGGER_HAPPY5
--- 709 => EV_KEY::BTN_TRIGGER_HAPPY6
--- 710 => EV_KEY::BTN_TRIGGER_HAPPY7
--- 711 => EV_KEY::BTN_TRIGGER_HAPPY8
--- 712 => EV_KEY::BTN_TRIGGER_HAPPY9
--- 713 => EV_KEY::BTN_TRIGGER_HAPPY10
--- 714 => EV_KEY::BTN_TRIGGER_HAPPY11
--- 715 => EV_KEY::BTN_TRIGGER_HAPPY12
--- 716 => EV_KEY::BTN_TRIGGER_HAPPY13
--- 717 => EV_KEY::BTN_TRIGGER_HAPPY14
--- 718 => EV_KEY::BTN_TRIGGER_HAPPY15
--- 719 => EV_KEY::BTN_TRIGGER_HAPPY16
--- 720 => EV_KEY::BTN_TRIGGER_HAPPY17
--- 721 => EV_KEY::BTN_TRIGGER_HAPPY18
--- 722 => EV_KEY::BTN_TRIGGER_HAPPY19
--- 723 => EV_KEY::BTN_TRIGGER_HAPPY20
--- 724 => EV_KEY::BTN_TRIGGER_HAPPY21
--- 725 => EV_KEY::BTN_TRIGGER_HAPPY22
--- 726 => EV_KEY::BTN_TRIGGER_HAPPY23
--- 727 => EV_KEY::BTN_TRIGGER_HAPPY24
--- 728 => EV_KEY::BTN_TRIGGER_HAPPY25
--- 729 => EV_KEY::BTN_TRIGGER_HAPPY26
--- 730 => EV_KEY::BTN_TRIGGER_HAPPY27
--- 731 => EV_KEY::BTN_TRIGGER_HAPPY28
--- 732 => EV_KEY::BTN_TRIGGER_HAPPY29
--- 733 => EV_KEY::BTN_TRIGGER_HAPPY30
--- 734 => EV_KEY::BTN_TRIGGER_HAPPY31
--- 735 => EV_KEY::BTN_TRIGGER_HAPPY32
--- 736 => EV_KEY::BTN_TRIGGER_HAPPY33
--- 737 => EV_KEY::BTN_TRIGGER_HAPPY34
--- 738 => EV_KEY::BTN_TRIGGER_HAPPY35
--- 739 => EV_KEY::BTN_TRIGGER_HAPPY36
--- 740 => EV_KEY::BTN_TRIGGER_HAPPY37
--- 741 => EV_KEY::BTN_TRIGGER_HAPPY38
--- 742 => EV_KEY::BTN_TRIGGER_HAPPY39
--- 743 => EV_KEY::BTN_TRIGGER_HAPPY40
--- ****************************************************************************
+highlight_ttl = 0
+highlight_max_ttl = 255
 
 modifier_map = {} -- holds the state of modifier keys
 game_mode_enabled = true  -- keyboard can be in "game mode" or in "normal mode";
@@ -608,17 +59,18 @@ function on_startup(config)
 	modifier_map[RIGHT_CTRL] = get_key_state(90)
 	modifier_map[LEFT_ALT] = get_key_state(17)
 	modifier_map[RIGHT_ALT] = get_key_state(71)
+	modifier_map[RIGHT_MENU] = get_key_state(84)
 end
 
 function on_key_down(key_index)
 	debug("Key down: Index: " .. key_index)
-
+		
 	-- update the modifier_map
 	if key_index == 4 then 
 		modifier_map[CAPS_LOCK] = true
 
-		-- eat CAPS_LOCK key while in game mode
- 		if game_mode_enabled then 
+		-- consume the CAPS_LOCK key while in game mode
+ 		if ENABLE_EASY_SHIFT and game_mode_enabled then 
 			inject_key(0, false)
 		end
 	end
@@ -635,32 +87,37 @@ function on_key_down(key_index)
 		modifier_map[LEFT_ALT] = true
 	elseif key_index == 71 then
 		modifier_map[RIGHT_ALT] = true
+	elseif key_index == 84 then
+		modifier_map[RIGHT_MENU] = true
+
+		-- consume the menu key
+		inject_key(0, false)
 	end
 
 	-- slot keys (F1 - F4)
 	if modifier_map[MODIFIER_KEY] and key_index == 12 then
-		switch_slot(0)
+		do_switch_slot(0)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 18 then
-		switch_slot(1)
+		do_switch_slot(1)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 24 then
-		switch_slot(2)
+		do_switch_slot(2)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 29 then
-		switch_slot(3)
+		do_switch_slot(3)
 	end
 
 	-- macro keys (INSERT - PAGEDOWN)
 	if modifier_map[MODIFIER_KEY] and key_index == 101 then
-		play_macro(0)
+		on_macro_key_down(0)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 105 then
-		play_macro(1)
+		on_macro_key_down(1)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 110 then
-		play_macro(2)
+		on_macro_key_down(2)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 102 then
-		play_macro(3)
+		on_macro_key_down(3)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 106 then
-		play_macro(4)
+		on_macro_key_down(4)
 	elseif modifier_map[MODIFIER_KEY] and key_index == 111 then
-		play_macro(5)
+		on_macro_key_down(5)
 	end
 
 	-- media keys (F9 - F12)
@@ -675,6 +132,13 @@ function on_key_down(key_index)
 	-- end
 
 	simple_remapping(key_index, true)
+
+	-- call complex macros on the Easy Shift+ layer (layer 4)
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and 
+	    EASY_SHIFT_MACRO_TABLE[key_index] ~= nil then
+		-- call associated function
+		EASY_SHIFT_MACRO_TABLE[key_index]()
+	end
 end
 
 function on_key_up(key_index)
@@ -684,8 +148,8 @@ function on_key_up(key_index)
 	if key_index == 4 then 
 		modifier_map[CAPS_LOCK] = false
 
-		-- eat CAPS_LOCK key while in game mode
-		if game_mode_enabled then 
+		-- consume CAPS_LOCK key while in game mode
+		if ENABLE_EASY_SHIFT and game_mode_enabled then 
 			inject_key(0, false)
 		end
 	end
@@ -702,6 +166,11 @@ function on_key_up(key_index)
 		modifier_map[LEFT_ALT] = false
 	elseif key_index == 71 then
 		modifier_map[RIGHT_ALT] = false
+	elseif key_index == 84 then
+		modifier_map[RIGHT_MENU] = false
+
+		-- consume menu key
+		inject_key(0, false)
 	end
 
 	-- media keys (F9 - F12)
@@ -720,7 +189,7 @@ end
 
 -- perform a simple remapping
 function simple_remapping(key_index, down)
-	if modifier_map[CAPS_LOCK] then
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
 		code = EASY_SHIFT_REMAPPING_TABLE[key_index]
 		if code ~= nil then
 			inject_key(code, down)
@@ -733,71 +202,41 @@ function simple_remapping(key_index, down)
 	end
 end
 
-function play_macro(index)
-	info("Playing back macro #" .. index + 1)
+function do_switch_slot(index)
+	debug("Switching to slot #" .. index + 1)
 
-	-- NOTE:
-	-- We filter by slots, if you want to enable macros on all slots equally,
-	-- just remove the 'and get_current_slot() == 0' part in each if statement.
-
-	if index == 0 and get_current_slot() == 0 then
-		-- if we are in slot #1, the macro key #1 will write the
-		-- string "Hello!" on the virtual keyboard
-
-		inject_key(MODIFIER_KEY_EV_CODE, false)  -- modifier key up
-
-		inject_key(42, true)  	-- shift down
-		
-		inject_key(35, true)  	-- 'h' down
-		inject_key(35, false)  	-- 'h' up
-		
-		inject_key(42, false) 	-- shift up
-
-		inject_key(18, true)  	-- 'e' down
-		inject_key(18, false)  	-- 'e' up
-
-		inject_key(38, true)  	-- 'l' down
-		inject_key(38, false)  	-- 'l' up
-
-		inject_key(38, true)  	-- 'l' down
-		inject_key(38, false)  	-- 'l' up
-
-		inject_key(24, true)  	-- 'o' down
-		inject_key(24, false)  	-- 'o' up
-
-		inject_key(42, true)  	-- shift down
-		
-		inject_key(2, true)  	-- '1' down
-		inject_key(2, false)  	-- '1' up
-		
-		inject_key(42, false) 	-- shift up
-
-	elseif index == 3 and get_current_slot() == 0 then
-		-- if we are in slot #1, the macro key #4 will write the
-		-- string "Test message from eruption" to the system journal
-
-		-- eat the original keystroke
-		inject_key(0, false)
-
-		result = system("logger", { "-i", "Test message from eruption" })
-		if result ~= 0 then
-			error("Command execution failed with result: " .. result)
-		end
-
-		-- NOTE: does not work as the 'root' user
-		-- system("notify-send", { "Title", "Test message from eruption" })
-	else
-		-- no match, just eat the original keystroke and do nothing
-		inject_key(0, false)
-	end
-end
-
-function switch_slot(index)
-	info("Switching to slot #" .. index + 1)
-
-	-- eat the keystroke
+	-- consume the keystroke
 	inject_key(0, false)
 
-	-- tell the eruption core to switch to a different slot
+	-- tell the Eruption core to switch to a different slot
 	switch_to_slot(index)
+end
+
+function on_tick(delta)
+	ticks = ticks + delta + 1
+	
+	update_color_state()
+
+	if highlight_ttl <= 0 then return end
+
+    local num_keys = get_num_keys()
+
+    -- show key highlight effect
+    if ticks % animation_delay == 0 then
+        for i = 0, num_keys do
+			if highlight_ttl >= highlight_step then
+				r, g, b, a = color_to_rgba(color_map[i])
+				alpha = trunc(lerp(0, highlight_max_ttl / 255, highlight_ttl) * highlight_opacity)
+
+				color_map[i] = rgba_to_color(r, g, b, min(255, alpha))
+			else 
+				highlight_ttl = 0
+				color_map[i] = 0x00000000
+			end
+        end
+
+		highlight_ttl = highlight_ttl - highlight_step
+
+        submit_color_map(color_map)
+    end
 end

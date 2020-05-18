@@ -59,10 +59,13 @@ pub const MAX_IN_FLIGHT_SFX: usize = 2;
 pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 30;
 
 /// Thread termination request flag of the audio player thread
-pub static AUDIO_PLAYBACK_THREAD_TERMINATED: AtomicBool = AtomicBool::new(false);
+pub static AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
 
 /// Thread termination request flag of the audio grabber thread
-pub static AUDIO_GRABBER_THREAD_TERMINATED: AtomicBool = AtomicBool::new(false);
+pub static AUDIO_GRABBER_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
+
+// Used as a flag whether the 'audio/grabber' thread is running
+static AUDIO_GRABBER_THREAD_RUNNING: AtomicBool = AtomicBool::new(false);
 
 /// Number of currently playing sound effects
 pub static ACTIVE_SFX: AtomicUsize = AtomicUsize::new(0);
@@ -80,6 +83,8 @@ lazy_static! {
     /// Holds audio data recorded by the audio grabber
     static ref AUDIO_GRABBER_BUFFER: Arc<Mutex<Vec<i16>>> = Arc::new(Mutex::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
 
+    static ref LAST_KEYBOARD_EVENT: Arc<Mutex<Option<events::Event>>> = Arc::new(Mutex::new(None));
+
     /// Global "sound effects enabled" flag
     pub static ref ENABLE_SFX: AtomicBool = AtomicBool::new(false);
 
@@ -90,7 +95,15 @@ lazy_static! {
     pub static ref SFX_KEY_UP: Option<Vec<u8>> = util::load_sfx("key-up.wav").ok();
 }
 
+pub fn reset_audio_backend() {
+    AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
+    // AUDIO_BACKEND.lock().take();
+}
+
 fn try_start_audio_backend() -> Result<()> {
+    // AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
+    // AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
+
     AUDIO_BACKEND
         .lock()
         .replace(Box::new(backends::PulseAudioBackend::new().map_err(
@@ -129,15 +142,19 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_loudness() -> isize {
-        try_start_audio_grabber()
-            .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        }
 
         CURRENT_RMS.load(Ordering::SeqCst)
     }
 
     pub fn get_audio_spectrum() -> Vec<f32> {
-        try_start_audio_grabber()
-            .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        }
 
         const FFT_SIZE: usize = 1024;
 
@@ -183,8 +200,10 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
-        try_start_audio_grabber()
-            .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+        }
 
         AUDIO_GRABBER_BUFFER.lock().to_vec()
     }
@@ -325,14 +344,14 @@ mod backends {
     use super::ACTIVE_SFX;
     use super::AUDIO_GRABBER_BUFFER;
     use super::AUDIO_GRABBER_BUFFER_SIZE;
-    use super::AUDIO_GRABBER_THREAD_TERMINATED;
-    use super::AUDIO_PLAYBACK_THREAD_TERMINATED;
+    use super::AUDIO_GRABBER_THREAD_RUNNING;
+    use super::AUDIO_GRABBER_THREAD_SHALL_TERMINATE;
+    use super::AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE;
     use super::CURRENT_RMS;
     use super::ENABLE_SFX;
 
-    use lazy_static::lazy_static;
     use log::{debug, error};
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::Ordering;
     use std::sync::Arc;
     use std::thread;
 
@@ -400,7 +419,7 @@ mod backends {
                 return Ok(());
             }
 
-            AUDIO_PLAYBACK_THREAD_TERMINATED.store(false, Ordering::SeqCst);
+            AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
 
             let samples = data.len();
 
@@ -466,7 +485,7 @@ mod backends {
                                     }
                                 };
 
-                                if AUDIO_PLAYBACK_THREAD_TERMINATED.load(Ordering::SeqCst) {
+                                if AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
                                     return;
                                 }
 
@@ -524,7 +543,7 @@ mod backends {
                     //event_loop_c.pause_stream(stream_id_c);
                     event_loop_c.destroy_stream(stream_id_c);
 
-                    AUDIO_PLAYBACK_THREAD_TERMINATED.store(true, Ordering::SeqCst);
+                    AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
                     ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
 
                     Ok(())
@@ -538,10 +557,6 @@ mod backends {
         }
 
         fn start_audio_grabber(&self) -> Result<()> {
-            lazy_static! {
-                static ref AUDIO_GRABBER_THREAD_RUNNING: AtomicBool = AtomicBool::new(false);
-            }
-
             if AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
                 return Ok(());
                 //return Err(AudioPluginError::GrabberError{ description: "Thread already running".into() });
@@ -591,7 +606,10 @@ mod backends {
                             }
                         };
 
-                        if AUDIO_GRABBER_THREAD_TERMINATED.load(Ordering::SeqCst) {
+                        if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
+                            AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
+                            AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
+
                             return;
                         }
 
@@ -734,7 +752,7 @@ mod backends {
                         .map_err(|e| AudioPluginError::PlaybackError {
                             description: format!("Error during playback: {}", e),
                         })
-                        .unwrap();
+                        .ok();
 
                     ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
                 })
@@ -747,13 +765,10 @@ mod backends {
         }
 
         fn start_audio_grabber(&self) -> Result<()> {
-            lazy_static! {
-                static ref AUDIO_GRABBER_THREAD_RUNNING: AtomicBool = AtomicBool::new(false);
-            }
-
             if AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-                return Ok(());
-                //return Err(AudioPluginError::GrabberError{ description: "Thread already running".into() });
+                return Err(AudioPluginError::GrabberError {
+                    description: "Thread already running".into(),
+                });
             }
 
             AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
@@ -792,7 +807,10 @@ mod backends {
 
                         CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
 
-                        if AUDIO_GRABBER_THREAD_TERMINATED.load(Ordering::SeqCst) {
+                        if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
+                            AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
+                            AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
+
                             break 'RECORDER_LOOP;
                         }
                     }

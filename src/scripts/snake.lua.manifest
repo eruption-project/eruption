@@ -1,0 +1,12 @@
+name = "Snake"
+description = "Display a snake"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.8"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0

@@ -634,6 +634,11 @@ impl RvDeviceState {
         } else {
             match &*self.led_hiddev.as_ref().lock() {
                 Some(led_dev) => {
+                    // TODO: The #' key (on QWERTZ layout) seems to be out of order!?
+                    //       This is an ugly hack, find a better way to fix this
+                    // let mut led_map = led_map.to_vec();
+                    // led_map.swap(81, 96);
+
                     let mut hwmap: [u8; 444] = [0; 444];
 
                     // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red

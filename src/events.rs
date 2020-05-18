@@ -22,7 +22,7 @@ use std::sync::Arc;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Event {
     DaemonStartup,
     DaemonShutdown,

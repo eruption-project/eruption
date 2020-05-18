@@ -13,6 +13,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- global state variables --
 color_map = {}
 ticks = 0

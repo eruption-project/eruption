@@ -36,6 +36,7 @@ use crate::CONFIG;
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
 pub enum Message {
+    SwitchSlot(usize),
     SwitchProfile(PathBuf),
     //LoadScript(PathBuf),
 }
@@ -55,6 +56,7 @@ pub enum DbusApiError {
 pub struct DbusApi {
     connection: Option<Arc<Connection>>,
 
+    active_slot_changed: Arc<Signal<()>>,
     active_profile_changed: Arc<Signal<()>>,
     profiles_changed: Arc<Signal<()>>,
 }
@@ -63,14 +65,21 @@ pub struct DbusApi {
 impl DbusApi {
     /// Initialize the D-Bus API
     pub fn new(dbus_tx: Sender<Message>) -> Self {
+        let dbus_tx_clone = dbus_tx.clone();
+
         let c = Connection::get_private(BusType::System).unwrap();
         c.register_name("org.eruption", NameFlag::ReplaceExisting as u32)
             .unwrap();
 
         let c_clone = Arc::new(c);
         let c_clone2 = c_clone.clone();
+        let c_clone3 = c_clone.clone();
 
         let f = Factory::new_fn::<()>();
+
+        let active_slot_changed_signal =
+            Arc::new(f.signal("ActiveSlotChanged", ()).sarg::<u64, _>("new slot"));
+        let active_slot_changed_signal_clone = active_slot_changed_signal.clone();
 
         let active_profile_changed_signal = Arc::new(
             f.signal("ActiveProfileChanged", ())
@@ -80,6 +89,18 @@ impl DbusApi {
 
         let profiles_changed_signal = Arc::new(f.signal("ProfilesChanged", ()));
         let profiles_changed_signal_clone = profiles_changed_signal.clone();
+
+        let active_slot_property = f
+            .property::<u64, _>("ActiveSlot", ())
+            .emits_changed(EmitsChangedSignal::Const)
+            .on_get(|i, _m| {
+                let result = crate::ACTIVE_SLOT.load(Ordering::SeqCst) as u64;
+                i.append(result);
+
+                Ok(())
+            });
+
+        let active_slot_property_clone = Arc::new(active_slot_property);
 
         let active_profile_property = f
             .property::<String, _>("ActiveProfile", ())
@@ -168,6 +189,50 @@ impl DbusApi {
                     ),
             )
             .add(
+                f.object_path("/org/eruption/slot", ())
+                    .introspectable()
+                    .add(
+                        f.interface("org.eruption.Slot", ())
+                            .add_s(active_slot_changed_signal_clone)
+                            .add_p(active_slot_property_clone.clone())
+                            .add_m(
+                                f.method("SwitchSlot", (), move |m| {
+                                    let n: u64 = m.msg.read1()?;
+
+                                    if n as usize >= constants::NUM_SLOTS {
+                                        Err(MethodErr::failed("Slot index out of bounds"))
+                                    } else {
+                                        dbus_tx
+                                            .send(Message::SwitchSlot(n as usize))
+                                            .unwrap_or_else(|e| {
+                                                error!(
+                                                    "Could not send a pending D-Bus event: {}",
+                                                    e
+                                                )
+                                            });
+                                        let mut changed_properties = Vec::new();
+                                        active_slot_property_clone.add_propertieschanged(
+                                            &mut changed_properties,
+                                            &"org.eruption".into(),
+                                            || Box::new(n),
+                                        );
+                                        if !changed_properties.is_empty() {
+                                            let msg = changed_properties
+                                                .first()
+                                                .unwrap()
+                                                .to_emit_message(&"/org/eruption/slot".into());
+                                            c_clone2.clone().send(msg).unwrap();
+                                        }
+                                        let s = true;
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    }
+                                })
+                                .inarg::<u64, _>("slot")
+                                .outarg::<bool, _>("status"),
+                            ),
+                    ),
+            )
+            .add(
                 f.object_path("/org/eruption/profile", ())
                     .introspectable()
                     .add(
@@ -179,7 +244,7 @@ impl DbusApi {
                                 f.method("SwitchProfile", (), move |m| {
                                     let n: &str = m.msg.read1()?;
 
-                                    dbus_tx
+                                    dbus_tx_clone
                                         .send(Message::SwitchProfile(PathBuf::from(n)))
                                         .unwrap_or_else(|e| {
                                             error!("Could not send a pending D-Bus event: {}", e)
@@ -205,7 +270,7 @@ impl DbusApi {
                                             .first()
                                             .unwrap()
                                             .to_emit_message(&"/org/eruption/profile".into());
-                                        c_clone2.clone().send(msg).unwrap();
+                                        c_clone3.clone().send(msg).unwrap();
                                     }
 
                                     let s = true;
@@ -253,14 +318,30 @@ impl DbusApi {
                     ),
             );
 
-        tree.set_registered(&*c_clone, true).unwrap();
+        tree.set_registered(&*c_clone, true)
+            .unwrap_or_else(|e| error!("Could not register the tree: {}", e));
         c_clone.add_handler(tree);
 
         DbusApi {
             connection: Some(c_clone),
+            active_slot_changed: active_slot_changed_signal,
             active_profile_changed: active_profile_changed_signal,
             profiles_changed: profiles_changed_signal,
         }
+    }
+
+    pub fn notify_active_slot_changed(&self) {
+        let active_slot = crate::ACTIVE_SLOT.load(Ordering::SeqCst);
+
+        self.connection
+            .as_ref()
+            .unwrap()
+            .send(self.active_slot_changed.emit(
+                &"/org/eruption/slot".into(),
+                &"org.eruption.Slot".into(),
+                &[active_slot as u64],
+            ))
+            .unwrap();
     }
 
     pub fn notify_active_profile_changed(&self) {

@@ -70,8 +70,10 @@ impl Plugin for ProfilesPlugin {
             lua_ctx.create_function(move |_, ()| Ok(ProfilesPlugin::get_current_slot()))?;
         globals.set("get_current_slot", get_current_slot)?;
 
-        let switch_to_slot = lua_ctx
-            .create_function(move |_, index: usize| Ok(ProfilesPlugin::switch_to_slot(index)))?;
+        let switch_to_slot = lua_ctx.create_function(move |_, index: usize| {
+            ProfilesPlugin::switch_to_slot(index);
+            Ok(())
+        })?;
         globals.set("switch_to_slot", switch_to_slot)?;
 
         Ok(())

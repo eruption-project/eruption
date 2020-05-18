@@ -13,7 +13,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
--- find example gradients below
+require "declarations"
+require "debug"
+
+-- please find example gradients below
 
 -- repeating linear red to light cold white gradient
 -- color_start = rgb_to_color(255, 0, 0)

@@ -13,9 +13,13 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- global state variables --
 color_map = {}
 hue_map = {}
+
 ticks = 0
 max_effect_ttl = 150
 
@@ -48,8 +52,13 @@ function on_tick(delta)
         for i = 0, num_keys do
             if hue_map[i] > 0 then
                 hue_map[i] = hue_map[i] - hue_step_afterglow
-                r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
-                color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+
+                if hue_map[i] >= hue_step_afterglow then
+                    r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
+                    color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+                else
+                    color_map[i] = 0x000000000
+                end
             end
         end
 

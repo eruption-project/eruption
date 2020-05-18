@@ -2,10 +2,10 @@ id = '5dc62fa6-e965-45cb-a0da-e87d28715095'
 name = 'Fireworks'
 description = 'The batique profile'
 active_scripts = [
- 	'macros.lua',
 	'solid.lua',
 	'fireworks.lua',
 	'impact.lua',
+ 	'macros.lua',
 ]
 
 [[config."Solid Color"]]

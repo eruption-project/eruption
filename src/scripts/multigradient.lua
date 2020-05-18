@@ -13,6 +13,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- set gradient stops
 gradient_stops = {
     [0] = { start = rgba_to_color(255,   0,   0, lerp(0, 255, opacity)), dest = rgba_to_color(255, 165,   0, lerp(0, 255, opacity)) },
@@ -54,7 +57,7 @@ end
 
 -- support functions
 function linear_gradient_multi(stops, p)
-    local i = clamp(trunc(p / (100 * stops.len)), 0, stops.len - 1)
+    local i = trunc(clamp(p / (100 * stops.len), 0, stops.len - 1))
 
     -- info("p: " .. p .. " " .. "index: " .. i)
 

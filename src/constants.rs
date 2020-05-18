@@ -27,8 +27,11 @@ pub const DEFAULT_SCRIPT_DIR: &str = "/usr/lib/eruption/scripts/";
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";
 
+/// Number of slots
+pub const NUM_SLOTS: usize = 4;
+
 /// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "batique.lua";
+pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
 
 /// Target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;

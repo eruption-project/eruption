@@ -1,6 +1,6 @@
 name = "Audio Visualizer #2 (HSL colors)"
 description = "Audio visualization using multiple colors"
-version = "0.0.2"
+version = "0.0.3"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']

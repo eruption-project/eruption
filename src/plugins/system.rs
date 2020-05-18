@@ -93,7 +93,7 @@ impl SystemPlugin {
     }
 
     /// Execute a shell command
-    pub(crate) fn system(command: &String, args: &Vec<String>) -> i32 {
+    pub(crate) fn system(command: &str, args: &[String]) -> i32 {
         Command::new(command)
             .args(args)
             // .envs(&envs)

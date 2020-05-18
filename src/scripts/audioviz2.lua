@@ -13,15 +13,15 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- global state variables --
 max_loudness = 64
 color_map = {}
 
 ticks = 0
 column = 0
-
-num_rows = 6
-max_keys_per_row = 22
 
 -- event handler functions --
 function on_startup(config)

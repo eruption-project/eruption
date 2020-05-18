@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 5 "10. May 2020" "0.1.8" "eruption.conf man page"
+.TH man 5 "18. May 2020" "0.1.9" "eruption.conf man page"
 .SH NAME
  Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .SH SYNOPSIS
@@ -13,13 +13,7 @@
 .br
 profile_dir = "/var/lib/eruption/profiles/"
 .br
-profile = "default"
-.br
-.br
-
 script_dir = "/usr/share/eruption/scripts/"
-.br
-script_files = ["macros.lua", "organic.lua"]
 .br
 .br
 
@@ -33,18 +27,14 @@ keyboard_variant = "ISO"
 
 [frontend]
 .br
-enabled = true
+# enabled = true
 .br
 # theme = "eruption"
 .br
 
 .SH Section [global]
 .br
-profile = The profile to load, when the daemon is started, and no previous saved state is found.
-.br
 keyboard_variant = Switch between sub-variants of your device. (Only partially supported)
-.br
-script_files = A list of Lua script files to execute, *when no profile is specified*
 .br
 
 .SH Section [frontend]

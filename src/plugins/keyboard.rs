@@ -112,44 +112,50 @@ impl KeyboardPlugin {
     }
 
     pub fn get_next_event(&self) -> Result<Option<evdev_rs::InputEvent>> {
-        let result = DEVICE.with(|dev| {
-            let result = dev
-                .borrow()
-                .as_ref()
-                .unwrap()
-                .next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
+        let result = DEVICE.with(
+            |dev| -> Result<(evdev_rs::ReadStatus, evdev_rs::InputEvent)> {
+                let result = dev
+                    .borrow()
+                    .as_ref()
+                    .unwrap()
+                    .next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
 
-            match result {
-                Ok(k) => {
-                    debug!("Key event: {:?}", k.1);
+                match result {
+                    Ok(k) => {
+                        debug!("Key event: {:?}", k.1);
 
-                    // reset "to be dropped" flag
-                    macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
+                        // reset "to be dropped" flag
+                        macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
 
-                    // update our internal representation of the keyboard state
-                    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
-                        let is_pressed = k.1.value > 0;
-                        let index = util::ev_key_to_key_index(code.clone()) as usize;
+                        // update our internal representation of the keyboard state
+                        if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
+                            let is_pressed = k.1.value > 0;
+                            let index = util::ev_key_to_key_index(code.clone()) as usize;
 
-                        KEY_STATES.write().unwrap()[index] = is_pressed;
-                    } else {
-                        // error!("Invalid event code received")
+                            KEY_STATES.write().unwrap()[index] = is_pressed;
+                        } else {
+                            // error!("Invalid event code received")
+                        }
+
+                        Ok(k)
                     }
 
-                    Ok(k)
-                }
+                    Err(e) => {
+                        if e.raw_os_error().unwrap() == libc::ENODEV {
+                            error!("Fatal: Keyboard device went away: {}", e);
 
-                Err(e) => {
-                    if e.raw_os_error().unwrap() == libc::ENODEV {
-                        error!("Keyboard device went away: {}", e);
-                        panic!();
-                    } else {
-                        error!("Could not peek evdev event: {}", e);
-                        Err(KeyboardPluginError::EvdevEventError {})
+                            crate::QUIT.store(true, Ordering::SeqCst);
+                            Err(KeyboardPluginError::EvdevEventError {})
+                        } else {
+                            error!("Fatal: Could not peek evdev event: {}", e);
+
+                            crate::QUIT.store(true, Ordering::SeqCst);
+                            Err(KeyboardPluginError::EvdevEventError {})
+                        }
                     }
                 }
-            }
-        })?;
+            },
+        )?;
 
         match result.0 {
             evdev_rs::ReadStatus::Success => Ok(Some(result.1)),

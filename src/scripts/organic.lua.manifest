@@ -1,6 +1,6 @@
 name = "Organic"
 description = "Compute Super Simplex Noise, mapped to the HSL color space"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
 min_supported_version = "0.1.4"
 tags = ['Background', 'Vendor', 'Noise']

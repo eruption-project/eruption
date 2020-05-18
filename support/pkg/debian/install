@@ -28,6 +28,7 @@ support/profiles/twinkle.profile var/lib/eruption/profiles
 support/profiles/rainbow.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
+support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
 support/profiles/turbulence.profile var/lib/eruption/profiles
 
@@ -95,6 +96,14 @@ src/scripts/voronoi.lua usr/share/eruption/scripts/
 src/scripts/voronoi.lua.manifest usr/share/eruption/scripts/
 src/scripts/water.lua usr/share/eruption/scripts/
 src/scripts/water.lua.manifest usr/share/eruption/scripts/
+src/scripts/snake.lua usr/share/eruption/scripts/
+src/scripts/snake.lua.manifest usr/share/eruption/scripts/
+src/scripts/lib/debug.lua usr/share/eruption/scripts/lib/
+src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib/
+src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib/
+src/scripts/lib/macros/modifiers.lua usr/share/eruption/scripts/lib/macros
+src/scripts/lib/macros/user-macros.lua usr/share/eruption/scripts/lib/macros
+src/scripts/lib/macros/starcraft2.lua usr/share/eruption/scripts/lib/macros
 src/scripts/examples usr/share/eruption/scripts/
 src/scripts/examples/simple.lua usr/share/eruption/scripts/
 

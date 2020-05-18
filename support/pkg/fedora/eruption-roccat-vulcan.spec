@@ -2,7 +2,7 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.8
+Version: 0.1.9
 Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
@@ -53,6 +53,9 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/macros
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
 %{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
@@ -91,6 +94,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/twinkle.profile %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
@@ -139,10 +143,16 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
+%{_sharedstatedir}/%{ShortName}/profiles/snake.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua
@@ -211,6 +221,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/turbulence.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/water.lua
 %{_datarootdir}/%{ShortName}/scripts/water.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/snake.lua
+%{_datarootdir}/%{ShortName}/scripts/snake.lua.manifest
 %{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
 %{_datarootdir}/%{ShortName}/sfx/phaser1.wav
 %{_datarootdir}/%{ShortName}/sfx/phaser2.wav

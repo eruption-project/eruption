@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
@@ -16,7 +16,7 @@ all = ["dbus"]
 frontend = ["rocket", "rocket_contrib"]
 
 [dependencies]
-libc = "0.2.69"
+libc = "0.2.70"
 nix = "0.17.0"
 prctl = "1.0.0"
 log = "0.4.8"
@@ -26,7 +26,7 @@ failure = "0.1.8"
 toml = "0.5.6"
 serde = { version = "1.0.110", features = ["derive"] }
 ctrlc = { version = "3.1.4", features = ["termination"] }
-clap = "2.33.0"
+clap = "2.33.1"
 hotwatch = "0.4.3"
 config = "0.10.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -45,7 +45,7 @@ noise = "0.6.0"
 simdnoise = "3.1.5"
 interpolation = "0.2.0"
 rlua = "0.17.0"
-sysinfo = "0.14.1"
+sysinfo = "0.14.2"
 systemstat = "0.1.5"
 procinfo = "0.4.2"
 rustfft = "3.0.1"
@@ -54,7 +54,7 @@ cpal = "0.11.0"
 libpulse-binding = "2.16"
 libpulse-simple-binding = "2.16"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
-dbus = { version = "0.8.2", optional = true }
+dbus = { version = "0.8.3", optional = true }
 rocket = { version = "0.4.4", optional = true }
 rocket_contrib = { version = "0.4.4", optional = true, features = ["tera_templates"] }
 

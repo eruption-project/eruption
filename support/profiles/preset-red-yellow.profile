@@ -2,12 +2,17 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713099'
 name = 'Preset: Red and Yellow'
 description = '''Presets for a 'red and yellow' color scheme'''
 active_scripts = [
- 	'macros.lua',
 	'batique.lua',
-	'shockwave.lua'
+	'shockwave.lua',
+ 	'macros.lua',
 ]
 
 [[config.Batique]]
 type = 'float'
 name = 'color_divisor'
-value = 8.0
+value = 2.0
+
+[[config.Batique]]
+type = 'float'
+name = 'color_offset'
+value = -90.0

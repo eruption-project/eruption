@@ -13,12 +13,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+require "declarations"
+require "debug"
+
 -- global state variables --
 ticks = 0
 color_map = {}
-
-num_rows = 6
-num_cols = 22
 
 function on_tick(delta)
     ticks = ticks + delta + 1

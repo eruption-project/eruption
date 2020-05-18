@@ -2,12 +2,12 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713093'
 name = 'Default'
 description = 'The default profile'
 active_scripts = [
-    'macros.lua',
     'organic.lua',
     'shockwave.lua',
     'impact.lua',
 #   'water.lua',
 #   'raindrops.lua',
+    'macros.lua',
 ]
 
 [[config.Shockwave]]

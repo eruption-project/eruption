@@ -1,26 +1,38 @@
-# Eruption Lua Support Library
+# Eruption Support Library
 
 _This document is a work-in-progress draft_
 
 ## Overview
 
 Eruption provides a small, but hopefully useful library of functions that are
-intended to be used by Lua scripts. Functions can be provided either by the
-daemon proper, or by plugins. Plugin specific functions are only available
-if the respective plugin is loaded.
+intended to be used by Lua scripts. Functions can be exported either by the
+daemon core, by Eruption plugins, or are provided via the Eruption Lua support
+library. Plugin specific functions are only available if the respective plugin
+is loaded. Functions provided by the Lua support library are available only if
+the respective file was loaded previously via a call to `require "..."`.
 
 ## Available Plugins
 
 * Keyboard: Process keyboard events, like e.g. "Key pressed"
-* System: Basic system information and status, like e.g. running processes
+* System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 * Sensors: Query system sensor values, like e.g. CPU package temperature
-* Audio: Audio related tasks, like playing sounds
+* Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 * Introspection: Provides internal status information of the Eruption daemon
-* Profiles: Switch profiles based on system state
+* Profiles: Switch slots, switch profiles based on system state, ...
 
-## Available Functions
+## Available Support Library Functions
 
-Eruption currently ships with the following library functions:
+Eruption currently ships with the following support library functions:
+
+| Name                               | File            | Since       | Description                                                 |
+| ---------------------------------- | --------------- | ----------- | ----------------------------------------------------------- |
+| `key_index(x, y)`                  | `utilities.lua` | since 0.1.9 | Returns the index of the key with the specified coordinates |
+| `debug_print_led_state(color_map)` | `debug.lua`     | since 0.1.9 | Prints a table, showing LED states in `color_map`           |
+
+## Core Functions
+
+Core functions are written in Rust, and are exported to the Lua VMs.
+Eruption currently ships with the following core functions:
 
 | Name                                                  | Plugin   | Lib      | Since              | Description                                                                                                                                                                                |
 | ----------------------------------------------------- | -------- | -------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -38,6 +50,8 @@ Eruption currently ships with the following library functions:
 | `rand(l, h) -> f`                                     | _core_   | Math     | since before 0.0.9 | Returns a random number in the range `l..h`                                                                                                                                                |
 | `trunc(f) -> i`                                       | _core_   | Math     | since before 0.0.9 | Truncate the fractional part of `f`                                                                                                                                                        |
 | `lerp(f0, f1, f) -> f`                                | _core_   | Math     | since 0.0.9        | Linear interpolation of `f` to `f0`..`f1`, where `f` should lie in the range of -1.0..+1.0                                                                                                 |
+| `invlerp(f0, f1, f) -> f`                             | _core_   | Math     | since 0.1.9        | Inverse linear interpolation of `f` to `f0`..`f1`. Returns a value in the range -1.0..+1.0                                                                                                 |
+| `range(f0, f1, f2, f3, f) -> f`                       | _core_   | Math     | since 0.1.9        | Linear interpolation of `f` from the range `f0`..`f1`, to the range `f2`..`f3`                                                                                                             |
 | `min(f1, f2) -> f`                                    | _core_   | Math     | since before 0.0.9 | Returns the smaller one of the two values                                                                                                                                                  |
 | `max(f1, f2) -> f`                                    | _core_   | Math     | since before 0.0.9 | Returns the greater one of the two values                                                                                                                                                  |
 | `clamp(f, l, h) -> f`                                 | _core_   | Math     | since before 0.0.9 | Clamp `f` to range `l..h`                                                                                                                                                                  |
@@ -70,6 +84,7 @@ Eruption currently ships with the following library functions:
 | `set_color_map([color_map])`                          | _core_   | Hw       | since before 0.0.9 | Set all LEDs at once to the colors specified in the array `color_map`. This will directly access the keyboard. Please see also: submit_color_map()                                         |
 | `submit_color_map([color_map])`                       | _core_   | Hw       | since 0.0.12       | Set all LEDs at once to the colors specified in the array `color_map`. Color maps of all scripts will be alpha blended together. and then sent to the keyboard once for each render frame. |
 | `inject_key(ev_key, down)`                            | _core_   | Hw       | since 0.1.1        | Inject a key event on the virtual keyboard                                                                                                                                                 |
+| `inject_key_with_delay(ev_key, down, millis)`         | _core_   | Hw       | since 0.1.9        | Inject a key event on the virtual keyboard, after `millis` milliseconds has passed                                                                                                         |
 | `get_current_load_avg_1() -> f`                       | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 1 minute                                                                                                                                       |
 | `get_current_load_avg_5() -> f`                       | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 5 minutes                                                                                                                                      |
 | `get_current_load_avg_10() -> f`                      | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 10 minutes                                                                                                                                     |
@@ -115,6 +130,7 @@ The following code will change a key's color to `bright red` after it has been
 pressed.
 
 #### Listing 01
+
 ```lua
 
 -- global array that stores each key's current color
