@@ -65,17 +65,25 @@ function update_color_state()
 
 		-- highlight remapped keys
 		for i = 0, num_keys do 
-			if EASY_SHIFT_REMAPPING_TABLE[i] ~= nil then
+			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = rgb_to_color(0, 64, 255) 
 			end
 		end
 
-		-- highlight macro keys
+		-- highlight keys with associated macros
 		for i = 0, num_keys do 
-			if EASY_SHIFT_MACRO_TABLE[i] ~= nil then
+			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = rgb_to_color(255, 0, 0)
 			end
 		end
+
+		-- highlight the macro keys (INSERT - PAGEDOWN)
+		color_map[101] = rgb_to_color(255, 0, 0)
+		color_map[105] = rgb_to_color(255, 0, 0)
+		color_map[110] = rgb_to_color(255, 0, 0)
+		color_map[102] = rgb_to_color(255, 0, 0)
+		color_map[106] = rgb_to_color(255, 0, 0)
+		color_map[111] = rgb_to_color(255, 0, 0)
 
 		highlight_ttl = highlight_max_ttl
 			
@@ -118,17 +126,17 @@ end
 -- remapping tables
 
 -- change the tables below to perform a simple one-to-one mapping
--- convention is: REMAPPING_TABLE[KEY_INDEX] = EV_KEY_CONSTANT
+-- convention is: REMAPPING_TABLE<[LAYER]>[KEY_INDEX] = EV_KEY_CONSTANT
 
 -- find some examples below:
--- REMAPPING_TABLE[35]			=  44  -- Remap: 'z' => 'y'
+-- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
 
-EASY_SHIFT_REMAPPING_TABLE[1]   = 113  -- Remap: ESC => MUTE (audio), while Easy Shift is activated
+EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
--- assign macros to keys on the Easy Shift layer
-EASY_SHIFT_MACRO_TABLE[7]		= macro_select_idle_scvs  	 --
-EASY_SHIFT_MACRO_TABLE[13]		= macro_select_all_military  --
--- EASY_SHIFT_MACRO_TABLE[19]		= easyshift_macro_3  	 --
+-- assign macros to keys on the Easy Shift+ layer
+EASY_SHIFT_MACRO_TABLE[1][7]		= macro_select_idle_scvs  	 --
+EASY_SHIFT_MACRO_TABLE[1][13]		= macro_select_all_military  --
+-- EASY_SHIFT_MACRO_TABLE[1][19]	= easyshift_macro_3  	 	 --
 
 
 -- ****************************************************************************

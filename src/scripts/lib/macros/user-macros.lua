@@ -138,17 +138,25 @@ function update_color_state()
 
 		-- highlight remapped keys
 		for i = 0, num_keys do 
-			if EASY_SHIFT_REMAPPING_TABLE[i] ~= nil then
+			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = rgb_to_color(0, 64, 255) 
 			end
 		end
 
-		-- highlight macro keys
+		-- highlight keys with associated macros
 		for i = 0, num_keys do 
-			if EASY_SHIFT_MACRO_TABLE[i] ~= nil then
+			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = rgb_to_color(0, 255, 0) 
 			end
 		end
+
+		-- highlight the macro keys (INSERT - PAGEDOWN)
+		color_map[101] = rgb_to_color(255, 0, 0)
+		color_map[105] = rgb_to_color(255, 0, 0)
+		color_map[110] = rgb_to_color(255, 0, 0)
+		color_map[102] = rgb_to_color(255, 0, 0)
+		color_map[106] = rgb_to_color(255, 0, 0)
+		color_map[111] = rgb_to_color(255, 0, 0)
 
 		highlight_ttl = highlight_max_ttl
 			
@@ -191,31 +199,32 @@ end
 -- remapping tables
 
 -- change the tables below to perform a simple one-to-one mapping
--- convention is: REMAPPING_TABLE[KEY_INDEX] = EV_KEY_CONSTANT
+-- convention is: REMAPPING_TABLE<[LAYER]>[KEY_INDEX] = EV_KEY_CONSTANT
 
 -- find some examples below:
--- REMAPPING_TABLE[35]			=  44  -- Remap: 'z' => 'y'
+-- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
 
-EASY_SHIFT_REMAPPING_TABLE[1]   = 113  -- Remap: ESC => MUTE (audio), while Easy Shift is activated
+EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[4][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
--- map F1 - F12 => F13 - F24 on the Easy Shift layer
-EASY_SHIFT_REMAPPING_TABLE[12]	= 183
-EASY_SHIFT_REMAPPING_TABLE[18]	= 184
-EASY_SHIFT_REMAPPING_TABLE[24]	= 185
-EASY_SHIFT_REMAPPING_TABLE[29]	= 186
-EASY_SHIFT_REMAPPING_TABLE[49]	= 187
-EASY_SHIFT_REMAPPING_TABLE[54]	= 188
-EASY_SHIFT_REMAPPING_TABLE[60]	= 189
-EASY_SHIFT_REMAPPING_TABLE[66]	= 190
-EASY_SHIFT_REMAPPING_TABLE[79]	= 191
-EASY_SHIFT_REMAPPING_TABLE[85]	= 192
-EASY_SHIFT_REMAPPING_TABLE[86]	= 193
-EASY_SHIFT_REMAPPING_TABLE[87]	= 194
+-- map F1 - F12 => F13 - F21 on the Easy Shift layer
+EASY_SHIFT_REMAPPING_TABLE[1][12]	= 183
+EASY_SHIFT_REMAPPING_TABLE[1][18]	= 184
+EASY_SHIFT_REMAPPING_TABLE[1][24]	= 185
+EASY_SHIFT_REMAPPING_TABLE[1][29]	= 186
+EASY_SHIFT_REMAPPING_TABLE[1][49]	= 187
+EASY_SHIFT_REMAPPING_TABLE[1][54]	= 188
+EASY_SHIFT_REMAPPING_TABLE[1][60]	= 189
+EASY_SHIFT_REMAPPING_TABLE[1][66]	= 190
+EASY_SHIFT_REMAPPING_TABLE[1][79]	= 191
+EASY_SHIFT_REMAPPING_TABLE[1][85]	= 192
+EASY_SHIFT_REMAPPING_TABLE[1][86]	= 193
+EASY_SHIFT_REMAPPING_TABLE[1][87]	= 194
 
--- assign macros to keys on the Easy Shift layer
-EASY_SHIFT_MACRO_TABLE[7]		= easyshift_macro_1  -- CTRL + SHIFT + 1 (a custom shortcut example)
-EASY_SHIFT_MACRO_TABLE[13]		= easyshift_macro_2  -- ALT + F4 (close active window)
-EASY_SHIFT_MACRO_TABLE[19]		= easyshift_macro_3  -- A custom macro
+-- assign macros to keys on the Easy Shift+ layer
+EASY_SHIFT_MACRO_TABLE[1][7]		= easyshift_macro_1  -- CTRL + SHIFT + 1 (a custom shortcut example)
+EASY_SHIFT_MACRO_TABLE[1][13]		= easyshift_macro_2  -- ALT + F4 (close active window)
+EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  -- A custom macro
 
 
 -- ****************************************************************************

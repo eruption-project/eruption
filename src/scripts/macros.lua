@@ -32,8 +32,13 @@ require "macros/modifiers"
 -- initialize remapping tables
 REMAPPING_TABLE = {}			-- level 1 remapping table (No modifier keys applied)
 
-EASY_SHIFT_REMAPPING_TABLE = {} -- level 4 remapping table (Easy Shift+ layer)
-EASY_SHIFT_MACRO_TABLE = {} 	-- level 4 macro table (Easy Shift+ layer)
+ACTIVE_EASY_SHIFT_LAYER = 1		-- level 4 supports up to 6 sub-layers
+EASY_SHIFT_REMAPPING_TABLE = {  -- level 4 remapping table (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+EASY_SHIFT_MACRO_TABLE = {	 	-- level 4 macro table (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
 
 -- import custom macro definitions sub-modules
 require(requires)
@@ -120,6 +125,21 @@ function on_key_down(key_index)
 		on_macro_key_down(5)
 	end
 
+	-- switch Easy Shift+ layers via Caps Lock + macro keys
+	if modifier_map[CAPS_LOCK] and key_index == 101 then
+		do_switch_easy_shift_layer(0)
+	elseif modifier_map[CAPS_LOCK] and key_index == 105 then
+		do_switch_easy_shift_layer(1)
+	elseif modifier_map[CAPS_LOCK] and key_index == 110 then
+		do_switch_easy_shift_layer(2)
+	elseif modifier_map[CAPS_LOCK] and key_index == 102 then
+		do_switch_easy_shift_layer(3)
+	elseif modifier_map[CAPS_LOCK] and key_index == 106 then
+		do_switch_easy_shift_layer(4)
+	elseif modifier_map[CAPS_LOCK] and key_index == 111 then
+		do_switch_easy_shift_layer(5)
+	end
+
 	-- media keys (F9 - F12)
 	-- if modifier_map[MODIFIER_KEY] and key_index == 79 then
 	-- 	inject_key(165, true) -- EV_KEY::PREVSONG
@@ -135,9 +155,9 @@ function on_key_down(key_index)
 
 	-- call complex macros on the Easy Shift+ layer (layer 4)
 	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and 
-	    EASY_SHIFT_MACRO_TABLE[key_index] ~= nil then
+	    EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
 		-- call associated function
-		EASY_SHIFT_MACRO_TABLE[key_index]()
+		EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]()
 	end
 end
 
@@ -190,7 +210,7 @@ end
 -- perform a simple remapping
 function simple_remapping(key_index, down)
 	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
-		code = EASY_SHIFT_REMAPPING_TABLE[key_index]
+		code = EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]
 		if code ~= nil then
 			inject_key(code, down)
 		end
@@ -210,6 +230,15 @@ function do_switch_slot(index)
 
 	-- tell the Eruption core to switch to a different slot
 	switch_to_slot(index)
+end
+
+function do_switch_easy_shift_layer(index)
+	debug("Switching to Easy Shift+ layer #" .. index + 1)
+
+	-- consume the keystroke
+	inject_key(0, false)
+
+	ACTIVE_EASY_SHIFT_LAYER = index + 1
 end
 
 function on_tick(delta)
