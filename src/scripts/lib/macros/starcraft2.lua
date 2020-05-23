@@ -16,6 +16,9 @@
 -- This is the macro definitions file for the game "Star Craft 2".
 -- You may want to customize the code below
 
+-- override color scheme
+require "themes/gaming"
+
 function macro_select_idle_scvs()
 	debug("Playing back: Select idle SCVs")
 
@@ -66,24 +69,40 @@ function update_color_state()
 		-- highlight remapped keys
 		for i = 0, num_keys do 
 			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
-				color_map[i] = rgb_to_color(0, 64, 255) 
+				color_map[i] = COLOR_REMAPPED_KEY
 			end
 		end
 
 		-- highlight keys with associated macros
 		for i = 0, num_keys do 
 			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
-				color_map[i] = rgb_to_color(255, 0, 0)
+				color_map[i] = COLOR_ASSOCIATED_MACRO
 			end
 		end
 
 		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map[101] = rgb_to_color(255, 0, 0)
-		color_map[105] = rgb_to_color(255, 0, 0)
-		color_map[110] = rgb_to_color(255, 0, 0)
-		color_map[102] = rgb_to_color(255, 0, 0)
-		color_map[106] = rgb_to_color(255, 0, 0)
-		color_map[111] = rgb_to_color(255, 0, 0)
+		color_map[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map[105] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map[110] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map[102] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map[106] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map[111] = COLOR_SWITCH_EASY_SHIFT_LAYER
+
+		-- highlight the active slot in a different color
+		active_color = rgb_to_color(128, 128, 255)
+		if ACTIVE_EASY_SHIFT_LAYER == 1 then
+			color_map[101] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
+			color_map[105] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		elseif ACTIVE_EASY_SHIFT_LAYER == 3 then
+			color_map[110] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		elseif ACTIVE_EASY_SHIFT_LAYER == 4 then
+			color_map[102] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		elseif ACTIVE_EASY_SHIFT_LAYER == 5 then
+			color_map[106] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		elseif ACTIVE_EASY_SHIFT_LAYER == 6 then
+			color_map[111] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+		end
 
 		highlight_ttl = highlight_max_ttl
 			
@@ -94,30 +113,29 @@ function update_color_state()
 		for i = 0, num_keys do color_map[i] = color_highlight end
 
 		-- highlight the slot keys
-		color_map[12] = rgb_to_color(32, 64, 128)
-		color_map[18] = rgb_to_color(32, 64, 128)
-		color_map[24] = rgb_to_color(32, 64, 128)
-		color_map[29] = rgb_to_color(32, 64, 128)
+		color_map[12] = COLOR_SWITCH_SLOT
+		color_map[18] = COLOR_SWITCH_SLOT
+		color_map[24] = COLOR_SWITCH_SLOT
+		color_map[29] = COLOR_SWITCH_SLOT
 
 		-- highlight the active slot in a different color
-		active_color = rgb_to_color(128, 128, 255)
 		if get_current_slot() == 0 then
-			color_map[12] = active_color
+			color_map[12] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 1 then
-			color_map[18] = active_color
+			color_map[18] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 2 then
-			color_map[24] = active_color
+			color_map[24] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 3 then
-			color_map[29] = active_color
+			color_map[29] = COLOR_ACTIVE_SLOT
 		end
 
 		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map[101] = rgb_to_color(255, 0, 0)
-		color_map[105] = rgb_to_color(255, 0, 0)
-		color_map[110] = rgb_to_color(255, 0, 0)
-		color_map[102] = rgb_to_color(255, 0, 0)
-		color_map[106] = rgb_to_color(255, 0, 0)
-		color_map[111] = rgb_to_color(255, 0, 0)
+		color_map[101] = COLOR_MACRO_KEY
+		color_map[105] = COLOR_MACRO_KEY
+		color_map[110] = COLOR_MACRO_KEY
+		color_map[102] = COLOR_MACRO_KEY
+		color_map[106] = COLOR_MACRO_KEY
+		color_map[111] = COLOR_MACRO_KEY
 
 		highlight_ttl = highlight_max_ttl
 	end

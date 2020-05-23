@@ -40,6 +40,9 @@ EASY_SHIFT_MACRO_TABLE = {	 	-- level 4 macro table (Easy Shift+ layer)
 	{}, {}, {}, {}, {}, {}
 }
 
+-- import default color scheme
+require "themes/default"
+
 -- import custom macro definitions sub-modules
 require(requires)
 

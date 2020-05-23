@@ -152,6 +152,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
