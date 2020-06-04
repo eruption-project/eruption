@@ -16,7 +16,7 @@ all = ["dbus"]
 frontend = ["rocket", "rocket_contrib"]
 
 [dependencies]
-libc = "0.2.70"
+libc = "0.2.71"
 nix = "0.17.0"
 prctl = "1.0.0"
 log = "0.4.8"
@@ -24,7 +24,7 @@ parking_lot = { version = "0.10.2", features = ["deadlock_detection"] }
 pretty_env_logger = "0.4.0"
 failure = "0.1.8"
 toml = "0.5.6"
-serde = { version = "1.0.110", features = ["derive"] }
+serde = { version = "1.0.111", features = ["derive"] }
 ctrlc = { version = "3.1.4", features = ["termination"] }
 clap = "2.33.1"
 hotwatch = "0.4.3"
@@ -42,10 +42,10 @@ rand = "0.7.3"
 palette = "0.5.0"
 nalgebra = "0.21.0"
 noise = "0.6.0"
-simdnoise = "3.1.5"
+simdnoise = "3.1.6"
 interpolation = "0.2.0"
 rlua = "0.17.0"
-sysinfo = "0.14.2"
+sysinfo = "0.14.5"
 systemstat = "0.1.5"
 procinfo = "0.4.2"
 rustfft = "3.0.1"
@@ -55,8 +55,8 @@ libpulse-binding = "2.16"
 libpulse-simple-binding = "2.16"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 dbus = { version = "0.8.3", optional = true }
-rocket = { version = "0.4.4", optional = true }
-rocket_contrib = { version = "0.4.4", optional = true, features = ["tera_templates"] }
+rocket = { version = "0.4.5", optional = true }
+rocket_contrib = { version = "0.4.5", optional = true, features = ["tera_templates"] }
 
 [profile.dev]
 opt-level = 0
