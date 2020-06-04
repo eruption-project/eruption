@@ -100,6 +100,14 @@ $ sudo dnf copr enable x3n0m0rph59/eruption-roccat-vulcan
 $ sudo dnf install eruption-roccat-vulcan-git
 ```
 
+#### Ubuntu
+
+```sh
+sudo add-apt-repository ppa:x3n0m0rph59/eruption-roccat-vulcan
+sudo apt update
+sudo apt install eruption-roccat-vulcan-git
+```
+
 To activate eruption now, you may either reboot your system or manually start
 the daemon with the command:
 
@@ -109,8 +117,6 @@ $ sudo systemctl start eruption.service
 
 Note: You don't have to enable the eruption service, since it is started by an
 `udev rule` as soon as a compatible keyboard device is plugged into your system.
-
-*Support for more distributions is coming soon!*
 
 #### From Source
 
