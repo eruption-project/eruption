@@ -25,7 +25,7 @@ use udev::Enumerator;
 
 // use log::*;
 
-use crate::rvdevice;
+use crate::hwdevices;
 
 pub type Result<T> = std::result::Result<T, UtilError>;
 
@@ -39,6 +39,9 @@ pub enum UtilError {
 
     #[fail(display = "Could not enumerate udev devices")]
     UdevError {},
+
+    #[fail(display = "Could not map an evdev event code to a key or button")]
+    MappingError {},
 }
 
 /// Get the path of the evdev device of the first keyboard from udev
@@ -53,10 +56,10 @@ pub fn get_evdev_from_udev() -> Result<String> {
                         let found_dev = device.properties().any(|e| {
                             e.name() == "ID_VENDOR_ID"
                                 && e.value().to_string_lossy()
-                                    == format!("{:x}", rvdevice::VENDOR_ID)
+                                    == format!("{:x}", hwdevices::VENDOR_ID)
                         }) && device.properties().any(|e| {
                             e.name() == "ID_MODEL_ID"
-                                && rvdevice::PRODUCT_ID
+                                && hwdevices::PRODUCT_ID
                                     .iter()
                                     .map(|v| format!("{:x}", v))
                                     .any(|v| v == e.value().to_string_lossy())
@@ -77,6 +80,78 @@ pub fn get_evdev_from_udev() -> Result<String> {
         Err(_e) => Err(UtilError::UdevError {}),
     }
 }
+
+/// Get the path of the evdev device of the first mouse from udev
+pub fn get_mouse_dev_from_udev() -> Result<String> {
+    match Enumerator::new() {
+        Ok(mut enumerator) => {
+            enumerator.match_subsystem("input").unwrap();
+            enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+
+            match enumerator.scan_devices() {
+                Ok(devices) => {
+                    for device in devices {
+                        if device.devnode().is_some() {
+                            // skip keyboard integrated mouse devices
+                            if let Some(val) = device.property_value("ID_MODEL") {
+                                if !val.to_string_lossy().contains("Vulcan") {
+                                    return Ok(device
+                                        .devnode()
+                                        .unwrap()
+                                        .to_str()
+                                        .unwrap()
+                                        .to_string());
+                                }
+                            }
+                        }
+                    }
+
+                    Err(UtilError::NoDevicesFound {})
+                }
+
+                Err(_e) => Err(UtilError::EnumerationError {}),
+            }
+        }
+
+        Err(_e) => Err(UtilError::UdevError {}),
+    }
+}
+
+// pub fn is_mouse_device(vendor_id: u16, product_id: u16) -> Result<bool> {
+//     match Enumerator::new() {
+//         Ok(mut enumerator) => {
+//             enumerator.match_subsystem("input").unwrap();
+
+//             match enumerator.scan_devices() {
+//                 Ok(devices) => {
+//                     for device in devices {
+//                         let found_dev = device.properties().any(|e| {
+//                             e.name() == "ID_VENDOR_ID"
+//                                 && e.value().to_string_lossy() == format!("{:x}", vendor_id)
+//                         }) && device.properties().any(|e| {
+//                             e.name() == "ID_MODEL_ID"
+//                                 && e.value().to_string_lossy() == format!("{:x}", product_id)
+//                         }) && device.devnode().is_some();
+
+//                         if found_dev {
+//                             if let Some(property) = device.property_value("ID_INPUT_MOUSE") {
+//                                 return Ok(property.to_string_lossy() == "1");
+//                             } else {
+//                                 return Ok(false);
+//                             }
+//                         }
+//                     }
+
+//                     Err(UtilError::NoDevicesFound {})
+//                 }
+
+//                 Err(_e) => Err(UtilError::EnumerationError {}),
+//             }
+//         }
+
+//         Err(_e) => Err(UtilError::UdevError {}),
+//     }
+// }
 
 // pub fn get_evdev_from_proc() -> Result<String> {
 //     let mut file = File::open("/proc/bus/input/devices")?;
@@ -339,4 +414,24 @@ static _EV_TO_INDEX_ANSI: [u8; 0x2ff + 1] = [
 
 pub fn ev_key_to_key_index(key: EV_KEY) -> u8 {
     EV_TO_INDEX_ISO[((key as u8) as usize)] + 1
+}
+
+pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
+    match code {
+        evdev_rs::enums::EV_KEY::BTN_LEFT => Ok(0),
+        evdev_rs::enums::EV_KEY::BTN_MIDDLE => Ok(1),
+        evdev_rs::enums::EV_KEY::BTN_RIGHT => Ok(2),
+
+        evdev_rs::enums::EV_KEY::BTN_4 => Ok(3),
+        evdev_rs::enums::EV_KEY::BTN_5 => Ok(4),
+        evdev_rs::enums::EV_KEY::BTN_6 => Ok(5),
+        evdev_rs::enums::EV_KEY::BTN_7 => Ok(6),
+        evdev_rs::enums::EV_KEY::BTN_8 => Ok(7),
+        evdev_rs::enums::EV_KEY::BTN_9 => Ok(8),
+
+        evdev_rs::enums::EV_KEY::BTN_EXTRA => Ok(9),
+        evdev_rs::enums::EV_KEY::BTN_SIDE => Ok(10),
+
+        _ => Err(UtilError::MappingError {}),
+    }
 }

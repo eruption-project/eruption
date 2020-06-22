@@ -36,7 +36,7 @@ function on_startup(config)
 	end
 end
 
-function on_key_down(key_index)	
+function on_key_down(key_index)
 	color_map[key_index] = rgba_to_color(255, 255, 255, 255)
 
     for i = 0, max_neigh do
@@ -46,13 +46,52 @@ function on_key_down(key_index)
             color_map[neigh_key] = color_impact
         end
 	end
-	
+
+	effect_ttl = max_effect_ttl
+end
+
+function on_mouse_button_down(button_index)
+	if not mouse_events then return end
+
+	local num_keys = get_num_keys()
+	for i = 0, num_keys do
+		color_map[i] = rgba_to_color(255, 255, 255, 64)
+	end
+
+	effect_ttl = max_effect_ttl
+end
+
+function on_mouse_button_up(button_index)
+	if not mouse_events then return end
+
+	local num_keys = get_num_keys()
+	for i = 0, num_keys do
+		color_map[i] = rgba_to_color(255, 255, 255, 64)
+	end
+
+	effect_ttl = max_effect_ttl
+end
+
+function on_mouse_wheel(direction)
+	if not mouse_events then return end
+
+	if direction == 0 then
+		c = rgba_to_color(255, 255, 255, 64)
+	elseif direction == 1 then
+		c = rgba_to_color(255, 255, 255, 64)
+	end
+
+	local num_keys = get_num_keys()
+	for i = 0, num_keys do
+		color_map[i] = c
+	end
+
 	effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
 	ticks = ticks + delta + 1
-	
+
 	if effect_ttl <= 0 then return end
 
 	local num_keys = get_num_keys()

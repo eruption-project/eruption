@@ -22,3 +22,9 @@ type = 'int'
 name = 'alpha_step_impact'
 description = 'Value that gets subtracted from the impact effects alpha channel every n frames'
 default = 5
+
+[[config]]
+type = 'bool'
+name = 'mouse_events'
+description = 'React on mouse events'
+default = true

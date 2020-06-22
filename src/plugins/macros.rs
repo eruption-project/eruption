@@ -53,6 +53,7 @@ pub enum MacrosPluginError {
 lazy_static! {
     pub static ref UINPUT_TX: Arc<Mutex<Option<Sender<Message>>>> = Arc::new(Mutex::new(None));
     pub static ref DROP_CURRENT_KEY: AtomicBool = AtomicBool::new(false);
+    pub static ref DROP_CURRENT_MOUSE_INPUT: AtomicBool = AtomicBool::new(false);
 }
 
 thread_local! {
@@ -372,82 +373,6 @@ impl MacrosPlugin {
             .name("uinput".into())
             .spawn(move || {
                 Self::initialize_thread_locals().unwrap();
-
-                // register an event observer for processing of all raw
-                // keyboard events from the hardware keyboard
-                //events::register_observer(|event: &events::Event| {
-                //match event {
-                //events::Event::RawKeyboardEvent(raw_event) => {
-                ////debug!("Key event: {:?}", raw_event);
-
-                //let mut already_processed = false;
-
-                //if let EventCode::EV_KEY(ref code) = raw_event.event_code {
-                //if code == &EV_KEY::KEY_RIGHTCTRL {
-                //MODIFIER_PRESSED.with(|modifier| {
-                //*modifier.borrow_mut() = raw_event.value > 0
-                //});
-                //}
-
-                //// support media keys
-                //MODIFIER_PRESSED.with(|modifier| {
-                //if raw_event.value < 2 {
-                //trace!("Modifier pressed: {}", *modifier.borrow());
-
-                //if code == &EV_KEY::KEY_F9 && *modifier.borrow() {
-                //Self::inject_single_key(
-                //EV_KEY::KEY_PREVIOUSSONG,
-                //raw_event.value,
-                //&raw_event.time,
-                //)
-                //.unwrap();
-                //already_processed = true;
-                //}
-
-                //if code == &EV_KEY::KEY_F10 && *modifier.borrow() {
-                //Self::inject_single_key(
-                //EV_KEY::KEY_STOPCD,
-                //raw_event.value,
-                //&raw_event.time,
-                //)
-                //.unwrap();
-                //already_processed = true;
-                //}
-
-                //if code == &EV_KEY::KEY_F11 && *modifier.borrow() {
-                //Self::inject_single_key(
-                //EV_KEY::KEY_PLAYPAUSE,
-                //raw_event.value,
-                //&raw_event.time,
-                //)
-                //.unwrap();
-                //already_processed = true;
-                //}
-
-                //if code == &EV_KEY::KEY_F12 && *modifier.borrow() {
-                //Self::inject_single_key(
-                //EV_KEY::KEY_NEXTSONG,
-                //raw_event.value,
-                //&raw_event.time,
-                //)
-                //.unwrap();
-                //already_processed = true;
-                //}
-                //}
-                //});
-                //}
-
-                //if !already_processed [>&& !DROP_CURRENT_KEY.load(Ordering::SeqCst)<] {
-                //// mirror hardware keyboard to virtual keyboard
-                //Self::inject_key_event(raw_event.clone()).unwrap();
-                //}
-
-                //Ok(true)
-                //}
-
-                //_ => Ok(false),
-                //}
-                //});
 
                 loop {
                     let message = uinput_rx.recv().unwrap();

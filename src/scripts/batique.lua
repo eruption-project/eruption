@@ -20,9 +20,6 @@ require "debug"
 ticks = 0
 color_map = {}
 
-num_rows = 6
-num_cols = 22
-
 function on_tick(delta)
     ticks = ticks + delta + 1
 
@@ -34,8 +31,8 @@ function on_tick(delta)
             local x = i / num_rows
             local y = i / num_cols
 
-            local val = super_simplex_noise(x / coord_scale,
-                                            y / coord_scale,
+            local val = super_simplex_noise((x / coord_scale),
+                                            (y / coord_scale),
                                             ticks / time_scale)
             val = lerp(0, 360, val)
 

@@ -320,11 +320,13 @@ You may use it to implement your own macros.
 ## Available Plugins <a name="plugins"></a>
 
 * Keyboard: Process keyboard events, like e.g. "Key pressed"
+* Mouse: Process mouse events, like e.g. "Button pressed" or "Mouse moved"
 * System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 * Introspection: Provides internal status information of the Eruption daemon
 * Profiles: Switch slots, switch profiles based on system state, ...
+* Macros: Inject programmable key stroke sequences
 
 ## Available Effects Scripts <a name="effects"></a>
 
@@ -399,5 +401,5 @@ Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
 ## Known Issues <a name="issues"></a>
 
 - Media keys not working, e.g.: `FN + F11` does not start music playback on my desktop
-  
+
   *It seems that the problem with disfunctional media keys got resolved by a recent firmware update*

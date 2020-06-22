@@ -14,11 +14,13 @@ the respective file was loaded previously via a call to `require "..."`.
 ## Available Plugins
 
 * Keyboard: Process keyboard events, like e.g. "Key pressed"
+* Mouse: Process mouse events, like e.g. "Button pressed" or "Mouse moved"
 * System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 * Introspection: Provides internal status information of the Eruption daemon
 * Profiles: Switch slots, switch profiles based on system state, ...
+* Macros: Inject programmable key stroke sequences
 
 ## Available Support Library Functions
 
@@ -91,6 +93,7 @@ Eruption currently ships with the following core functions:
 | `get_runnable_tasks() -> i`                           | System   | Sys      | since before 0.0.9 | Returns the number of runnable tasks on the system                                                                                                                                         |
 | `get_total_tasks() -> i`                              | System   | Sys      | since before 0.0.9 | Returns the total number of tasks on the system                                                                                                                                            |
 | `system(cmd, [args]) -> i`                            | System   | Sys      | since 0.1.8        | Run a shell command                                                                                                                                                                        |
+| `get_button_state(button_index) -> bool`              | Mouse    | Mouse    | since 0.1.10       | Returns `true` when mouse button `button_index` is pressed, otherwise returns `false`                                                                                                      |
 | `get_key_state(key_index) -> bool`                    | Keyboard | Keyboard | since 0.1.8        | Returns `true` when key `key_index` is pressed, otherwise returns `false`                                                                                                                  |
 | `get_current_slot() -> i`                             | Profiles | Profiles | since 0.1.8        | Returns the currently active slot (0-3)                                                                                                                                                    |
 | `switch_to_slot(index)`                               | Profiles | Profiles | since 0.1.8        | Switch to slot `index`                                                                                                                                                                     |
@@ -115,13 +118,17 @@ Please Note:
 
 Eruption currently calls the following event handler functions, if they are present in a Lua script:
 
-| Name                     | Plugin | Parameters                                | Description                                   |
-| ------------------------ | ------ | ----------------------------------------- | --------------------------------------------- |
-| `on_startup`             | _core_ | _n/a_                                     | Sent on startup, e.g. when a script is loaded |
-| `on_quit`                | _core_ | _n/a_                                     | Sent on daemon exit                           |
-| `on_tick(delta)`         | _core_ | delta: Timer delta since last tick        |                                               |
-| `on_key_down(key_index)` | _core_ | key_index: Key index (column major order) |                                               |
-| `on_key_up(key_index)`   | _core_ | key_index: Key index (column major order) |                                               |
+| Name                                   | Class      | Parameters                                | Description                                   |
+| -------------------------------------- | ---------- | ----------------------------------------- | --------------------------------------------- |
+| `on_startup`                           | _core_     | _n/a_                                     | Sent on startup, e.g. when a script is loaded |
+| `on_quit`                              | _core_     | _n/a_                                     | Sent on daemon exit                           |
+| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick        |                                               |
+| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order) |                                               |
+| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order) |                                               |
+| `on_mouse_down(button_index)`          | _Mouse_    | button_index: Index of mouse button       |                                               |
+| `on_mouse_up(button_index)`            | _Mouse_    | button_index: Index of mouse button       |                                               |
+| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 0 == up, 1 == down             |                                               |
+| `on_mouse_move(direction, rel_change)` | _Mouse_    | direction: 0 == horizontal, 1 == vertical | _Currently not supported_                     |
 Exhaustive listing of all currently available event callbacks
 
 ## Example Code

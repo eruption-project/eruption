@@ -30,9 +30,15 @@ pub enum Event {
     FileSystemEvent(crate::FileSystemEvent),
 
     RawKeyboardEvent(evdev_rs::InputEvent),
+    RawMouseEvent(evdev_rs::InputEvent),
 
     KeyDown(u8),
     KeyUp(u8),
+
+    MouseButtonDown(u8),
+    MouseButtonUp(u8),
+    MouseMove(u8, i32),
+    MouseWheelEvent(u8),
 }
 
 pub type Callback = dyn Fn(&Event) -> Result<bool> + Sync + Send + 'static;

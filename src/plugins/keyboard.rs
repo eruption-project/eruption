@@ -26,7 +26,7 @@ use std::fs::File;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, RwLock};
 
-use crate::rvdevice;
+use crate::hwdevices;
 use crate::util;
 
 use crate::plugins::macros;
@@ -54,7 +54,7 @@ pub enum KeyboardPluginError {
 
 lazy_static! {
     static ref KEY_STATES: Arc<RwLock<Vec<bool>>> =
-        Arc::new(RwLock::new(vec![false; rvdevice::NUM_KEYS]));
+        Arc::new(RwLock::new(vec![false; hwdevices::NUM_KEYS]));
 }
 
 thread_local! {
@@ -76,7 +76,10 @@ impl KeyboardPlugin {
                 Ok(devfile) => match Device::new_from_fd(devfile) {
                     Ok(mut device) => {
                         info!("Now listening on: {}", filename);
-
+                        info!(
+                            "Input device name: \"{}\"",
+                            device.name().unwrap_or("<n/a>")
+                        );
                         info!(
                             "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
                             device.bustype(),
@@ -84,14 +87,10 @@ impl KeyboardPlugin {
                             device.product_id()
                         );
                         info!("Driver version: {:x}", device.driver_version());
-                        info!(
-                            "Input device name: \"{}\"",
-                            device.name().unwrap_or("<n/a>")
-                        );
                         info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
                         // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
-                        info!("Grabbing the device exclusively");
+                        info!("Grabbing the keyboard device exclusively");
                         device
                             .grab(GrabMode::Grab)
                             .expect("Could not grab the device, terminating now.");

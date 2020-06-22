@@ -44,8 +44,8 @@ use std::u64;
 
 mod util;
 
-mod rvdevice;
-use rvdevice::RvDeviceState;
+mod hwdevices;
+use hwdevices::HwDevicesState;
 
 mod constants;
 mod dbus_interface;
@@ -100,6 +100,17 @@ lazy_static! {
     pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
     pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_MOVE: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
     // Other state
@@ -238,8 +249,10 @@ fn spawn_dbus_thread(
 }
 
 /// Spawns the keyboard events thread and executes it's main loop
-fn spawn_input_thread(kbd_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::Result<()> {
-    let builder = thread::Builder::new().name("events".into());
+fn spawn_keyboard_input_thread(
+    kbd_tx: Sender<Option<evdev_rs::InputEvent>>,
+) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("events/keyboard".into());
     builder
         .spawn(move || {
             {
@@ -275,7 +288,7 @@ fn spawn_input_thread(kbd_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::
                 .unwrap();
 
             loop {
-                // check if shall terminate the uinput thread, before we poll the keyboard
+                // check if we shall terminate the input thread, before we poll the keyboard
                 if QUIT.load(Ordering::SeqCst) {
                     break;
                 }
@@ -298,11 +311,69 @@ fn spawn_input_thread(kbd_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::
     Ok(())
 }
 
+/// Spawns the mouse events thread and executes it's main loop
+fn spawn_mouse_input_thread(mouse_tx: Sender<Option<evdev_rs::InputEvent>>) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("events/mouse".into());
+    builder
+        .spawn(move || {
+            {
+                // initialize thread local state of the mouse plugin
+                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
+                let mouse_plugin = plugin_manager
+                    .find_plugin_by_name_mut("Mouse".to_string())
+                    .unwrap_or_else(|| {
+                        error!("Could not find a required plugin");
+                        panic!()
+                    })
+                    .as_any_mut()
+                    .downcast_mut::<plugins::MousePlugin>()
+                    .unwrap();
+
+                if let Err(e) = mouse_plugin.initialize_thread_locals() {
+                    error!("Could not initialize the mouse plugin: {}", e);
+                };
+            }
+
+            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+            let mouse_plugin = plugin_manager
+                .find_plugin_by_name("Mouse".to_string())
+                .unwrap_or_else(|| {
+                    error!("Could not find a required plugin");
+                    panic!()
+                })
+                .as_any()
+                .downcast_ref::<plugins::MousePlugin>()
+                .unwrap();
+
+            loop {
+                // check if we shall terminate the input thread, before we poll the mouse
+                if QUIT.load(Ordering::SeqCst) {
+                    break;
+                }
+
+                if let Ok(event) = mouse_plugin.get_next_event() {
+                    mouse_tx.send(event).unwrap_or_else(|e| {
+                        error!("Could not send a mouse event to the main thread: {}", e)
+                    });
+                } else {
+                    // ignore spurious events
+                    // error!("Could not get next mouse event");
+                }
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
 fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
     script_path: PathBuf,
-    rvdevice: &RvDeviceState,
+    hwdevices: &HwDevicesState,
 ) -> Result<()> {
     let result = util::is_file_accessible(&script_path);
     if let Err(result) = result {
@@ -326,7 +397,7 @@ fn spawn_lua_thread(
         return Err(MainError::ScriptExecError {});
     }
 
-    let rvdevice = rvdevice.clone();
+    let hwdevices = hwdevices.clone();
 
     let builder = thread::Builder::new().name(format!(
         "{}:{}",
@@ -336,9 +407,9 @@ fn spawn_lua_thread(
     builder
         .spawn(move || -> Result<()> {
             loop {
-                let rvdevice = rvdevice.clone();
+                let hwdevices = hwdevices.clone();
 
-                let result = script::run_script(script_path.clone(), rvdevice, &lua_rx)
+                let result = script::run_script(script_path.clone(), hwdevices, &lua_rx)
                     .map_err(|_e| MainError::ScriptExecError {})?;
 
                 match result {
@@ -364,7 +435,7 @@ fn spawn_lua_thread(
 /// Switches the currently active profile to the profile file `profile_path`
 fn switch_profile<P: AsRef<Path>>(
     profile_file: P,
-    rvdevice: &RvDeviceState,
+    hwdevices: &HwDevicesState,
     #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
     info!("Switching to profile: {}", &profile_file.as_ref().display());
@@ -424,7 +495,7 @@ fn switch_profile<P: AsRef<Path>>(
         let script_path = script_dir.join(&script_file);
 
         let (lua_tx, lua_rx) = channel();
-        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice).unwrap_or_else(|e| {
+        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &hwdevices).unwrap_or_else(|e| {
             error!("Could not spawn a thread: {}", e);
         });
 
@@ -448,11 +519,12 @@ fn switch_profile<P: AsRef<Path>>(
 
 #[allow(clippy::cognitive_complexity)]
 fn run_main_loop(
-    rvdevice: &mut RvDeviceState,
+    hwdevices: &mut HwDevicesState,
     #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
     #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
     fsevents_rx: &Receiver<FileSystemEvent>,
 ) {
     trace!("Entering main loop...");
@@ -495,7 +567,7 @@ fn run_main_loop(
                 slot_profiles.as_ref().unwrap()[active_slot].clone()
             };
 
-            switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+            switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
                 .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
 
             saved_slot = active_slot;
@@ -547,7 +619,7 @@ fn run_main_loop(
                     info!("Loading profile: {}", profile_path.display());
 
                     failed_txs.clear();
-                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                    switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
                         .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
                 }
             },
@@ -576,7 +648,7 @@ fn run_main_loop(
                     info!("Loading profile: {}", profile_path.display());
 
                     failed_txs.clear();
-                    switch_profile(&profile_path, &rvdevice, &dbus_api_tx)
+                    switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
                         .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
                 }
             },
@@ -587,6 +659,223 @@ fn run_main_loop(
             Err(e) => {
                 error!("Channel error: {}", e);
                 break 'MAIN_LOOP;
+            }
+        }
+
+        'MOUSE_EVENTS_LOOP: loop {
+            let mut event_processed = false;
+
+            // send pending mouse events to the Lua VMs and to the event dispatcher
+            match mouse_rx.recv_timeout(Duration::from_millis(0)) {
+                Ok(result) => {
+                    match result {
+                        Some(raw_event) => {
+                            // notify all observers of raw events
+                            events::notify_observers(events::Event::RawMouseEvent(
+                                raw_event.clone(),
+                            ))
+                            .ok();
+
+                            if let evdev_rs::enums::EventCode::EV_REL(ref code) =
+                                raw_event.event_code
+                            {
+                                match code {
+                                    evdev_rs::enums::EV_REL::REL_X
+                                    | evdev_rs::enums::EV_REL::REL_Y => {
+                                        // mouse scroll wheel event occurred
+
+                                        let direction = if *code == evdev_rs::enums::EV_REL::REL_X {
+                                            0
+                                        } else {
+                                            1
+                                        };
+
+                                        *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
+                                            LUA_TXS.lock().len() - failed_txs.len();
+
+                                        for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                            if !failed_txs.contains(&idx) {
+                                                lua_tx.send(script::Message::MouseMove(direction, raw_event.value)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                            } else {
+                                                warn!("Not sending a message to a failed tx");
+                                            }
+                                        }
+
+                                        // yield to thread
+                                        //thread::sleep(Duration::from_millis(0));
+
+                                        // wait until all Lua VMs completed the event handler
+                                        loop {
+                                            let mut pending =
+                                                UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+
+                                            UPCALL_COMPLETED_ON_MOUSE_MOVE
+                                                .1
+                                                .wait_for(&mut pending, Duration::from_millis(50));
+
+                                            if *pending == 0 {
+                                                break;
+                                            }
+                                        }
+
+                                        events::notify_observers(events::Event::MouseMove(
+                                            direction,
+                                            raw_event.value,
+                                        ))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                    }
+
+                                    evdev_rs::enums::EV_REL::REL_WHEEL
+                                    | evdev_rs::enums::EV_REL::REL_HWHEEL
+                                    | evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES => {
+                                        // mouse scroll wheel event occurred
+
+                                        let direction = if raw_event.value > 0 { 0 } else { 1 };
+
+                                        *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
+                                            LUA_TXS.lock().len() - failed_txs.len();
+
+                                        for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                            if !failed_txs.contains(&idx) {
+                                                lua_tx.send(script::Message::MouseWheelEvent(direction)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                            } else {
+                                                warn!("Not sending a message to a failed tx");
+                                            }
+                                        }
+
+                                        // yield to thread
+                                        //thread::sleep(Duration::from_millis(0));
+
+                                        // wait until all Lua VMs completed the event handler
+                                        loop {
+                                            let mut pending =
+                                                UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+
+                                            UPCALL_COMPLETED_ON_MOUSE_EVENT
+                                                .1
+                                                .wait_for(&mut pending, Duration::from_millis(50));
+
+                                            if *pending == 0 {
+                                                break;
+                                            }
+                                        }
+
+                                        events::notify_observers(events::Event::MouseWheelEvent(
+                                            direction,
+                                        ))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                    }
+
+                                    _ => (), // ignore other events
+                                }
+                            } else if let evdev_rs::enums::EventCode::EV_KEY(code) =
+                                raw_event.event_code
+                            {
+                                // mouse button event occurred
+
+                                let is_pressed = raw_event.value > 0;
+                                let index = util::ev_key_to_button_index(code).unwrap();
+
+                                if is_pressed {
+                                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
+                                        LUA_TXS.lock().len() - failed_txs.len();
+
+                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                        if !failed_txs.contains(&idx) {
+                                            lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                        } else {
+                                            warn!("Not sending a message to a failed tx");
+                                        }
+                                    }
+
+                                    // yield to thread
+                                    //thread::sleep(Duration::from_millis(0));
+
+                                    // wait until all Lua VMs completed the event handler
+                                    loop {
+                                        let mut pending =
+                                            UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN
+                                            .1
+                                            .wait_for(&mut pending, Duration::from_millis(50));
+
+                                        if *pending == 0 {
+                                            break;
+                                        }
+                                    }
+
+                                    events::notify_observers(events::Event::MouseButtonDown(index))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                } else {
+                                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
+                                        LUA_TXS.lock().len() - failed_txs.len();
+
+                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                        if !failed_txs.contains(&idx) {
+                                            lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                        } else {
+                                            warn!("Not sending a message to a failed tx");
+                                        }
+                                    }
+
+                                    // yield to thread
+                                    //thread::sleep(Duration::from_millis(0));
+
+                                    // wait until all Lua VMs completed the event handler
+                                    loop {
+                                        let mut pending =
+                                            UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP
+                                            .1
+                                            .wait_for(&mut pending, Duration::from_millis(50));
+
+                                        if *pending == 0 {
+                                            break;
+                                        }
+                                    }
+
+                                    events::notify_observers(events::Event::MouseButtonUp(index))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                }
+                            }
+
+                            event_processed = true;
+                        }
+
+                        // ignore spurious events
+                        None => trace!("Spurious mouse event ignored"),
+                    }
+                }
+
+                // ignore timeout errors
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
+
+                Err(e) => {
+                    error!("Channel error: {}", e);
+                    break 'MAIN_LOOP;
+                }
+            }
+
+            if !event_processed {
+                break 'MOUSE_EVENTS_LOOP;
             }
         }
 
@@ -619,12 +908,12 @@ fn run_main_loop(
             // execute render "pipeline" now
             // first, clear the canvas
             script::LED_MAP.lock().copy_from_slice(
-                &[rvdevice::RGBA {
+                &[hwdevices::RGBA {
                     r: 0,
                     g: 0,
                     b: 0,
                     a: 0,
-                }; rvdevice::NUM_KEYS],
+                }; hwdevices::NUM_KEYS],
             );
 
             // instruct Lua VMs to realize their color maps, e.g. to blend their
@@ -671,7 +960,7 @@ fn run_main_loop(
 
             // send the final (combined) color map to the keyboard
             if !drop_frame {
-                rvdevice
+                hwdevices
                     .send_led_map(&script::LED_MAP.lock())
                     .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
 
@@ -687,116 +976,130 @@ fn run_main_loop(
             constants::MAIN_LOOP_DELAY_MILLIS,
         );
 
-        // send pending keyboard events to the Lua VMs and to the event dispatcher
-        match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
-            Ok(result) => match result {
-                Some(raw_event) => {
-                    // notify all observers of raw events
-                    events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone()))
+        'KEYBOARD_EVENTS_LOOP: loop {
+            let mut event_processed = false;
+
+            // send pending keyboard events to the Lua VMs and to the event dispatcher
+            match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
+                Ok(result) => match result {
+                    Some(raw_event) => {
+                        // notify all observers of raw events
+                        events::notify_observers(events::Event::RawKeyboardEvent(
+                            raw_event.clone(),
+                        ))
                         .ok();
 
-                    // ignore repetitions
-                    if raw_event.value < 2 {
-                        if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
-                            let is_pressed = raw_event.value > 0;
-                            let index = util::ev_key_to_key_index(code.clone());
+                        // ignore repetitions
+                        if raw_event.value < 2 {
+                            if let evdev_rs::enums::EventCode::EV_KEY(ref code) =
+                                raw_event.event_code
+                            {
+                                let is_pressed = raw_event.value > 0;
+                                let index = util::ev_key_to_key_index(code.clone());
 
-                            trace!("Key index: {:#x}", index);
+                                trace!("Key index: {:#x}", index);
 
-                            if is_pressed {
-                                *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
-                                    LUA_TXS.lock().len() - failed_txs.len();
+                                if is_pressed {
+                                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
+                                        LUA_TXS.lock().len() - failed_txs.len();
 
-                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                    if !failed_txs.contains(&idx) {
-                                        lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
+                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                        if !failed_txs.contains(&idx) {
+                                            lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
                                             |e| {
                                                 error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                             },
                                         );
-                                    } else {
-                                        warn!("Not sending a message to a failed tx");
+                                        } else {
+                                            warn!("Not sending a message to a failed tx");
+                                        }
                                     }
-                                }
 
-                                // yield to thread
-                                //thread::sleep(Duration::from_millis(0));
+                                    // yield to thread
+                                    //thread::sleep(Duration::from_millis(0));
 
-                                // wait until all Lua VMs completed the event handler
-                                loop {
-                                    let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+                                    // wait until all Lua VMs completed the event handler
+                                    loop {
+                                        let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
 
-                                    UPCALL_COMPLETED_ON_KEY_DOWN
-                                        .1
-                                        .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_KEY_DOWN
+                                            .1
+                                            .wait_for(&mut pending, Duration::from_millis(50));
 
-                                    if *pending == 0 {
-                                        break;
+                                        if *pending == 0 {
+                                            break;
+                                        }
                                     }
-                                }
 
-                                events::notify_observers(events::Event::KeyDown(index))
-                                    .unwrap_or_else(|e| error!("{}", e));
-                            } else {
-                                *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
-                                    LUA_TXS.lock().len() - failed_txs.len();
+                                    events::notify_observers(events::Event::KeyDown(index))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                } else {
+                                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
+                                        LUA_TXS.lock().len() - failed_txs.len();
 
-                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                    if !failed_txs.contains(&idx) {
-                                        lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
+                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                        if !failed_txs.contains(&idx) {
+                                            lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
                                             |e| {
                                                 error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                             },
                                         );
-                                    } else {
-                                        warn!("Not sending a message to a failed tx");
+                                        } else {
+                                            warn!("Not sending a message to a failed tx");
+                                        }
                                     }
-                                }
 
-                                // yield to thread
-                                //thread::sleep(Duration::from_millis(0));
+                                    // yield to thread
+                                    //thread::sleep(Duration::from_millis(0));
 
-                                // wait until all Lua VMs completed the event handler
-                                loop {
-                                    let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+                                    // wait until all Lua VMs completed the event handler
+                                    loop {
+                                        let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
 
-                                    UPCALL_COMPLETED_ON_KEY_UP
-                                        .1
-                                        .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_KEY_UP
+                                            .1
+                                            .wait_for(&mut pending, Duration::from_millis(50));
 
-                                    if *pending == 0 {
-                                        break;
+                                        if *pending == 0 {
+                                            break;
+                                        }
                                     }
-                                }
 
-                                events::notify_observers(events::Event::KeyUp(index))
-                                    .unwrap_or_else(|e| error!("{}", e));
+                                    events::notify_observers(events::Event::KeyUp(index))
+                                        .unwrap_or_else(|e| error!("{}", e));
+                                }
                             }
+
+                            // handler for Message::MirrorKey will drop the key if a Lua VM
+                            // called inject_key(..), so that the key won't be reported twice
+                            macros::UINPUT_TX
+                                .lock()
+                                .as_ref()
+                                .unwrap()
+                                .send(macros::Message::MirrorKey(raw_event.clone()))
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send a pending keyboard event: {}", e)
+                                });
                         }
 
-                        // handler for Message::MirrorKey will drop the key if a Lua VM
-                        // called inject_key(..), so that the key won't be reported twice
-                        macros::UINPUT_TX
-                            .lock()
-                            .as_ref()
-                            .unwrap()
-                            .send(macros::Message::MirrorKey(raw_event.clone()))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending keyboard event: {}", e)
-                            });
+                        event_processed = true;
                     }
+
+                    // ignore spurious events
+                    None => trace!("Spurious keyboard event ignored"),
+                },
+
+                // ignore timeout errors
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
+
+                Err(e) => {
+                    error!("Channel error: {}", e);
+                    break 'MAIN_LOOP;
                 }
+            }
 
-                // ignore spurious events
-                None => trace!("Spurious keyboard event ignored"),
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
+            if !event_processed {
+                break 'KEYBOARD_EVENTS_LOOP;
             }
         }
 
@@ -1017,11 +1320,11 @@ fn main() {
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
-            match RvDeviceState::enumerate_devices(&hidapi) {
-                Ok(mut rvdevice) => {
+            match HwDevicesState::enumerate_devices(&hidapi) {
+                Ok(mut hwdevices) => {
                     // open the control and led devices
                     info!("Opening devices...");
-                    rvdevice
+                    hwdevices
                     .open(&hidapi)
                     .unwrap_or_else(|e| {
                         error!("Error opening the keyboard device: {}", e);
@@ -1031,13 +1334,13 @@ fn main() {
 
                     // send initialization handshake
                     info!("Initializing devices...");
-                    rvdevice
+                    hwdevices
                         .send_init_sequence()
                         .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
 
                     // set leds to a known initial state
                     info!("Configuring LEDs...");
-                    rvdevice
+                    hwdevices
                         .set_led_init_pattern()
                         .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
 
@@ -1058,30 +1361,22 @@ fn main() {
                         .unwrap_or_else(|_e| error!("Could not register one or more plugins"));
 
                     // spawn a thread to handle keyboard input
-                    info!("Spawning input thread...");
+                    info!("Spawning keyboard input thread...");
 
                     let (kbd_tx, kbd_rx) = channel();
-                    spawn_input_thread(kbd_tx).unwrap_or_else(|e| {
+                    spawn_keyboard_input_thread(kbd_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
                         panic!()
                     });
 
-                    // spawn Lua VM threads
-                    // info!("Loading Lua scripts...");
+                    // spawn a thread to handle mouse input
+                    info!("Spawning mouse input thread...");
 
-                    // for (thread_idx, script_path) in script_paths.iter().enumerate() {
-                    //     let script_path = script_path.clone();
-
-                    //     let (lua_tx, lua_rx) = channel();
-                    //     let result =
-                    //         spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &rvdevice);
-
-                    //     if result.is_err() {
-                    //         error!("Could not spawn a Lua VM thread");
-                    //     } else {
-                    //         LUA_TXS.lock().push(lua_tx);
-                    //     }
-                    // }
+                    let (mouse_tx, mouse_rx) = channel();
+                    spawn_mouse_input_thread(mouse_tx).unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
 
                     // spawn a thread to handle the web-frontend
                     #[cfg(feature = "frontend")]
@@ -1112,13 +1407,14 @@ fn main() {
 
                     // enter the main loop
                     run_main_loop(
-                        &mut rvdevice,
+                        &mut hwdevices,
                         #[cfg(feature = "dbus")]
                         &dbus_api_tx,
                         #[cfg(feature = "frontend")]
                         &frontend_rx,
                         &dbus_rx,
                         &kbd_rx,
+                        &mouse_rx,
                         &fsevents_rx,
                     );
 
@@ -1132,9 +1428,14 @@ fn main() {
                     // TODO: Ugly hack, find a better way to wait for exit of the Lua VMs
                     thread::sleep(Duration::from_millis(250));
 
+                    // set LEDs to a known final state
+                    hwdevices
+                        .set_led_off_pattern()
+                        .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
+
                     // close the control and LED devices
                     info!("Closing devices...");
-                    rvdevice.close_all().unwrap_or_else(|e| {
+                    hwdevices.close_all().unwrap_or_else(|e| {
                         warn!("Could not close the keyboard device: {}", e);
                     });
                 }

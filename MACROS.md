@@ -13,7 +13,7 @@ If you want to implement custom macros for Eruption, you need to complete the fo
   ```bash
   $ sudoedit /usr/share/eruption/scripts/lib/macros/mygame.lua
   ```
-* To wire-up the newly created Lua file with an existing profile, 
+* To wire-up the newly created Lua file with an existing profile,
   add the following configuration stanza to the `.profile` file:
   ```toml
   [[config.Macros]]
@@ -51,7 +51,7 @@ function easyshift_macro_3()
   debug("Playing back: 'easyshift_macro_3'")
 
   inject_key_with_delay(42, true, 0)      -- shift down
-    
+
   inject_key_with_delay(35, true, 100)  	-- 'h' down
   inject_key_with_delay(35, false, 200)  	-- 'h' up
 

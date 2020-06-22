@@ -30,8 +30,8 @@ use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
 
+use crate::hwdevices::{HwDevicesState, NUM_KEYS, RGBA};
 use crate::plugin_manager;
-use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGBA};
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
 use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
@@ -40,8 +40,16 @@ pub enum Message {
     // Startup, // Not passed via message but invoked directly
     Quit(u32),
     Tick(u32),
+
+    // Keyboard events
     KeyDown(u8),
     KeyUp(u8),
+
+    // Mouse events
+    MouseButtonDown(u8),
+    MouseButtonUp(u8),
+    MouseMove(u8, i32),
+    MouseWheelEvent(u8),
 
     //LoadScript(PathBuf),
     // Abort,
@@ -106,8 +114,8 @@ mod callbacks {
 
     use super::{LED_MAP, LOCAL_LED_MAP};
 
+    use crate::hwdevices::{HwDevicesState, NUM_KEYS, RGBA};
     use crate::plugins::macros;
-    use crate::rvdevice::{RvDeviceState, NUM_KEYS, RGBA};
 
     /// Log a message with severity level `trace`.
     pub(crate) fn log_trace(x: &str) {
@@ -162,16 +170,19 @@ mod callbacks {
         // mirrored on the virtual keyboard.
         macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
 
-        thread::Builder::new().name("uinput/delayed".to_owned()).spawn(move || {
-            thread::sleep(Duration::from_millis(millis));
+        thread::Builder::new()
+            .name("uinput/delayed".to_owned())
+            .spawn(move || {
+                thread::sleep(Duration::from_millis(millis));
 
-            macros::UINPUT_TX
-                .lock()
-                .as_ref()
-                .unwrap()
-                .send(macros::Message::InjectKey { key: ev_key, down })
-                .unwrap();
-        }).unwrap();
+                macros::UINPUT_TX
+                    .lock()
+                    .as_ref()
+                    .unwrap()
+                    .send(macros::Message::InjectKey { key: ev_key, down })
+                    .unwrap();
+            })
+            .unwrap();
     }
 
     /// Get RGB components of a 32 bits color value.
@@ -409,7 +420,7 @@ mod callbacks {
     }
 
     /// Set the color of the key `idx` to `c`.
-    pub(crate) fn set_key_color(rvdev: &Arc<Mutex<RvDeviceState>>, idx: usize, c: u32) {
+    pub(crate) fn set_key_color(rvdev: &Arc<Mutex<HwDevicesState>>, idx: usize, c: u32) {
         let mut led_map = LED_MAP.lock();
         led_map[idx] = RGBA {
             a: u8::try_from((c >> 24) & 0xff).unwrap(),
@@ -448,7 +459,7 @@ mod callbacks {
     }
 
     /// Set all LEDs at once.
-    pub(crate) fn set_color_map(rvdev: &Arc<Mutex<RvDeviceState>>, map: &[u32]) {
+    pub(crate) fn set_color_map(rvdev: &Arc<Mutex<HwDevicesState>>, map: &[u32]) {
         assert!(map.len() == NUM_KEYS);
 
         let mut led_map = [RGBA {
@@ -541,7 +552,7 @@ pub enum RunScriptResult {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     file: PathBuf,
-    rvdevice: RvDeviceState,
+    hwdevices: HwDevicesState,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
@@ -566,11 +577,11 @@ pub fn run_script(
             let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
                 let mut errors_present = false;
 
-                if register_support_globals(lua_ctx, &rvdevice).is_err() {
+                if register_support_globals(lua_ctx, &hwdevices).is_err() {
                     return Ok(RunScriptResult::TerminatedWithErrors)
                 }
 
-                if register_support_funcs(lua_ctx, &rvdevice).is_err() {
+                if register_support_funcs(lua_ctx, &hwdevices).is_err() {
                     return Ok(RunScriptResult::TerminatedWithErrors)
                 }
 
@@ -708,6 +719,86 @@ pub fn run_script(
                                 }
                             }
 
+                            Message::MouseButtonDown(param) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_mouse_button_down")
+                                {
+                                    handler.call::<_, ()>(param).unwrap_or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        errors_present = true;
+                                    });
+                                }
+
+                                *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                }
+                            }
+
+                            Message::MouseButtonUp(param) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_mouse_button_up")
+                                {
+                                    handler.call::<_, ()>(param).unwrap_or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        errors_present = true;
+                                    });
+                                }
+
+                                *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                }
+                            }
+
+                            Message::MouseMove(direction, rel_change) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_mouse_move")
+                                {
+                                    handler.call::<_, ()>((direction, rel_change)).unwrap_or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        errors_present = true;
+                                    });
+                                }
+
+                                *crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                }
+                            }
+
+                            Message::MouseWheelEvent(param) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_mouse_wheel")
+                                {
+                                    handler.call::<_, ()>(param).unwrap_or_else(|e| {
+                                        error!("Lua error: {}", e);
+                                        errors_present = true;
+                                    });
+                                }
+
+                                *crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                }
+                            }
+
                             //Message::LoadScript(script_path) => {
                             //return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
                             //}
@@ -718,7 +809,7 @@ pub fn run_script(
                             // }
 
                             Message::Unload => {
-                                let mut errors_present = false;                                
+                                let mut errors_present = false;
 
                                 if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit")
                                 {
@@ -752,7 +843,7 @@ pub fn run_script(
     }
 }
 
-fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua::Result<()> {
+fn register_support_globals(lua_ctx: Context, _hwdevices: &HwDevicesState) -> rlua::Result<()> {
     let globals = lua_ctx.globals();
 
     #[cfg(debug_assertions)]
@@ -777,9 +868,9 @@ fn register_support_globals(lua_ctx: Context, _rvdevice: &RvDeviceState) -> rlua
     Ok(())
 }
 
-fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::Result<()> {
-    let rvdevid = rvdevice.get_dev_id();
-    let rvdev = Arc::new(Mutex::new(rvdevice.clone()));
+fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua::Result<()> {
+    let rvdevid = hwdevices.get_dev_id();
+    let rvdev = Arc::new(Mutex::new(hwdevices.clone()));
 
     let globals = lua_ctx.globals();
 
@@ -827,7 +918,8 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let min = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.min(f2)))?;
     globals.set("min", min)?;
 
-    let clamp = lua_ctx.create_function(|_, (val, f1, f2): (f64, f64, f64)| Ok(callbacks::clamp(val, f1, f2)))?;
+    let clamp = lua_ctx
+        .create_function(|_, (val, f1, f2): (f64, f64, f64)| Ok(callbacks::clamp(val, f1, f2)))?;
     globals.set("clamp", clamp)?;
 
     let abs = lua_ctx.create_function(|_, f: f64| Ok(f.abs()))?;
@@ -856,14 +948,14 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     let lerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| Ok(v0 + t * (v1 - v0)))?;
     globals.set("lerp", lerp)?;
 
-    let invlerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| Ok(
-        callbacks::clamp((t - v0) / (v0 - v1), 0.0, 1.0)
-    ))?;
+    let invlerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| {
+        Ok(callbacks::clamp((t - v0) / (v0 - v1), 0.0, 1.0))
+    })?;
     globals.set("invlerp", invlerp)?;
 
-    let range = lua_ctx.create_function(|_, (v0, v1, v2, v3, t): (f64, f64, f64, f64, f64)| Ok(
-        v2 + callbacks::clamp((t - v0) / (v1 - v0), 0.0, 1.0) * (v3 - v2)
-    ))?;
+    let range = lua_ctx.create_function(|_, (v0, v1, v2, v3, t): (f64, f64, f64, f64, f64)| {
+        Ok(v2 + callbacks::clamp((t - v0) / (v1 - v0), 0.0, 1.0) * (v3 - v2))
+    })?;
     globals.set("range", range)?;
 
     // keyboard state and macros
@@ -873,10 +965,11 @@ fn register_support_funcs(lua_ctx: Context, rvdevice: &RvDeviceState) -> rlua::R
     })?;
     globals.set("inject_key", inject_key)?;
 
-    let inject_key_with_delay = lua_ctx.create_function(|_, (ev_key, down, millis): (u32, bool, u64)| {
-        callbacks::inject_key_with_delay(ev_key, down, millis);
-        Ok(())
-    })?;
+    let inject_key_with_delay =
+        lua_ctx.create_function(|_, (ev_key, down, millis): (u32, bool, u64)| {
+            callbacks::inject_key_with_delay(ev_key, down, millis);
+            Ok(())
+        })?;
     globals.set("inject_key_with_delay", inject_key_with_delay)?;
 
     // color handling
