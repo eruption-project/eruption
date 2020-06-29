@@ -48,7 +48,6 @@ or prevent the service from starting by disabling
 $ sudo systemctl disable eruption
 ```
 
-
 ## Overview <a name="overview"></a>
 
 Eruption is a Linux daemon written in Rust, consisting of a core, an integrated
