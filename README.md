@@ -43,6 +43,11 @@ the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 ```sh
   systemd.mask=eruption.service
 ```
+or prevent the service from starting by disabling
+```sh
+$ sudo systemctl disable eruption
+```
+
 
 ## Overview <a name="overview"></a>
 
