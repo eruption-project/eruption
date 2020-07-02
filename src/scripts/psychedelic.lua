@@ -21,7 +21,7 @@ ticks = 0
 color_map = {}
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 
@@ -30,9 +30,9 @@ function on_tick(delta)
         for i = 0, num_keys do
 			local x = i / num_rows
             local y = i / num_cols
-			
+
             local val = super_simplex_noise(x / coord_scale,
-							 			    y / coord_scale, 
+							 			    y / coord_scale,
 										    ticks / time_scale)
 
             val = lerp(0, 360, val * color_boost)

@@ -21,7 +21,7 @@ ticks = 0
 color_map = {}
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 

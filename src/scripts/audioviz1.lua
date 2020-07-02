@@ -30,7 +30,7 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     -- update the state
 		loudness = get_audio_loudness()

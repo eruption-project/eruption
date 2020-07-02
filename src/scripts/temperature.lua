@@ -33,7 +33,7 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     -- update the temperature
     if ticks % 5 == 0 then

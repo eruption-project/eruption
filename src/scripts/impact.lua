@@ -55,7 +55,7 @@ function on_mouse_button_down(button_index)
 
 	local num_keys = get_num_keys()
 	for i = 0, num_keys do
-		color_map[i] = rgba_to_color(255, 255, 255, 64)
+		color_map[i] = rgba_to_color(255, 255, 255, 32)
 	end
 
 	effect_ttl = max_effect_ttl
@@ -66,7 +66,7 @@ function on_mouse_button_up(button_index)
 
 	local num_keys = get_num_keys()
 	for i = 0, num_keys do
-		color_map[i] = rgba_to_color(255, 255, 255, 64)
+		color_map[i] = rgba_to_color(255, 255, 255, 32)
 	end
 
 	effect_ttl = max_effect_ttl
@@ -75,9 +75,9 @@ end
 function on_mouse_wheel(direction)
 	if not mouse_events then return end
 
-	if direction == 0 then
+	if direction == 1 then
 		c = rgba_to_color(255, 255, 255, 64)
-	elseif direction == 1 then
+	elseif direction == 2 then
 		c = rgba_to_color(255, 255, 255, 64)
 	end
 
@@ -90,14 +90,14 @@ function on_mouse_wheel(direction)
 end
 
 function on_tick(delta)
-	ticks = ticks + delta + 1
+	ticks = ticks + delta
 
 	if effect_ttl <= 0 then return end
 
-	local num_keys = get_num_keys()
-
 	-- compute impact effect
 	if ticks % impact_step == 0 then
+		local num_keys = get_num_keys()
+
 		for i = 0, num_keys do
 			color = color_map[i]
 			if color ~= nil then
@@ -111,7 +111,7 @@ function on_tick(delta)
 		end
 
 		effect_ttl = effect_ttl - 1
-	end
 
-	submit_color_map(color_map)
+		submit_color_map(color_map)
+	end
 end

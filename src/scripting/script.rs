@@ -48,7 +48,7 @@ pub enum Message {
     // Mouse events
     MouseButtonDown(u8),
     MouseButtonUp(u8),
-    MouseMove(u8, i32),
+    MouseMove(i32, i32, i32),
     MouseWheelEvent(u8),
 
     //LoadScript(PathBuf),
@@ -160,6 +160,41 @@ mod callbacks {
             .as_ref()
             .unwrap()
             .send(macros::Message::InjectKey { key: ev_key, down })
+            .unwrap();
+    }
+
+    /// Inject a button event on the eruption virtual mouse.
+    pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
+        // calling inject_mouse_button(..) from Lua will drop the current input;
+        // the original mouse event from the hardware mouse will not be
+        // mirrored on the virtual mouse.
+        macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
+
+        macros::UINPUT_TX
+            .lock()
+            .as_ref()
+            .unwrap()
+            .send(macros::Message::InjectButtonEvent {
+                button: button_index,
+                down,
+            })
+            .unwrap();
+    }
+
+    /// Inject a mouse wheel scroll event on the eruption virtual mouse.
+    pub(crate) fn inject_mouse_wheel(direction: u32) {
+        // calling inject_mouse_wheel(..) from Lua will drop the current input;
+        // the original mouse event from the hardware mouse will not be
+        // mirrored on the virtual mouse.
+        macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
+
+        macros::UINPUT_TX
+            .lock()
+            .as_ref()
+            .unwrap()
+            .send(macros::Message::InjectMouseWheelEvent {
+                direction: direction,
+            })
             .unwrap();
     }
 
@@ -392,7 +427,7 @@ mod callbacks {
 
     #[test]
     fn test_rotate() {
-        let data: Vec<_> = (1..=100u32).collect();
+        let data: Vec<_> = (1..=100_u32).collect();
 
         let x_size = 10;
         let y_size = 10;
@@ -759,13 +794,13 @@ pub fn run_script(
                                 }
                             }
 
-                            Message::MouseMove(direction, rel_change) => {
+                            Message::MouseMove(rel_x, rel_y, rel_z) => {
                                 let mut errors_present = false;
 
                                 if let Ok(handler) =
                                     lua_ctx.globals().get::<_, Function>("on_mouse_move")
                                 {
-                                    handler.call::<_, ()>((direction, rel_change)).unwrap_or_else(|e| {
+                                    handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(|e| {
                                         error!("Lua error: {}", e);
                                         errors_present = true;
                                     });
@@ -971,6 +1006,19 @@ fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua:
             Ok(())
         })?;
     globals.set("inject_key_with_delay", inject_key_with_delay)?;
+
+    // mouse state and macros
+    let inject_mouse_button = lua_ctx.create_function(|_, (button_index, down): (u32, bool)| {
+        callbacks::inject_mouse_button(button_index, down);
+        Ok(())
+    })?;
+    globals.set("inject_mouse_button", inject_mouse_button)?;
+
+    let inject_mouse_wheel = lua_ctx.create_function(|_, direction: u32| {
+        callbacks::inject_mouse_wheel(direction);
+        Ok(())
+    })?;
+    globals.set("inject_mouse_wheel", inject_mouse_wheel)?;
 
     // color handling
     let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;

@@ -418,19 +418,39 @@ pub fn ev_key_to_key_index(key: EV_KEY) -> u8 {
 
 pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
     match code {
-        evdev_rs::enums::EV_KEY::BTN_LEFT => Ok(0),
-        evdev_rs::enums::EV_KEY::BTN_MIDDLE => Ok(1),
-        evdev_rs::enums::EV_KEY::BTN_RIGHT => Ok(2),
+        evdev_rs::enums::EV_KEY::KEY_RESERVED => Ok(0),
+        evdev_rs::enums::EV_KEY::BTN_LEFT => Ok(1),
+        evdev_rs::enums::EV_KEY::BTN_MIDDLE => Ok(2),
+        evdev_rs::enums::EV_KEY::BTN_RIGHT => Ok(3),
 
-        evdev_rs::enums::EV_KEY::BTN_4 => Ok(3),
-        evdev_rs::enums::EV_KEY::BTN_5 => Ok(4),
-        evdev_rs::enums::EV_KEY::BTN_6 => Ok(5),
-        evdev_rs::enums::EV_KEY::BTN_7 => Ok(6),
-        evdev_rs::enums::EV_KEY::BTN_8 => Ok(7),
-        evdev_rs::enums::EV_KEY::BTN_9 => Ok(8),
+        evdev_rs::enums::EV_KEY::BTN_4 => Ok(4),
+        evdev_rs::enums::EV_KEY::BTN_5 => Ok(5),
+        evdev_rs::enums::EV_KEY::BTN_6 => Ok(6),
+        evdev_rs::enums::EV_KEY::BTN_7 => Ok(7),
+        evdev_rs::enums::EV_KEY::BTN_8 => Ok(8),
+        evdev_rs::enums::EV_KEY::BTN_9 => Ok(9),
 
-        evdev_rs::enums::EV_KEY::BTN_EXTRA => Ok(9),
-        evdev_rs::enums::EV_KEY::BTN_SIDE => Ok(10),
+        evdev_rs::enums::EV_KEY::BTN_EXTRA => Ok(10),
+        evdev_rs::enums::EV_KEY::BTN_SIDE => Ok(11),
+
+        _ => Err(UtilError::MappingError {}),
+    }
+}
+
+pub fn button_index_to_ev_key(index: u32) -> Result<evdev_rs::enums::EV_KEY> {
+    match index {
+        0 => Ok(evdev_rs::enums::EV_KEY::KEY_RESERVED),
+        1 => Ok(evdev_rs::enums::EV_KEY::BTN_LEFT),
+        2 => Ok(evdev_rs::enums::EV_KEY::BTN_MIDDLE),
+        3 => Ok(evdev_rs::enums::EV_KEY::BTN_RIGHT),
+        4 => Ok(evdev_rs::enums::EV_KEY::BTN_4),
+        5 => Ok(evdev_rs::enums::EV_KEY::BTN_5),
+        6 => Ok(evdev_rs::enums::EV_KEY::BTN_6),
+        7 => Ok(evdev_rs::enums::EV_KEY::BTN_7),
+        8 => Ok(evdev_rs::enums::EV_KEY::BTN_8),
+        9 => Ok(evdev_rs::enums::EV_KEY::BTN_9),
+        10 => Ok(evdev_rs::enums::EV_KEY::BTN_EXTRA),
+        11 => Ok(evdev_rs::enums::EV_KEY::BTN_SIDE),
 
         _ => Err(UtilError::MappingError {}),
     }

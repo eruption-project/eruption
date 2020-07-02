@@ -20,7 +20,7 @@
 require "themes/gaming"
 
 function macro_select_idle_scvs()
-	debug("Playing back: Select idle SCVs")
+	info("Playing back: Select idle SCVs")
 
 	inject_key(29, true)	-- ctrl down
 	inject_key(59, true)	-- F1 down
@@ -30,7 +30,7 @@ function macro_select_idle_scvs()
 end
 
 function macro_select_all_military()
-	debug("Playing back: Select all military units")
+	info("Playing back: Select all military units")
 
 	inject_key(29, true)	-- ctrl down
 	inject_key(60, true)	-- F2 down
@@ -40,7 +40,7 @@ function macro_select_all_military()
 end
 
 function on_macro_key_down(index)
-	debug("Playing back: Macro #" .. index + 1)
+	info("Playing back: Macro #" .. index + 1)
 
 	-- NOTE:
 	-- We filter by slots, if you want to enable macros on all slots equally,
@@ -67,14 +67,14 @@ function update_color_state()
 		for i = 0, num_keys do color_map[i] = color_highlight end
 
 		-- highlight remapped keys
-		for i = 0, num_keys do 
+		for i = 0, num_keys do
 			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = COLOR_REMAPPED_KEY
 			end
 		end
 
 		-- highlight keys with associated macros
-		for i = 0, num_keys do 
+		for i = 0, num_keys do
 			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = COLOR_ASSOCIATED_MACRO
 			end
@@ -105,10 +105,10 @@ function update_color_state()
 		end
 
 		highlight_ttl = highlight_max_ttl
-			
+
 	elseif modifier_map[MODIFIER_KEY] then
 		local num_keys = get_num_keys()
-		
+
 		-- highlight all keys
 		for i = 0, num_keys do color_map[i] = color_highlight end
 
@@ -156,6 +156,18 @@ EASY_SHIFT_MACRO_TABLE[1][7]		= macro_select_idle_scvs  	 --
 EASY_SHIFT_MACRO_TABLE[1][13]		= macro_select_all_military  --
 -- EASY_SHIFT_MACRO_TABLE[1][19]	= easyshift_macro_3  	 	 --
 
+-- assign macros to mouse buttons on the Easy Shift+ layer
+-- EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --
+-- EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][2]	= easyshift_mouse_macro_2  --
+-- EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][3]	= easyshift_mouse_macro_3  --
+
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][1] = easyshift_mouse_macro_1  --
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][2] = easyshift_mouse_macro_2  --
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][3] = easyshift_mouse_macro_3  --
+
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up  	--
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down  	--
+
 
 -- ****************************************************************************
 -- QWERTZ layout, column major order
@@ -172,11 +184,11 @@ EASY_SHIFT_MACRO_TABLE[1][13]		= macro_select_all_military  --
 -- A			  =>   9
 -- <			  =>  10
 -- LEFT SUPER	  =>  11
--- F1			  =>  12 
+-- F1			  =>  12
 -- 2			  =>  13
 -- W			  =>  14
 -- S			  =>  15
--- Y			  =>  16 
+-- Y			  =>  16
 -- LEFT ALT		  =>  17
 -- F2			  =>  18
 -- 3			  =>  19
@@ -259,7 +271,7 @@ EASY_SHIFT_MACRO_TABLE[1][13]		= macro_select_all_military  --
 -- <not assigned> =>  96
 -- #'			  =>  97 -- ??
 -- <not assigned> =>  98
--- <not assigned> =>  99 
+-- <not assigned> =>  99
 -- PRINT SCR	  => 100
 -- INSERT		  => 101
 -- DEL			  => 102

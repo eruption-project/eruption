@@ -29,7 +29,7 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 

@@ -38,8 +38,8 @@ function on_key_down(key_index)
 end
 
 function on_tick(delta)
-	ticks = ticks + delta + 1
-	
+	ticks = ticks + delta
+
 	if effect_ttl <= 0 then return end
 
     -- calculate afterglow effect for pressed keys

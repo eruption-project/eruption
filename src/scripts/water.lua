@@ -47,13 +47,13 @@ function on_key_up(key_index)
 			water_grid[neigh_key] = 0.5
 		end
 	end
-	
+
 	effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
-	ticks = ticks + delta + 1
-	
+	ticks = ticks + delta
+
 	if effect_ttl <= 0 then return end
 
 	local num_keys = get_num_keys()
@@ -72,7 +72,7 @@ function on_tick(delta)
             color_map[key_index] = hsla_to_color(lerp(120, 220, sin(water_grid[key_index])) + 1.25, 1.0, 0.5,
 																	lerp(0, 255, sin(water_grid[key_index])))
 		end
-		
+
 		effect_ttl = effect_ttl - 1
 
 		submit_color_map(color_map)

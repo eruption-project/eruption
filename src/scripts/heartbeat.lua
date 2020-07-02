@@ -31,7 +31,7 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     -- update system load indicator approximately every 5 seconds
     if ticks % 100 == 0 then

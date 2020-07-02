@@ -30,13 +30,23 @@ RIGHT_MENU = 7
 require "macros/modifiers"
 
 -- initialize remapping tables
-REMAPPING_TABLE = {}			-- level 1 remapping table (No modifier keys applied)
+REMAPPING_TABLE = {}				-- level 1 remapping table (No modifier keys applied)
 
-ACTIVE_EASY_SHIFT_LAYER = 1		-- level 4 supports up to 6 sub-layers
-EASY_SHIFT_REMAPPING_TABLE = {  -- level 4 remapping table (Easy Shift+ layer)
+ACTIVE_EASY_SHIFT_LAYER = 1			-- level 4 supports up to 6 sub-layers
+EASY_SHIFT_REMAPPING_TABLE = {  	-- level 4 remapping table (Easy Shift+ layer)
 	{}, {}, {}, {}, {}, {}
 }
-EASY_SHIFT_MACRO_TABLE = {	 	-- level 4 macro table (Easy Shift+ layer)
+EASY_SHIFT_MACRO_TABLE = {	 		-- level 4 macro table (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE = {	-- macro tables for mouse button down events (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+EASY_SHIFT_MOUSE_UP_MACRO_TABLE = {		-- macro tables for mouse button up events (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE = {	-- macro tables for mouse wheel events (Easy Shift+ layer)
 	{}, {}, {}, {}, {}, {}
 }
 
@@ -72,18 +82,18 @@ end
 
 function on_key_down(key_index)
 	debug("Key down: Index: " .. key_index)
-		
+
 	-- update the modifier_map
-	if key_index == 4 then 
+	if key_index == 4 then
 		modifier_map[CAPS_LOCK] = true
 
 		-- consume the CAPS_LOCK key while in game mode
- 		if ENABLE_EASY_SHIFT and game_mode_enabled then 
+ 		if ENABLE_EASY_SHIFT and game_mode_enabled then
 			inject_key(0, false)
 		end
 	end
 
-	if key_index == 5 then 
+	if key_index == 5 then
 		modifier_map[LEFT_SHIFT] = true
 	elseif key_index == 83 then
 		modifier_map[RIGHT_SHIFT] = true
@@ -157,8 +167,11 @@ function on_key_down(key_index)
 	simple_remapping(key_index, true)
 
 	-- call complex macros on the Easy Shift+ layer (layer 4)
-	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and 
-	    EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+		EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
+		-- consume the original key press
+		inject_key(0, false)
+
 		-- call associated function
 		EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]()
 	end
@@ -168,11 +181,11 @@ function on_key_up(key_index)
 	debug("Key up: Index: " .. key_index)
 
 	-- update the modifier_map
-	if key_index == 4 then 
+	if key_index == 4 then
 		modifier_map[CAPS_LOCK] = false
 
 		-- consume CAPS_LOCK key while in game mode
-		if ENABLE_EASY_SHIFT and game_mode_enabled then 
+		if ENABLE_EASY_SHIFT and game_mode_enabled then
 			inject_key(0, false)
 		end
 	end
@@ -210,6 +223,48 @@ function on_key_up(key_index)
 	simple_remapping(key_index, false)
 end
 
+function on_mouse_button_down(button_index)
+	debug("Mouse down: Button: " .. button_index)
+
+	-- call complex macros on the Easy Shift+ layer (layer 4)
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+		EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
+		-- consume the original mouse click
+		inject_mouse_button(0, false)
+
+		-- call associated function
+		EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]()
+	end
+end
+
+function on_mouse_button_up(button_index)
+	debug("Mouse up: Button: " .. button_index)
+
+	-- call complex macros on the Easy Shift+ layer (layer 4)
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+		EASY_SHIFT_MOUSE_UP_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
+		-- consume the original mouse click
+		inject_mouse_button(0, false)
+
+		-- call associated function
+		EASY_SHIFT_MOUSE_UP_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]()
+	end
+end
+
+function on_mouse_wheel(direction)
+	debug("Mouse wheel: Direction: " .. direction)
+
+	-- call complex macros on the Easy Shift+ layer (layer 4)
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+		EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][direction] ~= nil then
+		-- consume the original mouse wheel event
+		inject_mouse_wheel(0)
+
+		-- call associated function
+		EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][direction]()
+	end
+end
+
 -- perform a simple remapping
 function simple_remapping(key_index, down)
 	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
@@ -245,8 +300,8 @@ function do_switch_easy_shift_layer(index)
 end
 
 function on_tick(delta)
-	ticks = ticks + delta + 1
-	
+	ticks = ticks + delta
+
 	update_color_state()
 
 	if highlight_ttl <= 0 then return end
@@ -261,7 +316,7 @@ function on_tick(delta)
 				alpha = trunc(lerp(0, highlight_max_ttl / 255, highlight_ttl) * highlight_opacity)
 
 				color_map[i] = rgba_to_color(r, g, b, min(255, alpha))
-			else 
+			else
 				highlight_ttl = 0
 				color_map[i] = 0x00000000
 			end

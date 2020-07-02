@@ -20,24 +20,32 @@ require "debug"
 ticks = 0
 color_map = {}
 
+offsets = {0, 0, 0}
+
+function on_mouse_move(rel_x, rel_y, rel_z)
+    offsets[1] = offsets[1] - rel_x
+    offsets[2] = offsets[2] - rel_y
+    offsets[3] = offsets[3] - rel_z
+end
+
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 
     -- calculate organic effect
     if ticks % animation_delay == 0 then
-		local angle = open_simplex_noise_2d(ticks / time_scale, 42)	
+		local angle = open_simplex_noise_2d(ticks / time_scale, 42)
 
         for i = 0, num_keys do
 			local x = i / num_rows
             local y = i / num_cols
 
-            local x2 = (cos(angle) * x) - (sin(angle) * y)
-			local y2 = (sin(angle) * x) + (cos(angle) * y)
-			
+            local x2 = (cos(angle) * x) - (sin(angle) * y) + (offsets[1] / 100)
+			local y2 = (sin(angle) * x) + (cos(angle) * y) + (offsets[2] / 100)
+
             local val = super_simplex_noise(x2 / coord_scale,
-							 			    y2 / coord_scale, 
+							 			    y2 / coord_scale,
                                             ticks / time_scale)
             val = lerp(0, 360, val)
 

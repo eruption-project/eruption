@@ -383,8 +383,8 @@ The macro files are stored in `/usr/share/eruption/scripts/lib/macros/`. Each fi
 
 | Name         | Class   | File              | Progress        | Description                                                                                                               |
 | ------------ | ------- | ----------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| user-macros  | Default | `user-macros.lua` | Approx 85% done | Customizable general purpose macro definitions for Eruption. Maybe use this as a starting point for your own macro files. |
-| Star Craft 2 | Game    | `starcraft2.lua`  | Approx 10% done | Star Craft 2 related macros                                                                                               |
+| user-macros  | Default | `user-macros.lua` | Approx 90% done | Customizable general purpose macro definitions for Eruption. Maybe use this as a starting point for your own macro files. |
+| Star Craft 2 | Game    | `starcraft2.lua`  | Approx 15% done | Star Craft 2 related macros                                                                                               |
 
 For a detailed documentation on how to write your own macros, please refer to [MACROS.md](./MACROS.md)
 

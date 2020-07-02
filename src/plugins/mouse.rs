@@ -15,7 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use evdev_rs::Device;
+use evdev_rs::{Device, GrabMode};
 use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
@@ -23,11 +23,11 @@ use rlua::Context;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fs::File;
-// use std::sync::atomic::Ordering;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, RwLock};
 
 use crate::hwdevices;
-// use crate::macros;
+use crate::macros;
 use crate::util;
 
 use crate::plugins::{self, Plugin};
@@ -78,7 +78,7 @@ impl MousePlugin {
 
         match File::open(&filename) {
             Ok(devfile) => match Device::new_from_fd(devfile) {
-                Ok(device) => {
+                Ok(mut device) => {
                     info!("Now listening on: {}", filename);
                     info!(
                         "Input device name: \"{}\"",
@@ -95,10 +95,10 @@ impl MousePlugin {
 
                     // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
-                    // info!("Grabbing the mouse device exclusively");
-                    // device
-                    //     .grab(GrabMode::Grab)
-                    //     .expect("Could not grab the device, terminating now.");
+                    info!("Grabbing the mouse device exclusively");
+                    device
+                        .grab(GrabMode::Grab)
+                        .expect("Could not grab the device, terminating now.");
 
                     DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
 
@@ -116,58 +116,64 @@ impl MousePlugin {
         let result = DEVICE.with(
             |dev| -> Result<(evdev_rs::ReadStatus, evdev_rs::InputEvent)> {
                 if let Some(dev) = dev.borrow().as_ref() {
-                    loop {
-                        let result = dev
-                            .next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
+                    let result =
+                        dev.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
 
-                        match result {
-                            Ok(k) => {
-                                trace!("Mouse event: {:?}", k.1);
+                    match result {
+                        Ok(k) => {
+                            trace!("Mouse event: {:?}", k.1);
 
-                                // reset "to be dropped" flag
-                                // macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
+                            // reset "to be dropped" flag
+                            macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
 
-                                // update our internal representation of the mouse state
-                                let event_code = k.1.event_code.clone();
-                                if let evdev_rs::enums::EventCode::EV_KEY(code) = event_code {
-                                    let is_pressed = k.1.value > 0;
-                                    let index =
-                                        util::ev_key_to_button_index(code).unwrap() as usize;
+                            // update our internal representation of the mouse state
+                            let event_code = k.1.event_code.clone();
+                            if let evdev_rs::enums::EventCode::EV_KEY(code) = event_code {
+                                let is_pressed = k.1.value > 0;
+                                let index = util::ev_key_to_button_index(code).unwrap() as usize;
 
-                                    BUTTON_STATES.write().unwrap()[index] = is_pressed;
-
-                                    return Ok(k);
-                                } else if let evdev_rs::enums::EventCode::EV_REL(code) = event_code
+                                BUTTON_STATES.write().unwrap()[index] = is_pressed;
+                            } else if let evdev_rs::enums::EventCode::EV_REL(code) = event_code {
+                                if code != evdev_rs::enums::EV_REL::REL_WHEEL
+                                    && code != evdev_rs::enums::EV_REL::REL_HWHEEL
+                                    && code != evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
+                                    && code != evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES
                                 {
-                                    if code == evdev_rs::enums::EV_REL::REL_WHEEL
-                                        || code == evdev_rs::enums::EV_REL::REL_HWHEEL
-                                        || code == evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
-                                    {
-                                        return Ok(k);
-                                    } else {
-                                        continue;
-                                    }
-                                } else {
-                                    // error!("Invalid event code received")
+                                    // directly mirror pointer motion events, to reduce input lag.
+                                    // This currently prohibits further manipulation of pointer motion events
+                                    macros::UINPUT_TX
+                                        .lock()
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(macros::Message::MirrorMouseEventImmediate(
+                                            k.1.clone(),
+                                        ))
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not send a pending mouse event: {}", e)
+                                        });
                                 }
+                            } else {
+                                // error!("Invalid event code received")
                             }
 
-                            Err(_e) => {
-                                // if e.raw_os_error().unwrap() == libc::ENODEV {
-                                //     error!("Mouse device went away: {}", e);
+                            Ok(k)
+                        }
 
-                                //     crate::QUIT.store(true, Ordering::SeqCst);
-                                //     Err(MousePluginError::EvdevEventError {})
-                                // } else {
-                                //     error!("Could not peek evdev event: {}", e);
+                        Err(_e) => {
+                            // if e.raw_os_error().unwrap() == libc::ENODEV {
+                            //     error!("Mouse device went away: {}", e);
 
-                                //     crate::QUIT.store(true, Ordering::SeqCst);
-                                //     Err(MousePluginError::EvdevEventError {})
-                                // }
+                            //     crate::QUIT.store(true, Ordering::SeqCst);
+                            //     Err(MousePluginError::EvdevEventError {})
+                            // } else {
+                            //     error!("Could not peek evdev event: {}", e);
 
-                                error!("Could not get mouse events");
-                                return Err(MousePluginError::EvdevEventError {});
-                            }
+                            //     crate::QUIT.store(true, Ordering::SeqCst);
+                            //     Err(MousePluginError::EvdevEventError {})
+                            // }
+
+                            error!("Could not get mouse events");
+                            return Err(MousePluginError::EvdevEventError {});
                         }
                     }
                 } else {

@@ -16,22 +16,6 @@
 require "declarations"
 require "debug"
 
--- please find example gradients below
-
--- repeating linear red to light cold white gradient
--- color_start = rgb_to_color(255, 0, 0)
--- color_end = rgb_to_color(0, 255, 255)
--- color_divisor = 128
--- animate_gradient = false
--- gradient_speed = 1
-
--- red to light cold white gradient
--- color_start = rgb_to_color(255, 0, 0)
--- color_end = rgb_to_color(0, 255, 255)
--- color_divisor = 256
--- animate_gradient = false
--- gradient_speed = 1
-
 -- global state variables --
 color_map = {}
 ticks = 0
@@ -39,22 +23,34 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
+    end
+
+    -- static gradient
+    if not animate_gradient then
+        for i = 0, num_keys do
+            color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
+        end
+
+        submit_color_map(color_map)
     end
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    if not animate_gradient then return end
+
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 
     -- animate gradient
-    if animate_gradient and (ticks % gradient_step == 0) then
+    if ticks % gradient_step == 0 then
         for i = 0, num_keys do
             color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
         end
-    end
 
-    submit_color_map(color_map)
+        submit_color_map(color_map)
+    end
 end

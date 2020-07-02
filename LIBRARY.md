@@ -87,6 +87,8 @@ Eruption currently ships with the following core functions:
 | `submit_color_map([color_map])`                       | _core_   | Hw       | since 0.0.12       | Set all LEDs at once to the colors specified in the array `color_map`. Color maps of all scripts will be alpha blended together. and then sent to the keyboard once for each render frame. |
 | `inject_key(ev_key, down)`                            | _core_   | Hw       | since 0.1.1        | Inject a key event on the virtual keyboard                                                                                                                                                 |
 | `inject_key_with_delay(ev_key, down, millis)`         | _core_   | Hw       | since 0.1.9        | Inject a key event on the virtual keyboard, after `millis` milliseconds has passed                                                                                                         |
+| `inject_mouse_button(button_index, down)`             | _core_   | Hw       | since 0.1.10       | Inject a mouse button event on the virtual mouse                                                                                                                                           |
+| `inject_mouse_wheel(direction)`                       | _core_   | Hw       | since 0.1.10       | Inject a wheel scroll event on the virtual mouse                                                                                                                                           |
 | `get_current_load_avg_1() -> f`                       | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 1 minute                                                                                                                                       |
 | `get_current_load_avg_5() -> f`                       | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 5 minutes                                                                                                                                      |
 | `get_current_load_avg_10() -> f`                      | System   | Sys      | since before 0.0.9 | Returns the system load average of the last 10 minutes                                                                                                                                     |
@@ -118,17 +120,17 @@ Please Note:
 
 Eruption currently calls the following event handler functions, if they are present in a Lua script:
 
-| Name                                   | Class      | Parameters                                | Description                                   |
-| -------------------------------------- | ---------- | ----------------------------------------- | --------------------------------------------- |
-| `on_startup`                           | _core_     | _n/a_                                     | Sent on startup, e.g. when a script is loaded |
-| `on_quit`                              | _core_     | _n/a_                                     | Sent on daemon exit                           |
-| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick        |                                               |
-| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order) |                                               |
-| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order) |                                               |
-| `on_mouse_down(button_index)`          | _Mouse_    | button_index: Index of mouse button       |                                               |
-| `on_mouse_up(button_index)`            | _Mouse_    | button_index: Index of mouse button       |                                               |
-| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 0 == up, 1 == down             |                                               |
-| `on_mouse_move(direction, rel_change)` | _Mouse_    | direction: 0 == horizontal, 1 == vertical | _Currently not supported_                     |
+| Name                                 | Class      | Parameters                                | Description                                   |
+| ------------------------------------ | ---------- | ----------------------------------------- | --------------------------------------------- |
+| `on_startup`                         | _core_     | _n/a_                                     | Sent on startup, e.g. when a script is loaded |
+| `on_quit`                            | _core_     | _n/a_                                     | Sent on daemon exit                           |
+| `on_tick(delta)`                     | _core_     | delta: Timer delta since last tick        |                                               |
+| `on_key_down(key_index)`             | _Keyboard_ | key_index: Key index (column major order) |                                               |
+| `on_key_up(key_index)`               | _Keyboard_ | key_index: Key index (column major order) |                                               |
+| `on_mouse_down(button_index)`        | _Mouse_    | button_index: Index of mouse button       |                                               |
+| `on_mouse_up(button_index)`          | _Mouse_    | button_index: Index of mouse button       |                                               |
+| `on_mouse_wheel(direction)`          | _Mouse_    | direction: 1 == up, 2 == down             |                                               |
+| `on_mouse_move(rel_x, rel_y, rel_z)` | _Mouse_    | x, y, z coordinate updates                | Coordinates are relative (delta values)       |
 Exhaustive listing of all currently available event callbacks
 
 ## Example Code

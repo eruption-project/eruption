@@ -33,14 +33,26 @@ pub const NUM_SLOTS: usize = 4;
 /// Default effect script
 pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
 
+/// Target "Frames per Second"
+pub const TARGET_FPS: u64 = 24;
+
 /// Target delay time of main loop iteration
-pub const MAIN_LOOP_DELAY_MILLIS: u64 = (1000.0 / /* target FPS: */ 30.0) as u64;
+pub const MAIN_LOOP_DELAY_MILLIS: u64 = 1000 / TARGET_FPS;
+
+/// Timeout for waiting on condition variables of Lua upcalls
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
+
+/// Max number of events that will be processed in each iteration of the main loop
+pub const MAX_EVENTS_PER_ITERATION: u64 = 100;
+
+/// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
+pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
 
 /// Amount of time that has to pass before we can send another command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 10;
 
 /// Update sensors every other second
-pub const SENSOR_UPDATE_TICKS: u64 = 60;
+pub const SENSOR_UPDATE_TICKS: u64 = 48;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;

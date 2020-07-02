@@ -35,7 +35,7 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    ticks = ticks + delta + 1
+    ticks = ticks + delta
 
     local num_keys = get_num_keys()
 
@@ -58,7 +58,7 @@ function on_tick(delta)
                                             color_saturation, color_lightness,
                                             lerp(0, 255, opacity))
         end
-    end
 
-    submit_color_map(color_map)
+        submit_color_map(color_map)
+    end
 end

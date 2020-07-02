@@ -549,6 +549,13 @@ fn run_main_loop(
 
     let mut start_time = Instant::now();
 
+    let mut mouse_move_event_last_dispatched = Instant::now();
+    let mut mouse_motion_buf = (0, 0, 0);
+
+    // Skip waiting (at the bottom of the loop) if we have pending events
+    let mut mouse_events_pending;
+    let mut keyboard_events_pending = false;
+
     // enter the main loop on the main thread
     'MAIN_LOOP: loop {
         // slot changed?
@@ -662,6 +669,10 @@ fn run_main_loop(
             }
         }
 
+        // process mouse events
+        // limit the number of messages that will be processed during this iteration
+        let mut loop_counter = 0;
+
         'MOUSE_EVENTS_LOOP: loop {
             let mut event_processed = false;
 
@@ -670,6 +681,8 @@ fn run_main_loop(
                 Ok(result) => {
                     match result {
                         Some(raw_event) => {
+                            let mut mirror_event = true;
+
                             // notify all observers of raw events
                             events::notify_observers(events::Event::RawMouseEvent(
                                 raw_event.clone(),
@@ -677,48 +690,75 @@ fn run_main_loop(
                             .ok();
 
                             if let evdev_rs::enums::EventCode::EV_REL(ref code) =
-                                raw_event.event_code
+                                raw_event.clone().event_code
                             {
                                 match code {
                                     evdev_rs::enums::EV_REL::REL_X
-                                    | evdev_rs::enums::EV_REL::REL_Y => {
-                                        // mouse scroll wheel event occurred
+                                    | evdev_rs::enums::EV_REL::REL_Y
+                                    | evdev_rs::enums::EV_REL::REL_Z => {
+                                        // mouse move event occurred
 
+                                        mirror_event = false; // don't mirror pointer motion events, since they are
+                                                              // already mirrored by the mouse plugin
+
+                                        // accumulate relative changes
                                         let direction = if *code == evdev_rs::enums::EV_REL::REL_X {
-                                            0
-                                        } else {
+                                            mouse_motion_buf.0 += raw_event.value;
+
                                             1
+                                        } else if *code == evdev_rs::enums::EV_REL::REL_Y {
+                                            mouse_motion_buf.1 += raw_event.value;
+
+                                            2
+                                        } else if *code == evdev_rs::enums::EV_REL::REL_Z {
+                                            mouse_motion_buf.2 += raw_event.value;
+
+                                            3
+                                        } else {
+                                            4
                                         };
 
-                                        *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
-                                            LUA_TXS.lock().len() - failed_txs.len();
+                                        if mouse_motion_buf != (0, 0, 0) &&
+                                            mouse_move_event_last_dispatched.elapsed().as_millis() > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into() {
+                                            mouse_move_event_last_dispatched = Instant::now();
 
-                                        for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                            if !failed_txs.contains(&idx) {
-                                                lua_tx.send(script::Message::MouseMove(direction, raw_event.value)).unwrap_or_else(
+                                            *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
+                                                LUA_TXS.lock().len() - failed_txs.len();
+
+                                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                                if !failed_txs.contains(&idx) {
+                                                    lua_tx.send(script::Message::MouseMove(mouse_motion_buf.0,
+                                                                                           mouse_motion_buf.1,
+                                                                                           mouse_motion_buf.2)).unwrap_or_else(
                                                 |e| {
-                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
-                                                },
-                                            );
-                                            } else {
-                                                warn!("Not sending a message to a failed tx");
+                                                        error!("Could not send a pending mouse event to a Lua VM: {}", e);
+                                                    });
+
+                                                    // reset relative motion buffer, since it has been submitted
+                                                    mouse_motion_buf = (0, 0, 0);
+                                                } else {
+                                                    warn!("Not sending a message to a failed tx");
+                                                }
                                             }
-                                        }
 
-                                        // yield to thread
-                                        //thread::sleep(Duration::from_millis(0));
+                                            // yield to thread
+                                            //thread::sleep(Duration::from_millis(0));
 
-                                        // wait until all Lua VMs completed the event handler
-                                        loop {
-                                            let mut pending =
-                                                UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+                                            // wait until all Lua VMs completed the event handler
+                                            loop {
+                                                let mut pending =
+                                                    UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
 
-                                            UPCALL_COMPLETED_ON_MOUSE_MOVE
-                                                .1
-                                                .wait_for(&mut pending, Duration::from_millis(50));
+                                                UPCALL_COMPLETED_ON_MOUSE_MOVE.1.wait_for(
+                                                    &mut pending,
+                                                    Duration::from_millis(
+                                                        constants::TIMEOUT_CONDITION_MILLIS,
+                                                    ),
+                                                );
 
-                                            if *pending == 0 {
-                                                break;
+                                                if *pending == 0 {
+                                                    break;
+                                                }
                                             }
                                         }
 
@@ -731,10 +771,11 @@ fn run_main_loop(
 
                                     evdev_rs::enums::EV_REL::REL_WHEEL
                                     | evdev_rs::enums::EV_REL::REL_HWHEEL
-                                    | evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES => {
+                                    /* | evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
+                                    | evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES */ => {
                                         // mouse scroll wheel event occurred
 
-                                        let direction = if raw_event.value > 0 { 0 } else { 1 };
+                                        let direction = if raw_event.value > 0 { 1 } else { 2 };
 
                                         *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
                                             LUA_TXS.lock().len() - failed_txs.len();
@@ -759,9 +800,12 @@ fn run_main_loop(
                                             let mut pending =
                                                 UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
 
-                                            UPCALL_COMPLETED_ON_MOUSE_EVENT
-                                                .1
-                                                .wait_for(&mut pending, Duration::from_millis(50));
+                                            UPCALL_COMPLETED_ON_MOUSE_EVENT.1.wait_for(
+                                                &mut pending,
+                                                Duration::from_millis(
+                                                    constants::TIMEOUT_CONDITION_MILLIS,
+                                                ),
+                                            );
 
                                             if *pending == 0 {
                                                 break;
@@ -777,7 +821,7 @@ fn run_main_loop(
                                     _ => (), // ignore other events
                                 }
                             } else if let evdev_rs::enums::EventCode::EV_KEY(code) =
-                                raw_event.event_code
+                                raw_event.clone().event_code
                             {
                                 // mouse button event occurred
 
@@ -808,9 +852,12 @@ fn run_main_loop(
                                         let mut pending =
                                             UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
 
-                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN
-                                            .1
-                                            .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
+                                            &mut pending,
+                                            Duration::from_millis(
+                                                constants::TIMEOUT_CONDITION_MILLIS,
+                                            ),
+                                        );
 
                                         if *pending == 0 {
                                             break;
@@ -843,9 +890,12 @@ fn run_main_loop(
                                         let mut pending =
                                             UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
 
-                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP
-                                            .1
-                                            .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
+                                            &mut pending,
+                                            Duration::from_millis(
+                                                constants::TIMEOUT_CONDITION_MILLIS,
+                                            ),
+                                        );
 
                                         if *pending == 0 {
                                             break;
@@ -855,6 +905,21 @@ fn run_main_loop(
                                     events::notify_observers(events::Event::MouseButtonUp(index))
                                         .unwrap_or_else(|e| error!("{}", e));
                                 }
+                            }
+
+                            if mirror_event {
+                                // mirror all events, except pointer motion events.
+                                // Pointer motion events currently can not be overridden,
+                                // they are mirrored to the virtual mouse directly after they are
+                                // received by the mouse plugin. This is done to reduce input lag
+                                macros::UINPUT_TX
+                                    .lock()
+                                    .as_ref()
+                                    .unwrap()
+                                    .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not send a pending mouse event: {}", e)
+                                    });
                             }
 
                             event_processed = true;
@@ -874,110 +939,38 @@ fn run_main_loop(
                 }
             }
 
-            if !event_processed {
-                break 'MOUSE_EVENTS_LOOP;
-            }
-        }
-
-        // execute render "pipeline" now
-
-        // reset the HashSet of failed TXs
-        // failed_txs.clear();
-
-        // send timer tick events to the Lua VMs
-        for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-            // if this tx failed previously, then skip it completely
-            if !failed_txs.contains(&index) {
-                lua_tx
-                    .send(script::Message::Tick(
-                        start_time.elapsed().as_millis().try_into().unwrap(),
-                    ))
-                    .unwrap_or_else(|e| {
-                        error!("Send error for Message::Tick: {}", e);
-                        failed_txs.insert(index);
-                    });
-            }
-        }
-
-        let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
-
-        // instruct the Lua VMs to realize their color maps, but only if at least one VM
-        // submitted a new map (performed a frame generation increment)
-        if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
-            let mut drop_frame = false;
-            // execute render "pipeline" now
-            // first, clear the canvas
-            script::LED_MAP.lock().copy_from_slice(
-                &[hwdevices::RGBA {
-                    r: 0,
-                    g: 0,
-                    b: 0,
-                    a: 0,
-                }; hwdevices::NUM_KEYS],
-            );
-
-            // instruct Lua VMs to realize their color maps, e.g. to blend their
-            // local color maps with the canvas
-            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
-
-            for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                // if this tx failed previously, then skip it completely
-                if !failed_txs.contains(&index) {
-                    // guarantee the right order of execution for the alpha blend
-                    // operations, so we have to wait for the current Lua VM to
-                    // complete its blending code, before continuing
-                    let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
-
-                    lua_tx
-                        .send(script::Message::RealizeColorMap)
-                        .unwrap_or_else(|e| {
-                            error!("Send error for Message::RealizeColorMap: {}", e);
-                            failed_txs.insert(index);
-                        });
-
-                    // yield to thread
-                    //thread::sleep(Duration::from_millis(0));
-
-                    let result = COLOR_MAPS_READY_CONDITION
-                        .1
-                        .wait_for(&mut pending, Duration::from_millis(50));
-
-                    if result.timed_out() {
-                        drop_frame = true;
-                        warn!("Frame dropped: Timeout while waiting for a lock!");
-                        break;
-                    }
+            if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                    mouse_events_pending = true;
                 } else {
-                    drop_frame = true;
+                    mouse_events_pending = false;
                 }
+
+                break 'MOUSE_EVENTS_LOOP; // no more events in queue or iteration limit reached
             }
 
-            // yield main thread
-            //thread::sleep(Duration::from_millis(0));
-
-            // number of pending blend ops should have reached zero by now
-            //assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
-
-            // send the final (combined) color map to the keyboard
-            if !drop_frame {
-                hwdevices
-                    .send_led_map(&script::LED_MAP.lock())
-                    .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
-
-                // we successfully updated the keyboard state, so store the current frame generation as the "currently active" one
-                saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
-            }
+            loop_counter += 1;
         }
 
-        // sync to MAIN_LOOP_DELAY_MILLIS iteration time
-        let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
-        let sleep_millis = u64::min(
-            constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
-            constants::MAIN_LOOP_DELAY_MILLIS,
-        );
+        // process keyboard events
+        // limit the number of messages that will be processed during this iteration
+        let mut loop_counter = 0;
 
         'KEYBOARD_EVENTS_LOOP: loop {
             let mut event_processed = false;
+
+            // sync to MAIN_LOOP_DELAY_MILLIS iteration time
+            let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
+            let sleep_millis = if mouse_events_pending || keyboard_events_pending {
+                // we did not process all pending messages in the current iteration,
+                // so do not wait now but continue immediately
+                0
+            } else {
+                u64::min(
+                    constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
+                    constants::MAIN_LOOP_DELAY_MILLIS,
+                )
+            };
 
             // send pending keyboard events to the Lua VMs and to the event dispatcher
             match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
@@ -1022,9 +1015,12 @@ fn run_main_loop(
                                     loop {
                                         let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
 
-                                        UPCALL_COMPLETED_ON_KEY_DOWN
-                                            .1
-                                            .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
+                                            &mut pending,
+                                            Duration::from_millis(
+                                                constants::TIMEOUT_CONDITION_MILLIS,
+                                            ),
+                                        );
 
                                         if *pending == 0 {
                                             break;
@@ -1056,9 +1052,12 @@ fn run_main_loop(
                                     loop {
                                         let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
 
-                                        UPCALL_COMPLETED_ON_KEY_UP
-                                            .1
-                                            .wait_for(&mut pending, Duration::from_millis(50));
+                                        UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
+                                            &mut pending,
+                                            Duration::from_millis(
+                                                constants::TIMEOUT_CONDITION_MILLIS,
+                                            ),
+                                        );
 
                                         if *pending == 0 {
                                             break;
@@ -1098,20 +1097,127 @@ fn run_main_loop(
                 }
             }
 
-            if !event_processed {
-                break 'KEYBOARD_EVENTS_LOOP;
+            if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                    keyboard_events_pending = true;
+                } else {
+                    keyboard_events_pending = false;
+                }
+
+                break 'KEYBOARD_EVENTS_LOOP; // no more events in queue or iteration limit reached
+            }
+
+            loop_counter += 1;
+        }
+
+        // finally update the LEDs if necessary
+        let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
+
+        // instruct the Lua VMs to realize their color maps, but only if at least one VM
+        // submitted a new map (performed a frame generation increment)
+        if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+            let mut drop_frame = false;
+            // execute render "pipeline" now
+            // first, clear the canvas
+            script::LED_MAP.lock().copy_from_slice(
+                &[hwdevices::RGBA {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    a: 0,
+                }; hwdevices::NUM_KEYS],
+            );
+
+            // instruct Lua VMs to realize their color maps, e.g. to blend their
+            // local color maps with the canvas
+            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
+
+            for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                // if this tx failed previously, then skip it completely
+                if !failed_txs.contains(&index) {
+                    // guarantee the right order of execution for the alpha blend
+                    // operations, so we have to wait for the current Lua VM to
+                    // complete its blending code, before continuing
+                    let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
+
+                    lua_tx
+                        .send(script::Message::RealizeColorMap)
+                        .unwrap_or_else(|e| {
+                            error!("Send error for Message::RealizeColorMap: {}", e);
+                            failed_txs.insert(index);
+                        });
+
+                    // yield to thread
+                    //thread::sleep(Duration::from_millis(0));
+
+                    let result = COLOR_MAPS_READY_CONDITION.1.wait_for(
+                        &mut pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    );
+
+                    if result.timed_out() {
+                        drop_frame = true;
+                        warn!("Frame dropped: Timeout while waiting for a lock!");
+                        break;
+                    }
+                } else {
+                    drop_frame = true;
+                }
+            }
+
+            // yield main thread
+            //thread::sleep(Duration::from_millis(0));
+
+            // number of pending blend ops should have reached zero by now
+            // assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
+
+            // send the final (combined) color map to the keyboard
+            if !drop_frame {
+                hwdevices
+                    .send_led_map(&script::LED_MAP.lock())
+                    .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
+
+                // thread::sleep(Duration::from_millis(
+                //     crate::constants::DEVICE_SETTLE_MILLIS,
+                // ));
+
+                // we successfully updated the keyboard state, so store the current frame generation as the "currently active" one
+                saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
+            }
+        }
+
+        // send timer tick events to the Lua VMs
+        for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+            // if this tx failed previously, then skip it completely
+            if !failed_txs.contains(&index) {
+                lua_tx
+                    .send(script::Message::Tick(
+                        (start_time.elapsed().as_millis() / constants::TARGET_FPS as u128) as u32,
+                    ))
+                    .unwrap_or_else(|e| {
+                        error!("Send error for Message::Tick: {}", e);
+                        failed_txs.insert(index);
+                    });
             }
         }
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
         if elapsed_after_sleep != constants::MAIN_LOOP_DELAY_MILLIS.into() {
-            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 25u64).into() {
-                warn!("More than 25 milliseconds of jitter detected!");
+            if elapsed_after_sleep > (constants::MAIN_LOOP_DELAY_MILLIS + 82_u64).into() {
+                warn!("More than 82 milliseconds of jitter detected!");
+                warn!("This means that we dropped at least one frame");
                 warn!(
                     "Loop took: {} milliseconds, goal: {}",
                     elapsed_after_sleep,
                     constants::MAIN_LOOP_DELAY_MILLIS
                 );
+            // } else if elapsed_after_sleep < 25_u128 {
+            //     warn!("Short loop detected, this could lead to flickering LEDs!");
+            //     warn!(
+            //         "Loop took: {} milliseconds, goal: {}",
+            //         elapsed_after_sleep,
+            //         constants::MAIN_LOOP_DELAY_MILLIS
+            //     );
             } else {
                 trace!(
                     "Loop took: {} milliseconds, goal: {}",
@@ -1137,6 +1243,7 @@ fn run_main_loop(
         fps_cntr += 1;
         ticks += 1;
 
+        // update timekeeping and state
         start_time = Instant::now();
     }
 

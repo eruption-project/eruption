@@ -50,8 +50,8 @@ function on_key_down(key_index)
 end
 
 function on_tick(delta)
-	ticks = ticks + delta + 1
-	
+	ticks = ticks + delta
+
 	if stage_state == STATE_INITIALIZING then
 		step_and_draw_init(ticks)
 	elseif stage_state == STATE_GAME_OVER then
@@ -63,7 +63,7 @@ function on_tick(delta)
 	end
 end
 
-function step_and_draw_init(ticks)	
+function step_and_draw_init(ticks)
 	local num_keys = get_num_keys()
 	for i = 0, num_keys do
 		local val = max(64 - (frame_counter * 4), 0)
@@ -79,7 +79,7 @@ function step_and_draw_init(ticks)
 	frame_counter = frame_counter - 1
 end
 
-function step_and_draw_game_over(ticks)	
+function step_and_draw_game_over(ticks)
 	-- if frame_counter > 32 delay
 
 	if frame_counter <= 32 then
@@ -94,7 +94,7 @@ function step_and_draw_game_over(ticks)
 	if frame_counter <= 0 then
 		reset_state()
 	end
-	
+
 	frame_counter = frame_counter - 1
 end
 
@@ -110,15 +110,15 @@ function step_and_draw_game(ticks)
 		local new_y = y + delta_y
 
 		-- if new_x <= 1 then
-		-- 	if new_y <= max_keys_per_col / 2 then 
+		-- 	if new_y <= max_keys_per_col / 2 then
 		-- 		change_direction(4)
 		-- 	else
 		-- 		change_direction(2)
 		-- 	end
 		-- end
-			
+
 		-- if new_y <= 1 then
-		-- 	if new_x <= max_keys_per_row / 2 then 
+		-- 	if new_x <= max_keys_per_row / 2 then
 		-- 		change_direction(1)
 		-- 	else
 		-- 		change_direction(3)
@@ -126,7 +126,7 @@ function step_and_draw_game(ticks)
 		-- end
 
 		-- if new_x >= max_keys_per_row - 1 then
-		-- 	if new_y <= max_keys_per_col / 2 then 
+		-- 	if new_y <= max_keys_per_col / 2 then
 		-- 		change_direction(4)
 		-- 	else
 		-- 		change_direction(2)
@@ -134,7 +134,7 @@ function step_and_draw_game(ticks)
 		-- end
 
 		-- if new_y >= max_keys_per_col - 1 then
-		-- 	if new_x >= max_keys_per_row / 2 then 
+		-- 	if new_x >= max_keys_per_row / 2 then
 		-- 		change_direction(1)
 		-- 	else
 		-- 		change_direction(3)
@@ -155,7 +155,7 @@ function step_and_draw_game(ticks)
 		if y < 0 then change_direction(4) end
 
 		-- debug("current_direction: " .. current_direction ..
-		-- 	  " old x: " .. x .. " old y: " .. y .. 
+		-- 	  " old x: " .. x .. " old y: " .. y ..
 		-- 	  " new x: " .. new_x .. " new y: " .. new_y)
 
 		-- check for self-collision
@@ -164,7 +164,7 @@ function step_and_draw_game(ticks)
 		-- 	local y = snake_list[j + 2]
 
 		-- 	if x ~= nil and y ~= nil and
-		-- 	   x == new_x and y == new_y then  
+		-- 	   x == new_x and y == new_y then
 		-- 		game_over()
 		-- 	end
 		-- end
@@ -198,12 +198,12 @@ function step_and_draw_game(ticks)
 	-- if ticks % next_change_ticks == 0 then
 	--	randomize_direction()
 	-- end
-	
+
 	-- clear background, draw food and manage state
 	for i = 0, num_keys do
 		if food_map[i] > 0 then
 			color_map[i] = rgba_to_color(255, 0, 0, 255)
-		else			
+		else
 			color_map[i] = rgba_to_color(0, 0, 0, 0)
 		end
 
@@ -215,12 +215,12 @@ function step_and_draw_game(ticks)
 		local x = snake_list[j + 1]
 		local y = snake_list[j + 2]
 
-		if x ~= nil and y ~= nil then  
+		if x ~= nil and y ~= nil then
 			local idx = key_index(x, y)
 			if idx == nil then idx = 1 else idx = idx + 1 end
 
 			-- trace("x: " .. x .. " y: " .. y .. " idx: " .. idx)
-			
+
 			if x ~= nil and y ~= nil then
 				color_map[idx] = rgba_to_color(255, 40, 0, 255)
 			end
@@ -286,7 +286,7 @@ end
 
 function game_over()
 	debug("Game over!")
-	
+
 	frame_counter = 64
 	stage_state = STATE_GAME_OVER
 end
@@ -299,13 +299,13 @@ function reset_state()
 	end
 
 	change_direction(3)
-	
+
 	snake_list = {
 		5, 3,
 		4, 3,
 		3, 3,
 	}
-	
+
 	stage_state = STATE_INITIALIZING
 	frame_counter = 32
 end

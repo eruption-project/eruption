@@ -17,97 +17,55 @@
 -- no override has been specified. You may want to customize the code below
 
 function easyshift_macro_1()
-	debug("Playing back: 'easyshift_macro_1'")
-
-	inject_key(42, true)  	-- shift down
-	inject_key(29, true)  	-- ctrl down
-	inject_key(2,  true)  	-- '1' down
-	
-	inject_key(2,  false)  	-- '1' up
-	inject_key(29, false)  	-- ctrl up
-	inject_key(42, false) 	-- shift up
+	info("Playing back: 'easyshift_macro_1'")
 end
 
 function easyshift_macro_2()
-	debug("Playing back: 'easyshift_macro_2'")
-
-	inject_key(56, true)  	-- alt down
-	inject_key(62, true)  	-- F4 down
-	
-	inject_key(62, false)  	-- F4 up
-	inject_key(56, false) 	-- alt up
+	info("Playing back: 'easyshift_macro_2'")
 end
 
 function easyshift_macro_3()
-    debug("Playing back: 'easyshift_macro_3'")
-    
-    inject_key_with_delay(42, true, 0)  	-- shift down
-		
-	inject_key_with_delay(35, true, 100)  	-- 'h' down
-	inject_key_with_delay(35, false, 200)  	-- 'h' up
-	
-	inject_key_with_delay(42, false, 300) 	-- shift up
+    info("Playing back: 'easyshift_macro_3'")
+end
 
-	inject_key_with_delay(18, true, 400)  	-- 'e' down
-	inject_key_with_delay(18, false, 500)  	-- 'e' up
+function easyshift_mouse_macro_1()
+	info("Playing back: 'easyshift_mouse_macro_1'")
+end
 
-	inject_key_with_delay(38, true, 600)  	-- 'l' down
-	inject_key_with_delay(38, false, 700)  	-- 'l' up
+function easyshift_mouse_macro_2()
+	info("Playing back: 'easyshift_mouse_macro_2'")
+end
 
-	inject_key_with_delay(38, true, 800)  	-- 'l' down
-	inject_key_with_delay(38, false, 900)  	-- 'l' up
+function easyshift_mouse_macro_3()
+	info("Playing back: 'easyshift_mouse_macro_3'")
+end
 
-	inject_key_with_delay(24, true, 1000)  	-- 'o' down
-	inject_key_with_delay(24, false, 1100) 	-- 'o' up
+function easyshift_mouse_wheel_scroll_up()
+	info("Playing back: 'easyshift_mouse_wheel_scroll_up'")
+end
 
-	inject_key_with_delay(42, true, 1200)  	-- shift down
-	
-	inject_key_with_delay(2, true, 1300)  	-- '1' down
-	inject_key_with_delay(2, false, 1400)  	-- '1' up
-	
-	inject_key_with_delay(42, false, 1500) 	-- shift up
+function easyshift_mouse_wheel_scroll_down()
+	info("Playing back: 'easyshift_mouse_wheel_scroll_down'")
 end
 
 function on_macro_key_down(index)
-	debug("Playing back: Macro #" .. index + 1)
+	info("Playing back: Macro #" .. index + 1)
 
 	-- NOTE:
 	-- We filter by slots, if you want to enable macros on all slots equally,
 	-- just remove the 'and get_current_slot() == 0' part in each if statement.
 
 	if index == 0 and get_current_slot() == 0 then
-		-- if we are in slot #1, the macro key #1 will write the
-		-- string "Hello!" on the virtual keyboard
+		-- if we are in slot #1, the macro key #1 will execute this if-branch
 
 		if MODIFIER_KEY ~= RIGHT_MENU then
 			inject_key(MODIFIER_KEY_EV_CODE, false)  -- modifier key up
 		end
 
-		inject_key(42, true)  	-- shift down
-		
-		inject_key(35, true)  	-- 'h' down
-		inject_key(35, false)  	-- 'h' up
-		
-		inject_key(42, false) 	-- shift up
+		-- consume the original keystroke
+		inject_key(0, false)
 
-		inject_key(18, true)  	-- 'e' down
-		inject_key(18, false)  	-- 'e' up
-
-		inject_key(38, true)  	-- 'l' down
-		inject_key(38, false)  	-- 'l' up
-
-		inject_key(38, true)  	-- 'l' down
-		inject_key(38, false)  	-- 'l' up
-
-		inject_key(24, true)  	-- 'o' down
-		inject_key(24, false)  	-- 'o' up
-
-		inject_key(42, true)  	-- shift down
-		
-		inject_key(2, true)  	-- '1' down
-		inject_key(2, false)  	-- '1' up
-		
-		inject_key(42, false) 	-- shift up
+		-- place your code here --
 
 	elseif index == 3 and get_current_slot() == 0 then
 		-- if we are in slot #1, the macro key #4 will write the
@@ -137,14 +95,14 @@ function update_color_state()
 		for i = 0, num_keys do color_map[i] = color_highlight end
 
 		-- highlight remapped keys
-		for i = 0, num_keys do 
+		for i = 0, num_keys do
 			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = COLOR_REMAPPED_KEY
 			end
 		end
 
 		-- highlight keys with associated macros
-		for i = 0, num_keys do 
+		for i = 0, num_keys do
 			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
 				color_map[i] = COLOR_ASSOCIATED_MACRO
 			end
@@ -174,10 +132,10 @@ function update_color_state()
 		end
 
 		highlight_ttl = highlight_max_ttl
-			
+
 	elseif modifier_map[MODIFIER_KEY] then
 		local num_keys = get_num_keys()
-		
+
 		-- highlight all keys
 		for i = 0, num_keys do color_map[i] = color_highlight end
 
@@ -221,7 +179,7 @@ end
 EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 EASY_SHIFT_REMAPPING_TABLE[4][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
--- map F1 - F12 => F13 - F21 on the Easy Shift layer
+-- map F1 - F12 => F13 - F21 on the Easy Shift+ layer
 EASY_SHIFT_REMAPPING_TABLE[1][12]	= 183
 EASY_SHIFT_REMAPPING_TABLE[1][18]	= 184
 EASY_SHIFT_REMAPPING_TABLE[1][24]	= 185
@@ -240,6 +198,18 @@ EASY_SHIFT_MACRO_TABLE[1][7]		= easyshift_macro_1  -- CTRL + SHIFT + 1 (a custom
 EASY_SHIFT_MACRO_TABLE[1][13]		= easyshift_macro_2  -- ALT + F4 (close active window)
 EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  -- A custom macro
 
+-- assign macros to mouse buttons on the Easy Shift+ layer
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][2]	= easyshift_mouse_macro_2  --
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][3]	= easyshift_mouse_macro_3  --
+
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][1] = easyshift_mouse_macro_1  --
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][2] = easyshift_mouse_macro_2  --
+-- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][3] = easyshift_mouse_macro_3  --
+
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up  	--
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down  	--
+
 
 -- ****************************************************************************
 -- QWERTZ layout, column major order
@@ -256,11 +226,11 @@ EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  -- A custom macro
 -- A			  =>   9
 -- <			  =>  10
 -- LEFT SUPER	  =>  11
--- F1			  =>  12 
+-- F1			  =>  12
 -- 2			  =>  13
 -- W			  =>  14
 -- S			  =>  15
--- Y			  =>  16 
+-- Y			  =>  16
 -- LEFT ALT		  =>  17
 -- F2			  =>  18
 -- 3			  =>  19
@@ -343,7 +313,7 @@ EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  -- A custom macro
 -- <not assigned> =>  96
 -- #'			  =>  97 -- ??
 -- <not assigned> =>  98
--- <not assigned> =>  99 
+-- <not assigned> =>  99
 -- PRINT SCR	  => 100
 -- INSERT		  => 101
 -- DEL			  => 102
