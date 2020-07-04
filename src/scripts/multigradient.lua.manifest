@@ -1,6 +1,6 @@
 name = "Multi Gradient"
 description = "Display a gradient with multiple color stops"
-version = "0.0.3"
+version = "0.0.4"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Gradient']

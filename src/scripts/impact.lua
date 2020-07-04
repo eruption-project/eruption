@@ -55,7 +55,7 @@ function on_mouse_button_down(button_index)
 
 	local num_keys = get_num_keys()
 	for i = 0, num_keys do
-		color_map[i] = rgba_to_color(255, 255, 255, 32)
+		color_map[i] = color_mouse_click_flash
 	end
 
 	effect_ttl = max_effect_ttl
@@ -66,7 +66,7 @@ function on_mouse_button_up(button_index)
 
 	local num_keys = get_num_keys()
 	for i = 0, num_keys do
-		color_map[i] = rgba_to_color(255, 255, 255, 32)
+		color_map[i] = color_mouse_click_flash
 	end
 
 	effect_ttl = max_effect_ttl
@@ -76,9 +76,9 @@ function on_mouse_wheel(direction)
 	if not mouse_events then return end
 
 	if direction == 1 then
-		c = rgba_to_color(255, 255, 255, 64)
+		c = color_mouse_wheel_flash
 	elseif direction == 2 then
-		c = rgba_to_color(255, 255, 255, 64)
+		c = color_mouse_wheel_flash
 	end
 
 	local num_keys = get_num_keys()

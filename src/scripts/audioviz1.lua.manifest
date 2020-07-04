@@ -1,6 +1,6 @@
 name = "Audio Visualizer #1 (Gradient)"
 description = "Audio visualization using a color gradient"
-version = "0.0.3"
+version = "0.0.4"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']

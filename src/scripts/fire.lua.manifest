@@ -1,6 +1,6 @@
 name = "Fire"
 description = "Shows a bonfire effect on the keyboard"
-version = "0.0.4"
+version = "0.0.5"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor']

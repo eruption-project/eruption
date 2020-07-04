@@ -25,7 +25,7 @@ function on_tick(delta)
 
     local num_keys = get_num_keys()
 
-    -- calculate batique effect
+    -- calculate voronoi noise effect
     if ticks % animation_delay == 0 then
         for i = 0, num_keys do
             local x = i / num_rows

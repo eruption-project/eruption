@@ -1,6 +1,6 @@
 name = "Snake"
 description = "Display a snake"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption development team"
 min_supported_version = "0.1.8"
 tags = ['Effect', 'Vendor']

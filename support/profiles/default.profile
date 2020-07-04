@@ -15,6 +15,16 @@ type = 'color'
 name = 'color_step_shockwave'
 value = 0x05010000
 
+[[config.Impact]]
+type = 'color'
+name = 'color_mouse_click_flash'
+value = 0xa0ff0000
+
+[[config.Impact]]
+type = 'color'
+name = 'color_mouse_wheel_flash'
+value = 0xd0ff0000
+
 [[config.Water]]
 type = 'float'
 name = 'flow_speed'

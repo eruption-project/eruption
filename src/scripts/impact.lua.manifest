@@ -1,8 +1,8 @@
 name = "Impact"
 description = "Highlight neighboring keys when a key has been pressed"
-version = "0.0.4"
+version = "0.0.5"
 author = "The Eruption development team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.10"
 tags = ['Effect', 'Vendor']
 
 [[config]]
@@ -28,3 +28,15 @@ type = 'bool'
 name = 'mouse_events'
 description = 'React on mouse events'
 default = true
+
+[[config]]
+type = 'color'
+name = 'color_mouse_click_flash'
+description = 'Color of flash effect shown on mouse button clicks'
+default = 0x20ffaaaa
+
+[[config]]
+type = 'color'
+name = 'color_mouse_wheel_flash'
+description = 'Color of flash effect shown on mouse wheel scroll'
+default = 0x40aaaaff

@@ -1,6 +1,6 @@
 name = "Gradient Noise"
 description = "Compute Gradient Noise, mapped to the HSL color space"
-version = "0.0.2"
+version = "0.0.3"
 author = "The Eruption development team"
 min_supported_version = "0.1.5"
 tags = ['Background', 'Vendor', 'Noise']
