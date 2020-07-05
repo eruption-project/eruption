@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.1.10
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -55,6 +55,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/macros
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
 %{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
