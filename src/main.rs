@@ -1418,6 +1418,12 @@ fn main() {
         .get::<bool>("frontend.enabled")
         .unwrap_or_else(|_| true);
 
+    // experimental features
+    // grab the mouse exclusively
+    let grab_mouse = config
+        .get::<bool>("experimental.grab_mouse")
+        .unwrap_or_else(|_| false);
+
     // try to set timer slack to a low value
     // prctl::set_timer_slack(1).unwrap_or_else(|e| warn!("Could not set process timer slack: {}", e));
 
@@ -1476,14 +1482,19 @@ fn main() {
                         panic!()
                     });
 
-                    // spawn a thread to handle mouse input
-                    info!("Spawning mouse input thread...");
-
+                    // enable mouse input
                     let (mouse_tx, mouse_rx) = channel();
-                    spawn_mouse_input_thread(mouse_tx).unwrap_or_else(|e| {
-                        error!("Could not spawn a thread: {}", e);
-                        panic!()
-                    });
+
+                    if grab_mouse {
+                        // spawn a thread to handle mouse input
+                        info!("Spawning mouse input thread...");
+                        spawn_mouse_input_thread(mouse_tx).unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
+                    } else {
+                        info!("Mouse support is DISABLED by configuration");
+                    }
 
                     // spawn a thread to handle the web-frontend
                     #[cfg(feature = "frontend")]

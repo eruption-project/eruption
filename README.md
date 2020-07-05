@@ -4,6 +4,7 @@
 - <a href="#important">Important</a>
 - <a href="#overview">Overview</a>
 - <a href="#features">Features</a>
+- <a href="#experimental">Experimental Features</a>
 - <a href="#missing">Missing Features</a>
 - <a href="#installation">Installation</a>
 - <a href="#config">Configuration and Usage</a>
@@ -76,6 +77,11 @@ Supported features:
 * Macro keys are working, programmable via Lua scripts. (But no `FN` modifier key, please see below)
 * Easy Shift is available, and active all the time (via `Caps Lock`)
 * GNOME profile switcher extension is available
+
+## Experimental Features <a name="experimental"></a>
+
+* Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[experimental]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
+
 
 ## Missing Features <a name="missing"></a>
 
@@ -316,6 +322,8 @@ aforementioned `MODIFIER` key. So if you want to play back `Macro #1` you just h
 
 Eruption 0.1.9 introduced the file `/usr/share/eruption/scripts/lib/macros/user-macros.lua`.
 You may use it to implement your own macros.
+
+Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is roughly implemented in the same way as the previously mentioned keyboard support, by adding a "virtual mouse" device to the system that injects events as needed. The "real hardware" mouse will be grabbed exclusively on startup of the daemon. This allows Eruption to filter out mouse events, so they won't be reported to the system twice.
 
 ## Available Plugins <a name="plugins"></a>
 
