@@ -2,10 +2,10 @@ target/release/eruption usr/bin/
 
 support/config/eruption.conf etc/eruption/
 
-support/systemd/eruption.service usr/lib/systemd/system/
-support/systemd/eruption.preset usr/lib/systemd/system-preset/
+support/systemd/eruption.service lib/systemd/system/
+support/systemd/eruption.preset lib/systemd/system-preset/
 
-support/udev/99-eruption-roccat-vulcan.rules usr/lib/udev/rules.d/
+support/udev/99-eruption-roccat-vulcan.rules lib/udev/rules.d/
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
@@ -98,6 +98,8 @@ src/scripts/water.lua usr/share/eruption/scripts/
 src/scripts/water.lua.manifest usr/share/eruption/scripts/
 src/scripts/snake.lua usr/share/eruption/scripts/
 src/scripts/snake.lua.manifest usr/share/eruption/scripts/
+src/scripts/macros.lua usr/share/eruption/scripts/
+src/scripts/macros.lua.manifest usr/share/eruption/scripts/
 src/scripts/lib/debug.lua usr/share/eruption/scripts/lib/
 src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib/
 src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib/

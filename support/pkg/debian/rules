@@ -15,7 +15,7 @@
 
 
 %:
-	dh $@
+	dh $@ --without autoreconf --without autotools-dev
 
 override_dh_auto_build:
 	export CARGO_HOME=".cargo"
@@ -25,8 +25,11 @@ override_dh_auto_build:
 override_dh_auto_clean:
 	$(RM) -r target/
 
-# dh_make generated override targets
-# This is example for Cmake (See https://bugs.debian.org/641051 )
-#override_dh_auto_configure:
-#	dh_auto_configure -- #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
+override_dh_clean:
+	# do nothing
 
+override_dh_update_autotools_config:
+	# do nothing
+
+override_dh_strip_nondeterminism:
+	# do nothing
