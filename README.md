@@ -45,11 +45,11 @@ the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 ```
 Or with systemctl to mask/disable the service:
 ```sh
-$ sudo systemctl mask eruption
+$ sudo systemctl mask eruption.service
 ```
 You can always re-enable the Eruption service with the command:
 ```sh
-$ sudo systemctl enable eruption
+$ sudo systemctl enable eruption.service
 ```
 
 ## Overview <a name="overview"></a>
