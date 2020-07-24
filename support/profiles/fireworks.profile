@@ -6,6 +6,8 @@ active_scripts = [
 	'fireworks.lua',
 	'impact.lua',
  	'macros.lua',
+	'stats.lua',
+# 	'profiles.lua',
 ]
 
 [[config."Solid Color"]]

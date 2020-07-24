@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 5 "May 2020" "0.1.10" "eruption.conf man page"
+.TH man 5 "Aug 2020" "0.1.11" "eruption.conf man page"
 .SH NAME
  Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .SH SYNOPSIS
@@ -23,24 +23,16 @@ script_dir = "/usr/share/eruption/scripts/"
 .br
 keyboard_variant = "ISO"
 .br
+grab_mouse = true
 .br
-
-[frontend]
-.br
-# enabled = true
-.br
-# theme = "eruption"
 .br
 
 .SH Section [global]
 .br
 keyboard_variant = Switch between sub-variants of your device. (Only partially supported)
 .br
-
-.SH Section [frontend]
-
-Please note that the "frontend" (a browser-based GUI) is not currently shipped
-with the pre-built packages, since it is considered not ready yet.
+grab_mouse = Enable support for mouse events and event injection
+.br
 
 .SH SEE ALSO
  eruption(8)

@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#[cfg(feature = "dbus")]
 use dbus::{
     ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs, tree::Access,
     tree::EmitsChangedSignal, tree::Factory, tree::MethodErr, tree::Signal,
@@ -52,7 +51,6 @@ pub enum DbusApiError {
 }
 
 /// D-Bus API support
-#[cfg(feature = "dbus")]
 pub struct DbusApi {
     connection: Option<Arc<Connection>>,
 
@@ -61,7 +59,6 @@ pub struct DbusApi {
     profiles_changed: Arc<Signal<()>>,
 }
 
-#[cfg(feature = "dbus")]
 impl DbusApi {
     /// Initialize the D-Bus API
     pub fn new(dbus_tx: Sender<Message>) -> Self {
@@ -111,9 +108,8 @@ impl DbusApi {
                 result
                     .as_ref()
                     .and_then(|p| {
-                        p.profile_file.file_name().and_then(|v| {
+                        p.profile_file.file_name().map(|v| {
                             i.append(&*v.to_string_lossy());
-                            Some(())
                         })
                     })
                     .ok_or_else(|| MethodErr::failed("Method failed"))
@@ -397,17 +393,6 @@ impl DbusApi {
 }
 
 /// Initialize the Eruption D-Bus API support
-#[cfg(feature = "dbus")]
 pub fn initialize(dbus_tx: Sender<Message>) -> Result<DbusApi> {
     Ok(DbusApi::new(dbus_tx))
-}
-
-/// An empty dummy struct
-#[cfg(not(feature = "dbus"))]
-pub struct DbusApi {}
-
-/// Get an empty dummy implementation of DbusApi
-#[cfg(not(feature = "dbus"))]
-pub fn initialize_dummy() -> DbusApi {
-    DbusApi {}
 }

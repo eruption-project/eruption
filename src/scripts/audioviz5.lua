@@ -23,12 +23,10 @@ color_map_pressed = {}
 ticks = 0
 adaptive_offset = 0
 
-num_rows = 6
-num_cols = 22
-
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = color_off
     end
@@ -37,21 +35,20 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    local num_keys = get_num_keys()
-
     adaptive_offset = get_audio_loudness() / 50000
-    debug("Adaptive offset: " .. adaptive_offset)
-
+    -- debug("AudioViz5: Adaptive offset: " .. adaptive_offset)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
+        local num_keys = get_num_keys()
+
         for i = 0, num_keys do
             local x = i / num_rows
             local y = i / num_cols
 
             local val = open_simplex_noise(x / coord_scale + adaptive_offset,
-                                            y / coord_scale + adaptive_offset,
-                                            ticks / time_scale)
+                                           y / coord_scale + adaptive_offset,
+                                           ticks / time_scale)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

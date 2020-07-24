@@ -58,9 +58,6 @@ pub const MAX_IN_FLIGHT_SFX: usize = 2;
 /// The allocated size of the audio grabber buffer
 pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 30;
 
-/// Thread termination request flag of the audio player thread
-pub static AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
-
 /// Thread termination request flag of the audio grabber thread
 pub static AUDIO_GRABBER_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
 
@@ -76,8 +73,7 @@ static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
 lazy_static! {
     /// Pluggable audio backend. Currently supported backends are "Null", ALSA and PulseAudio
     pub static ref AUDIO_BACKEND: Arc<Mutex<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
-        //Arc::new(Mutex::new(backends::AlsaBackend::new().expect("Could not instantiate the audio backend!")));
-        //Arc::new(Mutex::new(backends::PulseAudioBackend::new().expect("Could not instantiate the audio backend!")));
+        // Arc::new(Mutex::new(backends::PulseAudioBackend::new().expect("Could not instantiate the audio backend!")));
         Arc::new(Mutex::new(None));
 
     /// Holds audio data recorded by the audio grabber
@@ -346,17 +342,13 @@ mod backends {
     use super::AUDIO_GRABBER_BUFFER_SIZE;
     use super::AUDIO_GRABBER_THREAD_RUNNING;
     use super::AUDIO_GRABBER_THREAD_SHALL_TERMINATE;
-    use super::AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE;
     use super::CURRENT_RMS;
     use super::ENABLE_SFX;
 
-    use log::{debug, error};
+    use log::*;
     use std::sync::atomic::Ordering;
     use std::sync::Arc;
     use std::thread;
-
-    use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
-    use cpal::{StreamData, UnknownTypeInputBuffer, UnknownTypeOutputBuffer};
 
     use libpulse_binding as pulse;
     use libpulse_simple_binding as psimple;
@@ -379,286 +371,6 @@ mod backends {
             Ok(())
         }
         fn start_audio_grabber(&self) -> Result<()> {
-            Ok(())
-        }
-    }
-
-    /// Advanced Linux Sound Architecture backend
-    pub struct AlsaBackend {
-        host: Arc<cpal::Host>,
-        event_loop_playback: Arc<cpal::EventLoop>,
-        event_loop_grabber: Arc<cpal::EventLoop>,
-    }
-
-    #[allow(unused)]
-    impl AlsaBackend {
-        pub fn new() -> Result<Self> {
-            let host = cpal::default_host();
-
-            for (index, device) in host.devices().unwrap().enumerate() {
-                debug!("Device: {}: {}", index, device.name().unwrap());
-            }
-
-            let event_loop_playback = host.event_loop();
-            let event_loop_grabber = host.event_loop();
-
-            let result = AlsaBackend {
-                host: Arc::new(host),
-                event_loop_playback: Arc::new(event_loop_playback),
-                event_loop_grabber: Arc::new(event_loop_grabber),
-            };
-
-            Ok(result)
-        }
-    }
-
-    #[allow(unused)]
-    impl AudioBackend for AlsaBackend {
-        fn play_sfx(&self, data: &'static [u8]) -> Result<()> {
-            if !ENABLE_SFX.load(Ordering::SeqCst) {
-                return Ok(());
-            }
-
-            AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
-
-            let samples = data.len();
-
-            let host = self.host.clone();
-            let event_loop = self.event_loop_playback.clone();
-
-            let builder = thread::Builder::new().name("audio/handler".into());
-            builder
-                .spawn(move || -> Result<()> {
-                    let device = host
-                        .default_output_device()
-                        //.map_err(|e| AudioPluginError::PlaybackError { description: format!("{}", e) });
-                        .expect("no output device available");
-
-                    debug!("Default output device: {}", device.name().unwrap());
-
-                    let mut supported_formats_range = device
-                        .supported_output_formats()
-                        .expect("error while querying formats");
-
-                    //for f in supported_formats_range {
-                    //debug!("{:?}", f);
-                    //}
-
-                    //let format = supported_formats_range.next().expect("No supported formats!").with_max_sample_rate();
-
-                    let format = cpal::Format {
-                        channels: 2,
-                        sample_rate: cpal::SampleRate(44100),
-                        data_type: cpal::SampleFormat::I16,
-                    };
-
-                    debug!("Default output format: {:?}", format);
-
-                    let stream_id =
-                        event_loop
-                            .build_output_stream(&device, &format)
-                            .map_err(|e| AudioPluginError::PlaybackError {
-                                description: format!("{}", e),
-                            })?;
-
-                    let event_loop_c = event_loop.clone();
-                    let stream_id_c = stream_id.clone();
-
-                    let builder = thread::Builder::new().name("audio/playback".into());
-                    builder
-                        .spawn(move || {
-                            ACTIVE_SFX.fetch_add(1, Ordering::SeqCst);
-
-                            event_loop
-                                .play_stream(stream_id)
-                                .expect("failed to play_stream");
-
-                            event_loop.run(move |stream_id, stream_result| {
-                                let stream_data = match stream_result {
-                                    Ok(data) => data,
-                                    Err(err) => {
-                                        eprintln!(
-                                            "an error occurred on stream {:?}: {}",
-                                            stream_id, err
-                                        );
-                                        return;
-                                    }
-                                };
-
-                                if AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
-                                    return;
-                                }
-
-                                match stream_data {
-                                    StreamData::Output {
-                                        buffer: UnknownTypeOutputBuffer::U16(mut buffer),
-                                    } => {
-                                        let mut di = data
-                                            .chunks_exact(2)
-                                            .map(|c| u16::from_ne_bytes([c[0], c[1]]));
-
-                                        for elem in buffer.iter_mut() {
-                                            *elem = di.next().unwrap_or(0);
-                                        }
-                                    }
-
-                                    StreamData::Output {
-                                        buffer: UnknownTypeOutputBuffer::I16(mut buffer),
-                                    } => {
-                                        let mut di = data
-                                            .chunks_exact(2)
-                                            .map(|c| u16::from_ne_bytes([c[0], c[1]]))
-                                            .map(|c| (c as f32) as i16);
-
-                                        for elem in buffer.iter_mut() {
-                                            *elem = di.next().unwrap_or(0);
-                                        }
-                                    }
-
-                                    StreamData::Output {
-                                        buffer: UnknownTypeOutputBuffer::F32(mut buffer),
-                                    } => {
-                                        let mut di = data
-                                            .chunks_exact(2)
-                                            .map(|c| u16::from_ne_bytes([c[0], c[1]]));
-
-                                        for elem in buffer.iter_mut() {
-                                            *elem = di.next().unwrap_or(0).into();
-                                        }
-                                    }
-
-                                    _ => error!("Unsupported sample format!"),
-                                };
-                            });
-                        })
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
-
-                    thread::sleep(std::time::Duration::from_millis(
-                        ((44100 * 2) / samples * 100) as u64,
-                    ));
-
-                    //event_loop_c.pause_stream(stream_id_c);
-                    event_loop_c.destroy_stream(stream_id_c);
-
-                    AUDIO_PLAYBACK_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
-                    ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
-
-                    Ok(())
-                })
-                .unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
-
-            Ok(())
-        }
-
-        fn start_audio_grabber(&self) -> Result<()> {
-            if AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-                return Ok(());
-                //return Err(AudioPluginError::GrabberError{ description: "Thread already running".into() });
-            }
-
-            AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
-
-            let host = self.host.clone();
-            let event_loop = self.event_loop_grabber.clone();
-
-            let builder = thread::Builder::new().name("audio/grabber".into());
-            builder
-                .spawn(move || -> Result<()> {
-                    let device = host
-                        .default_input_device()
-                        .expect("Failed to get default input device");
-
-                    debug!("Default input device: {}", device.name().unwrap());
-
-                    let format = device
-                        .default_input_format()
-                        .expect("Failed to get default input format");
-
-                    debug!("Default input format: {:?}", format);
-
-                    let stream_id =
-                        event_loop
-                            .build_input_stream(&device, &format)
-                            .map_err(|e| AudioPluginError::GrabberError {
-                                description: format!(
-                                    "Could not create audio grabber stream: {}",
-                                    e
-                                ),
-                            })?;
-                    event_loop.play_stream(stream_id).map_err(|e| {
-                        AudioPluginError::GrabberError {
-                            description: format!("Could not start audio grabber stream: {}", e),
-                        }
-                    })?;
-
-                    event_loop.run(move |stream_id, stream_result| {
-                        let stream_data = match stream_result {
-                            Ok(data) => data,
-                            Err(err) => {
-                                eprintln!("an error occurred on stream {:?}: {}", stream_id, err);
-                                return;
-                            }
-                        };
-
-                        if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
-                            AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
-                            AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
-
-                            return;
-                        }
-
-                        let mut buffer = AUDIO_GRABBER_BUFFER.lock();
-
-                        match stream_data {
-                            StreamData::Input {
-                                buffer: UnknownTypeInputBuffer::U16(input_buffer),
-                            } => {
-                                // copy recorded samples to the global buffer
-                                buffer.clear();
-                                buffer.extend(input_buffer.iter().map(|s| *s as i16));
-                            }
-
-                            StreamData::Input {
-                                buffer: UnknownTypeInputBuffer::I16(input_buffer),
-                            } => {
-                                // copy recorded samples to the global buffer
-                                buffer.clear();
-                                buffer.extend(input_buffer.iter());
-                            }
-
-                            StreamData::Input {
-                                buffer: UnknownTypeInputBuffer::F32(input_buffer),
-                            } => {
-                                // copy recorded samples to the global buffer
-                                buffer.clear();
-                                buffer.extend(input_buffer.iter().map(|s| s.round() as i16));
-                            }
-
-                            _ => error!("Grabber: Unsupported sample format!"),
-                        }
-
-                        // compute root mean square (RMS) of the recorded samples
-                        let sqr_sum = buffer
-                            .iter()
-                            .map(|s| *s as f32)
-                            .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
-
-                        let sqr_sum = (sqr_sum / buffer.len() as f32).sqrt();
-
-                        CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
-                    });
-                })
-                .unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
-
             Ok(())
         }
     }

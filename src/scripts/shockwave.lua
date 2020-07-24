@@ -34,7 +34,7 @@ effect_ttl = 0
 
 -- max ttl of a shockwave cell
 shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
-shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / 6
+shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / shockwave_divisor
 
 -- global state variables --
 color_map = {}
@@ -44,6 +44,7 @@ state_map = {}
 -- event handler functions --
 function on_startup(config)
 	local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
 		state_map[i] = key_state.idle
@@ -51,7 +52,7 @@ function on_startup(config)
 end
 
 function on_key_down(key_index)
-	color_map[key_index] = rgba_to_color(255, 0, 0, 255)
+	color_map[key_index] = color_afterglow
 
 	for i = 0, max_neigh do
 		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
@@ -65,7 +66,7 @@ function on_key_down(key_index)
 end
 
 -- function on_key_up(key_index)
--- 	color_map[key_index] = rgba_to_color(255, 0, 0, 255)
+-- 	color_map[key_index] = color_afterglow
 
 -- 	for i = 0, max_neigh do
 -- 		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1

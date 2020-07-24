@@ -1,0 +1,12 @@
+name = "Profiles"
+description = "Switch profiles based on system state"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.11"
+tags = ['Macros', 'Vendor']
+
+[[config]]
+type = 'string'
+name = 'requires'
+description = 'Import mapping definitions sub-module'
+default = 'macros/user-mappings'

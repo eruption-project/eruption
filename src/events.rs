@@ -29,6 +29,8 @@ pub enum Event {
 
     FileSystemEvent(crate::FileSystemEvent),
 
+    HidEvent(crate::hwdevices::HidEvent),
+
     RawKeyboardEvent(evdev_rs::InputEvent),
     RawMouseEvent(evdev_rs::InputEvent),
 

@@ -53,7 +53,7 @@ pub enum KeyboardPluginError {
 }
 
 lazy_static! {
-    static ref KEY_STATES: Arc<RwLock<Vec<bool>>> =
+    pub static ref KEY_STATES: Arc<RwLock<Vec<bool>>> =
         Arc::new(RwLock::new(vec![false; hwdevices::NUM_KEYS]));
 }
 
@@ -76,18 +76,23 @@ impl KeyboardPlugin {
                 Ok(devfile) => match Device::new_from_fd(devfile) {
                     Ok(mut device) => {
                         info!("Now listening on: {}", filename);
+
                         info!(
                             "Input device name: \"{}\"",
                             device.name().unwrap_or("<n/a>")
                         );
+
                         info!(
                             "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
                             device.bustype(),
                             device.vendor_id(),
                             device.product_id()
                         );
-                        info!("Driver version: {:x}", device.driver_version());
+
+                        // info!("Driver version: {:x}", device.driver_version());
+
                         info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
+
                         // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                         info!("Grabbing the keyboard device exclusively");

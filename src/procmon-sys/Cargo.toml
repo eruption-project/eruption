@@ -1,0 +1,15 @@
+[package]
+edition = "2018"
+name = "procmon-sys"
+version = "0.0.2"
+build = "build.rs"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+license = "GPLv3+"
+
+[lib]
+
+[dependencies]
+libc = "0.2.73"
+
+[build-dependencies]
+cc = "1.0.58"

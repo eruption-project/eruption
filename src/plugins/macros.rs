@@ -99,6 +99,8 @@ impl MacrosPlugin {
         // configure allowed events
         dev.enable(&EventType::EV_KEY).unwrap();
         dev.enable(&EventType::EV_MSC).unwrap();
+
+        dev.enable(&EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
         dev.enable(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
 
         // enable media keys
@@ -310,6 +312,9 @@ impl MacrosPlugin {
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F22)).unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F23)).unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F24)).unwrap();
+
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FN)).unwrap();
+
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_UNKNOWN)).unwrap();
 
         match UInputDevice::create_from_device(&dev) {
@@ -337,6 +342,8 @@ impl MacrosPlugin {
         dev.enable(&EventType::EV_KEY).unwrap();
         dev.enable(&EventType::EV_REL).unwrap();
         dev.enable(&EventType::EV_MSC).unwrap();
+
+        dev.enable(&EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
         dev.enable(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
 
         // Enable all supported buttons; this is used to mirror the hardware device
@@ -364,6 +371,9 @@ impl MacrosPlugin {
 
         dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_EXTRA)).unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_SIDE)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_FORWARD)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_BACK)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_TASK)).unwrap();
 
         dev.enable(&EventCode::EV_REL(EV_REL::REL_WHEEL)).unwrap();
         dev.enable(&EventCode::EV_REL(EV_REL::REL_HWHEEL)).unwrap();
@@ -507,7 +517,7 @@ impl MacrosPlugin {
         let mut do_initialize = false;
 
         MOUSE_DEVICE.with(|dev| {
-            debug!("Injecting: {:?}", event);
+            trace!("Injecting: {:?}", event);
 
             if let Some(device) = dev.borrow().as_ref() {
                 let time = event.time.clone();
@@ -515,7 +525,7 @@ impl MacrosPlugin {
                 device.write_event(&event).unwrap();
 
                 let event = InputEvent {
-                    time: time.clone(),
+                    time,
                     event_type: EventType::EV_SYN,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value: 0,

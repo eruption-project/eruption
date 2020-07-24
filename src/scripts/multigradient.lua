@@ -35,6 +35,7 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = linear_gradient_multi(gradient_stops, (i * num_keys / 100))
     end
@@ -43,10 +44,10 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    local num_keys = get_num_keys()
-
     -- animate gradient
     if animate_gradient and (ticks % gradient_step == 0) then
+        local num_keys = get_num_keys()
+
         for i = 0, num_keys do
             color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
         end

@@ -39,6 +39,10 @@ pub const TARGET_FPS: u64 = 24;
 /// Target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = 1000 / TARGET_FPS;
 
+/// Static correction offset, to compensate for
+/// known time consumers like e.g. hardware accesses
+pub const MAIN_LOOP_DELAY_OFFSET_MILLIS: u64 = 5;
+
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
@@ -48,25 +52,14 @@ pub const MAX_EVENTS_PER_ITERATION: u64 = 100;
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
 
+/// Amount of time that has to pass before we can send another command to the control device
+pub const DEVICE_SETTLE_MILLIS_SAFE: u64 = 20;
+
 /// Amount of time that has to pass before we can send another command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 10;
 
 /// Update sensors every other second
-pub const SENSOR_UPDATE_TICKS: u64 = 48;
+pub const SENSOR_UPDATE_TICKS: u64 = 120;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
-
-// Browser-based GUI
-
-/// Default listen address of the web frontend
-#[cfg(feature = "frontend")]
-pub const WEB_FRONTEND_LISTEN_ADDR: &str = "localhost";
-
-/// Default port of the web frontend
-#[cfg(feature = "frontend")]
-pub const WEB_FRONTEND_PORT: u16 = 8059;
-
-/// Default web frontend theme. Available themese are "eruption" and "metal"
-#[cfg(feature = "frontend")]
-pub const DEFAULT_FRONTEND_THEME: &str = "eruption";

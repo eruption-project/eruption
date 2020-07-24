@@ -7,6 +7,8 @@ active_scripts = [
     'water.lua',
     'gaming.lua',
     'macros.lua',
+    'stats.lua',
+#   'profiles.lua',
 ]
 
 [[config."Solid Color"]]

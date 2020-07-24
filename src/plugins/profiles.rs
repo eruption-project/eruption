@@ -48,6 +48,20 @@ impl ProfilesPlugin {
         // detects, that ACTIVE_SLOT has been changed
         crate::ACTIVE_SLOT.store(index, Ordering::SeqCst);
     }
+
+    pub(crate) fn get_current_profile() -> Option<String> {
+        if let Some(profile) = &*crate::ACTIVE_PROFILE.lock() {
+            Some((*profile.profile_file.file_name().unwrap().to_string_lossy()).to_string())
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn switch_to_profile(profile: String) {
+        // the main loop will switch the active profile when it
+        // detects, that ACTIVE_PROFILE_NAME has been changed
+        *crate::ACTIVE_PROFILE_NAME.lock() = Some(profile);
+    }
 }
 
 impl Plugin for ProfilesPlugin {
@@ -75,6 +89,17 @@ impl Plugin for ProfilesPlugin {
             Ok(())
         })?;
         globals.set("switch_to_slot", switch_to_slot)?;
+
+        let get_current_profile = lua_ctx.create_function(move |_, ()| {
+            Ok(ProfilesPlugin::get_current_profile().unwrap_or_default())
+        })?;
+        globals.set("get_current_profile", get_current_profile)?;
+
+        let switch_to_profile = lua_ctx.create_function(move |_, profile: String| {
+            ProfilesPlugin::switch_to_profile(profile);
+            Ok(())
+        })?;
+        globals.set("switch_to_profile", switch_to_profile)?;
 
         Ok(())
     }

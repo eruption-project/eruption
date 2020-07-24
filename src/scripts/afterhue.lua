@@ -28,9 +28,10 @@ effect_ttl = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         hue_map[i] = 0
-				color_map[i] = hsla_to_color(0.0, 0.0, 0.0, 0.0)
+        color_map[i] = hsla_to_color(0.0, 0.0, 0.0, 0.0)
     end
 end
 
@@ -48,7 +49,8 @@ function on_tick(delta)
 
     -- calculate afterhue effect for pressed keys
     if ticks % afterglow_step == 0 then
-				local num_keys = get_num_keys()
+        local num_keys = get_num_keys()
+
         for i = 0, num_keys do
             if hue_map[i] > 0 then
                 hue_map[i] = hue_map[i] - hue_step_afterglow

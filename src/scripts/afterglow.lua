@@ -20,19 +20,21 @@ require "debug"
 color_map = {}
 color_map_glow = {}
 ticks = 0
-max_effect_ttl = 50
+max_effect_ttl = 150
 
 effect_ttl = 0
 
 -- event handler functions --
 function on_startup(config)
-	for i = 0, get_num_keys() do
+	local num_keys = get_num_keys()
+
+	for i = 0, num_keys do
 		color_map[i] = 0x000000000
 	end
 end
 
 function on_key_down(key_index)
-   color_map[key_index] = rgba_to_color(255, 255, 255, 255) -- color_afterglow
+   color_map[key_index] = color_afterglow
 
    effect_ttl = max_effect_ttl
 end
@@ -49,7 +51,7 @@ function on_tick(delta)
 		for i = 0, num_keys do
 			r, g, b, alpha = color_to_rgba(color_map[i])
 			if alpha > 0 then
-				color_map[i] = rgba_to_color(r, g, b, max(alpha - 1, 0))
+				color_map[i] = rgba_to_color(r, g, b, max(alpha - alpha_step_afterglow, 0))
 			else
 				color_map[i] = 0x000000000
 			end

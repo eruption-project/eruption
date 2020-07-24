@@ -27,6 +27,7 @@ function on_startup(config)
     percentage = 0
 
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = color_background
     end
@@ -38,7 +39,7 @@ function on_tick(delta)
     -- update the temperature
     if ticks % 5 == 0 then
         temperature = get_package_temp()
-        trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)
+        trace("Temperature: Temp: " .. get_package_temp() .. " / " .. max_temperature)
     end
 
     local num_keys = get_num_keys()

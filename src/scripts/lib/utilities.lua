@@ -18,7 +18,7 @@ require "declarations"
 -- returns the key index corresponding to the specified coordinates
 function key_index(x, y)
     if x > max_keys_per_row or y > max_keys_per_col then
-        error("Coordinate out of bounds: x or y")
+        error("Utilities: Coordinate out of bounds: x or y")
     end
 
     return rows_topology[22 * y + x] + 1

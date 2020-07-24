@@ -1,13 +1,16 @@
 id = '5dc62fa6-e965-45cb-a0da-e87d29713095'
-name = 'Profile 1'
-description = 'Effects Profile #1'
+name = 'Blue FX'
+description = 'Default Profile #1'
 active_scripts = [
     'solid.lua',
     'shockwave.lua',
     'impact.lua',
-#   'water.lua',
+    'water.lua',
+    'ghost.lua',
 #   'raindrops.lua',
     'macros.lua',
+    'stats.lua',
+#   'profiles.lua',
 ]
 
 [[config."Solid Color"]]

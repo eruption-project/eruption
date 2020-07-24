@@ -37,11 +37,12 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    --ticks = ticks + delta
+    -- ticks = ticks + delta
 
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
-			color_map[i] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
+		color_map[i] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
 	end
 
 	local spectrum = get_audio_spectrum()
@@ -66,7 +67,7 @@ function on_tick(delta)
 			if i == p then
 				color_map[peak_index] = rgba_to_color(255, 15, 15, lerp(0, 255, opacity))
 			else
-				color_map[peak_index] = rgba_to_color(0, 0, 0, 0)
+				color_map[peak_index] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
 			end
 		end
 	end

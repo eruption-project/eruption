@@ -15,12 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// enable these if you want to compile-in the frontend (browser-based GUI)
-
-//#![feature(plugin)]
-//#![feature(proc_macro_hygiene, decl_macro)]
-//#![feature(vec_into_raw_parts)]
-
 use clap::{App, Arg};
 use failure::Fail;
 use hotwatch::{
@@ -29,7 +23,7 @@ use hotwatch::{
 };
 use lazy_static::lazy_static;
 use log::*;
-use parking_lot::{Condvar, Mutex};
+use parking_lot::{Condvar, Mutex, RwLock};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::env;
@@ -41,35 +35,28 @@ use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use std::u64;
+// use tokio::prelude::*;
 
 mod util;
 
 mod hwdevices;
-use hwdevices::HwDevicesState;
+use hwdevices::{HidEvent, HwDevice};
 
 mod constants;
 mod dbus_interface;
 mod events;
 mod plugin_manager;
 mod plugins;
+mod procmon;
 mod profiles;
 mod scripting;
 mod state;
 
 use plugins::macros;
+use procmon::ProcMon;
 use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
-
-#[cfg(feature = "frontend")]
-mod frontend;
-
-#[cfg(not(feature = "frontend"))]
-#[allow(dead_code)]
-mod frontend {
-    // provide a dummy implementation of Message
-    pub enum Message {}
-}
 
 lazy_static! {
     /// The currently active slot (1-4)
@@ -80,6 +67,10 @@ lazy_static! {
 
     /// The currently active profile
     pub static ref ACTIVE_PROFILE: Arc<Mutex<Option<Profile>>> = Arc::new(Mutex::new(None));
+
+    /// Contains the file name part of the active profile;
+    /// may be used to switch profiles at runtime
+    pub static ref ACTIVE_PROFILE_NAME: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
 
     /// The current "pipeline" of scripts
     pub static ref ACTIVE_SCRIPTS: Arc<Mutex<Vec<Manifest>>> = Arc::new(Mutex::new(vec![]));
@@ -113,6 +104,16 @@ lazy_static! {
     pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
+    pub static ref UPCALL_COMPLETED_ON_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_SYSTEM_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_QUIT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+
     // Other state
 
     /// Global "keyboard brightness" modifier
@@ -125,6 +126,12 @@ pub type Result<T> = std::result::Result<T, MainError>;
 
 #[derive(Debug, Fail)]
 pub enum MainError {
+    #[fail(display = "Could not access storage: {}", description)]
+    StorageError { description: String },
+
+    #[fail(display = "Could not register Linux process monitoring")]
+    ProcMonError {},
+
     #[fail(display = "Could not spawn a thread")]
     ThreadSpawnError {},
 
@@ -135,6 +142,18 @@ pub enum MainError {
     ScriptExecError {},
     // #[fail(display = "Unknown error: {}", description)]
     // UnknownError { description: String },
+}
+
+#[derive(Debug, Clone)]
+pub enum SystemEvent {
+    ProcessExec {
+        event: procmon::Event,
+        file_name: Option<String>,
+    },
+    ProcessExit {
+        event: procmon::Event,
+        file_name: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -179,26 +198,6 @@ fn parse_commandline<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-/// Spawns the web-frontend thread
-#[cfg(feature = "frontend")]
-fn spawn_frontend_thread(
-    frontend_tx: Sender<frontend::Message>,
-    profile_path: PathBuf,
-    script_paths: Vec<PathBuf>,
-) -> plugins::Result<()> {
-    let builder = thread::Builder::new().name("frontend".into());
-    builder
-        .spawn(move || {
-            frontend::initialize(frontend_tx, profile_path, script_paths).unwrap_or_else(|e| {
-                error!("Could not initialize the Web-Frontend: {}", e);
-                panic!();
-            });
-        })
-        .map_err(|_e| MainError::ThreadSpawnError {})?;
-
-    Ok(())
-}
-
 #[derive(Debug, Clone)]
 pub enum DbusApiEvent {
     ProfilesChanged,
@@ -207,7 +206,6 @@ pub enum DbusApiEvent {
 }
 
 /// Spawns the dbus thread and executes it's main loop
-#[cfg(feature = "dbus")]
 fn spawn_dbus_thread(
     dbus_tx: Sender<dbus_interface::Message>,
 ) -> plugins::Result<Sender<DbusApiEvent>> {
@@ -373,7 +371,7 @@ fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
     script_path: PathBuf,
-    hwdevices: &HwDevicesState,
+    hwdevice: &HwDevice,
 ) -> Result<()> {
     let result = util::is_file_accessible(&script_path);
     if let Err(result) = result {
@@ -397,7 +395,7 @@ fn spawn_lua_thread(
         return Err(MainError::ScriptExecError {});
     }
 
-    let hwdevices = hwdevices.clone();
+    let hwdevice = hwdevice.clone();
 
     let builder = thread::Builder::new().name(format!(
         "{}:{}",
@@ -406,10 +404,9 @@ fn spawn_lua_thread(
     ));
     builder
         .spawn(move || -> Result<()> {
+            #[allow(clippy::never_loop)]
             loop {
-                let hwdevices = hwdevices.clone();
-
-                let result = script::run_script(script_path.clone(), hwdevices, &lua_rx)
+                let result = script::run_script(script_path.clone(), &hwdevice.clone(), &lua_rx)
                     .map_err(|_e| MainError::ScriptExecError {})?;
 
                 match result {
@@ -435,8 +432,8 @@ fn spawn_lua_thread(
 /// Switches the currently active profile to the profile file `profile_path`
 fn switch_profile<P: AsRef<Path>>(
     profile_file: P,
-    hwdevices: &HwDevicesState,
-    #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
+    hwdevice: &HwDevice,
+    dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
     info!("Switching to profile: {}", &profile_file.as_ref().display());
 
@@ -495,9 +492,10 @@ fn switch_profile<P: AsRef<Path>>(
         let script_path = script_dir.join(&script_file);
 
         let (lua_tx, lua_rx) = channel();
-        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &hwdevices).unwrap_or_else(|e| {
-            error!("Could not spawn a thread: {}", e);
-        });
+        spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), &hwdevice.clone())
+            .unwrap_or_else(|e| {
+                error!("Could not spawn a thread: {}", e);
+            });
 
         lua_txs.push(lua_tx);
     }
@@ -505,7 +503,6 @@ fn switch_profile<P: AsRef<Path>>(
     // finally assign the globally active profile
     *ACTIVE_PROFILE.lock() = Some(profile);
 
-    #[cfg(feature = "dbus")]
     dbus_api_tx
         .send(DbusApiEvent::ActiveProfileChanged)
         .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
@@ -517,182 +514,339 @@ fn switch_profile<P: AsRef<Path>>(
     Ok(())
 }
 
-#[allow(clippy::cognitive_complexity)]
-fn run_main_loop(
-    hwdevices: &mut HwDevicesState,
-    #[cfg(feature = "dbus")] dbus_api_tx: &Sender<DbusApiEvent>,
-    #[cfg(feature = "frontend")] frontend_rx: &Receiver<frontend::Message>,
-    dbus_rx: &Receiver<dbus_interface::Message>,
-    kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
-    mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
-    fsevents_rx: &Receiver<FileSystemEvent>,
-) {
-    trace!("Entering main loop...");
+/// Process system related events
+fn process_system_events(
+    sysevents_rx: &Receiver<SystemEvent>,
+    failed_txs: &HashSet<usize>,
+) -> Result<bool> {
+    let system_events_pending;
 
-    events::notify_observers(events::Event::DaemonStartup).unwrap();
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
 
-    // main loop iterations, monotonic counter
-    let mut ticks = 0;
+    'SYSTEM_EVENTS_LOOP: loop {
+        let mut event_processed = false;
 
-    // used to detect changes of the active slot
-    let mut saved_slot = 0;
+        match sysevents_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => {
+                // *UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-    // stores indices of failed Lua TXs
-    let mut failed_txs = HashSet::new();
-
-    // stores the generation number of the frame that is currently visible on the keyboard
-    let saved_frame_generation = AtomicUsize::new(0);
-
-    // used to calculate frames per second
-    let mut fps_cntr = 0;
-    let mut fps_timer = Instant::now();
-
-    let mut start_time = Instant::now();
-
-    let mut mouse_move_event_last_dispatched = Instant::now();
-    let mut mouse_motion_buf = (0, 0, 0);
-
-    // Skip waiting (at the bottom of the loop) if we have pending events
-    let mut mouse_events_pending;
-    let mut keyboard_events_pending = false;
-
-    // enter the main loop on the main thread
-    'MAIN_LOOP: loop {
-        // slot changed?
-        let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-        if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
-            #[cfg(feature = "dbus")]
-            dbus_api_tx
-                .send(DbusApiEvent::ActiveSlotChanged)
-                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-
-            // reset the audio backend, will be enabled again if needed
-            plugins::audio::reset_audio_backend();
-
-            let profile_path = {
-                let slot_profiles = SLOT_PROFILES.lock();
-                slot_profiles.as_ref().unwrap()[active_slot].clone()
-            };
-
-            switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
-                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
-
-            saved_slot = active_slot;
-            failed_txs.clear();
-        }
-
-        // prepare to call main loop hook
-        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
-        let plugins = plugin_manager.get_plugins();
-
-        // call main loop hook of each registered plugin
-        for plugin in plugins.iter() {
-            plugin.main_loop_hook(ticks);
-        }
-
-        // process file system related events
-        match fsevents_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                FileSystemEvent::ProfilesChanged => {
-                    events::notify_observers(events::Event::FileSystemEvent(
-                        FileSystemEvent::ProfilesChanged,
-                    ))
-                    .unwrap_or_else(|e| error!("{}", e));
-
-                    #[cfg(feature = "dbus")]
-                    dbus_api_tx
-                        .send(DbusApiEvent::ProfilesChanged)
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending dbus API event: {}", e)
-                        });
+                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                    if !failed_txs.contains(&idx) {
+                        lua_tx
+                            .send(script::Message::SystemEvent(result.clone()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending system event to a Lua VM: {}", e)
+                            });
+                    } else {
+                        warn!("Not sending a message to a failed tx");
+                    }
                 }
-                FileSystemEvent::ScriptsChanged => {}
-            },
+
+                // yield to thread
+                //thread::sleep(Duration::from_millis(0));
+
+                // TODO: wait??
+                // wait until all Lua VMs completed the event handler
+                // loop {
+                //     let mut pending = UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock();
+
+                //     UPCALL_COMPLETED_ON_SYSTEM_EVENT.1.wait_for(
+                //         &mut pending,
+                //         Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                //     );
+
+                //     if *pending == 0 {
+                //         break;
+                //     }
+                // }
+
+                // events::notify_observers(events::Event::SystemEvent(result))
+                //     .unwrap_or_else(|e| error!("{}", e));
+
+                event_processed = true;
+            }
 
             // ignore timeout errors
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
 
             Err(e) => {
-                // print warning but continue
                 warn!("Channel error: {}", e);
             }
         }
 
-        // process Web-Frontend events
-        #[cfg(feature = "frontend")]
-        match frontend_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                frontend::Message::SwitchProfile(profile_path) => {
-                    info!("Loading profile: {}", profile_path.display());
+        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+            if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                system_events_pending = true;
+            } else {
+                system_events_pending = false;
+            }
 
-                    failed_txs.clear();
-                    switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+            break 'SYSTEM_EVENTS_LOOP; // no more events in queue or iteration limit reached
+        }
+
+        loop_counter += 1;
+    }
+
+    Ok(system_events_pending)
+}
+
+/// Process file system related events
+fn process_filesystem_events(
+    fsevents_rx: &Receiver<FileSystemEvent>,
+    dbus_api_tx: &Sender<DbusApiEvent>,
+) -> Result<()> {
+    match fsevents_rx.recv_timeout(Duration::from_millis(0)) {
+        Ok(result) => match result {
+            FileSystemEvent::ProfilesChanged => {
+                events::notify_observers(events::Event::FileSystemEvent(
+                    FileSystemEvent::ProfilesChanged,
+                ))
+                .unwrap_or_else(|e| error!("{}", e));
+
+                dbus_api_tx
+                    .send(DbusApiEvent::ProfilesChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            }
+            FileSystemEvent::ScriptsChanged => {}
+        },
+
+        // ignore timeout errors
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+        Err(e) => {
+            // print warning but continue
+            warn!("Channel error: {}", e);
+        }
+    }
+
+    Ok(())
+}
+
+/// Process D-Bus events
+fn process_dbus_events(
+    dbus_rx: &Receiver<dbus_interface::Message>,
+    failed_txs: &mut HashSet<usize>,
+    dbus_api_tx: &Sender<DbusApiEvent>,
+    hwdevice: &HwDevice,
+) -> Result<()> {
+    match dbus_rx.recv_timeout(Duration::from_millis(0)) {
+        Ok(result) => match result {
+            dbus_interface::Message::SwitchSlot(slot) => {
+                info!("Switching to slot #{}", slot + 1);
+
+                failed_txs.clear();
+                ACTIVE_SLOT.store(slot, Ordering::SeqCst);
+            }
+
+            dbus_interface::Message::SwitchProfile(profile_path) => {
+                info!("Loading profile: {}", profile_path.display());
+
+                failed_txs.clear();
+                switch_profile(&profile_path, &hwdevice, &dbus_api_tx)
+                    .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+            }
+        },
+
+        // ignore timeout errors
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+
+        Err(e) => {
+            warn!("Channel error: {}", e);
+            // break 'MAIN_LOOP;
+        }
+    }
+
+    Ok(())
+}
+
+/// Process HID events
+fn process_hid_events(hwdevice: &HwDevice, failed_txs: &HashSet<usize>) -> Result<bool> {
+    let hid_events_pending;
+
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
+
+    let mut event_processed = false;
+
+    'HID_EVENTS_LOOP: loop {
+        match hwdevice.read().get_next_event_timeout(0) {
+            Ok(result) if result != HidEvent::Unknown => {
+                event_processed = true;
+
+                events::notify_observers(events::Event::HidEvent(result))
+                    .unwrap_or_else(|e| error!("{}", e));
+
+                *UPCALL_COMPLETED_ON_HID_EVENT.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
+
+                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                    if !failed_txs.contains(&idx) {
+                        lua_tx
+                            .send(script::Message::HidEvent(result))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending HID event to a Lua VM: {}", e)
+                            });
+                    } else {
+                        warn!("Not sending a message to a failed tx");
+                    }
                 }
-            },
 
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+                // yield to thread
+                //thread::sleep(Duration::from_millis(0));
 
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
+                // wait until all Lua VMs completed the event handler
+                loop {
+                    let mut pending = UPCALL_COMPLETED_ON_HID_EVENT.0.lock();
+
+                    UPCALL_COMPLETED_ON_HID_EVENT.1.wait_for(
+                        &mut pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    );
+
+                    if *pending == 0 {
+                        break;
+                    }
+                }
+
+                // translate HID event to keyboard event
+                match result {
+                    HidEvent::KeyDown { code } => {
+                        let index = util::hid_code_to_key_index(code);
+                        if index > 0 {
+                            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
+                                LUA_TXS.lock().len() - failed_txs.len();
+
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx
+                                        .send(script::Message::KeyDown(index))
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                                        });
+                                } else {
+                                    warn!("Not sending a message to a failed tx");
+                                }
+                            }
+
+                            // yield to thread
+                            //thread::sleep(Duration::from_millis(0));
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
+                                    &mut pending,
+                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                );
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyDown(index))
+                                .unwrap_or_else(|e| error!("{}", e));
+                        }
+                    }
+
+                    HidEvent::KeyUp { code } => {
+                        let index = util::hid_code_to_key_index(code);
+                        if index > 0 {
+                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
+                                LUA_TXS.lock().len() - failed_txs.len();
+
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
+                                        |e| {
+                                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                                        },
+                                    );
+                                } else {
+                                    warn!("Not sending a message to a failed tx");
+                                }
+                            }
+
+                            // yield to thread
+                            //thread::sleep(Duration::from_millis(0));
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
+                                    &mut pending,
+                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                );
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyUp(index))
+                                .unwrap_or_else(|e| error!("{}", e));
+                        }
+                    }
+
+                    _ => { /* ignore other events */ }
+                }
+            }
+
+            Ok(_) => { /* Ignore unknown events */ }
+
+            Err(_e) => {
+                event_processed = false;
             }
         }
 
-        // process D-Bus events
-        #[cfg(feature = "dbus")]
-        match dbus_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => match result {
-                dbus_interface::Message::SwitchSlot(slot) => {
-                    info!("Switching to slot #{}", slot + 1);
-
-                    failed_txs.clear();
-                    ACTIVE_SLOT.store(slot, Ordering::SeqCst);
-                }
-
-                dbus_interface::Message::SwitchProfile(profile_path) => {
-                    info!("Loading profile: {}", profile_path.display());
-
-                    failed_txs.clear();
-                    switch_profile(&profile_path, &hwdevices, &dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
-                }
-            },
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                error!("Channel error: {}", e);
-                break 'MAIN_LOOP;
+        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+            if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                hid_events_pending = true;
+            } else {
+                hid_events_pending = false;
             }
+
+            break 'HID_EVENTS_LOOP; // no more events in queue or iteration limit reached
         }
 
-        // process mouse events
-        // limit the number of messages that will be processed during this iteration
-        let mut loop_counter = 0;
+        loop_counter += 1;
+    }
 
-        'MOUSE_EVENTS_LOOP: loop {
-            let mut event_processed = false;
+    Ok(hid_events_pending)
+}
 
-            // send pending mouse events to the Lua VMs and to the event dispatcher
-            match mouse_rx.recv_timeout(Duration::from_millis(0)) {
-                Ok(result) => {
-                    match result {
-                        Some(raw_event) => {
-                            let mut mirror_event = true;
+/// Process mouse events
+fn process_mouse_events(
+    mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    failed_txs: &HashSet<usize>,
+    mouse_move_event_last_dispatched: &mut Instant,
+    mouse_motion_buf: &mut (i32, i32, i32),
+) -> Result<bool> {
+    let mouse_events_pending;
 
-                            // notify all observers of raw events
-                            events::notify_observers(events::Event::RawMouseEvent(
-                                raw_event.clone(),
-                            ))
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
+
+    'MOUSE_EVENTS_LOOP: loop {
+        let mut event_processed = false;
+
+        // send pending mouse events to the Lua VMs and to the event dispatcher
+        match mouse_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => {
+                match result {
+                    Some(raw_event) => {
+                        let mut mirror_event = true;
+
+                        // notify all observers of raw events
+                        events::notify_observers(events::Event::RawMouseEvent(raw_event.clone()))
                             .ok();
 
-                            if let evdev_rs::enums::EventCode::EV_REL(ref code) =
-                                raw_event.clone().event_code
-                            {
-                                match code {
+                        if let evdev_rs::enums::EventCode::EV_REL(ref code) =
+                            raw_event.clone().event_code
+                        {
+                            match code {
                                     evdev_rs::enums::EV_REL::REL_X
                                     | evdev_rs::enums::EV_REL::REL_Y
                                     | evdev_rs::enums::EV_REL::REL_Z => {
@@ -718,9 +872,9 @@ fn run_main_loop(
                                             4
                                         };
 
-                                        if mouse_motion_buf != (0, 0, 0) &&
+                                        if *mouse_motion_buf != (0, 0, 0) &&
                                             mouse_move_event_last_dispatched.elapsed().as_millis() > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into() {
-                                            mouse_move_event_last_dispatched = Instant::now();
+                                            *mouse_move_event_last_dispatched = Instant::now();
 
                                             *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
                                                 LUA_TXS.lock().len() - failed_txs.len();
@@ -735,7 +889,7 @@ fn run_main_loop(
                                                     });
 
                                                     // reset relative motion buffer, since it has been submitted
-                                                    mouse_motion_buf = (0, 0, 0);
+                                                    *mouse_motion_buf = (0, 0, 0);
                                                 } else {
                                                     warn!("Not sending a message to a failed tx");
                                                 }
@@ -820,264 +974,100 @@ fn run_main_loop(
 
                                     _ => (), // ignore other events
                                 }
-                            } else if let evdev_rs::enums::EventCode::EV_KEY(code) =
-                                raw_event.clone().event_code
-                            {
-                                // mouse button event occurred
+                        } else if let evdev_rs::enums::EventCode::EV_KEY(code) =
+                            raw_event.clone().event_code
+                        {
+                            // mouse button event occurred
 
-                                let is_pressed = raw_event.value > 0;
-                                let index = util::ev_key_to_button_index(code).unwrap();
+                            let is_pressed = raw_event.value > 0;
+                            let index = util::ev_key_to_button_index(code).unwrap();
 
-                                if is_pressed {
-                                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
-                                        LUA_TXS.lock().len() - failed_txs.len();
+                            if is_pressed {
+                                *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
 
-                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                        if !failed_txs.contains(&idx) {
-                                            lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
                                                 |e| {
                                                     error!("Could not send a pending mouse event to a Lua VM: {}", e)
                                                 },
                                             );
-                                        } else {
-                                            warn!("Not sending a message to a failed tx");
-                                        }
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
                                     }
-
-                                    // yield to thread
-                                    //thread::sleep(Duration::from_millis(0));
-
-                                    // wait until all Lua VMs completed the event handler
-                                    loop {
-                                        let mut pending =
-                                            UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
-
-                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
-                                            &mut pending,
-                                            Duration::from_millis(
-                                                constants::TIMEOUT_CONDITION_MILLIS,
-                                            ),
-                                        );
-
-                                        if *pending == 0 {
-                                            break;
-                                        }
-                                    }
-
-                                    events::notify_observers(events::Event::MouseButtonDown(index))
-                                        .unwrap_or_else(|e| error!("{}", e));
-                                } else {
-                                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
-                                        LUA_TXS.lock().len() - failed_txs.len();
-
-                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                        if !failed_txs.contains(&idx) {
-                                            lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
-                                                |e| {
-                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
-                                                },
-                                            );
-                                        } else {
-                                            warn!("Not sending a message to a failed tx");
-                                        }
-                                    }
-
-                                    // yield to thread
-                                    //thread::sleep(Duration::from_millis(0));
-
-                                    // wait until all Lua VMs completed the event handler
-                                    loop {
-                                        let mut pending =
-                                            UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
-
-                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
-                                            &mut pending,
-                                            Duration::from_millis(
-                                                constants::TIMEOUT_CONDITION_MILLIS,
-                                            ),
-                                        );
-
-                                        if *pending == 0 {
-                                            break;
-                                        }
-                                    }
-
-                                    events::notify_observers(events::Event::MouseButtonUp(index))
-                                        .unwrap_or_else(|e| error!("{}", e));
                                 }
-                            }
 
-                            if mirror_event {
-                                // mirror all events, except pointer motion events.
-                                // Pointer motion events currently can not be overridden,
-                                // they are mirrored to the virtual mouse directly after they are
-                                // received by the mouse plugin. This is done to reduce input lag
-                                macros::UINPUT_TX
-                                    .lock()
-                                    .as_ref()
-                                    .unwrap()
-                                    .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not send a pending mouse event: {}", e)
-                                    });
-                            }
+                                // yield to thread
+                                //thread::sleep(Duration::from_millis(0));
 
-                            event_processed = true;
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending =
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+
+                                    UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::MouseButtonDown(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            } else {
+                                *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
+
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
+                                    }
+                                }
+
+                                // yield to thread
+                                //thread::sleep(Duration::from_millis(0));
+
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+
+                                    UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::MouseButtonUp(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            }
                         }
 
-                        // ignore spurious events
-                        None => trace!("Spurious mouse event ignored"),
-                    }
-                }
-
-                // ignore timeout errors
-                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
-
-                Err(e) => {
-                    error!("Channel error: {}", e);
-                    break 'MAIN_LOOP;
-                }
-            }
-
-            if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
-                if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
-                    mouse_events_pending = true;
-                } else {
-                    mouse_events_pending = false;
-                }
-
-                break 'MOUSE_EVENTS_LOOP; // no more events in queue or iteration limit reached
-            }
-
-            loop_counter += 1;
-        }
-
-        // process keyboard events
-        // limit the number of messages that will be processed during this iteration
-        let mut loop_counter = 0;
-
-        'KEYBOARD_EVENTS_LOOP: loop {
-            let mut event_processed = false;
-
-            // sync to MAIN_LOOP_DELAY_MILLIS iteration time
-            let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
-            let sleep_millis = if mouse_events_pending || keyboard_events_pending {
-                // we did not process all pending messages in the current iteration,
-                // so do not wait now but continue immediately
-                0
-            } else {
-                u64::min(
-                    constants::MAIN_LOOP_DELAY_MILLIS.saturating_sub(elapsed),
-                    constants::MAIN_LOOP_DELAY_MILLIS,
-                )
-            };
-
-            // send pending keyboard events to the Lua VMs and to the event dispatcher
-            match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
-                Ok(result) => match result {
-                    Some(raw_event) => {
-                        // notify all observers of raw events
-                        events::notify_observers(events::Event::RawKeyboardEvent(
-                            raw_event.clone(),
-                        ))
-                        .ok();
-
-                        // ignore repetitions
-                        if raw_event.value < 2 {
-                            if let evdev_rs::enums::EventCode::EV_KEY(ref code) =
-                                raw_event.event_code
-                            {
-                                let is_pressed = raw_event.value > 0;
-                                let index = util::ev_key_to_key_index(code.clone());
-
-                                trace!("Key index: {:#x}", index);
-
-                                if is_pressed {
-                                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
-                                        LUA_TXS.lock().len() - failed_txs.len();
-
-                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                        if !failed_txs.contains(&idx) {
-                                            lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
-                                            |e| {
-                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
-                                            },
-                                        );
-                                        } else {
-                                            warn!("Not sending a message to a failed tx");
-                                        }
-                                    }
-
-                                    // yield to thread
-                                    //thread::sleep(Duration::from_millis(0));
-
-                                    // wait until all Lua VMs completed the event handler
-                                    loop {
-                                        let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
-
-                                        UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                                            &mut pending,
-                                            Duration::from_millis(
-                                                constants::TIMEOUT_CONDITION_MILLIS,
-                                            ),
-                                        );
-
-                                        if *pending == 0 {
-                                            break;
-                                        }
-                                    }
-
-                                    events::notify_observers(events::Event::KeyDown(index))
-                                        .unwrap_or_else(|e| error!("{}", e));
-                                } else {
-                                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
-                                        LUA_TXS.lock().len() - failed_txs.len();
-
-                                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                        if !failed_txs.contains(&idx) {
-                                            lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
-                                            |e| {
-                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
-                                            },
-                                        );
-                                        } else {
-                                            warn!("Not sending a message to a failed tx");
-                                        }
-                                    }
-
-                                    // yield to thread
-                                    //thread::sleep(Duration::from_millis(0));
-
-                                    // wait until all Lua VMs completed the event handler
-                                    loop {
-                                        let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
-
-                                        UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                                            &mut pending,
-                                            Duration::from_millis(
-                                                constants::TIMEOUT_CONDITION_MILLIS,
-                                            ),
-                                        );
-
-                                        if *pending == 0 {
-                                            break;
-                                        }
-                                    }
-
-                                    events::notify_observers(events::Event::KeyUp(index))
-                                        .unwrap_or_else(|e| error!("{}", e));
-                                }
-                            }
-
-                            // handler for Message::MirrorKey will drop the key if a Lua VM
-                            // called inject_key(..), so that the key won't be reported twice
+                        if mirror_event {
+                            // mirror all events, except pointer motion events.
+                            // Pointer motion events currently can not be overridden,
+                            // they are mirrored to the virtual mouse directly after they are
+                            // received by the mouse plugin. This is done to reduce input lag
                             macros::UINPUT_TX
                                 .lock()
                                 .as_ref()
                                 .unwrap()
-                                .send(macros::Message::MirrorKey(raw_event.clone()))
+                                .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
                                 .unwrap_or_else(|e| {
-                                    error!("Could not send a pending keyboard event: {}", e)
+                                    error!("Could not send a pending mouse event: {}", e)
                                 });
                         }
 
@@ -1085,41 +1075,336 @@ fn run_main_loop(
                     }
 
                     // ignore spurious events
-                    None => trace!("Spurious keyboard event ignored"),
-                },
-
-                // ignore timeout errors
-                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
-
-                Err(e) => {
-                    error!("Channel error: {}", e);
-                    break 'MAIN_LOOP;
+                    None => trace!("Spurious mouse event ignored"),
                 }
             }
 
-            if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
-                if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
-                    keyboard_events_pending = true;
-                } else {
-                    keyboard_events_pending = false;
-                }
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
 
-                break 'KEYBOARD_EVENTS_LOOP; // no more events in queue or iteration limit reached
+            Err(e) => {
+                error!("Channel error: {}", e);
+                // break 'MAIN_LOOP;
+
+                // TODO: ??
+                panic!()
             }
-
-            loop_counter += 1;
         }
 
-        // finally update the LEDs if necessary
+        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+            if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                mouse_events_pending = true;
+            } else {
+                mouse_events_pending = false;
+            }
+
+            break 'MOUSE_EVENTS_LOOP; // no more events in queue or iteration limit reached
+        }
+
+        loop_counter += 1;
+    }
+
+    Ok(mouse_events_pending)
+}
+
+/// Process keyboard events
+fn process_keyboard_events(
+    kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    failed_txs: &HashSet<usize>,
+    start_time: &Instant,
+    hid_events_pending: bool,
+    mouse_events_pending: bool,
+    system_events_pending: bool,
+) -> Result<bool> {
+    let mut keyboard_events_pending = false;
+
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
+
+    'KEYBOARD_EVENTS_LOOP: loop {
+        let mut event_processed = false;
+
+        // sync to MAIN_LOOP_DELAY_MILLIS iteration time
+        let elapsed: u64 = start_time.elapsed().as_millis().try_into().unwrap();
+        let sleep_millis = if hid_events_pending
+            || mouse_events_pending
+            || system_events_pending
+            || keyboard_events_pending
+        {
+            // we did not process all pending messages in the current iteration,
+            // so do not wait now, but continue immediately
+            0
+        } else {
+            u64::min(
+                constants::MAIN_LOOP_DELAY_MILLIS
+                    .saturating_sub(elapsed + constants::MAIN_LOOP_DELAY_OFFSET_MILLIS),
+                constants::MAIN_LOOP_DELAY_MILLIS,
+            )
+        };
+
+        // send pending keyboard events to the Lua VMs and to the event dispatcher
+        match kbd_rx.recv_timeout(Duration::from_millis(sleep_millis)) {
+            Ok(result) => match result {
+                Some(raw_event) => {
+                    // notify all observers of raw events
+                    events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone()))
+                        .ok();
+
+                    // ignore repetitions
+                    if raw_event.value < 2 {
+                        if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
+                            let is_pressed = raw_event.value > 0;
+                            let index = util::ev_key_to_key_index(code.clone());
+
+                            trace!("Key index: {:#x}", index);
+
+                            if is_pressed {
+                                *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
+
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
+                                            |e| {
+                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                                            },
+                                        );
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
+                                    }
+                                }
+
+                                // yield to thread
+                                //thread::sleep(Duration::from_millis(0));
+
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+
+                                    UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::KeyDown(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            } else {
+                                *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
+
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
+                                            |e| {
+                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                                            },
+                                        );
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
+                                    }
+                                }
+
+                                // yield to thread
+                                //thread::sleep(Duration::from_millis(0));
+
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+
+                                    UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::KeyUp(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            }
+                        }
+
+                        // handler for Message::MirrorKey will drop the key if a Lua VM
+                        // called inject_key(..), so that the key won't be reported twice
+                        macros::UINPUT_TX
+                            .lock()
+                            .as_ref()
+                            .unwrap()
+                            .send(macros::Message::MirrorKey(raw_event.clone()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending keyboard event: {}", e)
+                            });
+                    }
+
+                    event_processed = true;
+                }
+
+                // ignore spurious events
+                None => trace!("Spurious keyboard event ignored"),
+            },
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                // break 'MAIN_LOOP;
+
+                // TODO: ??
+                panic!()
+            }
+        }
+
+        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+            if loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+                keyboard_events_pending = true;
+            } else {
+                keyboard_events_pending = false;
+            }
+
+            break 'KEYBOARD_EVENTS_LOOP; // no more events in queue or iteration limit reached
+        }
+
+        loop_counter += 1;
+    }
+
+    Ok(keyboard_events_pending)
+}
+
+fn run_main_loop(
+    hwdevice: &HwDevice,
+    dbus_api_tx: &Sender<DbusApiEvent>,
+    dbus_rx: &Receiver<dbus_interface::Message>,
+    kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    fsevents_rx: &Receiver<FileSystemEvent>,
+    sysevents_rx: &Receiver<SystemEvent>,
+) -> Result<()> {
+    trace!("Entering main loop...");
+
+    events::notify_observers(events::Event::DaemonStartup).unwrap();
+
+    // main loop iterations, monotonic counter
+    let mut ticks = 0;
+
+    // used to detect changes of the active slot
+    let mut saved_slot = 0;
+
+    // stores indices of failed Lua TXs
+    let mut failed_txs = HashSet::new();
+
+    // stores the generation number of the frame that is currently visible on the keyboard
+    let saved_frame_generation = AtomicUsize::new(0);
+
+    // used to calculate frames per second
+    let mut fps_counter = 0;
+    let mut fps_timer = Instant::now();
+
+    let mut start_time = Instant::now();
+
+    let mut mouse_move_event_last_dispatched: Instant = Instant::now();
+    let mut mouse_motion_buf: (i32, i32, i32) = (0, 0, 0);
+
+    // enter the main loop on the main thread
+    'MAIN_LOOP: loop {
+        // slot changed?
+        let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+        if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
+            dbus_api_tx
+                .send(DbusApiEvent::ActiveSlotChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            // reset the audio backend, it will be enabled again if needed
+            plugins::audio::reset_audio_backend();
+
+            let profile_path = {
+                let slot_profiles = SLOT_PROFILES.lock();
+                slot_profiles.as_ref().unwrap()[active_slot].clone()
+            };
+
+            switch_profile(&profile_path, &hwdevice, &dbus_api_tx)
+                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+
+            saved_slot = active_slot;
+            failed_txs.clear();
+        }
+
+        // active profile name changed?
+        if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.lock() {
+            dbus_api_tx
+                .send(DbusApiEvent::ActiveProfileChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            // reset the audio backend, it will be enabled again if needed
+            plugins::audio::reset_audio_backend();
+
+            let profile_path = Path::new(active_profile);
+
+            switch_profile(&profile_path, &hwdevice, &dbus_api_tx)
+                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+
+            failed_txs.clear();
+        }
+        *ACTIVE_PROFILE_NAME.lock() = None;
+
+        // prepare to call main loop hook
+        let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+        let plugins = plugin_manager.get_plugins();
+
+        // call main loop hook of each registered plugin
+        for plugin in plugins.iter() {
+            plugin.main_loop_hook(ticks);
+        }
+
+        // now, process events from all available sources...
+
+        // process events from the system monitoring thread
+        let system_events_pending = process_system_events(&sysevents_rx, &failed_txs)?;
+
+        // process events from the file system watcher thread
+        process_filesystem_events(&fsevents_rx, &dbus_api_tx)?;
+
+        // process events from the D-Bus interface thread
+        process_dbus_events(&dbus_rx, &mut failed_txs, &dbus_api_tx, &hwdevice)?;
+
+        // process events from the HID layer
+        let hid_events_pending = process_hid_events(&hwdevice, &failed_txs)?;
+
+        // process events from the input subsystem
+        let mouse_events_pending = process_mouse_events(
+            &mouse_rx,
+            &failed_txs,
+            &mut mouse_move_event_last_dispatched,
+            &mut mouse_motion_buf,
+        )?;
+
+        process_keyboard_events(
+            &kbd_rx,
+            &failed_txs,
+            &start_time,
+            hid_events_pending,
+            mouse_events_pending,
+            system_events_pending,
+        )?;
+
+        // finally, update the LEDs if necessary
         let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
 
         // instruct the Lua VMs to realize their color maps, but only if at least one VM
         // submitted a new map (performed a frame generation increment)
         if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+            // execute render "pipeline" now...
             let mut drop_frame = false;
-            // execute render "pipeline" now
+
             // first, clear the canvas
-            script::LED_MAP.lock().copy_from_slice(
+            script::LED_MAP.write().copy_from_slice(
                 &[hwdevices::RGBA {
                     r: 0,
                     g: 0,
@@ -1169,13 +1454,25 @@ fn run_main_loop(
             //thread::sleep(Duration::from_millis(0));
 
             // number of pending blend ops should have reached zero by now
-            // assert!(*COLOR_MAPS_READY_CONDITION.0.lock() == 0);
+            let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
+            if ops_pending > 0 {
+                error!(
+                    "Pending blend ops before writing LED map to device: {}",
+                    ops_pending
+                );
+            }
 
             // send the final (combined) color map to the keyboard
             if !drop_frame {
-                hwdevices
-                    .send_led_map(&script::LED_MAP.lock())
-                    .unwrap_or_else(|e| error!("Could not send led map to the device: {}", e));
+                if let Some(mut hwdevice) = hwdevice.try_write() {
+                    hwdevice
+                        .send_led_map(&script::LED_MAP.read())
+                        .unwrap_or_else(|e| {
+                            error!("Could not send the LED map to the device: {}", e)
+                        });
+                } else {
+                    error!("Could not get a lock on the hardware device");
+                }
 
                 // thread::sleep(Duration::from_millis(
                 //     crate::constants::DEVICE_SETTLE_MILLIS,
@@ -1211,28 +1508,28 @@ fn run_main_loop(
                     elapsed_after_sleep,
                     constants::MAIN_LOOP_DELAY_MILLIS
                 );
-            // } else if elapsed_after_sleep < 25_u128 {
-            //     warn!("Short loop detected, this could lead to flickering LEDs!");
-            //     warn!(
-            //         "Loop took: {} milliseconds, goal: {}",
-            //         elapsed_after_sleep,
-            //         constants::MAIN_LOOP_DELAY_MILLIS
-            //     );
-            } else {
-                trace!(
-                    "Loop took: {} milliseconds, goal: {}",
-                    elapsed_after_sleep,
-                    constants::MAIN_LOOP_DELAY_MILLIS
-                );
-            }
+            } /* else if elapsed_after_sleep < 5_u128 {
+                  warn!("Short loop detected, this could lead to flickering LEDs!");
+                  warn!(
+                      "Loop took: {} milliseconds, goal: {}",
+                      elapsed_after_sleep,
+                      constants::MAIN_LOOP_DELAY_MILLIS
+                  );
+              } else {
+                    trace!(
+                        "Loop took: {} milliseconds, goal: {}",
+                        elapsed_after_sleep,
+                        constants::MAIN_LOOP_DELAY_MILLIS
+                    );
+                } */
         }
 
         // calculate and log fps each second
         if fps_timer.elapsed().as_millis() >= 1000 {
-            debug!("FPS: {}", fps_cntr);
+            debug!("FPS: {}", fps_counter);
 
             fps_timer = Instant::now();
-            fps_cntr = 0;
+            fps_counter = 0;
         }
 
         // shall we quit the main loop?
@@ -1240,7 +1537,7 @@ fn run_main_loop(
             break 'MAIN_LOOP;
         }
 
-        fps_cntr += 1;
+        fps_counter += 1;
         ticks += 1;
 
         // update timekeeping and state
@@ -1248,6 +1545,8 @@ fn run_main_loop(
     }
 
     events::notify_observers(events::Event::DaemonShutdown).unwrap();
+
+    Ok(())
 }
 
 /// Watch profiles and script directory, as well as our
@@ -1317,6 +1616,53 @@ pub fn register_filesystem_watcher(
     Ok(())
 }
 
+pub fn spawn_system_monitor_thread(sysevents_tx: Sender<SystemEvent>) -> Result<()> {
+    thread::Builder::new()
+        .name("monitor".to_owned())
+        .spawn(move || -> Result<()> {
+            let procmon = ProcMon::new().map_err(|_| MainError::ProcMonError {})?;
+
+            loop {
+                // check if we shall terminate the thread
+                if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                // process procmon events
+                let event = procmon.wait_for_event();
+                match event.event_type {
+                    procmon::EventType::Exec => {
+                        let pid = event.pid;
+
+                        sysevents_tx
+                            .send(SystemEvent::ProcessExec {
+                                event,
+                                file_name: util::get_process_file_name(pid).ok(),
+                            })
+                            .unwrap();
+                    }
+
+                    procmon::EventType::Exit => {
+                        let pid = event.pid;
+
+                        sysevents_tx
+                            .send(SystemEvent::ProcessExit {
+                                event,
+                                file_name: util::get_process_file_name(pid).ok(),
+                            })
+                            .unwrap();
+                    }
+
+                    _ => { /* ignore others */ }
+                }
+            }
+        })
+        .map_err(|_e| MainError::ThreadSpawnError {})?;
+
+    Ok(())
+}
+
+#[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
     use log::*;
@@ -1351,13 +1697,14 @@ mod thread_util {
 }
 
 /// Main program entrypoint
-#[allow(clippy::cognitive_complexity)]
-fn main() {
+#[tokio::main]
+pub async fn main() -> std::result::Result<(), failure::Error> {
     if unsafe { libc::isatty(0) != 0 } {
         print_header();
     }
 
     // start the thread deadlock detector
+    #[cfg(debug_assertions)]
     thread_util::deadlock_detector()
         .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
@@ -1413,31 +1760,26 @@ fn main() {
         .get_str("global.script_dir")
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
 
-    // frontend enable
-    let frontend_enabled = config
-        .get::<bool>("frontend.enabled")
-        .unwrap_or_else(|_| true);
-
-    // experimental features
     // grab the mouse exclusively
     let grab_mouse = config
-        .get::<bool>("experimental.grab_mouse")
-        .unwrap_or_else(|_| false);
-
-    // try to set timer slack to a low value
-    // prctl::set_timer_slack(1).unwrap_or_else(|e| warn!("Could not set process timer slack: {}", e));
-
-    // request realtime priority
-    // crate::util::set_process_priority();
+        .get::<bool>("global.grab_mouse")
+        .unwrap_or_else(|_| true);
 
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
-            match HwDevicesState::enumerate_devices(&hidapi) {
-                Ok(mut hwdevices) => {
-                    // open the control and led devices
+            // enumerate devices
+            info!("Enumerating connected devices...");
+
+            match hwdevices::enumerate_devices(&hidapi) {
+                Ok(hwdevice_r) => {
+                    // wrap the hwdevice
+                    let hwdevice: HwDevice = Arc::new(RwLock::new(hwdevice_r));
+
+                    // open the control and LED devices
                     info!("Opening devices...");
-                    hwdevices
+                    hwdevice
+                    .write()
                     .open(&hidapi)
                     .unwrap_or_else(|e| {
                         error!("Error opening the keyboard device: {}", e);
@@ -1447,22 +1789,21 @@ fn main() {
 
                     // send initialization handshake
                     info!("Initializing devices...");
-                    hwdevices
+                    hwdevice
+                        .write()
                         .send_init_sequence()
                         .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
 
                     // set leds to a known initial state
                     info!("Configuring LEDs...");
-                    hwdevices
+                    hwdevice
+                        .write()
                         .set_led_init_pattern()
                         .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
 
                     // initialize the D-Bus API
-                    #[cfg(feature = "dbus")]
                     info!("Initializing D-Bus API...");
-
                     let (dbus_tx, dbus_rx) = channel();
-                    #[cfg(feature = "dbus")]
                     let dbus_api_tx = spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
                         panic!()
@@ -1473,9 +1814,15 @@ fn main() {
                     plugins::register_plugins()
                         .unwrap_or_else(|_e| error!("Could not register one or more plugins"));
 
+                    // spawn a thread that monitors the system
+                    info!("Spawning system monitor thread...");
+                    let (sysevents_tx, sysevents_rx) = channel();
+                    spawn_system_monitor_thread(sysevents_tx).unwrap_or_else(|e| {
+                        error!("Could not create the system monitor thread: {}", e)
+                    });
+
                     // spawn a thread to handle keyboard input
                     info!("Spawning keyboard input thread...");
-
                     let (kbd_tx, kbd_rx) = channel();
                     spawn_keyboard_input_thread(kbd_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
@@ -1484,7 +1831,6 @@ fn main() {
 
                     // enable mouse input
                     let (mouse_tx, mouse_rx) = channel();
-
                     if grab_mouse {
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -1496,24 +1842,6 @@ fn main() {
                         info!("Mouse support is DISABLED by configuration");
                     }
 
-                    // spawn a thread to handle the web-frontend
-                    #[cfg(feature = "frontend")]
-                    let (frontend_tx, frontend_rx) = channel();
-
-                    if frontend_enabled {
-                        #[cfg(feature = "frontend")]
-                        info!("Spawning Web-Frontend thread...");
-
-                        #[cfg(feature = "frontend")]
-                        spawn_frontend_thread(frontend_tx, profile_path.clone(), script_paths)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
-                    } else {
-                        info!("Web-Frontend DISABLED by configuration");
-                    }
-
                     let (fsevents_tx, fsevents_rx) = channel();
                     register_filesystem_watcher(
                         fsevents_tx,
@@ -1523,37 +1851,70 @@ fn main() {
                     )
                     .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
 
+                    // load plugin state from disk
+                    plugins::PersistencePlugin::load_persistent_data().map_err(|e| {
+                        MainError::StorageError {
+                            description: format!("{}", e),
+                        }
+                    })?;
+
                     // enter the main loop
                     run_main_loop(
-                        &mut hwdevices,
-                        #[cfg(feature = "dbus")]
+                        &hwdevice,
                         &dbus_api_tx,
-                        #[cfg(feature = "frontend")]
-                        &frontend_rx,
                         &dbus_rx,
                         &kbd_rx,
                         &mouse_rx,
                         &fsevents_rx,
-                    );
+                        &sysevents_rx,
+                    )
+                    .unwrap_or_else(|e| error!("{}", e));
 
                     // we left the main loop, so send a final message to the running Lua VMs
+                    *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.lock().len();
+
                     for lua_tx in LUA_TXS.lock().iter() {
                         lua_tx
                             .send(script::Message::Quit(0))
                             .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
                     }
 
-                    // TODO: Ugly hack, find a better way to wait for exit of the Lua VMs
-                    thread::sleep(Duration::from_millis(250));
+                    // wait until all Lua VMs completed the event handler
+                    loop {
+                        let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
+
+                        let result = UPCALL_COMPLETED_ON_QUIT
+                            .1
+                            .wait_for(&mut pending, Duration::from_millis(2500));
+
+                        if result.timed_out() {
+                            warn!("Timed out while waiting for a Lua VM to shut down, terminating now");
+                            break;
+                        }
+
+                        if *pending == 0 {
+                            break;
+                        }
+                    }
+
+                    // store plugin state to disk
+                    plugins::PersistencePlugin::store_persistent_data().map_err(|e| {
+                        MainError::StorageError {
+                            description: format!("{}", e),
+                        }
+                    })?;
+
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
                     // set LEDs to a known final state
-                    hwdevices
+                    hwdevice
+                        .write()
                         .set_led_off_pattern()
                         .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
 
                     // close the control and LED devices
                     info!("Closing devices...");
-                    hwdevices.close_all().unwrap_or_else(|e| {
+                    hwdevice.write().close_all().unwrap_or_else(|e| {
                         warn!("Could not close the keyboard device: {}", e);
                     });
                 }
@@ -1576,4 +1937,6 @@ fn main() {
     state::save_runtime_state().unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
 
     info!("Exiting now");
+
+    Ok(())
 }

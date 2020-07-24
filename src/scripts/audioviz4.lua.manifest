@@ -9,7 +9,7 @@ tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']
 type = 'color'
 name = 'color_step'
 description = 'Color value that gets subtracted every [n] frames'
-default = 0x000a0a0a
+default = 0x0a0a0a0a
 
 [[config]]
 type = 'float'

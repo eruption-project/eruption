@@ -26,11 +26,12 @@ use std::fs::File;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, RwLock};
 
-use crate::hwdevices;
 use crate::macros;
 use crate::util;
 
 use crate::plugins::{self, Plugin};
+
+pub const MAX_MOUSE_BUTTONS: usize = 16;
 
 pub type Result<T> = std::result::Result<T, MousePluginError>;
 
@@ -56,7 +57,7 @@ pub enum MousePluginError {
 
 lazy_static! {
     static ref BUTTON_STATES: Arc<RwLock<Vec<bool>>> =
-        Arc::new(RwLock::new(vec![false; hwdevices::MAX_MOUSE_BUTTONS]));
+        Arc::new(RwLock::new(vec![false; MAX_MOUSE_BUTTONS]));
 }
 
 thread_local! {
@@ -80,17 +81,21 @@ impl MousePlugin {
             Ok(devfile) => match Device::new_from_fd(devfile) {
                 Ok(mut device) => {
                     info!("Now listening on: {}", filename);
+
                     info!(
                         "Input device name: \"{}\"",
                         device.name().unwrap_or("<n/a>")
                     );
+
                     info!(
                         "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
                         device.bustype(),
                         device.vendor_id(),
                         device.product_id()
                     );
-                    info!("Driver version: {:x}", device.driver_version());
+
+                    // info!("Driver version: {:x}", device.driver_version());
+
                     info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
 
                     // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
@@ -173,7 +178,7 @@ impl MousePlugin {
                             // }
 
                             error!("Could not get mouse events");
-                            return Err(MousePluginError::EvdevEventError {});
+                            Err(MousePluginError::EvdevEventError {})
                         }
                     }
                 } else {

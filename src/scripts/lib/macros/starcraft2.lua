@@ -20,7 +20,7 @@
 require "themes/gaming"
 
 function macro_select_idle_scvs()
-	info("Playing back: Select idle SCVs")
+	info("StarCraft2: Executing: Select idle SCVs")
 
 	inject_key(29, true)	-- ctrl down
 	inject_key(59, true)	-- F1 down
@@ -30,7 +30,7 @@ function macro_select_idle_scvs()
 end
 
 function macro_select_all_military()
-	info("Playing back: Select all military units")
+	info("StarCraft2: Executing: Select all military units")
 
 	inject_key(29, true)	-- ctrl down
 	inject_key(60, true)	-- F2 down
@@ -40,7 +40,7 @@ function macro_select_all_military()
 end
 
 function on_macro_key_down(index)
-	info("Playing back: Macro #" .. index + 1)
+	info("StarCraft2: Executing: Macro #" .. index + 1)
 
 	-- NOTE:
 	-- We filter by slots, if you want to enable macros on all slots equally,
@@ -60,7 +60,8 @@ function on_macro_key_down(index)
 end
 
 function update_color_state()
-	if ENABLE_EASY_SHIFT and modifier_map[CAPS_LOCK] then
+	if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
+		-- Easy Shift+ key has been pressed
 		local num_keys = get_num_keys()
 
 		-- highlight all keys
@@ -80,6 +81,9 @@ function update_color_state()
 			end
 		end
 
+		-- Highlight Easy Shift+ key
+		color_map[4] = COLOR_FUNCTION_KEY_SPECIAL
+
 		-- highlight the macro keys (INSERT - PAGEDOWN)
 		color_map[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
 		color_map[105] = COLOR_SWITCH_EASY_SHIFT_LAYER
@@ -89,7 +93,6 @@ function update_color_state()
 		color_map[111] = COLOR_SWITCH_EASY_SHIFT_LAYER
 
 		-- highlight the active slot in a different color
-		active_color = rgb_to_color(128, 128, 255)
 		if ACTIVE_EASY_SHIFT_LAYER == 1 then
 			color_map[101] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
@@ -107,6 +110,7 @@ function update_color_state()
 		highlight_ttl = highlight_max_ttl
 
 	elseif modifier_map[MODIFIER_KEY] then
+		-- modifier key has been pressed (eg: FN)
 		local num_keys = get_num_keys()
 
 		-- highlight all keys
@@ -129,6 +133,24 @@ function update_color_state()
 			color_map[29] = COLOR_ACTIVE_SLOT
 		end
 
+		-- highlight function keys
+		if MODIFIER_KEY == FN then
+			color_map[49] = COLOR_FUNCTION_KEY  -- F5 action
+			color_map[54] = COLOR_FUNCTION_KEY  -- F6 action
+			color_map[60] = COLOR_FUNCTION_KEY  -- F7 action
+			color_map[66] = COLOR_FUNCTION_KEY  -- F8 action
+			color_map[79] = COLOR_FUNCTION_KEY  -- F9 action
+			color_map[85] = COLOR_FUNCTION_KEY  -- F10 action
+			color_map[86] = COLOR_FUNCTION_KEY  -- F11 action
+			color_map[87] = COLOR_FUNCTION_KEY  -- F12 action
+
+			color_map[104] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
+
+			if ENABLE_EASY_SHIFT and game_mode_enabled then
+				color_map[4] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
+			end
+		end
+
 		-- highlight the macro keys (INSERT - PAGEDOWN)
 		color_map[101] = COLOR_MACRO_KEY
 		color_map[105] = COLOR_MACRO_KEY
@@ -148,6 +170,14 @@ end
 
 -- find some examples below:
 -- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
+
+-- Enable the modifier key, while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[1][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[2][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[3][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 
 EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 

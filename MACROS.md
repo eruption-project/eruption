@@ -48,7 +48,7 @@ In this example, the second 'l' will be sent to the system `200ms` after the fir
 A Lua function, that slowly types the string 'Hello!':
 ```lua
 function easyshift_macro_3()
-  debug("Playing back: 'easyshift_macro_3'")
+  debug("Executing: 'easyshift_macro_3'")
 
   inject_key_with_delay(42, true, 0)      -- shift down
 

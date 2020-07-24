@@ -31,22 +31,22 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    local num_keys = get_num_keys()
-
-    -- calculate organic effect
+    -- calculate the organic effect
     if ticks % animation_delay == 0 then
+        local num_keys = get_num_keys()
+
 		local angle = open_simplex_noise_2d(ticks / time_scale, 42)
 
         for i = 0, num_keys do
 			local x = i / num_rows
             local y = i / num_cols
 
-            local x2 = (cos(angle) * x) - (sin(angle) * y) + (offsets[1] / 100)
-			local y2 = (sin(angle) * x) + (cos(angle) * y) + (offsets[2] / 100)
+            local x2 = (cos(angle) * x) - (sin(angle) * y)
+			local y2 = (sin(angle) * x) + (cos(angle) * y)
 
-            local val = super_simplex_noise(x2 / coord_scale,
-							 			    y2 / coord_scale,
-                                            ticks / time_scale)
+            local val = super_simplex_noise((x2 + (offsets[1] / 256)) / coord_scale,
+							 			    (y2 + (offsets[2] / 256)) / coord_scale,
+                                            (ticks + (offsets[3] / 256)) / time_scale)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

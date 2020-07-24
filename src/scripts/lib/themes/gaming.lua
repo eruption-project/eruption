@@ -14,12 +14,17 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- switch slots via F1-F4
--- COLOR_SWITCH_SLOT = rgb_to_color(32, 64, 128)
+-- COLOR_SWITCH_SLOT = rgb_to_color(32, 255, 255)
 -- currently active slot
--- COLOR_ACTIVE_SLOT = rgb_to_color(128, 128, 255)
+-- COLOR_ACTIVE_SLOT = rgb_to_color(128, 255, 255)
 
 -- macro keys M1-M6
 COLOR_MACRO_KEY = rgb_to_color(255, 0, 0)
+
+-- F5-F12
+-- COLOR_FUNCTION_KEY = rgb_to_color(32, 64, 128)
+-- SCROLL LOCK, etc...
+-- COLOR_FUNCTION_KEY_SPECIAL = rgb_to_color(255, 0, 0)
 
 -- key remappings
 -- COLOR_REMAPPED_KEY = rgb_to_color(0, 64, 255)

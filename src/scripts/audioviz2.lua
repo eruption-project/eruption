@@ -26,6 +26,7 @@ column = 0
 -- event handler functions --
 function on_startup(config)
 	local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = color_background
     end
@@ -57,7 +58,7 @@ function on_tick(delta)
 
 	local color = hsl_to_color(color_angle, 1.0, 0.5)
 	for i = 0, num_rows - 1 do
-			color_map[column * num_rows + i] = color
+		color_map[column * num_rows + i] = color
 	end
 
 	column = column + 1

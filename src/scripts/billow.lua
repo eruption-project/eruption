@@ -20,16 +20,13 @@ require "debug"
 ticks = 0
 color_map = {}
 
-num_rows = 6
-num_cols = 22
-
 function on_tick(delta)
     ticks = ticks + delta
 
-    local num_keys = get_num_keys()
-
     -- calculate batique effect
     if ticks % animation_delay == 0 then
+        local num_keys = get_num_keys()
+
         for i = 0, num_keys do
             local x = i / num_rows
             local y = i / num_cols

@@ -18,7 +18,7 @@
 use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use rand::Rng;
 use rlua::{Context, Function, Lua};
 use std::cell::RefCell;
@@ -30,12 +30,13 @@ use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
 
-use crate::hwdevices::{HwDevicesState, NUM_KEYS, RGBA};
+use crate::hwdevices::{HidEvent, HwDevice, NUM_KEYS, RGBA};
 use crate::plugin_manager;
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
-use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
+use crate::{SystemEvent, ACTIVE_PROFILE, ACTIVE_SCRIPTS};
 
+#[derive(Debug, Clone)]
 pub enum Message {
     // Startup, // Not passed via message but invoked directly
     Quit(u32),
@@ -45,11 +46,17 @@ pub enum Message {
     KeyDown(u8),
     KeyUp(u8),
 
+    // HID events
+    HidEvent(HidEvent),
+
     // Mouse events
     MouseButtonDown(u8),
     MouseButtonUp(u8),
     MouseMove(i32, i32, i32),
     MouseWheelEvent(u8),
+
+    // System events
+    SystemEvent(SystemEvent),
 
     //LoadScript(PathBuf),
     // Abort,
@@ -61,14 +68,14 @@ pub enum Message {
 
 lazy_static! {
     /// Global LED state of the managed device
-    pub static ref LED_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA {
+    pub static ref LED_MAP: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA {
         r: 0x00,
         g: 0x00,
         b: 0x00,
         a: 0x00,
     }; NUM_KEYS]));
 
-    // Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
+    /// Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
     pub static ref FRAME_GENERATION_COUNTER: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
 }
 
@@ -105,16 +112,14 @@ mod callbacks {
     use noise::NoiseFn;
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
-    use parking_lot::Mutex;
     use std::convert::TryFrom;
     use std::sync::atomic::Ordering;
-    use std::sync::Arc;
     use std::thread;
     use std::time::Duration;
 
     use super::{LED_MAP, LOCAL_LED_MAP};
 
-    use crate::hwdevices::{HwDevicesState, NUM_KEYS, RGBA};
+    use crate::hwdevices::{HwDevice, LedKind, NUM_KEYS, RGBA};
     use crate::plugins::macros;
 
     /// Log a message with severity level `trace`.
@@ -192,9 +197,7 @@ mod callbacks {
             .lock()
             .as_ref()
             .unwrap()
-            .send(macros::Message::InjectMouseWheelEvent {
-                direction: direction,
-            })
+            .send(macros::Message::InjectMouseWheelEvent { direction })
             .unwrap();
     }
 
@@ -218,6 +221,13 @@ mod callbacks {
                     .unwrap();
             })
             .unwrap();
+    }
+
+    pub(crate) fn set_status_led(hwdevice: &HwDevice, led_id: u8, on: bool) {
+        hwdevice
+            .read()
+            .set_status_led(LedKind::from_id(led_id).unwrap(), on)
+            .unwrap_or_else(|e| error!("{}", e));
     }
 
     /// Get RGB components of a 32 bits color value.
@@ -449,14 +459,14 @@ mod callbacks {
     }
 
     /// Get the current color of the key `idx`.
-    pub(crate) fn get_key_color(rvdevid: &str, idx: usize) -> u32 {
-        error!("{}: {}", rvdevid, idx);
+    pub(crate) fn get_key_color(devid: &str, idx: usize) -> u32 {
+        error!("{}: {}", devid, idx);
         0
     }
 
     /// Set the color of the key `idx` to `c`.
-    pub(crate) fn set_key_color(rvdev: &Arc<Mutex<HwDevicesState>>, idx: usize, c: u32) {
-        let mut led_map = LED_MAP.lock();
+    pub(crate) fn set_key_color(hwdevice: &HwDevice, idx: usize, c: u32) {
+        let mut led_map = LED_MAP.write();
         led_map[idx] = RGBA {
             a: u8::try_from((c >> 24) & 0xff).unwrap(),
             r: u8::try_from((c >> 16) & 0xff).unwrap(),
@@ -464,9 +474,8 @@ mod callbacks {
             b: u8::try_from(c & 0xff).unwrap(),
         };
 
-        let mut rvdev = rvdev.lock();
-
-        rvdev
+        hwdevice
+            .write()
             .send_led_map(&*led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
 
@@ -477,7 +486,7 @@ mod callbacks {
 
     /// Get state of all LEDs
     pub(crate) fn get_color_map() -> Vec<u32> {
-        let global_led_map = LED_MAP.lock();
+        let global_led_map = LED_MAP.write();
 
         let result = global_led_map
             .iter()
@@ -494,7 +503,7 @@ mod callbacks {
     }
 
     /// Set all LEDs at once.
-    pub(crate) fn set_color_map(rvdev: &Arc<Mutex<HwDevicesState>>, map: &[u32]) {
+    pub(crate) fn set_color_map(hwdevice: &HwDevice, map: &[u32]) {
         assert!(map.len() == NUM_KEYS);
 
         let mut led_map = [RGBA {
@@ -519,11 +528,13 @@ mod callbacks {
             }
         }
 
-        let mut global_led_map = LED_MAP.lock();
-        *global_led_map = led_map.to_vec();
+        {
+            let mut global_led_map = LED_MAP.write();
+            *global_led_map = led_map.to_vec();
+        }
 
-        let mut rvdev = rvdev.lock();
-        rvdev
+        hwdevice
+            .write()
             .send_led_map(&led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
 
@@ -536,6 +547,7 @@ mod callbacks {
     /// next frame is rendered
     pub(crate) fn submit_color_map(map: &[u32]) {
         // trace!("submit_color_map: {}/{}", map.len(), NUM_KEYS);
+
         assert!(
             map.len() == NUM_KEYS,
             format!(
@@ -587,7 +599,7 @@ pub enum RunScriptResult {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     file: PathBuf,
-    hwdevices: HwDevicesState,
+    hwdevice: &HwDevice,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
@@ -612,16 +624,16 @@ pub fn run_script(
             let result: rlua::Result<RunScriptResult> = lua.context::<_, _>(|lua_ctx| {
                 let mut errors_present = false;
 
-                if register_support_globals(lua_ctx, &hwdevices).is_err() {
-                    return Ok(RunScriptResult::TerminatedWithErrors)
+                if register_support_globals(lua_ctx, &hwdevice).is_err() {
+                    return Ok(RunScriptResult::TerminatedWithErrors);
                 }
 
-                if register_support_funcs(lua_ctx, &hwdevices).is_err() {
-                    return Ok(RunScriptResult::TerminatedWithErrors)
+                if register_support_funcs(lua_ctx, &hwdevice).is_err() {
+                    return Ok(RunScriptResult::TerminatedWithErrors);
                 }
 
                 if register_script_config(lua_ctx, &manifest.unwrap()).is_err() {
-                    return Ok(RunScriptResult::TerminatedWithErrors)
+                    return Ok(RunScriptResult::TerminatedWithErrors);
                 }
 
                 // start execution of the Lua script
@@ -631,7 +643,7 @@ pub fn run_script(
                 });
 
                 if errors_present {
-                    return Ok(RunScriptResult::TerminatedWithErrors)
+                    return Ok(RunScriptResult::TerminatedWithErrors);
                 }
 
                 // call startup event handler, iff present
@@ -643,7 +655,7 @@ pub fn run_script(
                 }
 
                 if errors_present {
-                    return Ok(RunScriptResult::TerminatedWithErrors)
+                    return Ok(RunScriptResult::TerminatedWithErrors);
                 }
 
                 loop {
@@ -654,15 +666,17 @@ pub fn run_script(
 
                                 if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit")
                                 {
-
                                     handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                         error!("Lua error: {}", e);
                                         errors_present = true;
                                     });
                                 }
 
+                                *crate::UPCALL_COMPLETED_ON_QUIT.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
+
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -678,13 +692,13 @@ pub fn run_script(
                                 }
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
                             Message::RealizeColorMap => {
                                 LOCAL_LED_MAP.with(|foreground| {
-                                    for (idx, background) in LED_MAP.lock().iter_mut().enumerate() {
+                                    for (idx, background) in LED_MAP.write().iter_mut().enumerate() {
                                         let bg = &background;
                                         let fg = foreground.borrow()[idx];
 
@@ -703,14 +717,21 @@ pub fn run_script(
                                 });
 
                                 // signal readiness / notify the main thread that we are done
-                                crate::COLOR_MAPS_READY_CONDITION
+                                let val = { *crate::COLOR_MAPS_READY_CONDITION
                                     .0
-                                    .lock()
-                                    .checked_sub(1)
+                                    .lock() };
+
+                                let val = val.checked_sub(1)
                                     .unwrap_or_else(|| {
                                         warn!("Incorrect state in locking code detected");
                                         0
                                     });
+
+                                *crate::COLOR_MAPS_READY_CONDITION
+                                    .0
+                                    .lock() = val;
+
+
                                 crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
                             }
 
@@ -730,7 +751,7 @@ pub fn run_script(
                                 crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -750,7 +771,64 @@ pub fn run_script(
                                 crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
+                                }
+                            }
+
+                            Message::HidEvent(param) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_hid_event")
+                                {
+                                    let arg1: u8;
+                                    let event_type: u32 = match param {
+                                        HidEvent::KeyUp { code } => {
+                                            arg1 = code.into();
+                                            1
+                                        }
+                                        HidEvent::KeyDown { code } => {
+                                            arg1 = code.into();
+                                            2
+                                        }
+
+                                        HidEvent::MuteDown => {
+                                            arg1 = 1;
+                                            3
+                                        }
+                                        HidEvent::MuteUp => {
+                                            arg1 = 0;
+                                            3
+                                        }
+
+                                        HidEvent::VolumeDown => {
+                                            arg1 = 1;
+                                            4
+                                        }
+                                        HidEvent::VolumeUp => {
+                                            arg1 = 0;
+                                            4
+                                        }
+
+                                        _ => {
+                                            arg1 = 0;
+                                            0
+                                        }
+                                    };
+
+                                    handler
+                                        .call::<_, ()>((event_type, arg1))
+                                        .unwrap_or_else(|e| {
+                                            error!("Lua error: {}", e);
+                                            errors_present = true;
+                                        });
+                                }
+
+                                *crate::UPCALL_COMPLETED_ON_HID_EVENT.0.lock() -= 1;
+                                crate::UPCALL_COMPLETED_ON_HID_EVENT.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -770,7 +848,7 @@ pub fn run_script(
                                 crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -790,7 +868,7 @@ pub fn run_script(
                                 crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -800,17 +878,19 @@ pub fn run_script(
                                 if let Ok(handler) =
                                     lua_ctx.globals().get::<_, Function>("on_mouse_move")
                                 {
-                                    handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(|e| {
-                                        error!("Lua error: {}", e);
-                                        errors_present = true;
-                                    });
+                                    handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(
+                                        |e| {
+                                            error!("Lua error: {}", e);
+                                            errors_present = true;
+                                        },
+                                    );
                                 }
 
                                 *crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() -= 1;
                                 crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -830,7 +910,52 @@ pub fn run_script(
                                 crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
 
                                 if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors)
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
+                                }
+                            }
+
+                            Message::SystemEvent(param) => {
+                                let mut errors_present = false;
+
+                                if let Ok(handler) =
+                                    lua_ctx.globals().get::<_, Function>("on_system_event")
+                                {
+                                    let event_type;
+                                    let arg1;
+                                    let arg2;
+                                    let arg3;
+
+                                    match param {
+                                        SystemEvent::ProcessExec { event, file_name } => {
+                                            event_type = 0;
+
+                                            arg1 = event.pid;
+                                            arg2 = file_name.unwrap_or_default();
+                                            arg3 = 0; // TODO: implement hashing
+                                        }
+
+                                        SystemEvent::ProcessExit { event, file_name } => {
+                                            event_type = 1;
+
+                                            arg1 = event.pid;
+                                            arg2 = file_name.unwrap_or_default();
+                                            arg3 = 0; // TODO: implement hashing
+                                        }
+                                    }
+
+                                    handler
+                                        .call::<_, ()>((event_type, arg1, arg2, arg3))
+                                        .unwrap_or_else(|e| {
+                                            error!("Lua error: {}", e);
+                                            errors_present = true;
+                                        });
+                                }
+
+                                // *crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock() -= 1;
+                                // crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.1.notify_all();
+
+                                if errors_present {
+                                    return Ok(RunScriptResult::TerminatedWithErrors);
                                 }
                             }
 
@@ -855,10 +980,16 @@ pub fn run_script(
                                 }
 
                                 if errors_present {
-                                    error!("Lua script '{}' terminated with errors", file.file_name().unwrap().to_string_lossy());
+                                    error!(
+                                        "Lua script '{}' terminated with errors",
+                                        file.file_name().unwrap().to_string_lossy()
+                                    );
                                     return Ok(RunScriptResult::TerminatedWithErrors);
                                 } else {
-                                    debug!("Lua script '{}' terminated gracefully", file.file_name().unwrap().to_string_lossy());
+                                    debug!(
+                                        "Lua script '{}' terminated gracefully",
+                                        file.file_name().unwrap().to_string_lossy()
+                                    );
                                     return Ok(RunScriptResult::TerminatedGracefully);
                                 }
                             }
@@ -878,7 +1009,7 @@ pub fn run_script(
     }
 }
 
-fn register_support_globals(lua_ctx: Context, _hwdevices: &HwDevicesState) -> rlua::Result<()> {
+fn register_support_globals(lua_ctx: Context, _hwdevice: &HwDevice) -> rlua::Result<()> {
     let globals = lua_ctx.globals();
 
     #[cfg(debug_assertions)]
@@ -903,9 +1034,8 @@ fn register_support_globals(lua_ctx: Context, _hwdevices: &HwDevicesState) -> rl
     Ok(())
 }
 
-fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua::Result<()> {
-    let rvdevid = hwdevices.get_dev_id();
-    let rvdev = Arc::new(Mutex::new(hwdevices.clone()));
+fn register_support_funcs(lua_ctx: Context, hwdevice: &HwDevice) -> rlua::Result<()> {
+    let devid = hwdevice.read().get_usb_path();
 
     let globals = lua_ctx.globals();
 
@@ -1006,6 +1136,13 @@ fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua:
             Ok(())
         })?;
     globals.set("inject_key_with_delay", inject_key_with_delay)?;
+
+    let dev_tmp = hwdevice.clone();
+    let set_status_led = lua_ctx.create_function(move |_, (led_id, on): (u8, bool)| {
+        callbacks::set_status_led(&dev_tmp, led_id, on);
+        Ok(())
+    })?;
+    globals.set("set_status_led", set_status_led)?;
 
     // mouse state and macros
     let inject_mouse_button = lua_ctx.create_function(|_, (button_index, down): (u32, bool)| {
@@ -1132,14 +1269,14 @@ fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua:
     let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;
     globals.set("get_num_keys", get_num_keys)?;
 
-    let rvdevid_tmp = rvdevid;
+    let devid_tmp = devid;
     let get_key_color = lua_ctx
-        .create_function(move |_, idx: usize| Ok(callbacks::get_key_color(&rvdevid_tmp, idx)))?;
+        .create_function(move |_, idx: usize| Ok(callbacks::get_key_color(&devid_tmp, idx)))?;
     globals.set("get_key_color", get_key_color)?;
 
-    let rvdev_tmp = rvdev.clone();
+    let dev_tmp = hwdevice.clone();
     let set_key_color = lua_ctx.create_function(move |_, (idx, c): (usize, u32)| {
-        callbacks::set_key_color(&rvdev_tmp, idx, c);
+        callbacks::set_key_color(&dev_tmp, idx, c);
         Ok(())
     })?;
     globals.set("set_key_color", set_key_color)?;
@@ -1147,9 +1284,9 @@ fn register_support_funcs(lua_ctx: Context, hwdevices: &HwDevicesState) -> rlua:
     let get_color_map = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_color_map()))?;
     globals.set("get_color_map", get_color_map)?;
 
-    let rvdev_tmp = rvdev;
+    let dev_tmp = hwdevice.clone();
     let set_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
-        callbacks::set_color_map(&rvdev_tmp, &map);
+        callbacks::set_color_map(&dev_tmp, &map);
         Ok(())
     })?;
     globals.set("set_color_map", set_color_map)?;

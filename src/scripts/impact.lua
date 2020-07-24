@@ -31,13 +31,14 @@ effect_ttl = 0
 -- event handler functions --
 function on_startup(config)
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
 		color_map[i] = rgba_to_color(0, 0, 0, 0)
 	end
 end
 
 function on_key_down(key_index)
-	color_map[key_index] = rgba_to_color(255, 255, 255, 255)
+	color_map[key_index] = color_impact
 
     for i = 0, max_neigh do
         local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
@@ -54,6 +55,7 @@ function on_mouse_button_down(button_index)
 	if not mouse_events then return end
 
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
 		color_map[i] = color_mouse_click_flash
 	end
@@ -65,6 +67,7 @@ function on_mouse_button_up(button_index)
 	if not mouse_events then return end
 
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
 		color_map[i] = color_mouse_click_flash
 	end
@@ -82,6 +85,7 @@ function on_mouse_wheel(direction)
 	end
 
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
 		color_map[i] = c
 	end

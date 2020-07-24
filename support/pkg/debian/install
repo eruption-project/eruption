@@ -30,6 +30,7 @@ support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
+support/profiles/vu-meter.profile var/lib/eruption/profiles
 support/profiles/turbulence.profile var/lib/eruption/profiles
 
 src/scripts/afterglow.lua usr/share/eruption/scripts/
@@ -60,6 +61,8 @@ src/scripts/fireworks.lua usr/share/eruption/scripts/
 src/scripts/fireworks.lua.manifest usr/share/eruption/scripts/
 src/scripts/gaming.lua usr/share/eruption/scripts/
 src/scripts/gaming.lua.manifest usr/share/eruption/scripts/
+src/scripts/ghost.lua usr/share/eruption/scripts/
+src/scripts/ghost.lua.manifest usr/share/eruption/scripts/
 src/scripts/gradient.lua usr/share/eruption/scripts/
 src/scripts/gradient.lua.manifest usr/share/eruption/scripts/
 src/scripts/linear-gradient.lua usr/share/eruption/scripts/
@@ -100,13 +103,19 @@ src/scripts/snake.lua usr/share/eruption/scripts/
 src/scripts/snake.lua.manifest usr/share/eruption/scripts/
 src/scripts/macros.lua usr/share/eruption/scripts/
 src/scripts/macros.lua.manifest usr/share/eruption/scripts/
+src/scripts/profiles.lua usr/share/eruption/scripts/
+src/scripts/profiles.lua.manifest usr/share/eruption/scripts/
+src/scripts/stats.lua usr/share/eruption/scripts/
+src/scripts/stats.lua.manifest usr/share/eruption/scripts/
 src/scripts/lib/debug.lua usr/share/eruption/scripts/lib/
+src/scripts/lib/queue.lua usr/share/eruption/scripts/lib/
 src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib/
 src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib/
 src/scripts/lib/themes/default.lua usr/share/eruption/scripts/lib/themes
 src/scripts/lib/themes/gaming.lua usr/share/eruption/scripts/lib/themes
 src/scripts/lib/macros/modifiers.lua usr/share/eruption/scripts/lib/macros
 src/scripts/lib/macros/user-macros.lua usr/share/eruption/scripts/lib/macros
+src/scripts/lib/macros/user-mappings.lua usr/share/eruption/scripts/lib/macros
 src/scripts/lib/macros/starcraft2.lua usr/share/eruption/scripts/lib/macros
 src/scripts/examples usr/share/eruption/scripts/
 src/scripts/examples/simple.lua usr/share/eruption/scripts/

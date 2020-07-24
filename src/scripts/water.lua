@@ -56,11 +56,11 @@ function on_tick(delta)
 
 	if effect_ttl <= 0 then return end
 
-	local num_keys = get_num_keys()
-
     if ticks % flow_speed == 0 then
+        local num_keys = get_num_keys()
+
         -- compute wave effect
-        for key_index = 1, get_num_keys() do
+        for key_index = 1, num_keys do
             local epsilon = 0.1
             if water_grid[key_index] >= epsilon then
                 water_grid[key_index - 1] = water_grid[key_index] - 0.1

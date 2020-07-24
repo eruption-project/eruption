@@ -1,6 +1,6 @@
 name = "Afterglow"
 description = "Show an afterglow effect after a key has been pressed"
-version = "0.0.4"
+version = "0.0.5"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
@@ -15,13 +15,13 @@ default = 1.0
 type = 'color'
 name = 'color_afterglow'
 description = 'Afterglow color'
-default = 0xffff0000
+default = 0xffffffff
 
 [[config]]
-type = 'color'
-name = 'color_step_afterglow'
-description = 'Color value that gets subtracted from afterglow every [n] frames'
-default = 0x01000000
+type = 'int'
+name = 'alpha_step_afterglow'
+description = 'Value that gets subtracted from afterglow alpha every [n] frames'
+default = 4
 
 [[config]]
 type = 'float'

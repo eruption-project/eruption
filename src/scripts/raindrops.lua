@@ -20,6 +20,14 @@ require "debug"
 color_map = {}
 ticks = 0
 
+-- utility functions --
+local function place_raindrop()
+    local num_keys = get_num_keys()
+    local key = rand(0, num_keys)
+
+    color_map[key] = rgba_to_color(255, 255, 255, lerp(0, 255, opacity))
+end
+
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
@@ -54,11 +62,4 @@ function on_tick(delta)
     end
 
     submit_color_map(color_map)
-end
-
-function place_raindrop()
-    local num_keys = get_num_keys()
-    local key = rand(0, num_keys)
-
-    color_map[key] = rgba_to_color(255, 255, 255, lerp(0, 255, opacity))
 end

@@ -20,8 +20,8 @@ require "debug"
 color_map = {}
 
 -- compute fire with a supersampling factor of 8
-fire_grid_rows = 6 * 8
-fire_grid_cols = 22 * 8
+fire_grid_rows = num_rows * 8
+fire_grid_cols = num_cols * 8
 
 fire_grid = {}
 color_palette = {}
@@ -31,6 +31,7 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
@@ -53,9 +54,9 @@ function on_tick(delta)
     ticks = ticks + delta
 
     -- calculate fire effect
-    local num_keys = get_num_keys()
-
     if ticks % fire_speed == 0 then
+        local num_keys = get_num_keys()
+
         -- randomize bottom row
         for x = 0, fire_grid_cols - 1 do
             fire_grid[fire_grid_rows * x + fire_grid_cols] = rand(55, 255)

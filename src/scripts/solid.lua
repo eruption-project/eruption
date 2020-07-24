@@ -21,6 +21,7 @@ color_map = {}
 
 function on_startup(config)
   local num_keys = get_num_keys()
+
   for i = 0, num_keys do
       r, g, b, alpha = color_to_rgba(color_background)
       color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))

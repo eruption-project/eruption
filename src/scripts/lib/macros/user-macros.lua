@@ -17,39 +17,53 @@
 -- no override has been specified. You may want to customize the code below
 
 function easyshift_macro_1()
-	info("Playing back: 'easyshift_macro_1'")
+	info("UserMacros: Executing: 'easyshift_macro_1'")
 end
 
 function easyshift_macro_2()
-	info("Playing back: 'easyshift_macro_2'")
+	info("UserMacros: Executing: 'easyshift_macro_2'")
 end
 
 function easyshift_macro_3()
-    info("Playing back: 'easyshift_macro_3'")
+    info("UserMacros: Executing: 'easyshift_macro_3'")
 end
 
 function easyshift_mouse_macro_1()
-	info("Playing back: 'easyshift_mouse_macro_1'")
+	info("UserMacros: Executing: 'easyshift_mouse_macro_1'")
 end
 
 function easyshift_mouse_macro_2()
-	info("Playing back: 'easyshift_mouse_macro_2'")
+	info("UserMacros: Executing: 'easyshift_mouse_macro_2'")
 end
 
 function easyshift_mouse_macro_3()
-	info("Playing back: 'easyshift_mouse_macro_3'")
+	info("UserMacros: Executing: 'easyshift_mouse_macro_3'")
 end
 
 function easyshift_mouse_wheel_scroll_up()
-	info("Playing back: 'easyshift_mouse_wheel_scroll_up'")
+	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_up'")
 end
 
 function easyshift_mouse_wheel_scroll_down()
-	info("Playing back: 'easyshift_mouse_wheel_scroll_down'")
+	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_down'")
+end
+
+function on_dial_knob_rotate_left()
+	info("UserMacros: Executing: 'on_dial_knob_rotate_left'")
+
+	return false -- we did not handle the event, so return `false`
+				 -- to perform the default action
+end
+
+function on_dial_knob_rotate_right()
+	info("UserMacros: Executing: 'on_dial_knob_rotate_right'")
+
+	return false -- we did not handle the event, so return `false`
+				 -- to perform the default action
 end
 
 function on_macro_key_down(index)
-	info("Playing back: Macro #" .. index + 1)
+	info("UserMacros: Executing: Macro #" .. index + 1)
 
 	-- NOTE:
 	-- We filter by slots, if you want to enable macros on all slots equally,
@@ -67,17 +81,17 @@ function on_macro_key_down(index)
 
 		-- place your code here --
 
-	elseif index == 3 and get_current_slot() == 0 then
+	elseif index == 1 and get_current_slot() == 0 then
 		-- if we are in slot #1, the macro key #4 will write the
 		-- text "Message from eruption" to the system journal
 
 		-- consume the original keystroke
 		inject_key(0, false)
 
-		result = system("/usr/bin/logger", { "-i", "Message from eruption" })
-		if result ~= 0 then
-			error("Command execution failed with result: " .. result)
-		end
+		-- result = system("/usr/bin/logger", { "-i", "Message from eruption" })
+		-- if result ~= 0 then
+		-- 	error("Command execution failed with result: " .. result)
+		-- end
 
 		-- NOTE: does not work as the 'root' user
 		-- system("notify-send", { "Title", "Message from eruption" })
@@ -88,7 +102,8 @@ function on_macro_key_down(index)
 end
 
 function update_color_state()
-	if ENABLE_EASY_SHIFT and modifier_map[CAPS_LOCK] then
+	if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
+		-- Easy Shift+ key has been pressed
 		local num_keys = get_num_keys()
 
 		-- highlight all keys
@@ -107,6 +122,9 @@ function update_color_state()
 				color_map[i] = COLOR_ASSOCIATED_MACRO
 			end
 		end
+
+		-- Highlight Easy Shift+ key
+		color_map[4] = COLOR_FUNCTION_KEY_SPECIAL
 
 		-- highlight the macro keys (INSERT - PAGEDOWN)
 		color_map[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
@@ -134,6 +152,7 @@ function update_color_state()
 		highlight_ttl = highlight_max_ttl
 
 	elseif modifier_map[MODIFIER_KEY] then
+		-- modifier key has been pressed (eg: FN)
 		local num_keys = get_num_keys()
 
 		-- highlight all keys
@@ -156,6 +175,24 @@ function update_color_state()
 			color_map[29] = COLOR_ACTIVE_SLOT
 		end
 
+		-- highlight function keys
+		if MODIFIER_KEY == FN then
+			color_map[49] = COLOR_FUNCTION_KEY  -- F5 action
+			color_map[54] = COLOR_FUNCTION_KEY  -- F6 action
+			color_map[60] = COLOR_FUNCTION_KEY  -- F7 action
+			color_map[66] = COLOR_FUNCTION_KEY  -- F8 action
+			color_map[79] = COLOR_FUNCTION_KEY  -- F9 action
+			color_map[85] = COLOR_FUNCTION_KEY  -- F10 action
+			color_map[86] = COLOR_FUNCTION_KEY  -- F11 action
+			color_map[87] = COLOR_FUNCTION_KEY  -- F12 action
+
+			color_map[104] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
+
+			if ENABLE_EASY_SHIFT and game_mode_enabled then
+				color_map[4] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
+			end
+		end
+
 		-- highlight the macro keys (INSERT - PAGEDOWN)
 		color_map[101] = COLOR_MACRO_KEY
 		color_map[105] = COLOR_MACRO_KEY
@@ -176,8 +213,15 @@ end
 -- find some examples below:
 -- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
 
+-- Enable the modifier key, while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[1][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[2][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[3][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
+
 EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
-EASY_SHIFT_REMAPPING_TABLE[4][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- map F1 - F12 => F13 - F21 on the Easy Shift+ layer
 EASY_SHIFT_REMAPPING_TABLE[1][12]	= 183
@@ -194,9 +238,9 @@ EASY_SHIFT_REMAPPING_TABLE[1][86]	= 193
 EASY_SHIFT_REMAPPING_TABLE[1][87]	= 194
 
 -- assign macros to keys on the Easy Shift+ layer
-EASY_SHIFT_MACRO_TABLE[1][7]		= easyshift_macro_1  -- CTRL + SHIFT + 1 (a custom shortcut example)
-EASY_SHIFT_MACRO_TABLE[1][13]		= easyshift_macro_2  -- ALT + F4 (close active window)
-EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  -- A custom macro
+EASY_SHIFT_MACRO_TABLE[1][7]		= easyshift_macro_1  --
+EASY_SHIFT_MACRO_TABLE[1][13]		= easyshift_macro_2  --
+EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer
 EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --

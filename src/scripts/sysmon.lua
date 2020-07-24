@@ -37,7 +37,7 @@ function on_tick(delta)
     -- update the system state
     if ticks % 5 == 0 then
         temperature = get_package_temp()
-        trace("Temperature  " .. get_package_temp() .. " / " .. max_temperature)
+        trace("Sysmon: Temperature  " .. get_package_temp() .. " / " .. max_temperature)
     end
 
     local num_keys = get_num_keys()

@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.10
-Release: 2%{?dist}
+Version: 0.1.11
+Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -20,7 +20,6 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: alsa-lib-devel
 
 Requires: systemd
 Requires: dbus
@@ -61,16 +60,6 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/templates
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/styles
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/eruption
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/css/themes/metal
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/js
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/font
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/bg
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/static/img/icons
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
@@ -98,6 +87,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/vu-meter.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
@@ -105,8 +95,6 @@ cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_dat
 ln -s phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-down.wav
 ln -s phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 cp -ra %{_builddir}/%{name}-%{version}/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
-#cp -ra %{_builddir}/%{name}-%{version}/templates %{buildroot}%{_datarootdir}/%{ShortName}/
-#cp -ra %{_builddir}/%{name}-%{version}/static %{buildroot}%{_datarootdir}/%{ShortName}/
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 
@@ -148,18 +136,25 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/snake.profile
 %{_sharedstatedir}/%{ShortName}/profiles/starcraft2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
+%{_sharedstatedir}/%{ShortName}/profiles/vu-meter.profile
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
+%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-mappings.lua
 %config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/profiles.lua
+%{_datarootdir}/%{ShortName}/scripts/profiles.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/stats.lua
+%{_datarootdir}/%{ShortName}/scripts/stats.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterhue.lua
@@ -196,6 +191,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/fireworks.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/gaming.lua
 %{_datarootdir}/%{ShortName}/scripts/gaming.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/ghost.lua
+%{_datarootdir}/%{ShortName}/scripts/ghost.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/gradient.lua
 %{_datarootdir}/%{ShortName}/scripts/gradient.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/linear-gradient.lua
@@ -233,69 +230,5 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/sfx/phaser2.wav
 %{_datarootdir}/%{ShortName}/sfx/key-down.wav
 %{_datarootdir}/%{ShortName}/sfx/key-up.wav
-# Web-Frontend
-#%{_datarootdir}/%{ShortName}/templates/about.html.tera
-#%{_datarootdir}/%{ShortName}/templates/base.html.tera
-#%{_datarootdir}/%{ShortName}/templates/detail.html.tera
-#%{_datarootdir}/%{ShortName}/templates/documentation.html.tera
-#%{_datarootdir}/%{ShortName}/templates/profiles.html.tera
-#%{_datarootdir}/%{ShortName}/templates/soundfx.html.tera
-#%{_datarootdir}/%{ShortName}/templates/settings.html.tera
-#%{_datarootdir}/%{ShortName}/templates/preview.html.tera
-#%{_datarootdir}/%{ShortName}/static/css/animate.css
-#%{_datarootdir}/%{ShortName}/static/css/style.css
-#%{_datarootdir}/%{ShortName}/static/css/themes/eruption/colors.css
-#%{_datarootdir}/%{ShortName}/static/css/themes/metal/colors.css
-#%{_datarootdir}/%{ShortName}/static/css/styles/tomorrow-night.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap.css.map
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap.min.css.map
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.css.map
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-grid.min.css.map
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.css.map
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css
-#%{_datarootdir}/%{ShortName}/static/css/bootstrap-reboot.min.css.map
-#%{_datarootdir}/%{ShortName}/static/css/fontawesome.min.css
-#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.eot
-#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.svg
-#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.ttf
-#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff
-#%{_datarootdir}/%{ShortName}/static/font/fa-brands-400.woff2
-#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.eot
-#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.svg
-#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.ttf
-#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff
-#%{_datarootdir}/%{ShortName}/static/font/fa-regular-400.woff2
-#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.eot
-#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.svg
-#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.ttf
-#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff
-#%{_datarootdir}/%{ShortName}/static/font/fa-solid-900.woff2
-#%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.ttf
-#%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.ttf
-#%{_datarootdir}/%{ShortName}/static/font/Roboto-Regular.woff2
-#%{_datarootdir}/%{ShortName}/static/font/CuteFont-Regular.woff2
-#%{_datarootdir}/%{ShortName}/static/img/bg_direction_nav.png
-#%{_datarootdir}/%{ShortName}/static/img/glyphicons-halflings.png
-#%{_datarootdir}/%{ShortName}/static/img/bg/bg-1.jpg
-#%{_datarootdir}/%{ShortName}/static/img/icons/eruption.png
-#%{_datarootdir}/%{ShortName}/static/img/favicon.png
-#%{_datarootdir}/%{ShortName}/static/js/animate.js
-#%{_datarootdir}/%{ShortName}/static/js/custom.js
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.js.map
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.bundle.min.js.map
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.js
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.js.map
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js
-#%{_datarootdir}/%{ShortName}/static/js/bootstrap.min.js.map
-#%{_datarootdir}/%{ShortName}/static/js/jquery.js
-#%{_datarootdir}/%{ShortName}/static/js/fontawesome.min.js
-#%{_datarootdir}/%{ShortName}/static/js/highlight.pack.js
 
 %changelog

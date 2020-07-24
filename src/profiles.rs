@@ -205,6 +205,77 @@ impl FindConfig for Vec<ConfigParam> {
     }
 }
 
+macro_rules! get_config_value {
+    ($t:ident, $tval:ty, $pval:ty) => {
+        paste::item! {
+            pub fn [<get_ $t _value>](&self, script_name: &str, name: &str) -> Option<&$tval> {
+                if let Some(config) = &self.config {
+                    if let Some(cfg) = config.get(script_name) {
+                        match cfg.find_config_param(name) {
+                            Some(param) => match param {
+                                $pval { value, .. } => Some(value),
+                                _ => None,
+                            },
+                            None => None,
+                        }
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            }
+        }
+    };
+}
+
+macro_rules! set_config_value {
+    ($t:ident, $tval:ty, $pval:ty) => {
+        paste::item! {
+            pub fn [<set_ $t _value>](&mut self, script_name: &str, name: &str, val: &$tval) -> Result<()> {
+                if let Some(ref mut config) = self.config {
+                    if let Some(ref mut cfg) = config.get_mut(script_name) {
+                        match cfg.find_config_param_mut(name) {
+                            Some(ref mut param) => match param {
+                                $pval { ref mut value, .. } => {
+                                    *value = val.to_owned();
+                                    Ok(())
+                                }
+
+                                _ => Err(ProfileError::SetValueError {
+                                    msg: "Invalid data type".into(),
+                                }),
+                            },
+
+                            _ => {
+                                cfg.push($pval {
+                                    name: name.to_string(),
+                                    value: val.to_owned(),
+                                });
+                                Ok(())
+                            }
+                        }
+                    } else {
+                        config.insert(
+                            script_name.into(),
+                            vec![$pval {
+                                name: name.to_string(),
+                                value: val.to_owned(),
+                            }],
+                        );
+
+                        Ok(())
+                    }
+                } else {
+                    Err(ProfileError::SetValueError {
+                        msg: "Could not get config".into(),
+                    })
+                }
+            }
+        }
+    };
+}
+
 impl Profile {
     pub fn new(profile_file: &Path) -> Result<Self> {
         // parse manifest
@@ -293,308 +364,20 @@ impl Profile {
         Ok(())
     }
 
-    pub fn get_int_value(&self, script_name: &str, name: &str) -> Option<&i64> {
-        if let Some(config) = &self.config {
-            if let Some(cfg) = config.get(script_name) {
-                match cfg.find_config_param(name) {
-                    Some(param) => match param {
-                        ConfigParam::Int { value, .. } => Some(value),
+    get_config_value!(int, i64, ConfigParam::Int);
+    set_config_value!(int, i64, ConfigParam::Int);
 
-                        _ => None,
-                    },
+    get_config_value!(float, f64, ConfigParam::Float);
+    set_config_value!(float, f64, ConfigParam::Float);
 
-                    None => None,
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
+    get_config_value!(bool, bool, ConfigParam::Bool);
+    set_config_value!(bool, bool, ConfigParam::Bool);
 
-    pub fn set_int_value(&mut self, script_name: &str, name: &str, val: i64) -> Result<()> {
-        if let Some(ref mut config) = self.config {
-            if let Some(ref mut cfg) = config.get_mut(script_name) {
-                match cfg.find_config_param_mut(name) {
-                    Some(ref mut param) => match param {
-                        ConfigParam::Int { ref mut value, .. } => {
-                            *value = val;
-                            Ok(())
-                        }
+    get_config_value!(str, str, ConfigParam::String);
+    set_config_value!(str, str, ConfigParam::String);
 
-                        _ => Err(ProfileError::SetValueError {
-                            msg: "Invalid data type".into(),
-                        }),
-                    },
-
-                    _ => {
-                        cfg.push(ConfigParam::Int {
-                            name: name.to_string(),
-                            value: val,
-                        });
-                        Ok(())
-                    }
-                }
-            } else {
-                config.insert(
-                    script_name.into(),
-                    vec![ConfigParam::Int {
-                        name: name.to_string(),
-                        value: val,
-                    }],
-                );
-
-                Ok(())
-            }
-        } else {
-            Err(ProfileError::SetValueError {
-                msg: "Could not get config".into(),
-            })
-        }
-    }
-
-    pub fn get_float_value(&self, script_name: &str, name: &str) -> Option<&f64> {
-        if let Some(config) = &self.config {
-            if let Some(cfg) = config.get(script_name) {
-                match cfg.find_config_param(name) {
-                    Some(param) => match param {
-                        ConfigParam::Float { value, .. } => Some(value),
-                        _ => None,
-                    },
-                    None => None,
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    pub fn set_float_value(&mut self, script_name: &str, name: &str, val: f64) -> Result<()> {
-        if let Some(ref mut config) = self.config {
-            if let Some(ref mut cfg) = config.get_mut(script_name) {
-                match cfg.find_config_param_mut(name) {
-                    Some(ref mut param) => match param {
-                        ConfigParam::Float { ref mut value, .. } => {
-                            *value = val;
-                            Ok(())
-                        }
-
-                        _ => Err(ProfileError::SetValueError {
-                            msg: "Invalid data type".into(),
-                        }),
-                    },
-
-                    _ => {
-                        cfg.push(ConfigParam::Float {
-                            name: name.to_string(),
-                            value: val,
-                        });
-                        Ok(())
-                    }
-                }
-            } else {
-                config.insert(
-                    script_name.into(),
-                    vec![ConfigParam::Float {
-                        name: name.to_string(),
-                        value: val,
-                    }],
-                );
-
-                Ok(())
-            }
-        } else {
-            Err(ProfileError::SetValueError {
-                msg: "Could not get config".into(),
-            })
-        }
-    }
-
-    pub fn get_bool_value(&self, script_name: &str, name: &str) -> Option<&bool> {
-        if let Some(config) = &self.config {
-            if let Some(cfg) = config.get(script_name) {
-                match cfg.find_config_param(name) {
-                    Some(param) => match param {
-                        ConfigParam::Bool { value, .. } => Some(value),
-
-                        _ => None,
-                    },
-
-                    None => None,
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    pub fn set_bool_value(&mut self, script_name: &str, name: &str, val: bool) -> Result<()> {
-        if let Some(ref mut config) = self.config {
-            if let Some(ref mut cfg) = config.get_mut(script_name) {
-                match cfg.find_config_param_mut(name) {
-                    Some(ref mut param) => match param {
-                        ConfigParam::Bool { ref mut value, .. } => {
-                            *value = val;
-                            Ok(())
-                        }
-
-                        _ => Err(ProfileError::SetValueError {
-                            msg: "Invalid data type".into(),
-                        }),
-                    },
-
-                    _ => {
-                        cfg.push(ConfigParam::Bool {
-                            name: name.to_string(),
-                            value: val,
-                        });
-                        Ok(())
-                    }
-                }
-            } else {
-                config.insert(
-                    script_name.into(),
-                    vec![ConfigParam::Bool {
-                        name: name.to_string(),
-                        value: val,
-                    }],
-                );
-
-                Ok(())
-            }
-        } else {
-            Err(ProfileError::SetValueError {
-                msg: "Could not get config".into(),
-            })
-        }
-    }
-
-    pub fn get_str_value(&self, script_name: &str, name: &str) -> Option<&str> {
-        if let Some(config) = &self.config {
-            if let Some(cfg) = config.get(script_name) {
-                match cfg.find_config_param(name) {
-                    Some(param) => match param {
-                        ConfigParam::String { value, .. } => Some(value),
-
-                        _ => None,
-                    },
-
-                    None => None,
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    pub fn set_str_value(&mut self, script_name: &str, name: &str, val: String) -> Result<()> {
-        if let Some(ref mut config) = self.config {
-            if let Some(ref mut cfg) = config.get_mut(script_name) {
-                match cfg.find_config_param_mut(name) {
-                    Some(ref mut param) => match param {
-                        ConfigParam::String { ref mut value, .. } => {
-                            *value = val;
-                            Ok(())
-                        }
-
-                        _ => Err(ProfileError::SetValueError {
-                            msg: "Invalid data type".into(),
-                        }),
-                    },
-
-                    _ => {
-                        cfg.push(ConfigParam::String {
-                            name: name.to_string(),
-                            value: val,
-                        });
-                        Ok(())
-                    }
-                }
-            } else {
-                config.insert(
-                    script_name.into(),
-                    vec![ConfigParam::String {
-                        name: name.to_string(),
-                        value: val,
-                    }],
-                );
-
-                Ok(())
-            }
-        } else {
-            Err(ProfileError::SetValueError {
-                msg: "Could not get config".into(),
-            })
-        }
-    }
-
-    pub fn get_color_value(&self, script_name: &str, name: &str) -> Option<&u32> {
-        if let Some(config) = &self.config {
-            if let Some(cfg) = config.get(script_name) {
-                match cfg.find_config_param(name) {
-                    Some(param) => match param {
-                        ConfigParam::Color { value, .. } => Some(value),
-
-                        _ => None,
-                    },
-
-                    None => None,
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    pub fn set_color_value(&mut self, script_name: &str, name: &str, val: u32) -> Result<()> {
-        if let Some(ref mut config) = self.config {
-            if let Some(ref mut cfg) = config.get_mut(script_name) {
-                match cfg.find_config_param_mut(name) {
-                    Some(ref mut param) => match param {
-                        ConfigParam::Color { ref mut value, .. } => {
-                            *value = val;
-                            Ok(())
-                        }
-
-                        _ => Err(ProfileError::SetValueError {
-                            msg: "Invalid data type".into(),
-                        }),
-                    },
-
-                    _ => {
-                        cfg.push(ConfigParam::Color {
-                            name: name.to_string(),
-                            value: val,
-                        });
-                        Ok(())
-                    }
-                }
-            } else {
-                config.insert(
-                    script_name.into(),
-                    vec![ConfigParam::Color {
-                        name: name.to_string(),
-                        value: val,
-                    }],
-                );
-
-                Ok(())
-            }
-        } else {
-            Err(ProfileError::SetValueError {
-                msg: "Could not get config".into(),
-            })
-        }
-    }
+    get_config_value!(color, u32, ConfigParam::Color);
+    set_config_value!(color, u32, ConfigParam::Color);
 }
 
 impl Default for Profile {

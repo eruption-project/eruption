@@ -25,6 +25,7 @@ RIGHT_CTRL = 4
 LEFT_ALT = 5
 RIGHT_ALT = 6
 RIGHT_MENU = 7
+FN = 8
 
 -- import user configuration
 require "macros/modifiers"
@@ -64,9 +65,7 @@ highlight_ttl = 0
 highlight_max_ttl = 255
 
 modifier_map = {} -- holds the state of modifier keys
-game_mode_enabled = true  -- keyboard can be in "game mode" or in "normal mode";
-						  -- until support for game mode is in place, just pretend
-						  -- that we are in game mode, all the time
+game_mode_enabled = load_bool_transient("global.game_mode_enabled", false) -- keyboard can be in "game mode" or in "normal mode";
 
 -- event handler functions --
 function on_startup(config)
@@ -78,10 +77,133 @@ function on_startup(config)
 	modifier_map[LEFT_ALT] = get_key_state(17)
 	modifier_map[RIGHT_ALT] = get_key_state(71)
 	modifier_map[RIGHT_MENU] = get_key_state(84)
+	modifier_map[FN] = get_key_state(77)
+end
+
+function on_hid_event(event_type, arg1)
+	debug("Macros: HID event: " .. event_type .. " args: " .. arg1)
+
+	local key_code = arg1
+
+	local is_pressed = false
+	if event_type == 2 then
+		is_pressed = true
+	elseif event_type == 1 then
+		is_pressed = false
+	end
+
+	if key_code == 119 then
+		-- "FN" key event
+		modifier_map[FN] = is_pressed
+	elseif key_code == 255 then
+		-- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
+		modifier_map[CAPS_LOCK] = is_pressed
+	elseif key_code == 96 then
+		-- "SCROLL LOCK/GAME MODE" key event
+		local fn_pressed = modifier_map[FN]
+		if is_pressed and fn_pressed then
+			game_mode_enabled = not game_mode_enabled
+			store_bool_transient("global.game_mode_enabled", game_mode_enabled)
+
+			debug("Macros: Game mode toggled")
+		end
+	end
+
+	-- slot keys (F1 - F4)
+	if is_pressed then
+		if modifier_map[MODIFIER_KEY] and key_code == 16 then
+			do_switch_slot(0)
+		elseif modifier_map[MODIFIER_KEY] and key_code == 24 then
+			do_switch_slot(1)
+		elseif modifier_map[MODIFIER_KEY] and key_code == 33 then
+			do_switch_slot(2)
+		elseif modifier_map[MODIFIER_KEY] and key_code == 32 then
+			do_switch_slot(3)
+		end
+	end
+
+	-- function keys (F5 - F8)
+	if is_pressed then
+		if modifier_map[MODIFIER_KEY] and key_code == 40 then
+			inject_key(144, true) -- EV_KEY::FILE
+		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
+			inject_key(150, true) -- EV_KEY::WWW
+		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
+			inject_key(155, true) -- EV_KEY::MAIL
+		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
+			inject_key(140, true) -- EV_KEY::CALC
+		end
+	else
+		if modifier_map[MODIFIER_KEY] and key_code == 40 then
+			inject_key(144, false) -- EV_KEY::FILE
+		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
+			inject_key(150, false) -- EV_KEY::WWW
+		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
+			inject_key(155, false) -- EV_KEY::MAIL
+		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
+			inject_key(140, false) -- EV_KEY::CALC
+		end
+	end
+
+	-- media keys (F9 - F12)
+	if is_pressed then
+		if modifier_map[MODIFIER_KEY] and key_code == 64 then
+			inject_key(165, true) -- EV_KEY::PREVSONG
+		elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
+			inject_key(166, true) -- EV_KEY::STOPCD
+		elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
+			inject_key(164, true) -- EV_KEY::PLAYPAUSE
+		elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
+			inject_key(163, true) -- EV_KEY::NEXTSONG
+		end
+	else
+		if modifier_map[MODIFIER_KEY] and key_code == 64 then
+			inject_key(165, false) -- EV_KEY::PREVSONG
+		elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
+			inject_key(166, false) -- EV_KEY::STOPCD
+		elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
+			inject_key(164, false) -- EV_KEY::PLAYPAUSE
+		elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
+			inject_key(163, false) -- EV_KEY::NEXTSONG
+		end
+	end
+
+	-- process other HID events
+	if event_type == 3 then
+		-- Mute button event
+		if key_code == 1 then
+			inject_key(113, true) -- KEY_MUTE (audio) (down)
+			set_status_led(1, true)
+		else
+			inject_key(113, false) -- KEY_MUTE (audio) (up)
+		end
+	elseif event_type == 4 then
+		-- Volume/brightness dial knob rotation
+		local event_handled = false
+		if on_dial_knob_rotate_left ~= nil and on_dial_knob_rotate_right ~= nil then
+			if key_code == 0 then
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_dial_knob_rotate_right(key_code)
+			else
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_dial_knob_rotate_left(key_code)
+			end
+		end
+
+		if not event_handled then
+			if key_code == 1 then
+				inject_key(114, true) -- VOLUME_DOWN (down)
+				inject_key(114, false) -- VOLUME_DOWN (up)
+			else
+				inject_key(115, true) -- VOLUME_UP (down)
+				inject_key(115, false) -- VOLUME_UP (up)
+			end
+		end
+	end
 end
 
 function on_key_down(key_index)
-	debug("Key down: Index: " .. key_index)
+	debug("Macros: Key down: Index: " .. key_index)
 
 	-- update the modifier_map
 	if key_index == 4 then
@@ -108,8 +230,10 @@ function on_key_down(key_index)
 	elseif key_index == 84 then
 		modifier_map[RIGHT_MENU] = true
 
-		-- consume the menu key
-		inject_key(0, false)
+		if MODIFIER_KEY == RIGHT_MENU then
+			-- consume the menu key
+			inject_key(0, false)
+		end
 	end
 
 	-- slot keys (F1 - F4)
@@ -153,32 +277,23 @@ function on_key_down(key_index)
 		do_switch_easy_shift_layer(5)
 	end
 
-	-- media keys (F9 - F12)
-	-- if modifier_map[MODIFIER_KEY] and key_index == 79 then
-	-- 	inject_key(165, true) -- EV_KEY::PREVSONG
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 85 then
-	-- 	inject_key(166, true) -- EV_KEY::STOPCD
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 86 then
-	-- 	inject_key(164, true) -- EV_KEY::PLAYPAUSE
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 87 then
-	-- 	inject_key(163, true) -- EV_KEY::NEXTSONG
-	-- end
-
 	simple_remapping(key_index, true)
 
-	-- call complex macros on the Easy Shift+ layer (layer 4)
-	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
-		EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
-		-- consume the original key press
-		inject_key(0, false)
+	if game_mode_enabled then
+		-- call complex macros on the Easy Shift+ layer (layer 4)
+		if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+			EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
+			-- consume the original key press
+			inject_key(0, false)
 
-		-- call associated function
-		EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]()
+			-- call associated function
+			EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]()
+		end
 	end
 end
 
 function on_key_up(key_index)
-	debug("Key up: Index: " .. key_index)
+	debug("Macros: Key up: Index: " .. key_index)
 
 	-- update the modifier_map
 	if key_index == 4 then
@@ -205,29 +320,20 @@ function on_key_up(key_index)
 	elseif key_index == 84 then
 		modifier_map[RIGHT_MENU] = false
 
-		-- consume menu key
-		inject_key(0, false)
+		if MODIFIER_KEY == RIGHT_MENU then
+			-- consume the menu key
+			inject_key(0, false)
+		end
 	end
-
-	-- media keys (F9 - F12)
-	-- if modifier_map[MODIFIER_KEY] and key_index == 79 then
-	-- 	inject_key(165, false) -- EV_KEY::PREVSONG
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 85 then
-	-- 	inject_key(166, false) -- EV_KEY::STOPCD
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 86 then
-	-- 	inject_key(164, false) -- EV_KEY::PLAYPAUSE
-	-- elseif modifier_map[MODIFIER_KEY] and key_index == 87 then
-	-- 	inject_key(163, false) -- EV_KEY::NEXTSONG
-	-- end
 
 	simple_remapping(key_index, false)
 end
 
 function on_mouse_button_down(button_index)
-	debug("Mouse down: Button: " .. button_index)
+	debug("Macros: Mouse down: Button: " .. button_index)
 
 	-- call complex macros on the Easy Shift+ layer (layer 4)
-	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and
 		EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
 		-- consume the original mouse click
 		inject_mouse_button(0, false)
@@ -238,10 +344,10 @@ function on_mouse_button_down(button_index)
 end
 
 function on_mouse_button_up(button_index)
-	debug("Mouse up: Button: " .. button_index)
+	debug("Macros: Mouse up: Button: " .. button_index)
 
 	-- call complex macros on the Easy Shift+ layer (layer 4)
-	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and
 		EASY_SHIFT_MOUSE_UP_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
 		-- consume the original mouse click
 		inject_mouse_button(0, false)
@@ -252,10 +358,10 @@ function on_mouse_button_up(button_index)
 end
 
 function on_mouse_wheel(direction)
-	debug("Mouse wheel: Direction: " .. direction)
+	debug("Macros: Mouse wheel: Direction: " .. direction)
 
 	-- call complex macros on the Easy Shift+ layer (layer 4)
-	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and
 		EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][direction] ~= nil then
 		-- consume the original mouse wheel event
 		inject_mouse_wheel(0)
@@ -281,7 +387,7 @@ function simple_remapping(key_index, down)
 end
 
 function do_switch_slot(index)
-	debug("Switching to slot #" .. index + 1)
+	debug("Macros: Switching to slot #" .. index + 1)
 
 	-- consume the keystroke
 	inject_key(0, false)
@@ -291,7 +397,7 @@ function do_switch_slot(index)
 end
 
 function do_switch_easy_shift_layer(index)
-	debug("Switching to Easy Shift+ layer #" .. index + 1)
+	debug("Macros: Switching to Easy Shift+ layer #" .. index + 1)
 
 	-- consume the keystroke
 	inject_key(0, false)

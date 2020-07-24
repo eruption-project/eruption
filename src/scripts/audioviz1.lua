@@ -24,6 +24,7 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = color_background
     end
@@ -43,7 +44,7 @@ function on_tick(delta)
 			max_loudness = 8
 		end
 
-		--debug("Loudness  " .. loudness .. " / " .. max_loudness)
+		--debug("AudioViz1: Loudness  " .. loudness .. " / " .. max_loudness)
 
     local num_keys = get_num_keys()
 

@@ -1,6 +1,6 @@
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
-version = "0.0.4"
+version = "0.0.5"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
@@ -9,7 +9,7 @@ tags = ['Effect', 'Vendor']
 type = 'float'
 name = 'afterglow_step'
 description = 'Step afterglow animation every [n] frames'
-default = 2.0
+default = 1.0
 
 [[config]]
 type = 'color'
@@ -34,3 +34,9 @@ type = 'color'
 name = 'color_step_shockwave'
 description = 'Color value that gets subtracted from the shockwave every [n] frames'
 default = 0x0a0a0000
+
+[[config]]
+type = 'int'
+name = 'shockwave_divisor'
+description = 'Controls the spread of the shockwave. Range: [1..10], lower values mean less spread'
+default = 5

@@ -1,6 +1,6 @@
 id = '5dc62fa6-e965-45cb-a0da-e87d29713093'
-name = 'Default'
-description = 'The default profile'
+name = 'Organic FX'
+description = 'Organic effects'
 active_scripts = [
     'organic.lua',
     'shockwave.lua',
@@ -8,12 +8,19 @@ active_scripts = [
 #   'water.lua',
 #   'raindrops.lua',
     'macros.lua',
+    'stats.lua',
+#   'profiles.lua',
 ]
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_step_shockwave'
 value = 0x05010000
+
+[[config.Impact]]
+type = 'bool'
+name = 'mouse_events'
+value = true
 
 [[config.Impact]]
 type = 'color'

@@ -25,12 +25,15 @@ use udev::Enumerator;
 
 // use log::*;
 
-use crate::hwdevices;
+use crate::hwdevices::{self, HidEventCode};
 
 pub type Result<T> = std::result::Result<T, UtilError>;
 
 #[derive(Debug, Fail)]
 pub enum UtilError {
+    #[fail(display = "Operation fehlgeschlagen")]
+    OpFailed {},
+
     #[fail(display = "No compatible devices found")]
     NoDevicesFound {},
 
@@ -416,6 +419,15 @@ pub fn ev_key_to_key_index(key: EV_KEY) -> u8 {
     EV_TO_INDEX_ISO[((key as u8) as usize)] + 1
 }
 
+pub fn hid_code_to_key_index(code: HidEventCode) -> u8 {
+    match code {
+        HidEventCode::KEY_FN => 77,
+
+        // We don't need all the other key codes, for now
+        _ => 0,
+    }
+}
+
 pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
     match code {
         evdev_rs::enums::EV_KEY::KEY_RESERVED => Ok(0),
@@ -437,6 +449,9 @@ pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
 
         evdev_rs::enums::EV_KEY::BTN_EXTRA => Ok(14),
         evdev_rs::enums::EV_KEY::BTN_SIDE => Ok(15),
+        evdev_rs::enums::EV_KEY::BTN_FORWARD => Ok(16),
+        evdev_rs::enums::EV_KEY::BTN_BACK => Ok(17),
+        evdev_rs::enums::EV_KEY::BTN_TASK => Ok(18),
 
         _ => Err(UtilError::MappingError {}),
     }
@@ -463,7 +478,21 @@ pub fn button_index_to_ev_key(index: u32) -> Result<evdev_rs::enums::EV_KEY> {
 
         14 => Ok(evdev_rs::enums::EV_KEY::BTN_EXTRA),
         15 => Ok(evdev_rs::enums::EV_KEY::BTN_SIDE),
+        16 => Ok(evdev_rs::enums::EV_KEY::BTN_FORWARD),
+        17 => Ok(evdev_rs::enums::EV_KEY::BTN_BACK),
+        18 => Ok(evdev_rs::enums::EV_KEY::BTN_TASK),
 
         _ => Err(UtilError::MappingError {}),
     }
+}
+
+pub fn get_process_file_name(pid: i32) -> Result<String> {
+    let tmp = format!("/proc/{}/exe", pid);
+    let filename = Path::new(&tmp);
+    let result = nix::fcntl::readlink(filename);
+
+    Ok(result
+        .map_err(|_| UtilError::OpFailed {})?
+        .into_string()
+        .map_err(|_| UtilError::OpFailed {})?)
 }

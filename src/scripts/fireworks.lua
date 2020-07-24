@@ -54,9 +54,9 @@ function on_tick(delta)
 	if effect_ttl <= 0 then return end
 
     -- calculate fireworks effect
-    local num_keys = get_num_keys()
-
     if ticks % animation_speed == 0 then
+        local num_keys = get_num_keys()
+
         -- compute fireworks effect
       	for key_index = 1, num_keys - 1 do
 			local avg = (fireworks_grid[key_index - 1] + fireworks_grid[key_index + 1]) / 2

@@ -65,6 +65,7 @@ end
 
 function step_and_draw_init(ticks)
 	local num_keys = get_num_keys()
+
 	for i = 0, num_keys do
 		local val = max(64 - (frame_counter * 4), 0)
 		color_map[i] = rgba_to_color(val, val, val, val)
@@ -84,6 +85,7 @@ function step_and_draw_game_over(ticks)
 
 	if frame_counter <= 32 then
 		local num_keys = get_num_keys()
+
 		for i = 0, num_keys do
 			color_map[i] = rgba_to_color(0, 0, 0, 0)
 		end
@@ -154,7 +156,7 @@ function step_and_draw_game(ticks)
 		if x < 0 then change_direction(3) end
 		if y < 0 then change_direction(4) end
 
-		-- debug("current_direction: " .. current_direction ..
+		-- debug("Snake: current_direction: " .. current_direction ..
 		-- 	  " old x: " .. x .. " old y: " .. y ..
 		-- 	  " new x: " .. new_x .. " new y: " .. new_y)
 
@@ -172,7 +174,7 @@ function step_and_draw_game(ticks)
 		-- collision detection: snake vs. food
 		local idx = key_index(new_x, new_y)
 		if food_map[idx] ~= nil and food_map[idx] > 0 then
-			debug("Collected some food!")
+			debug("Snake: Collected some food!")
 
 			food_map[idx] = 0
 
@@ -252,40 +254,40 @@ end
 
 function change_direction(dir)
 	if dir == 1 then
-		debug("Changing direction: left")
+		debug("Snake: Changing direction: left")
 		current_direction = 1
 
 		delta_x = -1
 		delta_y = 0
 
 	elseif dir == 2 then
-		debug("Changing direction: up")
+		debug("Snake: Changing direction: up")
 		current_direction = 2
 
 		delta_x = 0
 		delta_y = -1
 
 	elseif dir == 3 then
-		debug("Changing direction: right")
+		debug("Snake: Changing direction: right")
 		current_direction = 3
 
 		delta_x = 1
 		delta_y = 0
 
 	elseif dir == 4 then
-		debug("Changing direction: down")
+		debug("Snake: Changing direction: down")
 		current_direction = 4
 
 		delta_x = 0
 		delta_y = 1
 
 	else
-		error("Invalid direction: " .. dir)
+		error("Snake: Invalid direction: " .. dir)
 	end
 end
 
 function game_over()
-	debug("Game over!")
+	debug("Snake: Game over!")
 
 	frame_counter = 64
 	stage_state = STATE_GAME_OVER

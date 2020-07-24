@@ -43,10 +43,10 @@ function on_tick(delta)
 
     ticks = ticks + delta
 
-    local num_keys = get_num_keys()
-
     -- animate gradient
     if ticks % gradient_step == 0 then
+        local num_keys = get_num_keys()
+
         for i = 0, num_keys do
             color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
         end

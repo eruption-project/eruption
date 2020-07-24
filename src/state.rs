@@ -116,9 +116,8 @@ pub fn init_global_runtime_state() -> Result<()> {
         .as_ref()
         .unwrap()
         .get("profiles")
-        .and_then(|p| {
+        .map(|p| {
             profiles.replace(p);
-            Ok(())
         })
         .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
 

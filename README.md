@@ -10,7 +10,6 @@
 - <a href="#config">Configuration and Usage</a>
 - <a href="#profiles">Profiles</a>
 - <a href="#scripts">Lua Scripts and Manifests</a>
-- <a href="#gui">Browser based GUI</a>
 - <a href="#audio">Support for Audio Playback and Capture </a>
 - <a href="#macro_support">Support for Macros </a>
 - <a href="#plugins">Available Plugins</a>
@@ -24,11 +23,11 @@
 
 A Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 
-### TL;DR what you absolutely need to know
+### TL;DR what you absolutely need to know (including important updates on version 0.1.11)
 
-- The default `MODIFIER` key is **`Right Menu`**. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
-- Use the `FN` key to access special/media functions (`F1`-`F12`)
-- Easy Shift is active all the time and can be accessed by holding down the `Caps Lock` key.
+- The default `MODIFIER` key is now **`FN`**. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
+- Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
+- Easy Shift+ is no longer active all the time; it has to be activated by pressing `FN`+`Scroll Lock/GameMode`.
 - You may want to set a different profile for each slot (`F1`-`F4`).
 - Maybe you want to use the GNOME Shell extension [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
 or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
@@ -75,27 +74,16 @@ Overview:
 * Allows for construction of complex "effect pipelines"
 * Event-based architecture
 * Daemon plugins may export functions to Lua
-* May be run as a Linux user process or as a system daemon
 * Profiles may be switched at runtime via a D-Bus method
-
-Supported features:
-
-* Volume control knob is working
-* Media keys (via `FN` modifier key) are working with the latest firmware update applied
-* Macro keys are working, programmable via Lua scripts. (But no `FN` modifier key, please see below)
-* Easy Shift is available, and active all the time (via `Caps Lock`)
-* GNOME profile switcher extension is available
+* A GNOME based profile switcher extension is available
 
 ## Experimental Features <a name="experimental"></a>
 
-* Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[experimental]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
+* Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
 
 
 ## Missing Features <a name="missing"></a>
 
-* Support for `FN` key is missing, a user-configurable `MODIFIER` key is used instead (default: `Right Menu` key)
-* Support for "Game Mode" is missing, "Easy Shift" ist active all the time
-* The GUI is not ready yet, a browser-based frontend is in development
 * Mute button will stay lit even if audio is muted
 * ...
 
@@ -161,20 +149,12 @@ script_dir = "/usr/share/eruption/scripts/"
 # select your keyboard variant
 # keyboard_variant = "ANSI"
 keyboard_variant = "ISO"
-
-[frontend]
-# enabled = true
-# theme = "eruption"
 ```
 
 #### Section [global]
 
 *keyboard_variant* = Switch between sub-variants of your device. (Only partially supported)
 
-#### Section [frontend]
-
-Please note that the "frontend" (a browser-based GUI) is not currently shipped
-with the pre-built packages, since it is considered not ready yet.
 
 ### Profiles <a name="profiles"></a>
 
@@ -254,14 +234,6 @@ All script files and their corresponding manifests reside in the directory
 `/usr/share/eruption/scripts`. You may use the provided scripts as a starting
 point to write your own effects.
 
-### Browser-based GUI <a name="gui"></a>
-
-If you built eruption from source, and did enable support for the browser-based
-GUI, you may reach it with the link below. This will open the eruption GUI in
-your browser: [http://localhost:8059/](http://localhost:8059/)
-
-> Please note that the browser-based GUI is currently considered *not ready*!
-
 
 ### Support for Audio Playback and Capture <a name="audio"></a>
 
@@ -331,7 +303,7 @@ aforementioned `MODIFIER` key. So if you want to play back `Macro #1` you just h
 Eruption 0.1.9 introduced the file `/usr/share/eruption/scripts/lib/macros/user-macros.lua`.
 You may use it to implement your own macros.
 
-Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is roughly implemented in the same way as the previously mentioned keyboard support, by adding a "virtual mouse" device to the system that injects events as needed. The "real hardware" mouse will be grabbed exclusively on startup of the daemon. This allows Eruption to filter out mouse events, so they won't be reported to the system twice.
+Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is roughly implemented in the same way as the previously mentioned keyboard support, by adding a "virtual mouse" device to the system that injects events as needed. The "real hardware" mouse will be grabbed exclusively on startup of the daemon. This allows Eruption to filter out or inject "virtual" mouse events.
 
 ## Available Plugins <a name="plugins"></a>
 
@@ -341,6 +313,7 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 * Introspection: Provides internal status information of the Eruption daemon
+* Persistence: Provides a persistence layer for the Lua scripts to store data
 * Profiles: Switch slots, switch profiles based on system state, ...
 * Macros: Inject programmable key stroke sequences
 
@@ -364,6 +337,7 @@ Eruption currently ships with the following Lua scripts:
 | Heartbeat                 | Effect     | `heartbeat.lua`   | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                              |
 | Impact                    | Effect     | `impact.lua`      | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out |
 | Raindrops                 | Effect     | `raindrops.lua`   | Ready  | Rain effect, randomly light up keys and fade them out again                                                  |
+| Ghost                     | Effect     | `ghost.lua`       | Ready  | Ghost typing effect, randomly highlight keys and fade them out again                                         |
 | Solid                     | Background | `solid.lua`       | Ready  | Display a solid color                                                                                        |
 | Rainbow                   | Background | `rainbow.lua`     | Ready  | Display a rainbow color gradient                                                                             |
 | Stripes                   | Background | `stripes.lua`     | Ready  | Display horizontal stripes of multiple colors                                                                |
@@ -376,6 +350,7 @@ The following scripts are unfinished/still in development, and some of them have
 | ------------------ | ---------- | --------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | Fire               | Background | `fire.lua`            | Approx. 65% done | Shows a bonfire effect on the keyboard                                                             |
 | Fireworks          | Background | `fireworks.lua`       | Approx. 85% done | Shows a fireworks effect on the keyboard                                                           |
+| Heat Map           | Effect     | `heatmap.lua`         | Approx. 50% done | Shows a heat map of recorded statistics on the keyboard                                            |
 | Water              | Effect     | `water.lua`           | Approx. 95% done | Shows a water effect on the keyboard                                                               |
 | Gaming             | Effect     | `gaming.lua`          | Approx. 85% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                    |
 | Snake              | Effect     | `snake.lua`           | Approx. 25% done | Displays a snake that lives on your keyboard                                                       |

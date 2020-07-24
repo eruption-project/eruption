@@ -5,6 +5,8 @@ active_scripts = [
 	'batique.lua',
 	'shockwave.lua',
  	'macros.lua',
+	'stats.lua',
+# 	'profiles.lua',
 ]
 
 [[config.Batique]]

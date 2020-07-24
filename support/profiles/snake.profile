@@ -7,6 +7,8 @@ active_scripts = [
 	'snake.lua',
 #   'raindrops.lua',
     'macros.lua',
+    'stats.lua',
+#   'profiles.lua',
 ]
 
 [[config."Solid Color"]]

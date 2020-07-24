@@ -1,0 +1,18 @@
+name = "Heatmap"
+description = "Display a heat map of previously recorded statistics"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.11"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'color'
+name = 'color_cold'
+description = 'Gradient start'
+default = 0xff00ff00
+
+[[config]]
+type = 'color'
+name = 'color_hot'
+description = 'Gradient stop'
+default = 0xffff0000

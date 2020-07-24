@@ -6,6 +6,12 @@ min_supported_version = "0.1.10"
 tags = ['Effect', 'Vendor']
 
 [[config]]
+type = 'bool'
+name = 'mouse_events'
+description = 'React on mouse events'
+default = true
+
+[[config]]
 type = 'float'
 name = 'impact_step'
 description = 'Step impact animation every [n] frames'
@@ -15,19 +21,13 @@ default = 1.0
 type = 'color'
 name = 'color_impact'
 description = 'Color of impact effect'
-default = 0xffff0000
+default = 0x20ffffaa
 
 [[config]]
 type = 'int'
 name = 'alpha_step_impact'
-description = 'Value that gets subtracted from the impact effects alpha channel every n frames'
-default = 5
-
-[[config]]
-type = 'bool'
-name = 'mouse_events'
-description = 'React on mouse events'
-default = true
+description = 'Value that gets subtracted from the impact effects alpha channel every [n] frames'
+default = 4
 
 [[config]]
 type = 'color'

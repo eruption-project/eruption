@@ -25,6 +25,7 @@ percentage = 0
 -- event handler functions --
 function on_startup(config)
     local num_keys = get_num_keys()
+
     for i = 0, num_keys do
         color_map[i] = rgba_to_color(0, 0, 0, 0)
     end
@@ -36,7 +37,7 @@ function on_tick(delta)
     -- update system load indicator approximately every 5 seconds
     if ticks % 100 == 0 then
         heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier, 3.25), 0.25)
-        trace("Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
+        trace("HeartBeat: Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
     end
 
     local num_keys = get_num_keys()
