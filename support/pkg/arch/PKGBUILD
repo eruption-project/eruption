@@ -4,7 +4,7 @@ pkgname='eruption-roccat-vulcan-git'
 _pkgname='eruption-roccat-vulcan'
 pkgdesc='Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards'
 pkgver='0.1.11'
-pkgrel='1'
+pkgrel='2'
 epoch=
 arch=('i686' 'x86_64')
 url='https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/'
@@ -111,6 +111,8 @@ package() {
     install -m 644 "src/scripts/ghost.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/gradient.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/gradient.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/heatmap.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/heatmap.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/linear-gradient.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/linear-gradient.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/heartbeat.lua" "$pkgdir/usr/share/eruption/scripts/"

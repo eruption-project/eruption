@@ -70,6 +70,8 @@ src/scripts/linear-gradient.lua usr/share/eruption/scripts/
 src/scripts/linear-gradient.lua.manifest usr/share/eruption/scripts/
 src/scripts/heartbeat.lua usr/share/eruption/scripts/
 src/scripts/heartbeat.lua.manifest usr/share/eruption/scripts/
+src/scripts/heatmap.lua usr/share/eruption/scripts/
+src/scripts/heatmap.lua.manifest usr/share/eruption/scripts/
 src/scripts/impact.lua usr/share/eruption/scripts/
 src/scripts/impact.lua.manifest usr/share/eruption/scripts/
 src/scripts/multigradient.lua usr/share/eruption/scripts/
