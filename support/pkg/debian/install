@@ -18,6 +18,7 @@ support/profiles/fx2.profile var/lib/eruption/profiles
 support/profiles/fireworks.profile var/lib/eruption/profiles
 support/profiles/gaming.profile var/lib/eruption/profiles
 support/profiles/gradient-noise.profile var/lib/eruption/profiles
+support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
 support/profiles/profile1.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles

@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.1.11
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -74,6 +74,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fireworks.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gradient-noise.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -123,6 +124,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
+%{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
