@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf src/scripts/lib/themes/* src/scripts/lib/macr
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=65a1c3606e507494ab64c8f00c4774547a61e858')
+source=('git+https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=19d26951a5539db700ecf08916ed6383a7bdc58f')
 noextract=()
 sha512sums=('SKIP')
 
