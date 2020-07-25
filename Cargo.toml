@@ -55,6 +55,11 @@ dbus = "0.8.4"
 paste = "0.1"
 procmon-sys = { version = "0.0.2", path = 'src/procmon-sys' }
 
+# ubuntu bionic
+# sysinfo = "=0.14.2"
+# libpulse-binding = { git = "https://github.com/jnqnfe/pulse-binding-rust.git", branch = "travis-bionic-1" }
+# libpulse-simple-binding = { git = "https://github.com/jnqnfe/pulse-binding-rust.git", branch = "travis-bionic-1" }
+
 [dev-dependencies]
 tokio = { version = "0.2", features = ["test-util"] }
 

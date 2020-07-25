@@ -735,7 +735,7 @@ impl Device for RoccatVulcan1xx {
 
                     let event = match buf[0..5] {
                         // Key reports, incl. KEY_FN, ..
-                        [0x03, 0x00, 0xfb, code, status, ..] => match status {
+                        [0x03, 0x00, 0xfb, code, status] => match status {
                             0x00 => HidEvent::KeyUp {
                                 code: HidEventCode::from_report(0xfb, code),
                             },
@@ -748,7 +748,7 @@ impl Device for RoccatVulcan1xx {
                         },
 
                         // CAPS LOCK, Easy Shift+, ..
-                        [0x03, 0x00, 0x0a, code, status, ..] => match code {
+                        [0x03, 0x00, 0x0a, code, status] => match code {
                             0x39 | 0xff => match status {
                                 0x00 => HidEvent::KeyDown {
                                     code: HidEventCode::from_report(0x0a, code),
@@ -764,15 +764,15 @@ impl Device for RoccatVulcan1xx {
                             _ => HidEvent::Unknown,
                         },
 
-                        [0x03, 0x00, 0xcc, code, ..] => match code {
+                        [0x03, 0x00, 0xcc, code, _] => match code {
                             0x01 => HidEvent::VolumeUp,
                             0xff => HidEvent::VolumeDown,
 
                             _ => HidEvent::Unknown,
                         },
 
-                        [0x02, 0xe2, 0x00, 0x00, ..] => HidEvent::MuteDown,
-                        [0x02, 0x00, 0x00, 0x00, ..] => HidEvent::MuteUp,
+                        [0x02, 0xe2, 0x00, 0x00, _] => HidEvent::MuteDown,
+                        [0x02, 0x00, 0x00, 0x00, _] => HidEvent::MuteUp,
 
                         _ => HidEvent::Unknown,
                     };
