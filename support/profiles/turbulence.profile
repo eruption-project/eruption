@@ -4,8 +4,8 @@ description = 'The turbulence profile (SIMD/AVX2 required)'
 active_scripts = [
 	'turbulence.lua',
 	'shockwave.lua',
-	'impact.lua',
+#	'impact.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]

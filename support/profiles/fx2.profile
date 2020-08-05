@@ -3,12 +3,12 @@ name = 'FX2'
 description = 'Effects Profile #2'
 active_scripts = [
     'solid.lua',
-    'impact.lua',
+#   'impact.lua',
     'shockwave.lua',
-    'water.lua',
+#   'water.lua',
 #   'raindrops.lua',
     'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 #   'profiles.lua',
 ]
 

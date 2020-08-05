@@ -4,6 +4,11 @@ description = "Display a heat map of previously recorded statistics"
 active_scripts = [
 	'heatmap.lua',
  	'macros.lua',
-	'stats.lua',
+ 	'stats.lua',
 # 	'profiles.lua',
 ]
+
+[[config.Heatmap]]
+type = 'string'
+name = 'histogram_name'
+value = 'key_histogram'

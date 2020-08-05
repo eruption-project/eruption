@@ -1,0 +1,48 @@
+name = "Wave"
+description = "A wave effect"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.12"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'bool'
+name = 'horizontal'
+description = 'Horizontal or vertical'
+default = true
+
+[[config]]
+type = 'int'
+name = 'direction'
+description = '-1 == left/down, +1 == right/up'
+default = -1
+
+[[config]]
+type = 'float'
+name = 'scale_factor'
+description = 'Scale factor of the alpha value'
+default = 127.0
+
+[[config]]
+type = 'float'
+name = 'speed_divisor'
+description = 'Speed of the wave'
+default = 25.0
+
+[[config]]
+type = 'float'
+name = 'wave_length'
+description = 'Wave length divisor'
+default = 4.0
+
+[[config]]
+type = 'color'
+name = 'color_wave'
+description = 'Color of the wave'
+default = 0x00000000
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0

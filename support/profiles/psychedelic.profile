@@ -4,8 +4,8 @@ description = 'The psychedelic smooth profile'
 active_scripts = [
 	'psychedelic.lua',
 	'shockwave.lua',
-	'impact.lua',
+#	'impact.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]

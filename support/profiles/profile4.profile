@@ -3,9 +3,9 @@ name = "Linear Gradient"
 description = "Default Profile #4"
 active_scripts = [
 	'linear-gradient.lua',
-	'impact.lua',
+#	'impact.lua',
 	'afterhue.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]

@@ -7,7 +7,7 @@ active_scripts = [
 	'snake.lua',
 #   'raindrops.lua',
     'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 #   'profiles.lua',
 ]
 

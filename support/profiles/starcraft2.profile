@@ -3,12 +3,12 @@ name = 'Gaming: StarCraft 2'
 description = 'The Star Craft 2 gaming profile'
 active_scripts = [
     'solid.lua',
-    'impact.lua',
+#   'impact.lua',
     'shockwave.lua',
-    'water.lua',
+#   'water.lua',
 #   'raindrops.lua',
     'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 #   'profiles.lua',
 ]
 

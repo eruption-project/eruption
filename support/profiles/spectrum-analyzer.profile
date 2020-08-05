@@ -5,7 +5,7 @@ active_scripts = [
 	'solid.lua',
 	'audioviz3.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]
 

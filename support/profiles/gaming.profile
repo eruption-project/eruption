@@ -3,11 +3,11 @@ name = 'Gaming: Generic'
 description = 'The generic gaming profile'
 active_scripts = [
     'solid.lua',
-    'impact.lua',
-    'water.lua',
+#   'impact.lua',
+#   'water.lua',
     'gaming.lua',
     'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 #   'profiles.lua',
 ]
 

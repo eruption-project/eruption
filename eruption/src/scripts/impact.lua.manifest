@@ -1,0 +1,24 @@
+name = "Impact"
+description = "Highlight neighboring keys when a key has been pressed"
+version = "0.0.6"
+author = "The Eruption development team"
+min_supported_version = "0.1.10"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'float'
+name = 'impact_step'
+description = 'Step impact animation every [n] frames'
+default = 1.0
+
+[[config]]
+type = 'color'
+name = 'color_impact'
+description = 'Color of impact effect'
+default = 0xffffffaa
+
+[[config]]
+type = 'int'
+name = 'alpha_step_impact'
+description = 'Value that gets subtracted from the impact effects alpha channel every [n] frames'
+default = 16

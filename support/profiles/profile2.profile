@@ -6,6 +6,6 @@ active_scripts = [
 	'shockwave.lua',
 	'afterhue.lua',
  	'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 # 	'profiles.lua',
 ]

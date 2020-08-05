@@ -4,8 +4,8 @@ description = 'Shows a rainbow'
 active_scripts = [
 	'rainbow.lua',
 	'shockwave.lua',
-	'impact.lua',
+#	'impact.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]

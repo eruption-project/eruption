@@ -4,8 +4,8 @@ description = 'The gradient noise profile (SIMD/AVX2 required)'
 active_scripts = [
 	'gradient.lua',
 	'shockwave.lua',
-	'impact.lua',
+#	'impact.lua',
  	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 # 	'profiles.lua',
 ]

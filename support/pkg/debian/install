@@ -1,4 +1,5 @@
 target/release/eruption usr/bin/
+target/release/eruptionctl usr/bin/
 
 support/config/eruption.conf etc/eruption/
 
@@ -11,6 +12,7 @@ support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
+support/man/eruptionctl.1 usr/share/man/man1/
 
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
@@ -19,7 +21,10 @@ support/profiles/fireworks.profile var/lib/eruption/profiles
 support/profiles/gaming.profile var/lib/eruption/profiles
 support/profiles/gradient-noise.profile var/lib/eruption/profiles
 support/profiles/heatmap.profile var/lib/eruption/profiles
+support/profiles/heatmap-errors.profile var/lib/eruption/profiles
+support/profiles/matrix.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
+support/profiles/checkerboard.profile var/lib/eruption/profiles
 support/profiles/profile1.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
 support/profiles/profile3.profile var/lib/eruption/profiles
@@ -29,10 +34,17 @@ support/profiles/twinkle.profile var/lib/eruption/profiles
 support/profiles/rainbow.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
+support/profiles/rainbow-wave.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
+support/profiles/solid-wave.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
 support/profiles/vu-meter.profile var/lib/eruption/profiles
 support/profiles/turbulence.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-blue-red.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-red-yellow.profile var/lib/eruption/profiles
+support/profiles/swirl-turbulence.profile var/lib/eruption/profiles
+support/profiles/swirl-voronoi.profile var/lib/eruption/profiles
 
 src/scripts/afterglow.lua usr/share/eruption/scripts/
 src/scripts/afterglow.lua.manifest usr/share/eruption/scripts/
@@ -54,6 +66,8 @@ src/scripts/batique.lua usr/share/eruption/scripts/
 src/scripts/batique.lua.manifest usr/share/eruption/scripts/
 src/scripts/billow.lua usr/share/eruption/scripts/
 src/scripts/billow.lua.manifest usr/share/eruption/scripts/
+src/scripts/checkerboard.lua usr/share/eruption/scripts/
+src/scripts/checkerboard.lua.manifest usr/share/eruption/scripts/
 src/scripts/fbm.lua usr/share/eruption/scripts/
 src/scripts/fbm.lua.manifest usr/share/eruption/scripts/
 src/scripts/fire.lua usr/share/eruption/scripts/
@@ -80,6 +94,8 @@ src/scripts/osn.lua usr/share/eruption/scripts/
 src/scripts/osn.lua.manifest usr/share/eruption/scripts/
 src/scripts/perlin.lua usr/share/eruption/scripts/
 src/scripts/perlin.lua.manifest usr/share/eruption/scripts/
+src/scripts/phonon.lua usr/share/eruption/scripts/
+src/scripts/phonon.lua.manifest usr/share/eruption/scripts/
 src/scripts/psychedelic.lua usr/share/eruption/scripts/
 src/scripts/psychedelic.lua.manifest usr/share/eruption/scripts/
 src/scripts/rainbow.lua usr/share/eruption/scripts/
@@ -92,6 +108,12 @@ src/scripts/stripes.lua usr/share/eruption/scripts/
 src/scripts/stripes.lua.manifest usr/share/eruption/scripts/
 src/scripts/shockwave.lua usr/share/eruption/scripts/
 src/scripts/shockwave.lua.manifest usr/share/eruption/scripts/
+src/scripts/swirl-perlin.lua usr/share/eruption/scripts/
+src/scripts/swirl-perlin.lua.manifest usr/share/eruption/scripts/
+src/scripts/swirl-turbulence.lua usr/share/eruption/scripts/
+src/scripts/swirl-turbulence.lua.manifest usr/share/eruption/scripts/
+src/scripts/swirl-voronoi.lua usr/share/eruption/scripts/
+src/scripts/swirl-voronoi.lua.manifest usr/share/eruption/scripts/
 src/scripts/sysmon.lua usr/share/eruption/scripts/
 src/scripts/sysmon.lua.manifest usr/share/eruption/scripts/
 src/scripts/temperature.lua usr/share/eruption/scripts/
@@ -102,6 +124,8 @@ src/scripts/voronoi.lua usr/share/eruption/scripts/
 src/scripts/voronoi.lua.manifest usr/share/eruption/scripts/
 src/scripts/water.lua usr/share/eruption/scripts/
 src/scripts/water.lua.manifest usr/share/eruption/scripts/
+src/scripts/wave.lua usr/share/eruption/scripts/
+src/scripts/wave.lua.manifest usr/share/eruption/scripts/
 src/scripts/snake.lua usr/share/eruption/scripts/
 src/scripts/snake.lua.manifest usr/share/eruption/scripts/
 src/scripts/macros.lua usr/share/eruption/scripts/

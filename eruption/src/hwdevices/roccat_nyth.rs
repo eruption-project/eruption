@@ -1,0 +1,490 @@
+/*
+    This file is part of Eruption.
+
+    Eruption is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Eruption is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+use log::*;
+use parking_lot::Mutex;
+// use std::sync::atomic::Ordering;
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+
+use crate::constants;
+
+use super::{
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDeviceTrait,
+    MouseHidEvent, RGBA,
+};
+
+pub type Result<T> = super::Result<T>;
+
+// pub const NUM_KEYS: usize = 9;
+pub const KEYBOARD_SUB_DEVICE: usize = 2;
+
+/// ROCCAT Nyth info struct (sent as HID report)
+#[derive(Debug, Copy, Clone)]
+#[repr(C, packed)]
+pub struct DeviceInfo {
+    pub report_id: u8,
+    pub size: u8,
+    pub reserved1: u16,
+    pub firmware_version: i32,
+    pub reserved2: u16,
+}
+
+/// Event code of a device HID message
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum MouseHidEventCode {
+    #[allow(dead_code)]
+    Unknown(u8),
+
+    KEY_BTN1,
+}
+
+impl MouseHidEventCode {
+    // Instantiate a HidEventCode from raw HID report data
+    // pub fn from_report(report: u8, code: u8) -> Self {
+    //     match report {
+    //         0xfb => match code {
+    //             16 => Self::KEY_BTN1,
+
+    //             _ => Self::Unknown(code),
+    //         },
+
+    //         // 0x0a => match code {
+    //         //     57 => Self::KEY_CAPS_LOCK,
+    //         //     255 => Self::KEY_EASY_SHIFT,
+
+    //         //     _ => Self::Unknown(code),
+    //         // },
+    //         _ => Self::Unknown(code),
+    //     }
+    // }
+}
+
+/// Convert a HidEventCode to an integer code value
+impl Into<u8> for MouseHidEventCode {
+    fn into(self) -> u8 {
+        match self {
+            Self::KEY_BTN1 => 16,
+
+            MouseHidEventCode::Unknown(code) => code,
+        }
+    }
+}
+
+#[derive(Clone)]
+/// Device specific code for the ROCCAT Nyth mouse
+pub struct RoccatNyth {
+    pub is_initialized: bool,
+
+    pub is_bound: bool,
+    pub ctrl_hiddev_info: Option<hidapi::DeviceInfo>,
+
+    pub is_opened: bool,
+    pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+}
+
+impl RoccatNyth {
+    /// Binds the driver to the supplied HID device
+    pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
+        Self {
+            is_initialized: false,
+
+            is_bound: true,
+            ctrl_hiddev_info: Some(ctrl_dev.clone()),
+
+            is_opened: false,
+            ctrl_hiddev: Arc::new(Mutex::new(None)),
+        }
+    }
+
+    pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
+        trace!("Querying control device feature report");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else {
+            match id {
+                0x0f => {
+                    let mut buf: [u8; 256] = [0; 256];
+                    buf[0] = id;
+
+                    let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                    let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+                    match ctrl_dev.get_feature_report(&mut buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                            Ok(())
+                        }
+
+                        Err(_) => Err(HwDeviceError::InvalidResult {}),
+                    }
+                }
+
+                _ => Err(HwDeviceError::InvalidStatusCode {}),
+            }
+        }
+    }
+
+    // fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
+    //     trace!("Sending control device feature report");
+
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {})
+    //     } else if !self.is_opened {
+    //         Err(HwDeviceError::DeviceNotOpened {})
+    //     } else {
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+    //         match id {
+    //             0x15 => {
+    //                 let buf: [u8; 3] = [0x15, 0x00, 0x01];
+
+    //                 match ctrl_dev.send_feature_report(&buf) {
+    //                     Ok(_result) => {
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+    //                         Ok(())
+    //                     }
+
+    //                     Err(_) => Err(HwDeviceError::InvalidResult {}),
+    //                 }
+    //             }
+
+    //             _ => Err(HwDeviceError::InvalidStatusCode {}),
+    //         }
+    //     }
+    // }
+
+    fn wait_for_ctrl_dev(&mut self) -> Result<()> {
+        trace!("Waiting for control device to respond...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else {
+            loop {
+                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+
+                let mut buf: [u8; 4] = [0; 4];
+                buf[0] = 0x04;
+
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+                match ctrl_dev.get_feature_report(&mut buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                        if buf[1] == 0x01 {
+                            return Ok(());
+                        }
+                    }
+
+                    Err(_) => return Err(HwDeviceError::InvalidResult {}),
+                }
+            }
+        }
+    }
+}
+
+impl DeviceInfoTrait for RoccatNyth {
+    type NativeDeviceInfo = self::DeviceInfo;
+
+    fn get_device_capabilities(&self) -> DeviceCapabilities {
+        DeviceCapabilities {}
+    }
+
+    fn get_device_info(&self) -> Result<self::DeviceInfo> {
+        trace!("Querying the device for information...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            let mut buf = [0; 64];
+            buf[0] = 0x0f; // Query device info (HID report 0x0f)
+
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+                    let result: DeviceInfo =
+                        unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
+
+                    Ok(result)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }
+        }
+    }
+}
+
+impl DeviceTrait for RoccatNyth {
+    fn get_usb_path(&self) -> String {
+        self.ctrl_hiddev_info
+            .clone()
+            .unwrap()
+            .path()
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
+    fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
+        trace!("Opening HID devices now...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else {
+            trace!("Opening control device...");
+
+            match self.ctrl_hiddev_info.as_ref().unwrap().open_device(&api) {
+                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+                Err(_) => return Err(HwDeviceError::DeviceOpenError {}),
+            };
+
+            self.is_opened = true;
+
+            Ok(())
+        }
+    }
+
+    fn close_all(&mut self) -> Result<()> {
+        trace!("Closing HID devices now...");
+
+        // close keyboard device
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else {
+            trace!("Closing control device...");
+            *self.ctrl_hiddev.lock() = None;
+
+            self.is_opened = false;
+
+            Ok(())
+        }
+    }
+
+    fn send_init_sequence(&mut self) -> Result<()> {
+        trace!("Sending device init sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else {
+            self.query_ctrl_report(0x0f)
+                .unwrap_or_else(|e| error!("{}", e));
+
+            // self.send_ctrl_report(0x15)
+            //     .unwrap_or_else(|e| error!("{}", e));
+
+            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+
+            self.is_initialized = true;
+
+            Ok(())
+        }
+    }
+
+    fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.write(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }
+        }
+    }
+
+    fn read_data_raw(&self, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf = Vec::new();
+            buf.resize(size, 0);
+
+            match ctrl_dev.read(buf.as_mut_slice()) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+
+                    Ok(buf)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }
+        }
+    }
+}
+
+impl MouseDeviceTrait for RoccatNyth {
+    #[inline]
+    fn get_next_event(&self) -> Result<MouseHidEvent> {
+        self.get_next_event_timeout(-1)
+    }
+
+    fn get_next_event_timeout(&self, millis: i32) -> Result<MouseHidEvent> {
+        trace!("Querying control device for next event");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf = [0; 8];
+
+            match ctrl_dev.read_timeout(&mut buf, millis) {
+                Ok(_size) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    let event = match buf[0..5] {
+                        // DPI changed
+                        [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
+
+                        _ => MouseHidEvent::Unknown,
+                    };
+
+                    // match event {
+                    //     HidEvent::KeyDown { code } => {
+                    //         // reset "to be dropped" flag
+                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
+
+                    //         // update our internal representation of the keyboard state
+                    //         let index = util::hid_code_to_key_index(code) as usize;
+                    //         keyboard::KEY_STATES.write().unwrap()[index] = true;
+                    //     }
+
+                    //     HidEvent::KeyUp { code } => {
+                    //         // reset "to be dropped" flag
+                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
+
+                    //         // update our internal representation of the keyboard state
+                    //         let index = util::hid_code_to_key_index(code) as usize;
+                    //         keyboard::KEY_STATES.write().unwrap()[index] = false;
+                    //     }
+
+                    //     _ => { /* ignore other events */ }
+                    // }
+
+                    Ok(event)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }
+        }
+    }
+
+    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
+        trace!("Setting LEDs from supplied map...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            // match *self.led_hiddev.lock() {
+            //     Some(ref led_dev) => {
+            //         // TODO: Implement this
+            //         Ok(())
+            //     }
+
+            //     None => Err(HwDeviceError::DeviceNotOpened {}),
+            // }
+
+            Ok(())
+        }
+    }
+
+    fn set_led_init_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED init pattern...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            // TODO: Implement this
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+
+            Ok(())
+        }
+    }
+
+    fn set_led_off_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED off pattern...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {})
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {})
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {})
+        } else {
+            // TODO: Implement this
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+
+            Ok(())
+        }
+    }
+}

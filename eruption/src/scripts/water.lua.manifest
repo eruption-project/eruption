@@ -1,0 +1,18 @@
+name = "Water"
+description = "Show a spreading wave when a key has been pressed"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'color'
+name = 'color_water'
+description = 'Color of the water'
+default = 0xffff0000
+
+[[config]]
+type = 'int'
+name = 'wave_divisor'
+description = 'Controls the spread of the wave. Range: [1..10], lower values mean less spread'
+default = 2

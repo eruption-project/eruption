@@ -1,0 +1,26 @@
+[package]
+name = "eruptionctl"
+version = "0.0.1"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+edition = "2018"
+description = "A CLI control utility for the Eruption Linux user-mode driver"
+repository = "https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git"
+homepage = "https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/"
+license = "GPLv3+"
+readme = "README.md"
+
+[dependencies]
+clap = "3.0.0-beta.1"
+clap_derive = "3.0.0-beta.1"
+colored = "2.0"
+log = "0.4.11"
+libc = "0.2.74"
+nix = "0.18.0"
+parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
+tokio = { version = "0.2.22", features = ["full"] }
+failure = "0.1.8"
+dbus = "0.8.4"
+dbus-tokio = "0.5.2"
+
+[dev-dependencies]
+tokio = { version = "0.2", features = ["test-util"] }

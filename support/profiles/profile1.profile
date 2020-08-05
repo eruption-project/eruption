@@ -3,13 +3,15 @@ name = 'Blue FX'
 description = 'Default Profile #1'
 active_scripts = [
     'solid.lua',
+#   'water.lua',
+    'phonon.lua',
     'shockwave.lua',
-    'impact.lua',
-    'water.lua',
-    'ghost.lua',
+#   'impact.lua',
+#   'water.lua',
+#   'ghost.lua',
 #   'raindrops.lua',
     'macros.lua',
-    'stats.lua',
+#   'stats.lua',
 #   'profiles.lua',
 ]
 

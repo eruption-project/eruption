@@ -1,0 +1,48 @@
+name = "Shockwave"
+description = "Show a spreading shockwave when a key has been pressed"
+version = "0.0.5"
+author = "The Eruption development team"
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'color'
+name = 'color_afterglow'
+description = 'Afterglow color'
+default = 0xffffffff
+
+[[config]]
+type = 'color'
+name = 'color_shockwave'
+description = 'Color of the shockwave'
+default = 0xffff0000
+
+[[config]]
+type = 'color'
+name = 'color_step_shockwave'
+description = 'Color value that gets subtracted from the shockwave every [n] frames'
+default = 0x0a0a0000
+
+[[config]]
+type = 'int'
+name = 'shockwave_divisor'
+description = 'Controls the spread of the shockwave. Range: [1..10], lower values mean less spread'
+default = 5
+
+[[config]]
+type = 'bool'
+name = 'mouse_events'
+description = 'React on mouse events'
+default = true
+
+[[config]]
+type = 'color'
+name = 'color_mouse_click_flash'
+description = 'Color of flash effect shown on mouse button clicks'
+default = 0x20ffaaaa
+
+[[config]]
+type = 'color'
+name = 'color_mouse_wheel_flash'
+description = 'Color of flash effect shown on mouse wheel scroll'
+default = 0x40aaaaff

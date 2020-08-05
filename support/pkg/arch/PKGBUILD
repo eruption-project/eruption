@@ -3,8 +3,8 @@
 pkgname='eruption-roccat-vulcan-git'
 _pkgname='eruption-roccat-vulcan'
 pkgdesc='Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards'
-pkgver='0.1.11'
-pkgrel='2'
+pkgver='0.1.12'
+pkgrel='0'
 epoch=
 arch=('i686' 'x86_64')
 url='https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/'
@@ -54,6 +54,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/share/man/man8"
     mkdir -p "$pkgdir/usr/share/man/man5"
+    mkdir -p "$pkgdir/usr/share/man/man1"
 
     mkdir -p "$pkgdir/usr/share/bash-completion/completions"
     mkdir -p "$pkgdir/usr/share/zsh/site-functions"
@@ -61,6 +62,8 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption/sfx"
 
     install -m 755 "target/release/eruption" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruptionctl" "$pkgdir/usr/bin/"
+
     install -m 644 "support/config/eruption.conf" "$pkgdir/etc/eruption/"
 
     install -m 644 "support/systemd/eruption.service" "$pkgdir/usr/lib/systemd/system/"
@@ -72,6 +75,7 @@ package() {
 
     install -m 644 "support/man/eruption.8" "$pkgdir/usr/share/man/man8/"
     install -m 644 "support/man/eruption.conf.5" "$pkgdir/usr/share/man/man5/"
+    install -m 644 "support/man/eruptionctl.1" "$pkgdir/usr/share/man/man1/"
 
     install -m 644 "src/scripts/macros.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/macros.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
@@ -99,6 +103,8 @@ package() {
     install -m 644 "src/scripts/batique.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/billow.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/billow.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/checkerboard.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/checkerboard.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/fbm.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/fbm.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/fire.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -125,6 +131,8 @@ package() {
     install -m 644 "src/scripts/osn.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/perlin.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/perlin.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/phonon.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/phonon.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/psychedelic.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/psychedelic.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/rainbow.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -141,6 +149,12 @@ package() {
     install -m 644 "src/scripts/stripes.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/sysmon.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/sysmon.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-perlin.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-perlin.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-turbulence.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-turbulence.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-voronoi.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/swirl-voronoi.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/temperature.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/temperature.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/turbulence.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -149,6 +163,8 @@ package() {
     install -m 644 "src/scripts/voronoi.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/water.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/water.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/wave.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "src/scripts/wave.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/snake.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/snake.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "src/scripts/lib/debug.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
@@ -176,7 +192,10 @@ package() {
     install -m 644 "support/profiles/gaming.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/gradient-noise.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/heatmap.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/heatmap-errors.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/matrix.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/batique.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/checkerboard.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/profile1.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/profile2.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/profile3.profile" "$pkgdir/var/lib/eruption/profiles/"
@@ -186,9 +205,16 @@ package() {
     install -m 644 "support/profiles/rainbow.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-red-yellow.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-blue-red.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/rainbow-wave.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/snake.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/solid-wave.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/starcraft2.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/spectrum-analyzer.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/vu-meter.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/swirl-perlin.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/swirl-perlin-blue-red.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/swirl-perlin-red-yellow.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/swirl-turbulence.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/swirl-voronoi.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/turbulence.profile" "$pkgdir/var/lib/eruption/profiles/"
 }

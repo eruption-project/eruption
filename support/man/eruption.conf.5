@@ -1,11 +1,13 @@
 .\" Manpage for Eruption.
-.TH man 5 "Aug 2020" "0.1.11" "eruption.conf man page"
+.TH man 5 "Aug 2020" "0.1.12" "eruption.conf man page"
 .SH NAME
  Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .SH SYNOPSIS
 .SH DESCRIPTION
 # Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 .br
+.br
+
 # Main configuration file
 .br
 .br
@@ -17,13 +19,22 @@ script_dir = "/usr/share/eruption/scripts/"
 .br
 .br
 
-# select your keyboard variant
 .br
 # keyboard_variant = "ANSI"
 .br
 keyboard_variant = "ISO"
 .br
+.br
+
+enable_mouse = true
+.br
 grab_mouse = true
+.br
+.br
+
+afk_profile = "rainbow-wave.profile"
+.br
+afk_timeout_secs = 0
 .br
 .br
 
@@ -31,11 +42,22 @@ grab_mouse = true
 .br
 keyboard_variant = Switch between sub-variants of your device. (Only partially supported)
 .br
-grab_mouse = Enable support for mouse events and event injection
+
+enable_mouse = Enable support for mouse events. Will open the evdev device in shared mode.
+.br
+grab_mouse = Enable support for mouse event injection. Will open the evdev device in exclusive mode.
+             Disable this feature if you want to use 3rd party mouse driver software.
+.br
+.br
+
+afk_profile = The profile to load when the user is AFK (Away from Keyboard)
+.br
+afk_timeout_secs = Time that has to pass without any input events, until AFK mode is activated.
+                   Specify 0 seconds to disable the AFK mode feature.
 .br
 
 .SH SEE ALSO
- eruption(8)
+ eruption(8), eruptionctl(1)
 .SH BUGS
  No known bugs.
 .SH AUTHOR

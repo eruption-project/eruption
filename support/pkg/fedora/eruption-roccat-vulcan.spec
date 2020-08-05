@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.11
-Release: 3%{?dist}
+Version: 0.1.12
+Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
 License: GPLv3+
@@ -44,6 +44,7 @@ cargo build --all --release --verbose
 %install
 %{__mkdir_p} %{buildroot}%{_mandir}/man5
 %{__mkdir_p} %{buildroot}%{_mandir}/man8
+%{__mkdir_p} %{buildroot}%{_mandir}/man1
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/system.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
@@ -63,18 +64,22 @@ cargo build --all --release --verbose
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
+cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fireworks.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gradient-noise.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -85,10 +90,17 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/twinkle.profile %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/vu-meter.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-voronoi.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
 cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
@@ -98,6 +110,7 @@ ln -s phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 cp -ra %{_builddir}/%{name}-%{version}/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 
 %post
 %systemd_post %{ShortName}.service
@@ -111,20 +124,25 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %files
 %doc %{_mandir}/man5/eruption.conf.5.gz
 %doc %{_mandir}/man8/eruption.8.gz
+%doc %{_mandir}/man1/eruptionctl.1.gz
 %dir %{_datarootdir}/icons/hicolor/scalable/apps/
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 /usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
 %{_bindir}/eruption
+%{_bindir}/eruptionctl
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
+%{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile
+%{_sharedstatedir}/%{ShortName}/profiles/heatmap-errors.profile
+%{_sharedstatedir}/%{ShortName}/profiles/matrix.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
@@ -135,22 +153,29 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
+%{_sharedstatedir}/%{ShortName}/profiles/rainbow-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/snake.profile
+%{_sharedstatedir}/%{ShortName}/profiles/solid-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/starcraft2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
 %{_sharedstatedir}/%{ShortName}/profiles/vu-meter.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-red-yellow.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-turbulence.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-voronoi.profile
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-mappings.lua
-%config(noreplace) %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-mappings.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/profiles.lua
@@ -173,6 +198,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/audioviz5.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/billow.lua
 %{_datarootdir}/%{ShortName}/scripts/billow.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/checkerboard.lua
+%{_datarootdir}/%{ShortName}/scripts/checkerboard.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/organic.lua
 %{_datarootdir}/%{ShortName}/scripts/organic.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/batique.lua
@@ -181,6 +208,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/fbm.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/perlin.lua
 %{_datarootdir}/%{ShortName}/scripts/perlin.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/phonon.lua
+%{_datarootdir}/%{ShortName}/scripts/phonon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua
@@ -219,6 +248,12 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/solid.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/swirl-perlin.lua
+%{_datarootdir}/%{ShortName}/scripts/swirl-perlin.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/swirl-turbulence.lua
+%{_datarootdir}/%{ShortName}/scripts/swirl-turbulence.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/swirl-voronoi.lua
+%{_datarootdir}/%{ShortName}/scripts/swirl-voronoi.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua
@@ -227,6 +262,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 %{_datarootdir}/%{ShortName}/scripts/turbulence.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/water.lua
 %{_datarootdir}/%{ShortName}/scripts/water.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/wave.lua
+%{_datarootdir}/%{ShortName}/scripts/wave.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/snake.lua
 %{_datarootdir}/%{ShortName}/scripts/snake.lua.manifest
 %{_datarootdir}/%{ShortName}/sfx/typewriter1.wav

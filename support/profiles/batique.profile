@@ -4,8 +4,8 @@ description = 'The batique profile'
 active_scripts = [
 	'batique.lua',
 	'shockwave.lua',
-	'impact.lua',
+#	'impact.lua',
 	'macros.lua',
-	'stats.lua',
+#	'stats.lua',
 #	'profiles.lua',
 ]
