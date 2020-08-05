@@ -67,6 +67,9 @@ pub const DEVICE_SETTLE_MILLIS_SAFE: u64 = 12;
 /// Amount of time that has to pass before we can send another command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 10;
 
+/// Amount of time that has to pass before we retry to open a failed hardware device
+pub const DEVICE_RETRY_MILLIS: u64 = 5000;
+
 /// Update sensors every other second
 pub const SENSOR_UPDATE_TICKS: u64 = 40;
 

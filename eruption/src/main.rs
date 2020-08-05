@@ -37,6 +37,8 @@ use std::time::{Duration, Instant};
 use std::u64;
 use tokio::join;
 
+use plugins::mouse::MousePluginError;
+
 mod util;
 
 mod hwdevices;
@@ -367,13 +369,24 @@ fn spawn_mouse_input_thread(mouse_tx: Sender<Option<evdev_rs::InputEvent>>) -> p
                     break;
                 }
 
-                if let Ok(event) = mouse_plugin.get_next_event() {
-                    mouse_tx.send(event).unwrap_or_else(|e| {
-                        error!("Could not send a mouse event to the main thread: {}", e)
-                    });
-                } else {
-                    // ignore spurious events
-                    // error!("Could not get next mouse event");
+                match mouse_plugin.get_next_event() {
+                    Ok(event) => {
+                        mouse_tx.send(event).unwrap_or_else(|e| {
+                            error!("Could not send a mouse event to the main thread: {}", e)
+                        });
+                    }
+
+                    Err(e) => match e {
+                        MousePluginError::EvdevNoDevError {} => {
+                            error!("Fatal: Mouse device went away: {}", e);
+                            thread::sleep(Duration::from_millis(constants::DEVICE_RETRY_MILLIS));
+                        }
+
+                        _ => {
+                            // ignore spurious events
+                            // error!("Could not get next mouse event");
+                        }
+                    },
                 }
             }
         })

@@ -131,40 +131,40 @@ pub fn get_evdev_mouse_from_udev() -> Result<String> {
 }
 
 /// Get the path of the evdev device of the first mouse from udev
-// pub fn get_mouse_dev_from_udev() -> Result<String> {
-//     match Enumerator::new() {
-//         Ok(mut enumerator) => {
-//             enumerator.match_subsystem("input").unwrap();
-//             // enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+pub fn get_mouse_dev_from_udev() -> Result<String> {
+    match Enumerator::new() {
+        Ok(mut enumerator) => {
+            enumerator.match_subsystem("input").unwrap();
+            // enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
 
-//             match enumerator.scan_devices() {
-//                 Ok(devices) => {
-//                     for device in devices {
-//                         if device.devnode().is_some() {
-//                             // skip keyboard integrated mouse devices
-//                             if let Some(val) = device.property_value("ID_MODEL") {
-//                                 if !val.to_string_lossy().contains("Vulcan") {
-//                                     return Ok(device
-//                                         .devnode()
-//                                         .unwrap()
-//                                         .to_str()
-//                                         .unwrap()
-//                                         .to_string());
-//                                 }
-//                             }
-//                         }
-//                     }
+            match enumerator.scan_devices() {
+                Ok(devices) => {
+                    for device in devices {
+                        if device.devnode().is_some() {
+                            // skip keyboard integrated mouse devices
+                            if let Some(val) = device.property_value("ID_MODEL") {
+                                if !val.to_string_lossy().contains("Vulcan") {
+                                    return Ok(device
+                                        .devnode()
+                                        .unwrap()
+                                        .to_str()
+                                        .unwrap()
+                                        .to_string());
+                                }
+                            }
+                        }
+                    }
 
-//                     Err(UtilError::NoDevicesFound {})
-//                 }
+                    Err(UtilError::NoDevicesFound {})
+                }
 
-//                 Err(_e) => Err(UtilError::EnumerationError {}),
-//             }
-//         }
+                Err(_e) => Err(UtilError::EnumerationError {}),
+            }
+        }
 
-//         Err(_e) => Err(UtilError::UdevError {}),
-//     }
-// }
+        Err(_e) => Err(UtilError::UdevError {}),
+    }
+}
 
 // pub fn is_mouse_device(vendor_id: u16, product_id: u16) -> Result<bool> {
 //     match Enumerator::new() {

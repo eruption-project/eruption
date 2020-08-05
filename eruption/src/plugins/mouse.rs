@@ -87,8 +87,9 @@ impl MousePlugin {
     }
 
     pub fn initialize_thread_locals(&mut self) -> Result<()> {
-        let filename =
-            util::get_evdev_mouse_from_udev().map_err(|_e| MousePluginError::UdevError {})?;
+        let filename = util::get_evdev_mouse_from_udev()
+            .or_else(|_e| util::get_mouse_dev_from_udev())
+            .map_err(|_e| MousePluginError::UdevError {})?;
 
         match File::open(&filename) {
             Ok(devfile) => match Device::new_from_fd(devfile) {
