@@ -261,6 +261,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 %{_datarootdir}/%{ShortName}/scripts/swirl-turbulence.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/swirl-voronoi.lua
 %{_datarootdir}/%{ShortName}/scripts/swirl-voronoi.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/flight-perlin.lua
+%{_datarootdir}/%{ShortName}/scripts/flight-perlin.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua
 %{_datarootdir}/%{ShortName}/scripts/sysmon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/temperature.lua
