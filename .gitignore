@@ -1,3 +1,4 @@
+.cargo/
 /.vscode
 /target
 **/*.rs.bk

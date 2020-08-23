@@ -15,8 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// use failure::Fail;
-
 pub mod audio;
 pub mod introspection;
 pub mod keyboard;
@@ -43,14 +41,14 @@ use log::*;
 
 use super::plugin_manager;
 
-pub type Result<T> = std::result::Result<T, failure::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 // #[derive(Debug, Fail)]
 // pub enum PluginError {
-//     // #[fail(display = "Could not register Lua extensions")]
+//     // #[error("Could not register Lua extensions")]
 //     // LuaExtensionError {},
 
-//     #[fail(display = "Unknown error: {}", description)]
+//     #[error("Unknown error: {}", description)]
 //     UnknownError { description: String },
 // }
 

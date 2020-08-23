@@ -1,6 +1,6 @@
 name = "Afterglow"
 description = "Show an afterglow effect after a key has been pressed"
-version = "0.0.5"
+version = "0.0.6"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']

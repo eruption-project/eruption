@@ -20,6 +20,15 @@ require "debug"
 ticks = 0
 color_map = {}
 offsets = {0, 0, 0}
+time_offset = 0
+
+local function easing(x)
+    if x < 0.5 then
+        return 4 * pow(x, 3)
+    else
+        return 1 - pow(-2 * x + 2, 3) / 2
+    end
+end
 
 -- event handler functions --
 function on_startup(config)
@@ -39,13 +48,15 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- calculate voronoi swirl effect
+    -- calculate perlin flight effect
     if ticks % animation_delay == 0 then
+        time_offset = easing(sin(ticks / speed))
+
         for i = num_rows, 0, -1 do
             for j = 1, max_keys_per_row do
-                local val = voronoi_noise((i + (offsets[2] / 256)) / coord_scale,
-                                          (j + (offsets[1] / 256)) / coord_scale,
-                                          (ticks + (offsets[3] / 256)) / time_scale)
+                local val = perlin_noise((i + (offsets[2] / 256)) / coord_scale,
+                                         (j + (offsets[1] / 256)) / coord_scale,
+                                         time_offset + (offsets[3] / 256) / time_scale)
                 val = lerp(0, 360, val)
 
                 local index = rows_topology[j + (i * max_keys_per_row)] + 1

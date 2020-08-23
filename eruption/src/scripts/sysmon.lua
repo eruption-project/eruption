@@ -18,7 +18,6 @@ require "debug"
 
 -- global state variables --
 temperature = get_package_temp()
-max_temperature = get_package_max_temp()
 color_map = {}
 ticks = 0
 
@@ -34,16 +33,16 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- update the system state
-    if ticks % 5 == 0 then
-        temperature = get_package_temp()
-        trace("Sysmon: Temperature  " .. get_package_temp() .. " / " .. max_temperature)
-    end
+    if ticks % 5 ~= 0 then return end
 
+    -- update the system state
     local num_keys = get_num_keys()
 
     -- calculate colors
+    temperature = get_package_temp()
     local percentage = min(temperature / max_temperature * 100, 100)
+
+    -- info("Temperature: percentage: " .. percentage ..  " max: " .. max_temperature .. " current: " .. temperature)
 
     for i = 0, num_keys do
         color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)

@@ -26,7 +26,7 @@ function on_startup(config)
     local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
     end
 end
 
@@ -43,8 +43,8 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         for i = num_rows, 0, -1 do
             for j = 1, max_keys_per_row do
-                local val = perlin_noise((i + (offsets[1] / 256)) / coord_scale,
-                                         (j + (offsets[2] / 256)) / coord_scale,
+                local val = perlin_noise((i + (offsets[2] / 256)) / coord_scale,
+                                         (j + (offsets[1] / 256)) / coord_scale,
                                          (ticks + (offsets[3] / 256)) / time_scale)
                 val = lerp(0, 360, val)
 

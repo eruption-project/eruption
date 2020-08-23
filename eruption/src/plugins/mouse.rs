@@ -16,7 +16,6 @@
 */
 
 use evdev_rs::{Device, GrabMode};
-use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -34,26 +33,23 @@ use crate::plugins::{self, Plugin};
 
 pub const MAX_MOUSE_BUTTONS: usize = 16;
 
-pub type Result<T> = std::result::Result<T, MousePluginError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum MousePluginError {
-    #[fail(display = "Could not peek evdev event")]
+    #[error("Could not peek evdev event")]
     EvdevEventError {},
 
-    #[fail(display = "Evdev device is not available")]
+    #[error("Evdev device is not available")]
     EvdevNoDevError {},
 
-    #[fail(display = "Could not get the name of the evdev device from udev")]
-    UdevError {},
-
-    #[fail(display = "Could not open the evdev device")]
+    // #[error("Could not get the name of the evdev device from udev")]
+    // UdevError {},
+    #[error("Could not open the evdev device")]
     EvdevError {},
 
-    #[fail(display = "Could not create a libevdev device handle")]
+    #[error("Could not create a libevdev device handle")]
     EvdevHandleError {},
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 lazy_static! {
@@ -87,9 +83,8 @@ impl MousePlugin {
     }
 
     pub fn initialize_thread_locals(&mut self) -> Result<()> {
-        let filename = util::get_evdev_mouse_from_udev()
-            .or_else(|_e| util::get_mouse_dev_from_udev())
-            .map_err(|_e| MousePluginError::UdevError {})?;
+        let filename =
+            util::get_evdev_mouse_from_udev().or_else(|_e| util::get_mouse_dev_from_udev())?;
 
         match File::open(&filename) {
             Ok(devfile) => match Device::new_from_fd(devfile) {
@@ -126,10 +121,10 @@ impl MousePlugin {
                     Ok(())
                 }
 
-                Err(_e) => Err(MousePluginError::EvdevHandleError {}),
+                Err(_e) => Err(MousePluginError::EvdevHandleError {}.into()),
             },
 
-            Err(_e) => Err(MousePluginError::EvdevError {}),
+            Err(_e) => Err(MousePluginError::EvdevError {}.into()),
         }
     }
 
@@ -193,20 +188,20 @@ impl MousePlugin {
                             //     error!("Mouse device went away: {}", e);
 
                             //     crate::QUIT.store(true, Ordering::SeqCst);
-                            //     Err(MousePluginError::EvdevEventError {})
+                            //     Err(MousePluginError::EvdevEventError {}.into())
                             // } else {
                             //     error!("Could not peek evdev event: {}", e);
 
                             //     crate::QUIT.store(true, Ordering::SeqCst);
-                            //     Err(MousePluginError::EvdevEventError {})
+                            //     Err(MousePluginError::EvdevEventError {}.into())
                             // }
 
                             error!("Could not get mouse events");
-                            Err(MousePluginError::EvdevEventError {})
+                            Err(MousePluginError::EvdevEventError {}.into())
                         }
                     }
                 } else {
-                    Err(MousePluginError::EvdevNoDevError {})
+                    Err(MousePluginError::EvdevNoDevError {}.into())
                 }
             },
         )?;
@@ -223,6 +218,7 @@ impl MousePlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for MousePlugin {
     fn get_name(&self) -> String {
         "Mouse".to_string()
@@ -247,7 +243,9 @@ impl Plugin for MousePlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

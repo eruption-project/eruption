@@ -19,7 +19,6 @@ use dbus::{
     ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs, tree::Access,
     tree::EmitsChangedSignal, tree::Factory, tree::MethodErr, tree::Signal,
 };
-use failure::Fail;
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
@@ -40,14 +39,12 @@ pub enum Message {
     //LoadScript(PathBuf),
 }
 
-pub type Result<T> = std::result::Result<T, DbusApiError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum DbusApiError {
-    #[fail(display = "D-Bus not connected")]
+    #[error("D-Bus not connected")]
     BusNotConnected {},
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 /// D-Bus API support
@@ -387,7 +384,7 @@ impl DbusApi {
                 Ok(())
             }
 
-            None => Err(DbusApiError::BusNotConnected {}),
+            None => Err(DbusApiError::BusNotConnected {}.into()),
         }
     }
 }

@@ -44,8 +44,8 @@ function on_tick(delta)
             local x2 = (cos(angle) * x) - (sin(angle) * y)
 			local y2 = (sin(angle) * x) + (cos(angle) * y)
 
-            local val = super_simplex_noise((x2 + (offsets[1] / 256)) / coord_scale,
-							 			    (y2 + (offsets[2] / 256)) / coord_scale,
+            local val = super_simplex_noise((x2 + (offsets[2] / 256)) / coord_scale,
+							 			    (y2 + (offsets[1] / 256)) / coord_scale,
                                             (ticks + (offsets[3] / 256)) / time_scale)
             val = lerp(0, 360, val)
 

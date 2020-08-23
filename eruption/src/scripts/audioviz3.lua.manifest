@@ -1,6 +1,6 @@
 name = "Audio Visualizer #3 (Spectrum Analyzer)"
 description = "Spectrum analyzer audio visualization"
-version = "0.0.4"
+version = "0.0.5"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']
@@ -10,18 +10,6 @@ type = 'float'
 name = 'afterglow_step'
 description = 'Step afterglow animation every [n] frames'
 default = 2.0
-
-[[config]]
-type = 'color'
-name = 'color_off'
-description = 'LED off'
-default = 0x00000000
-
-[[config]]
-type = 'color'
-name = 'color_bright'
-description = 'LED bright'
-default = 0xffffffff
 
 [[config]]
 type = 'color'

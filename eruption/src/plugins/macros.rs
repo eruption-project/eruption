@@ -17,11 +17,10 @@
 
 use evdev_rs::enums::*;
 use evdev_rs::{Device, InputEvent, TimeVal, UInputDevice};
-use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
-use parking_lot::Mutex;
 use mlua::prelude::*;
+use parking_lot::Mutex;
 use std::any::Any;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
@@ -33,7 +32,7 @@ use std::thread;
 use crate::plugins::{self, Plugin};
 use crate::util;
 
-pub type Result<T> = std::result::Result<T, MacrosPluginError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 pub enum Message {
     // keyboard related
@@ -47,15 +46,10 @@ pub enum Message {
     InjectMouseWheelEvent { direction: u32 },
 }
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum MacrosPluginError {
-    #[fail(display = "Could not open the evdev device")]
+    #[error("Could not open the evdev device")]
     EvdevError {},
-
-    #[fail(display = "Could not spawn a thread")]
-    ThreadSpawnError {},
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 lazy_static! {
@@ -324,7 +318,7 @@ impl MacrosPlugin {
                 Ok(())
             }
 
-            Err(_e) => Err(MacrosPluginError::EvdevError {}),
+            Err(_e) => Err(MacrosPluginError::EvdevError {}.into()),
         }
     }
 
@@ -389,7 +383,7 @@ impl MacrosPlugin {
                 Ok(())
             }
 
-            Err(_e) => Err(MacrosPluginError::EvdevError {}),
+            Err(_e) => Err(MacrosPluginError::EvdevError {}.into()),
         }
     }
 
@@ -627,8 +621,7 @@ impl MacrosPlugin {
                         }
                     }
                 }
-            })
-            .map_err(|_e| MacrosPluginError::ThreadSpawnError {})?;
+            })?;
 
         *UINPUT_TX.lock() = Some(uinput_tx);
 
@@ -636,6 +629,7 @@ impl MacrosPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for MacrosPlugin {
     fn get_name(&self) -> String {
         "Macros".to_string()
@@ -655,7 +649,9 @@ impl Plugin for MacrosPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

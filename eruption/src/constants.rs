@@ -15,6 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#![allow(dead_code)]
+
 /// Default path of eruption master configuration file
 pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
 
@@ -22,7 +24,7 @@ pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
 pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 
 /// Default script directory
-pub const DEFAULT_SCRIPT_DIR: &str = "/usr/lib/eruption/scripts/";
+pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";
@@ -40,14 +42,10 @@ pub const AFK_TIMEOUT_SECS: u64 = 0;
 pub const DEFAULT_AFK_PROFILE: &str = "rainbow-wave.profile";
 
 /// Target "Frames per Second"
-pub const TARGET_FPS: u64 = 20;
+pub const TARGET_FPS: u64 = 24;
 
 /// Target delay time of main loop iteration
 pub const MAIN_LOOP_DELAY_MILLIS: u64 = 1000 / TARGET_FPS;
-
-/// Static correction offset, to compensate for
-/// known time consumers like e.g. hardware accesses
-pub const MAIN_LOOP_DELAY_OFFSET_MILLIS: u64 = 5;
 
 /// How often should we read out the USB hardware state?
 pub const MAIN_LOOP_HW_READ_DIVISOR: u64 = 1; // 1 == do not skip iterations
@@ -56,7 +54,7 @@ pub const MAIN_LOOP_HW_READ_DIVISOR: u64 = 1; // 1 == do not skip iterations
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 100;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 250;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
@@ -70,8 +68,8 @@ pub const DEVICE_SETTLE_MILLIS: u64 = 10;
 /// Amount of time that has to pass before we retry to open a failed hardware device
 pub const DEVICE_RETRY_MILLIS: u64 = 5000;
 
-/// Update sensors every other second
-pub const SENSOR_UPDATE_TICKS: u64 = 40;
+/// Update sensors every n seconds
+pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS * 1;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;

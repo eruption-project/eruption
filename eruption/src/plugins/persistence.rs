@@ -15,8 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// use failure::Fail;
-use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -52,20 +50,15 @@ pub enum StoreValue {
     Hash(HashMap<String, String>),
 }
 
-pub type Result<T> = std::result::Result<T, PersistencePluginError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum PersistencePluginError {
-    #[fail(display = "Storage error: {}", description)]
-    StorageError { description: String },
-
-    #[fail(display = "Invalid data type error: {}", description)]
+    #[error("Invalid data type error: {description}")]
     TypeError { description: String },
 
-    #[fail(display = "Non existent key: {}", description)]
+    #[error("Non existent key: {description}")]
     KeyError { description: String },
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 pub struct PersistencePlugin {}
@@ -94,13 +87,13 @@ macro_rules! load_operation {
                         } else {
                             Err(PersistencePluginError::TypeError {
                                 description: key.to_owned(),
-                            })
+                            }.into())
                         }
                     }
 
                     None => Err(PersistencePluginError::KeyError {
                         description: key.to_owned(),
-                    }),
+                    }.into()),
                 }
             }
         }
@@ -131,13 +124,13 @@ macro_rules! load_transient_operation {
                         } else {
                             Err(PersistencePluginError::TypeError {
                                 description: key.to_owned(),
-                            })
+                            }.into())
                         }
                     }
 
                     None => Err(PersistencePluginError::KeyError {
                         description: key.to_owned(),
-                    }),
+                    }.into()),
                 }
             }
         }
@@ -153,17 +146,11 @@ impl PersistencePlugin {
     pub fn store_persistent_data() -> Result<()> {
         info!("Storing persistent state data to disk...");
 
-        let json_string = serde_json::to_string_pretty(&*GLOBAL_STORE.read()).map_err(|e| {
-            PersistencePluginError::StorageError {
-                description: format!("Could not serialize a data structure: {}", e),
-            }
-        })?;
+        let json_string = serde_json::to_string_pretty(&*GLOBAL_STORE.read())?;
 
         let path = PathBuf::from(constants::STATE_DIR).join(&PathBuf::from("persistent.store"));
 
-        fs::write(&path, json_string).map_err(|e| PersistencePluginError::StorageError {
-            description: format!("{}", e),
-        })?;
+        fs::write(&path, json_string)?;
 
         Ok(())
     }
@@ -174,16 +161,9 @@ impl PersistencePlugin {
 
         let path = PathBuf::from(constants::STATE_DIR).join(&PathBuf::from("persistent.store"));
 
-        let json_string =
-            fs::read_to_string(&path).map_err(|e| PersistencePluginError::StorageError {
-                description: format!("{}", e),
-            })?;
+        let json_string = fs::read_to_string(&path)?;
 
-        let map: HashMap<String, StoreValue> = serde_json::from_str(&json_string).map_err(|e| {
-            PersistencePluginError::StorageError {
-                description: format!("Could not deserialize a data structure: {}", e),
-            }
-        })?;
+        let map: HashMap<String, StoreValue> = serde_json::from_str(&json_string)?;
 
         {
             *GLOBAL_STORE.write() = map;
@@ -239,6 +219,7 @@ impl PersistencePlugin {
     load_transient_operation!(string_hash, HashMap<String, String>, StoreValue::Hash);
 }
 
+#[async_trait::async_trait]
 impl Plugin for PersistencePlugin {
     fn get_name(&self) -> String {
         "Persistence".to_string()
@@ -485,7 +466,9 @@ impl Plugin for PersistencePlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

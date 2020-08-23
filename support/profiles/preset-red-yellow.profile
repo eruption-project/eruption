@@ -12,9 +12,9 @@ active_scripts = [
 [[config.Batique]]
 type = 'float'
 name = 'color_divisor'
-value = 2.0
+value = 2.5
 
 [[config.Batique]]
 type = 'float'
 name = 'color_offset'
-value = -90.0
+value = 25.0

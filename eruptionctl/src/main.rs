@@ -20,15 +20,20 @@ use colored::*;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
-use failure::Fail;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-type Result<T> = std::result::Result<T, failure::Error>;
+mod constants;
+mod manifest;
+mod profiles;
+mod util;
 
-#[derive(Debug, Fail)]
+type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, thiserror::Error)]
 pub enum MainError {
-    #[fail(display = "Unknown error: {}", description)]
+    #[error("Unknown error: {description}")]
     UnknownError { description: String },
 }
 
@@ -122,6 +127,7 @@ pub enum ScriptsSubcommands {
     List,
 }
 
+/// Print license information
 #[allow(dead_code)]
 fn print_header() {
     println!(
@@ -142,6 +148,7 @@ fn print_header() {
     );
 }
 
+/// Returns a connection to the D-Bus system bus using the specified `path`
 pub async fn dbus_system_bus(
     path: &str,
 ) -> Result<dbus::nonblock::Proxy<'_, Arc<dbus::nonblock::SyncConnection>>> {
@@ -157,6 +164,7 @@ pub async fn dbus_system_bus(
     Ok(proxy)
 }
 
+/// Switch the currently active profile
 pub async fn switch_profile(name: &str) -> Result<()> {
     let file_name = name.to_owned();
 
@@ -168,6 +176,7 @@ pub async fn switch_profile(name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Switch the currently active slot
 pub async fn switch_slot(index: usize) -> Result<()> {
     let (_result,): (bool,) = dbus_system_bus("/org/eruption/slot")
         .await?
@@ -177,6 +186,7 @@ pub async fn switch_slot(index: usize) -> Result<()> {
     Ok(())
 }
 
+/// Enumerate all available profiles
 pub async fn get_profiles() -> Result<Vec<(String, String)>> {
     let (result,): (Vec<(String, String)>,) = dbus_system_bus("/org/eruption/profile")
         .await?
@@ -186,10 +196,27 @@ pub async fn get_profiles() -> Result<Vec<(String, String)>> {
     Ok(result)
 }
 
-pub async fn get_scripts() -> Result<Vec<(String, String)>> {
-    Ok(vec![("Not implemented".into(), "None".into())])
+/// Enumerate all available scripts
+pub fn get_script_list() -> Result<Vec<(String, String)>> {
+    let path = constants::DEFAULT_SCRIPT_DIR;
+    let scripts = util::enumerate_scripts(&path)?;
+
+    let result = scripts
+        .iter()
+        .map(|s| {
+            (
+                format!("{} - {}", s.name.clone(), s.description.clone()),
+                s.script_file.to_string_lossy().to_string(),
+            )
+        })
+        .collect();
+
+    Ok(result)
 }
 
+// global configuration options
+
+/// Get the current brightness value
 pub async fn get_brightness() -> Result<i64> {
     let result = dbus_system_bus("/org/eruption/config")
         .await?
@@ -199,6 +226,7 @@ pub async fn get_brightness() -> Result<i64> {
     Ok(result)
 }
 
+/// Set the current brightness value
 pub async fn set_brightness(brightness: i64) -> Result<()> {
     let arg = Box::new(brightness as i64);
 
@@ -210,6 +238,7 @@ pub async fn set_brightness(brightness: i64) -> Result<()> {
     Ok(())
 }
 
+/// Returns true when SoundFX is enabled
 pub async fn get_sound_fx() -> Result<bool> {
     let result = dbus_system_bus("/org/eruption/config")
         .await?
@@ -219,6 +248,7 @@ pub async fn get_sound_fx() -> Result<bool> {
     Ok(result)
 }
 
+/// Set SoundFX state to `enabled`
 pub async fn set_sound_fx(enabled: bool) -> Result<()> {
     let arg = Box::new(enabled);
 
@@ -231,13 +261,16 @@ pub async fn set_sound_fx(enabled: bool) -> Result<()> {
 }
 
 #[tokio::main]
-pub async fn main() -> std::result::Result<(), failure::Error> {
+pub async fn main() -> std::result::Result<(), eyre::Error> {
+    color_eyre::install()?;
+
     // if unsafe { libc::isatty(0) != 0 } {
     //     print_header();
     // }
 
     let opts = Options::parse();
     match opts.command {
+        // configuration related sub-commands
         Subcommands::Config { command } => match command {
             ConfigSubcommands::Brightness { brightness } => {
                 if let Some(brightness) = brightness {
@@ -264,8 +297,24 @@ pub async fn main() -> std::result::Result<(), failure::Error> {
             }
         },
 
+        // profile related sub-commands
         Subcommands::Profiles { command } => match command {
-            ProfilesSubcommands::Edit { profile_name: _ } => {}
+            ProfilesSubcommands::Edit { profile_name } => {
+                let path = constants::DEFAULT_PROFILE_DIR;
+                let profiles = util::enumerate_profiles(&path)?;
+
+                if let Some(profile) = profiles.iter().find(|p| {
+                    *p.profile_file
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        == profile_name
+                }) {
+                    util::edit_file(&profile.profile_file)?
+                } else {
+                    eprintln!("No matches found");
+                }
+            }
 
             ProfilesSubcommands::List => {
                 for p in get_profiles().await? {
@@ -273,21 +322,87 @@ pub async fn main() -> std::result::Result<(), failure::Error> {
                 }
             }
 
-            ProfilesSubcommands::Info { profile_name: _ } => {}
+            ProfilesSubcommands::Info { profile_name } => {
+                let path = constants::DEFAULT_PROFILE_DIR;
+                let profiles = util::enumerate_profiles(path)?;
+
+                let empty = HashMap::new();
+
+                if let Some(profile) = profiles.iter().find(|p| {
+                    *p.profile_file
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        == profile_name
+                }) {
+                    println!(
+                        "Profile:\t{} ({})\nDescription:\t{}\nScripte:\t{:?}\n\n{:#?}",
+                        profile.name,
+                        profile.id,
+                        profile.description,
+                        profile.active_scripts,
+                        profile.config.as_ref().unwrap_or(&empty),
+                    );
+                } else {
+                    eprintln!("No matches found");
+                }
+            }
         },
 
+        // script related sub-commands
         Subcommands::Scripts { command } => match command {
-            ScriptsSubcommands::Edit { script_name: _ } => {}
+            ScriptsSubcommands::Edit { script_name } => {
+                let path = constants::DEFAULT_SCRIPT_DIR;
+                let scripts = util::enumerate_scripts(&path)?;
 
-            ScriptsSubcommands::List => {
-                for p in get_scripts().await? {
-                    println!("{}: {}", p.0.bold(), p.1);
+                if let Some(script) = scripts.iter().find(|s| {
+                    *s.script_file
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        == script_name
+                }) {
+                    util::edit_file(&script.script_file)?
+                } else {
+                    eprintln!("No matches found");
                 }
             }
 
-            ScriptsSubcommands::Info { script_name: _ } => {}
+            ScriptsSubcommands::List => {
+                for s in get_script_list()? {
+                    println!("{}: {}", s.0.bold(), s.1);
+                }
+            }
+
+            ScriptsSubcommands::Info { script_name } => {
+                let path = constants::DEFAULT_SCRIPT_DIR;
+                let scripts = util::enumerate_scripts(&path)?;
+
+                let empty = vec![];
+
+                if let Some(script) = scripts.iter().find(|s| {
+                    *s.script_file
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        == script_name
+                }) {
+                    println!(
+                        "Lua script:\t{} ({})\nDaemon version:\t{}\nAuthor:\t\t{}\nDescription:\t{}\nTags:\t\t{:?}",
+                        script.name,
+                        script.version,
+                        script.min_supported_version,
+                        script.author,
+                        script.description,
+                        script.tags.as_ref().unwrap_or(&empty),
+                    );
+                } else {
+                    eprintln!("No matches found");
+                }
+            }
         },
 
+        // convenience operations: switch profile or slot
         Subcommands::Switch { command } => match command {
             SwitchSubcommands::Profile { profile_name } => {
                 println!("Switching to profile: {}", profile_name.bold());

@@ -1,6 +1,6 @@
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
-version = "0.0.5"
+version = "0.0.6"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
@@ -10,6 +10,12 @@ type = 'color'
 name = 'color_afterglow'
 description = 'Afterglow color'
 default = 0xffffffff
+
+[[config]]
+type = 'color'
+name = 'color_step_afterglow'
+description = 'Color value that gets subtracted from afterglow every [n] frames'
+default = 0x08000000
 
 [[config]]
 type = 'color'

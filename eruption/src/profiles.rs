@@ -15,8 +15,9 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#![allow(dead_code)]
+
 use crate::constants;
-use failure::Fail;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -25,26 +26,24 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
-pub type Result<T> = std::result::Result<T, ProfileError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum ProfileError {
-    #[fail(display = "Could not open profile file for reading")]
+    #[error("Could not open profile file for reading")]
     OpenError {},
 
-    #[fail(display = "Could not parse profile file")]
+    #[error("Could not parse profile file")]
     ParseError {},
 
-    #[fail(display = "Could not save profile file: {}", msg)]
+    #[error("Could not save profile file: {msg}")]
     WriteError { msg: String },
 
-    #[fail(display = "Could not find profile file from UUID")]
+    #[error("Could not find profile file from UUID")]
     FindError {},
 
-    #[fail(display = "Could not set a config value in a profile: {}", msg)]
+    #[error("Could not set a config value in a profile: {msg}")]
     SetValueError { msg: String },
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -244,7 +243,7 @@ macro_rules! set_config_value {
 
                                 _ => Err(ProfileError::SetValueError {
                                     msg: "Invalid data type".into(),
-                                }),
+                                }.into()),
                             },
 
                             _ => {
@@ -269,7 +268,7 @@ macro_rules! set_config_value {
                 } else {
                     Err(ProfileError::SetValueError {
                         msg: "Could not get config".into(),
-                    })
+                    }.into())
                 }
             }
         }
@@ -293,11 +292,11 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}),
+                    Err(_e) => Err(ProfileError::ParseError {}.into()),
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}),
+            Err(_e) => Err(ProfileError::OpenError {}.into()),
         }
     }
 
@@ -318,17 +317,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}),
+                    Err(_e) => Err(ProfileError::ParseError {}.into()),
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}),
+            Err(_e) => Err(ProfileError::OpenError {}.into()),
         }
     }
 
     pub fn find_by_uuid(uuid: Uuid, profile_path: &Path) -> Result<Self> {
         let profile_files = get_profile_files(&profile_path).unwrap();
-        let mut result = Err(ProfileError::FindError {});
+        let mut result = Err(ProfileError::FindError {}.into());
 
         'PROFILE_LOOP: for profile_file in profile_files.iter() {
             match Profile::from(&profile_file) {
@@ -353,9 +352,7 @@ impl Profile {
     }
 
     pub fn save(&self) -> Result<()> {
-        let toml = toml::ser::to_string_pretty(&self).map_err(|_| ProfileError::WriteError {
-            msg: "Could not convert profile data".into(),
-        })?;
+        let toml = toml::ser::to_string_pretty(&self)?;
 
         fs::write(&self.profile_file, &toml).map_err(|_| ProfileError::WriteError {
             msg: "Could not write file".into(),

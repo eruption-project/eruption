@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//use failure::Fail;
 use mlua::prelude::*;
 use std::any::Any;
 use std::sync::atomic::Ordering;
@@ -23,11 +22,11 @@ use std::sync::atomic::Ordering;
 use crate::plugins;
 use crate::plugins::Plugin;
 
-//pub type Result<T> = std::result::Result<T, ProfilesPluginError>;
+//pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 //#[derive(Debug, Fail)]
 //pub enum ProfilesPluginError {
-////#[fail(display = "Unknown error: {}", description)]
+////#[error("Unknown error: {}", description)]
 ////UnknownError { description: String },
 //}
 
@@ -64,6 +63,7 @@ impl ProfilesPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for ProfilesPlugin {
     fn get_name(&self) -> String {
         "Profiles".to_string()
@@ -104,7 +104,9 @@ impl Plugin for ProfilesPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

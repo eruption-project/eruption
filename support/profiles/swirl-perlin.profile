@@ -7,6 +7,7 @@ active_scripts = [
 #   'impact.lua',
 #   'water.lua',
 #   'raindrops.lua',
+#   'sysmon.lua',
     'macros.lua',
 #   'stats.lua',
 #   'profiles.lua',
@@ -15,12 +16,22 @@ active_scripts = [
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_divisor'
-value = 1.0
+value = 2.35
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_offset'
 value = 0.0
+
+[[config."Perlin Swirl"]]
+type = 'float'
+name = 'time_scale'
+value = 140.0
+
+[[config."Perlin Swirl"]]
+type = 'float'
+name = 'coord_scale'
+value = 30.0
 
 [[config.Shockwave]]
 type = 'color'
@@ -46,3 +57,13 @@ value = 0xd0ff0000
 type = 'float'
 name = 'opacity'
 value = 0.75
+
+[[config."System Monitor"]]
+type = 'color'
+name = 'color_cold'
+value = 0x0000ff00
+
+[[config."System Monitor"]]
+type = 'color'
+name = 'color_hot'
+value = 0xffff0000

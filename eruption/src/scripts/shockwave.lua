@@ -37,22 +37,24 @@ shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
 shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_sentinel) / shockwave_divisor
 
 -- global state variables --
-color_map = {}
-ticks = 0
 state_map = {}
+color_map = {}
+color_map_afterglow = {}
+ticks = 0
 
 -- event handler functions --
 function on_startup(config)
 	local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
 		state_map[i] = key_state.idle
+		color_map[i] = 0x00000000
+		color_map_afterglow[i] = 0x00000000
     end
 end
 
 function on_key_down(key_index)
-	color_map[key_index] = color_afterglow
+	color_map_afterglow[key_index] = color_afterglow
 
 	for i = 0, max_neigh do
 		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
@@ -166,12 +168,26 @@ function on_tick(delta)
 			color_map[i] = color_shockwave - color_step_shockwave
 		end
 
-		if color_map[i] > rgba_to_color(0, 0, 0, 0) then
+		if color_map[i] > 0x00000000 then
 			color_map[i] = color_map[i] - color_step_shockwave
 
-			if color_map[i] < rgba_to_color(0, 0, 0, 0) then
-				color_map[i] = rgba_to_color(0, 0, 0, 0)
+			if color_map[i] < 0x00000000 then
+				color_map[i] = 0x00000000
 			end
+		end
+
+		-- compute afterglow
+		if color_map_afterglow[i] > 0x00000000 then
+			color_map_afterglow[i] = color_map_afterglow[i] - color_step_afterglow
+			color_map[i] = color_map_afterglow[i]
+		else
+			color_map_afterglow[i] = 0x00000000
+		end
+
+		-- safety net
+		if color_map[i] == nil or
+		   color_map[i] < 0x00000000 or color_map[i] > 0xffffffff then
+			color_map[i] = 0x00000000
 		end
 	end
 

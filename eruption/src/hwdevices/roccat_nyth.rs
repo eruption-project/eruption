@@ -40,9 +40,9 @@ pub const KEYBOARD_SUB_DEVICE: usize = 2;
 pub struct DeviceInfo {
     pub report_id: u8,
     pub size: u8,
-    pub reserved1: u16,
-    pub firmware_version: i32,
-    pub reserved2: u16,
+    // pub reserved1: u16,
+    // pub firmware_version: i32,
+    // pub reserved2: u16,
 }
 
 /// Event code of a device HID message
@@ -102,6 +102,8 @@ pub struct RoccatNyth {
 impl RoccatNyth {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
+        info!("Bound driver: ROCCAT Nyth");
+
         Self {
             is_initialized: false,
 
@@ -117,9 +119,9 @@ impl RoccatNyth {
         trace!("Querying control device feature report");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             match id {
                 0x0f => {
@@ -136,11 +138,11 @@ impl RoccatNyth {
                             Ok(())
                         }
 
-                        Err(_) => Err(HwDeviceError::InvalidResult {}),
+                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
                     }
                 }
 
-                _ => Err(HwDeviceError::InvalidStatusCode {}),
+                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
             }
         }
     }
@@ -149,9 +151,9 @@ impl RoccatNyth {
     //     trace!("Sending control device feature report");
 
     //     if !self.is_bound {
-    //         Err(HwDeviceError::DeviceNotBound {})
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
     //     } else if !self.is_opened {
-    //         Err(HwDeviceError::DeviceNotOpened {})
+    //         Err(HwDeviceError::DeviceNotOpened {}.into())
     //     } else {
     //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
     //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -167,11 +169,11 @@ impl RoccatNyth {
     //                         Ok(())
     //                     }
 
-    //                     Err(_) => Err(HwDeviceError::InvalidResult {}),
+    //                     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
     //                 }
     //             }
 
-    //             _ => Err(HwDeviceError::InvalidStatusCode {}),
+    //             _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
     //         }
     //     }
     // }
@@ -180,9 +182,9 @@ impl RoccatNyth {
         trace!("Waiting for control device to respond...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             loop {
                 thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
@@ -202,7 +204,7 @@ impl RoccatNyth {
                         }
                     }
 
-                    Err(_) => return Err(HwDeviceError::InvalidResult {}),
+                    Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
             }
         }
@@ -220,11 +222,11 @@ impl DeviceInfoTrait for RoccatNyth {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let mut buf = [0; 64];
             buf[0] = 0x0f; // Query device info (HID report 0x0f)
@@ -241,7 +243,7 @@ impl DeviceInfoTrait for RoccatNyth {
                     Ok(result)
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
@@ -262,13 +264,13 @@ impl DeviceTrait for RoccatNyth {
         trace!("Opening HID devices now...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.as_ref().unwrap().open_device(&api) {
                 Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
-                Err(_) => return Err(HwDeviceError::DeviceOpenError {}),
+                Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
             self.is_opened = true;
@@ -282,9 +284,9 @@ impl DeviceTrait for RoccatNyth {
 
         // close keyboard device
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             trace!("Closing control device...");
             *self.ctrl_hiddev.lock() = None;
@@ -299,9 +301,9 @@ impl DeviceTrait for RoccatNyth {
         trace!("Sending device init sequence...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             self.query_ctrl_report(0x0f)
                 .unwrap_or_else(|e| error!("{}", e));
@@ -319,11 +321,11 @@ impl DeviceTrait for RoccatNyth {
 
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -336,18 +338,18 @@ impl DeviceTrait for RoccatNyth {
                     Ok(())
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
 
     fn read_data_raw(&self, size: usize) -> Result<Vec<u8>> {
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -363,7 +365,7 @@ impl DeviceTrait for RoccatNyth {
                     Ok(buf)
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
@@ -379,11 +381,11 @@ impl MouseDeviceTrait for RoccatNyth {
         trace!("Querying control device for next event");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -397,6 +399,12 @@ impl MouseDeviceTrait for RoccatNyth {
                     let event = match buf[0..5] {
                         // DPI changed
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
+
+                        // TODO: Remove this, as soon as we implement the extra keys
+                        _ if buf != [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00] => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| warn!("  {}", s));
+                            MouseHidEvent::Unknown
+                        }
 
                         _ => MouseHidEvent::Unknown,
                     };
@@ -426,7 +434,7 @@ impl MouseDeviceTrait for RoccatNyth {
                     Ok(event)
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
@@ -435,11 +443,11 @@ impl MouseDeviceTrait for RoccatNyth {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // match *self.led_hiddev.lock() {
             //     Some(ref led_dev) => {
@@ -447,7 +455,7 @@ impl MouseDeviceTrait for RoccatNyth {
             //         Ok(())
             //     }
 
-            //     None => Err(HwDeviceError::DeviceNotOpened {}),
+            //     None => Err(HwDeviceError::DeviceNotOpened {}.into()),
             // }
 
             Ok(())
@@ -458,11 +466,11 @@ impl MouseDeviceTrait for RoccatNyth {
         trace!("Setting LED init pattern...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
             thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
@@ -475,11 +483,11 @@ impl MouseDeviceTrait for RoccatNyth {
         trace!("Setting LED off pattern...");
 
         if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {})
+            Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {})
+            Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {})
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
             thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));

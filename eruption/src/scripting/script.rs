@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -24,6 +23,8 @@ use parking_lot::RwLock;
 use rand::Rng;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -98,27 +99,36 @@ thread_local! {
     pub static LOCAL_LED_MAP_MODIFIED: RefCell<bool> = RefCell::new(false);
 }
 
-pub type Result<T> = std::result::Result<T, ScriptingError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum ScriptingError {
-    #[fail(display = "Could not read script file")]
+    #[error("Could not read script file")]
     OpenError {},
 
-    #[fail(display = "Invalid or inaccessible manifest file")]
+    #[error("Invalid or inaccessible manifest file")]
     InaccessibleManifest {},
+}
 
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
+#[derive(Debug)]
+pub struct UnknownError {}
+
+impl std::error::Error for UnknownError {}
+
+impl fmt::Display for UnknownError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Unknown error occurred")
+    }
 }
 
 /// These functions are intended to be used from within lua scripts
 mod callbacks {
     use byteorder::{ByteOrder, LittleEndian};
     use log::*;
-    use noise::NoiseFn;
+    use noise::{NoiseFn, Seedable};
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
+    use std::cell::RefCell;
     use std::convert::TryFrom;
     use std::sync::atomic::Ordering;
     use std::thread;
@@ -128,6 +138,61 @@ mod callbacks {
 
     use crate::hwdevices::{KeyboardDevice, LedKind, NUM_KEYS, RGBA};
     use crate::plugins::macros;
+
+    fn seed() -> u32 {
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        let start = SystemTime::now();
+        let since_the_epoch = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+
+        since_the_epoch.as_millis() as u32
+    }
+
+    thread_local! {
+        pub static PERLIN_NOISE: RefCell<noise::Perlin> = {
+            let noise = noise::Perlin::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static BILLOW_NOISE: RefCell<noise::Billow> = {
+            let noise = noise::Billow::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static VORONOI_NOISE: RefCell<noise::Worley> = {
+            let noise = noise::Worley::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static RIDGED_MULTIFRACTAL_NOISE: RefCell<noise::RidgedMulti> = {
+            let noise = noise::RidgedMulti::new();
+
+            // noise.octaves = 6;
+            // noise.frequency = 2.0; // default: 1.0
+            // noise.lacunarity = std::f64::consts::PI * 2.0 / 3.0;
+            // noise.persistence = 1.0;
+            // noise.attenuation = 4.0; // default: 2.0
+
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static FBM_NOISE: RefCell<noise::Fbm> = {
+            let noise = noise::Fbm::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static OPEN_SIMPLEX_NOISE: RefCell<noise::OpenSimplex> = {
+            let noise = noise::OpenSimplex::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+
+        pub static SUPER_SIMPLEX_NOISE: RefCell<noise::SuperSimplex> = {
+            let noise = noise::SuperSimplex::new();
+            RefCell::new(noise.set_seed(seed()))
+        };
+    }
 
     /// Log a message with severity level `trace`.
     pub(crate) fn log_trace(x: &str) {
@@ -262,7 +327,8 @@ mod callbacks {
     pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
         let (r, g, b) = color_to_rgb(c);
         let rgb =
-            Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)));
+            Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
+                .into_linear();
 
         let (h, s, l) = Hsl::from(rgb).into_components();
 
@@ -281,7 +347,7 @@ mod callbacks {
 
     /// Convert HSL components to a 32 bits color value.
     pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
-        let rgb = Srgb::convert_from(Hsl::new(h, s, l));
+        let rgb = Srgb::convert_from(Hsl::new(h, s, l)).into_linear();
         let rgb = rgb.into_components();
         rgba_to_color(
             (rgb.0 * 255.0) as u8,
@@ -293,7 +359,7 @@ mod callbacks {
 
     /// Convert HSLA components to a 32 bits color value.
     pub(crate) fn hsla_to_color(h: f64, s: f64, l: f64, a: u8) -> u32 {
-        let rgb = Srgb::convert_from(Hsl::new(h, s, l));
+        let rgb = Srgb::convert_from(Hsl::new(h, s, l)).into_linear();
         let rgb = rgb.into_components();
         rgba_to_color(
             (rgb.0 * 255.0) as u8,
@@ -365,67 +431,52 @@ mod callbacks {
 
     /// Compute Perlin noise
     pub(crate) fn perlin_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::Perlin::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        PERLIN_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Billow noise
     pub(crate) fn billow_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::Billow::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        BILLOW_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Worley (Voronoi) noise
     pub(crate) fn voronoi_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::Worley::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        VORONOI_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Fractal Brownian Motion noise
     pub(crate) fn fractal_brownian_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::Fbm::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        FBM_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Ridged Multifractal noise
     pub(crate) fn ridged_multifractal_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::RidgedMulti::new();
-
-        // noise.octaves = 6;
-        // noise.frequency = 2.0; // default: 1.0
-        // noise.lacunarity = std::f64::consts::PI * 2.0 / 3.0;
-        // noise.persistence = 1.0;
-        // noise.attenuation = 4.0; // default: 2.0
-
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        RIDGED_MULTIFRACTAL_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Open Simplex noise (2D)
     pub(crate) fn open_simplex_noise_2d(f1: f64, f2: f64) -> f64 {
-        let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2]) / 2.0 + 0.5
+        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2]))
     }
 
     /// Compute Open Simplex noise (3D)
     pub(crate) fn open_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Open Simplex noise (4D)
     pub(crate) fn open_simplex_noise_4d(f1: f64, f2: f64, f3: f64, f4: f64) -> f64 {
-        let noise = noise::OpenSimplex::new();
-        noise.get([f1, f2, f3, f4]) / 2.0 + 0.5
+        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3, f4]))
     }
 
     /// Compute Super Simplex noise (3D)
     pub(crate) fn super_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        let noise = noise::SuperSimplex::new();
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
+        SUPER_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
     }
 
     /// Compute Checkerboard noise (3D)
     pub(crate) fn checkerboard_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
+        // no seed needed
         let noise = noise::Checkerboard::new();
         noise.get([f1, f2, f3]) / 2.0 + 0.5
     }
@@ -636,7 +687,7 @@ pub fn run_script(
                     error
                 );
 
-                return Err(ScriptingError::InaccessibleManifest {});
+                return Err(ScriptingError::InaccessibleManifest {}.into());
             } else {
                 ACTIVE_SCRIPTS
                     .lock()
@@ -659,7 +710,11 @@ pub fn run_script(
 
             // start execution of the Lua script
             lua_ctx.load(&script).eval::<()>().unwrap_or_else(|e| {
-                error!("Lua error: {}", e);
+                error!(
+                    "Lua error: {}\n\t{:?}",
+                    e,
+                    e.source().unwrap_or_else(|| &UnknownError {})
+                );
                 errors_present = true;
             });
 
@@ -670,7 +725,11 @@ pub fn run_script(
             // call startup event handler, if present
             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_startup") {
                 handler.call::<_, ()>(()).unwrap_or_else(|e| {
-                    error!("Lua error: {}", e);
+                    error!(
+                        "Lua error: {}\n\t{:?}",
+                        e,
+                        e.source().unwrap_or_else(|| &UnknownError {})
+                    );
                     errors_present = true;
                 });
             }
@@ -691,7 +750,11 @@ pub fn run_script(
 
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -711,7 +774,11 @@ pub fn run_script(
                                 if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_tick")
                                 {
                                     handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                        error!("Lua error: {}", e);
+                                        error!(
+                                            "Lua error: {}\n\t{:?}",
+                                            e,
+                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                        );
                                         errors_present = true;
                                     })
                                 } else {
@@ -765,7 +832,11 @@ pub fn run_script(
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_down")
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -783,7 +854,11 @@ pub fn run_script(
 
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_up") {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -843,7 +918,11 @@ pub fn run_script(
                                 handler
                                     .call::<_, ()>((event_type, arg1))
                                     .unwrap_or_else(|e| {
-                                        error!("Lua error: {}", e);
+                                        error!(
+                                            "Lua error: {}\n\t{:?}",
+                                            e,
+                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                        );
                                         errors_present = true;
                                     });
                             }
@@ -878,7 +957,11 @@ pub fn run_script(
                                 handler
                                     .call::<_, ()>((event_type, arg1))
                                     .unwrap_or_else(|e| {
-                                        error!("Lua error: {}", e);
+                                        error!(
+                                            "Lua error: {}\n\t{:?}",
+                                            e,
+                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                        );
                                         errors_present = true;
                                     });
                             }
@@ -898,7 +981,11 @@ pub fn run_script(
                                 lua_ctx.globals().get::<_, Function>("on_mouse_button_down")
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -918,7 +1005,11 @@ pub fn run_script(
                                 lua_ctx.globals().get::<_, Function>("on_mouse_button_up")
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -940,7 +1031,11 @@ pub fn run_script(
                                 {
                                     handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(
                                         |e| {
-                                            error!("Lua error: {}", e);
+                                            error!(
+                                                "Lua error: {}\n\t{:?}",
+                                                e,
+                                                e.source().unwrap_or_else(|| &UnknownError {})
+                                            );
                                             errors_present = true;
                                         },
                                     );
@@ -964,7 +1059,11 @@ pub fn run_script(
                                 lua_ctx.globals().get::<_, Function>("on_mouse_wheel")
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 });
                             }
@@ -1010,7 +1109,11 @@ pub fn run_script(
                                 handler
                                     .call::<_, ()>((event_type, arg1, arg2, arg3))
                                     .unwrap_or_else(|e| {
-                                        error!("Lua error: {}", e);
+                                        error!(
+                                            "Lua error: {}\n\t{:?}",
+                                            e,
+                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                        );
                                         errors_present = true;
                                     });
                             }
@@ -1036,7 +1139,11 @@ pub fn run_script(
 
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
                                 handler.call::<_, ()>(()).unwrap_or_else(|e| {
-                                    error!("Lua error: {}", e);
+                                    error!(
+                                        "Lua error: {}\n\t{:?}",
+                                        e,
+                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                    );
                                     errors_present = true;
                                 })
                             }
@@ -1060,7 +1167,7 @@ pub fn run_script(
             }
         }
 
-        Err(_e) => Err(ScriptingError::OpenError {}),
+        Err(_e) => Err(ScriptingError::OpenError {}.into()),
     }
 }
 
@@ -1158,7 +1265,7 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
     globals.set("sqrt", sqrt)?;
 
     let rand =
-        lua_ctx.create_function(|_, (l, h): (u64, u64)| Ok(rand::thread_rng().gen_range(l, h)))?;
+        lua_ctx.create_function(|_, (l, h): (i64, i64)| Ok(rand::thread_rng().gen_range(l, h)))?;
     globals.set("rand", rand)?;
 
     let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;

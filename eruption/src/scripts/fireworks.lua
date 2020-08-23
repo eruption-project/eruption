@@ -31,7 +31,7 @@ function on_startup(config)
     local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
         fireworks_grid[i] = 0.0
     end
 end
@@ -86,7 +86,7 @@ function on_tick(delta)
 					local hue = lerp(0, 360, sin(fireworks_grid[idx]))
 					color_map[idx] = hsla_to_color(hue, 1.0, 0.5, lerp(0, 255, opacity))
 				else
-					color_map[idx] = rgba_to_color(0, 0, 0, 0)
+					color_map[idx] = 0x00000000
 				end
             end
         end

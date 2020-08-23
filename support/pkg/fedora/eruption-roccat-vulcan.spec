@@ -2,14 +2,13 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.12
+Version: 0.1.13
 Release: 0%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
-URL:     https://x3n0m0rph59.gitlab.io/eruption-roccat-vulcan/
+URL:     https://github.com/X3n0m0rph59/eruption-roccat-vulcan
 License: GPLv3+
 
-# Source0: https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git
-Source0: https://gitlab.com/X3n0m0rph59/%{OrigName}/-/archive/master/%{OrigName}-master.tar.gz
+Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/master/master.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-build
 
@@ -98,6 +97,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/vu-meter.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-voronoi.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -108,6 +108,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/sfx/phaser2.wav %{buildroot}%{_dat
 ln -s phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-down.wav
 ln -s phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 cp -ra %{_builddir}/%{name}-%{version}/eruption/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
+
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
@@ -129,6 +131,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 /usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
+/usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
 %{_unitdir}/eruption.service
@@ -161,6 +164,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 %{_sharedstatedir}/%{ShortName}/profiles/vu-meter.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-turbulence.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-voronoi.profile

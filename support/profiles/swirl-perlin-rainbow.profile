@@ -1,8 +1,8 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713115'
-name = 'Color Swirls (Voronoi)'
+id = '5dc62fa6-e965-45cb-a0da-e87d29713119'
+name = 'Color Swirls (Perlin): Rainbow'
 description = 'Color Swirl effect'
 active_scripts = [
-    'swirl-voronoi.lua',
+    'swirl-perlin.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',
@@ -13,15 +13,25 @@ active_scripts = [
 #   'profiles.lua',
 ]
 
-[[config."Voronoi Swirl"]]
+[[config."Perlin Swirl"]]
+type = 'float'
+name = 'color_divisor'
+value = 1.0
+
+[[config."Perlin Swirl"]]
+type = 'float'
+name = 'color_offset'
+value = 0.0
+
+[[config."Perlin Swirl"]]
 type = 'float'
 name = 'time_scale'
-value = 50.0
+value = 100.0
 
-[[config."Voronoi Swirl"]]
+[[config."Perlin Swirl"]]
 type = 'float'
 name = 'coord_scale'
-value = 5.0
+value = 14.0
 
 [[config.Shockwave]]
 type = 'color'

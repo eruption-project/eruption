@@ -15,17 +15,16 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::Fail;
 use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
 
 mod roccat_kone_pure_ultra;
-// mod roccat_nyth;
+mod roccat_nyth;
 mod roccat_vulcan;
 
 use roccat_kone_pure_ultra::RoccatKonePureUltra;
-// use roccat_nyth::RoccatNyth;
+use roccat_nyth::RoccatNyth;
 use roccat_vulcan::{KeyboardHidEventCode, RoccatVulcan1xx};
 
 pub use roccat_vulcan::hid_code_to_key_index; // TODO: Fix this
@@ -33,7 +32,7 @@ pub use roccat_vulcan::hid_code_to_key_index; // TODO: Fix this
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
 pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
 
-pub type Result<T> = std::result::Result<T, HwDeviceError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 // List of supported devices
 // Supported keyboards
@@ -51,45 +50,45 @@ pub const PRODUCT_IDS_MICE: [u16; 3] = [
 
 pub const NUM_KEYS: usize = roccat_vulcan::NUM_KEYS; // TODO: Fix this
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum HwDeviceError {
-    #[fail(display = "Could not enumerate devices")]
+    #[error("Could not enumerate devices")]
     EnumerationError {},
 
-    #[fail(display = "Could not open the device file")]
+    #[error("Could not open the device file")]
     DeviceOpenError {},
 
-    // #[fail(display = "Invalid init sequence")]
+    // #[error("Invalid init sequence")]
     // InitSequenceError {},
 
-    // #[fail(display = "Invalid operation")]
+    // #[error("Invalid operation")]
     // InvalidOperation {},
 
-    // #[fail(display = "Unsupported operation")]
+    // #[error("Unsupported operation")]
     // UnsupportedOperationError {},
-    #[fail(display = "Device not bound")]
+    #[error("Device not bound")]
     DeviceNotBound {},
 
-    #[fail(display = "Device not opened")]
+    #[error("Device not opened")]
     DeviceNotOpened {},
 
-    #[fail(display = "Device not initialized")]
+    #[error("Device not initialized")]
     DeviceNotInitialized {},
 
-    #[fail(display = "Invalid status code")]
+    #[error("Invalid status code")]
     InvalidStatusCode {},
 
-    #[fail(display = "Invalid result")]
+    #[error("Invalid result")]
     InvalidResult {},
 
-    #[fail(display = "Write error")]
+    #[error("Write error")]
     WriteError {},
 
-    //#[fail(display = "Could not close the device")]
+    //#[error("Could not close the device")]
     //CloseError {},
-    #[fail(display = "Invalid value: {}", description)]
+    #[error("Invalid value: {description}")]
     ValueError { description: String },
-    // #[fail(display = "Unknown error: {}", description)]
+    // #[error("Unknown error: {}", description)]
     // UnknownError { description: String },
 }
 
@@ -154,7 +153,8 @@ impl LedKind {
 
             _ => Err(HwDeviceError::ValueError {
                 description: "Invalid LED identifier".to_owned(),
-            }),
+            }
+            .into()),
         }
     }
 }
@@ -314,7 +314,7 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
             && VENDOR_IDS_MICE.iter().any(|p| *p == device.vendor_id())
             && PRODUCT_IDS_MICE.iter().any(|p| *p == device.product_id())
             // TODO: Fix this
-            && device.interface_number() == roccat_kone_pure_ultra::KEYBOARD_SUB_DEVICE as i32
+            && device.interface_number() == get_sub_device(device.vendor_id(), device.product_id())
         {
             info!(
                 "Found Mouse device: {:?}: {}",
@@ -330,7 +330,7 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
     if !found_ctrl_dev || !found_led_dev {
         warn!("At least one required device could not be detected");
 
-        Err(HwDeviceError::EnumerationError {})
+        Err(HwDeviceError::EnumerationError {}.into())
     } else {
         // We only support the ROCCAT Vulcan 100/12x series, for now
         let keyboard_device = Arc::new(RwLock::new(Box::from(RoccatVulcan1xx::bind(
@@ -339,16 +339,43 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
         ))
             as Box<dyn KeyboardDeviceTrait + Send + Sync + 'static>));
 
-        // We only support the ROCCAT Kone Pure Ultra, for now
+        // bind mouse device
         let mouse_device = if found_mouse_dev {
             Some(Arc::new(RwLock::new(
-                Box::from(RoccatKonePureUltra::bind(&mouse_device.unwrap()))
-                    as Box<dyn MouseDeviceTrait + Send + Sync + 'static>,
+                match (
+                    mouse_device.unwrap().vendor_id(),
+                    mouse_device.unwrap().product_id(),
+                ) {
+                    (0x1e7d, 0x2dd2) => {
+                        Box::from(RoccatKonePureUltra::bind(&mouse_device.unwrap()))
+                            as Box<dyn MouseDeviceTrait + Send + Sync + 'static>
+                    }
+
+                    (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => {
+                        Box::from(RoccatNyth::bind(&mouse_device.unwrap()))
+                            as Box<dyn MouseDeviceTrait + Send + Sync + 'static>
+                    }
+
+                    _ => {
+                        error!("Fatal: Invalid state error in hardware detection code");
+                        panic!()
+                    }
+                },
             )))
         } else {
             None
         };
 
         Ok((keyboard_device, mouse_device))
+    }
+}
+
+fn get_sub_device(vid: u16, pid: u16) -> i32 {
+    match (vid, pid) {
+        (0x1e7d, 0x2dd2) => roccat_kone_pure_ultra::KEYBOARD_SUB_DEVICE as i32,
+
+        (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => roccat_nyth::KEYBOARD_SUB_DEVICE as i32,
+
+        _ => 0,
     }
 }

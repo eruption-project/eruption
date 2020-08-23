@@ -1,8 +1,8 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713115'
-name = 'Color Swirls (Voronoi)'
-description = 'Color Swirl effect'
+id = '5dc62fa6-e965-45cb-a0da-e87d29714116'
+name = 'Flight (Perlin)'
+description = 'Fly through perlin noise in HSL color space'
 active_scripts = [
-    'swirl-voronoi.lua',
+    'flight-perlin.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',
@@ -13,15 +13,25 @@ active_scripts = [
 #   'profiles.lua',
 ]
 
-[[config."Voronoi Swirl"]]
+[[config."Perlin Flight"]]
+type = 'float'
+name = 'color_divisor'
+value = 2.35
+
+[[config."Perlin Flight"]]
+type = 'float'
+name = 'color_offset'
+value = 0.0
+
+[[config."Perlin Flight"]]
 type = 'float'
 name = 'time_scale'
-value = 50.0
+value = 140.0
 
-[[config."Voronoi Swirl"]]
+[[config."Perlin Flight"]]
 type = 'float'
 name = 'coord_scale'
-value = 5.0
+value = 30.0
 
 [[config.Shockwave]]
 type = 'color'

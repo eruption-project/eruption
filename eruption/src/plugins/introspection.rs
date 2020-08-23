@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// use failure::Fail;
 use mlua::prelude::*;
 use std::any::Any;
 
@@ -25,7 +24,7 @@ use crate::plugins::{self, Plugin};
 
 // #[derive(Debug, Fail)]
 // pub enum IntrospectionPluginError {
-//     #[fail(display = "Unknown error: {}", description)]
+//     #[error("Unknown error: {}", description)]
 //     UnknownError { description: String },
 // }
 
@@ -37,6 +36,7 @@ impl IntrospectionPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for IntrospectionPlugin {
     fn get_name(&self) -> String {
         "Introspection".to_string()
@@ -56,7 +56,9 @@ impl Plugin for IntrospectionPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

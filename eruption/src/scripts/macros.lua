@@ -72,7 +72,7 @@ VOLUME_OVERLAY = 1
 
 overlay_state = NO_OVERLAY
 overlay_ttl = 0
-overlay_max_ttl = 20 * 15
+overlay_max_ttl = 24 * 18
 
 -- key highlighting
 highlight_ttl = 0
@@ -96,9 +96,9 @@ function on_startup(config)
 	local num_keys = get_num_keys()
 
 	for i = 0, num_keys do
-		color_map[i] = rgba_to_color(0, 0, 0, 0)
-		color_map_highlight[i] = rgba_to_color(0, 0, 0, 0)
-		color_map_overlay[i] = rgba_to_color(0, 0, 0, 0)
+		color_map[i] = 0x00000000
+		color_map_highlight[i] = 0x00000000
+		color_map_overlay[i] = 0x00000000
 	end
 end
 
@@ -492,7 +492,7 @@ function on_tick(delta)
 				color_map[i] = color_map_highlight[i]
 			else
 				highlight_ttl = 0
-				color_map_highlight[i] = rgba_to_color(0, 0, 0, 0)
+				color_map_highlight[i] = 0x00000000
 			end
 
 			-- overlay effect
@@ -503,13 +503,12 @@ function on_tick(delta)
 				color_map_overlay[i] = rgba_to_color(r, g, b, min(255, alpha))
 				color_map[i] = color_map_overlay[i]
 			else
-				overlay_ttl = 0
-				color_map_overlay[i] = rgba_to_color(0, 0, 0, 0)
+				color_map_overlay[i] = 0x00000000
 			end
 
 			-- reset the canvas, if we dont have to draw anything
-			if highlight_ttl <= 0 and overlay_ttl <= 0 then
-				color_map[i] = rgba_to_color(0, 0, 0, 0)
+			if highlight_ttl <= overlay_step and overlay_ttl <= overlay_step then
+				color_map[i] = 0x00000000
 			end
         end
 

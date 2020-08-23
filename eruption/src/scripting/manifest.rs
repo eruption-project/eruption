@@ -15,7 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::Fail;
+#![allow(dead_code)]
+
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -25,23 +26,21 @@ use std::str::FromStr;
 use crate::profiles;
 use crate::util;
 
-pub type Result<T> = std::result::Result<T, ManifestError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum ManifestError {
-    #[fail(display = "Could not open file for reading")]
+    #[error("Could not open file for reading")]
     OpenError {},
 
-    #[fail(display = "Could not parse manifest file")]
+    #[error("Could not parse manifest file")]
     ParseError {},
 
-    #[fail(display = "Could not enumerate script files")]
+    #[error("Could not enumerate script files")]
     ScriptEnumerationError {},
 
-    #[fail(display = "Could not parse param value")]
+    #[error("Could not parse param value")]
     ParseParamError {},
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 fn default_id() -> usize {
@@ -50,10 +49,6 @@ fn default_id() -> usize {
 
 fn default_script_file() -> PathBuf {
     "".into()
-}
-
-fn default_html_class() -> String {
-    "badge-default".into()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
@@ -155,7 +150,7 @@ impl ParseConfig for Vec<ConfigParam> {
             }
         }
 
-        Err(ManifestError::ParseParamError {})
+        Err(ManifestError::ParseParamError {}.into())
     }
 }
 
@@ -208,9 +203,6 @@ pub struct Manifest {
     pub min_supported_version: String,
     pub tags: Option<Vec<ScriptTag>>,
     pub config: Option<Vec<ConfigParam>>,
-
-    #[serde(default = "default_html_class")]
-    pub html_class: String,
 }
 
 impl std::cmp::PartialOrd for Manifest {
@@ -231,27 +223,17 @@ impl Manifest {
                         result.id = id;
                         result.script_file = script.to_path_buf();
 
-                        if let Some(tags) = &result.tags {
-                            result.html_class.clear();
-
-                            for tag in tags {
-                                result
-                                    .html_class
-                                    .push_str(&format!(" {}", tag.get_css_class()));
-                            }
-                        }
-
                         Ok(result)
                     }
 
                     Err(e) => {
                         error!("{}", e);
-                        Err(ManifestError::ParseError {})
+                        Err(ManifestError::ParseError {}.into())
                     }
                 }
             }
 
-            Err(_e) => Err(ManifestError::OpenError {}),
+            Err(_e) => Err(ManifestError::OpenError {}.into()),
         }
     }
 
@@ -275,7 +257,7 @@ fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
             })
             .collect()),
 
-        Err(_e) => Err(ManifestError::ScriptEnumerationError {}),
+        Err(_e) => Err(ManifestError::ScriptEnumerationError {}.into()),
     }
 }
 

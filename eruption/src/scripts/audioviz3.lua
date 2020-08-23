@@ -21,12 +21,7 @@ color_map = {}
 
 ticks = 0
 column = 0
-power_envelope = 2000.0
-
--- Keyboard topology maps --
--- use 'table_offset = 0' for the ISO model
--- table_offset = get_num_keys() + 1
-table_offset = 0
+power_envelope = 256.0
 
 -- event handler functions --
 function on_startup(config)
@@ -37,7 +32,9 @@ function on_startup(config)
 end
 
 function on_tick(delta)
-    -- ticks = ticks + delta
+	ticks = ticks + delta
+
+	if ticks % 2 ~= 0 then return end
 
 	local num_keys = get_num_keys()
 
@@ -49,7 +46,7 @@ function on_tick(delta)
 	local num_buckets = 32
 	local num_rows = max_keys_per_col
 
-	for col = 1, num_cols + 1 do
+	for col = 1, num_cols + 1, 1 do
 		local bucket = trunc(num_buckets / num_cols * col)
 		local val = spectrum[bucket]
 		if val == nil then val = 0 end
@@ -64,9 +61,7 @@ function on_tick(delta)
 			color_map[index] = linear_gradient(color_hot, color_cold, i / num_rows)
 
 			local peak_index = rows_topology[col + p * max_keys_per_row] + 1
-			if i == p then
-				color_map[peak_index] = rgba_to_color(255, 15, 15, lerp(0, 255, opacity))
-			else
+			if i ~= p then
 				color_map[peak_index] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
 			end
 		end

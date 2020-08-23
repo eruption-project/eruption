@@ -16,7 +16,6 @@
 */
 
 use evdev_rs::{Device, GrabMode};
-use failure::Fail;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -34,23 +33,21 @@ use crate::plugins::macros;
 
 use crate::plugins::{self, Plugin};
 
-pub type Result<T> = std::result::Result<T, KeyboardPluginError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum KeyboardPluginError {
-    #[fail(display = "Could not peek evdev event")]
+    #[error("Could not peek evdev event")]
     EvdevEventError {},
 
-    #[fail(display = "Could not get the name of the evdev device from udev")]
+    #[error("Could not get the name of the evdev device from udev")]
     UdevError {},
 
-    #[fail(display = "Could not open the evdev device")]
+    #[error("Could not open the evdev device")]
     EvdevError {},
 
-    #[fail(display = "Could not create a libevdev device handle")]
+    #[error("Could not create a libevdev device handle")]
     EvdevHandleError {},
-    // #[fail(display = "Unknown error: {}", description)]
-    // UnknownError { description: String },
 }
 
 lazy_static! {
@@ -106,13 +103,13 @@ impl KeyboardPlugin {
                         Ok(())
                     }
 
-                    Err(_e) => Err(KeyboardPluginError::EvdevHandleError {}),
+                    Err(_e) => Err(KeyboardPluginError::EvdevHandleError {}.into()),
                 },
 
-                Err(_e) => Err(KeyboardPluginError::EvdevError {}),
+                Err(_e) => Err(KeyboardPluginError::EvdevError {}.into()),
             },
 
-            Err(_e) => Err(KeyboardPluginError::UdevError {}),
+            Err(_e) => Err(KeyboardPluginError::UdevError {}.into()),
         }
     }
 
@@ -153,12 +150,12 @@ impl KeyboardPlugin {
                             error!("Fatal: Keyboard device went away: {}", e);
 
                             crate::QUIT.store(true, Ordering::SeqCst);
-                            Err(KeyboardPluginError::EvdevEventError {})
+                            Err(KeyboardPluginError::EvdevEventError {}.into())
                         } else {
                             error!("Fatal: Could not peek evdev event: {}", e);
 
                             crate::QUIT.store(true, Ordering::SeqCst);
-                            Err(KeyboardPluginError::EvdevEventError {})
+                            Err(KeyboardPluginError::EvdevEventError {}.into())
                         }
                     }
                 }
@@ -177,6 +174,7 @@ impl KeyboardPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for KeyboardPlugin {
     fn get_name(&self) -> String {
         "Keyboard".to_string()
@@ -200,7 +198,9 @@ impl Plugin for KeyboardPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

@@ -15,12 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::Error;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use std::sync::Arc;
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, Clone)]
 pub enum Event {

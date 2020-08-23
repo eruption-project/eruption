@@ -18,18 +18,17 @@
 use log::*;
 use mlua::prelude::*;
 use std::any::Any;
-// use failure::Fail;
 
 use std::process::Command;
 
 use crate::plugins;
 use crate::plugins::Plugin;
 
-// pub type Result<T> = std::result::Result<T, SystemPluginError>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 // #[derive(Debug, Fail)]
 // pub enum SystemPluginError {
-//     #[fail(display = "Unknown error: {}", description)]
+//     #[error("Unknown error: {}", description)]
 //     UnknownError { description: String },
 // }
 
@@ -103,6 +102,7 @@ impl SystemPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for SystemPlugin {
     fn get_name(&self) -> String {
         "System".to_string()
@@ -147,7 +147,9 @@ impl Plugin for SystemPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

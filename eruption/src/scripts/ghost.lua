@@ -29,7 +29,7 @@ key_state = {
 	shockwave_origin = 32,
 }
 
-target_fps = 20
+target_fps = 24
 max_effect_ttl = 50
 effect_ttl = 0
 
@@ -63,7 +63,7 @@ function on_startup(config)
 	local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
 		state_map[i] = key_state.idle
     end
 end
@@ -108,11 +108,11 @@ function on_tick(delta)
 			color_map[i] = color_shockwave - color_step_shockwave
 		end
 
-		if color_map[i] > rgba_to_color(0, 0, 0, 0) then
+		if color_map[i] > 0x00000000 then
 			color_map[i] = color_map[i] - color_step_shockwave
 
-			if color_map[i] < rgba_to_color(0, 0, 0, 0) then
-				color_map[i] = rgba_to_color(0, 0, 0, 0)
+			if color_map[i] < 0x00000000 then
+				color_map[i] = 0x00000000
 			end
 		end
 	end

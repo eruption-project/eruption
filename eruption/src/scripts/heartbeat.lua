@@ -27,7 +27,7 @@ function on_startup(config)
     local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
     end
 end
 
@@ -64,7 +64,7 @@ function on_tick(delta)
                 color_map[i] = 0x00000000
             end
         else
-            color_map[i] = rgba_to_color(0, 0, 0, 0)
+            color_map[i] = 0x00000000
         end
     end
 

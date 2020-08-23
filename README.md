@@ -104,7 +104,7 @@ Note: You don't have to enable the eruption service, since it is started by an
 #### From Source
 
 ```sh
-$ git clone https://gitlab.com/X3n0m0rph59/eruption-roccat-vulcan.git
+$ git clone https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git
 $ cd eruption-roccat-vulcan
 $ cargo build --all --release
 ```

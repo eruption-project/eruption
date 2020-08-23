@@ -16,24 +16,22 @@
 */
 
 use lazy_static::lazy_static;
-use log::*;
+// use log::*;
 use mlua::prelude::*;
-use std::any::Any;
-// use failure::Fail;
 use parking_lot::Mutex;
+use std::any::Any;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::thread;
-use sysinfo::{ComponentExt, SystemExt};
+use sysinfo::{ComponentExt, RefreshKind, SystemExt};
 
 use crate::plugins;
 use crate::plugins::Plugin;
 
-// pub type Result<T> = std::result::Result<T, SensorsPluginError>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 // #[derive(Debug, Fail)]
 // pub enum SensorsPluginError {
-//     #[fail(display = "Unknown error: {}", description)]
+//     #[error("Unknown error: {}", description)]
 //     UnknownError { description: String },
 // }
 
@@ -42,7 +40,7 @@ lazy_static! {
     static ref DO_REFRESH: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 
     /// System state and sensor information
-    static ref SYSTEM: Arc<Mutex<sysinfo::System>> = Arc::new(Mutex::new(sysinfo::System::new()));
+    static ref SYSTEM: Arc<Mutex<sysinfo::System>> = Arc::new(Mutex::new(sysinfo::System::new_with_specifics(RefreshKind::default().with_components().with_memory())));
 }
 
 /// A plugin that gives Lua scripts access to the systems sensor data
@@ -50,22 +48,21 @@ pub struct SensorsPlugin {}
 
 impl SensorsPlugin {
     pub fn new() -> Self {
+        let mut system = SYSTEM.lock();
+
+        system.refresh_memory();
+        system.refresh_components_list();
+        system.refresh_components();
+
         SensorsPlugin {}
     }
 
     /// Refresh state of sensors
     pub fn refresh() {
-        // we need to spawn a thread here, since sensor updating is really slooow
-        let builder = thread::Builder::new().name("sensors".into());
-        builder
-            .spawn(move || {
-                let mut system = SYSTEM.lock();
-                system.refresh_all();
-            })
-            .unwrap_or_else(|e| {
-                error!("Could not spawn a thread: {}", e);
-                panic!()
-            });
+        let mut system = SYSTEM.lock();
+
+        system.refresh_memory();
+        system.refresh_components();
     }
 
     /// Get the temperature of the CPU package
@@ -76,7 +73,11 @@ impl SensorsPlugin {
 
         let components = system.get_components();
         if components.len() > 1 {
-            components[components.len().saturating_sub(1)].get_temperature()
+            components
+                .iter()
+                .find(|c| c.get_label().contains("Package id 0"))
+                .and_then(|c| Some(c.get_temperature()))
+                .unwrap_or_else(|| 0.0)
         } else {
             0.0
         }
@@ -90,7 +91,11 @@ impl SensorsPlugin {
 
         let components = system.get_components();
         if components.len() > 1 {
-            components[components.len().saturating_sub(1)].get_max()
+            components
+                .iter()
+                .find(|c| c.get_label().contains("Package id 0"))
+                .and_then(|c| Some(c.get_temperature()))
+                .unwrap_or_else(|| 0.0)
         } else {
             0.0
         }
@@ -129,6 +134,7 @@ impl SensorsPlugin {
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for SensorsPlugin {
     fn get_name(&self) -> String {
         "Sensors".to_string()
@@ -172,13 +178,15 @@ impl Plugin for SensorsPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, ticks: u64) {
+    async fn main_loop_hook(&self, ticks: u64) {
         // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
             Self::refresh();
         }
     }
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

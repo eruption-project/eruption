@@ -19,7 +19,7 @@ color_map = {}
 function on_startup()
     -- turn off all key LEDs
     for i = 0, get_num_keys() do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
     end
 
     -- update keyboard LED state

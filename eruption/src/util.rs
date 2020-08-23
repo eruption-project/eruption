@@ -18,7 +18,6 @@
 // use std::fs::File;
 // use std::io::prelude::*;
 use evdev_rs::enums::EV_KEY;
-use failure::Fail;
 use std::fs;
 use std::path::{Path, PathBuf};
 use udev::Enumerator;
@@ -27,24 +26,24 @@ use udev::Enumerator;
 
 use crate::hwdevices;
 
-pub type Result<T> = std::result::Result<T, UtilError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum UtilError {
     #[cfg(feature = "procmon")]
-    #[fail(display = "Operation fehlgeschlagen")]
+    #[error("Operation fehlgeschlagen")]
     OpFailed {},
 
-    #[fail(display = "No compatible devices found")]
+    #[error("No compatible devices found")]
     NoDevicesFound {},
 
-    #[fail(display = "Error occurred during device enumeration")]
+    #[error("Error occurred during device enumeration")]
     EnumerationError {},
 
-    #[fail(display = "Could not enumerate udev devices")]
+    #[error("Could not enumerate udev devices")]
     UdevError {},
 
-    #[fail(display = "Could not map an evdev event code to a key or button")]
+    #[error("Could not map an evdev event code to a key or button")]
     MappingError {},
 }
 
@@ -76,14 +75,14 @@ pub fn get_evdev_from_udev() -> Result<String> {
                         }
                     }
 
-                    Err(UtilError::NoDevicesFound {})
+                    Err(UtilError::NoDevicesFound {}.into())
                 }
 
-                Err(_e) => Err(UtilError::EnumerationError {}),
+                Err(_e) => Err(UtilError::EnumerationError {}.into()),
             }
         }
 
-        Err(_e) => Err(UtilError::UdevError {}),
+        Err(_e) => Err(UtilError::UdevError {}.into()),
     }
 }
 
@@ -119,14 +118,14 @@ pub fn get_evdev_mouse_from_udev() -> Result<String> {
                         }
                     }
 
-                    Err(UtilError::NoDevicesFound {})
+                    Err(UtilError::NoDevicesFound {}.into())
                 }
 
-                Err(_e) => Err(UtilError::EnumerationError {}),
+                Err(_e) => Err(UtilError::EnumerationError {}.into()),
             }
         }
 
-        Err(_e) => Err(UtilError::UdevError {}),
+        Err(_e) => Err(UtilError::UdevError {}.into()),
     }
 }
 
@@ -155,14 +154,14 @@ pub fn get_mouse_dev_from_udev() -> Result<String> {
                         }
                     }
 
-                    Err(UtilError::NoDevicesFound {})
+                    Err(UtilError::NoDevicesFound {}.into())
                 }
 
-                Err(_e) => Err(UtilError::EnumerationError {}),
+                Err(_e) => Err(UtilError::EnumerationError {}.into()),
             }
         }
 
-        Err(_e) => Err(UtilError::UdevError {}),
+        Err(_e) => Err(UtilError::UdevError {}.into()),
     }
 }
 
@@ -191,14 +190,14 @@ pub fn get_mouse_dev_from_udev() -> Result<String> {
 //                         }
 //                     }
 
-//                     Err(UtilError::NoDevicesFound {})
+//                     Err(UtilError::NoDevicesFound {}.into())
 //                 }
 
-//                 Err(_e) => Err(UtilError::EnumerationError {}),
+//                 Err(_e) => Err(UtilError::EnumerationError {}.into()),
 //             }
 //         }
 
-//         Err(_e) => Err(UtilError::UdevError {}),
+//         Err(_e) => Err(UtilError::UdevError {}.into()),
 //     }
 // }
 
@@ -490,7 +489,7 @@ pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
         evdev_rs::enums::EV_KEY::BTN_BACK => Ok(17),
         evdev_rs::enums::EV_KEY::BTN_TASK => Ok(18),
 
-        _ => Err(UtilError::MappingError {}),
+        _ => Err(UtilError::MappingError {}.into()),
     }
 }
 
@@ -519,7 +518,7 @@ pub fn button_index_to_ev_key(index: u32) -> Result<evdev_rs::enums::EV_KEY> {
         17 => Ok(evdev_rs::enums::EV_KEY::BTN_BACK),
         18 => Ok(evdev_rs::enums::EV_KEY::BTN_TASK),
 
-        _ => Err(UtilError::MappingError {}),
+        _ => Err(UtilError::MappingError {}.into()),
     }
 }
 

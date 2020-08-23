@@ -41,7 +41,7 @@ function on_startup(config)
 	local num_keys = get_num_keys()
 
     for i = 0, num_keys do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+        color_map[i] = 0x00000000
 		state_map[i] = key_state.idle
     end
 end
@@ -104,7 +104,7 @@ function on_tick(delta)
 		if state_map[i] >= key_state.water_sentinel then
 			color_map[i] = hsla_to_color(state_map[i], 0.5, 0.5, 255)
 		else
-			color_map[i] = rgba_to_color(0, 0, 0, 0)
+			color_map[i] = 0x00000000
 		end
 	end
 

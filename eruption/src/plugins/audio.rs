@@ -15,13 +15,13 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::Fail;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use parking_lot::Mutex;
 use std::any::Any;
+use std::f32::consts::PI;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -33,22 +33,20 @@ use rustfft::FFT;
 use crate::events;
 use crate::plugins::{self, Plugin};
 
-pub type Result<T> = std::result::Result<T, AudioPluginError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum AudioPluginError {
-    //#[fail(display = "Unknown error: {}", description)]
-    //UnknownError { description: String },
-    #[fail(display = "Pulse Audio error: {}", description)]
+    #[error("Pulse Audio error: {description}")]
     PulseError { description: String },
 
-    #[fail(display = "File I/O error: {}", description)]
+    #[error("File I/O error: {description}")]
     IoError { description: String },
 
-    #[fail(display = "Playback error: {}", description)]
+    #[error("Playback error: {description}")]
     PlaybackError { description: String },
 
-    #[fail(display = "Audio grabber error: {}", description)]
+    #[error("Audio grabber error: {description}")]
     GrabberError { description: String },
 }
 
@@ -125,7 +123,8 @@ fn try_start_audio_grabber() -> Result<()> {
     } else {
         Err(AudioPluginError::GrabberError {
             description: "Audio backend not initialized".into(),
-        })
+        }
+        .into())
     }
 }
 
@@ -152,7 +151,7 @@ impl AudioPlugin {
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
-        const FFT_SIZE: usize = 1024;
+        const FFT_SIZE: usize = 512;
 
         let raw_data = Self::get_audio_raw_data();
         let mut data: Vec<Complex<f32>> = raw_data
@@ -165,32 +164,38 @@ impl AudioPlugin {
         let fft = Radix4::new(FFT_SIZE, false);
         fft.process(&mut data, &mut output);
 
-        // normalize and smooth datapoints
+        // apply post processing steps: normalization, window function and smoothing
         let one_over_fft_len_sqrt = 1.0 / (FFT_SIZE as f32).sqrt();
 
-        const SMOOTH_DATAPOINTS: usize = 4;
+        let mut phase = 0.0;
+        const DELTA: f32 = (2.0 * PI) / FFT_SIZE as f32;
+
+        const SMOOTH_DATA_POINTS: usize = 2;
         let mut counter = 0;
         let mut accum = 0.0;
 
-        let result: Vec<f32> = output[8..(output.len() / 8) + 8]
+        let result: Vec<f32> = output
             .iter()
+            // normalize
             .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
+            // apply Hamming window
+            .map(|e| {
+                phase += DELTA;
+                e * (0.54 - 0.46 * phase.cos())
+            })
+            // smooth data points
             .coalesce(|x, y| {
                 counter += 1;
                 accum += x + y;
-
-                if counter % SMOOTH_DATAPOINTS == 0 {
+                if counter % SMOOTH_DATA_POINTS == 0 {
                     counter = 0;
                     accum = 0.0;
-
                     Err((x, y))
                 } else {
-                    Ok(accum / SMOOTH_DATAPOINTS as f32)
+                    Ok(accum / SMOOTH_DATA_POINTS as f32)
                 }
             })
             .collect();
-
-        //debug!("Length: {}", result.len());
 
         result
     }
@@ -211,13 +216,14 @@ impl AudioPlugin {
         }
 
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
-            backend.get_master_volume().unwrap_or_else(|_| 0) * 100 / u16::MAX as isize
+            backend.get_master_volume().unwrap_or_else(|_| 0) * 100 / std::u16::MAX as isize
         } else {
             -1
         }
     }
 }
 
+#[async_trait::async_trait]
 impl Plugin for AudioPlugin {
     fn get_name(&self) -> String {
         "Audio".to_string()
@@ -303,7 +309,9 @@ impl Plugin for AudioPlugin {
         Ok(())
     }
 
-    fn main_loop_hook(&self, _ticks: u64) {}
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
+    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self
@@ -506,7 +514,8 @@ mod backends {
             if AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
                 return Err(AudioPluginError::GrabberError {
                     description: "Thread already running".into(),
-                });
+                }
+                .into());
             }
 
             AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);

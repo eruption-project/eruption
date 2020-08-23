@@ -15,8 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use failure::{Error, Fail};
-
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::RwLock;
@@ -29,15 +27,15 @@ use std::sync::Arc;
 use crate::constants;
 use crate::plugins::audio;
 
-pub type Result<T> = std::result::Result<T, StateError>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum StateError {
-    #[fail(display = "Could not load global runtime state: {}", error)]
-    StateLoadError { error: Error },
+    #[error("Could not load global runtime state: {description}")]
+    StateLoadError { description: String },
 
-    #[fail(display = "Could not save global runtime state: {}", error)]
-    StateWriteError { error: Error },
+    #[error("Could not save global runtime state: {description}")]
+    StateWriteError { description: String },
 }
 
 lazy_static! {
@@ -99,7 +97,9 @@ pub fn init_global_runtime_state() -> Result<()> {
             &state_path.to_str().unwrap(),
             config::FileFormat::Toml,
         ))
-        .map_err(|e| StateError::StateLoadError { error: e.into() })?;
+        .map_err(|e| StateError::StateLoadError {
+            description: format!("{}", e),
+        })?;
 
     audio::ENABLE_SFX.store(
         STATE
@@ -156,10 +156,11 @@ pub fn save_runtime_state() -> Result<()> {
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
     };
 
-    let toml = toml::ser::to_string_pretty(&config)
-        .map_err(|e| StateError::StateWriteError { error: e.into() })?;
+    let toml = toml::ser::to_string_pretty(&config).map_err(|e| StateError::StateWriteError {
+        description: format!("{}", e),
+    })?;
 
-    fs::write(&state_path, &toml).map_err(|e| StateError::StateWriteError { error: e.into() })?;
+    fs::write(&state_path, &toml)?;
 
     Ok(())
 }

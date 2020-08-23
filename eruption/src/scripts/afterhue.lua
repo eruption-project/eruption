@@ -59,7 +59,7 @@ function on_tick(delta)
                     r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
                     color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
                 else
-                    color_map[i] = 0x000000000
+                    color_map[i] = 0x00000000
                 end
             end
         end
