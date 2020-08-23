@@ -49,7 +49,7 @@ pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
 pub fn edit_file<P: AsRef<Path>>(file_name: P) -> Result<()> {
     println!("Editing: {}", &file_name.as_ref().to_string_lossy());
 
-    Command::new(env!("EDITOR"))
+    Command::new(std::env::var("EDITOR").unwrap_or_else(|_| "/usr/bin/nano".to_string()))
         .args(&[file_name.as_ref().to_string_lossy().to_string()])
         .status()?;
 
