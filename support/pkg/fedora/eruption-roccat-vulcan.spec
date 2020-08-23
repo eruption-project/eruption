@@ -19,7 +19,7 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: luajit
+BuildRequires: luajit-devel
 
 Requires: systemd
 Requires: dbus
