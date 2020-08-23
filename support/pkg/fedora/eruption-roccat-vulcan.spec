@@ -3,7 +3,7 @@
 
 Name:    eruption-roccat-vulcan-git
 Version: 0.1.13
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://github.com/X3n0m0rph59/eruption-roccat-vulcan
 License: GPLv3+
@@ -19,11 +19,13 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
+BuildRequires: luajit
 
 Requires: systemd
 Requires: dbus
 Requires: hidapi
 Requires: libevdev
+Requires: luajit
 
 Conflicts: eruption-roccat-vulcan
 
@@ -47,6 +49,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/system.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
+%{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
 %{__mkdir_p} %{buildroot}%{_unitdir}
 %{__mkdir_p} %{buildroot}%{_presetdir}
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}
