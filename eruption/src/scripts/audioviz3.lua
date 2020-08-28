@@ -21,7 +21,7 @@ color_map = {}
 
 ticks = 0
 column = 0
-power_envelope = 256.0
+power_envelope = 128.0
 
 -- event handler functions --
 function on_startup(config)

@@ -15,20 +15,13 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use parking_lot::Mutex;
 use std::any::Any;
-use std::f32::consts::PI;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
-
-use rustfft::algorithm::Radix4;
-use rustfft::num_complex::Complex;
-use rustfft::num_traits::Zero;
-use rustfft::FFT;
 
 use crate::events;
 use crate::plugins::{self, Plugin};
@@ -54,7 +47,10 @@ pub enum AudioPluginError {
 pub const MAX_IN_FLIGHT_SFX: usize = 2;
 
 /// The allocated size of the audio grabber buffer
-pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 30;
+pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 16;
+
+/// Number of FFT frequency buckets of the spectrum analyzer
+pub const FFT_SIZE: usize = 512;
 
 /// Thread termination request flag of the audio grabber thread
 pub static AUDIO_GRABBER_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
@@ -76,6 +72,9 @@ lazy_static! {
 
     /// Holds audio data recorded by the audio grabber
     static ref AUDIO_GRABBER_BUFFER: Arc<Mutex<Vec<i16>>> = Arc::new(Mutex::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
+
+    /// Spectrum analyzer state
+    static ref AUDIO_SPECTRUM: Arc<Mutex<Vec<f32>>> = Arc::new(Mutex::new(vec![0.0; FFT_SIZE / 2]));
 
     static ref LAST_KEYBOARD_EVENT: Arc<Mutex<Option<events::Event>>> = Arc::new(Mutex::new(None));
 
@@ -151,53 +150,7 @@ impl AudioPlugin {
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
-        const FFT_SIZE: usize = 512;
-
-        let raw_data = Self::get_audio_raw_data();
-        let mut data: Vec<Complex<f32>> = raw_data
-            .iter()
-            .take(FFT_SIZE)
-            .map(|e| Complex::from(*e as f32))
-            .collect();
-        let mut output = vec![Complex::zero(); FFT_SIZE];
-
-        let fft = Radix4::new(FFT_SIZE, false);
-        fft.process(&mut data, &mut output);
-
-        // apply post processing steps: normalization, window function and smoothing
-        let one_over_fft_len_sqrt = 1.0 / (FFT_SIZE as f32).sqrt();
-
-        let mut phase = 0.0;
-        const DELTA: f32 = (2.0 * PI) / FFT_SIZE as f32;
-
-        const SMOOTH_DATA_POINTS: usize = 2;
-        let mut counter = 0;
-        let mut accum = 0.0;
-
-        let result: Vec<f32> = output
-            .iter()
-            // normalize
-            .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
-            // apply Hamming window
-            .map(|e| {
-                phase += DELTA;
-                e * (0.54 - 0.46 * phase.cos())
-            })
-            // smooth data points
-            .coalesce(|x, y| {
-                counter += 1;
-                accum += x + y;
-                if counter % SMOOTH_DATA_POINTS == 0 {
-                    counter = 0;
-                    accum = 0.0;
-                    Err((x, y))
-                } else {
-                    Ok(accum / SMOOTH_DATA_POINTS as f32)
-                }
-            })
-            .collect();
-
-        result
+        AUDIO_SPECTRUM.lock().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
@@ -367,8 +320,10 @@ mod backends {
     use super::AUDIO_GRABBER_BUFFER_SIZE;
     use super::AUDIO_GRABBER_THREAD_RUNNING;
     use super::AUDIO_GRABBER_THREAD_SHALL_TERMINATE;
+    use super::AUDIO_SPECTRUM;
     use super::CURRENT_RMS;
     use super::ENABLE_SFX;
+    use super::FFT_SIZE;
 
     use log::*;
     use std::sync::atomic::Ordering;
@@ -382,6 +337,12 @@ mod backends {
     use pulse::stream::Direction;
     use pulsectl::controllers::DeviceControl;
     use pulsectl::controllers::SinkController;
+
+    use rustfft::algorithm::Radix4;
+    use rustfft::num_complex::Complex;
+    use rustfft::num_traits::Zero;
+    use rustfft::FFT;
+    use std::f32::consts::PI;
 
     /// Audio backend trait, defines an interface to the player and
     /// grabber functionality
@@ -553,6 +514,38 @@ mod backends {
                         let sqr_sum = (sqr_sum / buffer.len() as f32).sqrt();
 
                         CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
+
+                        // spectrum analyzer
+                        let mut data: Vec<Complex<f32>> = buffer
+                            .iter()
+                            .take(FFT_SIZE)
+                            .map(|e| Complex::from(*e as f32))
+                            .collect();
+                        let mut output = vec![Complex::zero(); FFT_SIZE];
+
+                        let fft = Radix4::new(FFT_SIZE, false);
+                        fft.process(&mut data, &mut output);
+
+                        // apply post processing steps: normalization, window function and smoothing
+                        let one_over_fft_len_sqrt = 1.0 / ((FFT_SIZE / 2) as f32).sqrt();
+
+                        let mut phase = 0.0;
+                        const DELTA: f32 = (2.0 * PI) / (FFT_SIZE / 2) as f32;
+
+                        let result: Vec<f32> = output[(FFT_SIZE / 2)..]
+                            .iter()
+                            // normalize
+                            .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
+                            // apply Hamming window
+                            .map(|e| {
+                                phase += DELTA;
+                                e * (0.54 - 0.46 * phase.cos())
+                            })
+                            .collect();
+
+                        for (i, e) in AUDIO_SPECTRUM.lock().iter_mut().enumerate() {
+                            *e = (*e + result[i]) / 2.0;
+                        }
 
                         if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
                             AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);

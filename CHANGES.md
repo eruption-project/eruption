@@ -4,6 +4,8 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 0.1.14 | __New Release__                                                                                                         |
+| 0.1.14 | Improved the spectrum analyzer                                                                                          |
 | 0.1.13 | __New Release__                                                                                                         |
 | 0.1.13 | Fixed a bug with suspend/resume. Eruption will now be restarted after system wakes up from suspend                      |
 | 0.1.13 | Fixed multiple bugs in color handling code that artificially limited the usable color-space                             |
