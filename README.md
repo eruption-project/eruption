@@ -1,4 +1,4 @@
-![Clippy check](https://github.com/X3n0m0rph59/eruption-roccat-vulcan/workflows/.github/workflows/rust.yml/badge.svg)
+![Clippy check](https://github.com/X3n0m0rph59/eruption-roccat-vulcan/workflows/Clippy%20check/badge.svg)
 
 # Table of Contents
 
