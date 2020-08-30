@@ -4,6 +4,8 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 0.1.15 | __New Release__                                                                                                         |
+| 0.1.15 | Lowered CPU load and power consumption in the spectrum analyzer code                                                    |
 | 0.1.14 | __New Release__                                                                                                         |
 | 0.1.14 | Improved the spectrum analyzer                                                                                          |
 | 0.1.13 | __New Release__                                                                                                         |

@@ -18,7 +18,7 @@
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use std::any::Any;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -71,12 +71,10 @@ lazy_static! {
         Arc::new(Mutex::new(None));
 
     /// Holds audio data recorded by the audio grabber
-    static ref AUDIO_GRABBER_BUFFER: Arc<Mutex<Vec<i16>>> = Arc::new(Mutex::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
+    static ref AUDIO_GRABBER_BUFFER: Arc<RwLock<Vec<i16>>> = Arc::new(RwLock::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
 
     /// Spectrum analyzer state
-    static ref AUDIO_SPECTRUM: Arc<Mutex<Vec<f32>>> = Arc::new(Mutex::new(vec![0.0; FFT_SIZE / 2]));
-
-    static ref LAST_KEYBOARD_EVENT: Arc<Mutex<Option<events::Event>>> = Arc::new(Mutex::new(None));
+    static ref AUDIO_SPECTRUM: Arc<RwLock<Vec<f32>>> = Arc::new(RwLock::new(vec![0.0; FFT_SIZE / 2]));
 
     /// Global "sound effects enabled" flag
     pub static ref ENABLE_SFX: AtomicBool = AtomicBool::new(false);
@@ -87,6 +85,10 @@ lazy_static! {
     /// Key up SFX
     pub static ref SFX_KEY_UP: Option<Vec<u8>> = util::load_sfx("key-up.wav").ok();
 }
+
+// Enable computation of RMS and Spectrum Analyzer data?
+static AUDIO_GRABBER_PERFORM_RMS_COMPUTATION: AtomicBool = AtomicBool::new(false);
+static AUDIO_GRABBER_PERFORM_FFT_COMPUTATION: AtomicBool = AtomicBool::new(false);
 
 pub fn reset_audio_backend() {
     AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
@@ -136,6 +138,8 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_loudness() -> isize {
+        AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
+
         if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
             try_start_audio_grabber()
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
@@ -145,12 +149,14 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_spectrum() -> Vec<f32> {
+        AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
+
         if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
             try_start_audio_grabber()
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
-        AUDIO_SPECTRUM.lock().clone()
+        AUDIO_SPECTRUM.read().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
@@ -159,7 +165,7 @@ impl AudioPlugin {
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
-        AUDIO_GRABBER_BUFFER.lock().to_vec()
+        AUDIO_GRABBER_BUFFER.read().to_vec()
     }
 
     pub fn get_audio_volume() -> isize {
@@ -487,9 +493,6 @@ mod backends {
                     let grabber = Self::init_grabber().unwrap();
 
                     'RECORDER_LOOP: loop {
-                        //let mut tmp: Vec<u8> = Vec::with_capacity(AUDIO_GRABBER_BUFFER_SIZE);
-                        //tmp.resize(AUDIO_GRABBER_BUFFER_SIZE, 0);
-
                         let mut tmp: Vec<u8> = vec![0; AUDIO_GRABBER_BUFFER_SIZE];
 
                         grabber
@@ -498,53 +501,58 @@ mod backends {
                                 description: format!("Error during recording: {}", e),
                             })?;
 
-                        let mut buffer = AUDIO_GRABBER_BUFFER.lock();
+                        let mut buffer = AUDIO_GRABBER_BUFFER.write();
                         buffer.clear();
+                        buffer.reserve(AUDIO_GRABBER_BUFFER_SIZE);
                         buffer.extend(
                             tmp.chunks_exact(2)
                                 .map(|c| i16::from_ne_bytes([c[0], c[1]])),
                         );
 
                         // compute root mean square (RMS) of the recorded samples
-                        let sqr_sum = buffer
-                            .iter()
-                            .map(|s| *s as f32)
-                            .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
+                        if super::AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.load(Ordering::Relaxed) {
+                            let sqr_sum = buffer
+                                .iter()
+                                .map(|s| *s as f32)
+                                .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
 
-                        let sqr_sum = (sqr_sum / buffer.len() as f32).sqrt();
+                            let sqr_sum = (sqr_sum / buffer.len() as f32).sqrt();
 
-                        CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
+                            CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
+                        }
 
-                        // spectrum analyzer
-                        let mut data: Vec<Complex<f32>> = buffer
-                            .iter()
-                            .take(FFT_SIZE)
-                            .map(|e| Complex::from(*e as f32))
-                            .collect();
-                        let mut output = vec![Complex::zero(); FFT_SIZE];
+                        // compute spectrum analyzer
+                        if super::AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.load(Ordering::Relaxed) {
+                            let mut data: Vec<Complex<f32>> = buffer
+                                .iter()
+                                .take(FFT_SIZE)
+                                .map(|e| Complex::from(*e as f32))
+                                .collect();
+                            let mut output = vec![Complex::zero(); FFT_SIZE];
 
-                        let fft = Radix4::new(FFT_SIZE, false);
-                        fft.process(&mut data, &mut output);
+                            let fft = Radix4::new(FFT_SIZE, false);
+                            fft.process(&mut data, &mut output);
 
-                        // apply post processing steps: normalization, window function and smoothing
-                        let one_over_fft_len_sqrt = 1.0 / ((FFT_SIZE / 2) as f32).sqrt();
+                            // apply post processing steps: normalization, window function and smoothing
+                            let one_over_fft_len_sqrt = 1.0 / ((FFT_SIZE / 2) as f32).sqrt();
 
-                        let mut phase = 0.0;
-                        const DELTA: f32 = (2.0 * PI) / (FFT_SIZE / 2) as f32;
+                            let mut phase = 0.0;
+                            const DELTA: f32 = (2.0 * PI) / (FFT_SIZE / 2) as f32;
 
-                        let result: Vec<f32> = output[(FFT_SIZE / 2)..]
-                            .iter()
-                            // normalize
-                            .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
-                            // apply Hamming window
-                            .map(|e| {
-                                phase += DELTA;
-                                e * (0.54 - 0.46 * phase.cos())
-                            })
-                            .collect();
+                            let result: Vec<f32> = output[(FFT_SIZE / 2)..]
+                                .iter()
+                                // normalize
+                                .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
+                                // apply Hamming window
+                                .map(|e| {
+                                    phase += DELTA;
+                                    e * (0.54 - 0.46 * phase.cos())
+                                })
+                                .collect();
 
-                        for (i, e) in AUDIO_SPECTRUM.lock().iter_mut().enumerate() {
-                            *e = (*e + result[i]) / 2.0;
+                            for (i, e) in AUDIO_SPECTRUM.write().iter_mut().enumerate() {
+                                *e = (*e + result[i]) / 2.0;
+                            }
                         }
 
                         if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
