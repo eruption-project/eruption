@@ -33,7 +33,7 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    if ticks % 5 ~= 0 then return end
+    if ticks % 4 == 0 then return end
 
     -- update the system state
     local num_keys = get_num_keys()
