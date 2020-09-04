@@ -27,6 +27,8 @@ Requires: hidapi
 Requires: libevdev
 Requires: luajit
 
+Recommends: lua-socket-compat
+
 Conflicts: eruption-roccat-vulcan
 
 %global gittag master
@@ -67,6 +69,7 @@ cargo build --all --release --verbose
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
@@ -82,6 +85,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/gradient-noise.profile %{
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/netfx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -116,6 +120,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buil
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 
 %post
 %systemd_post %{ShortName}.service
@@ -149,6 +154,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap-errors.profile
 %{_sharedstatedir}/%{ShortName}/profiles/matrix.profile
+%{_sharedstatedir}/%{ShortName}/profiles/netfx.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/profile2.profile
@@ -243,6 +249,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 %{_datarootdir}/%{ShortName}/scripts/impact.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/netfx.lua
+%{_datarootdir}/%{ShortName}/scripts/netfx.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/osn.lua
 %{_datarootdir}/%{ShortName}/scripts/osn.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rainbow.lua

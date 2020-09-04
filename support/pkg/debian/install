@@ -1,5 +1,6 @@
 target/release/eruption usr/bin/
 target/release/eruptionctl usr/bin/
+target/release/eruption-netfx usr/bin/
 
 support/systemd/eruption-suspend.sh lib/systemd/system-sleep/eruption
 
@@ -15,6 +16,7 @@ support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
 support/man/eruptionctl.1 usr/share/man/man1/
+support/man/eruption-netfx.1 usr/share/man/man1/
 
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
@@ -25,6 +27,7 @@ support/profiles/gradient-noise.profile var/lib/eruption/profiles
 support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/heatmap-errors.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
+support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
 support/profiles/checkerboard.profile var/lib/eruption/profiles
 support/profiles/profile1.profile var/lib/eruption/profiles
@@ -93,6 +96,8 @@ eruption/src/scripts/impact.lua usr/share/eruption/scripts/
 eruption/src/scripts/impact.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/multigradient.lua usr/share/eruption/scripts/
 eruption/src/scripts/multigradient.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/netfx.lua usr/share/eruption/scripts/
+eruption/src/scripts/netfx.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/osn.lua usr/share/eruption/scripts/
 eruption/src/scripts/osn.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/perlin.lua usr/share/eruption/scripts/

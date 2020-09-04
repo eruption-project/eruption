@@ -677,7 +677,7 @@ pub fn run_script(
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
         Ok(script) => {
-            let lua_ctx = Lua::new();
+            let lua_ctx = unsafe { Lua::unsafe_new_with(mlua::StdLib::ALL) };
 
             let manifest = Manifest::from(&file);
             if let Err(error) = manifest {

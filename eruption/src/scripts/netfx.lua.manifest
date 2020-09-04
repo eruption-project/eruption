@@ -1,0 +1,24 @@
+name = "Network FX"
+description = "Receive colors over a network socket"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.14"
+tags = ['Background', 'Vendor', 'Gradient']
+
+[[config]]
+type = 'string'
+name = 'bind_address'
+description = 'The ip address to bind to'
+default = '127.0.0.1'
+
+[[config]]
+type = 'int'
+name = 'port'
+description = 'The port number to bind to'
+default = 2359
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0

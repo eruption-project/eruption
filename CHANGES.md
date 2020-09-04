@@ -5,6 +5,11 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.15 | __New Release__                                                                                                         |
+| 0.1.15 | Allow Lua VMs to load additional Lua extension modules at runtime                                                       |
+| 0.1.15 | Added support for the new `Network FX` protocol - please see [NETFX.md](./NETFX.md) for further information             |
+| 0.1.15 | Added a new Lua script `netfx.lua` implementing the Network FX server                                                   |
+| 0.1.15 | Added a new Profile `netfx.profile` that makes use of `netfx.lua`                                                       |
+| 0.1.15 | Added a new companion tool `eruption-netfx`, that implements the `Network FX` reference client                          |
 | 0.1.15 | Lowered CPU load and power consumption in the spectrum analyzer code                                                    |
 | 0.1.14 | __New Release__                                                                                                         |
 | 0.1.14 | Improved the spectrum analyzer                                                                                          |

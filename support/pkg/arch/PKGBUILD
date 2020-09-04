@@ -10,7 +10,7 @@ arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption-roccat-vulcan'
 license=('GPL3+')
 groups=()
-depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit')
+depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket')
 makedepends=('git' 'rust')
 checkdepends=()
 optdepends=()
@@ -65,6 +65,7 @@ package() {
 
     install -m 755 "target/release/eruption" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruptionctl" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-netfx" "$pkgdir/usr/bin/"
 
     install -m 755 "support/systemd/eruption-suspend.sh" "$pkgdir/usr/lib/systemd/system-sleep/eruption"
 
@@ -80,6 +81,7 @@ package() {
     install -m 644 "support/man/eruption.8" "$pkgdir/usr/share/man/man8/"
     install -m 644 "support/man/eruption.conf.5" "$pkgdir/usr/share/man/man5/"
     install -m 644 "support/man/eruptionctl.1" "$pkgdir/usr/share/man/man1/"
+    install -m 644 "support/man/eruption-netfx.1" "$pkgdir/usr/share/man/man1/"
 
     install -m 644 "eruption/src/scripts/macros.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/macros.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
@@ -131,6 +133,8 @@ package() {
     install -m 644 "eruption/src/scripts/impact.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/multigradient.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/multigradient.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/netfx.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/netfx.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/osn.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/osn.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/perlin.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -198,6 +202,7 @@ package() {
     install -m 644 "support/profiles/heatmap.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/heatmap-errors.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/matrix.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/netfx.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/batique.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/checkerboard.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/profile1.profile" "$pkgdir/var/lib/eruption/profiles/"
