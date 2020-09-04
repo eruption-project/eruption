@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "async-trait",
  "byteorder",

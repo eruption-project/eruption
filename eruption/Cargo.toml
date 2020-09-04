@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.1.14"
+version = "0.1.15"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"

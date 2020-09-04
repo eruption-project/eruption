@@ -2,7 +2,7 @@ name = "Network FX"
 description = "Receive colors over a network socket"
 version = "0.0.1"
 author = "The Eruption development team"
-min_supported_version = "0.1.14"
+min_supported_version = "0.1.15"
 tags = ['Background', 'Vendor', 'Gradient']
 
 [[config]]
