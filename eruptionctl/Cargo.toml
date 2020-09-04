@@ -29,7 +29,7 @@ uuid = { version = "0.8.1", features = ["serde", "v4"] }
 toml = "0.5.6"
 thiserror = "1.0.20"
 eyre = "0.6.0"
-color-eyre = "0.5.1"
+color-eyre = "0.5.2"
 paste = "1.0"
 dbus = "0.8.4"
 dbus-tokio = "0.5.2"
