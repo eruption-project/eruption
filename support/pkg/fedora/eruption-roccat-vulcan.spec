@@ -20,6 +20,8 @@ BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: luajit-devel
+BuildRequires: libX11-devel
+BuildRequires: libXrandr-devel
 
 Requires: systemd
 Requires: dbus
