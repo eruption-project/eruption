@@ -1343,18 +1343,18 @@ async fn process_keyboard_events(
                                     .unwrap_or_else(|e| error!("{}", e));
                             }
                         }
-
-                        // handler for Message::MirrorKey will drop the key if a Lua VM
-                        // called inject_key(..), so that the key won't be reported twice
-                        macros::UINPUT_TX
-                            .lock()
-                            .as_ref()
-                            .unwrap()
-                            .send(macros::Message::MirrorKey(raw_event.clone()))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending keyboard event: {}", e)
-                            });
                     }
+
+                    // handler for Message::MirrorKey will drop the key if a Lua VM
+                    // called inject_key(..), so that the key won't be reported twice
+                    macros::UINPUT_TX
+                        .lock()
+                        .as_ref()
+                        .unwrap()
+                        .send(macros::Message::MirrorKey(raw_event.clone()))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending keyboard event: {}", e)
+                        });
 
                     event_processed = true;
                 }
