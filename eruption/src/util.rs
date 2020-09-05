@@ -19,7 +19,11 @@
 // use std::io::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::time::Duration;
+use std::{
+    path::{Path, PathBuf},
+    thread,
+};
 use udev::Enumerator;
 
 // use log::*;
@@ -49,40 +53,70 @@ pub enum UtilError {
 
 /// Get the path of the evdev device of the first keyboard from udev
 pub fn get_evdev_from_udev() -> Result<String> {
-    match Enumerator::new() {
-        Ok(mut enumerator) => {
-            enumerator.match_subsystem("input").unwrap();
+    // retry up to n times, in case device enumeration fails
+    let mut retry_counter = 3;
 
-            match enumerator.scan_devices() {
-                Ok(devices) => {
-                    for device in devices {
-                        let found_dev = device.properties().any(|e| {
-                            e.name() == "ID_VENDOR_ID"
-                                && (hwdevices::VENDOR_IDS
-                                    .iter()
-                                    .map(|v| format!("{:x}", v))
-                                    .any(|v| v == e.value().to_string_lossy()))
-                        }) && device.properties().any(|e| {
-                            e.name() == "ID_MODEL_ID"
-                                && (hwdevices::PRODUCT_IDS
-                                    .iter()
-                                    .map(|v| format!("{:x}", v))
-                                    .any(|v| v == e.value().to_string_lossy()))
-                        }) && device.devnode().is_some();
+    loop {
+        match Enumerator::new() {
+            Ok(mut enumerator) => {
+                enumerator.match_subsystem("input").unwrap();
 
-                        if found_dev {
-                            return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                match enumerator.scan_devices() {
+                    Ok(devices) => {
+                        for device in devices {
+                            let found_dev = device.properties().any(|e| {
+                                e.name() == "ID_VENDOR_ID"
+                                    && (hwdevices::VENDOR_IDS
+                                        .iter()
+                                        .map(|v| format!("{:x}", v))
+                                        .any(|v| v == e.value().to_string_lossy()))
+                            }) && device.properties().any(|e| {
+                                e.name() == "ID_MODEL_ID"
+                                    && (hwdevices::PRODUCT_IDS
+                                        .iter()
+                                        .map(|v| format!("{:x}", v))
+                                        .any(|v| v == e.value().to_string_lossy()))
+                            }) && device.devnode().is_some();
+
+                            if found_dev {
+                                return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                            }
+                        }
+
+                        if retry_counter <= 0 {
+                            // give up the search
+                            break Err(UtilError::NoDevicesFound {}.into());
+                        } else {
+                            // wait for the device to be available
+                            retry_counter -= 1;
+                            thread::sleep(Duration::from_millis(500));
                         }
                     }
 
-                    Err(UtilError::NoDevicesFound {}.into())
+                    Err(_e) => {
+                        if retry_counter <= 0 {
+                            // give up the search
+                            break Err(UtilError::EnumerationError {}.into());
+                        } else {
+                            // wait for the enumerator to be available
+                            retry_counter -= 1;
+                            thread::sleep(Duration::from_millis(500));
+                        }
+                    }
                 }
+            }
 
-                Err(_e) => Err(UtilError::EnumerationError {}.into()),
+            Err(_e) => {
+                if retry_counter <= 0 {
+                    // give up the search
+                    break Err(UtilError::UdevError {}.into());
+                } else {
+                    // wait for the enumerator to be available
+                    retry_counter -= 1;
+                    thread::sleep(Duration::from_millis(500));
+                }
             }
         }
-
-        Err(_e) => Err(UtilError::UdevError {}.into()),
     }
 }
 
