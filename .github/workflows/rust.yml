@@ -7,7 +7,7 @@ jobs:
       - name: Setup Dependencies
         run: |
           sudo apt-get update -y -qq
-          sudo apt-get install -y -qq libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev	libdbus-1-dev libpulse-dev luajit libluajit-5.1-dev
+          sudo apt-get install -y -qq libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev	libdbus-1-dev libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
