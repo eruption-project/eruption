@@ -410,7 +410,7 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
 
                     //         // update our internal representation of the keyboard state
                     //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write().unwrap()[index] = true;
+                    //         keyboard::KEY_STATES.write()[index] = true;
                     //     }
 
                     //     HidEvent::KeyUp { code } => {
@@ -419,7 +419,7 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
 
                     //         // update our internal representation of the keyboard state
                     //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write().unwrap()[index] = false;
+                    //         keyboard::KEY_STATES.write()[index] = false;
                     //     }
 
                     //     _ => { /* ignore other events */ }

@@ -19,11 +19,12 @@ use evdev_rs::{Device, GrabMode};
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
+use parking_lot::RwLock;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fs::File;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::macros;
@@ -151,7 +152,7 @@ impl MousePlugin {
                                 let is_pressed = k.1.value > 0;
                                 let index = util::ev_key_to_button_index(code).unwrap() as usize;
 
-                                BUTTON_STATES.write().unwrap()[index] = is_pressed;
+                                BUTTON_STATES.write()[index] = is_pressed;
                             } else if let evdev_rs::enums::EventCode::EV_REL(code) = event_code {
                                 if code != evdev_rs::enums::EV_REL::REL_WHEEL
                                     && code != evdev_rs::enums::EV_REL::REL_HWHEEL
@@ -214,7 +215,7 @@ impl MousePlugin {
     }
 
     pub(crate) fn get_button_state(button_index: usize) -> bool {
-        BUTTON_STATES.read().unwrap()[button_index]
+        BUTTON_STATES.read()[button_index]
     }
 }
 

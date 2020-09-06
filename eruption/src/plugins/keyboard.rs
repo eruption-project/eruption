@@ -19,11 +19,12 @@ use evdev_rs::{Device, GrabMode};
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
+use parking_lot::RwLock;
 use std::any::Any;
 use std::cell::RefCell;
 use std::fs::File;
 use std::sync::atomic::Ordering;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::hwdevices;
@@ -137,7 +138,7 @@ impl KeyboardPlugin {
                             let is_pressed = k.1.value > 0;
                             let index = util::ev_key_to_key_index(code.clone()) as usize;
 
-                            KEY_STATES.write().unwrap()[index] = is_pressed;
+                            KEY_STATES.write()[index] = is_pressed;
                         } else {
                             // error!("Invalid event code received")
                         }
@@ -170,7 +171,7 @@ impl KeyboardPlugin {
     }
 
     pub(crate) fn get_key_state(key_index: usize) -> bool {
-        KEY_STATES.read().unwrap()[key_index]
+        KEY_STATES.read()[key_index]
     }
 }
 

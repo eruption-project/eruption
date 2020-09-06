@@ -739,6 +739,8 @@ async fn process_hid_events(
                     KeyboardHidEvent::KeyDown { code } => {
                         let index = hwdevices::hid_code_to_key_index(code);
                         if index > 0 {
+                            plugins::keyboard::KEY_STATES.write()[index as usize] = true;
+
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
                                 LUA_TXS.lock().len() - failed_txs.len();
 
@@ -779,6 +781,8 @@ async fn process_hid_events(
                     KeyboardHidEvent::KeyUp { code } => {
                         let index = hwdevices::hid_code_to_key_index(code);
                         if index > 0 {
+                            plugins::keyboard::KEY_STATES.write()[index as usize] = false;
+
                             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
                                 LUA_TXS.lock().len() - failed_txs.len();
 
@@ -1269,98 +1273,104 @@ async fn process_keyboard_events(
                     events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone()))
                         .ok();
 
-                    // ignore repetitions
-                    if raw_event.value < 2 {
-                        if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
-                            let is_pressed = raw_event.value > 0;
-                            let index = util::ev_key_to_key_index(code.clone());
+                    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
+                        let is_pressed = raw_event.value > 0;
+                        let index = util::ev_key_to_key_index(code.clone());
 
-                            trace!("Key index: {:#x}", index);
+                        trace!("Key index: {:#x}", index);
 
-                            if is_pressed {
-                                *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
-                                    LUA_TXS.lock().len() - failed_txs.len();
+                        if is_pressed {
+                            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
+                                LUA_TXS.lock().len() - failed_txs.len();
 
-                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                    if !failed_txs.contains(&idx) {
-                                        lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx.send(script::Message::KeyDown(index)).unwrap_or_else(
                                             |e| {
                                                 error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                             },
                                         );
-                                    } else {
-                                        warn!("Not sending a message to a failed tx");
-                                    }
+                                } else {
+                                    warn!("Not sending a message to a failed tx");
                                 }
-
-                                // wait until all Lua VMs completed the event handler
-                                loop {
-                                    let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
-
-                                    UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                                        &mut pending,
-                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                                    );
-
-                                    if *pending == 0 {
-                                        break;
-                                    }
-                                }
-
-                                events::notify_observers(events::Event::KeyDown(index))
-                                    .unwrap_or_else(|e| error!("{}", e));
-                            } else {
-                                *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
-                                    LUA_TXS.lock().len() - failed_txs.len();
-
-                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                                    if !failed_txs.contains(&idx) {
-                                        lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
-                                            |e| {
-                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
-                                            },
-                                        );
-                                    } else {
-                                        warn!("Not sending a message to a failed tx");
-                                    }
-                                }
-
-                                // wait until all Lua VMs completed the event handler
-                                loop {
-                                    let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
-
-                                    UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                                        &mut pending,
-                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                                    );
-
-                                    if *pending == 0 {
-                                        break;
-                                    }
-                                }
-
-                                events::notify_observers(events::Event::KeyUp(index))
-                                    .unwrap_or_else(|e| error!("{}", e));
                             }
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
+                                    &mut pending,
+                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                );
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyDown(index))
+                                .unwrap_or_else(|e| error!("{}", e));
+                        } else {
+                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
+                                LUA_TXS.lock().len() - failed_txs.len();
+
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
+                                            |e| {
+                                                error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                                            },
+                                        );
+                                } else {
+                                    warn!("Not sending a message to a failed tx");
+                                }
+                            }
+
+                            // wait until all Lua VMs completed the event handler
+                            loop {
+                                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+
+                                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
+                                    &mut pending,
+                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                );
+
+                                if *pending == 0 {
+                                    break;
+                                }
+                            }
+
+                            events::notify_observers(events::Event::KeyUp(index))
+                                .unwrap_or_else(|e| error!("{}", e));
                         }
                     }
 
-                    // handler for Message::MirrorKey will drop the key if a Lua VM
-                    // called inject_key(..), so that the key won't be reported twice
-                    macros::UINPUT_TX
-                        .lock()
-                        .as_ref()
-                        .unwrap()
-                        .send(macros::Message::MirrorKey(raw_event.clone()))
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending keyboard event: {}", e)
-                        });
+                    // mirror all key events except macro invocations
+                    // through FN and CAPS LOCK/Easy Shift keys
+                    if !plugins::keyboard::KEY_STATES.read()[77]
+                        && !plugins::keyboard::KEY_STATES.read()[4]
+                    {
+                        // handler for Message::MirrorKey will drop the key if a Lua VM
+                        // called inject_key(..), so that the key won't be reported twice
+                        macros::UINPUT_TX
+                            .lock()
+                            .as_ref()
+                            .unwrap()
+                            .send(macros::Message::MirrorKey(raw_event.clone()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending keyboard event: {}", e)
+                            });
+                    }
 
                     event_processed = true;
                 }
 
                 // ignore spurious events
-                None => trace!("Spurious keyboard event ignored"),
+                None => {
+                    event_processed = true;
+                    trace!("Spurious keyboard event ignored");
+                }
             },
 
             // ignore timeout errors

@@ -798,7 +798,7 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                             // update our internal representation of the keyboard state
                             let index = hid_code_to_key_index(code) as usize;
-                            keyboard::KEY_STATES.write().unwrap()[index] = true;
+                            keyboard::KEY_STATES.write()[index] = true;
                         }
 
                         KeyboardHidEvent::KeyUp { code } => {
@@ -807,7 +807,7 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                             // update our internal representation of the keyboard state
                             let index = hid_code_to_key_index(code) as usize;
-                            keyboard::KEY_STATES.write().unwrap()[index] = false;
+                            keyboard::KEY_STATES.write()[index] = false;
                         }
 
                         _ => { /* ignore other events */ }
@@ -946,6 +946,9 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 pub fn hid_code_to_key_index(code: KeyboardHidEventCode) -> u8 {
     match code {
         KeyboardHidEventCode::KEY_FN => 77,
+
+        KeyboardHidEventCode::KEY_CAPS_LOCK => 4,
+        KeyboardHidEventCode::KEY_EASY_SHIFT => 4,
 
         // We don't need all the other key codes, for now
         _ => 0,
