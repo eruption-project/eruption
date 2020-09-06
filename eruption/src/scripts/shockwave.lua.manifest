@@ -1,6 +1,6 @@
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
-version = "0.0.6"
+version = "0.0.7"
 author = "The Eruption development team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
@@ -33,7 +33,7 @@ default = 0x0a0a0000
 type = 'int'
 name = 'shockwave_divisor'
 description = 'Controls the spread of the shockwave. Range: [1..10], lower values mean less spread'
-default = 5
+default = 2
 
 [[config]]
 type = 'bool'
