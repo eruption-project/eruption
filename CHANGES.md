@@ -5,6 +5,9 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.15 | __New Release__                                                                                                         |
+| 0.1.15 | Improved robustness of device initialization code                                                                       |
+| 0.1.15 | Stopped original key events from leaking through on macro invocations                                                   |
+| 0.1.15 | Repaired broken key repetition functionality (on Linux virtual terminals)                                               |
 | 0.1.15 | Allow Lua VMs to load additional Lua extension modules at runtime                                                       |
 | 0.1.15 | Added support for the new `Network FX` protocol - please see [NETFX.md](./NETFX.md) for further information             |
 | 0.1.15 | Added a new Lua script `netfx.lua` implementing the Network FX server                                                   |

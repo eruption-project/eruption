@@ -203,6 +203,7 @@ Eruption currently ships with the following Lua scripts:
 | Ridged Multifractal Noise       | Background | `rmf.lua`              | Ready  | Effect based on the Ridged Multifractal noise function that serves as input to produce a HSL color           |
 | Voronoi                         | Background | `voronoi.lua`          | Ready  | Effect based on the Voronoi noise function that serves as input to produce a HSL color                       |
 | Checkerboard                    | Background | `checkerboard.lua`     | Ready  | Effect based on the Checkerboard noise function that serves as input to produce a HSL color                  |
+| Network FX                      | Background | `netfx.lua`            | Ready  | Implements Network FX, a TCP-based network protocol                                                          |
 | Heartbeat                       | Effect     | `heartbeat.lua`        | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                              |
 | Impact                          | Effect     | `impact.lua`           | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out |
 | Raindrops                       | Effect     | `raindrops.lua`        | Ready  | Rain effect, randomly light up keys and fade them out again                                                  |

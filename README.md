@@ -49,13 +49,13 @@ the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 ```sh
   systemd.mask=eruption.service
 ```
-Or with systemctl to mask/disable the service:
+Or with systemctl to mask the service:
 ```sh
 $ sudo systemctl mask eruption.service
 ```
 You can always re-enable the Eruption service with the command:
 ```sh
-$ sudo systemctl enable eruption.service
+$ sudo systemctl unmask eruption.service
 ```
 
 ## Design Overview <a name="overview"></a>
@@ -100,7 +100,7 @@ the daemon with the command:
 $ sudo systemctl start eruption.service
 ```
 
-Note: You don't have to enable the eruption service, since it is started by an
+> Note: You don't have to enable the eruption service, since it is started by an
 `udev` rule as soon as a compatible keyboard device is plugged into your system.
 
 #### From Source

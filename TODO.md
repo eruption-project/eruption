@@ -3,7 +3,6 @@
 ## Preliminary Roadmap
 
 * Widen the scope of the project: Add support for more hardware devices
-* CLI app: We need a command line app
 * GUI support: We lack a decent GUI
 * ...
 
