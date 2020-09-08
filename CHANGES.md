@@ -5,6 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.15 | __New Release__                                                                                                         |
+| 0.1.15 | Released a new version of the `Eruption Profile Switcher` Gnome Shell extension; please be sure to update!              |
 | 0.1.15 | Improved robustness of device initialization code                                                                       |
 | 0.1.15 | Stopped original key events from leaking through on macro invocations                                                   |
 | 0.1.15 | Repaired broken key repetition functionality (on Linux virtual terminals)                                               |
