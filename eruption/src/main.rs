@@ -1356,18 +1356,10 @@ async fn process_keyboard_events(
                         }
                     }
 
-                    // needed to avoid spurious repetitions of keys
-                    // e.g.: when CAPS LOCK is released while another key is held down
-                    let num_pressed = plugins::keyboard::KEY_STATES
-                        .read()
-                        .iter()
-                        .fold(0, |acc, e| if *e { acc + 1 } else { acc });
-
                     // mirror all key events except macro invocations
                     // through FN and CAPS LOCK/Easy Shift keys
                     if (!plugins::keyboard::KEY_STATES.read()[77]
                         && !plugins::keyboard::KEY_STATES.read()[4])
-                        || num_pressed > 1
                         || force_mirror_event
                     {
                         // handler for Message::MirrorKey will drop the key if a Lua VM
