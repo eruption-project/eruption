@@ -17,13 +17,11 @@
 
 use log::*;
 use parking_lot::Mutex;
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
 use crate::constants;
-use crate::macros;
 use crate::plugins::keyboard;
 
 use super::{
@@ -793,18 +791,12 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                     match event {
                         KeyboardHidEvent::KeyDown { code } => {
-                            // reset "to be dropped" flag
-                            macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
                             // update our internal representation of the keyboard state
                             let index = hid_code_to_key_index(code) as usize;
                             keyboard::KEY_STATES.write()[index] = true;
                         }
 
                         KeyboardHidEvent::KeyUp { code } => {
-                            // reset "to be dropped" flag
-                            macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
                             // update our internal representation of the keyboard state
                             let index = hid_code_to_key_index(code) as usize;
                             keyboard::KEY_STATES.write()[index] = false;

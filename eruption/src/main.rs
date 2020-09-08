@@ -1264,7 +1264,6 @@ async fn process_keyboard_events(
 
     'KEYBOARD_EVENTS_LOOP: loop {
         let mut event_processed = false;
-        let mut force_mirror_event = false;
 
         // send pending keyboard events to the Lua VMs and to the event dispatcher
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
@@ -1279,15 +1278,6 @@ async fn process_keyboard_events(
                         let index = util::ev_key_to_key_index(code.clone());
 
                         trace!("Key index: {:#x}", index);
-
-                        if index == 4 {
-                            // if CAPS LOCK/Easy Shift is pressed, we normally inhibit mirroring of keystrokes
-                            // to the virtual keyboard (see code below). This means we have to
-                            // re-enable the CAPS LOCK functionality here by letting the CAPS LOCK key
-                            // pass the event filter if it is the current key/only key being pressed
-
-                            force_mirror_event = true;
-                        }
 
                         if is_pressed {
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
@@ -1356,23 +1346,16 @@ async fn process_keyboard_events(
                         }
                     }
 
-                    // mirror all key events except macro invocations
-                    // through FN and CAPS LOCK/Easy Shift keys
-                    if (!plugins::keyboard::KEY_STATES.read()[77]
-                        && !plugins::keyboard::KEY_STATES.read()[4])
-                        || force_mirror_event
-                    {
-                        // handler for Message::MirrorKey will drop the key if a Lua VM
-                        // called inject_key(..), so that the key won't be reported twice
-                        macros::UINPUT_TX
-                            .lock()
-                            .as_ref()
-                            .unwrap()
-                            .send(macros::Message::MirrorKey(raw_event.clone()))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending keyboard event: {}", e)
-                            });
-                    }
+                    // handler for Message::MirrorKey will drop the key if a Lua VM
+                    // called inject_key(..), so that the key won't be reported twice
+                    macros::UINPUT_TX
+                        .lock()
+                        .as_ref()
+                        .unwrap()
+                        .send(macros::Message::MirrorKey(raw_event.clone()))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending keyboard event: {}", e)
+                        });
 
                     event_processed = true;
                 }

@@ -81,7 +81,7 @@ function on_macro_key_down(index)
 		end
 
 		-- consume the original keystroke
-		inject_key(0, false)
+		consume_key()
 
 		-- place your code here --
 
@@ -90,7 +90,7 @@ function on_macro_key_down(index)
 		-- text "Message from eruption" to the system journal
 
 		-- consume the original keystroke
-		inject_key(0, false)
+		consume_key()
 
 		-- result = system("/usr/bin/logger", { "-i", "Message from eruption" })
 		-- if result ~= 0 then
@@ -101,7 +101,7 @@ function on_macro_key_down(index)
 		-- system("notify-send", { "Title", "Message from eruption" })
 	else
 		-- no match, just consume the original keystroke and do nothing
-		inject_key(0, false)
+		consume_key()
 	end
 end
 

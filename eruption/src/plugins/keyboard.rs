@@ -130,15 +130,15 @@ impl KeyboardPlugin {
                         // update AFK timer
                         *crate::LAST_INPUT_TIME.lock() = Instant::now();
 
-                        // reset "to be dropped" flag
-                        macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
                         // update our internal representation of the keyboard state
                         if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
                             let is_pressed = k.1.value > 0;
                             let index = util::ev_key_to_key_index(code.clone()) as usize;
 
                             KEY_STATES.write()[index] = is_pressed;
+
+                            // reset "to be dropped" flag
+                            macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
                         } else {
                             // error!("Invalid event code received")
                         }

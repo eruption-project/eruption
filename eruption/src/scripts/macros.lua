@@ -81,6 +81,11 @@ highlight_max_ttl = 255
 modifier_map = {} -- holds the state of modifier keys
 game_mode_enabled = load_bool_transient("global.game_mode_enabled", false) -- keyboard can be in "game mode" or in "normal mode";
 
+-- utility functions --
+function consume_key()
+	inject_key(0, false)
+end
+
 -- event handler functions --
 function on_startup(config)
 	modifier_map[CAPS_LOCK] = get_key_state(4)
@@ -256,7 +261,7 @@ function on_key_down(key_index)
 
 		-- consume the CAPS_LOCK key while in game mode
  		if ENABLE_EASY_SHIFT and game_mode_enabled then
-			inject_key(0, false)
+			consume_key()
 		end
 	end
 
@@ -277,7 +282,7 @@ function on_key_down(key_index)
 
 		if MODIFIER_KEY == RIGHT_MENU then
 			-- consume the menu key
-			inject_key(0, false)
+			consume_key()
 		end
 	end
 
@@ -329,7 +334,7 @@ function on_key_down(key_index)
 		if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
 			EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index] ~= nil then
 			-- consume the original key press
-			inject_key(0, false)
+			consume_key()
 
 			-- call associated function
 			EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]()
@@ -346,7 +351,7 @@ function on_key_up(key_index)
 
 		-- consume CAPS_LOCK key while in game mode
 		if ENABLE_EASY_SHIFT and game_mode_enabled then
-			inject_key(0, false)
+			consume_key()
 		end
 	end
 
@@ -367,7 +372,7 @@ function on_key_up(key_index)
 
 		if MODIFIER_KEY == RIGHT_MENU then
 			-- consume the menu key
-			inject_key(0, false)
+			consume_key()
 		end
 	end
 
@@ -435,7 +440,7 @@ function do_switch_slot(index)
 	debug("Macros: Switching to slot #" .. index + 1)
 
 	-- consume the keystroke
-	inject_key(0, false)
+	consume_key()
 
 	-- tell the Eruption core to switch to a different slot
 	switch_to_slot(index)
@@ -445,7 +450,7 @@ function do_switch_easy_shift_layer(index)
 	debug("Macros: Switching to Easy Shift+ layer #" .. index + 1)
 
 	-- consume the keystroke
-	inject_key(0, false)
+	consume_key()
 
 	ACTIVE_EASY_SHIFT_LAYER = index + 1
 end

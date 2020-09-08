@@ -52,10 +52,10 @@ function on_macro_key_down(index)
 		end
 
 		-- consume the original keystroke
-		inject_key(0, false)
+		consume_key()
 	else
 		-- no match, just consume the original keystroke and do nothing
-		inject_key(0, false)
+		consume_key()
 	end
 end
 
