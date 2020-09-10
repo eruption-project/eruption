@@ -138,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "bytemuck"
-version = "1.4.0"
+version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92046dbb6f9332943252123f53623e0a6d513651af14967e2991c371ec20201c"
+checksum = "41aa2ec95ca3b5c54cf73c91acf06d24f4495d5f1b1c12506ae3483d646177ac"
 
 [[package]]
 name = "byteorder"
@@ -1045,9 +1045,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-binding"
-version = "2.16.1"
+version = "2.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c71487f89ebfe3d2c23e706774d9d5c25208a30205909d77b304066876306bd"
+checksum = "1795efad67f34ae95740ded62e3c346e707b0caeb0f6088d75958e97316b5538"
 dependencies = [
  "libc",
  "libpulse-sys",
@@ -1056,9 +1056,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-simple-binding"
-version = "2.16.0"
+version = "2.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4ef3ce750cdbce60fc96aac1f6dad84d67419d2307a05a27b73700f1f5d33e0"
+checksum = "6a53209aedd0f264c071a52064f8cedc7c45b54be10f4416ca9373cee357ea20"
 dependencies = [
  "libpulse-binding",
  "libpulse-simple-sys",
@@ -1067,9 +1067,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-simple-sys"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a48e779375c1d6e8b8d2fcbca67cc2f3208d447f17215f8ea600d6a58ccc6a56"
+checksum = "b6aacf8fadb867101db732194a0cf250bdb46d567ffca98490d213602168183f"
 dependencies = [
  "libpulse-sys",
  "pkg-config",
@@ -1077,9 +1077,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-sys"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa9559e91871e5f820c3b4e181b8c8f3ebd0b7839c92943802caf0f1477fdc27"
+checksum = "5f53857071d564f864755a6945d316cc8fe62c36ed20bd4231c8ab6b62141786"
 dependencies = [
  "libc",
  "pkg-config",
@@ -1833,9 +1833,9 @@ checksum = "eba180dafb9038b050a4c280019bbedf9f2467b61e5d892dcad585bb57aadc5a"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "175c513d55719db99da20232b06cda8bab6b83ec2d04e3283edf0213c37c1a29"
+checksum = "36e28516df94f3dd551a587da5357459d9b36d945a7c37c3557928c1c2ff2a2c"
 dependencies = [
  "unicode-xid",
 ]
@@ -2242,9 +2242,9 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 
 [[package]]
 name = "socket2"
-version = "0.3.12"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03088793f677dce356f3ccc2edb1b314ad191ab702a5de3faf49304f7e104918"
+checksum = "b1fa70dc5c8104ec096f4fe7ede7a221d35ae13dcd19ba1ad9a81d2cab9a1c44"
 dependencies = [
  "cfg-if",
  "libc",
@@ -2471,9 +2471,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-core"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f0e00789804e99b20f12bc7003ca416309d28a6f495d6af58d1e2c2842461b5"
+checksum = "5bcf46c1f1f06aeea2d6b81f3c863d0930a596c86ad1920d4e5bad6dd1d7119a"
 dependencies = [
  "lazy_static",
 ]
