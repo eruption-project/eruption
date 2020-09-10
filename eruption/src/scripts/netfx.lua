@@ -62,7 +62,7 @@ function on_startup(config)
 
         -- configure socket
         server:setoption("reuseaddr", true)
-        server:setoption("reuseport", true)
+        -- server:setoption("reuseport", true)
 
         local status, msg = server:bind(bind_address, port)
         if status == nil then
