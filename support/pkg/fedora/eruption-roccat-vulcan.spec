@@ -137,6 +137,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netf
 %doc %{_mandir}/man5/eruption.conf.5.gz
 %doc %{_mandir}/man8/eruption.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
+%doc %{_mandir}/man1/eruption-netfx.1.gz
 %dir %{_datarootdir}/icons/hicolor/scalable/apps/
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
@@ -144,6 +145,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netf
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
+%{_bindir}/eruption-netfx
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
