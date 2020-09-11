@@ -4,6 +4,7 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 0.1.16 | __New Release__                                                                                                         |
 | 0.1.15 | __New Release__                                                                                                         |
 | 0.1.15 | Released a new version of the `Eruption Profile Switcher` Gnome Shell extension; please be sure to update!              |
 | 0.1.15 | Improved robustness of device initialization code                                                                       |
