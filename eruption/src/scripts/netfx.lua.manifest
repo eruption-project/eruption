@@ -3,7 +3,7 @@ description = "Receive colors over a network socket"
 version = "0.0.1"
 author = "The Eruption development team"
 min_supported_version = "0.1.15"
-tags = ['Background', 'Vendor', 'Gradient']
+tags = ['Background', 'Vendor']
 
 [[config]]
 type = 'string'
