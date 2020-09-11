@@ -16,7 +16,7 @@ clap = "3.0.0-beta.1"
 clap_derive = "3.0.0-beta.1"
 colored = "2.0"
 log = "0.4.11"
-libc = "0.2.76"
+libc = "0.2.77"
 nix = "0.18.0"
 parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
 serde = { version = "1.0.115", features = ["derive"] }
