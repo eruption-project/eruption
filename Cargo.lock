@@ -291,7 +291,7 @@ dependencies = [
  "lazy_static",
  "nom 5.1.2",
  "rust-ini",
- "serde 1.0.115",
+ "serde 1.0.116",
  "serde-hjson",
  "serde_json",
  "toml",
@@ -483,7 +483,7 @@ dependencies = [
  "rayon",
  "rust-pulsectl",
  "rustfft",
- "serde 1.0.115",
+ "serde 1.0.116",
  "serde_json",
  "simdnoise",
  "sysinfo",
@@ -515,7 +515,7 @@ dependencies = [
  "parking_lot 0.11.0",
  "pretty_env_logger",
  "rayon",
- "serde 1.0.115",
+ "serde 1.0.116",
  "serde_json",
  "thiserror",
  "tokio",
@@ -542,7 +542,7 @@ dependencies = [
  "nix 0.18.0",
  "parking_lot 0.11.0",
  "paste 1.0.0",
- "serde 1.0.115",
+ "serde 1.0.116",
  "serde_json",
  "thiserror",
  "tokio",
@@ -2121,9 +2121,9 @@ checksum = "9dad3f759919b92c3068c696c15c3d17238234498bbdcc80f2c469606f948ac8"
 
 [[package]]
 name = "serde"
-version = "1.0.115"
+version = "1.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e54c9a88f2da7238af84b5101443f0c0d0a3bbdc455e34a5c9497b1903ed55d5"
+checksum = "96fe57af81d28386a513cbc6858332abc6117cfdb5999647c6444b8f43a370a5"
 dependencies = [
  "serde_derive",
 ]
@@ -2143,9 +2143,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.115"
+version = "1.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "609feed1d0a73cc36a0182a840a9b37b4a82f0b1150369f0536a9e3f2a31dc48"
+checksum = "f630a6370fd8e457873b4bd2ffdae75408bc291ba72be773772a4c2a065d9ae8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2160,7 +2160,7 @@ checksum = "164eacbdb13512ec2745fb09d51fd5b22b0d65ed294a1dcf7285a360c80a675c"
 dependencies = [
  "itoa",
  "ryu",
- "serde 1.0.115",
+ "serde 1.0.116",
 ]
 
 [[package]]
@@ -2444,7 +2444,7 @@ version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ffc92d160b1eef40665be3a05630d003936a3bc7da7421277846c2613e92c71a"
 dependencies = [
- "serde 1.0.115",
+ "serde 1.0.116",
 ]
 
 [[package]]
@@ -2511,26 +2511,26 @@ dependencies = [
 
 [[package]]
 name = "tracing-serde"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6ccba2f8f16e0ed268fc765d9b7ff22e965e7185d32f8f1ec8294fe17d86e79"
+checksum = "fb65ea441fbb84f9f6748fd496cf7f63ec9af5bca94dd86456978d055e8eb28b"
 dependencies = [
- "serde 1.0.115",
+ "serde 1.0.116",
  "tracing-core",
 ]
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.2.11"
+version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abd165311cc4d7a555ad11cc77a37756df836182db0d81aac908c8184c584f40"
+checksum = "82bb5079aa76438620837198db8a5c529fb9878c730bc2b28179b0241cf04c10"
 dependencies = [
  "ansi_term 0.12.1",
  "chrono",
  "lazy_static",
  "matchers",
  "regex",
- "serde 1.0.115",
+ "serde 1.0.116",
  "serde_json",
  "sharded-slab",
  "smallvec",
@@ -2587,7 +2587,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fde2f6a4bea1d6e007c4ad38c6839fa71cbb63b6dbf5b595aa38dc9b1093c11"
 dependencies = [
  "rand 0.7.3",
- "serde 1.0.115",
+ "serde 1.0.116",
 ]
 
 [[package]]
