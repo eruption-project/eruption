@@ -4,10 +4,10 @@ description = 'Default Profile #1'
 active_scripts = [
     'solid.lua',
 #   'water.lua',
-    'phonon.lua',
+#   'phonon.lua',
+#   'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
-#   'water.lua',
 #   'ghost.lua',
 #   'raindrops.lua',
     'macros.lua',
@@ -23,7 +23,17 @@ value = 0xff2020ff
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
-value = 0.35
+value = 0.45
+
+# [[config.Halo]]
+# type = 'bool'
+# name = 'mouse_events'
+# value = false
+
+[[config.Impact]]
+type = 'color'
+name = 'color_impact'
+value = 0xffff001f
 
 [[config.Raindrops]]
 type = 'float'
