@@ -245,6 +245,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netf
 %{_datarootdir}/%{ShortName}/scripts/gradient.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/linear-gradient.lua
 %{_datarootdir}/%{ShortName}/scripts/linear-gradient.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/halo.lua
+%{_datarootdir}/%{ShortName}/scripts/halo.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/heartbeat.lua
 %{_datarootdir}/%{ShortName}/scripts/heartbeat.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/heatmap.lua

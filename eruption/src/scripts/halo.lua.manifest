@@ -1,0 +1,42 @@
+name = "Halo"
+description = "Show a spreading rainbow colored halo when a key has been pressed"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.0.12"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'bool'
+name = 'mouse_events'
+description = 'React on mouse events'
+default = true
+
+[[config]]
+type = 'color'
+name = 'color_mouse_click_flash'
+description = 'Color of flash effect shown on mouse button clicks'
+default = 0x20ffaaaa
+
+[[config]]
+type = 'color'
+name = 'color_mouse_wheel_flash'
+description = 'Color of flash effect shown on mouse wheel scroll'
+default = 0x40aaaaff
+
+[[config]]
+type = 'color'
+name = 'color_afterglow'
+description = 'Afterglow color'
+default = 0xffffffff
+
+[[config]]
+type = 'color'
+name = 'color_step_afterglow'
+description = 'Color value that gets subtracted from afterglow every [n] frames'
+default = 0x08000000
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0
