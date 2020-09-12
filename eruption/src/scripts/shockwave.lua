@@ -38,9 +38,24 @@ shockwave_ttl_decrease = (key_state.shockwave_origin - key_state.shockwave_senti
 
 -- global state variables --
 state_map = {}
+visited_map = {}
 color_map = {}
 color_map_afterglow = {}
 ticks = 0
+
+-- utility functions --
+local function set_neighbor_states(key_index, value)
+	if key_index ~= nil then
+		for i = 0, max_neigh do
+			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset]
+
+			if neigh_key ~= nil and neigh_key ~= 0xff then
+				state_map[neigh_key + 1] = value
+				visited_map[neigh_key + 1] = true
+			end
+		end
+	end
+end
 
 -- event handler functions --
 function on_startup(config)
@@ -55,31 +70,10 @@ end
 
 function on_key_down(key_index)
 	color_map_afterglow[key_index] = color_afterglow
-
-	for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
-
-		if neigh_key ~= 0xff then
-			state_map[neigh_key] = key_state.shockwave_origin
-		end
-	end
+ 	set_neighbor_states(key_index, key_state.shockwave_origin)
 
 	effect_ttl = max_effect_ttl
 end
-
--- function on_key_up(key_index)
--- 	color_map[key_index] = color_afterglow
-
--- 	for i = 0, max_neigh do
--- 		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
-
--- 		if neigh_key ~= 0xff then
--- 			state_map[neigh_key] = key_state.shockwave_origin
--- 		end
--- 	end
-
--- 	effect_ttl = max_effect_ttl
--- end
 
 function on_mouse_button_down(button_index)
 	if not mouse_events then return end
@@ -145,6 +139,10 @@ function on_tick(delta)
 
 	local num_keys = get_num_keys()
 
+	for i = 0, num_keys do
+		visited_map[i] = false
+	end
+
 	-- propagate the shockwave
 	for i = 1, num_keys do
 		-- decrease key ttl
@@ -153,14 +151,24 @@ function on_tick(delta)
 			if state_map[i] <= key_state.shockwave_sentinel then
 				state_map[i] = key_state.idle
 			end
-
 		end
 
 		-- propagate wave effect
-		if state_map[i] >= key_state.shockwave_sentinel then
-			state_map[i - 1] = state_map[i] - shockwave_ttl_decrease
+		if not visited_map[i] and state_map[i] >= key_state.shockwave_sentinel then
+			local neigh_key = neighbor_topology[(i * max_neigh) + 0 + table_offset] + 1
+
+			if neigh_key ~= nil and neigh_key ~= 0xff then
+				state_map[neigh_key] = state_map[i] - shockwave_ttl_decrease
+				visited_map[neigh_key] = true
+
+				set_neighbor_states(i, state_map[neigh_key])
+			end
 		else
-			state_map[i - 1] = key_state.idle
+			local neigh_key = neighbor_topology[(i * max_neigh) + 0 + table_offset] + 1
+
+			if neigh_key ~= 0xff then
+				state_map[neigh_key] = key_state.idle
+			end
 		end
 
 		-- compute shockwave color
