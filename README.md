@@ -18,6 +18,8 @@ A Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards.
 Support for other hardware devices is planned and will be included in future releases.
 Please see [TODO.md](./TODO.md) for further information.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ig_71zg14nQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ### __TL;DR__ what you absolutely need to know
 
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
