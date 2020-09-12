@@ -18,7 +18,7 @@ A Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards.
 Support for other hardware devices is planned and will be included in future releases.
 Please see [TODO.md](./TODO.md) for further information.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ig_71zg14nQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
 ### __TL;DR__ what you absolutely need to know
 
