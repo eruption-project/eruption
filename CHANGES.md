@@ -5,6 +5,8 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.16 | __New Release__                                                                                                         |
+| 0.1.16 | Revert to previous version of the Lua script `shockwave.lua` but with an updated neighbor selection algorithm           |
+| 0.1.16 | Added a new Lua script `halo.lua` that shows a rainbow colored animated halo when a key has been pressed                |
 | 0.1.15 | __New Release__                                                                                                         |
 | 0.1.15 | Released a new version of the `Eruption Profile Switcher` Gnome Shell extension; please be sure to update!              |
 | 0.1.15 | Improved robustness of device initialization code                                                                       |
