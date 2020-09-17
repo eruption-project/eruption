@@ -5,7 +5,7 @@ active_scripts = [
     'solid.lua',
 #   'water.lua',
 #   'phonon.lua',
-#   'halo.lua',
+    'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'ghost.lua',
