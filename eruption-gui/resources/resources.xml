@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/eruption/eruption-gui">
+    <file compressed="true">ui/main.glade</file>
+    <file compressed="true">ui/about.glade</file>
+    <file>styles/app.css</file>
+    <file>img/eruption-gui.png</file>
+    <file>img/keyboard.png</file>
+  </gresource>
+</gresources>

@@ -22,6 +22,8 @@ BuildRequires: pulseaudio-libs-devel
 BuildRequires: luajit-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
+BuildRequires: gtk3-devel
+BuildRequires: gtksourceview3-devel
 
 Requires: systemd
 Requires: dbus
@@ -53,6 +55,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/system.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
+%{__mkdir_p} %{buildroot}%{_datarootdir}/polkit-1/actions/
 %{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
 %{__mkdir_p} %{buildroot}%{_unitdir}
 %{__mkdir_p} %{buildroot}%{_presetdir}
@@ -69,6 +72,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
+%{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
@@ -79,6 +83,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{b
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
+cp -a %{_builddir}/%{name}-%{version}/support/policykit/org.eruption.policy %{buildroot}%{_datarootdir}/polkit-1/actions/
 cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
@@ -127,11 +132,14 @@ cp -ra %{_builddir}/%{name}-%{version}/eruption/src/scripts %{buildroot}%{_datar
 
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
+cp -a %{_builddir}/%{name}-%{version}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
+
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
 %post
 %systemd_post %{ShortName}.service
@@ -152,6 +160,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
+%{_datarootdir}/polkit-1/actions/org.eruption.policy
 /usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
@@ -163,6 +172,10 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_presetdir}/50-eruption.preset
 %{_userunitdir}/eruption-process-monitor.service
 %{_userpresetdir}/50-eruption-process-monitor.preset
+%{_bindir}/eruption-gui
+%{_unitdir}/eruption.service
+%{_presetdir}/50-eruption.preset
+%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile

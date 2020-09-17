@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+
+  <schema id="org.eruption.eruption-gui"
+    path="/org/eruption/eruption-gui/">
+
+    <key type="s" name="netfx-host-name">
+      <default>"localhost"</default>
+      <summary>NetworkFX Host Name</summary>
+      <description>The NetworkFX Host Name</description>
+    </key>
+
+    <key type="i" name="netfx-port-number">
+      <default>2359</default>
+      <summary>NetworkFX Port Number</summary>
+      <description>The NetworkFX Port Number</description>
+    </key>
+
+  </schema>
+
+</schemalist>

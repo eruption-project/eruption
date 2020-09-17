@@ -11,7 +11,7 @@ url='https://github.com/X3n0m0rph59/eruption-roccat-vulcan'
 license=('GPL3+')
 groups=()
 depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket')
-makedepends=('git' 'rust' 'xorg-server-devel' 'libxrandr')
+makedepends=('git' 'rust' 'xorg-server-devel' 'libxrandr' 'gtk3')
 checkdepends=()
 optdepends=()
 provides=('eruption-roccat-vulcan')
@@ -43,6 +43,8 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/examples"
 
+    mkdir -p "$pkgdir/usr/share/eruption-gui/schemas/"
+
     mkdir -p "$pkgdir/var/lib/eruption/profiles"
 
     mkdir -p "$pkgdir/usr/lib/systemd/system"
@@ -55,6 +57,8 @@ package() {
     mkdir -p "$pkgdir/usr/lib/udev/rules.d/"
 
     mkdir -p "$pkgdir/etc/dbus-1/system.d"
+
+    mkdir -p "$pkgdir/usr/share/polkit-1/actions/"
 
     mkdir -p "$pkgdir/usr/share/man/man8"
     mkdir -p "$pkgdir/usr/share/man/man5"
@@ -70,6 +74,9 @@ package() {
     install -m 755 "target/release/eruption-netfx" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-debug-tool" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"
+
+    install -m 644 "eruption-gui/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui/schemas/"
 
     install -m 755 "support/systemd/eruption-suspend.sh" "$pkgdir/usr/lib/systemd/system-sleep/eruption"
 
@@ -85,6 +92,8 @@ package() {
     install -m 644 "support/udev/99-eruption-roccat-vulcan.rules" "$pkgdir/usr/lib/udev/rules.d/"
 
     install -m 644 "support/dbus/org.eruption.control.conf" "$pkgdir/etc/dbus-1/system.d/"
+
+    install -m 644 "support/policykit/org.eruption.policy" "$pkgdir/usr/share/polkit-1/actions/"
 
     install -m 644 "support/man/eruption.8" "$pkgdir/usr/share/man/man8/"
     install -m 644 "support/man/eruption.conf.5" "$pkgdir/usr/share/man/man5/"

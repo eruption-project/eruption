@@ -12,7 +12,7 @@ readme = "README.md"
 [dependencies]
 # async-std = { version = "1.6.2", features = ["attributes", "tokio02"] }
 # async-macros = "2.0.0"
-clap = "3.0.0-beta.1"
+clap = "3.0.0-beta.2"
 clap_derive = "3.0.0-beta.1"
 colored = "2.0"
 log = "0.4.11"

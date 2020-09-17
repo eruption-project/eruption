@@ -62,6 +62,14 @@ pub fn init_global_runtime_state() -> Result<()> {
         PathBuf::from("profile4.profile"),
     ]);
 
+    let mut slot_names = crate::SLOT_NAMES.lock();
+    *slot_names = vec![
+        "Profile Slot 1".to_string(),
+        "Profile Slot 2".to_string(),
+        "Profile Slot 3".to_string(),
+        "Profile Slot 4".to_string(),
+    ];
+
     // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
@@ -120,6 +128,16 @@ pub fn init_global_runtime_state() -> Result<()> {
             profiles.replace(p);
         })
         .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
+
+    STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get("slot_names")
+        .map(|p| {
+            *slot_names = p;
+        })
+        .unwrap_or_else(|_| warn!("Invalid saved state: slot_names"));
 
     crate::ACTIVE_SLOT.store(
         STATE

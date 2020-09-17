@@ -74,6 +74,12 @@ pub enum Subcommands {
         command: ProfilesSubcommands,
     },
 
+    /// Naming related commands such as renaming of profile slots
+    Names {
+        #[clap(subcommand)]
+        command: NamesSubcommands,
+    },
+
     /// Script related subcommands
     Scripts {
         #[clap(subcommand)]
@@ -112,6 +118,19 @@ pub enum ProfilesSubcommands {
 
     /// List available profiles
     List,
+}
+
+/// Subcommands of the "names" command
+#[derive(Debug, Clap)]
+pub enum NamesSubcommands {
+    /// List slot names
+    List,
+
+    /// Set the name of a single profile slot
+    Set { slot_index: usize, name: String },
+
+    /// Set all the profile slot names at once
+    SetAll { names: Vec<String> },
 }
 
 /// Subcommands of the "scripts" command
@@ -159,7 +178,12 @@ pub async fn dbus_system_bus(
         panic!("Lost connection to D-Bus: {}", err);
     });
 
-    let proxy = nonblock::Proxy::new("org.eruption", path, Duration::from_secs(4), conn);
+    let proxy = nonblock::Proxy::new(
+        "org.eruption",
+        path,
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        conn,
+    );
 
     Ok(proxy)
 }
@@ -182,6 +206,38 @@ pub async fn switch_slot(index: usize) -> Result<()> {
         .await?
         .method_call("org.eruption.Slot", "SwitchSlot", (index as u64,))
         .await?;
+
+    Ok(())
+}
+
+/// Get the names of the profile slots
+pub async fn get_slot_names() -> Result<Vec<String>> {
+    let result: Vec<String> = dbus_system_bus("/org/eruption/slot")
+        .await?
+        .get("org.eruption.Slot", "SlotNames")
+        .await?;
+
+    Ok(result)
+}
+
+/// Set the names of the profile slots
+pub async fn set_slot_names(names: &[String]) -> Result<()> {
+    let arg = Box::new(names);
+
+    let _result = dbus_system_bus("/org/eruption/slot")
+        .await?
+        .set("org.eruption.Slot", "SlotNames", arg)
+        .await?;
+
+    Ok(())
+}
+
+/// Set the name of a single profile slot
+pub async fn set_slot_name(slot_index: usize, name: String) -> Result<()> {
+    let mut result = get_slot_names().await?;
+
+    result[slot_index] = name;
+    set_slot_names(&result).await?;
 
     Ok(())
 }
@@ -345,6 +401,34 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     );
                 } else {
                     eprintln!("No matches found");
+                }
+            }
+        },
+
+        // naming related sub-commands
+        Subcommands::Names { command } => match command {
+            NamesSubcommands::List => {
+                let slot_names = get_slot_names().await?;
+
+                for (index, name) in slot_names.iter().enumerate() {
+                    let s = format!("{}", index + 1);
+                    println!("{}: {}", s.bold(), name);
+                }
+            }
+
+            NamesSubcommands::Set { slot_index, name } => {
+                if slot_index > 0 && slot_index <= constants::NUM_SLOTS {
+                    set_slot_name(slot_index - 1, name).await?;
+                } else {
+                    eprintln!("Slot index out of bounds");
+                }
+            }
+
+            NamesSubcommands::SetAll { names } => {
+                if names.len() == constants::NUM_SLOTS {
+                    set_slot_names(&names).await?;
+                } else {
+                    eprintln!("Elements do not match number of slots");
                 }
             }
         },

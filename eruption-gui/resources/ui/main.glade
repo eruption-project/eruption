@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.36.0 
+
+Copyright (C) 2019-2020 The Eruption Development Team
+
+This file is part of Eruption.
+
+Eruption is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Eruption is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+Author: X3n0m0rph59
+
+-->
+<interface>
+  <requires lib="gtk+" version="3.22"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name Eruption -->
+  <!-- interface-copyright 2019-2020 The Eruption Development Team -->
+  <!-- interface-authors X3n0m0rph59 -->
+  <object class="GtkAdjustment" id="adjustment_percent">
+    <property name="upper">100</property>
+    <property name="value">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_port">
+    <property name="upper">65535</property>
+    <property name="value">2359</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkMenu" id="main_menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="about_item">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">About…</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="quit_item">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Quit</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkApplicationWindow" id="main_window">
+    <property name="width_request">850</property>
+    <property name="height_request">768</property>
+    <property name="can_focus">False</property>
+    <property name="window_position">center</property>
+    <property name="icon_name">/org/eruption/eruption-gui/img/eruption-gui.png</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkStack" id="main_stack">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="transition_type">crossfade</property>
+            <property name="interpolate_size">True</property>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="valign">end</property>
+                    <property name="margin_start">8</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="border_width">8</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">none</property>
+                    <child>
+                      <object class="GtkAlignment">
+                        <property name="width_request">0</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkGrid">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="border_width">8</property>
+                            <property name="row_spacing">8</property>
+                            <property name="column_spacing">16</property>
+                            <child>
+                              <object class="GtkAccelLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="label" translatable="yes">_SoundFX Audio Effects</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">soundfx_switch</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSwitch" id="networkfx_ambient_switch">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkAccelLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">networkfx_ambient_switch</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSwitch" id="soundfx_switch">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Special</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkDrawingArea" id="drawing_area">
+                    <property name="width_request">796</property>
+                    <property name="height_request">271</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="margin_start">16</property>
+                    <property name="margin_end">16</property>
+                    <property name="margin_top">16</property>
+                    <property name="margin_bottom">16</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">Keyboard</property>
+                <property name="icon_name">keyboard-symbolic</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="pixel_size">200</property>
+                    <property name="icon_name">mouse</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">This module is currently not implemented</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page1</property>
+                <property name="title" translatable="yes">Mouse</property>
+                <property name="icon_name">mouse-symbolic</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkPaned">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="position">280</property>
+                <property name="position_set">True</property>
+                <property name="wide_handle">True</property>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hscrollbar_policy">always</property>
+                    <property name="vscrollbar_policy">always</property>
+                    <property name="propagate_natural_width">True</property>
+                    <child>
+                      <object class="GtkTreeView" id="profiles_treeview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
+                        <property name="hscroll_policy">natural</property>
+                        <property name="vscroll_policy">natural</property>
+                        <property name="rules_hint">True</property>
+                        <property name="search_column">1</property>
+                        <property name="hover_expand">True</property>
+                        <property name="show_expanders">False</property>
+                        <property name="enable_grid_lines">both</property>
+                        <property name="enable_tree_lines">True</property>
+                        <property name="activate_on_single_click">True</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkNotebook">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="scrollable">True</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="config_window">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                      </object>
+                    </child>
+                    <child type="tab">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Configuration</property>
+                      </object>
+                      <packing>
+                        <property name="tab_fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkStack" id="profile_stack">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="transition_type">slide-left-right</property>
+                            <child>
+                              <placeholder/>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkStackSwitcher" id="profile_stack_switcher">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_start">8</property>
+                            <property name="margin_end">8</property>
+                            <property name="margin_top">8</property>
+                            <property name="margin_bottom">8</property>
+                            <property name="stack">profile_stack</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child type="tab">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Source Editors</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                        <property name="tab_fill">False</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">True</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page2</property>
+                <property name="title" translatable="yes">Profiles</property>
+                <property name="icon_name">folder-documents-symbolic</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLayout">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="border_width">8</property>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="width_request">100</property>
+                    <property name="height_request">80</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">none</property>
+                    <child>
+                      <object class="GtkAlignment">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkGrid">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_top">16</property>
+                            <property name="row_spacing">8</property>
+                            <property name="column_spacing">16</property>
+                            <property name="row_homogeneous">True</property>
+                            <property name="column_homogeneous">True</property>
+                            <child>
+                              <object class="GtkAccelLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="label" translatable="yes">_Host Name</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">host_name</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="host_name">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="text" translatable="yes">localhost</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkAccelLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="label" translatable="yes">_Port Number</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">port_number</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="port_number">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="input_purpose">digits</property>
+                                <property name="adjustment">adjustment_port</property>
+                                <property name="numeric">True</property>
+                                <property name="wrap">True</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Eruption NetworkFX Settings</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">16</property>
+                    <property name="y">16</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page3</property>
+                <property name="title" translatable="yes">Settings</property>
+                <property name="icon_name">system-run-symbolic</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="slot_bar">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_start">10</property>
+            <property name="margin_end">10</property>
+            <property name="margin_top">10</property>
+            <property name="margin_bottom">10</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <property name="baseline_position">bottom</property>
+            <child>
+              <object class="GtkFrame" id="slot1_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkBox" id="slot1_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">8</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioButton" id="slot1_radio_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Activate Slot 1</property>
+                            <property name="draw_indicator">True</property>
+                            <child>
+                              <object class="GtkEntry" id="slot1_entry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="margin_start">8</property>
+                                <property name="margin_end">8</property>
+                                <property name="margin_top">8</property>
+                                <property name="margin_bottom">8</property>
+                                <property name="editable">False</property>
+                                <property name="has_frame">False</property>
+                                <property name="text" translatable="yes">Profile Slot 1</property>
+                                <property name="secondary_icon_stock">gtk-edit</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">False</property>
+                                <property name="placeholder_text" translatable="yes">Profile Slot Name</property>
+                                <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="slot1_combo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+                <style>
+                  <class name="slot_indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="slot2_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkBox" id="slot2_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">8</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioButton" id="slot2_radio_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Activate Slot 2</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">slot1_radio_button</property>
+                            <child>
+                              <object class="GtkEntry" id="slot2_entry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="margin_start">8</property>
+                                <property name="margin_end">8</property>
+                                <property name="margin_top">8</property>
+                                <property name="margin_bottom">8</property>
+                                <property name="editable">False</property>
+                                <property name="has_frame">False</property>
+                                <property name="text" translatable="yes">Profile Slot 2</property>
+                                <property name="secondary_icon_stock">gtk-edit</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">False</property>
+                                <property name="placeholder_text" translatable="yes">Profile Slot Name</property>
+                                <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="slot2_combo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="id_column">1</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+                <style>
+                  <class name="slot_indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="slot3_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkBox" id="slot3_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">8</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioButton" id="slot3_radio_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Activate Slot 3</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">slot1_radio_button</property>
+                            <child>
+                              <object class="GtkEntry" id="slot3_entry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="margin_start">8</property>
+                                <property name="margin_end">8</property>
+                                <property name="margin_top">8</property>
+                                <property name="margin_bottom">8</property>
+                                <property name="editable">False</property>
+                                <property name="has_frame">False</property>
+                                <property name="text" translatable="yes">Profile Slot 3</property>
+                                <property name="secondary_icon_stock">gtk-edit</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">False</property>
+                                <property name="placeholder_text" translatable="yes">Profile Slot Name</property>
+                                <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="slot3_combo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="id_column">1</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+                <style>
+                  <class name="slot_indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="slot4_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkBox" id="slot4_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">8</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioButton" id="slot4_radio_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Activate Slot 4</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">slot1_radio_button</property>
+                            <child>
+                              <object class="GtkEntry" id="slot4_entry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="margin_start">8</property>
+                                <property name="margin_end">8</property>
+                                <property name="margin_top">8</property>
+                                <property name="margin_bottom">8</property>
+                                <property name="editable">False</property>
+                                <property name="has_frame">False</property>
+                                <property name="text" translatable="yes">Profile Slot 4</property>
+                                <property name="secondary_icon_stock">gtk-edit</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">False</property>
+                                <property name="placeholder_text" translatable="yes">Profile Slot Name</property>
+                                <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="slot4_combo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="id_column">1</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+                <style>
+                  <class name="slot_indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="header_bar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="title" translatable="yes">Eruption GUI</property>
+        <property name="spacing">8</property>
+        <property name="show_close_button">True</property>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStackSwitcher" id="stack_switcher">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="icon_size">5</property>
+            <property name="stack">main_stack</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="menu_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popup">main_menu</property>
+            <property name="use_popover">False</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+              </object>
+            </child>
+            <accelerator key="F10" signal="activate"/>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLockButton" id="lock_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="text_lock" translatable="yes"/>
+            <property name="text_unlock" translatable="yes"/>
+            <property name="tooltip_lock" translatable="yes"/>
+            <property name="tooltip_unlock" translatable="yes"/>
+            <property name="tooltip_not_authorized" translatable="yes"/>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="brightness_scale">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="margin_end">192</property>
+            <property name="hexpand">True</property>
+            <property name="adjustment">adjustment_percent</property>
+            <property name="show_fill_level">True</property>
+            <property name="fill_level">100</property>
+            <property name="round_digits">0</property>
+            <property name="digits">0</property>
+            <property name="value_pos">right</property>
+          </object>
+          <packing>
+            <property name="position">4</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child internal-child="accessible">
+      <object class="AtkObject" id="main_window-atkobject">
+        <property name="AtkObject::accessible-role" translatable="yes">application</property>
+      </object>
+    </child>
+  </object>
+</interface>

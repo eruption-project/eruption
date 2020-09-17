@@ -75,6 +75,14 @@ lazy_static! {
         a: 0x00,
     }; NUM_KEYS]));
 
+    /// The last rendered frame of the managed device
+    pub static ref LAST_RENDERED_LED_MAP: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA {
+        r: 0x00,
+        g: 0x00,
+        b: 0x00,
+        a: 0x00,
+    }; NUM_KEYS]));
+
     /// Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
     pub static ref FRAME_GENERATION_COUNTER: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
 }

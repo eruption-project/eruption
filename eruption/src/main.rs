@@ -63,6 +63,9 @@ lazy_static! {
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
 
+    /// The custom names of each slot
+    pub static ref SLOT_NAMES: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+
     /// The slot to profile associations
     pub static ref SLOT_PROFILES: Arc<Mutex<Option<Vec<PathBuf>>>> = Arc::new(Mutex::new(None));
 
@@ -100,6 +103,9 @@ lazy_static! {
 
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
+
+    /// Last D-Bus event timer, mainly used to control polling interval
+    pub static ref LAST_DBUS_EVENT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
     /// Channels to the Lua VMs
     static ref LUA_TXS: Arc<Mutex<Vec<Sender<script::Message>>>> = Arc::new(Mutex::new(vec![]));
@@ -203,7 +209,7 @@ pub enum DbusApiEvent {
     ActiveSlotChanged,
 }
 
-/// Spawns the dbus thread and executes it's main loop
+/// Spawns the D-Bus API thread and executes it's main loop
 fn spawn_dbus_thread(
     dbus_tx: Sender<dbus_interface::Message>,
 ) -> plugins::Result<Sender<DbusApiEvent>> {
@@ -214,27 +220,69 @@ fn spawn_dbus_thread(
         let dbus = dbus_interface::initialize(dbus_tx)?;
 
         loop {
-            // process events, destined for the dbus api
-            match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
-                Ok(result) => match result {
-                    DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed(),
+            let mut api_event_processed;
+            let mut event_processed;
 
-                    DbusApiEvent::ActiveProfileChanged => dbus.notify_active_profile_changed(),
+            // process events, destined for the D-Bus API
+            'API_EVENT_LOOP: loop {
+                api_event_processed = false;
 
-                    DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed(),
-                },
+                match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
+                    Ok(result) => {
+                        match result {
+                            DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed(),
 
-                // ignore timeout errors
-                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
+                            DbusApiEvent::ActiveProfileChanged => {
+                                dbus.notify_active_profile_changed()
+                            }
 
-                Err(e) => {
-                    // print warning but continue
-                    warn!("Channel error: {}", e);
+                            DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed(),
+                        }
+
+                        api_event_processed = true;
+                    }
+
+                    // ignore timeout errors
+                    Err(_e) => {
+                        // print warning but continue
+                        // warn!("Channel error: {}", e);
+                    }
+                }
+
+                if !api_event_processed {
+                    break 'API_EVENT_LOOP;
                 }
             }
 
-            dbus.get_next_event()
-                .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+            // receive events over D-Bus
+            let mut event_limit = constants::MAX_EVENTS_PER_ITERATION;
+
+            event_processed = false;
+
+            'EVENT_LOOP: while dbus.has_pending_event().unwrap() {
+                dbus.get_next_event()
+                    .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+
+                event_limit -= 1;
+                event_processed = true;
+
+                if !event_processed || event_limit <= 0 {
+                    break 'EVENT_LOOP;
+                }
+            }
+
+            // if we did not do any work for some time then wait here
+            // to save CPU cycles, so we don't run in a tight loop
+            if (!api_event_processed && !event_processed)
+                && LAST_DBUS_EVENT_TIME.lock().elapsed().as_millis()
+                    > constants::DBUS_TIMEOUT_MILLIS as u128
+            {
+                // no message processed recently
+                thread::sleep(Duration::from_millis(constants::DBUS_LONG_SLEEP_MILLIS));
+            } else {
+                // we just processed a message
+                thread::sleep(Duration::from_millis(constants::DBUS_SHORT_SLEEP_MILLIS));
+            }
         }
     })?;
 
@@ -1779,6 +1827,10 @@ async fn run_main_loop(
 
                 // we successfully updated the keyboard state, so store the current frame generation as the "currently active" one
                 saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
+
+                script::LAST_RENDERED_LED_MAP
+                    .write()
+                    .copy_from_slice(&script::LED_MAP.read());
             }
         }
 

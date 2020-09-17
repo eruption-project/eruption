@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+
+<!--
+    This file is part of Eruption.
+
+    Eruption is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Eruption is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<policyconfig>
+    <vendor>The Eruption Development Team</vendor>
+    <vendor_url>https://github.com/X3n0m0rph59/eruption-roccat-vulcan</vendor_url>
+    <icon_name>keyboard</icon_name>
+
+    <!-- Monitor the Eruption daemons state -->
+    <action id="org.eruption.monitor">
+      <description>Monitor Eruption</description>
+      <message>Authentication is required to monitor Eruption</message>
+      <defaults>
+        <allow_any>yes</allow_any>
+        <allow_inactive>yes</allow_inactive>
+        <allow_active>yes</allow_active>
+      </defaults>
+    </action>
+
+    <!-- Change non-priviledged settings like e.g.: LED Brightness -->
+    <action id="org.eruption.settings">
+      <description>Change settings of Eruption</description>
+      <message>Authentication is required to change the settings of Eruption</message>
+      <defaults>
+        <allow_any>yes</allow_any>
+        <allow_inactive>yes</allow_inactive>
+        <allow_active>yes</allow_active>
+      </defaults>
+    </action>
+
+    <!-- Change priviledged settings like e.g.: Lua script code -->
+    <action id="org.eruption.manage">
+      <description>Manage the Eruption daemon</description>
+      <message>Authentication is required to manage the Eruption daemon</message>
+      <defaults>
+        <allow_any>auth_admin_keep</allow_any>
+        <allow_inactive>auth_admin_keep</allow_inactive>
+        <allow_active>auth_admin_keep</allow_active>
+      </defaults>
+    </action>
+</policyconfig>

@@ -3,8 +3,11 @@ target/release/eruptionctl usr/bin/
 target/release/eruption-netfx usr/bin/
 target/release/eruption-debug-tool usr/bin/
 target/release/eruption-process-monitor usr/bin/
+target/release/eruption-gui usr/bin/
 
 support/systemd/eruption-suspend.sh lib/systemd/system-sleep/eruption
+
+eruption-gui/schemas/gschemas.compiled usr/share/eruption-gui/schemas/
 
 support/config/eruption.conf etc/eruption/
 support/config/process-monitor.conf etc/eruption/
@@ -18,6 +21,8 @@ support/systemd/eruption-process-monitor.preset lib/systemd/user-preset/
 support/udev/99-eruption-roccat-vulcan.rules lib/udev/rules.d/
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
+
+support/policykit/org.eruption.policy usr/share/polkit-1/actions/
 
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
