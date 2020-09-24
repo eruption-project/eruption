@@ -208,7 +208,7 @@ fn parse_commandline() -> clap::ArgMatches {
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards")
         .arg(
-            Arg::with_name("config")
+            Arg::new("config")
                 .short('c')
                 .long("config")
                 .value_name("FILE")
@@ -2158,7 +2158,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     plugins::PersistencePlugin::store_persistent_data()
                         .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
 
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
                     // set LEDs to a known final state
                     keyboard_device

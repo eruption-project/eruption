@@ -59,11 +59,8 @@ pub const MAX_EVENTS_PER_ITERATION: u64 = 250;
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
 
-/// Amount of time that has to pass before we can send another command to the control device
-pub const DEVICE_SETTLE_MILLIS_SAFE: u64 = 12;
-
-/// Amount of time that has to pass before we can send another command to the LED control device
-pub const DEVICE_SETTLE_MILLIS: u64 = 10;
+/// Amount of time that has to pass before we retry sending a command to the LED control device
+pub const DEVICE_SETTLE_MILLIS: u64 = 5;
 
 /// Amount of time that has to pass before we retry to open a failed hardware device
 pub const DEVICE_RETRY_MILLIS: u64 = 5000;

@@ -17,9 +17,8 @@
 
 use log::*;
 use parking_lot::Mutex;
-use std::sync::Arc;
-use std::thread;
 use std::time::Duration;
+use std::{sync::Arc, thread};
 
 use crate::constants;
 use crate::plugins::keyboard;
@@ -469,8 +468,6 @@ impl RoccatVulcan1xx {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             loop {
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
-
                 let mut buf: [u8; 4] = [0; 4];
                 buf[0] = 0x04;
 
@@ -488,6 +485,8 @@ impl RoccatVulcan1xx {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
+
+                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }
@@ -655,7 +654,6 @@ impl DeviceTrait for RoccatVulcan1xx {
             match ctrl_dev.write(&buf) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
                     Ok(())
                 }
@@ -682,7 +680,6 @@ impl DeviceTrait for RoccatVulcan1xx {
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
                     Ok(buf)
                 }
@@ -904,7 +901,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
             }; NUM_KEYS];
 
             self.send_led_map(&led_map)?;
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
             Ok(())
         }
@@ -928,7 +924,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
             }; NUM_KEYS];
 
             self.send_led_map(&led_map)?;
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
             Ok(())
         }

@@ -549,10 +549,6 @@ mod callbacks {
             .write()
             .send_led_map(&*led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
-
-        thread::sleep(Duration::from_millis(
-            crate::constants::DEVICE_SETTLE_MILLIS,
-        ));
     }
 
     /// Get state of all LEDs
@@ -608,10 +604,6 @@ mod callbacks {
             .write()
             .send_led_map(&led_map)
             .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
-
-        thread::sleep(Duration::from_millis(
-            crate::constants::DEVICE_SETTLE_MILLIS,
-        ));
     }
 
     /// Submit LED color map for later realization, as soon as the

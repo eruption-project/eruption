@@ -187,8 +187,6 @@ impl RoccatNyth {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             loop {
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
-
                 let mut buf: [u8; 4] = [0; 4];
                 buf[0] = 0x04;
 
@@ -206,6 +204,8 @@ impl RoccatNyth {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
+
+                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }
@@ -333,7 +333,6 @@ impl DeviceTrait for RoccatNyth {
             match ctrl_dev.write(&buf) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
                     Ok(())
                 }
@@ -360,7 +359,6 @@ impl DeviceTrait for RoccatNyth {
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
 
                     Ok(buf)
                 }
@@ -473,7 +471,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }
@@ -490,7 +488,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS_SAFE));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }
