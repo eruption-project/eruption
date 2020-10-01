@@ -277,8 +277,14 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
     for device in api.device_list() {
         debug!(
             "Device: {} {}, interface: {}",
-            device.manufacturer_string().unwrap(),
-            device.product_string().unwrap(),
+            device.manufacturer_string().unwrap_or_else(|| {
+                error!("Could not query device information");
+                "<unknown>"
+            }),
+            device.product_string().unwrap_or_else(|| {
+                error!("Could not query device information");
+                "<unknown>"
+            }),
             device.interface_number()
         );
 

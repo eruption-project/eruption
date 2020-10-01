@@ -1657,6 +1657,14 @@ async fn run_main_loop(
                     .send_led_map(&script::LED_MAP.read())
                     .unwrap_or_else(|e| error!("Could not send the LED map to the device: {}", e));
 
+                if let Some(dev) = mouse_device {
+                    dev.write()
+                        .send_led_map(&script::LED_MAP.read())
+                        .unwrap_or_else(|e| {
+                            error!("Could not send the LED map to the device: {}", e)
+                        });
+                }
+
                 // thread::sleep(Duration::from_millis(
                 //     crate::constants::DEVICE_SETTLE_MILLIS,
                 // ));
@@ -2165,6 +2173,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         .write()
                         .set_led_off_pattern()
                         .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
+
+                    if let Some(mouse_device) = mouse_device {
+                        mouse_device
+                            .write()
+                            .set_led_off_pattern()
+                            .unwrap_or_else(|e| {
+                                error!("Could not finalize LEDs configuration: {}", e)
+                            });
+                    }
 
                     // close the control and LED devices
                     info!("Closing devices...");
