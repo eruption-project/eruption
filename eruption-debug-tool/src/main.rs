@@ -29,7 +29,7 @@ mod util;
 
 use util::{DeviceState, HexSlice};
 
-type Result<T> = std::result::Result<T, eyre::Error>;
+// type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
@@ -42,7 +42,7 @@ pub enum MainError {
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    about = "A CLI utility to debug USB devices",
+    about = "A CLI utility to debug USB HID devices",
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
@@ -59,13 +59,13 @@ pub enum Subcommands {
     /// List available devices, use this first to find out the index of the device to use
     List,
 
-    /// Generate a report of the specified device
+    /// Generate a report for the specified device
     Report {
         /// The index of the device, can be found with the list subcommand
         device: usize,
     },
 
-    /// Dump a trace of events originating from the specified device
+    /// Dump a trace of events originating from the specified device (May hang the device)
     Trace {
         /// The index of the device, can be found with the list subcommand
         device: usize,
@@ -98,12 +98,6 @@ pub enum Subcommands {
         /// Hex bytes e.g.: [0x09, 0x00, 0x1f]
         data: String,
     },
-
-    /// Send test data to a device (dangerous)
-    Test {
-        /// The index of the device, can be found with the list subcommand
-        device: usize,
-    },
 }
 
 /// Print license information
@@ -127,12 +121,28 @@ fn print_header() {
     );
 }
 
+#[allow(dead_code)]
+fn print_notice() {
+    println!(
+        r#"
+ NOTICE:
+
+ Please stop the Eruption daemon prior to running this tool:
+ $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+
+ You can re-enable Eruption with this command afterwards:
+ $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
+ "#
+    );
+}
+
 #[tokio::main]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 
     // if unsafe { libc::isatty(0) != 0 } {
     //     print_header();
+    //     print_notice();
     // }
 
     // initialize logging
@@ -146,14 +156,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     match opts.command {
         Subcommands::List => {
-            debug!("Enumerating devices...");
+            println!();
+            println!("Please find the device you want to debug below and use its respective");
+            println!("index number (column 1) as the device index for the other subcommands of this tool\n");
 
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -168,25 +180,25 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             device.interface_number()
                         )
                     }
+
+                    println!("\nEnumeration completed");
                 }
 
                 Err(_) => {
                     error!("Could not open HIDAPI");
                 }
             };
-
-            debug!("Enumeration complete");
         }
 
         Subcommands::Report { device } => {
-            info!("-- Start of report --");
+            println!("-- Start of report --");
 
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -205,7 +217,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             for i in 0..256 {
                                 if let Ok(result) = dev.get_indexed_string(i) {
                                     if let Some(s) = result {
-                                        info!("{:03}: {}", i, s);
+                                        println!("{:03}: {}", i, s);
                                     }
                                 } else {
                                     if opts.verbose > 0 {
@@ -226,18 +238,18 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             };
 
-            info!("-- End of report --");
+            println!("-- End of report --");
         }
 
         Subcommands::Trace { device } => {
-            info!("-- Start of trace --");
+            println!("-- Start of trace --");
 
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -253,30 +265,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         );
 
                         if let Ok(dev) = device.open_device(&hidapi) {
-                            info!("Initializing...");
-                            let mut buf: [u8; 256] = [0; 256];
-                            buf[0] = 0x0f;
-
-                            let bytes_read = dev.get_feature_report(&mut buf)?;
-
-                            info!("{} bytes", bytes_read);
-                            hexdump::hexdump_iter(&buf).for_each(|s| info!("  {}", s));
-
-                            // wait to settle
-                            thread::sleep(Duration::from_millis(1000));
+                            println!("Initializing...");
 
                             let mut buf: [u8; 8] = [0; 8];
                             buf[0] = 0x04;
 
                             let bytes_read = dev.get_feature_report(&mut buf)?;
 
-                            info!("{} bytes", bytes_read);
-                            hexdump::hexdump_iter(&buf).for_each(|s| info!("  {}", s));
+                            println!("{} bytes", bytes_read);
+                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
 
                             // wait to settle
-                            thread::sleep(Duration::from_millis(1000));
+                            thread::sleep(Duration::from_millis(500));
 
-                            info!("Entering loop:");
+                            println!("Entering polling loop:");
 
                             loop {
                                 let mut buf: [u8; 16] = [0; 16];
@@ -284,8 +286,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 let bytes_read = dev.read(&mut buf)?;
 
-                                info!("{:?}: {} bytes", Instant::now(), bytes_read);
-                                hexdump::hexdump_iter(&buf).for_each(|s| info!("  {}", s));
+                                println!("{:?}: {} bytes", Instant::now(), bytes_read);
+                                hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
                             }
                         } else {
                             error!("Could not open the device, is the device in use?");
@@ -300,22 +302,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             };
 
-            info!("-- End of trace --");
+            println!("-- End of trace --");
         }
 
         Subcommands::StateDiff {
             device: device_index,
         } => {
-            info!("Reading data from device...");
-
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     if let Some((index, device)) =
                         hidapi.device_list().enumerate().nth(device_index)
                     {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -338,6 +338,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 device.serial_number().unwrap_or_else(|| "<unknown>"),
                                 device.product_string().unwrap_or_else(|| "<unknown>"),
                             );
+
+                            println!("Reading data from device...");
 
                             for report_id in 0..=255 {
                                 let length = 128;
@@ -371,10 +373,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 }
                             }
 
+                            println!("The following USB HID report IDs have changed bytes:\n");
+
                             util::print_diff(&state, &data_store);
+
+                            println!("Saving state data...");
 
                             data_store.push(state);
                             util::save_data_to_file(&path, &data_store)?;
+
+                            println!("Done");
                         } else {
                             error!("Could not open the device, is the device in use?");
                         }
@@ -392,16 +400,14 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             report_id,
             length,
         } => {
-            info!("Reading data from device...");
-
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     if let Some((index, device)) =
                         hidapi.device_list().enumerate().nth(device_index)
                     {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -417,6 +423,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         );
 
                         if let Ok(dev) = device.open_device(&hidapi) {
+                            println!("Reading data from device...");
+
                             let mut buf = Vec::new();
 
                             buf.resize(length + 1, 0x00);
@@ -424,7 +432,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                             dev.get_feature_report(&mut buf)?;
 
-                            info!("[{}]", HexSlice::new(&buf));
+                            println!("[{}]", HexSlice::new(&buf));
                         } else {
                             error!("Could not open the device, is the device in use?");
                         }
@@ -441,16 +449,14 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             device: device_index,
             data,
         } => {
-            info!("Writing data to device...");
-
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     if let Some((index, device)) =
                         hidapi.device_list().enumerate().nth(device_index)
                     {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -466,9 +472,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         );
 
                         if let Ok(dev) = device.open_device(&hidapi) {
+                            println!("Writing data to device...");
+
                             let buf = util::parse_hex_vec(&data)?;
 
-                            info!("[{}]", HexSlice::new(&buf));
+                            println!("[{}]", HexSlice::new(&buf));
 
                             dev.send_feature_report(&buf)?;
                         } else {
@@ -482,161 +490,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             }
         }
-
-        Subcommands::Test {
-            device: device_index,
-        } => {
-            warn!("Sending test data to device...");
-
-            // create the one and only hidapi instance
-            match hidapi::HidApi::new() {
-                Ok(hidapi) => {
-                    if let Some((index, device)) =
-                        hidapi.device_list().enumerate().nth(device_index)
-                    {
-                        info!(
-                            "#{}: USB ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
-                            device.vendor_id(),
-                            device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device.interface_number()
-                        );
-
-                        if let Ok(dev) = device.open_device(&hidapi) {
-                            fn settle(dev: &hidapi::HidDevice) -> Result<()> {
-                                let mut buf: [u8; 8] = [0; 8];
-                                buf[0] = 0x04;
-                                let _result = dev.get_feature_report(&mut buf)?;
-
-                                info!("Settle: {:x?}", &buf);
-                                thread::sleep(Duration::from_millis(250));
-
-                                Ok(())
-                            }
-
-                            fn init(dev: &hidapi::HidDevice) -> Result<()> {
-                                let buf: [u8; 76] = [
-                                    0x9, 0x4c, 0x6a, 0x65, 0x9, 0x47, 0x3, 0x0, 0x0, 0x10, 0x0,
-                                    0x18, 0x0, 0x20, 0x0, 0x40, 0x0, 0x8, 0x0, 0x10, 0x0, 0x18,
-                                    0x0, 0x20, 0x0, 0x40, 0x0, 0x0, 0x2, 0x3, 0x4, 0x6, 0xff, 0xf,
-                                    0x0, 0x0, 0xff, 0xff, 0xc5, 0xb, 0xdc, 0xff, 0xff, 0xe6, 0x8c,
-                                    0x0, 0x15, 0xff, 0xf, 0xf, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0, 0x0, 0x0, 0x0, 0xd8, 0xb, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8c,
-                                ];
-
-                                // [
-                                //     /*0x9, 0x49, 0x6a, 0x65,*/ 0x9, 0x47, 0x3, 0x0, 0x0, 0x10,
-                                //     0x0, 0x18, 0x0, 0x20, 0x0, 0x40, 0x0, 0x8, 0x0, 0x10, 0x0,
-                                //     0x18, 0x0, 0x1, 0x1, 0x1, 0xff, r, g, b, 0x50, 0x0, 0xff, 0xf,
-                                //     0x50, 0x0, 0x15, 0xff, 0xf, 0xf, 0xff, 0x15, 0xff, 0xf, 0xf,
-                                //     0xff, 0x15, 0xff, 0xf, 0xf, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                //     0x0, 0x0, 0x0, 0x0, 0x59, 0xa, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                //     0x0, 0x0, 0x0, 0x0,
-                                // ];
-
-                                info!("{:x?}", &buf[4..]);
-
-                                // 37-39
-
-                                // [9, 4c, 6a, 65, 9, 47, 3, 0, 0, 10, 0, 18, 0, 20, 0, 40, 0, 8, 0, 10, 0, 18, 0, 20, 0, 40, 0, 0, 2, 3, 4, 6, ff, f, 0, 0, ff, ff, 51, ff, 0, ff, ff, e6, 8c, 0, 15, ff, f, f, ff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7b, b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8c]
-                                // [9, 4c, 6a, 65, 9, 47, 3, 0, 0, 10, 0, 18, 0, 20, 0, 40, 0, 8, 0, 10, 0, 18, 0, 20, 0, 40, 0, 0, 2, 3, 4, 6, ff, f, 0, 0, ff, ff, c5, b, dc, ff, ff, e6, 8c, 0, 15, ff, f, f, ff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d8, b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8c]
-
-                                dev.send_feature_report(&buf[4..])?;
-
-                                Ok(())
-                            }
-
-                            fn set_led_color(
-                                dev: &hidapi::HidDevice,
-                                r: u8,
-                                g: u8,
-                                b: u8,
-                            ) -> Result<()> {
-                                let mut buf = vec![0x09];
-                                buf.resize(76, 0x00);
-
-                                dev.get_feature_report(&mut buf)?;
-
-                                // settle(&dev)?;
-
-                                info!("{:x?}", buf);
-
-                                /*
-                                let mut buf = buf[4..].to_vec();
-                                // buf.resize(32, 0x00);
-
-                                const base: usize = 1;
-                                buf[0] = 0x06;
-                                // buf[base + 1] = 0x1f;
-                                buf[base + 1] = 0x00; // profile
-                                buf[base + 23] = 0x01;
-                                buf[base + 25] = 0xff;
-                                buf[base + 26] = r;
-                                buf[base + 27] = g;
-                                buf[base + 28] = b;
-                                buf[base + 29] = 0x01;
-                                buf[base + 30] = 0x00;
-
-
-                                */
-
-                                // let brightness = 80;
-
-                                let buf: [u8; 77] = [
-                                    0x9, 0x4c, 0x6a, 0x65, 0x9, 0x47, 0x3, 0x0, 0x0, 0x10, 0x0,
-                                    0x18, 0x0, 0x20, 0x0, 0x40, 0x0, 0x8, 0x0, 0x10, 0x0, 0x18,
-                                    0x0, 0x20, 0x0, 0x40, 0x0, 0x1, 0x2, 0x3, 0x4, 0x6, 0xff, 0xf,
-                                    0x0, 0x0, 0xff, 0xff, r, g, b, 0xff, 0xff, 0xe6, 0x8c, 0x0,
-                                    0x15, 0xff, 0xf, 0xf, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0, 0x0, 0x0, 0xd8, 0xb, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                ];
-
-                                // [
-                                //     /*0x9, 0x49, 0x6a, 0x65,*/ 0x9, 0x47, 0x3, 0x0, 0x0, 0x10,
-                                //     0x0, 0x18, 0x0, 0x20, 0x0, 0x40, 0x0, 0x8, 0x0, 0x10, 0x0,
-                                //     0x18, 0x0, 0x1, 0x1, 0x1, 0xff, r, g, b, 0x50, 0x0, 0xff, 0xf,
-                                //     0x50, 0x0, 0x15, 0xff, 0xf, 0xf, 0xff, 0x15, 0xff, 0xf, 0xf,
-                                //     0xff, 0x15, 0xff, 0xf, 0xf, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                //     0x0, 0x0, 0x0, 0x0, 0x59, 0xa, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                //     0x0, 0x0, 0x0, 0x0,
-                                // ];
-
-                                info!("{:x?}", &buf[4..]);
-
-                                dev.send_feature_report(&buf[4..])?;
-
-                                settle(&dev)?;
-
-                                Ok(())
-                            }
-
-                            init(&dev)?;
-                            settle(&dev)?;
-                            set_led_color(&dev, 59, 245, 0)?;
-                        } else {
-                            error!("Could not open the device, is the device in use?");
-                        }
-                    }
-                }
-
-                Err(_) => {
-                    error!("Could not open HIDAPI");
-                }
-            };
-
-            info!("-- End of test --");
-        }
-    };
+    }
 
     Ok(())
 }
