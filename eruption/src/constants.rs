@@ -66,7 +66,7 @@ pub const DEVICE_SETTLE_MILLIS: u64 = 5;
 pub const DEVICE_RETRY_MILLIS: u64 = 5000;
 
 /// Update sensors every n seconds
-pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS * 1;
+pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;

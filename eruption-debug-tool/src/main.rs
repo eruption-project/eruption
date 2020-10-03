@@ -16,7 +16,6 @@
 */
 
 use clap::Clap;
-use color_eyre;
 use colored::*;
 use log::*;
 use std::time::Instant;
@@ -166,14 +165,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         )
                     }
@@ -199,14 +192,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         );
 
@@ -216,10 +203,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                     if let Some(s) = result {
                                         println!("{:03}: {}", i, s);
                                     }
-                                } else {
-                                    if opts.verbose > 0 {
-                                        error!("{:03}: {}", i, "Failed");
-                                    }
+                                } else if opts.verbose > 0 {
+                                    error!("{:03}: {}", i, "Failed");
                                 }
                             }
                         } else {
@@ -250,14 +235,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         );
 
@@ -316,14 +295,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         );
 
@@ -332,8 +305,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                             let mut data_store = util::load_data_from_file(&path)?;
                             let mut state = DeviceState::new(
-                                device.serial_number().unwrap_or_else(|| "<unknown>"),
-                                device.product_string().unwrap_or_else(|| "<unknown>"),
+                                device.serial_number().unwrap_or("<unknown>"),
+                                device.product_string().unwrap_or("<unknown>"),
                             );
 
                             println!("Reading data from device...");
@@ -408,14 +381,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         );
 
@@ -457,14 +424,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
-                            device
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
-                            device
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .bold(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
                             device.interface_number()
                         );
 

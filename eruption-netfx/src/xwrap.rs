@@ -13,7 +13,6 @@ use std::slice;
 use image::Pixel;
 use image::Rgba;
 use image::RgbaImage;
-use libc;
 use x11::xlib;
 use x11::xrandr;
 
@@ -103,8 +102,8 @@ impl Display {
             }
 
             Rect {
-                x: x,
-                y: y,
+                x,
+                y,
                 w: attrs.width,
                 h: attrs.height,
             }
@@ -270,8 +269,8 @@ impl<'a> Iterator for ScreenRectIter<'a> {
 
             //Some((w as i32, h as i32, x as i32, y as i32))
             Some(Rect {
-                x: x,
-                y: y,
+                x,
+                y,
                 w: w as i32,
                 h: h as i32,
             })

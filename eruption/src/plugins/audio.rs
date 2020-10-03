@@ -175,7 +175,7 @@ impl AudioPlugin {
         }
 
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
-            backend.get_master_volume().unwrap_or_else(|_| 0) * 100 / std::u16::MAX as isize
+            backend.get_master_volume().unwrap_or(0) * 100 / std::u16::MAX as isize
         } else {
             -1
         }

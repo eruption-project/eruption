@@ -335,7 +335,7 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
             info!(
                 "Found Mouse device: {:?}: {}",
                 device.path(),
-                device.product_string().unwrap_or_else(|| "<unknown>"),
+                device.product_string().unwrap_or("<unknown>"),
             );
 
             found_mouse_dev = true;

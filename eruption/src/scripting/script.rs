@@ -705,7 +705,7 @@ pub fn run_script(
                 error!(
                     "Lua error: {}\n\t{:?}",
                     e,
-                    e.source().unwrap_or_else(|| &UnknownError {})
+                    e.source().unwrap_or(&UnknownError {})
                 );
                 errors_present = true;
             });
@@ -720,7 +720,7 @@ pub fn run_script(
                     error!(
                         "Lua error: {}\n\t{:?}",
                         e,
-                        e.source().unwrap_or_else(|| &UnknownError {})
+                        e.source().unwrap_or(&UnknownError {})
                     );
                     errors_present = true;
                 });
@@ -745,7 +745,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -769,7 +769,7 @@ pub fn run_script(
                                         error!(
                                             "Lua error: {}\n\t{:?}",
                                             e,
-                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                            e.source().unwrap_or(&UnknownError {})
                                         );
                                         errors_present = true;
                                     })
@@ -827,7 +827,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -849,7 +849,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -913,7 +913,7 @@ pub fn run_script(
                                         error!(
                                             "Lua error: {}\n\t{:?}",
                                             e,
-                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                            e.source().unwrap_or(&UnknownError {})
                                         );
                                         errors_present = true;
                                     });
@@ -952,7 +952,7 @@ pub fn run_script(
                                         error!(
                                             "Lua error: {}\n\t{:?}",
                                             e,
-                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                            e.source().unwrap_or(&UnknownError {})
                                         );
                                         errors_present = true;
                                     });
@@ -976,7 +976,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -1000,7 +1000,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -1026,7 +1026,7 @@ pub fn run_script(
                                             error!(
                                                 "Lua error: {}\n\t{:?}",
                                                 e,
-                                                e.source().unwrap_or_else(|| &UnknownError {})
+                                                e.source().unwrap_or(&UnknownError {})
                                             );
                                             errors_present = true;
                                         },
@@ -1054,7 +1054,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 });
@@ -1104,7 +1104,7 @@ pub fn run_script(
                                         error!(
                                             "Lua error: {}\n\t{:?}",
                                             e,
-                                            e.source().unwrap_or_else(|| &UnknownError {})
+                                            e.source().unwrap_or(&UnknownError {})
                                         );
                                         errors_present = true;
                                     });
@@ -1134,7 +1134,7 @@ pub fn run_script(
                                     error!(
                                         "Lua error: {}\n\t{:?}",
                                         e,
-                                        e.source().unwrap_or_else(|| &UnknownError {})
+                                        e.source().unwrap_or(&UnknownError {})
                                     );
                                     errors_present = true;
                                 })

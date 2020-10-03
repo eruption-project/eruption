@@ -64,7 +64,7 @@ lazy_static! {
             .as_ref()
             .unwrap()
             .get::<bool>("global.grab_mouse")
-            .unwrap_or_else(|_| true);
+            .unwrap_or(true);
 
         AtomicBool::from(grab_mouse)
     };

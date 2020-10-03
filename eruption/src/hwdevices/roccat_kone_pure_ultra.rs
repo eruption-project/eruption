@@ -172,7 +172,7 @@ impl RoccatKonePureUltra {
                                     Ok(())
                                 }
 
-                                Err(_) => Err(HwDeviceError::InvalidResult {}).into(),
+                                Err(_) => Err(HwDeviceError::InvalidResult {}),
                             }?;
 
                             let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
@@ -183,7 +183,7 @@ impl RoccatKonePureUltra {
                                     Ok(())
                                 }
 
-                                Err(_) => Err(HwDeviceError::InvalidResult {}).into(),
+                                Err(_) => Err(HwDeviceError::InvalidResult {}),
                             }?;
                         }
                     }

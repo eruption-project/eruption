@@ -2229,7 +2229,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     // enable support for experimental features?
     let enable_experimental_features = config
         .get::<bool>("global.enable_experimental_features")
-        .unwrap_or_else(|_| false);
+        .unwrap_or(false);
 
     EXPERIMENTAL_FEATURES.store(enable_experimental_features, Ordering::SeqCst);
 
@@ -2253,9 +2253,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
 
     // enable the mouse
-    let enable_mouse = config
-        .get::<bool>("global.enable_mouse")
-        .unwrap_or_else(|_| true);
+    let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
 
     // grab the mouse exclusively
     // let grab_mouse = config

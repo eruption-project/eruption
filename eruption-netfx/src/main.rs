@@ -121,9 +121,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Ping => {
             let address = format!(
                 "{}:{}",
-                opts.hostname
-                    .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-                opts.port.unwrap_or_else(|| constants::DEFAULT_PORT)
+                opts.hostname.unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
+                opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
                 println!("Connecting to: {}", address);
@@ -146,9 +145,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Command { data } => {
             let address = format!(
                 "{}:{}",
-                opts.hostname
-                    .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-                opts.port.unwrap_or_else(|| constants::DEFAULT_PORT)
+                opts.hostname.unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
+                opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
                 println!("Connecting to: {}", address);
@@ -205,9 +203,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Image { filename } => {
             let address = format!(
                 "{}:{}",
-                opts.hostname
-                    .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-                opts.port.unwrap_or_else(|| constants::DEFAULT_PORT)
+                opts.hostname.unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
+                opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
                 println!("Connecting to: {}", address);
@@ -272,7 +269,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 "{}:{}",
                 opts.hostname
                     .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-                opts.port.unwrap_or_else(|| constants::DEFAULT_PORT)
+                opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
                 println!("Connecting to: {}", address);
@@ -334,7 +331,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
 
                     delay_for(Duration::from_millis(
-                        frame_delay.unwrap_or_else(|| constants::DEFAULT_ANIMATION_DELAY_MILLIS),
+                        frame_delay.unwrap_or(constants::DEFAULT_ANIMATION_DELAY_MILLIS),
                     ))
                     .await;
                 }
@@ -346,7 +343,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 "{}:{}",
                 opts.hostname
                     .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-                opts.port.unwrap_or_else(|| constants::DEFAULT_PORT)
+                opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
                 println!("Connecting to: {}", address);
@@ -390,7 +387,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
 
                 delay_for(Duration::from_millis(
-                    frame_delay.unwrap_or_else(|| constants::DEFAULT_FRAME_DELAY_MILLIS),
+                    frame_delay.unwrap_or(constants::DEFAULT_FRAME_DELAY_MILLIS),
                 ))
                 .await;
             }

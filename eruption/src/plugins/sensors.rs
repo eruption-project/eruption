@@ -77,7 +77,7 @@ impl SensorsPlugin {
                 .iter()
                 .find(|c| c.get_label().contains("Package id 0"))
                 .and_then(|c| Some(c.get_temperature()))
-                .unwrap_or_else(|| 0.0)
+                .unwrap_or(0.0)
         } else {
             0.0
         }
@@ -95,7 +95,7 @@ impl SensorsPlugin {
                 .iter()
                 .find(|c| c.get_label().contains("Package id 0"))
                 .and_then(|c| Some(c.get_temperature()))
-                .unwrap_or_else(|| 0.0)
+                .unwrap_or(0.0)
         } else {
             0.0
         }
