@@ -124,8 +124,6 @@ fn print_header() {
 fn print_notice() {
     println!(
         r#"
- NOTICE:
-
  Please stop the Eruption daemon prior to running this tool:
  $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
 
@@ -139,10 +137,10 @@ fn print_notice() {
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 
-    // if unsafe { libc::isatty(0) != 0 } {
-    //     print_header();
-    //     print_notice();
-    // }
+    if unsafe { libc::isatty(0) != 0 } {
+        // print_header();
+        print_notice();
+    }
 
     // initialize logging
     if env::var("RUST_LOG").is_err() {
