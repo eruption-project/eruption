@@ -16,20 +16,20 @@ clap = "3.0.0-beta.1"
 clap_derive = "3.0.0-beta.1"
 colored = "2.0"
 log = "0.4.11"
-libc = "0.2.77"
+libc = "0.2.78"
 nix = "0.18.0"
 parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
 serde = { version = "1.0.116", features = ["derive"] }
-serde_json = { version = "1.0.57" }
+serde_json = { version = "1.0.58" }
 tokio = { version = "0.2.22", features = ["full", "parking_lot"] }
-tracing = "0.1.19"
+tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.12"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 toml = "0.5.6"
 thiserror = "1.0.20"
-eyre = "0.6.0"
-color-eyre = "0.5.2"
+eyre = "0.6.1"
+color-eyre = "0.5.6"
 paste = "1.0"
 dbus = "0.8.4"
 dbus-tokio = "0.5.2"
