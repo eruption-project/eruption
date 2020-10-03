@@ -99,6 +99,9 @@ lazy_static! {
     /// Global "is AFK" status flag
     pub static ref AFK: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 
+    /// Global "enable experimental features" flag
+    pub static ref EXPERIMENTAL_FEATURES: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+
     // Other state
 
     /// Global "keyboard brightness" modifier
@@ -2222,6 +2225,17 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         });
 
     *CONFIG.lock() = Some(config.clone());
+
+    // enable support for experimental features?
+    let enable_experimental_features = config
+        .get::<bool>("global.enable_experimental_features")
+        .unwrap_or_else(|_| false);
+
+    EXPERIMENTAL_FEATURES.store(enable_experimental_features, Ordering::SeqCst);
+
+    if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
+        warn!("** EXPERIMENTAL FEATURES are ENABLED, this may expose serious bugs! **");
+    }
 
     // load and initialize global runtime state
     info!("Loading saved state...");
