@@ -24,7 +24,6 @@ use std::{env, thread};
 use std::{path::PathBuf, time::Duration};
 
 mod constants;
-mod hwdevices;
 mod util;
 
 use util::{DeviceState, HexSlice};
