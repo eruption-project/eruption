@@ -1,6 +1,7 @@
 target/release/eruption usr/bin/
 target/release/eruptionctl usr/bin/
 target/release/eruption-netfx usr/bin/
+target/release/eruption-debug-tool usr/bin/
 
 support/systemd/eruption-suspend.sh lib/systemd/system-sleep/eruption
 

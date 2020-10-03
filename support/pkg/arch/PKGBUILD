@@ -66,6 +66,7 @@ package() {
     install -m 755 "target/release/eruption" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruptionctl" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-netfx" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-debug-tool" "$pkgdir/usr/bin/"
 
     install -m 755 "support/systemd/eruption-suspend.sh" "$pkgdir/usr/lib/systemd/system-sleep/eruption"
 

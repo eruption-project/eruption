@@ -123,6 +123,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buil
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
 
 %post
 %systemd_post %{ShortName}.service
@@ -146,6 +147,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netf
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
 %{_bindir}/eruption-netfx
+%{_bindir}/eruption-debug-tool
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
