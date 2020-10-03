@@ -6,7 +6,7 @@ Table of new and noteworthy changes:
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.16 | __New Release__                                                                                                         |
 | 0.1.16 | Add support for ROCCAT Kone Pure Ultra LED                                                                              |
-| 0.1.16 | Add a new companion tool `eruption-debug-tool` that may be used to debug USB HID devices                                  |
+| 0.1.16 | Add a new companion tool `eruption-debug-tool` that may be used to debug USB HID devices                                |
 | 0.1.16 | Revert to previous version of the Lua script `shockwave.lua` but with an updated neighbor selection algorithm           |
 | 0.1.16 | Added a new Lua script `halo.lua` that shows a rainbow colored animated halo when a key has been pressed                |
 | 0.1.15 | __New Release__                                                                                                         |
