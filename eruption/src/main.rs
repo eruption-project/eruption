@@ -2304,7 +2304,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                         // spawn a thread to handle possible subdevices
                         if let Some(mouse_device) = mouse_device.as_ref() {
-                            if mouse_device.read().has_secondary_device() {
+                            if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                                && mouse_device.read().has_secondary_device()
+                            {
                                 info!("Spawning mouse input thread for secondary subdevice...");
                                 spawn_mouse_input_thread_secondary(mouse_secondary_tx)
                                     .unwrap_or_else(|e| {
