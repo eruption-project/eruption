@@ -503,12 +503,14 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
+            // use the color of KP_ENTER for now
+
             let buf: [u8; 11] = [
                 0x0d,
                 0x0b,
-                led_map[1].r,
-                led_map[1].g,
-                led_map[1].b,
+                led_map[131].r,
+                led_map[131].g,
+                led_map[131].b,
                 0x00,
                 0x00,
                 0x00,
