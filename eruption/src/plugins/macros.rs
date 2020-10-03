@@ -86,8 +86,8 @@ impl MacrosPlugin {
         // setup virtual keyboard device
         dev.set_name("Eruption Virtual Keyboard");
         dev.set_bustype(3);
+        dev.set_vendor_id(0xffff);
         dev.set_product_id(0x0123);
-        dev.set_vendor_id(0x0059);
         dev.set_version(0x01);
 
         // configure allowed events
@@ -328,8 +328,8 @@ impl MacrosPlugin {
         // setup a virtual mouse device
         dev.set_name("Eruption Virtual Mouse");
         dev.set_bustype(3);
+        dev.set_vendor_id(0xffff);
         dev.set_product_id(0x0124);
-        dev.set_vendor_id(0x0059);
         dev.set_version(0x01);
 
         // configure allowed events

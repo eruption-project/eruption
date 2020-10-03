@@ -185,15 +185,22 @@ pub struct DeviceInfo {
     pub firmware_version: i32,
 }
 
+impl DeviceInfo {
+    pub fn new(firmware_version: i32) -> Self {
+        DeviceInfo { firmware_version }
+    }
+}
+
 /// Information about a generic device
 pub trait DeviceInfoTrait {
-    type NativeDeviceInfo;
-
     /// Get device capabilities
     fn get_device_capabilities(&self) -> DeviceCapabilities;
 
     /// Get device specific information
-    fn get_device_info(&self) -> Result<Self::NativeDeviceInfo>;
+    fn get_device_info(&self) -> Result<DeviceInfo>;
+
+    /// Get device firmware revision suitable for display to the user
+    fn get_firmware_revision(&self) -> String;
 }
 
 /// Generic device trait
@@ -219,7 +226,7 @@ pub trait DeviceTrait {
 }
 
 /// Devices like e.g. a supported keyboard
-pub trait KeyboardDeviceTrait: DeviceTrait {
+pub trait KeyboardDeviceTrait: DeviceTrait + DeviceInfoTrait {
     /// Set the state of a device status LED, like e.g. Num Lock, etc...
     fn set_status_led(&self, led_kind: LedKind, on: bool) -> Result<()>;
 
@@ -242,7 +249,7 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
 }
 
 /// Device like e.g. a supported mouse
-pub trait MouseDeviceTrait: DeviceTrait {
+pub trait MouseDeviceTrait: DeviceTrait + DeviceInfoTrait {
     /// Get the next HID event from the control device (blocking)
     fn get_next_event(&self) -> Result<MouseHidEvent>;
 
@@ -259,6 +266,9 @@ pub trait MouseDeviceTrait: DeviceTrait {
     /// Send a LED finalization pattern to the device. This should normally be used,
     /// to set the device to a known good state, on exit of the daemon
     fn set_led_off_pattern(&mut self) -> Result<()>;
+
+    /// Returns true when the mouse supports a secondary subdevice like e.g. a keyboard panel
+    fn has_secondary_device(&self) -> bool;
 }
 
 /// Enumerates all HID devices on the system and returns the first supported device that was found

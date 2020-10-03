@@ -163,6 +163,48 @@ pub fn get_evdev_mouse_from_udev() -> Result<String> {
     }
 }
 
+/// Get the path of the evdev device (of the first subdevice)
+/// of the primary mouse from udev
+pub fn get_evdev_mouse_secondary_from_udev() -> Result<String> {
+    match Enumerator::new() {
+        Ok(mut enumerator) => {
+            enumerator.match_subsystem("input").unwrap();
+
+            match enumerator.scan_devices() {
+                Ok(devices) => {
+                    for device in devices {
+                        if device.properties().any(|e| e.name() == "ID_INPUT_KEY") {
+                            let found_dev = device.properties().any(|e| {
+                                e.name() == "ID_VENDOR_ID"
+                                    && (hwdevices::VENDOR_IDS_MICE
+                                        .iter()
+                                        .map(|v| format!("{:x}", v))
+                                        .any(|v| v == e.value().to_string_lossy()))
+                            }) && device.properties().any(|e| {
+                                e.name() == "ID_MODEL_ID"
+                                    && (hwdevices::PRODUCT_IDS_MICE
+                                        .iter()
+                                        .map(|v| format!("{:x}", v))
+                                        .any(|v| v == e.value().to_string_lossy()))
+                            }) && device.devnode().is_some();
+
+                            if found_dev {
+                                return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                            }
+                        }
+                    }
+
+                    Err(UtilError::NoDevicesFound {}.into())
+                }
+
+                Err(_e) => Err(UtilError::EnumerationError {}.into()),
+            }
+        }
+
+        Err(_e) => Err(UtilError::UdevError {}.into()),
+    }
+}
+
 /// Get the path of the evdev device of the first mouse from udev
 pub fn get_mouse_dev_from_udev() -> Result<String> {
     match Enumerator::new() {
@@ -523,6 +565,20 @@ pub fn ev_key_to_button_index(code: EV_KEY) -> Result<u8> {
         evdev_rs::enums::EV_KEY::BTN_BACK => Ok(17),
         evdev_rs::enums::EV_KEY::BTN_TASK => Ok(18),
 
+        evdev_rs::enums::EV_KEY::KEY_0 => Ok(19),
+        evdev_rs::enums::EV_KEY::KEY_1 => Ok(20),
+        evdev_rs::enums::EV_KEY::KEY_2 => Ok(21),
+        evdev_rs::enums::EV_KEY::KEY_3 => Ok(22),
+        evdev_rs::enums::EV_KEY::KEY_4 => Ok(23),
+        evdev_rs::enums::EV_KEY::KEY_5 => Ok(24),
+        evdev_rs::enums::EV_KEY::KEY_6 => Ok(25),
+        evdev_rs::enums::EV_KEY::KEY_7 => Ok(26),
+        evdev_rs::enums::EV_KEY::KEY_8 => Ok(27),
+        evdev_rs::enums::EV_KEY::KEY_9 => Ok(28),
+
+        evdev_rs::enums::EV_KEY::KEY_MINUS => Ok(29),
+        evdev_rs::enums::EV_KEY::KEY_EQUAL => Ok(30),
+
         _ => Err(UtilError::MappingError {}.into()),
     }
 }
@@ -551,6 +607,20 @@ pub fn button_index_to_ev_key(index: u32) -> Result<evdev_rs::enums::EV_KEY> {
         16 => Ok(evdev_rs::enums::EV_KEY::BTN_FORWARD),
         17 => Ok(evdev_rs::enums::EV_KEY::BTN_BACK),
         18 => Ok(evdev_rs::enums::EV_KEY::BTN_TASK),
+
+        19 => Ok(evdev_rs::enums::EV_KEY::KEY_0),
+        20 => Ok(evdev_rs::enums::EV_KEY::KEY_1),
+        21 => Ok(evdev_rs::enums::EV_KEY::KEY_2),
+        22 => Ok(evdev_rs::enums::EV_KEY::KEY_3),
+        23 => Ok(evdev_rs::enums::EV_KEY::KEY_4),
+        24 => Ok(evdev_rs::enums::EV_KEY::KEY_5),
+        25 => Ok(evdev_rs::enums::EV_KEY::KEY_6),
+        26 => Ok(evdev_rs::enums::EV_KEY::KEY_7),
+        27 => Ok(evdev_rs::enums::EV_KEY::KEY_8),
+        28 => Ok(evdev_rs::enums::EV_KEY::KEY_9),
+
+        29 => Ok(evdev_rs::enums::EV_KEY::KEY_MINUS),
+        30 => Ok(evdev_rs::enums::EV_KEY::KEY_EQUAL),
 
         _ => Err(UtilError::MappingError {}.into()),
     }

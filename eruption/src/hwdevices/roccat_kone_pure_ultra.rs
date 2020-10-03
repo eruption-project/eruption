@@ -18,9 +18,9 @@
 use log::*;
 use parking_lot::Mutex;
 // use std::sync::atomic::Ordering;
-use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
 
@@ -40,9 +40,10 @@ pub const KEYBOARD_SUB_DEVICE: usize = 2;
 pub struct DeviceInfo {
     pub report_id: u8,
     pub size: u8,
-    pub reserved1: u16,
-    pub firmware_version: i32,
-    pub reserved2: u16,
+    pub firmware_version: u8,
+    pub reserved1: u8,
+    pub reserved2: u8,
+    pub reserved3: u8,
 }
 
 /// Event code of a device HID message
@@ -259,13 +260,11 @@ impl RoccatKonePureUltra {
 }
 
 impl DeviceInfoTrait for RoccatKonePureUltra {
-    type NativeDeviceInfo = self::DeviceInfo;
-
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities {}
     }
 
-    fn get_device_info(&self) -> Result<self::DeviceInfo> {
+    fn get_device_info(&self) -> Result<super::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
@@ -275,23 +274,32 @@ impl DeviceInfoTrait for RoccatKonePureUltra {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let mut buf = [0; 64];
-            buf[0] = 0x0f; // Query device info (HID report 0x0f)
+            let mut buf = [0; size_of::<DeviceInfo>()];
+            buf[0] = 0x09; // Query device info (HID report 0x09)
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.get_feature_report(&mut buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
-                    let result: DeviceInfo =
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
+                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
+        }
+    }
+
+    fn get_firmware_revision(&self) -> String {
+        if let Ok(device_info) = self.get_device_info() {
+            format!("{}", device_info.firmware_version)
+        } else {
+            "<unknown>".to_string()
         }
     }
 }
@@ -565,5 +573,9 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
 
             Ok(())
         }
+    }
+
+    fn has_secondary_device(&self) -> bool {
+        false
     }
 }

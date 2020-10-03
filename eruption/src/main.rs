@@ -395,6 +395,80 @@ fn spawn_mouse_input_thread(mouse_tx: Sender<Option<evdev_rs::InputEvent>>) -> p
     Ok(())
 }
 
+/// Spawns the mouse events thread (for an additional subdevice on the primary mouse) and executes it's main loop
+fn spawn_mouse_input_thread_secondary(
+    mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
+) -> plugins::Result<()> {
+    let builder = thread::Builder::new().name("events/mouse:secondary".into());
+    builder
+        .spawn(move || {
+            {
+                // initialize thread local state of the mouse plugin
+                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
+                let mouse_plugin = plugin_manager
+                    .find_plugin_by_name_mut("Mouse".to_string())
+                    .unwrap_or_else(|| {
+                        error!("Could not find a required plugin");
+                        panic!()
+                    })
+                    .as_any_mut()
+                    .downcast_mut::<plugins::MousePlugin>()
+                    .unwrap();
+
+                if let Err(e) = mouse_plugin.initialize_thread_locals_secondary() {
+                    error!("Could not initialize the mouse plugin: {}", e);
+                };
+            }
+
+            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+            let mouse_plugin = plugin_manager
+                .find_plugin_by_name("Mouse".to_string())
+                .unwrap_or_else(|| {
+                    error!("Could not find a required plugin");
+                    panic!()
+                })
+                .as_any()
+                .downcast_ref::<plugins::MousePlugin>()
+                .unwrap();
+
+            loop {
+                // check if we shall terminate the input thread, before we poll the mouse
+                if QUIT.load(Ordering::SeqCst) {
+                    break;
+                }
+
+                match mouse_plugin.get_next_event_secondary() {
+                    Ok(event) => {
+                        mouse_tx.send(event).unwrap_or_else(|e| {
+                            error!(
+                                "Could not send a mouse event (secondary) to the main thread: {}",
+                                e
+                            )
+                        });
+                    }
+
+                    Err(e) => match e.downcast_ref::<MousePluginError>() {
+                        Some(MousePluginError::EvdevNoDevError {}) => {
+                            error!("Fatal: Mouse device (secondary) went away: {}", e);
+                            thread::sleep(Duration::from_millis(constants::DEVICE_RETRY_MILLIS));
+                        }
+
+                        _ => {
+                            // ignore spurious events
+                            // error!("Could not get next mouse event");
+                        }
+                    },
+                }
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
 fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
@@ -1254,6 +1328,142 @@ async fn process_mouse_events(
     Ok(())
 }
 
+/// Process mouse events from a secondary subdevice on the primary mouse
+async fn process_mouse_secondary_events(
+    mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    failed_txs: &HashSet<usize>,
+) -> Result<()> {
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
+
+    'MOUSE_EVENTS_LOOP: loop {
+        let mut event_processed = false;
+
+        // send pending mouse events to the Lua VMs and to the event dispatcher
+        match mouse_rx.recv_timeout(Duration::from_millis(0)) {
+            Ok(result) => {
+                match result {
+                    Some(raw_event) => {
+                        // notify all observers of raw events
+                        events::notify_observers(events::Event::RawMouseEvent(raw_event.clone()))
+                            .ok();
+
+                        if let evdev_rs::enums::EventCode::EV_KEY(code) =
+                            raw_event.clone().event_code
+                        {
+                            // mouse button event occurred
+
+                            let is_pressed = raw_event.value > 0;
+                            let index = util::ev_key_to_button_index(code).unwrap();
+
+                            if is_pressed {
+                                *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
+
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
+                                    }
+                                }
+
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending =
+                                        UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+
+                                    UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::MouseButtonDown(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            } else {
+                                *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
+                                    LUA_TXS.lock().len() - failed_txs.len();
+
+                                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                    if !failed_txs.contains(&idx) {
+                                        lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
+                                                |e| {
+                                                    error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                                                },
+                                            );
+                                    } else {
+                                        warn!("Not sending a message to a failed tx");
+                                    }
+                                }
+
+                                // wait until all Lua VMs completed the event handler
+                                loop {
+                                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+
+                                    UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
+                                        &mut pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    );
+
+                                    if *pending == 0 {
+                                        break;
+                                    }
+                                }
+
+                                events::notify_observers(events::Event::MouseButtonUp(index))
+                                    .unwrap_or_else(|e| error!("{}", e));
+                            }
+                        }
+
+                        // mirror all events, except pointer motion events.
+                        // Pointer motion events currently can not be overridden,
+                        // they are mirrored to the virtual mouse directly after they are
+                        // received by the mouse plugin. This is done to reduce input lag
+                        macros::UINPUT_TX
+                            .lock()
+                            .as_ref()
+                            .unwrap()
+                            .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending mouse event: {}", e)
+                            });
+
+                        event_processed = true;
+                    }
+
+                    // ignore spurious events
+                    None => trace!("Spurious mouse event ignored"),
+                }
+            }
+
+            // ignore timeout errors
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
+
+            Err(e) => {
+                error!("Channel error: {}", e);
+                // break 'MAIN_LOOP;
+            }
+        }
+
+        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+            break 'MOUSE_EVENTS_LOOP; // no more events in queue or iteration limit reached
+        }
+
+        loop_counter += 1;
+    }
+
+    Ok(())
+}
+
 /// Process keyboard events
 async fn process_keyboard_events(
     kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
@@ -1393,6 +1603,7 @@ async fn run_main_loop(
     dbus_rx: &Receiver<dbus_interface::Message>,
     kbd_rx: &Receiver<Option<evdev_rs::InputEvent>>,
     mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
+    mouse_secondary_rx: &Receiver<Option<evdev_rs::InputEvent>>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     #[cfg(feature = "procmon")] sysevents_rx: &Receiver<SystemEvent>,
 ) -> Result<()> {
@@ -1548,6 +1759,9 @@ async fn run_main_loop(
             &mut mouse_motion_buf,
         );
 
+        let future_mouse_secondary_events =
+            process_mouse_secondary_events(&mouse_secondary_rx, &failed_txs);
+
         let future_kbd_events = process_keyboard_events(&kbd_rx, &failed_txs);
 
         // process events from the D-Bus interface thread
@@ -1558,6 +1772,7 @@ async fn run_main_loop(
             future_kbd_events,
             future_hid_events,
             future_mouse_events,
+            future_mouse_secondary_events,
             future_mouse_hid_events,
             future_fs_events,
             future_dbus_events,
@@ -1569,12 +1784,13 @@ async fn run_main_loop(
             future_kbd_events,
             future_hid_events,
             future_mouse_events,
+            future_mouse_secondary_events,
             future_mouse_hid_events,
             future_fs_events,
             future_dbus_events,
         )?;
 
-        if results.5 {
+        if results.6 {
             // A D-Bus event triggered a profile change
             failed_txs.clear();
         }
@@ -2053,8 +2269,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 Ok((keyboard_device, mouse_device)) => {
                     info!("Device enumeration completed");
 
-                    // debug!("{:?}", keyboard_device.read().get_device_info().unwrap());
-
                     // spawn a thread to handle keyboard input
                     info!("Spawning keyboard input thread...");
                     let (kbd_tx, kbd_rx) = channel();
@@ -2065,6 +2279,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                     // enable mouse input
                     let (mouse_tx, mouse_rx) = channel();
+                    let (mouse_secondary_tx, mouse_secondary_rx) = channel();
                     if enable_mouse {
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -2072,6 +2287,18 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             error!("Could not spawn a thread: {}", e);
                             panic!()
                         });
+
+                        // spawn a thread to handle possible subdevices
+                        if let Some(mouse_device) = mouse_device.as_ref() {
+                            if mouse_device.read().has_secondary_device() {
+                                info!("Spawning mouse input thread for secondary subdevice...");
+                                spawn_mouse_input_thread_secondary(mouse_secondary_tx)
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not spawn a thread: {}", e);
+                                        panic!()
+                                    });
+                            }
+                        }
                     } else {
                         info!("Mouse support is DISABLED by configuration");
                     }
@@ -2081,6 +2308,18 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                     info!("Waiting for tasks to complete...");
                     join!(future_keyboard, future_mouse);
+
+                    info!(
+                        "Keyboard device firmware revision: {:?}",
+                        keyboard_device.read().get_firmware_revision()
+                    );
+
+                    if let Some(mouse_device) = mouse_device.as_ref() {
+                        info!(
+                            "Mouse device firmware revision: {:?}",
+                            mouse_device.read().get_firmware_revision()
+                        );
+                    }
 
                     info!("Performing late initializations...");
 
@@ -2126,6 +2365,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         &dbus_rx,
                         &kbd_rx,
                         &mouse_rx,
+                        &mouse_secondary_rx,
                         &fsevents_rx,
                         #[cfg(feature = "procmon")]
                         &sysevents_rx,

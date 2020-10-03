@@ -32,7 +32,7 @@ use crate::util;
 
 use crate::plugins::{self, Plugin};
 
-pub const MAX_MOUSE_BUTTONS: usize = 16;
+pub const MAX_MOUSE_BUTTONS: usize = 32;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -71,7 +71,13 @@ lazy_static! {
 }
 
 thread_local! {
+    // primary mouse device
     static DEVICE: RefCell<Option<Device>> = RefCell::new(None);
+}
+
+thread_local! {
+    // secondary device on the mouse (e.g.: like an additional keyboard panel)
+    static SECONDARY_DEVICE: RefCell<Option<Device>> = RefCell::new(None);
 }
 
 /// A plugin that listens for mouse events
@@ -122,13 +128,61 @@ impl MousePlugin {
                     Ok(())
                 }
 
-                Err(_e) => Err(MousePluginError::EvdevHandleError {}.into()),
+                Err(_e) => return Err(MousePluginError::EvdevHandleError {}.into()),
             },
 
-            Err(_e) => Err(MousePluginError::EvdevError {}.into()),
+            Err(_e) => return Err(MousePluginError::EvdevError {}.into()),
+        }
+    }
+    pub fn initialize_thread_locals_secondary(&mut self) -> Result<()> {
+        let filename = util::get_evdev_mouse_secondary_from_udev()?;
+
+        warn!("{}", filename);
+
+        match File::open(&filename) {
+            Ok(devfile) => match Device::new_from_fd(devfile) {
+                Ok(mut device) => {
+                    info!("Now listening on (secondary): {}", filename);
+
+                    info!(
+                        "Input device name: \"{}\"",
+                        device.name().unwrap_or("<n/a>")
+                    );
+
+                    info!(
+                        "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
+                        device.bustype(),
+                        device.vendor_id(),
+                        device.product_id()
+                    );
+
+                    // info!("Driver version: {:x}", device.driver_version());
+
+                    info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
+
+                    // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
+
+                    if GRAB_MOUSE.load(Ordering::SeqCst) {
+                        info!("Grabbing the secondary mouse device exclusively");
+                        device
+                            .grab(GrabMode::Grab)
+                            .expect("Could not grab the secondary mouse device, terminating now.");
+                    }
+
+                    SECONDARY_DEVICE.with(|dev| *dev.borrow_mut() = Some(device));
+
+                    Ok(())
+                }
+
+                Err(_e) => return Err(MousePluginError::EvdevHandleError {}.into()),
+            },
+
+            Err(_e) => return Err(MousePluginError::EvdevError {}.into()),
         }
     }
 
+    /// Get the next evdev event for the primary mouse device
+    /// this call blocks until an event is queued
     pub fn get_next_event(&self) -> Result<Option<evdev_rs::InputEvent>> {
         let result = DEVICE.with(
             |dev| -> Result<(evdev_rs::ReadStatus, evdev_rs::InputEvent)> {
@@ -198,6 +252,69 @@ impl MousePlugin {
                             // }
 
                             error!("Could not get mouse events");
+                            Err(MousePluginError::EvdevEventError {}.into())
+                        }
+                    }
+                } else {
+                    Err(MousePluginError::EvdevNoDevError {}.into())
+                }
+            },
+        )?;
+
+        match result.0 {
+            evdev_rs::ReadStatus::Success => Ok(Some(result.1)),
+
+            _ => Ok(None),
+        }
+    }
+
+    /// Get the next evdev event for an additional subdevice on the primary mouse device
+    /// this call blocks until an event is queued
+    pub fn get_next_event_secondary(&self) -> Result<Option<evdev_rs::InputEvent>> {
+        let result = SECONDARY_DEVICE.with(
+            |dev| -> Result<(evdev_rs::ReadStatus, evdev_rs::InputEvent)> {
+                if let Some(dev) = dev.borrow().as_ref() {
+                    let result =
+                        dev.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
+
+                    match result {
+                        Ok(k) => {
+                            trace!("Mouse event (secondary): {:?}", k.1);
+
+                            // update AFK timer
+                            *crate::LAST_INPUT_TIME.lock() = Instant::now();
+
+                            // reset "to be dropped" flag
+                            macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
+
+                            // update our internal representation of the mouse state
+                            let event_code = k.1.event_code.clone();
+                            if let evdev_rs::enums::EventCode::EV_KEY(code) = event_code {
+                                let is_pressed = k.1.value > 0;
+                                let index = util::ev_key_to_button_index(code).unwrap() as usize;
+
+                                BUTTON_STATES.write()[index] = is_pressed;
+                            } else {
+                                // error!("Invalid event code received")
+                            }
+
+                            Ok(k)
+                        }
+
+                        Err(e) => {
+                            // if e.raw_os_error().unwrap() == libc::ENODEV {
+                            //     error!("Mouse device went away: {}", e);
+
+                            //     crate::QUIT.store(true, Ordering::SeqCst);
+                            //     Err(MousePluginError::EvdevEventError {}.into())
+                            // } else {
+                            //     error!("Could not peek evdev event: {}", e);
+
+                            //     crate::QUIT.store(true, Ordering::SeqCst);
+                            //     Err(MousePluginError::EvdevEventError {}.into())
+                            // }
+
+                            error!("Could not get mouse (secondary) events: {}", e);
                             Err(MousePluginError::EvdevEventError {}.into())
                         }
                     }
