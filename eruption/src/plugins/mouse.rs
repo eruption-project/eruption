@@ -134,6 +134,7 @@ impl MousePlugin {
             Err(_e) => return Err(MousePluginError::EvdevError {}.into()),
         }
     }
+
     pub fn initialize_thread_locals_secondary(&mut self) -> Result<()> {
         let filename = util::get_evdev_mouse_secondary_from_udev()?;
 
