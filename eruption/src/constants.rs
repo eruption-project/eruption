@@ -70,3 +70,6 @@ pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
+
+// Wait n seconds before sending the LED "off pattern" on shutdown
+pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 500;

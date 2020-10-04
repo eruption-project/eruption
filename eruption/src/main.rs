@@ -2420,7 +2420,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     plugins::PersistencePlugin::store_persistent_data()
                         .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
 
-                    thread::sleep(Duration::from_millis(constants::DBUS_TIMEOUT_MILLIS as u64));
+                    thread::sleep(Duration::from_millis(
+                        constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
+                    ));
 
                     // set LEDs to a known final state
                     keyboard_device
