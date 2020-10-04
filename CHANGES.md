@@ -5,6 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 0.1.16 | __New Release__                                                                                                         |
+| 0.1.16 | Released a new version of the `Eruption Profile Switcher` Gnome Shell extension; please be sure to update!              |
 | 0.1.16 | Add support for ROCCAT Kone Pure Ultra LED                                                                              |
 | 0.1.16 | Add a new companion tool `eruption-debug-tool` that may be used to debug USB HID devices                                |
 | 0.1.16 | Revert to previous version of the Lua script `shockwave.lua` but with an updated neighbor selection algorithm           |
