@@ -64,7 +64,6 @@ pub enum KeyboardHidEventCode {
     KEY_F8,
 
     KEY_ESC,
-    KEY_ENTER,
     KEY_CAPS_LOCK,
     KEY_FN,
     KEY_EASY_SHIFT,
@@ -86,7 +85,6 @@ impl KeyboardHidEventCode {
                 57 => Self::KEY_F8,
 
                 17 => Self::KEY_ESC,
-                107 => Self::KEY_ENTER,
                 119 => Self::KEY_FN,
 
                 _ => Self::Unknown(code),
@@ -119,7 +117,6 @@ impl Into<u8> for KeyboardHidEventCode {
             Self::KEY_F8 => 57,
 
             Self::KEY_ESC => 17,
-            Self::KEY_ENTER => 107,
             Self::KEY_CAPS_LOCK => 57,
             Self::KEY_FN => 119,
             Self::KEY_EASY_SHIFT => 255,
