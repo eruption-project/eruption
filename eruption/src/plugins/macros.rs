@@ -484,7 +484,7 @@ impl MacrosPlugin {
         Ok(())
     }
 
-    /// Inject a pre-existing InputEvent into the output of the virtual mouse device
+    /// Inject a pre-existing InputEvent into to output of the virtual mouse device
     fn inject_mouse_event(event: evdev_rs::InputEvent) -> Result<()> {
         let mut do_initialize = false;
 
@@ -505,7 +505,7 @@ impl MacrosPlugin {
         Ok(())
     }
 
-    /// Inject a pre-existing InputEvent into the output of the virtual mouse device
+    /// Inject a pre-existing InputEvent into to output of the virtual mouse device
     /// Will send a SYN_REPORT directly after sending `event`
     fn inject_mouse_event_immediate(event: evdev_rs::InputEvent) -> Result<()> {
         let mut do_initialize = false;
@@ -622,19 +622,6 @@ impl MacrosPlugin {
                     }
                 }
             })?;
-
-        // HACK: sometimes we do not register "return key up" on startup of the daemon
-        // So inject that event manually here. Note, that this does not cause the daemon
-        // to inject a return key press since it will only send a key up event without a
-        // prior key dow event
-        if plugins::keyboard::KEY_STATES.read()[89] {
-            uinput_tx
-                .send(Message::InjectKey {
-                    key: 89,
-                    down: false,
-                })
-                .unwrap();
-        }
 
         *UINPUT_TX.lock() = Some(uinput_tx);
 
