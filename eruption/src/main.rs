@@ -2317,23 +2317,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         info!("Mouse support is DISABLED by configuration");
                     }
 
+                    info!("Initializing devices...");
+
                     let future_keyboard = init_keyboard_device(&keyboard_device, &hidapi);
                     let future_mouse = init_mouse_device(&mouse_device, &hidapi);
 
                     info!("Waiting for tasks to complete...");
                     join!(future_keyboard, future_mouse);
-
-                    info!(
-                        "Keyboard device firmware revision: {:?}",
-                        keyboard_device.read().get_firmware_revision()
-                    );
-
-                    if let Some(mouse_device) = mouse_device.as_ref() {
-                        info!(
-                            "Mouse device firmware revision: {:?}",
-                            mouse_device.read().get_firmware_revision()
-                        );
-                    }
 
                     info!("Performing late initializations...");
 

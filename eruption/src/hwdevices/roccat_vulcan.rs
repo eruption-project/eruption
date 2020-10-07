@@ -505,8 +505,6 @@ impl DeviceInfoTrait for RoccatVulcan1xx {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x0f; // Query device info (HID report 0x0f)
@@ -604,6 +602,14 @@ impl DeviceTrait for RoccatVulcan1xx {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
+            let firmware_version = self.get_device_info()?.firmware_version;
+            if firmware_version < 136 {
+                warn!(
+                    "Outdated firmware version: {}, should be: >= 136",
+                    firmware_version
+                );
+            }
+
             self.query_ctrl_report(0x0f)
                 .unwrap_or_else(|e| error!("{}", e));
 
