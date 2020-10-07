@@ -218,7 +218,9 @@ pub fn get_mouse_dev_from_udev() -> Result<String> {
                         if device.devnode().is_some() {
                             // skip keyboard integrated mouse devices
                             if let Some(val) = device.property_value("ID_MODEL") {
-                                if !val.to_string_lossy().contains("Vulcan") {
+                                if !val.to_string_lossy().contains("Vulcan")
+                                    && !val.to_string_lossy().contains("Ryos")
+                                {
                                     return Ok(device
                                         .devnode()
                                         .unwrap()
