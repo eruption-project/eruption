@@ -310,6 +310,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69323bff1fb41c635347b8ead484a5ca6c3f11914d784170b158d8449ab07f8e"
+dependencies = [
+ "cfg-if",
+ "crossbeam-channel",
+ "crossbeam-deque",
+ "crossbeam-epoch",
+ "crossbeam-queue",
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-channel"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -343,6 +357,17 @@ dependencies = [
  "maybe-uninit",
  "memoffset",
  "scopeguard",
+]
+
+[[package]]
+name = "crossbeam-queue"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "774ba60a54c213d409d5353bda12d49cd68d14e45036a285234c8d6f91f92570"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "maybe-uninit",
 ]
 
 [[package]]
@@ -445,7 +470,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -453,6 +478,7 @@ dependencies = [
  "clap",
  "color-eyre",
  "config",
+ "crossbeam",
  "ctrlc",
  "dbus",
  "evdev-rs",
@@ -1064,9 +1090,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.78"
+version = "0.2.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa7087f49d294270db4e1928fc110c976cd4b9e5a16348e0a1df09afa99e6c98"
+checksum = "2448f6066e80e3bfc792e9c98bf705b4b0fc6e8ef5b43e5889aff0eaa9c58743"
 
 [[package]]
 name = "libdbus-sys"
@@ -2364,18 +2390,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dfdd070ccd8ccb78f4ad66bf1982dc37f620ef696c6b5028fe2ed83dd3d0d08"
+checksum = "318234ffa22e0920fe9a40d7b8369b5f649d490980cf7aadcf1eb91594869b42"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd80fc12f73063ac132ac92aceea36734f04a1d93c1240c6944e23a3b8841793"
+checksum = "cae2447b6282786c3493999f40a9be2a6ad20cb8bd268b0a0dbf5a065535c0ab"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2544,9 +2570,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82bb5079aa76438620837198db8a5c529fb9878c730bc2b28179b0241cf04c10"
+checksum = "4ef0a5e15477aa303afbfac3a44cba9b6430fdaad52423b1e6c0dbbe28c3eedd"
 dependencies = [
  "ansi_term 0.12.1",
  "chrono",
@@ -2558,6 +2584,7 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "tracing",
  "tracing-core",
  "tracing-log",
  "tracing-serde",
