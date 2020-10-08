@@ -2322,6 +2322,18 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     let future_keyboard = init_keyboard_device(&keyboard_device, &hidapi);
                     let future_mouse = init_mouse_device(&mouse_device, &hidapi);
 
+                    info!(
+                        "Keyboard firmware revision: {}",
+                        keyboard_device.read().get_firmware_revision()
+                    );
+
+                    if let Some(mouse_device) = mouse_device.as_ref() {
+                        info!(
+                            "Mouse firmware revision: {}",
+                            mouse_device.read().get_firmware_revision()
+                        );
+                    }
+
                     info!("Waiting for tasks to complete...");
                     join!(future_keyboard, future_mouse);
 
