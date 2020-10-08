@@ -4,6 +4,7 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 0.1.17 | __New Release__                                                                                                         |
 | 0.1.16 | __New Release__                                                                                                         |
 | 0.1.16 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!              |
 | 0.1.16 | Add support for ROCCAT Kone Pure Ultra LED                                                                              |
