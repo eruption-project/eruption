@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -28,7 +29,6 @@ use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
 
@@ -833,9 +833,6 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
-
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             }
@@ -854,9 +851,6 @@ pub fn run_script(
                                     errors_present = true;
                                 });
                             }
-
-                            *crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
 
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
@@ -919,9 +913,6 @@ pub fn run_script(
                                     });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.notify_all();
-
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             }
@@ -958,9 +949,6 @@ pub fn run_script(
                                     });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.notify_all();
-
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             }
@@ -982,9 +970,6 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
-
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             }
@@ -1005,9 +990,6 @@ pub fn run_script(
                                     errors_present = true;
                                 });
                             }
-
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
 
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
@@ -1036,9 +1018,6 @@ pub fn run_script(
                                 }
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
-
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             }
@@ -1059,9 +1038,6 @@ pub fn run_script(
                                     errors_present = true;
                                 });
                             }
-
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() -= 1;
-                            crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
 
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);
@@ -1109,9 +1085,6 @@ pub fn run_script(
                                         errors_present = true;
                                     });
                             }
-
-                            // *crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock() -= 1;
-                            // crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.1.notify_all();
 
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);

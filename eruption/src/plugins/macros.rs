@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::{unbounded, Sender};
 use evdev_rs::enums::*;
 use evdev_rs::{Device, InputEvent, TimeVal, UInputDevice};
 use lazy_static::lazy_static;
@@ -25,7 +26,6 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use std::sync::mpsc::{channel, Sender};
 use std::sync::Arc;
 use std::thread;
 
@@ -539,7 +539,7 @@ impl MacrosPlugin {
     }
 
     fn spawn_uinput_thread() -> Result<()> {
-        let (uinput_tx, uinput_rx) = channel();
+        let (uinput_tx, uinput_rx) = unbounded();
 
         thread::Builder::new()
             .name("uinput".into())
@@ -648,8 +648,6 @@ impl Plugin for MacrosPlugin {
     fn register_lua_funcs(&self, _lua_ctx: &Lua) -> mlua::Result<()> {
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 
