@@ -16,10 +16,6 @@ procmon = ["procmon-sys"]
 [dependencies]
 crossbeam = "0.7.3"
 parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
-# async-std = { version = "1.6.2", features = ["attributes", "tokio02"] }
-# async-macros = "2.0.0"
-#tokio = { version = "0.2.22", features = ["full", "parking_lot"] }
-#futures = "0.3.6"
 async-trait = "0.1.41"
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
@@ -60,7 +56,7 @@ mlua_derive = { version = "0.4.0" }
 sysinfo = "0.15"
 systemstat = "0.1.5"
 procinfo = "0.4.2"
-rustfft = "3.0.1"
+rustfft = "4.0.0"
 hound = "3.4.0"
 libpulse-binding = "2.16"
 libpulse-simple-binding = "2.16"
