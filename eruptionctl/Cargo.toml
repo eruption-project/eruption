@@ -17,16 +17,16 @@ clap_derive = "3.0.0-beta.1"
 colored = "2.0"
 log = "0.4.11"
 libc = "0.2.79"
-nix = "0.18.0"
+nix = "0.19.0"
 parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
 serde = { version = "1.0.116", features = ["derive"] }
-serde_json = { version = "1.0.58" }
+serde_json = { version = "1.0.59" }
 tokio = { version = "0.2.22", features = ["full", "parking_lot"] }
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.13"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
-toml = "0.5.6"
+toml = "0.5.7"
 thiserror = "1.0.21"
 eyre = "0.6.1"
 color-eyre = "0.5.6"

@@ -14,24 +14,24 @@ default = []
 procmon = ["procmon-sys"]
 
 [dependencies]
-crossbeam = "0.7.3"
+crossbeam = "0.8.0"
 parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
 async-trait = "0.1.41"
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.13"
 libc = "0.2.79"
-nix = "0.18.0"
+nix = "0.19.0"
 prctl = "1.0.0"
 log = "0.4.11"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.21"
 eyre = "0.6.1"
 color-eyre = "0.5.6"
-toml = "0.5.6"
+toml = "0.5.7"
 serde = { version = "1.0.116", features = ["derive"] }
-serde_json = { version = "1.0.58" }
-ctrlc = { version = "3.1.6", features = ["termination"] }
+serde_json = { version = "1.0.59" }
+ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.1"
 hotwatch = "0.4.3"
 config = "0.10.1"
@@ -46,7 +46,7 @@ rayon = "1.4.1"
 lazy_static = "1.4.0"
 rand = "0.7.3"
 palette = "0.5.0"
-nalgebra = "0.22.0"
+nalgebra = "0.22.1"
 noise = "0.6.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
