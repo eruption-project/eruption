@@ -3,6 +3,7 @@
 # Table of Contents
 
 - <a href="#eruption">Eruption</a>
+- <a href="#devices">Supported Devices</a>
 - <a href="#issues">Known Issues</a>
 - <a href="#important">Important Information</a>
 - <a href="#overview">Design Overview</a>
@@ -28,6 +29,17 @@ Please see [TODO.md](./TODO.md) and [CHANGES.md](./CHANGES.md) for further infor
 - You may want to set a different profile for each slot (`F1`-`F4`).
 - Maybe you want to use the GNOME Shell extension [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
 or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
+
+## Supported Devices <a name="devices"></a>
+
+### Keyboard devices
+
+* ROCCAT Vulcan 100/12x series keyboard
+
+### Mouse devices
+
+* ROCCAT Kone Pure Ultra
+* ROCCAT Kova AIMO (very experimental)
 
 ## Known Issues <a name="issues"></a>
 

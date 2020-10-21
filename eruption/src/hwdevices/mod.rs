@@ -20,10 +20,12 @@ use parking_lot::RwLock;
 use std::sync::Arc;
 
 mod roccat_kone_pure_ultra;
+mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan;
 
 use roccat_kone_pure_ultra::RoccatKonePureUltra;
+use roccat_kova_aimo::RoccatKovaAimo;
 use roccat_nyth::RoccatNyth;
 use roccat_vulcan::{KeyboardHidEventCode, RoccatVulcan1xx};
 
@@ -43,8 +45,9 @@ pub const PRODUCT_IDS: [u16; 2] = [
 
 // Supported mice
 pub const VENDOR_IDS_MICE: [u16; 1] = [0x1e7d]; // ROCCAT
-pub const PRODUCT_IDS_MICE: [u16; 3] = [
+pub const PRODUCT_IDS_MICE: [u16; 4] = [
     0x2dd2, // ROCCAT Kone Pure Ultra
+    0x2cf1, // ROCCAT Kova Aimo
     0x2e7c, 0x2e7d, // ROCCAT Nyth
 ];
 
@@ -367,6 +370,9 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
                             as Box<dyn MouseDeviceTrait + Send + Sync + 'static>
                     }
 
+                    (0x1e7d, 0x2cf1) => Box::from(RoccatKovaAimo::bind(&mouse_device.unwrap()))
+                        as Box<dyn MouseDeviceTrait + Send + Sync + 'static>,
+
                     (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => {
                         Box::from(RoccatNyth::bind(&mouse_device.unwrap()))
                             as Box<dyn MouseDeviceTrait + Send + Sync + 'static>
@@ -389,6 +395,8 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
 fn get_sub_device(vid: u16, pid: u16) -> i32 {
     match (vid, pid) {
         (0x1e7d, 0x2dd2) => roccat_kone_pure_ultra::KEYBOARD_SUB_DEVICE as i32,
+
+        (0x1e7d, 0x2cf1) => roccat_kova_aimo::KEYBOARD_SUB_DEVICE as i32,
 
         (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => roccat_nyth::KEYBOARD_SUB_DEVICE as i32,
 

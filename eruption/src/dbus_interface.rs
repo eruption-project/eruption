@@ -16,9 +16,9 @@
 */
 
 use crossbeam::channel::Sender;
-use dbus::{
-    ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs, tree::Access,
-    tree::EmitsChangedSignal, tree::Factory, tree::MethodErr, tree::Signal,
+use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
+use dbus_tree::{
+    Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
 };
 use log::*;
 use std::path::PathBuf;

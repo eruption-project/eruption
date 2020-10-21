@@ -29,7 +29,7 @@ thiserror = "1.0.21"
 eyre = "0.6.1"
 color-eyre = "0.5.6"
 toml = "0.5.7"
-serde = { version = "1.0.116", features = ["derive"] }
+serde = { version = "1.0.117", features = ["derive"] }
 serde_json = { version = "1.0.59" }
 ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.1"
@@ -62,7 +62,8 @@ libpulse-binding = "2.16"
 libpulse-simple-binding = "2.16"
 rust-pulsectl = "0.2.6"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
-dbus = "0.8.4"
+dbus = "0.9.0"
+dbus-tree = "0.9.0"
 paste = "1.0"
 procmon-sys = { version = "0.0.2", path = 'src/procmon-sys', optional = true }
 
@@ -72,4 +73,4 @@ procmon-sys = { version = "0.0.2", path = 'src/procmon-sys', optional = true }
 # libpulse-simple-binding = { git = "https://github.com/jnqnfe/pulse-binding-rust.git", branch = "travis-bionic-1" }
 
 [dev-dependencies]
-tokio = { version = "0.2", features = ["test-util"] }
+tokio = { version = "0.3", features = ["test-util"] }
