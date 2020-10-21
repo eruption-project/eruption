@@ -199,6 +199,8 @@ impl Plugin for KeyboardPlugin {
         Ok(())
     }
 
+    async fn main_loop_hook(&self, _ticks: u64) {}
+
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {

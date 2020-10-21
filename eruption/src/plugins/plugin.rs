@@ -35,6 +35,9 @@ pub trait Plugin: Any {
     /// Register supplied lua functions and extensions
     fn register_lua_funcs(&self, lua_ctx: &Lua) -> mlua::Result<()>;
 
+    /// Called on each iteration of the main loop
+    async fn main_loop_hook(&self, ticks: u64);
+
     /// Called on each iteration of the main loop,
     /// use this for really short lived operations
     fn sync_main_loop_hook(&self, ticks: u64);

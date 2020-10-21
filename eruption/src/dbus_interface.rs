@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crossbeam::channel::Sender;
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
 use dbus_tree::{
     Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
@@ -23,6 +22,7 @@ use dbus_tree::{
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 use crate::constants;
