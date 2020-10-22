@@ -155,12 +155,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e4cec68f03f32e44924783795810fa50a7035d8c8ebe78580ad7e6c703fba38"
 
 [[package]]
-name = "bytes"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0dcbc35f504eb6fc275a6d20e4ebcda18cf50d40ba6fabff8c711fa16cb3b16"
-
-[[package]]
 name = "bytesize"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -428,8 +422,8 @@ checksum = "b6840421e249bf51f6ad1873b53f7423f14e712208792dfe4b3a8ff99f713309"
 dependencies = [
  "dbus",
  "libc",
- "mio 0.6.22",
- "tokio 0.2.22",
+ "mio",
+ "tokio",
 ]
 
 [[package]]
@@ -577,7 +571,7 @@ dependencies = [
  "sysinfo",
  "systemstat",
  "thiserror",
- "tokio 0.3.1",
+ "tokio",
  "toml",
  "tracing",
  "tracing-futures",
@@ -606,7 +600,7 @@ dependencies = [
  "serde 1.0.117",
  "serde_json",
  "thiserror",
- "tokio 0.3.1",
+ "tokio",
  "toml",
  "tracing",
  "tracing-futures",
@@ -635,7 +629,7 @@ dependencies = [
  "serde 1.0.117",
  "serde_json",
  "thiserror",
- "tokio 0.3.1",
+ "tokio",
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
@@ -680,7 +674,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror",
- "tokio 0.2.22",
+ "tokio",
  "toml",
  "tracing",
  "tracing-futures",
@@ -709,7 +703,7 @@ dependencies = [
  "serde 1.0.117",
  "serde_json",
  "thiserror",
- "tokio 0.3.1",
+ "tokio",
  "toml",
  "tracing",
  "tracing-futures",
@@ -1409,19 +1403,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mio"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8f1c83949125de4a582aa2da15ae6324d91cf6a58a70ea407643941ff98f558"
-dependencies = [
- "libc",
- "log",
- "miow 0.3.5",
- "ntapi",
- "winapi 0.3.9",
-]
-
-[[package]]
 name = "mio-extras"
 version = "2.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1429,7 +1410,7 @@ checksum = "52403fe290012ce777c4626790c8951324a2b9e3316b3143779c72b029742f19"
 dependencies = [
  "lazycell",
  "log",
- "mio 0.6.22",
+ "mio",
  "slab",
 ]
 
@@ -1440,7 +1421,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0840c1c50fd55e521b247f949c241c9997709f23bd7f023b9762cd561e935656"
 dependencies = [
  "log",
- "mio 0.6.22",
+ "mio",
  "miow 0.3.5",
  "winapi 0.3.9",
 ]
@@ -1453,7 +1434,7 @@ checksum = "afcb699eb26d4332647cc848492bbc15eafb26f08d0304550d5aa1f612e066f0"
 dependencies = [
  "iovec",
  "libc",
- "mio 0.6.22",
+ "mio",
 ]
 
 [[package]]
@@ -1609,7 +1590,7 @@ dependencies = [
  "fsevent-sys",
  "inotify",
  "libc",
- "mio 0.6.22",
+ "mio",
  "mio-extras",
  "walkdir",
  "winapi 0.3.9",
@@ -2657,14 +2638,14 @@ version = "0.2.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d34ca54d84bf2b5b4d7d31e901a8464f7b60ac145a284fba25ceb801f2ddccd"
 dependencies = [
- "bytes 0.5.6",
+ "bytes",
  "fnv",
  "futures-core",
  "iovec",
  "lazy_static",
  "libc",
  "memchr 2.3.3",
- "mio 0.6.22",
+ "mio",
  "mio-named-pipes",
  "mio-uds",
  "num_cpus",
@@ -2672,29 +2653,7 @@ dependencies = [
  "pin-project-lite",
  "signal-hook-registry",
  "slab",
- "tokio-macros 0.2.5",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1911a203c5c240fd237e23a42e48846475f3d3b1e1dad3f17e6cc17a775b707c"
-dependencies = [
- "bytes 0.6.0",
- "fnv",
- "futures-core",
- "lazy_static",
- "libc",
- "memchr 2.3.3",
- "mio 0.7.4",
- "num_cpus",
- "parking_lot 0.11.0",
- "pin-project-lite",
- "signal-hook-registry",
- "slab",
- "tokio-macros 0.3.0",
+ "tokio-macros",
  "winapi 0.3.9",
 ]
 
@@ -2703,17 +2662,6 @@ name = "tokio-macros"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0c3acc6aa564495a0f2e1d59fab677cd7f81a19994cfc7f3ad0e64301560389"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d48caa7b66c7a6ec943edf78d21a594fbeb24e536c781da67d5c32edec54103f"
 dependencies = [
  "proc-macro2",
  "quote",
