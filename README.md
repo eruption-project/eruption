@@ -39,7 +39,7 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 ### Mouse devices
 
 * ROCCAT Kone Pure Ultra
-* ROCCAT Kova AIMO (very experimental)
+* ROCCAT Kova Aimo (highly experimental)
 
 ## Known Issues <a name="issues"></a>
 
