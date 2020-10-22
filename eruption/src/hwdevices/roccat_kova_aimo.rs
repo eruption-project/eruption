@@ -156,73 +156,76 @@ impl RoccatKovaAimo {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match id {
-                0x04 => {
-                    for j in 0..=1 {
-                        for i in 0..=4 {
-                            let buf: [u8; 4] = [0x04, i, j, 0x00];
+            // TODO: Implement this
+            // match id {
+            //     0x04 => {
+            //         for j in 0..=1 {
+            //             for i in 0..=4 {
+            //                 let buf: [u8; 4] = [0x04, i, j, 0x00];
 
-                            match ctrl_dev.send_feature_report(&buf) {
-                                Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //                 match ctrl_dev.send_feature_report(&buf) {
+            //                     Ok(_result) => {
+            //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                                    Ok(())
-                                }
+            //                         Ok(())
+            //                     }
 
-                                Err(_) => Err(HwDeviceError::InvalidResult {}),
-                            }?;
+            //                     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            //                 }?;
 
-                            let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
-                            match ctrl_dev.get_feature_report(&mut buf) {
-                                Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //                 let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
+            //                 match ctrl_dev.get_feature_report(&mut buf) {
+            //                     Ok(_result) => {
+            //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                                    Ok(())
-                                }
+            //                         Ok(())
+            //                     }
 
-                                Err(_) => Err(HwDeviceError::InvalidResult {}),
-                            }?;
-                        }
-                    }
+            //                     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            //                 }?;
+            //             }
+            //         }
 
-                    Ok(())
-                }
+            //         Ok(())
+            //     }
 
-                0x0e => {
-                    let buf: [u8; 6] = [0x0e, 0x06, 0x01, 0x01, 0x00, 0xff];
+            //     0x0e => {
+            //         let buf: [u8; 6] = [0x0e, 0x06, 0x01, 0x01, 0x00, 0xff];
 
-                    match ctrl_dev.send_feature_report(&buf) {
-                        Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //         match ctrl_dev.send_feature_report(&buf) {
+            //             Ok(_result) => {
+            //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                            Ok(())
-                        }
+            //                 Ok(())
+            //             }
 
-                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-                    }
-                }
+            //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            //         }
+            //     }
 
-                0x0d => {
-                    let buf: [u8; 11] = [
-                        0x0d, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ];
+            //     0x0d => {
+            //         let buf: [u8; 11] = [
+            //             0x0d, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //         ];
 
-                    match ctrl_dev.send_feature_report(&buf) {
-                        Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //         match ctrl_dev.send_feature_report(&buf) {
+            //             Ok(_result) => {
+            //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                            Ok(())
-                        }
+            //                 Ok(())
+            //             }
 
-                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-                    }
-                }
+            //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            //         }
+            //     }
 
-                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
-            }
+            //     _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+            // }
+
+            Ok(())
         }
     }
 
@@ -360,17 +363,18 @@ impl DeviceTrait for RoccatKovaAimo {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            // TODO: Implement this
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("{}", e));
+            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
 
-            self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            // self.send_ctrl_report(0x0e)
+            //     .unwrap_or_else(|e| error!("{}", e));
+            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
 
-            self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            // self.send_ctrl_report(0x0d)
+            //     .unwrap_or_else(|e| error!("{}", e));
+            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
 
             self.is_initialized = true;
 
@@ -454,7 +458,7 @@ impl MouseDeviceTrait for RoccatKovaAimo {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     let event = match buf[0..5] {
-                        // Key reports, incl. KEY_FN, ..
+                        // Key reports
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
 
                         _ => MouseHidEvent::Unknown,
@@ -500,34 +504,38 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            // TODO: Implement this
 
-            // use the color of KP_ENTER for now
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 11] = [
-                0x0d,
-                0x0b,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ];
+            // // use the color of KP_ENTER for now
 
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            // let buf: [u8; 11] = [
+            //     0x0d,
+            //     0x0b,
+            //     led_map[131].r,
+            //     led_map[131].g,
+            //     led_map[131].b,
+            //     0x00,
+            //     0x00,
+            //     0x00,
+            //     0x00,
+            //     0x00,
+            //     0x00,
+            // ];
 
-                    Ok(())
-                }
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            //         Ok(())
+            //     }
+
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            // }
+
+            Ok(())
         }
     }
 
