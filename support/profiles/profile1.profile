@@ -12,7 +12,6 @@ active_scripts = [
 #   'raindrops.lua',
     'macros.lua',
 #   'stats.lua',
-#   'profiles.lua',
 ]
 
 [[config."Solid Color"]]

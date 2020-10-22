@@ -38,9 +38,6 @@ use crate::scripting::manifest::{ConfigParam, Manifest};
 
 use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
 
-#[cfg(feature = "procmon")]
-use crate::SystemEvent;
-
 #[derive(Debug, Clone)]
 pub enum Message {
     // Startup, // Not passed via message but invoked directly
@@ -60,10 +57,6 @@ pub enum Message {
     MouseButtonUp(u8),
     MouseMove(i32, i32, i32),
     MouseWheelEvent(u8),
-
-    // System events
-    #[cfg(feature = "procmon")]
-    SystemEvent(SystemEvent),
 
     //LoadScript(PathBuf),
     // Abort,
@@ -1062,56 +1055,6 @@ pub fn run_script(
 
                             *crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() -= 1;
                             crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        #[cfg(feature = "procmon")]
-                        Message::SystemEvent(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_system_event")
-                            {
-                                let event_type;
-                                let arg1;
-                                let arg2;
-                                let arg3;
-
-                                match param {
-                                    SystemEvent::ProcessExec { event, file_name } => {
-                                        event_type = 0;
-
-                                        arg1 = event.pid;
-                                        arg2 = file_name.unwrap_or_default();
-                                        arg3 = 0; // TODO: implement hashing
-                                    }
-
-                                    SystemEvent::ProcessExit { event, file_name } => {
-                                        event_type = 1;
-
-                                        arg1 = event.pid;
-                                        arg2 = file_name.unwrap_or_default();
-                                        arg3 = 0; // TODO: implement hashing
-                                    }
-                                }
-
-                                handler
-                                    .call::<_, ()>((event_type, arg1, arg2, arg3))
-                                    .unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error: {}\n\t{:?}",
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    });
-                            }
-
-                            // *crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock() -= 1;
-                            // crate::UPCALL_COMPLETED_ON_SYSTEM_EVENT.1.notify_all();
 
                             if errors_present {
                                 return Ok(RunScriptResult::TerminatedWithErrors);

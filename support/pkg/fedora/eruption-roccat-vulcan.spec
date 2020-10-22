@@ -56,6 +56,8 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
 %{__mkdir_p} %{buildroot}%{_unitdir}
 %{__mkdir_p} %{buildroot}%{_presetdir}
+%{__mkdir_p} %{buildroot}%{_userunitdir}
+%{__mkdir_p} %{buildroot}%{_userpresetdir}
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts
@@ -70,13 +72,18 @@ cargo build --all --release --verbose
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
+cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
+cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.service %{buildroot}/%{_userunitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -124,6 +131,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{bu
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
 
 %post
 %systemd_post %{ShortName}.service
@@ -139,8 +147,10 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debu
 %doc %{_mandir}/man8/eruption.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
+%doc %{_mandir}/man1/eruption-process-monitor.1.gz
 %dir %{_datarootdir}/icons/hicolor/scalable/apps/
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
+%config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 /usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
 /usr/lib/systemd/system-sleep/eruption
@@ -148,8 +158,11 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debu
 %{_bindir}/eruptionctl
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-debug-tool
+%caps(cap_net_admin=ep) %{_bindir}/eruption-process-monitor
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
+%{_userunitdir}/eruption-process-monitor.service
+%{_userpresetdir}/50-eruption-process-monitor.preset
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
@@ -197,8 +210,6 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debu
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
-%{_datarootdir}/%{ShortName}/scripts/profiles.lua
-%{_datarootdir}/%{ShortName}/scripts/profiles.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stats.lua
 %{_datarootdir}/%{ShortName}/scripts/stats.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua

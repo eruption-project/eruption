@@ -1,0 +1,58 @@
+[package]
+name = "eruption-process-monitor"
+version = "0.0.1"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+edition = "2018"
+description = "A daemon to monitor and introspect system processes and events"
+repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
+homepage = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan"
+license = "GPLv3+"
+readme = "README.md"
+
+[dependencies]
+# async-std = { version = "1.6.2", features = ["attributes", "tokio02"] }
+# async-macros = "2.0.0"
+async-trait = "0.1.41"
+byteorder = "1.3.4"
+clap = "3.0.0-beta.1"
+clap_derive = "3.0.0-beta.1"
+ctrlc = { version = "3.1.7", features = ["termination"] }
+config = "0.10.1"
+colored = "2.0"
+dyn-clone = "1.0.3"
+dyn-clonable = "0.9.0"
+indexmap = "1.6.0"
+log = "0.4.11"
+libc = "0.2.79"
+nix = "0.19.0"
+pretty_env_logger = "0.4.0"
+parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
+regex = "1.4.1"
+serde = { version = "1.0.117", features = ["derive"] }
+serde_json = "1.0.59"
+serde_yaml = "0.8"
+tokio = { version = "0.2.22", features = ["full", "parking_lot"] }
+tracing = "0.1.21"
+tracing-futures = "0.2.4"
+tracing-subscriber = "0.2.13"
+crossbeam = "0.8.0"
+uuid = { version = "0.8.1", features = ["serde", "v4"] }
+toml = "0.5.7"
+thiserror = "1.0.21"
+eyre = "0.6.1"
+color-eyre = "0.5.6"
+paste = "1.0"
+hotwatch = "0.4.3"
+hexdump = "0.1.0"
+itertools = "0.9.0"
+rayon = "1.5.0"
+lazy_static = "1.4.0"
+rust-crypto = "0.2.36"
+dbus = "0.9.0"
+dbus-tokio = "0.6.0"
+procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
+walkdir = "2.3.1"
+x11rb = {version = "0.7.0", features = ["allow-unsafe-code"] }
+
+[dev-dependencies]
+tokio = { version = "0.2.22", features = ["test-util"] }

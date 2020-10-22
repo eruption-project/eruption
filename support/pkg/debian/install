@@ -2,13 +2,18 @@ target/release/eruption usr/bin/
 target/release/eruptionctl usr/bin/
 target/release/eruption-netfx usr/bin/
 target/release/eruption-debug-tool usr/bin/
+target/release/eruption-process-monitor usr/bin/
 
 support/systemd/eruption-suspend.sh lib/systemd/system-sleep/eruption
 
 support/config/eruption.conf etc/eruption/
+support/config/process-monitor.conf etc/eruption/
 
 support/systemd/eruption.service lib/systemd/system/
 support/systemd/eruption.preset lib/systemd/system-preset/
+
+support/systemd/eruption-process-monitor.service lib/systemd/user/
+support/systemd/eruption-process-monitor.preset lib/systemd/user-preset/
 
 support/udev/99-eruption-roccat-vulcan.rules lib/udev/rules.d/
 
@@ -16,8 +21,10 @@ support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
+support/man/process-monitor.5 usr/share/man/man1/
 support/man/eruptionctl.1 usr/share/man/man1/
 support/man/eruption-netfx.1 usr/share/man/man1/
+support/man/eruption-process-monitor.1 usr/share/man/man1/
 
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
@@ -141,8 +148,6 @@ eruption/src/scripts/snake.lua usr/share/eruption/scripts/
 eruption/src/scripts/snake.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/macros.lua usr/share/eruption/scripts/
 eruption/src/scripts/macros.lua.manifest usr/share/eruption/scripts/
-eruption/src/scripts/profiles.lua usr/share/eruption/scripts/
-eruption/src/scripts/profiles.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/stats.lua usr/share/eruption/scripts/
 eruption/src/scripts/stats.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/lib/debug.lua usr/share/eruption/scripts/lib/

@@ -1,0 +1,20 @@
+[Unit]
+Description=Process Monitoring and Introspection for Eruption
+Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
+Wants=default.target
+
+[Service]
+ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon
+PIDFile=/run/eruption-process-monitor.pid
+Type=exec
+#CapabilityBoundingSet=CAP_NET_ADMIN
+#AmbientCapabilities=CAP_NET_ADMIN
+#ProtectHome=yes
+#ProtectSystem=full
+#ProtectKernelTunables=yes
+#ProtectControlGroups=yes
+#PrivateDevices=no
+#PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

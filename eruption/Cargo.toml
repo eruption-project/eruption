@@ -10,8 +10,6 @@ readme = "README.md"
 
 [features]
 default = []
-# default = ["procmon"]
-procmon = ["procmon-sys"]
 
 [dependencies]
 crossbeam = "0.8.0"
@@ -67,7 +65,6 @@ uuid = { version = "0.8.1", features = ["serde", "v4"] }
 dbus = "0.9.0"
 dbus-tree = "0.9.0"
 paste = "1.0"
-procmon-sys = { version = "0.0.2", path = 'src/procmon-sys', optional = true }
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

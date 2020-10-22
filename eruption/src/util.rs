@@ -34,10 +34,6 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum UtilError {
-    #[cfg(feature = "procmon")]
-    #[error("Operation fehlgeschlagen")]
-    OpFailed {},
-
     #[error("No compatible devices found")]
     NoDevicesFound {},
 
@@ -626,16 +622,4 @@ pub fn button_index_to_ev_key(index: u32) -> Result<evdev_rs::enums::EV_KEY> {
 
         _ => Err(UtilError::MappingError {}.into()),
     }
-}
-
-#[cfg(feature = "procmon")]
-pub fn get_process_file_name(pid: i32) -> Result<String> {
-    let tmp = format!("/proc/{}/exe", pid);
-    let filename = Path::new(&tmp);
-    let result = nix::fcntl::readlink(filename);
-
-    Ok(result
-        .map_err(|_| UtilError::OpFailed {})?
-        .into_string()
-        .map_err(|_| UtilError::OpFailed {})?)
 }

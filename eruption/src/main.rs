@@ -59,11 +59,6 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-#[cfg(feature = "procmon")]
-mod procmon;
-#[cfg(feature = "procmon")]
-use procmon::ProcMon;
-
 lazy_static! {
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
@@ -152,27 +147,11 @@ pub enum MainError {
     #[error("Could not access storage: {description}")]
     StorageError { description: String },
 
-    #[error("Could not register Linux process monitoring")]
-    ProcMonError {},
-
     #[error("Could not switch profiles")]
     SwitchProfileError {},
 
     #[error("Could not execute Lua script")]
     ScriptExecError {},
-}
-
-#[cfg(feature = "procmon")]
-#[derive(Debug, Clone)]
-pub enum SystemEvent {
-    ProcessExec {
-        event: procmon::Event,
-        file_name: Option<String>,
-    },
-    ProcessExit {
-        event: procmon::Event,
-        file_name: Option<String>,
-    },
 }
 
 #[derive(Debug, Clone)]
@@ -619,73 +598,6 @@ fn switch_profile<P: AsRef<Path>>(
     let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
     let mut slot_profiles = SLOT_PROFILES.lock();
     slot_profiles.as_mut().unwrap()[active_slot] = profile_file.as_ref().into();
-
-    Ok(())
-}
-
-/// Process system related events
-#[cfg(feature = "procmon")]
-async fn process_system_events(
-    sysevents_rx: &Receiver<SystemEvent>,
-    failed_txs: &HashSet<usize>,
-) -> Result<()> {
-    // limit the number of messages that will be processed during this iteration
-    let mut loop_counter = 0;
-
-    'SYSTEM_EVENTS_LOOP: loop {
-        let mut event_processed = false;
-
-        match sysevents_rx.recv_timeout(Duration::from_millis(0)) {
-            Ok(result) => {
-                // *UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
-
-                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                    if !failed_txs.contains(&idx) {
-                        lua_tx
-                            .send(script::Message::SystemEvent(result.clone()))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending system event to a Lua VM: {}", e)
-                            });
-                    } else {
-                        warn!("Not sending a message to a failed tx");
-                    }
-                }
-
-                // TODO: wait??
-                // wait until all Lua VMs completed the event handler
-                // loop {
-                //     let mut pending = UPCALL_COMPLETED_ON_SYSTEM_EVENT.0.lock();
-
-                //     UPCALL_COMPLETED_ON_SYSTEM_EVENT.1.wait_for(
-                //         &mut pending,
-                //         Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                //     );
-
-                //     if *pending == 0 {
-                //         break;
-                //     }
-                // }
-
-                // events::notify_observers(events::Event::SystemEvent(result))
-                //     .unwrap_or_else(|e| error!("{}", e));
-
-                event_processed = true;
-            }
-
-            // ignore timeout errors
-            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => (),
-
-            Err(e) => {
-                warn!("Channel error: {}", e);
-            }
-        }
-
-        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
-            break 'SYSTEM_EVENTS_LOOP; // no more events in queue or iteration limit reached
-        }
-
-        loop_counter += 1;
-    }
 
     Ok(())
 }
@@ -1604,7 +1516,6 @@ async fn run_main_loop(
     mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
     mouse_secondary_rx: &Receiver<Option<evdev_rs::InputEvent>>,
     fsevents_rx: &Receiver<FileSystemEvent>,
-    #[cfg(feature = "procmon")] sysevents_rx: &Receiver<SystemEvent>,
 ) -> Result<()> {
     trace!("Entering main loop...");
 
@@ -1634,7 +1545,6 @@ async fn run_main_loop(
     let mut mouse_move_event_last_dispatched: Instant = Instant::now();
     let mut mouse_motion_buf: (i32, i32, i32) = (0, 0, 0);
 
-    // enter the main loop on the main thread
     'MAIN_LOOP: loop {
         // slot changed?
         let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
@@ -1737,10 +1647,6 @@ async fn run_main_loop(
 
         // now, process events from all available sources...
 
-        // process events from the system monitoring thread
-        #[cfg(feature = "procmon")]
-        let future_system_events = process_system_events(&sysevents_rx, &failed_txs);
-
         // process events from the file system watcher thread
         let future_fs_events = process_filesystem_events(&fsevents_rx, &dbus_api_tx);
 
@@ -1766,19 +1672,6 @@ async fn run_main_loop(
         // process events from the D-Bus interface thread
         let future_dbus_events = process_dbus_events(&dbus_rx, &dbus_api_tx, &keyboard_device);
 
-        #[cfg(feature = "procmon")]
-        let results = try_join!(
-            future_kbd_events,
-            future_hid_events,
-            future_mouse_events,
-            future_mouse_secondary_events,
-            future_mouse_hid_events,
-            future_fs_events,
-            future_dbus_events,
-            future_system_events,
-        )?;
-
-        #[cfg(not(feature = "procmon"))]
         let results = try_join!(
             future_kbd_events,
             future_hid_events,
@@ -2031,52 +1924,6 @@ pub fn register_filesystem_watcher(
                 }
             },
         )?;
-
-    Ok(())
-}
-
-#[cfg(feature = "procmon")]
-pub fn spawn_system_monitor_thread(sysevents_tx: Sender<SystemEvent>) -> Result<()> {
-    thread::Builder::new()
-        .name("monitor".to_owned())
-        .spawn(move || -> Result<()> {
-            let procmon = ProcMon::new()?;
-
-            loop {
-                // check if we shall terminate the thread
-                if QUIT.load(Ordering::SeqCst) {
-                    break Ok(());
-                }
-
-                // process procmon events
-                let event = procmon.wait_for_event();
-                match event.event_type {
-                    procmon::EventType::Exec => {
-                        let pid = event.pid;
-
-                        sysevents_tx
-                            .send(SystemEvent::ProcessExec {
-                                event,
-                                file_name: util::get_process_file_name(pid).ok(),
-                            })
-                            .unwrap();
-                    }
-
-                    procmon::EventType::Exit => {
-                        let pid = event.pid;
-
-                        sysevents_tx
-                            .send(SystemEvent::ProcessExit {
-                                event,
-                                file_name: util::get_process_file_name(pid).ok(),
-                            })
-                            .unwrap();
-                    }
-
-                    _ => { /* ignore others */ }
-                }
-            }
-        })?;
 
     Ok(())
 }
@@ -2343,17 +2190,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         panic!()
                     });
 
-                    // spawn a thread that monitors the system
-                    #[cfg(feature = "procmon")]
-                    let (sysevents_tx, sysevents_rx) = channel();
-                    #[cfg(feature = "procmon")]
-                    {
-                        info!("Spawning system monitor thread...");
-                        spawn_system_monitor_thread(sysevents_tx).unwrap_or_else(|e| {
-                            error!("Could not create the system monitor thread: {}", e)
-                        });
-                    }
-
                     let (fsevents_tx, fsevents_rx) = channel();
                     register_filesystem_watcher(
                         fsevents_tx,
@@ -2379,8 +2215,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         &mouse_rx,
                         &mouse_secondary_rx,
                         &fsevents_rx,
-                        #[cfg(feature = "procmon")]
-                        &sysevents_rx,
                     )
                     .await
                     .unwrap_or_else(|e| error!("{}", e));

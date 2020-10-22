@@ -1,5 +1,5 @@
 [workspace]
-members = ["eruption", "eruptionctl", "eruption-netfx", "eruption-debug-tool"]
+members = ["eruption", "eruptionctl", "eruption-netfx", "eruption-debug-tool", "eruption-process-monitor"]
 
 [profile.dev]
 opt-level = 0

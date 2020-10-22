@@ -20,6 +20,7 @@ set -e
 
 case "$1" in
     configure)
+        setcap cap_net_admin+ep /usr/bin/eruption-process-monitor
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

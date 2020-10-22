@@ -7,7 +7,6 @@ active_scripts = [
 	'afterglow.lua',
  	'macros.lua',
 #	'stats.lua',
-# 	'profiles.lua',
 ]
 
 [[config."Audio Visualizer #3 (Spectrum Analyzer)"]]

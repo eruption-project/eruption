@@ -6,7 +6,6 @@ active_scripts = [
 	'audioviz4.lua',
  	'macros.lua',
 #	'stats.lua',
-# 	'profiles.lua',
 ]
 
 [[config.'Solid Color']]

@@ -10,5 +10,4 @@ active_scripts = [
 #   'sysmon.lua',
     'macros.lua',
 #   'stats.lua',
-#   'profiles.lua',
 ]

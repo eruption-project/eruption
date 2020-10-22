@@ -5,7 +5,6 @@ active_scripts = [
 	'heatmap.lua',
  	'macros.lua',
  	'stats.lua',
-# 	'profiles.lua',
 ]
 
 [[config.Heatmap]]

@@ -7,5 +7,4 @@ active_scripts = [
 #	'impact.lua',
  	'macros.lua',
 #	'stats.lua',
-# 	'profiles.lua',
 ]

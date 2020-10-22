@@ -83,8 +83,7 @@ active_scripts = [
   #   'raindrops.lua',
       'macros.lua',
   #   'stats.lua',
-  #   'profiles.lua',
-  ]
+]
 ```
 
 The file `preset-red-yellow.profile` from the directory `/var/lib/eruption/profiles`
@@ -98,7 +97,6 @@ active_scripts = [
 	  'shockwave.lua',
  	  'macros.lua',
 #	  'stats.lua',
-#     'profiles.lua',
 ]
 
 [[config.Batique]]

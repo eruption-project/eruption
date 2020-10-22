@@ -8,7 +8,6 @@ active_scripts = [
     'gaming.lua',
     'macros.lua',
 #   'stats.lua',
-#   'profiles.lua',
 ]
 
 [[config."Solid Color"]]
