@@ -7,6 +7,7 @@ Wants=default.target
 ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon
 PIDFile=/run/eruption-process-monitor.pid
 Type=exec
+Restart=always
 #CapabilityBoundingSet=CAP_NET_ADMIN
 #AmbientCapabilities=CAP_NET_ADMIN
 #ProtectHome=yes
