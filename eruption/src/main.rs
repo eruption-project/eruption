@@ -38,8 +38,6 @@ use std::time::{Duration, Instant};
 use std::u64;
 use tokio::{join, try_join};
 
-use plugins::mouse::MousePluginError;
-
 mod util;
 
 mod hwdevices;
@@ -152,6 +150,9 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Could not access storage: {description}")]
     StorageError { description: String },
+
+    #[error("Lost connection to device")]
+    DeviceDisconnected {},
 
     #[error("Could not switch profiles")]
     SwitchProfileError {},
@@ -357,59 +358,58 @@ fn spawn_mouse_input_thread(mouse_tx: Sender<Option<evdev_rs::InputEvent>>) -> p
     let builder = thread::Builder::new().name("events/mouse".into());
     builder
         .spawn(move || {
-            {
-                // initialize thread local state of the mouse plugin
-                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
-                let mouse_plugin = plugin_manager
-                    .find_plugin_by_name_mut("Mouse".to_string())
-                    .unwrap_or_else(|| {
-                        error!("Could not find a required plugin");
-                        panic!()
-                    })
-                    .as_any_mut()
-                    .downcast_mut::<plugins::MousePlugin>()
-                    .unwrap();
+            'MOUSE_DEVICE_LOOP: loop {
+                fn initialize_mouse_device() {
+                    // initialize thread local state of the mouse plugin
+                    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
+                    let mouse_plugin = plugin_manager
+                        .find_plugin_by_name_mut("Mouse".to_string())
+                        .unwrap_or_else(|| {
+                            error!("Could not find a required plugin");
+                            panic!()
+                        })
+                        .as_any_mut()
+                        .downcast_mut::<plugins::MousePlugin>()
+                        .unwrap();
 
-                if let Err(e) = mouse_plugin.initialize_thread_locals() {
-                    error!("Could not initialize the mouse plugin: {}", e);
-                };
-            }
-
-            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
-            let mouse_plugin = plugin_manager
-                .find_plugin_by_name("Mouse".to_string())
-                .unwrap_or_else(|| {
-                    error!("Could not find a required plugin");
-                    panic!()
-                })
-                .as_any()
-                .downcast_ref::<plugins::MousePlugin>()
-                .unwrap();
-
-            loop {
-                // check if we shall terminate the input thread, before we poll the mouse
-                if QUIT.load(Ordering::SeqCst) {
-                    break;
+                    if let Err(e) = mouse_plugin.initialize_thread_locals() {
+                        error!("Could not initialize the mouse plugin: {}", e);
+                    };
                 }
 
-                match mouse_plugin.get_next_event() {
-                    Ok(event) => {
-                        mouse_tx.send(event).unwrap_or_else(|e| {
-                            error!("Could not send a mouse event to the main thread: {}", e)
-                        });
+                initialize_mouse_device();
+
+                {
+                    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+                    let mouse_plugin = plugin_manager
+                        .find_plugin_by_name("Mouse".to_string())
+                        .unwrap_or_else(|| {
+                            error!("Could not find a required plugin");
+                            panic!()
+                        })
+                        .as_any()
+                        .downcast_ref::<plugins::MousePlugin>()
+                        .unwrap();
+
+                    loop {
+                        // check if we shall terminate the input thread, before we poll the mouse
+                        if QUIT.load(Ordering::SeqCst) {
+                            break;
+                        }
+
+                        match mouse_plugin.get_next_event() {
+                            Ok(event) => {
+                                mouse_tx.send(event).unwrap_or_else(|e| {
+                                    error!("Could not send a mouse event to the main thread: {}", e)
+                                });
+                            }
+
+                            Err(e) => {
+                                error!("Fatal: Mouse device went away: {}", e);
+                                break 'MOUSE_DEVICE_LOOP;
+                            }
+                        }
                     }
-
-                    Err(e) => match e.downcast_ref::<MousePluginError>() {
-                        Some(MousePluginError::EvdevNoDevError {}) => {
-                            error!("Fatal: Mouse device went away: {}", e);
-                            thread::sleep(Duration::from_millis(constants::DEVICE_RETRY_MILLIS));
-                        }
-
-                        _ => {
-                            // ignore spurious events
-                            // error!("Could not get next mouse event");
-                        }
-                    },
                 }
             }
         })
@@ -428,62 +428,61 @@ fn spawn_mouse_input_thread_secondary(
     let builder = thread::Builder::new().name("events/mouse:secondary".into());
     builder
         .spawn(move || {
-            {
-                // initialize thread local state of the mouse plugin
-                let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
-                let mouse_plugin = plugin_manager
-                    .find_plugin_by_name_mut("Mouse".to_string())
-                    .unwrap_or_else(|| {
-                        error!("Could not find a required plugin");
-                        panic!()
-                    })
-                    .as_any_mut()
-                    .downcast_mut::<plugins::MousePlugin>()
-                    .unwrap();
+            'MOUSE_DEVICE_LOOP: loop {
+                fn initialize_mouse_secondary_device() {
+                    // initialize thread local state of the mouse plugin
+                    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
+                    let mouse_plugin = plugin_manager
+                        .find_plugin_by_name_mut("Mouse".to_string())
+                        .unwrap_or_else(|| {
+                            error!("Could not find a required plugin");
+                            panic!()
+                        })
+                        .as_any_mut()
+                        .downcast_mut::<plugins::MousePlugin>()
+                        .unwrap();
 
-                if let Err(e) = mouse_plugin.initialize_thread_locals_secondary() {
-                    error!("Could not initialize the mouse plugin: {}", e);
-                };
-            }
-
-            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
-            let mouse_plugin = plugin_manager
-                .find_plugin_by_name("Mouse".to_string())
-                .unwrap_or_else(|| {
-                    error!("Could not find a required plugin");
-                    panic!()
-                })
-                .as_any()
-                .downcast_ref::<plugins::MousePlugin>()
-                .unwrap();
-
-            loop {
-                // check if we shall terminate the input thread, before we poll the mouse
-                if QUIT.load(Ordering::SeqCst) {
-                    break;
+                    if let Err(e) = mouse_plugin.initialize_thread_locals_secondary() {
+                        error!("Could not initialize the mouse plugin: {}", e);
+                    };
                 }
 
-                match mouse_plugin.get_next_event_secondary() {
-                    Ok(event) => {
-                        mouse_tx.send(event).unwrap_or_else(|e| {
-                            error!(
+                initialize_mouse_secondary_device();
+
+                {
+                    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+                    let mouse_plugin = plugin_manager
+                        .find_plugin_by_name("Mouse".to_string())
+                        .unwrap_or_else(|| {
+                            error!("Could not find a required plugin");
+                            panic!()
+                        })
+                        .as_any()
+                        .downcast_ref::<plugins::MousePlugin>()
+                        .unwrap();
+
+                    loop {
+                        // check if we shall terminate the input thread, before we poll the mouse
+                        if QUIT.load(Ordering::SeqCst) {
+                            break;
+                        }
+
+                        match mouse_plugin.get_next_event_secondary() {
+                            Ok(event) => {
+                                mouse_tx.send(event).unwrap_or_else(|e| {
+                                    error!(
                                 "Could not send a mouse event (secondary) to the main thread: {}",
                                 e
                             )
-                        });
+                                });
+                            }
+
+                            Err(e) => {
+                                error!("Fatal: Mouse (secondary) device went away: {}", e);
+                                break 'MOUSE_DEVICE_LOOP;
+                            }
+                        }
                     }
-
-                    Err(e) => match e.downcast_ref::<MousePluginError>() {
-                        Some(MousePluginError::EvdevNoDevError {}) => {
-                            error!("Fatal: Mouse device (secondary) went away: {}", e);
-                            thread::sleep(Duration::from_millis(constants::DEVICE_RETRY_MILLIS));
-                        }
-
-                        _ => {
-                            // ignore spurious events
-                            // error!("Could not get next mouse event");
-                        }
-                    },
                 }
             }
         })
@@ -1271,9 +1270,8 @@ async fn process_mouse_events(
             // ignore timeout errors
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
 
-            Err(e) => {
-                error!("Channel error: {}", e);
-                // break 'MAIN_LOOP;
+            Err(_e) => {
+                return Err(MainError::DeviceDisconnected {}.into());
             }
         }
 
@@ -1407,9 +1405,8 @@ async fn process_mouse_secondary_events(
             // ignore timeout errors
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
 
-            Err(e) => {
-                error!("Channel error: {}", e);
-                // break 'MAIN_LOOP;
+            Err(_e) => {
+                return Err(MainError::DeviceDisconnected {}.into());
             }
         }
 
@@ -1430,10 +1427,9 @@ async fn process_keyboard_events(
 ) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
+    let mut event_processed;
 
     'KEYBOARD_EVENTS_LOOP: loop {
-        let mut event_processed = false;
-
         // send pending keyboard events to the Lua VMs and to the event dispatcher
         match kbd_rx.recv_timeout(Duration::from_millis(0)) {
             Ok(result) => match result {
@@ -1539,9 +1535,8 @@ async fn process_keyboard_events(
             // ignore timeout errors
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => event_processed = false,
 
-            Err(e) => {
-                error!("Channel error: {}", e);
-                // break 'MAIN_LOOP;
+            Err(_e) => {
+                return Err(MainError::DeviceDisconnected {}.into());
             }
         }
 
@@ -2064,9 +2059,6 @@ async fn init_mouse_device(mouse_device: &Option<MouseDevice>, hidapi: &hidapi::
             .write()
             .set_led_init_pattern()
             .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
-    } else {
-        // Mouse device not supported
-        info!("This mouse is currently not supported, falling back to the generic driver");
     }
 }
 
@@ -2187,35 +2179,42 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     // enable mouse input
                     let (mouse_tx, mouse_rx) = channel();
                     let (mouse_secondary_tx, mouse_secondary_rx) = channel();
-                    if enable_mouse {
-                        // spawn a thread to handle mouse input
-                        info!("Spawning mouse input thread...");
-                        spawn_mouse_input_thread(mouse_tx).unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
+                    if mouse_device.is_some() {
+                        if enable_mouse {
+                            // spawn a thread to handle mouse input
+                            info!("Spawning mouse input thread...");
+                            spawn_mouse_input_thread(mouse_tx).unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
 
-                        // spawn a thread to handle possible subdevices
-                        if let Some(mouse_device) = mouse_device.as_ref() {
-                            if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
-                                && mouse_device.read().has_secondary_device()
-                            {
-                                info!("Spawning mouse input thread for secondary subdevice...");
-                                spawn_mouse_input_thread_secondary(mouse_secondary_tx)
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not spawn a thread: {}", e);
-                                        panic!()
-                                    });
+                            // spawn a thread to handle possible subdevices
+                            if let Some(mouse_device) = mouse_device.as_ref() {
+                                if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                                    && mouse_device.read().has_secondary_device()
+                                {
+                                    info!("Spawning mouse input thread for secondary subdevice...");
+                                    spawn_mouse_input_thread_secondary(mouse_secondary_tx)
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not spawn a thread: {}", e);
+                                            panic!()
+                                        });
+                                }
                             }
+                        } else {
+                            info!("Mouse support is DISABLED by configuration");
                         }
                     } else {
-                        info!("Mouse support is DISABLED by configuration");
+                        info!("No mouse devices found");
                     }
 
                     info!("Initializing devices...");
 
                     let future_keyboard = init_keyboard_device(&keyboard_device, &hidapi);
                     let future_mouse = init_mouse_device(&mouse_device, &hidapi);
+
+                    info!("Waiting for tasks to complete...");
+                    join!(future_keyboard, future_mouse);
 
                     info!(
                         "Keyboard firmware revision: {}",
@@ -2228,9 +2227,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             mouse_device.read().get_firmware_revision()
                         );
                     }
-
-                    info!("Waiting for tasks to complete...");
-                    join!(future_keyboard, future_mouse);
 
                     info!("Performing late initializations...");
 

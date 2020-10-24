@@ -206,7 +206,7 @@ pub fn get_mouse_dev_from_udev() -> Result<String> {
     match Enumerator::new() {
         Ok(mut enumerator) => {
             enumerator.match_subsystem("input").unwrap();
-            // enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+            enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
 
             match enumerator.scan_devices() {
                 Ok(devices) => {

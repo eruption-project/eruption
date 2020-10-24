@@ -19,15 +19,19 @@ use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
 
+mod generic_mouse;
 mod roccat_kone_pure_ultra;
 mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan;
 
+use generic_mouse::GenericMouse;
 use roccat_kone_pure_ultra::RoccatKonePureUltra;
 use roccat_kova_aimo::RoccatKovaAimo;
 use roccat_nyth::RoccatNyth;
 use roccat_vulcan::{KeyboardHidEventCode, RoccatVulcan1xx};
+
+use crate::util;
 
 pub use roccat_vulcan::hid_code_to_key_index; // TODO: Fix this
 
@@ -120,7 +124,7 @@ pub enum KeyboardHidEvent {
     VolumeUp,
 }
 
-/// A Keyboard HID event
+/// A Mouse HID event
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum MouseHidEvent {
     Unknown,
@@ -385,7 +389,13 @@ pub fn enumerate_devices(api: &hidapi::HidApi) -> Result<(KeyboardDevice, Option
                 },
             )))
         } else {
-            None
+            // we did not find a supported mouse, let's see if we find a generic mouse device
+            if let Ok(path) = util::get_mouse_dev_from_udev() {
+                Some(Arc::new(RwLock::new(Box::from(GenericMouse::bind(&path))
+                    as Box<dyn MouseDeviceTrait + Send + Sync + 'static>)))
+            } else {
+                None
+            }
         };
 
         Ok((keyboard_device, mouse_device))

@@ -128,10 +128,10 @@ impl MousePlugin {
                     Ok(())
                 }
 
-                Err(_e) => return Err(MousePluginError::EvdevHandleError {}.into()),
+                Err(_e) => Err(MousePluginError::EvdevHandleError {}.into()),
             },
 
-            Err(_e) => return Err(MousePluginError::EvdevError {}.into()),
+            Err(_e) => Err(MousePluginError::EvdevError {}.into()),
         }
     }
 
@@ -175,10 +175,10 @@ impl MousePlugin {
                     Ok(())
                 }
 
-                Err(_e) => return Err(MousePluginError::EvdevHandleError {}.into()),
+                Err(_e) => Err(MousePluginError::EvdevHandleError {}.into()),
             },
 
-            Err(_e) => return Err(MousePluginError::EvdevError {}.into()),
+            Err(_e) => Err(MousePluginError::EvdevError {}.into()),
         }
     }
 
