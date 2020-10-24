@@ -70,14 +70,14 @@ pub fn load_data_from_file<P: AsRef<Path>>(path: &P) -> Result<Vec<DeviceState>>
     Ok(result)
 }
 
-pub fn save_data_to_file<P: AsRef<Path>>(path: &P, data: &Vec<DeviceState>) -> Result<()> {
+pub fn save_data_to_file<P: AsRef<Path>>(path: &P, data: &[DeviceState]) -> Result<()> {
     let data = serde_json::to_string(&data)?;
     fs::write(&path.as_ref(), &data)?;
 
     Ok(())
 }
 
-pub fn print_diff(current_state: &DeviceState, data: &Vec<DeviceState>) {
+pub fn print_diff(current_state: &DeviceState, data: &[DeviceState]) {
     for state in data.iter().rev() {
         if current_state.serial == state.serial && current_state.device_name == state.device_name {
             for ds in state.data.iter() {
@@ -156,7 +156,7 @@ pub fn parse_hex_vec(src: &str) -> Result<Vec<u8>> {
     for e in src.split(',') {
         let e = e.trim();
 
-        if !e.is_empty() && e.chars().next().unwrap() != ']' {
+        if !e.is_empty() && !e.starts_with(']') {
             let val = if let Some(stripped) = e.strip_prefix("0x") {
                 u8::from_str_radix(stripped, 16)
             } else {

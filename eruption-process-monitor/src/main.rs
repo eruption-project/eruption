@@ -604,7 +604,7 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
                 },
             )?;
 
-            let tx = dbus_event_tx.clone();
+            let tx = dbus_event_tx;
             let _id3 = config_proxy.match_signal(
                 move |h: PropertiesPropertiesChanged, _: &Connection, _message: &dbus::Message| {
                     if let Some(brightness) = h.changed_properties.get("Brightness") {
@@ -826,11 +826,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
 
     // enable logging if we are running as a daemon
-    let daemon = match opts.command {
-        Subcommands::Daemon => true,
-
-        _ => false,
-    };
+    let daemon = matches!(opts.command, Subcommands::Daemon);
 
     if unsafe { libc::isatty(0) == 0 } || daemon {
         // initialize logging

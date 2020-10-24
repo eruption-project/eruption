@@ -168,6 +168,7 @@ impl Image {
         Image { handle: ximage }
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn into_image_buffer(&self) -> Option<RgbaImage> {
         unsafe {
             // Extract values from the XImage into our own scope
