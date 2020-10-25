@@ -267,7 +267,7 @@ fn spawn_dbus_thread(
                 event_limit -= 1;
                 event_processed = true;
 
-                if !event_processed || event_limit <= 0 {
+                if !event_processed || event_limit == 0 {
                     break 'EVENT_LOOP;
                 }
             }
