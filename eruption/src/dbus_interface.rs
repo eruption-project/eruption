@@ -24,11 +24,11 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::constants;
 use crate::plugins::audio;
 use crate::profiles;
 use crate::script;
 use crate::CONFIG;
+use crate::{constants, plugins};
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -330,6 +330,10 @@ impl DbusApi {
                                                         e
                                                     )
                                                 });
+
+                                            // reset the audio backend, it will be enabled again if needed
+                                            plugins::audio::reset_audio_backend();
+
                                             let mut changed_properties = Vec::new();
                                             active_slot_property_clone.add_propertieschanged(
                                                 &mut changed_properties,
@@ -447,6 +451,9 @@ impl DbusApi {
                                             .unwrap_or_else(|e| {
                                                 error!("Could not send a pending D-Bus event: {}", e)
                                             });
+
+                                        // reset the audio backend, it will be enabled again if needed
+                                        plugins::audio::reset_audio_backend();
 
                                         let mut changed_properties = Vec::new();
                                         active_profile_property_clone.add_propertieschanged(
