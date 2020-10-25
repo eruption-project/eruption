@@ -76,7 +76,7 @@ lazy_static! {
     }; NUM_KEYS]));
 
     /// Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
-    pub static ref FRAME_GENERATION_COUNTER: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
+    pub static ref FRAME_GENERATION_COUNTER: AtomicUsize = AtomicUsize::new(0);
 }
 
 thread_local! {

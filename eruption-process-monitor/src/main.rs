@@ -57,13 +57,13 @@ lazy_static! {
     // Flags
 
     /// Global "enable experimental features" flag
-    pub static ref EXPERIMENTAL_FEATURES: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
 
     /// Signals that we initiated a profile change
-    pub static ref PROFILE_CHANGING: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref PROFILE_CHANGING: AtomicBool = AtomicBool::new(false);
 
     /// Global "quit" status flag
-    pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -850,9 +850,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     // register ctrl-c handler
     let (ctrl_c_tx, ctrl_c_rx) = unbounded();
-    let q = QUIT.clone();
     ctrlc::set_handler(move || {
-        q.store(true, Ordering::SeqCst);
+        QUIT.store(true, Ordering::SeqCst);
 
         ctrl_c_tx
             .send(true)

@@ -83,13 +83,13 @@ lazy_static! {
     // Flags
 
     /// Global "quit" status flag
-    pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 
     /// Global "is AFK" status flag
-    pub static ref AFK: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref AFK: AtomicBool = AtomicBool::new(false);
 
     /// Global "enable experimental features" flag
-    pub static ref EXPERIMENTAL_FEATURES: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
 
     // Other state
 
@@ -2040,9 +2040,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let q = QUIT.clone();
     ctrlc::set_handler(move || {
-        q.store(true, Ordering::SeqCst);
+        QUIT.store(true, Ordering::SeqCst);
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
