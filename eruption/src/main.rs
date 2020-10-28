@@ -202,6 +202,7 @@ pub enum DbusApiEvent {
     ProfilesChanged,
     ActiveProfileChanged,
     ActiveSlotChanged,
+    BrightnessChanged,
 }
 
 /// Spawns the dbus thread and executes it's main loop
@@ -223,6 +224,8 @@ fn spawn_dbus_thread(
                     DbusApiEvent::ActiveProfileChanged => dbus.notify_active_profile_changed(),
 
                     DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed(),
+
+                    DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed(),
                 },
 
                 // ignore timeout errors
@@ -1522,6 +1525,8 @@ async fn run_main_loop(
     // used to detect changes of the active slot
     let mut saved_slot = 0;
 
+    let mut saved_brightness = 0;
+
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
@@ -1561,6 +1566,16 @@ async fn run_main_loop(
 
             saved_slot = active_slot;
             failed_txs.clear();
+        }
+
+        // brightness changed?
+        let current_brightness = BRIGHTNESS.load(Ordering::SeqCst);
+        if current_brightness != saved_brightness {
+            dbus_api_tx
+                .send(DbusApiEvent::BrightnessChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            saved_brightness = current_brightness;
         }
 
         // user is AFK?

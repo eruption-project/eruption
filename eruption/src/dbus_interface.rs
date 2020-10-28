@@ -16,9 +16,7 @@
 */
 
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
-use dbus_tree::{
-    Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
-};
+use dbus_tree::{{EmitsChangedSignal, Factory}, Access, MethodErr, Signal};
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
@@ -48,12 +46,14 @@ pub enum DbusApiError {
 }
 
 /// D-Bus API support
-pub struct DbusApi {
+pub struct DbusApi
+{
     connection: Option<Arc<Connection>>,
 
     active_slot_changed: Arc<Signal<()>>,
     active_profile_changed: Arc<Signal<()>>,
     profiles_changed: Arc<Signal<()>>,
+    brightness_changed: Arc<Signal<()>>,
 }
 
 impl DbusApi {
@@ -83,6 +83,12 @@ impl DbusApi {
 
         let profiles_changed_signal = Arc::new(f.signal("ProfilesChanged", ()));
         let profiles_changed_signal_clone = profiles_changed_signal.clone();
+
+        let brightness_changed_signal = Arc::new(
+            f.signal("BrightnessChanged", ())
+                .sarg::<i64, _>("current brightness"),
+        );
+        let brightness_changed_signal_clone = brightness_changed_signal.clone();
 
         let active_slot_property = f
             .property::<u64, _>("ActiveSlot", ())
@@ -177,8 +183,9 @@ impl DbusApi {
                     .introspectable()
                     .add(
                         f.interface("org.eruption.Config", ())
+                            .add_s(brightness_changed_signal_clone)
                             .add_p(enable_sfx_property_clone)
-                            .add_p(brightness_property_clone),
+                            .add_p(brightness_property_clone.clone()),
                     ),
             )
             .add(
@@ -322,12 +329,27 @@ impl DbusApi {
             .unwrap_or_else(|e| error!("Could not register the tree: {}", e));
         c_clone.add_handler(tree);
 
-        DbusApi {
+        Self {
             connection: Some(c_clone),
             active_slot_changed: active_slot_changed_signal,
             active_profile_changed: active_profile_changed_signal,
             profiles_changed: profiles_changed_signal,
+            brightness_changed: brightness_changed_signal,
         }
+    }
+
+    pub fn notify_brightness_changed(&self) {
+        let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
+        self.connection
+            .as_ref()
+            .unwrap()
+            .send(self.brightness_changed.emit(
+                &"/org/eruption/config".into(),
+                &"org.eruption.Config".into(),
+                &[brightness as i64],
+            ))
+            .unwrap();
     }
 
     pub fn notify_active_slot_changed(&self) {

@@ -117,6 +117,11 @@ pub enum KeyboardHidEvent {
     KeyDown { code: KeyboardHidEventCode },
     KeyUp { code: KeyboardHidEventCode },
 
+    // Brightness related
+    BrightnessUp,
+    BrightnessDown,
+    SetBrightness(u8),
+
     // Audio related
     MuteDown,
     MuteUp,

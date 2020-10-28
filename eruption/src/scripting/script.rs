@@ -640,6 +640,15 @@ mod callbacks {
 
         super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
     }
+
+    pub(crate) fn get_brightness() -> isize {
+        crate::BRIGHTNESS.load(Ordering::SeqCst)
+    }
+
+    pub(crate) fn set_brightness(val: isize) {
+        crate::BRIGHTNESS.store(val, Ordering::SeqCst);
+        super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+    }
 }
 
 /// Action requests for `run_script`
@@ -892,6 +901,21 @@ pub fn run_script(
                                     KeyboardHidEvent::VolumeUp => {
                                         arg1 = 0;
                                         4
+                                    }
+
+                                    KeyboardHidEvent::BrightnessDown => {
+                                        arg1 = 1;
+                                        5
+                                    }
+
+                                    KeyboardHidEvent::BrightnessUp => {
+                                        arg1 = 0;
+                                        5
+                                    }
+
+                                    KeyboardHidEvent::SetBrightness(val) => {
+                                        arg1 = val;
+                                        6
                                     }
 
                                     _ => {
@@ -1398,6 +1422,15 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
         Ok(())
     })?;
     globals.set("submit_color_map", submit_color_map)?;
+
+    let get_brightness = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_brightness()))?;
+    globals.set("get_brightness", get_brightness)?;
+
+    let set_brightness = lua_ctx.create_function(move |_, val: isize| {
+        callbacks::set_brightness(val);
+        Ok(())
+    })?;
+    globals.set("set_brightness", set_brightness)?;
 
     // finally, register Lua functions supplied by eruption plugins
     let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
