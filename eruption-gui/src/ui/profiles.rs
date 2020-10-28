@@ -15,10 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::{
-    constants, manifest,
-    profiles::{self, Profile},
-};
+use crate::{constants, manifest, profiles::Profile};
 use crate::{manifest::Manifest, util};
 use gdk::RGBA;
 use glib::clone;

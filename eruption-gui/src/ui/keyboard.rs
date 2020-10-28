@@ -272,7 +272,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
 }
 
 /// Paint a key on the keyboard widget
-fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context) {
+fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context, scale_factor: f64) {
     let key_def = &KEY_DEFS[key];
 
     cr.set_source_rgba(
@@ -301,15 +301,12 @@ pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(da: &D, context: &cairo::Context)
     let width = da.get_allocated_width();
     let height = da.get_allocated_height();
 
-    let pixbuf = Pixbuf::from_resource_at_scale(
-        "/org/eruption/eruption-gui/img/keyboard.png",
-        width,
-        height,
-        true,
-    )
-    .unwrap();
+    let scale_factor = (width / height) as f64 * 1.0;
+
+    let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/keyboard.png").unwrap();
 
     // paint the schematic drawing
+    context.scale(scale_factor, scale_factor);
     context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
     context.paint();
 
@@ -320,10 +317,10 @@ pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(da: &D, context: &cairo::Context)
         // if let Some(index) = KEY_DEFS.iter().position(|e| e.index == i) {
         //     paint_key(index + 1, &led_colors[i], &context);
         // } else {
-        //     log::error!("Invalid kex index: {}", i);
+        //     log::error!("Invalid key index: {}", i);
         // }
 
-        paint_key(i + 1, &led_colors[i], &context);
+        paint_key(i + 1, &led_colors[i], &context, scale_factor);
     }
 
     gtk::Inhibit(false)
