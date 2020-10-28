@@ -185,7 +185,7 @@ impl DbusApi {
                         f.interface("org.eruption.Config", ())
                             .add_s(brightness_changed_signal_clone)
                             .add_p(enable_sfx_property_clone)
-                            .add_p(brightness_property_clone.clone()),
+                            .add_p(brightness_property_clone),
                     ),
             )
             .add(
