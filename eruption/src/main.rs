@@ -86,13 +86,13 @@ lazy_static! {
     // Flags
 
     /// Global "quit" status flag
-    pub static ref QUIT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 
     /// Global "is AFK" status flag
-    pub static ref AFK: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref AFK: AtomicBool = AtomicBool::new(false);
 
     /// Global "enable experimental features" flag
-    pub static ref EXPERIMENTAL_FEATURES: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
 
     // Other state
 
@@ -208,6 +208,7 @@ pub enum DbusApiEvent {
     ProfilesChanged,
     ActiveProfileChanged,
     ActiveSlotChanged,
+    BrightnessChanged,
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
@@ -238,6 +239,8 @@ fn spawn_dbus_thread(
                             }
 
                             DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed(),
+
+                            DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed(),
                         }
 
                         api_event_processed = true;
@@ -1570,6 +1573,8 @@ async fn run_main_loop(
     // used to detect changes of the active slot
     let mut saved_slot = 0;
 
+    let mut saved_brightness = 0;
+
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
@@ -1609,6 +1614,16 @@ async fn run_main_loop(
 
             saved_slot = active_slot;
             failed_txs.clear();
+        }
+
+        // brightness changed?
+        let current_brightness = BRIGHTNESS.load(Ordering::SeqCst);
+        if current_brightness != saved_brightness {
+            dbus_api_tx
+                .send(DbusApiEvent::BrightnessChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            saved_brightness = current_brightness;
         }
 
         // user is AFK?
@@ -2092,9 +2107,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let q = QUIT.clone();
     ctrlc::set_handler(move || {
-        q.store(true, Ordering::SeqCst);
+        QUIT.store(true, Ordering::SeqCst);
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 

@@ -69,6 +69,7 @@ color_map_overlay = {}
 -- overlays
 NO_OVERLAY = 0
 VOLUME_OVERLAY = 1
+BRIGHTNESS_OVERLAY = 2
 
 overlay_state = NO_OVERLAY
 overlay_ttl = 0
@@ -205,7 +206,7 @@ function on_hid_event(event_type, arg1)
 			inject_key(113, false) -- KEY_MUTE (audio) (up)
 		end
 	elseif event_type == 4 then
-		-- Volume/brightness dial knob rotation
+		-- Volume dial knob rotation
 		local event_handled = false
 		if on_dial_knob_rotate_left ~= nil and on_dial_knob_rotate_right ~= nil then
 			if key_code == 0 then
@@ -218,7 +219,7 @@ function on_hid_event(event_type, arg1)
 		end
 
 		if not event_handled then
-			-- default action is to adjust volume
+			-- adjust volume
 			overlay_state = VOLUME_OVERLAY
 			overlay_ttl = overlay_max_ttl
 
@@ -229,6 +230,36 @@ function on_hid_event(event_type, arg1)
 				inject_key(115, true) -- VOLUME_UP (down)
 				inject_key(115, false) -- VOLUME_UP (up)
 			end
+		end
+	elseif event_type == 5 then
+		-- Brightness dial knob rotation
+		local event_handled = false
+		if on_dial_knob_rotate_left ~= nil and on_dial_knob_rotate_right ~= nil then
+			if key_code == 0 then
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_dial_knob_rotate_right(key_code)
+			else
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_dial_knob_rotate_left(key_code)
+			end
+		end
+
+		if not event_handled then
+			-- adjust brightness
+			overlay_state = BRIGHTNESS_OVERLAY
+			overlay_ttl = overlay_max_ttl
+
+			local brightness = get_brightness()
+
+			if key_code == 1 then
+				brightness = brightness - 8
+			else
+				brightness = brightness + 8
+			end
+
+			brightness = clamp(brightness, 0, 100)
+
+			set_brightness(brightness)
 		end
 	end
 end
@@ -463,6 +494,20 @@ function update_overlay_state()
 
 		-- generate color map values
 		local percentage = get_audio_volume()
+
+		local upper_bound = num_keys * (min(percentage, 100) / 100)
+		for i = 0, num_keys do
+			if i <= upper_bound then
+				color_map_overlay[i] = rgb_to_color(255, 255, 255)
+			else
+				color_map_overlay[i] = rgb_to_color(20, 20, 20)
+			end
+		end
+	elseif overlay_state == BRIGHTNESS_OVERLAY then
+		local num_keys = get_num_keys()
+
+		-- generate color map values
+		local percentage = get_brightness()
 
 		local upper_bound = num_keys * (min(percentage, 100) / 100)
 		for i = 0, num_keys do

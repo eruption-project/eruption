@@ -1,6 +1,6 @@
 name = "Macros"
 description = "Default Macro Presets"
-version = "0.0.7"
+version = "0.0.8"
 author = "The Eruption development team"
 min_supported_version = "0.1.12"
 tags = ['Macros', 'Vendor']
