@@ -16,7 +16,7 @@
 */
 
 mod roccat_kone_pure_ultra;
-mod roccat_kova_aimo;
+mod roccat_kone_aimo;
 mod roccat_nyth;
 
 use hidapi::HidDevice;
@@ -70,8 +70,8 @@ pub fn bind_device(
             hiddev,
         ))),
 
-        // ROCCAT Kova Aimo
-        (0x1e7d, 0x2cf1) => Ok(Box::new(roccat_kova_aimo::RoccatKovaAimo::bind(hiddev))),
+        // ROCCAT Kone Aimo
+        (0x1e7d, 0x2e27) => Ok(Box::new(roccat_kone_aimo::RoccatKoneAimo::bind(hiddev))),
 
         // ROCCAT Nyth
         (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => Ok(Box::new(roccat_nyth::RoccatNyth::bind(hiddev))),
