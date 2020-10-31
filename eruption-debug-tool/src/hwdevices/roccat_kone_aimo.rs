@@ -50,9 +50,9 @@ impl RoccatKoneAimo {
 
             match id {
                 0x04 => {
-                    for j in vec![0x80, 0x90] {
+                    for j in &[0x80, 0x90] {
                         for i in 0..=4 {
-                            let buf: [u8; 3] = [0x04, i, j];
+                            let buf: [u8; 3] = [0x04, i, *j];
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
