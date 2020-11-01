@@ -1,16 +1,13 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713117'
-name = 'Color Swirls (Perlin): Blue and Red'
-description = 'Color Swirl effect'
+id = '5dc62fa6-e965-45cb-a0da-e87d29713101'
+name = "Spectrum Analyzer + Color Swirls (Perlin)"
+description = "Spectrum Analyzer"
 active_scripts = [
-    'swirl-perlin.lua',
+	'swirl-perlin.lua',
     'halo.lua',
     'shockwave.lua',
-#   'impact.lua',
-#   'water.lua',
-#   'raindrops.lua',
-#   'sysmon.lua',
-    'macros.lua',
-#   'stats.lua',
+	'audioviz3.lua',
+ 	'macros.lua',
+#	'stats.lua',
 ]
 
 [[config."Perlin Swirl"]]
@@ -53,17 +50,7 @@ type = 'color'
 name = 'color_mouse_wheel_flash'
 value = 0xd0ff0000
 
-[[config.Raindrops]]
+[[config."Audio Visualizer #3 (Spectrum Analyzer)"]]
 type = 'float'
 name = 'opacity'
-value = 0.75
-
-[[config."System Monitor"]]
-type = 'color'
-name = 'color_cold'
-value = 0x0000ff00
-
-[[config."System Monitor"]]
-type = 'color'
-name = 'color_hot'
-value = 0xffff0000
+value = 0.85

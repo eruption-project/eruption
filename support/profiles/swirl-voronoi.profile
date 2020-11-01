@@ -3,6 +3,7 @@ name = 'Color Swirls (Voronoi)'
 description = 'Color Swirl effect'
 active_scripts = [
     'swirl-voronoi.lua',
+    'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',

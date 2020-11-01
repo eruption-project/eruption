@@ -31,7 +31,7 @@ function on_startup(config)
     -- static gradient
     if not animate_gradient then
         for i = 0, num_keys do
-            color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
+            color_map[i] = linear_gradient(color_start, color_end, i / num_keys)
         end
 
         submit_color_map(color_map)
@@ -48,7 +48,8 @@ function on_tick(delta)
         local num_keys = get_num_keys()
 
         for i = 0, num_keys do
-            color_map[i] = linear_gradient(color_start, color_end, ((i + ticks) / color_divisor) * gradient_speed)
+            local p = ((i + ticks) / color_divisor) % 100
+            color_map[i] = linear_gradient(color_start, color_end, p / 100)
         end
 
         submit_color_map(color_map)

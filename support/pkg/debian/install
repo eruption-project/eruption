@@ -51,6 +51,7 @@ support/profiles/rainbow-wave.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/solid-wave.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
+support/profiles/spectrum-analyzer-swirl.profile var/lib/eruption/profiles
 support/profiles/vu-meter.profile var/lib/eruption/profiles
 support/profiles/turbulence.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin.profile var/lib/eruption/profiles
@@ -158,7 +159,6 @@ eruption/src/scripts/lib/themes/default.lua usr/share/eruption/scripts/lib/theme
 eruption/src/scripts/lib/themes/gaming.lua usr/share/eruption/scripts/lib/themes
 eruption/src/scripts/lib/macros/modifiers.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/user-macros.lua usr/share/eruption/scripts/lib/macros
-eruption/src/scripts/lib/macros/user-mappings.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/starcraft2.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/examples usr/share/eruption/scripts/
 eruption/src/scripts/examples/simple.lua usr/share/eruption/scripts/

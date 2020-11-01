@@ -110,6 +110,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/vu-meter.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -189,6 +190,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_sharedstatedir}/%{ShortName}/profiles/solid-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/starcraft2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
+%{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer-swirl.profile
 %{_sharedstatedir}/%{ShortName}/profiles/vu-meter.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red.profile
@@ -206,7 +208,6 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
-%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-mappings.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
