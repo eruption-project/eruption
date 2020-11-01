@@ -1223,6 +1223,18 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
     let sqrt = lua_ctx.create_function(|_, f: f64| Ok(f.sqrt()))?;
     globals.set("sqrt", sqrt)?;
 
+    let atan2 = lua_ctx.create_function(|_, (y, x): (f64, f64)| Ok(y.atan2(x)))?;
+    globals.set("atan2", atan2)?;
+
+    let ceil = lua_ctx.create_function(|_, f: f64| Ok(f.ceil()))?;
+    globals.set("ceil", ceil)?;
+
+    let floor = lua_ctx.create_function(|_, f: f64| Ok(f.floor()))?;
+    globals.set("floor", floor)?;
+
+    let round = lua_ctx.create_function(|_, f: f64| Ok(f.round()))?;
+    globals.set("round", round)?;
+
     let rand =
         lua_ctx.create_function(|_, (l, h): (i64, i64)| Ok(rand::thread_rng().gen_range(l, h)))?;
     globals.set("rand", rand)?;
