@@ -39,13 +39,9 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 ### Mouse devices
 
 * ROCCAT Kone Pure Ultra
-* ROCCAT Kova Aimo (highly experimental)
+* ROCCAT Kone Aimo (experimental)
 
 ## Known Issues <a name="issues"></a>
-
-- Media keys sometimes not working, e.g.: `FN + F11` does not start music playback on my desktop
-
-  *It seems that the problem with disfunctional media keys got resolved by a recent firmware update*
 
 - Mute button will stay lit even if audio is muted
 

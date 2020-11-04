@@ -8,3 +8,23 @@ active_scripts = [
  	'macros.lua',
 #	'stats.lua',
 ]
+
+[[config.Gradient]]
+type = 'color'
+name = 'color_start'
+value = 0xffff0000
+
+[[config.Gradient]]
+type = 'color'
+name = 'color_end'
+value = 0xff0000ff
+
+[[config.Gradient]]
+type = 'int'
+name = 'color_divisor'
+value = 5
+
+[[config.Gradient]]
+type = 'bool'
+name = 'animate_gradient'
+value = true

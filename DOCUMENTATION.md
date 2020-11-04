@@ -10,6 +10,7 @@
 - <a href="#effects">Available Effects</a>
 - <a href="#macros">Available Macro Definitions</a>
 - <a href="#info">Further Reading</a>
+- <a href="#process-monitor">Process Monitor</a>
 - <a href="#contributing">Contributing</a>
 
 ## Features <a name="features"></a>
@@ -257,6 +258,11 @@ For a detailed documentation on how to write your own macros, please refer to [M
 
 For a documentation of the supported Lua functions and libraries, please
 refer to the developer documentation [LIBRARY.md](./LIBRARY.md)
+
+## Process Monitor <a name="process-monitor"></a>
+
+Eruption `0.1.17` added a new daemon called `eruption-process-monitor`, which allows for dynamic switching of profiles and slots using a rule matching engine.
+
 
 ## Contributing <a name="contributing"></a>
 

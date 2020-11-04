@@ -73,7 +73,7 @@ BRIGHTNESS_OVERLAY = 2
 
 overlay_state = NO_OVERLAY
 overlay_ttl = 0
-overlay_max_ttl = 24 * 18
+overlay_max_ttl = 24 * 16
 
 -- key highlighting
 highlight_ttl = 0
@@ -246,15 +246,15 @@ function on_hid_event(event_type, arg1)
 
 		if not event_handled then
 			-- adjust brightness
-			overlay_state = BRIGHTNESS_OVERLAY
-			overlay_ttl = overlay_max_ttl
+			-- overlay_state = NO_OVERLAY
+			overlay_ttl = 24 * 2
 
 			local brightness = get_brightness()
 
 			if key_code == 1 then
-				brightness = brightness - 8
+				brightness = brightness - 5
 			else
-				brightness = brightness + 8
+				brightness = brightness + 5
 			end
 
 			brightness = clamp(brightness, 0, 100)

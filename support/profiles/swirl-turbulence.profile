@@ -3,6 +3,7 @@ name = 'Color Swirls (Turbulence)'
 description = 'Color Swirl effect'
 active_scripts = [
     'swirl-turbulence.lua',
+    'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',

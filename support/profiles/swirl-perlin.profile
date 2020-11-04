@@ -3,6 +3,7 @@ name = 'Color Swirls (Perlin)'
 description = 'Color Swirl effect'
 active_scripts = [
     'swirl-perlin.lua',
+    'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',
@@ -25,7 +26,7 @@ value = 0.0
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'time_scale'
-value = 140.0
+value = 250.0
 
 [[config."Perlin Swirl"]]
 type = 'float'

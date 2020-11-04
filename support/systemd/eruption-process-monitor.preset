@@ -1,1 +1,1 @@
-enable eruption-process-monitor.service
+disable eruption-process-monitor.service
