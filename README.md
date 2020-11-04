@@ -43,10 +43,6 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 
 ## Known Issues <a name="issues"></a>
 
-- Media keys sometimes not working, e.g.: `FN + F11` does not start music playback on my desktop
-
-  *It seems that the problem with disfunctional media keys got resolved by a recent firmware update*
-
 - Mute button will stay lit even if audio is muted
 
 - Keyboard may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
