@@ -1,0 +1,36 @@
+name = "Pulse"
+description = "Show a pulsating effect"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.17"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'color'
+name = 'color_pulse'
+description = 'Pulse color'
+default = 0xffff0000
+
+[[config]]
+type = 'float'
+name = 'pulse_speed'
+description = 'Speed of the pulse effect'
+default = 4.0
+
+[[config]]
+type = 'string'
+name = 'easing_function_in'
+description = 'Easing function: linear, outSine, inCubic, ...'
+default = 'inOutQuad'
+
+[[config]]
+type = 'string'
+name = 'easing_function_out'
+description = 'Easing function: linear, outSine, inCubic, ...'
+default = 'inOutQuad'
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 0.5

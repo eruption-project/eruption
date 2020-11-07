@@ -243,6 +243,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_datarootdir}/%{ShortName}/scripts/phonon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/pulse.lua
+%{_datarootdir}/%{ShortName}/scripts/pulse.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/voronoi.lua

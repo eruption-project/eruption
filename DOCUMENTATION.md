@@ -228,6 +228,7 @@ The following scripts are unfinished/still in development, and some of them have
 | Halo               | Effect     | `halo.lua`            | Approx. 95% done | Show a spreading rainbow colored animated halo when a key has been pressed                         |
 | Heat Map           | Effect     | `heatmap.lua`         | Approx. 50% done | Shows a heat map of recorded statistics on the keyboard                                            |
 | Gaming             | Effect     | `gaming.lua`          | Approx. 85% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                    |
+| Pulse              | Effect     | `pulse.lua`           | Approx. 85% done | Display a pulsating color on a fixed set of keys                                                   |
 | Snake              | Effect     | `snake.lua`           | Approx. 25% done | Displays a snake that lives on your keyboard                                                       |
 | Linear Gradient    | Background | `linear-gradient.lua` | Approx. 95% done | Display a color gradient                                                                           |
 | Multi Gradient     | Background | `multigradient.lua`   | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                         |

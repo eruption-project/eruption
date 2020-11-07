@@ -73,7 +73,7 @@ BRIGHTNESS_OVERLAY = 2
 
 overlay_state = NO_OVERLAY
 overlay_ttl = 0
-overlay_max_ttl = 24 * 16
+overlay_max_ttl = 24 * 24
 
 -- key highlighting
 highlight_ttl = 0
@@ -496,6 +496,8 @@ function update_overlay_state()
 		local percentage = get_audio_volume()
 
 		local upper_bound = num_keys * (min(percentage, 100) / 100)
+		upper_bound = upper_bound + (upper_bound % max_keys_per_col) + 1
+
 		for i = 0, num_keys do
 			if i <= upper_bound then
 				color_map_overlay[i] = rgb_to_color(255, 255, 255)
@@ -510,6 +512,8 @@ function update_overlay_state()
 		local percentage = get_brightness()
 
 		local upper_bound = num_keys * (min(percentage, 100) / 100)
+		upper_bound = upper_bound + (upper_bound % max_keys_per_col) + 1
+
 		for i = 0, num_keys do
 			if i <= upper_bound then
 				color_map_overlay[i] = rgb_to_color(255, 255, 255)
@@ -531,12 +535,12 @@ function on_tick(delta)
     local num_keys = get_num_keys()
 
     -- show key highlight effect or the active overlay
-    if ticks % animation_delay == 0 then
+	if ticks % animation_delay == 0 then
 		for i = 0, num_keys do
 			-- key highlight effect
-			if highlight_ttl >= highlight_step then
+			if highlight_ttl > 0 then
 				r, g, b, a = color_to_rgba(color_map_highlight[i])
-				alpha = trunc(lerp(0, highlight_max_ttl / 255, highlight_ttl) * highlight_opacity)
+				alpha = range(0, 255, 0, highlight_max_ttl, highlight_ttl)
 
 				color_map_highlight[i] = rgba_to_color(r, g, b, min(255, alpha))
 				color_map[i] = color_map_highlight[i]
@@ -546,24 +550,21 @@ function on_tick(delta)
 			end
 
 			-- overlay effect
-			if overlay_ttl >= overlay_step then
+			if overlay_ttl > 0 then
 				r, g, b, a = color_to_rgba(color_map_overlay[i])
-				alpha = trunc(lerp(0, overlay_max_ttl / 255, overlay_ttl) * overlay_opacity)
+				alpha = range(0, 255, 0, overlay_max_ttl, overlay_ttl)
 
 				color_map_overlay[i] = rgba_to_color(r, g, b, min(255, alpha))
 				color_map[i] = color_map_overlay[i]
 			else
+				overlay_ttl = 0
 				color_map_overlay[i] = 0x00000000
-			end
-
-			-- reset the canvas, if we dont have to draw anything
-			if highlight_ttl <= overlay_step and overlay_ttl <= overlay_step then
-				color_map[i] = 0x00000000
 			end
         end
 
-		highlight_ttl = highlight_ttl - highlight_step
-		overlay_ttl = overlay_ttl - overlay_step
+		-- apply easing
+		highlight_ttl = highlight_ttl - max(1.0, ((highlight_ttl / highlight_step) * 4))
+		overlay_ttl = overlay_ttl - max(1.0, ((overlay_ttl / overlay_step) / 2))
 
 		if overlay_ttl <= 0 then
 			overlay_state = NO_OVERLAY

@@ -117,6 +117,8 @@ eruption/src/scripts/phonon.lua usr/share/eruption/scripts/
 eruption/src/scripts/phonon.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/psychedelic.lua usr/share/eruption/scripts/
 eruption/src/scripts/psychedelic.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/pulse.lua usr/share/eruption/scripts/
+eruption/src/scripts/pulse.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/rainbow.lua usr/share/eruption/scripts/
 eruption/src/scripts/rainbow.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/raindrops.lua usr/share/eruption/scripts/

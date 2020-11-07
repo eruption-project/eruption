@@ -9,6 +9,8 @@ Table of new and noteworthy changes:
 | 0.1.17 | Add a new daemon `eruption-process-monitor` that monitors the system for certain events and acts upon them              |
 | 0.1.17 | Add experimental support for the ROCCAT Kone Aimo                                                                       |
 | 0.1.17 | Support changing the master brightness via the dial knob on the keyboard                                                |
+| 0.1.17 | Add a new Lua library `easing.lua`, that provides multiple easing functions                                             |
+| 0.1.17 | Add a new Lua script `pulse.lua` that displays a pulsating color on a fixed set of keys                                 |
 | 0.1.16 | __New Release__                                                                                                         |
 | 0.1.16 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!              |
 | 0.1.16 | Add support for ROCCAT Kone Pure Ultra LED                                                                              |

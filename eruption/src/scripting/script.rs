@@ -1223,6 +1223,9 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
     let sqrt = lua_ctx.create_function(|_, f: f64| Ok(f.sqrt()))?;
     globals.set("sqrt", sqrt)?;
 
+    let asin = lua_ctx.create_function(|_, a: f64| Ok(a.asin()))?;
+    globals.set("asin", asin)?;
+
     let atan2 = lua_ctx.create_function(|_, (y, x): (f64, f64)| Ok(y.atan2(x)))?;
     globals.set("atan2", atan2)?;
 
