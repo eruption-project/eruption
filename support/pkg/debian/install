@@ -21,7 +21,7 @@ support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
-support/man/process-monitor.5 usr/share/man/man1/
+support/man/process-monitor.conf.5 usr/share/man/man5/
 support/man/eruptionctl.1 usr/share/man/man1/
 support/man/eruption-netfx.1 usr/share/man/man1/
 support/man/eruption-process-monitor.1 usr/share/man/man1/
