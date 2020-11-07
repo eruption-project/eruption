@@ -49,6 +49,7 @@ package() {
     mkdir -p "$pkgdir/usr/lib/systemd/system-preset"
 
     mkdir -p "$pkgdir/usr/lib/systemd/user"
+    mkdir -p "$pkgdir/usr/lib/systemd/user-preset"
 
     mkdir -p "$pkgdir/usr/lib/systemd/system-sleep"
 
