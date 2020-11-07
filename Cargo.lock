@@ -712,7 +712,7 @@ dependencies = [
  "serde 1.0.117",
  "serde_json",
  "thiserror",
- "tokio 0.3.3",
+ "tokio 0.2.22",
  "toml",
  "tracing",
  "tracing-futures",
