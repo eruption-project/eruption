@@ -565,7 +565,7 @@ dependencies = [
  "nix 0.19.0",
  "noise",
  "palette",
- "parking_lot",
+ "parking_lot 0.11.0",
  "paste 1.0.2",
  "prctl",
  "pretty_env_logger",
@@ -603,7 +603,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.19.0",
- "parking_lot",
+ "parking_lot 0.11.0",
  "paste 1.0.2",
  "pretty_env_logger",
  "serde 1.0.117",
@@ -632,7 +632,7 @@ dependencies = [
  "log",
  "nix 0.19.0",
  "num-traits 0.2.14",
- "parking_lot",
+ "parking_lot 0.11.0",
  "pretty_env_logger",
  "rayon",
  "serde 1.0.117",
@@ -672,7 +672,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.19.0",
- "parking_lot",
+ "parking_lot 0.11.0",
  "paste 1.0.2",
  "pretty_env_logger",
  "procmon-sys",
@@ -683,7 +683,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror",
- "tokio 0.3.3",
+ "tokio 0.2.22",
  "toml",
  "tracing",
  "tracing-futures",
@@ -707,7 +707,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.19.0",
- "parking_lot",
+ "parking_lot 0.11.0",
  "paste 1.0.2",
  "serde 1.0.117",
  "serde_json",
@@ -770,6 +770,12 @@ name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+
+[[package]]
+name = "fnv"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "fsevent"
@@ -1315,6 +1321,15 @@ checksum = "8dd5a6d5999d9907cda8ed67bbd137d3af8085216c2ac62de5be860bd41f304a"
 
 [[package]]
 name = "lock_api"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4da24a77a3d8a6d4862d95f72e6fdb9c09a643ecdb402d754004a557f2bec75"
+dependencies = [
+ "scopeguard",
+]
+
+[[package]]
+name = "lock_api"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28247cc5a5be2f05fbcd76dd0cf2c7d3b5400cb978a28042abcd4fa0b3f8261c"
@@ -1453,6 +1468,29 @@ dependencies = [
  "log",
  "mio 0.6.22",
  "slab",
+]
+
+[[package]]
+name = "mio-named-pipes"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0840c1c50fd55e521b247f949c241c9997709f23bd7f023b9762cd561e935656"
+dependencies = [
+ "log",
+ "mio 0.6.22",
+ "miow 0.3.5",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "mio-uds"
+version = "0.6.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afcb699eb26d4332647cc848492bbc15eafb26f08d0304550d5aa1f612e066f0"
+dependencies = [
+ "iovec",
+ "libc",
+ "mio 0.6.22",
 ]
 
 [[package]]
@@ -1759,13 +1797,37 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3a704eb390aafdc107b0e392f56a82b668e3a71366993b5340f5833fd62505e"
+dependencies = [
+ "lock_api 0.3.4",
+ "parking_lot_core 0.7.2",
+]
+
+[[package]]
+name = "parking_lot"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4893845fa2ca272e647da5d0e46660a314ead9c2fdd9a883aabc32e481a8733"
 dependencies = [
  "instant",
- "lock_api",
- "parking_lot_core",
+ "lock_api 0.4.1",
+ "parking_lot_core 0.8.0",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d58c7c768d4ba344e3e8d72518ac13e259d7c7ade24167003b8488e10b6740a3"
+dependencies = [
+ "cfg-if 0.1.10",
+ "cloudabi 0.0.3",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2640,13 +2702,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d34ca54d84bf2b5b4d7d31e901a8464f7b60ac145a284fba25ceb801f2ddccd"
 dependencies = [
  "bytes 0.5.6",
+ "fnv",
  "futures-core",
+ "iovec",
  "lazy_static",
+ "libc",
+ "memchr 2.3.4",
  "mio 0.6.22",
+ "mio-named-pipes",
+ "mio-uds",
  "num_cpus",
+ "parking_lot 0.10.2",
  "pin-project-lite",
+ "signal-hook-registry",
  "slab",
  "tokio-macros 0.2.5",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2663,7 +2734,7 @@ dependencies = [
  "memchr 2.3.4",
  "mio 0.7.5",
  "num_cpus",
- "parking_lot",
+ "parking_lot 0.11.0",
  "pin-project-lite",
  "signal-hook-registry",
  "slab",

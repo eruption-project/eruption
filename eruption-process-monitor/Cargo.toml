@@ -31,7 +31,7 @@ regex = "1.4.2"
 serde = { version = "1.0.117", features = ["derive"] }
 serde_json = "1.0.59"
 serde_yaml = "0.8"
-tokio = { version = "0.3", features = ["full", "parking_lot"] }
+tokio = { version = "0.2", features = ["full", "parking_lot"] }
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
@@ -55,4 +55,4 @@ walkdir = "2.3.1"
 x11rb = {version = "0.7.0", features = ["allow-unsafe-code"] }
 
 [dev-dependencies]
-tokio = { version = "0.3", features = ["test-util"] }
+tokio = { version = "0.2", features = ["test-util"] }
