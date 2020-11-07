@@ -202,6 +202,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/easing.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
