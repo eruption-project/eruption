@@ -4,6 +4,7 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                             |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 0.1.18 | __New Release__                                                                                                         |
 | 0.1.17 | __New Release__                                                                                                         |
 | 0.1.17 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!              |
 | 0.1.17 | Add a new daemon `eruption-process-monitor` that monitors the system for certain events and acts upon them              |
