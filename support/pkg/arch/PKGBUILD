@@ -3,8 +3,8 @@
 pkgname='eruption-roccat-vulcan-git'
 _pkgname='eruption-roccat-vulcan'
 pkgdesc='Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards'
-pkgver='0.1.17'
-pkgrel='0'
+pkgver='0.1.18'
+pkgrel='4'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption-roccat-vulcan'
@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=83585b77b88729c78e864253c74eafbb0fc13e28')
+source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=652c0a36759b687963d954630f51695ebb4cf394')
 noextract=()
 sha512sums=('SKIP')
 
@@ -51,6 +51,7 @@ package() {
     mkdir -p "$pkgdir/usr/lib/systemd/system-preset"
 
     mkdir -p "$pkgdir/usr/lib/systemd/user"
+    mkdir -p "$pkgdir/usr/lib/systemd/user-preset"
 
     mkdir -p "$pkgdir/usr/lib/systemd/system-sleep"
 
@@ -162,6 +163,8 @@ package() {
     install -m 644 "eruption/src/scripts/phonon.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/psychedelic.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/psychedelic.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/pulse.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/pulse.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/rainbow.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/rainbow.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/raindrops.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -195,6 +198,7 @@ package() {
     install -m 644 "eruption/src/scripts/snake.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/snake.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/lib/debug.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
+    install -m 644 "eruption/src/scripts/lib/easing.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/queue.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/utilities.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/declarations.lua" "$pkgdir/usr/share/eruption/scripts/lib/"

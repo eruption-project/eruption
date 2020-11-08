@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption-roccat-vulcan-git
-Version: 0.1.17
-Release: 0%{?dist}
+Version: 0.1.18
+Release: 3%{?dist}
 Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
 URL:     https://github.com/X3n0m0rph59/eruption-roccat-vulcan
 License: GPLv3+
@@ -76,7 +76,7 @@ cargo build --all --release --verbose
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
-cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.5 %{buildroot}/%{_mandir}/man5/
+cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{buildroot}/%{_mandir}/man1/
@@ -157,6 +157,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %doc %{_mandir}/man1/eruptionctl.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
 %doc %{_mandir}/man1/eruption-process-monitor.1.gz
+%doc %{_mandir}/man5/process-monitor.conf.5.gz
 %dir %{_datarootdir}/icons/hicolor/scalable/apps/
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
@@ -214,6 +215,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
 %{_datarootdir}/%{ShortName}/scripts/examples/simple.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/debug.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/easing.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
@@ -256,6 +258,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/phonon.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua
 %{_datarootdir}/%{ShortName}/scripts/psychedelic.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/pulse.lua
+%{_datarootdir}/%{ShortName}/scripts/pulse.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua
 %{_datarootdir}/%{ShortName}/scripts/rmf.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/voronoi.lua

@@ -26,7 +26,7 @@ support/policykit/org.eruption.policy usr/share/polkit-1/actions/
 
 support/man/eruption.8 usr/share/man/man8/
 support/man/eruption.conf.5 usr/share/man/man5/
-support/man/process-monitor.5 usr/share/man/man1/
+support/man/process-monitor.conf.5 usr/share/man/man5/
 support/man/eruptionctl.1 usr/share/man/man1/
 support/man/eruption-netfx.1 usr/share/man/man1/
 support/man/eruption-process-monitor.1 usr/share/man/man1/
@@ -122,6 +122,8 @@ eruption/src/scripts/phonon.lua usr/share/eruption/scripts/
 eruption/src/scripts/phonon.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/psychedelic.lua usr/share/eruption/scripts/
 eruption/src/scripts/psychedelic.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/pulse.lua usr/share/eruption/scripts/
+eruption/src/scripts/pulse.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/rainbow.lua usr/share/eruption/scripts/
 eruption/src/scripts/rainbow.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/raindrops.lua usr/share/eruption/scripts/
@@ -157,6 +159,7 @@ eruption/src/scripts/macros.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/stats.lua usr/share/eruption/scripts/
 eruption/src/scripts/stats.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/lib/debug.lua usr/share/eruption/scripts/lib/
+eruption/src/scripts/lib/easing.lua usr/share/eruption/scripts/lib/
 eruption/src/scripts/lib/queue.lua usr/share/eruption/scripts/lib/
 eruption/src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib/
 eruption/src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib/

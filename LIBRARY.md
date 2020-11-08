@@ -27,10 +27,59 @@ the respective file was loaded previously via a call to `require "..."`.
 
 Eruption currently ships with the following support library functions:
 
-| Name                               | File            | Since       | Description                                                 |
-| ---------------------------------- | --------------- | ----------- | ----------------------------------------------------------- |
-| `key_index(x, y)`                  | `utilities.lua` | since 0.1.9 | Returns the index of the key with the specified coordinates |
-| `debug_print_led_state(color_map)` | `debug.lua`     | since 0.1.9 | Prints a table, showing LED states in `color_map`           |
+| Name                               | File            | Since        | Description                                                 |
+| ---------------------------------- | --------------- | ------------ | ----------------------------------------------------------- |
+| `key_index(x, y)`                  | `utilities.lua` | since 0.1.9  | Returns the index of the key with the specified coordinates |
+| `debug_print_led_state(color_map)` | `debug.lua`     | since 0.1.9  | Prints a table, showing LED states in `color_map`           |
+| `debug_print_led_state(color_map)` | `debug.lua`     | since 0.1.9  | Prints a table, showing LED states in `color_map`           |
+| `linear(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inQuad(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outQuad(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutQuad(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInQuad(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inCubic(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outCubic(t, b, c, d)`             | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutCubic(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInCubic(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inQuart(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outQuart(t, b, c, d)`             | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutQuart(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInQuart(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inQuint(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outQuint(t, b, c, d)`             | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutQuint(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInQuint(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inSine(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outSine(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutSine(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInSine(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inExpo(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outExpo(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutExpo(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInExpo(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inCirc(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outCirc(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutCirc(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInCirc(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inElastic(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outElastic(t, b, c, d)`           | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutElastic(t, b, c, d)`         | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInElastic(t, b, c, d)`         | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inBack(t, b, c, d)`               | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outBack(t, b, c, d)`              | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutBack(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInBack(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inBounce(t, b, c, d)`             | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outBounce(t, b, c, d)`            | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `inOutBounce(t, b, c, d)`          | `easing.lua`    | since 0.1.17 | Easing function                                             |
+| `outInBounce(t, b, c, d)`          | `easing.lua`    | since 0.1.17 | Easing function                                             |
+
+*For all easing functions:*
+
+- t = elapsed time
+- b = begin
+- c = change == ending - beginning
+- d = duration (total time)
 
 ## Core Functions
 
@@ -50,6 +99,7 @@ Eruption currently ships with the following core functions:
 | `cos(a) -> f`                                         | _core_      | Math     | since 0.1.4        | Returns the cosine of angle `a`                                                                                                                                                            |
 | `pow(f, p) -> f`                                      | _core_      | Math     | since before 0.0.9 | Returns `f` to the power of `p`                                                                                                                                                            |
 | `sqrt(f) -> f`                                        | _core_      | Math     | since before 0.0.9 | Returns the square root of `f`                                                                                                                                                             |
+| `asin(f) -> f`                                        | _core_      | Math     | since 0.1.17       | Returns the arcus sine of `f`                                                                                                                                                              |
 | `atan2(y, x) -> f`                                    | _core_      | Math     | since 0.1.17       | Returns the arcus tangens of (`y`, `x`)                                                                                                                                                    |
 | `ceil(f) -> f`                                        | _core_      | Math     | since 0.1.17       | Returns the ceiling of `f`                                                                                                                                                                 |
 | `floor(f) -> f`                                       | _core_      | Math     | since 0.1.17       | Returns the floor of `f`                                                                                                                                                                   |

@@ -27,7 +27,7 @@ default = 1.0
 type = 'float'
 name = 'overlay_opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
-default = 0.75
+default = 1.0
 
 [[config]]
 type = 'int'
