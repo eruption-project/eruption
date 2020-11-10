@@ -155,7 +155,7 @@ function on_hid_event(event_type, arg1)
 		if modifier_map[MODIFIER_KEY] and key_code == 40 then
 			inject_key(144, true) -- EV_KEY::FILE
 		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
-			inject_key(150, true) -- EV_KEY::WWW
+			inject_key(172, true) -- EV_KEY::HOMEPAGE
 		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
 			inject_key(155, true) -- EV_KEY::MAIL
 		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
@@ -165,7 +165,7 @@ function on_hid_event(event_type, arg1)
 		if modifier_map[MODIFIER_KEY] and key_code == 40 then
 			inject_key(144, false) -- EV_KEY::FILE
 		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
-			inject_key(150, false) -- EV_KEY::WWW
+			inject_key(172, false) -- EV_KEY::HOMEPAGE
 		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
 			inject_key(155, false) -- EV_KEY::MAIL
 		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then

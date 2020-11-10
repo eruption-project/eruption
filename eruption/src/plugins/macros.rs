@@ -97,6 +97,12 @@ impl MacrosPlugin {
         dev.enable(&EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
         dev.enable(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
 
+        // enable FN-F5 - FN-F8
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FILE)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HOMEPAGE)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MAIL)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
+
         // enable media keys
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PREVIOUSSONG))
             .unwrap();
