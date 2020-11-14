@@ -13,6 +13,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+target_fps = 20
+
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model
 -- table_offset = get_num_keys() + 1

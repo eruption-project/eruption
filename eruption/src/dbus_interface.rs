@@ -15,12 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::Sender;
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
-use dbus_tree::{{EmitsChangedSignal, Factory}, Access, MethodErr, Signal};
+use dbus_tree::{
+    Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
+};
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 use crate::plugins::audio;
@@ -46,8 +48,7 @@ pub enum DbusApiError {
 }
 
 /// D-Bus API support
-pub struct DbusApi
-{
+pub struct DbusApi {
     connection: Option<Arc<Connection>>,
 
     active_slot_changed: Arc<Signal<()>>,

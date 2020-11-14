@@ -1,10 +1,10 @@
 # Maintainer: X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
-pkgname='eruption-roccat-vulcan-git'
-_pkgname='eruption-roccat-vulcan'
-pkgdesc='Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards'
+pkgname='eruption-git'
+_pkgname='eruption'
+pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.18'
-pkgrel='4'
+pkgrel='0'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption-roccat-vulcan'
@@ -14,14 +14,14 @@ depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-so
 makedepends=('git' 'rust' 'xorg-server-devel' 'libxrandr')
 checkdepends=()
 optdepends=()
-provides=('eruption-roccat-vulcan')
+provides=('eruption')
 conflicts=('eruption-roccat-vulcan')
 replaces=()
 backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/share/eruption/scripts/lib/macros/*)
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=652c0a36759b687963d954630f51695ebb4cf394')
+source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=f3c761a00eda8595e4cf0cb442ddd4002b2b8caa')
 noextract=()
 sha512sums=('SKIP')
 

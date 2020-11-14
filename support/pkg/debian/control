@@ -1,4 +1,4 @@
-Source: eruption-roccat-vulcan-git
+Source: eruption-git
 Section: admin
 Priority: optional
 Maintainer: X3n0m0rph59 <x3n0m0rph59@gmail.com>
@@ -20,8 +20,8 @@ Homepage: <insert the upstream URL, if relevant>
 #Vcs-Browser: https://salsa.debian.org/debian/eruption-roccat-vulcan-git
 #Vcs-Git: https://salsa.debian.org/debian/eruption-roccat-vulcan-git.git
 
-Package: eruption-roccat-vulcan-git
+Package: eruption-git
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lua-socket (>= 3.0~rc1+git+ac3201d-4)
-Description: Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
- Eruption is a Linux daemon written in Rust, consisting of a core, an integrated Lua interpreter and additional plugin components. Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" and subsequently control the AIMO LEDs on the keyboard. Plugins may export additional functionality to the Lua scripting engine.
+Description: Linux user-mode input and LED driver for keyboards, mice and other devices
+ Eruption is a Linux daemon written in Rust, consisting of a core, an integrated Lua interpreter and additional plugin components. Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" and subsequently control the LEDs on the keyboard and mouse. Plugins may export additional functionality to the Lua scripting engine.

@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -28,11 +29,12 @@ use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::vec::Vec;
 
-use crate::hwdevices::{KeyboardDevice, KeyboardHidEvent, MouseHidEvent, NUM_KEYS, RGBA};
+use crate::hwdevices::{
+    KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, NUM_KEYS, RGBA,
+};
 use crate::plugin_manager;
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
@@ -67,7 +69,7 @@ pub enum Message {
 }
 
 lazy_static! {
-    /// Global LED state of the managed device
+    /// Global LED map, the "canvas"
     pub static ref LED_MAP: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA {
         r: 0x00,
         g: 0x00,
@@ -114,22 +116,21 @@ impl fmt::Display for UnknownError {
     }
 }
 
-/// These functions are intended to be used from within lua scripts
+/// These functions are intended to be used from within Lua scripts
 mod callbacks {
     use byteorder::{ByteOrder, LittleEndian};
     use log::*;
     use noise::{NoiseFn, Seedable};
     use palette::ConvertFrom;
     use palette::{Hsl, Srgb};
-    use std::cell::RefCell;
     use std::convert::TryFrom;
     use std::sync::atomic::Ordering;
-    use std::thread;
     use std::time::Duration;
+    use std::{cell::RefCell, thread};
 
     use super::{LED_MAP, LOCAL_LED_MAP, LOCAL_LED_MAP_MODIFIED};
 
-    use crate::hwdevices::{KeyboardDevice, LedKind, NUM_KEYS, RGBA};
+    use crate::hwdevices::{NUM_KEYS, RGBA};
     use crate::plugins::macros;
 
     fn seed() -> u32 {
@@ -288,12 +289,12 @@ mod callbacks {
             .unwrap();
     }
 
-    pub(crate) fn set_status_led(keyboard_device: &KeyboardDevice, led_id: u8, on: bool) {
-        keyboard_device
-            .read()
-            .set_status_led(LedKind::from_id(led_id).unwrap(), on)
-            .unwrap_or_else(|e| error!("{}", e));
-    }
+    // pub(crate) fn set_status_led(keyboard_device: &KeyboardDevice, led_id: u8, on: bool) {
+    //     keyboard_device
+    //         .read()
+    //         .set_status_led(LedKind::from_id(led_id).unwrap(), on)
+    //         .unwrap_or_else(|e| error!("{}", e));
+    // }
 
     /// Get RGB components of a 32 bits color value.
     pub(crate) fn color_to_rgb(c: u32) -> (u8, u8, u8) {
@@ -522,28 +523,6 @@ mod callbacks {
         NUM_KEYS
     }
 
-    /// Get the current color of the key `idx`.
-    pub(crate) fn get_key_color(devid: &str, idx: usize) -> u32 {
-        error!("{}: {}", devid, idx);
-        0
-    }
-
-    /// Set the color of the key `idx` to `c`.
-    pub(crate) fn set_key_color(keyboard_device: &KeyboardDevice, idx: usize, c: u32) {
-        let mut led_map = LED_MAP.write();
-        led_map[idx] = RGBA {
-            a: u8::try_from((c >> 24) & 0xff).unwrap(),
-            r: u8::try_from((c >> 16) & 0xff).unwrap(),
-            g: u8::try_from((c >> 8) & 0xff).unwrap(),
-            b: u8::try_from(c & 0xff).unwrap(),
-        };
-
-        keyboard_device
-            .write()
-            .send_led_map(&*led_map)
-            .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
-    }
-
     /// Get state of all LEDs
     pub(crate) fn get_color_map() -> Vec<u32> {
         let global_led_map = LED_MAP.write();
@@ -560,43 +539,6 @@ mod callbacks {
         assert!(result.len() == NUM_KEYS);
 
         result
-    }
-
-    /// Set all LEDs at once.
-    pub(crate) fn set_color_map(keyboard_device: &KeyboardDevice, map: &[u32]) {
-        assert!(map.len() == NUM_KEYS);
-
-        let mut led_map = [RGBA {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 0,
-        }; NUM_KEYS];
-
-        let mut i = 0;
-        loop {
-            led_map[i] = RGBA {
-                a: u8::try_from((map[i] >> 24) & 0xff).unwrap(),
-                r: u8::try_from((map[i] >> 16) & 0xff).unwrap(),
-                g: u8::try_from((map[i] >> 8) & 0xff).unwrap(),
-                b: u8::try_from(map[i] & 0xff).unwrap(),
-            };
-
-            i += 1;
-            if i >= NUM_KEYS - 1 {
-                break;
-            }
-        }
-
-        {
-            let mut global_led_map = LED_MAP.write();
-            *global_led_map = led_map.to_vec();
-        }
-
-        keyboard_device
-            .write()
-            .send_led_map(&led_map)
-            .unwrap_or_else(|e| error!("Could not send the LED map to the keyboard: {}", e));
     }
 
     /// Submit LED color map for later realization, as soon as the
@@ -666,8 +608,9 @@ pub enum RunScriptResult {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     file: PathBuf,
-    keyboard_device: &KeyboardDevice,
     rx: &Receiver<Message>,
+    keyboard_devices: &[KeyboardDevice],
+    _mouse_devices: &[MouseDevice],
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
         Ok(script) => {
@@ -690,11 +633,11 @@ pub fn run_script(
 
             let mut errors_present = false;
 
-            if register_support_globals(&lua_ctx, &keyboard_device).is_err() {
+            if register_support_globals(&lua_ctx).is_err() {
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
 
-            if register_support_funcs(&lua_ctx, &keyboard_device).is_err() {
+            if register_support_funcs(&lua_ctx).is_err() {
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
 
@@ -874,12 +817,16 @@ pub fn run_script(
                                 let arg1: u8;
                                 let event_type: u32 = match param {
                                     KeyboardHidEvent::KeyUp { code } => {
-                                        arg1 = code.into();
+                                        arg1 = keyboard_devices[0]
+                                            .read()
+                                            .hid_event_code_to_report(&code);
                                         1
                                     }
 
                                     KeyboardHidEvent::KeyDown { code } => {
-                                        arg1 = code.into();
+                                        arg1 = keyboard_devices[0]
+                                            .read()
+                                            .hid_event_code_to_report(&code);
                                         2
                                     }
 
@@ -1130,7 +1077,7 @@ pub fn run_script(
     }
 }
 
-fn register_support_globals(lua_ctx: &Lua, _keyboard_device: &KeyboardDevice) -> mlua::Result<()> {
+fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
     #[cfg(debug_assertions)]
@@ -1155,9 +1102,7 @@ fn register_support_globals(lua_ctx: &Lua, _keyboard_device: &KeyboardDevice) ->
     Ok(())
 }
 
-fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> mlua::Result<()> {
-    let devid = keyboard_device.read().get_usb_path();
-
+fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
     // logging
@@ -1272,13 +1217,6 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
             Ok(())
         })?;
     globals.set("inject_key_with_delay", inject_key_with_delay)?;
-
-    let dev_tmp = keyboard_device.clone();
-    let set_status_led = lua_ctx.create_function(move |_, (led_id, on): (u8, bool)| {
-        callbacks::set_status_led(&dev_tmp, led_id, on);
-        Ok(())
-    })?;
-    globals.set("set_status_led", set_status_led)?;
 
     // mouse state and macros
     let inject_mouse_button = lua_ctx.create_function(|_, (button_index, down): (u32, bool)| {
@@ -1410,27 +1348,8 @@ fn register_support_funcs(lua_ctx: &Lua, keyboard_device: &KeyboardDevice) -> ml
     let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;
     globals.set("get_num_keys", get_num_keys)?;
 
-    let devid_tmp = devid;
-    let get_key_color = lua_ctx
-        .create_function(move |_, idx: usize| Ok(callbacks::get_key_color(&devid_tmp, idx)))?;
-    globals.set("get_key_color", get_key_color)?;
-
-    let dev_tmp = keyboard_device.clone();
-    let set_key_color = lua_ctx.create_function(move |_, (idx, c): (usize, u32)| {
-        callbacks::set_key_color(&dev_tmp, idx, c);
-        Ok(())
-    })?;
-    globals.set("set_key_color", set_key_color)?;
-
     let get_color_map = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_color_map()))?;
     globals.set("get_color_map", get_color_map)?;
-
-    let dev_tmp = keyboard_device.clone();
-    let set_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
-        callbacks::set_color_map(&dev_tmp, &map);
-        Ok(())
-    })?;
-    globals.set("set_color_map", set_color_map)?;
 
     let submit_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
         callbacks::submit_color_map(&map);

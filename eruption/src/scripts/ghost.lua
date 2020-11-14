@@ -29,7 +29,6 @@ key_state = {
 	shockwave_origin = 32,
 }
 
-target_fps = 24
 max_effect_ttl = 50
 effect_ttl = 0
 

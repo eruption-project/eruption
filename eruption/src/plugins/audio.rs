@@ -19,9 +19,12 @@ use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use parking_lot::{Mutex, RwLock};
-use std::any::Any;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::{
+    any::Any,
+    time::{Duration, Instant},
+};
 
 use crate::events;
 use crate::plugins::{self, Plugin};
@@ -64,11 +67,16 @@ pub static ACTIVE_SFX: AtomicUsize = AtomicUsize::new(0);
 /// Running average of the loudness of the signal in the audio grabber buffer
 static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
 
+static ERROR_RATE_LIMIT_MILLIS: u64 = 10000;
+
 lazy_static! {
     /// Pluggable audio backend. Currently supported backends are "Null", ALSA and PulseAudio
     pub static ref AUDIO_BACKEND: Arc<Mutex<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
         // Arc::new(Mutex::new(backends::PulseAudioBackend::new().expect("Could not instantiate the audio backend!")));
         Arc::new(Mutex::new(None));
+
+    /// Do not spam the logs on error, limit the amount of error messages per time unit
+    static ref RATE_LIMIT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now().checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS)).unwrap_or_else(|| Instant::now())));
 
     /// Holds audio data recorded by the audio grabber
     static ref AUDIO_GRABBER_BUFFER: Arc<RwLock<Vec<i16>>> = Arc::new(RwLock::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
@@ -93,6 +101,10 @@ static AUDIO_GRABBER_PERFORM_FFT_COMPUTATION: AtomicBool = AtomicBool::new(false
 pub fn reset_audio_backend() {
     AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
     // AUDIO_BACKEND.lock().take();
+
+    *RATE_LIMIT_TIME.write() = Instant::now()
+        .checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS))
+        .unwrap();
 }
 
 fn try_start_audio_backend() -> Result<()> {
@@ -103,6 +115,8 @@ fn try_start_audio_backend() -> Result<()> {
         .lock()
         .replace(Box::new(backends::PulseAudioBackend::new().map_err(
             |e| {
+                *RATE_LIMIT_TIME.write() = Instant::now();
+
                 error!("Could not initialize the audio backend: {}", e);
                 e
             },
@@ -141,8 +155,10 @@ impl AudioPlugin {
         AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
 
         if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+                try_start_audio_grabber()
+                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            }
         }
 
         CURRENT_RMS.load(Ordering::SeqCst)
@@ -152,8 +168,10 @@ impl AudioPlugin {
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
         if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+                try_start_audio_grabber()
+                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            }
         }
 
         AUDIO_SPECTRUM.read().clone()
@@ -161,8 +179,10 @@ impl AudioPlugin {
 
     pub fn get_audio_raw_data() -> Vec<i16> {
         if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+                try_start_audio_grabber()
+                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
+            }
         }
 
         AUDIO_GRABBER_BUFFER.read().to_vec()
@@ -177,7 +197,7 @@ impl AudioPlugin {
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
             backend.get_master_volume().unwrap_or(0) * 100 / std::u16::MAX as isize
         } else {
-            -1
+            0
         }
     }
 }
@@ -332,9 +352,8 @@ mod backends {
     use super::FFT_SIZE;
 
     use log::*;
-    use std::sync::atomic::Ordering;
     use std::sync::Arc;
-    use std::thread;
+    use std::{sync::atomic::Ordering, thread};
 
     use libpulse_binding as pulse;
     use libpulse_simple_binding as psimple;

@@ -30,7 +30,7 @@ use super::{
 pub type Result<T> = super::Result<T>;
 
 // pub const NUM_KEYS: usize = 9;
-pub const SUB_DEVICE: i32 = 0; // USB HID sub-device to bind to
+pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -49,13 +49,13 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatKoneAimo::bind(
+        Ok(Arc::new(RwLock::new(Box::new(RoccatKovaAimo::bind(
             &ctrl_dev.unwrap(),
         )))))
     }
 }
 
-/// ROCCAT Kone Aimo info struct (sent as HID report)
+/// ROCCAT Kova AIMO info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -110,8 +110,8 @@ impl Into<u8> for MouseHidEventCode {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Kone Aimo mouse
-pub struct RoccatKoneAimo {
+/// Device specific code for the ROCCAT Kova AIMO mouse
+pub struct RoccatKovaAimo {
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -121,10 +121,10 @@ pub struct RoccatKoneAimo {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 }
 
-impl RoccatKoneAimo {
+impl RoccatKovaAimo {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone Aimo");
+        info!("Bound driver: ROCCAT Kova AIMO");
 
         Self {
             is_initialized: false,
@@ -226,13 +226,8 @@ impl RoccatKoneAimo {
                     }
                 }
 
-                0x0d => {
-                    let buf: [u8; 46] = [
-                        0x0d, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ];
+                0x09 => {
+                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -283,7 +278,7 @@ impl RoccatKoneAimo {
     }
 }
 
-impl DeviceInfoTrait for RoccatKoneAimo {
+impl DeviceInfoTrait for RoccatKovaAimo {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities {}
     }
@@ -328,7 +323,7 @@ impl DeviceInfoTrait for RoccatKoneAimo {
     }
 }
 
-impl DeviceTrait for RoccatKoneAimo {
+impl DeviceTrait for RoccatKovaAimo {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -402,7 +397,7 @@ impl DeviceTrait for RoccatKoneAimo {
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("{}", e));
 
-            self.send_ctrl_report(0x0d)
+            self.send_ctrl_report(0x09)
                 .unwrap_or_else(|e| eprintln!("{}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("{}", e));
@@ -471,7 +466,7 @@ impl DeviceTrait for RoccatKoneAimo {
     }
 }
 
-impl MouseDeviceTrait for RoccatKoneAimo {
+impl MouseDeviceTrait for RoccatKovaAimo {
     #[inline]
     fn get_next_event(&self) -> Result<MouseHidEvent> {
         self.get_next_event_timeout(-1)
@@ -507,7 +502,7 @@ impl MouseDeviceTrait for RoccatKoneAimo {
                             MouseHidEvent::Unknown
                         }
 
-                        // Button reports
+                        // Button reports (DPI)
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
 
                         _ => MouseHidEvent::Unknown,
@@ -536,53 +531,15 @@ impl MouseDeviceTrait for RoccatKoneAimo {
 
             // use the color of KP_ENTER for now
 
-            let buf: [u8; 46] = [
-                0x0d,
-                0x2e,
+            let buf: [u8; 8] = [
+                0x0a,
+                0x08,
                 led_map[131].r,
                 led_map[131].g,
                 led_map[131].b,
-                led_map[131].a,
                 led_map[131].r,
                 led_map[131].g,
                 led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].a,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

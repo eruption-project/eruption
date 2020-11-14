@@ -52,7 +52,7 @@ pub struct Options {
     command: Subcommands,
 }
 
-// Subcommands
+// Sub-commands
 #[derive(Debug, Clap)]
 pub enum Subcommands {
     /// List available devices, use this first to find out the index of the device to use
@@ -60,25 +60,25 @@ pub enum Subcommands {
 
     /// Generate a report for the specified device
     Report {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
     },
 
     /// Dump a trace of events originating from the specified device (May hang the device)
     Trace {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
     },
 
     /// Read out the device state and show differences to previous state (May hang the device)
     StateDiff {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
     },
 
     /// Read a single USB HID feature report from device
     Read {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
 
         /// ID of the USB HID report
@@ -91,7 +91,7 @@ pub enum Subcommands {
 
     /// Send a single USB HID feature report to device (dangerous)
     Write {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
 
         /// Hex bytes e.g.: [0x09, 0x00, 0x1f]
@@ -100,7 +100,7 @@ pub enum Subcommands {
 
     /// Send a device specific init sequence and try to set colors
     RunTests {
-        /// The index of the device, can be found with the list subcommand
+        /// The index of the device, can be found with the list sub-command
         device: usize,
     },
 }
@@ -161,7 +161,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::List => {
             println!();
             println!("Please find the device you want to debug below and use its respective");
-            println!("index number (column 1) as the device index for the other subcommands of this tool\n");
+            println!("index number (column 1) as the device index for the other sub-commands of this tool\n");
 
             // create the one and only hidapi instance
             match hidapi::HidApi::new() {

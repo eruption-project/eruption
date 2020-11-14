@@ -15,24 +15,48 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use hidapi::HidApi;
 use log::*;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
-use std::thread;
 use std::time::Duration;
+use std::{any::Any, thread};
 use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDeviceTrait,
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
     MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
 
 // pub const NUM_KEYS: usize = 9;
-pub const KEYBOARD_SUB_DEVICE: usize = 2;
+pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
+
+/// Binds the driver to a device
+pub fn bind_hiddev(
+    hidapi: &HidApi,
+    usb_vid: u16,
+    usb_pid: u16,
+    serial: &str,
+) -> super::Result<MouseDevice> {
+    let ctrl_dev = hidapi.device_list().find(|&device| {
+        device.vendor_id() == usb_vid
+            && device.product_id() == usb_pid
+            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.interface_number() == SUB_DEVICE
+    });
+
+    if ctrl_dev.is_none() {
+        Err(HwDeviceError::EnumerationError {}.into())
+    } else {
+        Ok(Arc::new(RwLock::new(Box::new(RoccatNyth::bind(
+            &ctrl_dev.unwrap(),
+        )))))
+    }
+}
 
 /// ROCCAT Nyth info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
@@ -268,6 +292,14 @@ impl DeviceTrait for RoccatNyth {
             .to_string()
     }
 
+    fn get_usb_vid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().vendor_id()
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().product_id()
+    }
+
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 
@@ -375,6 +407,14 @@ impl DeviceTrait for RoccatNyth {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 impl MouseDeviceTrait for RoccatNyth {
@@ -414,28 +454,6 @@ impl MouseDeviceTrait for RoccatNyth {
 
                         _ => MouseHidEvent::Unknown,
                     };
-
-                    // match event {
-                    //     HidEvent::KeyDown { code } => {
-                    //         // reset "to be dropped" flag
-                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
-                    //         // update our internal representation of the keyboard state
-                    //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write()[index] = true;
-                    //     }
-
-                    //     HidEvent::KeyUp { code } => {
-                    //         // reset "to be dropped" flag
-                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
-                    //         // update our internal representation of the keyboard state
-                    //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write()[index] = false;
-                    //     }
-
-                    //     _ => { /* ignore other events */ }
-                    // }
 
                     Ok(event)
                 }

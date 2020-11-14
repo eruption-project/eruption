@@ -36,6 +36,7 @@ pub struct PluginManager {
     registered_plugins: HashMap<String, Box<PluginType>>,
 }
 
+#[allow(dead_code)]
 impl PluginManager {
     /// Create a new plugin manager
     pub fn new() -> Self {
@@ -66,9 +67,9 @@ impl PluginManager {
             .collect()
     }
 
-    // pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<PluginType>> {
-    //     self.registered_plugins.values_mut().collect()
-    // }
+    pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<PluginType>> {
+        self.registered_plugins.values_mut().collect()
+    }
 
     pub fn find_plugin_by_name(&self, name: String) -> Option<&PluginType> {
         self.registered_plugins.get(&name).map(AsRef::as_ref)

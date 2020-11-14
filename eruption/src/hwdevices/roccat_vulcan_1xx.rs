@@ -15,17 +15,17 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use hidapi::HidApi;
 use log::*;
-use parking_lot::Mutex;
-use std::{mem::size_of, time::Duration};
+use parking_lot::{Mutex, RwLock};
+use std::{any::Any, mem::size_of, time::Duration};
 use std::{sync::Arc, thread};
 
 use crate::constants;
-use crate::plugins::keyboard;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDeviceTrait,
-    KeyboardHidEvent, LedKind, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
+    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -34,6 +34,37 @@ pub const NUM_KEYS: usize = 144;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
+
+/// Binds the driver to a device
+pub fn bind_hiddev(
+    hidapi: &HidApi,
+    usb_vid: u16,
+    usb_pid: u16,
+    serial: &str,
+) -> super::Result<KeyboardDevice> {
+    let ctrl_dev = hidapi.device_list().find(|&device| {
+        device.vendor_id() == usb_vid
+            && device.product_id() == usb_pid
+            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.interface_number() == CTRL_INTERFACE
+    });
+
+    let led_dev = hidapi.device_list().find(|&device| {
+        device.vendor_id() == usb_vid
+            && device.product_id() == usb_pid
+            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.interface_number() == LED_INTERFACE
+    });
+
+    if ctrl_dev.is_none() || led_dev.is_none() {
+        Err(HwDeviceError::EnumerationError {}.into())
+    } else {
+        Ok(Arc::new(RwLock::new(Box::new(RoccatVulcan1xx::bind(
+            &ctrl_dev.unwrap(),
+            &led_dev.unwrap(),
+        )))))
+    }
+}
 
 /// ROCCAT Vulcan 100/12x device info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
@@ -45,85 +76,6 @@ pub struct DeviceInfo {
     pub reserved1: u8,
     pub reserved2: u8,
     pub reserved3: u8,
-}
-
-/// Event code of a device HID message
-#[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum KeyboardHidEventCode {
-    Unknown(u8),
-
-    KEY_F1,
-    KEY_F2,
-    KEY_F3,
-    KEY_F4,
-
-    KEY_F5,
-    KEY_F6,
-    KEY_F7,
-    KEY_F8,
-
-    KEY_ESC,
-    KEY_CAPS_LOCK,
-    KEY_FN,
-    KEY_EASY_SHIFT,
-}
-
-impl KeyboardHidEventCode {
-    /// Instantiate a HidEventCode from raw HID report data
-    pub fn from_report(report: u8, code: u8) -> Self {
-        match report {
-            0xfb => match code {
-                16 => Self::KEY_F1,
-                24 => Self::KEY_F2,
-                33 => Self::KEY_F3,
-                32 => Self::KEY_F4,
-
-                40 => Self::KEY_F5,
-                48 => Self::KEY_F6,
-                56 => Self::KEY_F7,
-                57 => Self::KEY_F8,
-
-                17 => Self::KEY_ESC,
-                119 => Self::KEY_FN,
-
-                _ => Self::Unknown(code),
-            },
-
-            0x0a => match code {
-                57 => Self::KEY_CAPS_LOCK,
-                255 => Self::KEY_EASY_SHIFT,
-
-                _ => Self::Unknown(code),
-            },
-
-            _ => Self::Unknown(code),
-        }
-    }
-}
-
-/// Convert a HidEventCode to an integer code value
-impl Into<u8> for KeyboardHidEventCode {
-    fn into(self) -> u8 {
-        match self {
-            Self::KEY_F1 => 16,
-            Self::KEY_F2 => 24,
-            Self::KEY_F3 => 33,
-            Self::KEY_F4 => 32,
-
-            Self::KEY_F5 => 40,
-            Self::KEY_F6 => 48,
-            Self::KEY_F7 => 56,
-            Self::KEY_F8 => 57,
-
-            Self::KEY_ESC => 17,
-            Self::KEY_CAPS_LOCK => 57,
-            Self::KEY_FN => 119,
-            Self::KEY_EASY_SHIFT => 255,
-
-            KeyboardHidEventCode::Unknown(code) => code,
-        }
-    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -146,13 +98,13 @@ pub struct RoccatVulcan1xx {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
-    pub dial_mode:  Arc<Mutex<DialMode>>,
+    pub dial_mode: Arc<Mutex<DialMode>>,
 }
 
 impl RoccatVulcan1xx {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Vulcan");
+        info!("Bound driver: ROCCAT Vulcan 100/12x");
 
         Self {
             is_initialized: false,
@@ -557,6 +509,14 @@ impl DeviceTrait for RoccatVulcan1xx {
             .to_string()
     }
 
+    fn get_usb_vid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().vendor_id()
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().product_id()
+    }
+
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 
@@ -713,6 +673,14 @@ impl DeviceTrait for RoccatVulcan1xx {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 impl KeyboardDeviceTrait for RoccatVulcan1xx {
@@ -773,11 +741,11 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         // Key reports, incl. KEY_FN, ..
                         [0x03, 0x00, 0xfb, code, status] => match status {
                             0x00 => KeyboardHidEvent::KeyUp {
-                                code: KeyboardHidEventCode::from_report(0xfb, code),
+                                code: keyboard_hid_event_code_from_report(0xfb, code),
                             },
 
                             0x01 => KeyboardHidEvent::KeyDown {
-                                code: KeyboardHidEventCode::from_report(0xfb, code),
+                                code: keyboard_hid_event_code_from_report(0xfb, code),
                             },
 
                             _ => KeyboardHidEvent::Unknown,
@@ -787,11 +755,11 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         [0x03, 0x00, 0x0a, code, status] => match code {
                             0x39 | 0xff => match status {
                                 0x00 => KeyboardHidEvent::KeyDown {
-                                    code: KeyboardHidEventCode::from_report(0x0a, code),
+                                    code: keyboard_hid_event_code_from_report(0x0a, code),
                                 },
 
                                 0x01 => KeyboardHidEvent::KeyUp {
-                                    code: KeyboardHidEventCode::from_report(0x0a, code),
+                                    code: keyboard_hid_event_code_from_report(0x0a, code),
                                 },
 
                                 _ => KeyboardHidEvent::Unknown,
@@ -801,8 +769,14 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         },
 
                         // volume up/down adjustment is initiated by the following sequence
-                        [0x03, 0x00, 0x0b, 0x26, _] => { *self.dial_mode.lock() = DialMode::Volume; KeyboardHidEvent::Unknown },
-                        [0x03, 0x00, 0x0b, 0x27, _] => { *self.dial_mode.lock() = DialMode::Volume; KeyboardHidEvent::Unknown },
+                        [0x03, 0x00, 0x0b, 0x26, _] => {
+                            *self.dial_mode.lock() = DialMode::Volume;
+                            KeyboardHidEvent::Unknown
+                        }
+                        [0x03, 0x00, 0x0b, 0x27, _] => {
+                            *self.dial_mode.lock() = DialMode::Volume;
+                            KeyboardHidEvent::Unknown
+                        }
 
                         [0x03, 0x00, 0xcc, code, _] => {
                             let result = if *self.dial_mode.lock() == DialMode::Volume {
@@ -825,15 +799,12 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                             *self.dial_mode.lock() = DialMode::Brightness;
 
                             result
-                        },
+                        }
 
-                        [0x03, 0x00, 0x0c, val, _] => {
-                            KeyboardHidEvent::SetBrightness(val)
-                        },
+                        [0x03, 0x00, 0x0c, val, _] => KeyboardHidEvent::SetBrightness(val),
 
                         [0x02, 0xe2, 0x00, 0x00, _] => KeyboardHidEvent::MuteDown,
                         [0x02, 0x00, 0x00, 0x00, _] => KeyboardHidEvent::MuteUp,
-
 
                         _ => KeyboardHidEvent::Unknown,
                     };
@@ -841,14 +812,14 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                     match event {
                         KeyboardHidEvent::KeyDown { code } => {
                             // update our internal representation of the keyboard state
-                            let index = hid_code_to_key_index(code) as usize;
-                            keyboard::KEY_STATES.write()[index] = true;
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.lock()[index] = true;
                         }
 
                         KeyboardHidEvent::KeyUp { code } => {
                             // update our internal representation of the keyboard state
-                            let index = hid_code_to_key_index(code) as usize;
-                            keyboard::KEY_STATES.write()[index] = false;
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.lock()[index] = false;
                         }
 
                         _ => { /* ignore other events */ }
@@ -860,6 +831,22 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
+    }
+
+    fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
+        match code {
+            KeyboardHidEventCode::KEY_FN => 77,
+
+            KeyboardHidEventCode::KEY_CAPS_LOCK => 4,
+            KeyboardHidEventCode::KEY_EASY_SHIFT => 4,
+
+            // We don't need all the other key codes, for now
+            _ => 0,
+        }
+    }
+
+    fn hid_event_code_to_report(&self, code: &KeyboardHidEventCode) -> u8 {
+        keyboard_hid_event_code_to_report(&code)
     }
 
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
@@ -982,14 +969,54 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
     }
 }
 
-pub fn hid_code_to_key_index(code: KeyboardHidEventCode) -> u8 {
+fn keyboard_hid_event_code_to_report(code: &KeyboardHidEventCode) -> u8 {
     match code {
-        KeyboardHidEventCode::KEY_FN => 77,
+        KeyboardHidEventCode::KEY_F1 => 16,
+        KeyboardHidEventCode::KEY_F2 => 24,
+        KeyboardHidEventCode::KEY_F3 => 33,
+        KeyboardHidEventCode::KEY_F4 => 32,
 
-        KeyboardHidEventCode::KEY_CAPS_LOCK => 4,
-        KeyboardHidEventCode::KEY_EASY_SHIFT => 4,
+        KeyboardHidEventCode::KEY_F5 => 40,
+        KeyboardHidEventCode::KEY_F6 => 48,
+        KeyboardHidEventCode::KEY_F7 => 56,
+        KeyboardHidEventCode::KEY_F8 => 57,
 
-        // We don't need all the other key codes, for now
-        _ => 0,
+        KeyboardHidEventCode::KEY_ESC => 17,
+        KeyboardHidEventCode::KEY_FN => 119,
+
+        KeyboardHidEventCode::KEY_CAPS_LOCK => 57,
+        KeyboardHidEventCode::KEY_EASY_SHIFT => 57,
+
+        KeyboardHidEventCode::Unknown(code) => *code,
+    }
+}
+
+fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
+    match report {
+        0xfb => match code {
+            16 => KeyboardHidEventCode::KEY_F1,
+            24 => KeyboardHidEventCode::KEY_F2,
+            33 => KeyboardHidEventCode::KEY_F3,
+            32 => KeyboardHidEventCode::KEY_F4,
+
+            40 => KeyboardHidEventCode::KEY_F5,
+            48 => KeyboardHidEventCode::KEY_F6,
+            56 => KeyboardHidEventCode::KEY_F7,
+            57 => KeyboardHidEventCode::KEY_F8,
+
+            17 => KeyboardHidEventCode::KEY_ESC,
+            119 => KeyboardHidEventCode::KEY_FN,
+
+            _ => KeyboardHidEventCode::Unknown(code),
+        },
+
+        0x0a => match code {
+            57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
+            255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
+
+            _ => KeyboardHidEventCode::Unknown(code),
+        },
+
+        _ => KeyboardHidEventCode::Unknown(code),
     }
 }

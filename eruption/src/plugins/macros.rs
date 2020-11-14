@@ -15,19 +15,18 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::{unbounded, Sender};
 use evdev_rs::enums::*;
 use evdev_rs::{Device, InputEvent, TimeVal, UInputDevice};
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use parking_lot::Mutex;
-use std::any::Any;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use std::sync::mpsc::{channel, Sender};
 use std::sync::Arc;
-use std::thread;
+use std::{any::Any, thread};
 
 use crate::plugins::{self, Plugin};
 use crate::util;
@@ -99,7 +98,8 @@ impl MacrosPlugin {
 
         // enable FN-F5 - FN-F8
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FILE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HOMEPAGE)).unwrap();
+        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HOMEPAGE))
+            .unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MAIL)).unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
 
@@ -116,7 +116,6 @@ impl MacrosPlugin {
         // to the virtual keyboard, so that the hardware device can be disabled.
 
         // Generated via `sudo evtest`
-        // Input device name: "ROCCAT ROCCAT Vulcan AIMO"
         // Supported events:
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_ESC)).unwrap();
         dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_1)).unwrap();
@@ -545,7 +544,7 @@ impl MacrosPlugin {
     }
 
     fn spawn_uinput_thread() -> Result<()> {
-        let (uinput_tx, uinput_rx) = channel();
+        let (uinput_tx, uinput_rx) = unbounded();
 
         thread::Builder::new()
             .name("uinput".into())

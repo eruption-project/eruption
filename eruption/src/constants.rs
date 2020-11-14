@@ -42,28 +42,19 @@ pub const AFK_TIMEOUT_SECS: u64 = 0;
 pub const DEFAULT_AFK_PROFILE: &str = "rainbow-wave.profile";
 
 /// Target "Frames per Second"
-pub const TARGET_FPS: u64 = 24;
-
-/// Target delay time of main loop iteration
-pub const MAIN_LOOP_DELAY_MILLIS: u64 = 1000 / TARGET_FPS;
-
-/// How often should we read out the USB hardware state?
-pub const MAIN_LOOP_HW_READ_DIVISOR: u64 = 1; // 1 == do not skip iterations
+pub const TARGET_FPS: u64 = 20;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 250;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 1;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
 
 /// Amount of time that has to pass before we retry sending a command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 5;
-
-/// Amount of time that has to pass before we retry to open a failed hardware device
-pub const DEVICE_RETRY_MILLIS: u64 = 5000;
 
 /// Update sensors every n seconds
 pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
@@ -72,4 +63,7 @@ pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 
 // Wait n seconds before sending the LED "off pattern" on shutdown
-pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 500;
+pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 250;
+
+// Max. supported number of mouse buttons
+pub const MAX_MOUSE_BUTTONS: usize = 32;

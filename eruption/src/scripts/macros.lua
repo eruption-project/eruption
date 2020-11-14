@@ -73,7 +73,7 @@ BRIGHTNESS_OVERLAY = 2
 
 overlay_state = NO_OVERLAY
 overlay_ttl = 0
-overlay_max_ttl = 24 * 24
+overlay_max_ttl = target_fps * 25
 
 -- key highlighting
 highlight_ttl = 0
@@ -201,7 +201,6 @@ function on_hid_event(event_type, arg1)
 		-- Mute button event
 		if key_code == 1 then
 			inject_key(113, true) -- KEY_MUTE (audio) (down)
-			set_status_led(1, true)
 		else
 			inject_key(113, false) -- KEY_MUTE (audio) (up)
 		end
@@ -247,7 +246,7 @@ function on_hid_event(event_type, arg1)
 		if not event_handled then
 			-- adjust brightness
 			-- overlay_state = NO_OVERLAY
-			overlay_ttl = 24 * 2
+			-- overlay_ttl = overlay_max_ttl
 
 			local brightness = get_brightness()
 
@@ -496,7 +495,7 @@ function update_overlay_state()
 		local percentage = get_audio_volume()
 
 		local upper_bound = num_keys * (min(percentage, 100) / 100)
-		upper_bound = upper_bound + (upper_bound % max_keys_per_col) + 1
+		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
 
 		for i = 0, num_keys do
 			if i <= upper_bound then
@@ -512,7 +511,7 @@ function update_overlay_state()
 		local percentage = get_brightness()
 
 		local upper_bound = num_keys * (min(percentage, 100) / 100)
-		upper_bound = upper_bound + (upper_bound % max_keys_per_col) + 1
+		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
 
 		for i = 0, num_keys do
 			if i <= upper_bound then

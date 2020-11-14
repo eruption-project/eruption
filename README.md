@@ -15,13 +15,13 @@
 
 ## Eruption <a name="eruption"></a>
 
-A Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards.
-Support for other hardware devices is planned and will be included in future releases.
-Please see [TODO.md](./TODO.md) and [CHANGES.md](./CHANGES.md) for further information.
+A Linux user-mode driver for input devices with LED lighting support.
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
 ### __TL;DR__ what you absolutely need to know
+
+#### ROCCAT Vulcan 100/12x series keyboard:
 
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
 - Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
@@ -38,8 +38,9 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 
 ### Mouse devices
 
-* ROCCAT Kone Pure Ultra
 * ROCCAT Kone Aimo (experimental)
+* ROCCAT Kone Pure Ultra
+* ROCCAT Kova AIMO (experimental)
 
 ## Known Issues <a name="issues"></a>
 
