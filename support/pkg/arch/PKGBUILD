@@ -4,7 +4,7 @@ pkgname='eruption-roccat-vulcan-git'
 _pkgname='eruption-roccat-vulcan'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.18'
-pkgrel='0'
+pkgrel='1'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption-roccat-vulcan'
@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=eed77786d019ecf57a03b831e3cf2d6635f57e61')
+source=('git+https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git#commit=4d9d81b3fcf6e6e9cd5d8fd3dafc93b89a5022bb')
 noextract=()
 sha512sums=('SKIP')
 
