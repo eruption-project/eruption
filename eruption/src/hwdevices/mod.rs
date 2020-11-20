@@ -23,6 +23,8 @@ use std::time::Duration;
 use std::{any::Any, sync::Arc, thread};
 use udev::Enumerator;
 
+mod generic_keyboard;
+mod generic_mouse;
 mod roccat_kone_aimo;
 mod roccat_kone_pure_ultra;
 mod roccat_kova_aimo;
@@ -174,6 +176,7 @@ where
 
 #[derive(Clone, Copy)]
 pub enum DeviceClass {
+    Unknown,
     Keyboard,
     Mouse,
 }
@@ -446,19 +449,19 @@ pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, V
             d.get_usb_vid() == device_info.vendor_id()
                 && d.get_usb_pid() == device_info.product_id()
         }) {
-            // debug!(
-            //     "Found HID device: 0x{:x}:0x{:x} - {} {}",
-            //     device_info.vendor_id(),
-            //     device_info.product_id(),
-            //     device_info
-            //         .manufacturer_string()
-            //         .unwrap_or_else(|| "<unknown>")
-            //         .to_string(),
-            //     device_info
-            //         .product_string()
-            //         .unwrap_or_else(|| "<unknown>")
-            //         .to_string()
-            // );
+            debug!(
+                "Found supported HID device: 0x{:x}:0x{:x} - {} {}",
+                device_info.vendor_id(),
+                device_info.product_id(),
+                device_info
+                    .manufacturer_string()
+                    .unwrap_or_else(|| "<unknown>")
+                    .to_string(),
+                device_info
+                    .product_string()
+                    .unwrap_or_else(|| "<unknown>")
+                    .to_string()
+            );
 
             let serial = device_info.serial_number().unwrap_or_else(|| "");
             let path = device_info.path().to_string_lossy().to_string();
@@ -468,7 +471,7 @@ pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, V
                 match driver.get_device_class() {
                     DeviceClass::Keyboard => {
                         info!(
-                            "Found keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                            "Found supported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
                             device_info.vendor_id(),
                             device_info.product_id(),
                             path,
@@ -503,7 +506,7 @@ pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, V
 
                     DeviceClass::Mouse => {
                         info!(
-                            "Found mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                            "Found supported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
                             device_info.vendor_id(),
                             device_info.product_id(),
                             path,
@@ -535,6 +538,106 @@ pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, V
                             error!("Failed to bind the device driver");
                         }
                     }
+
+                    DeviceClass::Unknown => {
+                        error!("Failed to bind the device driver, unsupported device class");
+                    }
+                }
+            }
+        } else {
+            // found an unsupported device
+
+            debug!(
+                "Found unsupported HID device: 0x{:x}:0x{:x} - {} {}",
+                device_info.vendor_id(),
+                device_info.product_id(),
+                device_info
+                    .manufacturer_string()
+                    .unwrap_or_else(|| "<unknown>")
+                    .to_string(),
+                device_info
+                    .product_string()
+                    .unwrap_or_else(|| "<unknown>")
+                    .to_string()
+            );
+
+            let serial = device_info.serial_number().unwrap_or_else(|| "");
+            let path = device_info.path().to_string_lossy().to_string();
+
+            if !bound_devices.contains(&(device_info.vendor_id(), device_info.product_id(), serial))
+            {
+                match get_usb_device_class(device_info.vendor_id(), device_info.product_id()) {
+                    Ok(DeviceClass::Keyboard) => {
+                        info!(
+                            "Found unsupported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                            device_info.vendor_id(),
+                            device_info.product_id(),
+                            path,
+                            device_info
+                                .manufacturer_string()
+                                .unwrap_or_else(|| "<unknown>")
+                                .to_string(),
+                            device_info
+                                .product_string()
+                                .unwrap_or_else(|| "<unknown>")
+                                .to_string()
+                        );
+
+                        if let Ok(device) = generic_keyboard::bind_hiddev(
+                            &api,
+                            device_info.vendor_id(),
+                            device_info.product_id(),
+                            &serial,
+                        ) {
+                            keyboard_devices.push(device);
+                            bound_devices.push((
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                serial,
+                            ));
+                        } else {
+                            error!("Failed to bind the device driver");
+                        }
+                    }
+
+                    Ok(DeviceClass::Mouse) => {
+                        info!(
+                            "Found unsupported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                            device_info.vendor_id(),
+                            device_info.product_id(),
+                            path,
+                            device_info
+                                .manufacturer_string()
+                                .unwrap_or_else(|| "<unknown>")
+                                .to_string(),
+                            device_info
+                                .product_string()
+                                .unwrap_or_else(|| "<unknown>")
+                                .to_string()
+                        );
+
+                        if let Ok(device) = generic_mouse::bind_hiddev(
+                            &api,
+                            device_info.vendor_id(),
+                            device_info.product_id(),
+                            &serial,
+                        ) {
+                            mouse_devices.push(device);
+                            bound_devices.push((
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                serial,
+                            ));
+                        } else {
+                            error!("Failed to bind the device driver");
+                        }
+                    }
+
+                    Ok(DeviceClass::Unknown) => { /* unknown device class, ignore the device */ }
+
+                    Err(e) => {
+                        error!("Failed to query HID device class: {}", e);
+                    }
                 }
             }
         }
@@ -551,7 +654,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
     loop {
         match Enumerator::new() {
             Ok(mut enumerator) => {
-                // enumerator.match_is_initialized();
+                // enumerator.match_is_initialized().unwrap();
                 enumerator.match_subsystem("input").unwrap();
 
                 match enumerator.scan_devices() {
@@ -561,28 +664,46 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
                                         .iter()
-                                        .map(|v| format!("{:x}", v))
+                                        .map(|v| format!("{:04x}", v))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) && device.properties().any(|e| {
                                 e.name() == "ID_MODEL_ID"
                                     && ([usb_pid]
                                         .iter()
-                                        .map(|v| format!("{:x}", v))
+                                        .map(|v| format!("{:04x}", v))
                                         .any(|v| v == e.value().to_string_lossy()))
-                            }) && device.devnode().is_some();
+                            }) /* && device.devnode().is_some() */;
 
                             if found_dev {
-                                debug!(
-                                    "Picking evdev device: {}",
-                                    device.devnode().unwrap().to_str().unwrap().to_string()
-                                );
+                                if let Some(devnode) = device.devnode() {
+                                    debug!(
+                                        "Picking evdev device: {}",
+                                        devnode.to_str().unwrap().to_string()
+                                    );
 
-                                return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                                    return Ok(devnode.to_str().unwrap().to_string());
+                                } else {
+                                    if let Some(devname) =
+                                        device.properties().find(|e| e.name() == "DEVNAME")
+                                    {
+                                        debug!(
+                                            "Picking evdev device: {}",
+                                            devname.value().to_str().unwrap().to_string()
+                                        );
+
+                                        return Ok(devname.value().to_str().unwrap().to_string());
+                                    } else {
+                                        // give up the search
+                                        trace!("Could not query device node path");
+                                    }
+                                }
                             }
                         }
 
                         if retry_counter <= 0 {
                             // give up the search
+                            error!("Requested device could not be found");
+
                             break Err(HwDeviceError::NoDevicesFound {}.into());
                         } else {
                             // wait for the device to be available
@@ -640,13 +761,13 @@ pub fn get_input_sub_dev_from_udev(
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
                                         .iter()
-                                        .map(|v| format!("{:x}", v))
+                                        .map(|v| format!("{:04x}", v))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) && device.properties().any(|e| {
                                 e.name() == "ID_MODEL_ID"
                                     && ([usb_pid]
                                         .iter()
-                                        .map(|v| format!("{:x}", v))
+                                        .map(|v| format!("{:04x}", v))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) && device.properties().any(|e| {
                                 e.name() == "ID_USB_INTERFACE_NUM"
@@ -725,13 +846,13 @@ pub fn get_input_sub_dev_from_udev(
 //                             e.name() == "ID_VENDOR_ID"
 //                                 && ([usb_vid]
 //                                     .iter()
-//                                     .map(|v| format!("{:x}", v))
+//                                     .map(|v| format!("{:04x}", v))
 //                                     .any(|v| v == e.value().to_string_lossy()))
 //                         }) && device.properties().any(|e| {
 //                             e.name() == "ID_MODEL_ID"
 //                                 && ([usb_pid]
 //                                     .iter()
-//                                     .map(|v| format!("{:x}", v))
+//                                     .map(|v| format!("{:04x}", v))
 //                                     .any(|v| v == e.value().to_string_lossy()))
 //                         }) && device.devnode().is_some();
 
@@ -750,3 +871,53 @@ pub fn get_input_sub_dev_from_udev(
 //         Err(_e) => Err(HwDeviceError::UdevError {}.into()),
 //     }
 // }
+
+pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
+    match Enumerator::new() {
+        Ok(mut enumerator) => {
+            enumerator.match_subsystem("input").unwrap();
+
+            match enumerator.scan_devices() {
+                Ok(devices) => {
+                    for device in devices {
+                        let found_dev = device.properties().any(|e| {
+                            e.name() == "ID_VENDOR_ID"
+                                && ([usb_vid]
+                                    .iter()
+                                    .map(|v| format!("{:04x}", v))
+                                    .any(|v| v == e.value().to_string_lossy()))
+                        }) && device.properties().any(|e| {
+                            e.name() == "ID_MODEL_ID"
+                                && ([usb_pid]
+                                    .iter()
+                                    .map(|v| format!("{:04x}", v))
+                                    .any(|v| v == e.value().to_string_lossy()))
+                        });
+
+                        if found_dev {
+                            let is_keyboard =
+                                device.properties().any(|e| e.name() == "ID_INPUT_KEYBOARD");
+
+                            let is_mouse =
+                                device.properties().any(|e| e.name() == "ID_INPUT_MOUSE");
+
+                            if is_keyboard {
+                                return Ok(DeviceClass::Keyboard);
+                            } else if is_mouse {
+                                return Ok(DeviceClass::Mouse);
+                            } else {
+                                return Ok(DeviceClass::Unknown);
+                            }
+                        }
+                    }
+
+                    Err(HwDeviceError::NoDevicesFound {}.into())
+                }
+
+                Err(_e) => Err(HwDeviceError::EnumerationError {}.into()),
+            }
+        }
+
+        Err(_e) => Err(HwDeviceError::UdevError {}.into()),
+    }
+}
