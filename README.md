@@ -1,4 +1,4 @@
-![Clippy check](https://github.com/X3n0m0rph59/eruption-roccat-vulcan/workflows/Clippy%20check/badge.svg)
+![Clippy check](https://github.com/X3n0m0rph59/eruption/workflows/Clippy%20check/badge.svg)
 
 # Table of Contents
 
@@ -86,22 +86,22 @@ prior to sending the resulting final color map to the keyboard.
 #### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
-$ yay -Sy aur/eruption-roccat-vulcan-git
+$ paru -Sy aur/eruption-git
 ```
 
 #### Fedora based
 
 ```sh
-$ sudo dnf copr enable x3n0m0rph59/eruption-roccat-vulcan
-$ sudo dnf install eruption-roccat-vulcan-git
+$ sudo dnf copr enable x3n0m0rph59/eruption
+$ sudo dnf install eruption-git
 ```
 
 #### Ubuntu
 
 ```sh
-sudo add-apt-repository ppa:x3n0m0rph59/eruption-roccat-vulcan
+sudo add-apt-repository ppa:x3n0m0rph59/eruption
 sudo apt update
-sudo apt install eruption-roccat-vulcan-git
+sudo apt install eruption-git
 ```
 
 To activate Eruption now, you may either reboot your system or manually start
@@ -117,8 +117,8 @@ $ sudo systemctl start eruption.service
 #### From Source
 
 ```sh
-$ git clone https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git
-$ cd eruption-roccat-vulcan
+$ git clone https://github.com/X3n0m0rph59/eruption.git
+$ cd eruption
 $ cargo build --all --release
 ```
 

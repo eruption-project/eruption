@@ -1,11 +1,11 @@
-%global OrigName eruption-roccat-vulcan
+%global OrigName eruption
 %global ShortName eruption
 
 Name:    eruption-git
 Version: 0.1.18
 Release: 0%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
-URL:     https://github.com/X3n0m0rph59/eruption-roccat-vulcan
+URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
 Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/master/master.tar.gz
@@ -32,6 +32,7 @@ Requires: luajit
 Recommends: lua-socket-compat
 
 Conflicts: eruption-roccat-vulcan
+Conflicts: eruption-roccat-vulcan-git
 
 %global gittag master
 %global debug_package %{nil}
@@ -79,7 +80,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{b
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
-cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
+cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
@@ -154,7 +155,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
-/usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
+/usr/lib/udev/rules.d/99-eruption.rules
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl

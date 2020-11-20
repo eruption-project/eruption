@@ -4,8 +4,8 @@ version = "0.0.1"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
-repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
-homepage = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
+homepage = "https://github.com/X3n0m0rph59/eruption"
 license = "GPLv3+"
 readme = "README.md"
 

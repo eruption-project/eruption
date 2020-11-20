@@ -4,7 +4,7 @@ version = "0.1.18"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Eruption Linux user-mode input and LED driver for keyboards, mice and other devices"
-repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
 license = "GPLv3+"
 readme = "README.md"
 

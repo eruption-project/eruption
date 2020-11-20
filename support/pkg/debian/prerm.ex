@@ -1,5 +1,5 @@
 #!/bin/sh
-# prerm script for eruption-roccat-vulcan-git
+# prerm script for eruption-git
 #
 # see: dh_installdeb(1)
 

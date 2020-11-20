@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for eruption-roccat-vulcan-git
+# postrm script for eruption-git
 #
 # see: dh_installdeb(1)
 

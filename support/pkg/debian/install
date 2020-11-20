@@ -15,7 +15,7 @@ support/systemd/eruption.preset lib/systemd/system-preset/
 support/systemd/eruption-process-monitor.service lib/systemd/user/
 support/systemd/eruption-process-monitor.preset lib/systemd/user-preset/
 
-support/udev/99-eruption-roccat-vulcan.rules lib/udev/rules.d/
+support/udev/99-eruption.rules lib/udev/rules.d/
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
