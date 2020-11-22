@@ -13,7 +13,19 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-target_fps = 20
+-- target framerate of the core engine
+target_fps = get_target_fps()
+
+-- canvas dimensions
+canvas_size = get_canvas_size()
+canvas_height = get_canvas_height()
+canvas_width = get_canvas_width()
+
+keyboard_zone_start = 0
+keyboard_zone_end = get_num_keys()
+
+mouse_zone_start = 145
+mouse_zone_end = 144 + 36
 
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model
@@ -33,6 +45,8 @@ coordinates_to_index = {
 keys_per_col = {
 	0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x05, 0x06, 0x06, 0x05, 0x05, 0x04, 0x05, 0x04, 0x05, 0x05, 0x05, 0x03
 }
+
+num_keys = get_num_keys()
 
 -- rows
 num_rows = 6

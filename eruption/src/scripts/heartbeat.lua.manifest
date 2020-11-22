@@ -6,28 +6,22 @@ min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo']
 
 [[config]]
-type = 'color'
-name = 'color_step'
-description = 'Color value that gets subtracted every [n] frames'
-default = 0x000a0a0a
-
-[[config]]
 type = 'float'
 name = 'heartbeat_multiplier'
 description = 'Heartbeat speed multiplier'
-default = 0.25
+default = 1
 
 [[config]]
 type = 'float'
 name = 'heartbeat_upper_lim'
 description = 'Heartbeat max extent'
-default = -10
+default = -0
 
 [[config]]
 type = 'float'
 name = 'heartbeat_lower_lim'
 description = 'Heartbeat min extent'
-default = 10
+default = 0
 
 [[config]]
 type = 'float'

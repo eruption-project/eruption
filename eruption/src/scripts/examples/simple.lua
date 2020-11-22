@@ -17,12 +17,12 @@
 color_map = {}
 
 function on_startup()
-    -- turn off all key LEDs
-    for i = 0, get_num_keys() do
+    -- turn off all LEDs
+    for i = 0, get_canvas_size() do
         color_map[i] = 0x00000000
     end
 
-    -- update keyboard LED state
+    -- update LED state
     submit_color_map(color_map)
 end
 

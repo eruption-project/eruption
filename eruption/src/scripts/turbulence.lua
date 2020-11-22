@@ -25,11 +25,9 @@ function on_tick(delta)
 
     -- calculate turbulence noise effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
-            local x = i / num_rows
-            local y = i / num_cols
+        for i = 0, canvas_size do
+            local x = i / canvas_width
+            local y = i / canvas_height
 
             local val = turbulence_noise_3d(x / coord_scale,
                                             y / coord_scale,
@@ -37,8 +35,8 @@ function on_tick(delta)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                            color_saturation, color_lightness,
-                                            lerp(0, 255, opacity))
+                                          color_saturation, color_lightness,
+                                          lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

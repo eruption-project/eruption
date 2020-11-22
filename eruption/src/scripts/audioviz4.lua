@@ -24,17 +24,13 @@ percentage = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
 end
 
 function on_tick(delta)
     ticks = ticks + delta
-
-    local num_keys = get_num_keys()
 
     -- calculate 'fill' percentage for heartbeat effect
     percentage = min((get_audio_loudness() / 100) * loudness_scale_factor, 100.0)

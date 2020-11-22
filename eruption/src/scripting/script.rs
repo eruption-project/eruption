@@ -32,13 +32,14 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::vec::Vec;
 
-use crate::hwdevices::{
-    KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, NUM_KEYS, RGBA,
-};
+use crate::constants;
+use crate::hwdevices::{KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, RGBA};
 use crate::plugin_manager;
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
 use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -75,7 +76,7 @@ lazy_static! {
         g: 0x00,
         b: 0x00,
         a: 0x00,
-    }; NUM_KEYS]));
+    }; constants::CANVAS_SIZE]));
 
     /// Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
     pub static ref FRAME_GENERATION_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -88,13 +89,11 @@ thread_local! {
         g: 0x00,
         b: 0x00,
         a: 0x00,
-    }; NUM_KEYS]);
+    }; constants::CANVAS_SIZE]);
 
     /// True, if LED color map was modified at least once in this thread
     pub static LOCAL_LED_MAP_MODIFIED: RefCell<bool> = RefCell::new(false);
 }
-
-pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ScriptingError {
@@ -103,6 +102,9 @@ pub enum ScriptingError {
 
     #[error("Invalid or inaccessible manifest file")]
     InaccessibleManifest {},
+
+    #[error("Invalid value")]
+    ValueError {},
 }
 
 #[derive(Debug)]
@@ -130,8 +132,10 @@ mod callbacks {
 
     use super::{LED_MAP, LOCAL_LED_MAP, LOCAL_LED_MAP_MODIFIED};
 
-    use crate::hwdevices::{NUM_KEYS, RGBA};
     use crate::plugins::macros;
+    use crate::{constants, hwdevices::RGBA};
+
+    pub type Result<T> = std::result::Result<T, eyre::Error>;
 
     fn seed() -> u32 {
         use std::time::{SystemTime, UNIX_EPOCH};
@@ -217,6 +221,26 @@ mod callbacks {
     pub(crate) fn delay(millis: u64) {
         // TODO: This will totally block the Lua VM, so not very useful currently.
         thread::sleep(Duration::from_millis(millis));
+    }
+
+    /// Returns the target framerate
+    pub(crate) fn get_target_fps() -> u64 {
+        constants::TARGET_FPS
+    }
+
+    /// Returns the number of "pixels" on the canvas
+    pub(crate) fn get_canvas_size() -> usize {
+        constants::CANVAS_SIZE
+    }
+
+    /// Returns the height of the canvas
+    pub(crate) fn get_canvas_height() -> usize {
+        constants::CANVAS_HEIGHT
+    }
+
+    /// Returns the width of the canvas
+    pub(crate) fn get_canvas_width() -> usize {
+        constants::CANVAS_WIDTH
     }
 
     /// Inject a key on the eruption virtual keyboard.
@@ -520,7 +544,8 @@ mod callbacks {
 
     /// Get the number of keys of the managed device.
     pub(crate) fn get_num_keys() -> usize {
-        NUM_KEYS
+        // TODO: Return the number of keys of a specific device
+        144
     }
 
     /// Get state of all LEDs
@@ -536,43 +561,43 @@ mod callbacks {
             })
             .collect::<Vec<u32>>();
 
-        assert!(result.len() == NUM_KEYS);
+        assert!(result.len() == constants::CANVAS_SIZE);
 
         result
     }
 
     /// Submit LED color map for later realization, as soon as the
     /// next frame is rendered
-    pub(crate) fn submit_color_map(map: &[u32]) {
-        // trace!("submit_color_map: {}/{}", map.len(), NUM_KEYS);
+    pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
+        // trace!("submit_color_map: {}/{}", map.len(), constants::CANVAS_SIZE);
 
-        assert!(
-            map.len() == NUM_KEYS,
-            format!(
-                "Assertion 'map.len() == NUM_KEYS' failed: {} != {}",
-                map.len(),
-                NUM_KEYS
-            )
-        );
+        // assert!(
+        //     map.len() == constants::CANVAS_SIZE,
+        //     format!(
+        //         "Assertion 'map.len() == constants::CANVAS_SIZE' failed: {} != {}",
+        //         map.len(),
+        //         constants::CANVAS_SIZE
+        //     )
+        // );
 
         let mut led_map = [RGBA {
             r: 0,
             g: 0,
             b: 0,
             a: 0,
-        }; NUM_KEYS];
+        }; constants::CANVAS_SIZE];
 
         let mut i = 0;
         loop {
             led_map[i] = RGBA {
-                a: u8::try_from((map[i] >> 24) & 0xff).unwrap(),
-                r: u8::try_from((map[i] >> 16) & 0xff).unwrap(),
-                g: u8::try_from((map[i] >> 8) & 0xff).unwrap(),
-                b: u8::try_from(map[i] & 0xff).unwrap(),
+                a: u8::try_from((map[i] >> 24) & 0xff)?,
+                r: u8::try_from((map[i] >> 16) & 0xff)?,
+                g: u8::try_from((map[i] >> 8) & 0xff)?,
+                b: u8::try_from(map[i] & 0xff)?,
             };
 
             i += 1;
-            if i >= NUM_KEYS - 1 {
+            if i >= led_map.len() || i >= map.len() {
                 break;
             }
         }
@@ -581,6 +606,8 @@ mod callbacks {
         LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
 
         super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+        Ok(())
     }
 
     pub(crate) fn get_brightness() -> isize {
@@ -904,6 +931,16 @@ pub fn run_script(
                                         1
                                     }
 
+                                    MouseHidEvent::ButtonDown(index) => {
+                                        arg1 = index + 1;
+                                        2
+                                    }
+
+                                    MouseHidEvent::ButtonUp(index) => {
+                                        arg1 = index + 1;
+                                        3
+                                    }
+
                                     _ => {
                                         arg1 = 0;
                                         0
@@ -1142,6 +1179,20 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     })?;
     globals.set("delay", delay)?;
 
+    // eruption engine status
+    let get_target_fps = lua_ctx.create_function(|_, ()| Ok(callbacks::get_target_fps()))?;
+    globals.set("get_target_fps", get_target_fps)?;
+
+    // canvas related functions
+    let get_canvas_size = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_size()))?;
+    globals.set("get_canvas_size", get_canvas_size)?;
+
+    let get_canvas_width = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_width()))?;
+    globals.set("get_canvas_width", get_canvas_width)?;
+
+    let get_canvas_height = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_height()))?;
+    globals.set("get_canvas_height", get_canvas_height)?;
+
     // math library
     let max = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.max(f2)))?;
     globals.set("max", max)?;
@@ -1352,8 +1403,8 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     globals.set("get_color_map", get_color_map)?;
 
     let submit_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
-        callbacks::submit_color_map(&map);
-        Ok(())
+        callbacks::submit_color_map(&map)
+            .map_err(|_e| LuaError::ExternalError(Arc::new(ScriptingError::ValueError {})))
     })?;
     globals.set("submit_color_map", submit_color_map)?;
 

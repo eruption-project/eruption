@@ -19,9 +19,9 @@ require "debug"
 -- global state variables --
 color_map = {}
 
--- compute fire with a supersampling factor of 8
-fire_grid_rows = num_rows * 8
-fire_grid_cols = num_cols * 8
+-- compute fire with a supersampling factor of 2
+fire_grid_rows = num_rows * 2
+fire_grid_cols = num_cols * 2
 
 fire_grid = {}
 color_palette = {}
@@ -30,9 +30,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
 
@@ -46,7 +44,7 @@ function on_startup(config)
      -- initialize palette
     for i = 0, 255 do
         color_palette[i] = hsla_to_color(i / 3, 1.0, min(0.5, ((i * 1.45) / 256)),
-                                        lerp(0, 255, opacity))
+                                         lerp(0, 255, opacity))
     end
 end
 
@@ -55,14 +53,12 @@ function on_tick(delta)
 
     -- calculate fire effect
     if ticks % fire_speed == 0 then
-        local num_keys = get_num_keys()
-
         -- randomize bottom row
-        for x = 0, fire_grid_cols - 1 do
-            fire_grid[fire_grid_rows * x + fire_grid_cols] = rand(55, 255)
+        for x = 0, fire_grid_cols do
+            fire_grid[fire_grid_rows * x + fire_grid_cols] = rand(35, 255)
         end
 
-        -- compute fire from top to bottom
+        -- compute fire effect, from top to bottom
         for y = 0, fire_grid_rows - 2 do
             for x = 0, fire_grid_cols - 1 do
                 fire_grid[y * fire_grid_cols + x] =
@@ -93,16 +89,20 @@ function on_tick(delta)
                             fire_grid[(y + 1) * fire_grid_cols + (x)]     +
                             fire_grid[(y + 1) * fire_grid_cols + (x + 1)]
 
-                local avg = sum / 8
+                local avg = trunc(sum / 8)
+                local idx = rows_topology[trunc(x + (y * max_keys_per_row))]
 
-                local idx = (x / 8) * fire_grid_rows + (y / 8)
-                color_map[idx] = color_palette[trunc(avg)]
-
-                -- should not happen, but be safe
-                if color_map[idx] == nil then
-                    color_map[idx] = color_palette[0]
+                if idx ~= nil then
+                    color_map[idx] = color_palette[clamp(avg, 0, 255)]
                 end
             end
+        end
+
+        -- for the mouse zone on the canvas, we simply copy
+        -- over colors from the keyboard zone
+        local offset = mouse_zone_end - keyboard_zone_end
+        for i = mouse_zone_start, mouse_zone_end do
+            color_map[i] = color_map[i - offset]
         end
 
         submit_color_map(color_map)

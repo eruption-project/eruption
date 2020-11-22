@@ -103,7 +103,7 @@ lazy_static! {
 
     /// Key states
     pub static ref KEY_STATES: Arc<Mutex<Vec<bool>>> =
-        Arc::new(Mutex::new(vec![false; hwdevices::NUM_KEYS]));
+        Arc::new(Mutex::new(vec![false; constants::MAX_KEYS]));
 
     pub static ref BUTTON_STATES: Arc<Mutex<Vec<bool>>> =
         Arc::new(Mutex::new(vec![false; constants::MAX_MOUSE_BUTTONS]));
@@ -1595,8 +1595,7 @@ async fn run_main_loop(
                     &dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
-                )
-                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+                )?;
 
                 saved_slot = active_slot;
                 failed_txs.clear();
@@ -1715,7 +1714,10 @@ async fn run_main_loop(
                                 error!("Could not process a filesystem event: {}", e)
                             })
                     } else {
-                        error!("{}", event.as_ref().unwrap_err());
+                        error!(
+                            "Could not process a filesystem event: {}",
+                            event.as_ref().unwrap_err()
+                        );
                     }
                 }
 
@@ -1733,7 +1735,12 @@ async fn run_main_loop(
 
                         failed_txs.clear();
                     } else {
-                        error!("{}", event.as_ref().unwrap_err());
+                        error!(
+                            "Could not process a D-Bus event: {}",
+                            event.as_ref().unwrap_err()
+                        );
+
+                        sel.remove(dbus_events);
                     }
                 }
 
@@ -1747,7 +1754,10 @@ async fn run_main_loop(
                                     error!("Could not process a keyboard event: {}", e)
                                 });
                         } else {
-                            error!("{}", event.as_ref().unwrap_err());
+                            error!(
+                                "Could not process a keyboard event: {}",
+                                event.as_ref().unwrap_err()
+                            );
                         }
                     } else if let Some(event) = mouse_events.iter().find(|&&e| e.0 == i) {
                         let event = &oper.recv(&(event.1).1);
@@ -1761,10 +1771,13 @@ async fn run_main_loop(
                             .await
                             .unwrap_or_else(|e| error!("Could not process a mouse event: {}", e));
                         } else {
-                            error!("{}", event.as_ref().unwrap_err());
+                            error!(
+                                "Could not process a mouse event: {}",
+                                event.as_ref().unwrap_err()
+                            );
                         }
                     } else {
-                        error!("Invalid event type");
+                        error!("Invalid or missing event type");
                     }
                 }
             },
@@ -1819,7 +1832,7 @@ async fn run_main_loop(
                         g: 0,
                         b: 0,
                         a: 0,
-                    }; hwdevices::NUM_KEYS],
+                    }; constants::CANVAS_SIZE],
                 );
 
                 // instruct Lua VMs to realize their color maps,

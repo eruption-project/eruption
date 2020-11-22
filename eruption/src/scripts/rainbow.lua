@@ -22,9 +22,8 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
-        color_map[i] = color_off
+    for i = 0, canvas_size do
+        color_map[i] = 0x00000000
     end
 end
 
@@ -33,11 +32,9 @@ function on_tick(delta)
 
     -- animate gradient
     if ticks % gradient_speed == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
+        for i = 0, canvas_size do
             color_map[i] = hsla_to_color((i * hue_multiplier) + ticks,
-											color_saturation, color_lightness, lerp(0, 255, opacity))
+										  color_saturation, color_lightness, lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

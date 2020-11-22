@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use bitvec::prelude::*;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
@@ -24,13 +25,16 @@ use crate::constants;
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, NUM_KEYS, RGBA,
+    MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
 
-// pub const NUM_KEYS: usize = 9;
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
+
+// canvas to LED index mapping
+pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+pub const LED_1: usize = constants::CANVAS_SIZE - 35;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -67,48 +71,6 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
-/// Event code of a device HID message
-#[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum MouseHidEventCode {
-    #[allow(dead_code)]
-    Unknown(u8),
-
-    KEY_BTN1,
-}
-
-impl MouseHidEventCode {
-    // Instantiate a HidEventCode from raw HID report data
-    // pub fn from_report(report: u8, code: u8) -> Self {
-    //     match report {
-    //         0xfb => match code {
-    //             16 => Self::KEY_BTN1,
-
-    //             _ => Self::Unknown(code),
-    //         },
-
-    //         // 0x0a => match code {
-    //         //     57 => Self::KEY_CAPS_LOCK,
-    //         //     255 => Self::KEY_EASY_SHIFT,
-
-    //         //     _ => Self::Unknown(code),
-    //         // },
-    //         _ => Self::Unknown(code),
-    //     }
-    // }
-}
-
-/// Convert a HidEventCode to an integer code value
-impl Into<u8> for MouseHidEventCode {
-    fn into(self) -> u8 {
-        match self {
-            Self::KEY_BTN1 => 16,
-
-            MouseHidEventCode::Unknown(code) => code,
-        }
-    }
-}
-
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kova AIMO mouse
 pub struct RoccatKovaAimo {
@@ -119,6 +81,8 @@ pub struct RoccatKovaAimo {
 
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+
+    pub button_states: Arc<Mutex<BitVec>>,
 }
 
 impl RoccatKovaAimo {
@@ -134,6 +98,8 @@ impl RoccatKovaAimo {
 
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
+
+            button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
         }
     }
 
@@ -488,22 +454,79 @@ impl MouseDeviceTrait for RoccatKovaAimo {
             let mut buf = [0; 8];
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
-                Ok(_size) => {
+                Ok(size) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     let event = match buf[0..5] {
-                        // Button reports
-                        [0x01, _index, 0x00, 0x00, _] => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| info!("  {}", s));
-
-                            // index
-                            // MouseHidEvent::ButtonDown(0)
-
-                            MouseHidEvent::Unknown
-                        }
-
                         // Button reports (DPI)
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
+
+                        // Button reports
+                        [button_mask, 0x00, button_mask2, 0x00, _] if size > 0 => {
+                            let mut result = vec![];
+
+                            let button_mask = button_mask.view_bits::<Lsb0>();
+                            let button_mask2 = button_mask2.view_bits::<Lsb0>();
+
+                            let mut button_states = self.button_states.lock();
+
+                            // notify button press events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button press events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            if result.len() > 1 {
+                                error!(
+                                    "We missed a HID event, mouse button states will be inconsistent"
+                                );
+                            }
+
+                            if result.is_empty() {
+                                MouseHidEvent::Unknown
+                            } else {
+                                debug!("{:?}", result[0]);
+                                result[0]
+                            }
+                        }
 
                         _ => MouseHidEvent::Unknown,
                     };
@@ -534,12 +557,12 @@ impl MouseDeviceTrait for RoccatKovaAimo {
             let buf: [u8; 8] = [
                 0x0a,
                 0x08,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
+                led_map[LED_0].r,
+                led_map[LED_0].g,
+                led_map[LED_0].b,
+                led_map[LED_1].r,
+                led_map[LED_1].g,
+                led_map[LED_1].b,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {
@@ -564,12 +587,12 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 
@@ -587,12 +610,12 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 

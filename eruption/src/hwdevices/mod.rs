@@ -36,8 +36,6 @@ pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-pub const NUM_KEYS: usize = 144; // TODO: Fix this
-
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
@@ -53,6 +51,42 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev),
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev),
     ]));
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum HwDeviceError {
+    #[error("No compatible devices found")]
+    NoDevicesFound {},
+
+    #[error("An error occurred during device enumeration")]
+    EnumerationError {},
+
+    #[error("Could not enumerate udev devices")]
+    UdevError {},
+
+    #[error("Could not open the device file")]
+    DeviceOpenError {},
+
+    #[error("Device not bound")]
+    DeviceNotBound {},
+
+    #[error("Device not opened")]
+    DeviceNotOpened {},
+
+    #[error("Device not initialized")]
+    DeviceNotInitialized {},
+
+    #[error("Invalid status code")]
+    InvalidStatusCode {},
+
+    #[error("Invalid result")]
+    InvalidResult {},
+
+    #[error("Write error")]
+    WriteError {},
+
+    #[error("LED map has an invalid size")]
+    LedMapError {},
 }
 
 pub trait DriverMetadata {
@@ -179,39 +213,6 @@ pub enum DeviceClass {
     Unknown,
     Keyboard,
     Mouse,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum HwDeviceError {
-    #[error("No compatible devices found")]
-    NoDevicesFound {},
-
-    #[error("An error occurred during device enumeration")]
-    EnumerationError {},
-
-    #[error("Could not enumerate udev devices")]
-    UdevError {},
-
-    #[error("Could not open the device file")]
-    DeviceOpenError {},
-
-    #[error("Device not bound")]
-    DeviceNotBound {},
-
-    #[error("Device not opened")]
-    DeviceNotOpened {},
-
-    #[error("Device not initialized")]
-    DeviceNotInitialized {},
-
-    #[error("Invalid status code")]
-    InvalidStatusCode {},
-
-    #[error("Invalid result")]
-    InvalidResult {},
-
-    #[error("Write error")]
-    WriteError {},
 }
 
 /// Represents an RGBA color value
@@ -872,6 +873,7 @@ pub fn get_input_sub_dev_from_udev(
 //     }
 // }
 
+/// Queries udev for the device class of an USB input device
 pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
     match Enumerator::new() {
         Ok(mut enumerator) => {

@@ -28,7 +28,6 @@ local function load_key_histogram(name)
     trace("Statistics: Loading histogram '" .. name .. "' from persistent storage")
 
     local result = {}
-    local num_keys = get_num_keys()
 
     for i = 0, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
@@ -41,8 +40,6 @@ end
 local function store_key_histogram(key_histogram, name)
     trace("Statistics: Saving histogram '" .. name .. "' to persistent storage")
 
-    local num_keys = get_num_keys()
-
     for i = 0, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
         store_int(key, key_histogram[i])
@@ -51,8 +48,6 @@ end
 
 local function dump_key_histogram(name)
     info("Statistics: Dumping: '" .. name .. "'")
-
-    local num_keys = get_num_keys()
 
     for i = 0, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"

@@ -25,11 +25,9 @@ function on_tick(delta)
 
     -- calculate voronoi noise effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
-            local x = i / num_rows
-            local y = i / num_cols
+        for i = 0, canvas_size do
+            local x = i / canvas_width
+            local y = i / canvas_height
 
             local val = voronoi_noise(x / coord_scale,
                                         y / coord_scale,

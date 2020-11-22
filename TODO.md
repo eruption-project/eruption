@@ -3,7 +3,7 @@
 ## Preliminary Roadmap
 
 * Widen the scope of the project: Add support for more hardware devices
-* Write wiki articles
+* Write more wiki articles
 * Write more documentation
 * ...
 

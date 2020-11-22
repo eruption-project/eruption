@@ -18,7 +18,7 @@ function debug_print_led_state(color_map)
 
     local row = ""
 
-    for i = 0, get_num_keys() - 1 do
+    for i = 0, get_canvas_size() - 1 do
 
         if i % 21 == 0 then
             info(row)

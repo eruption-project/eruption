@@ -6,10 +6,10 @@ min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor']
 
 [[config]]
-type = 'float'
+type = 'int'
 name = 'fire_speed'
 description = 'Step fire animation every [n] frames'
-default = 2.0
+default = 1
 
 [[config]]
 type = 'float'

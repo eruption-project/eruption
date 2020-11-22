@@ -40,6 +40,42 @@ function easyshift_mouse_macro_3()
 	info("UserMacros: Executing: 'easyshift_mouse_macro_3'")
 end
 
+function easyshift_mouse_macro_4()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_4'")
+end
+
+function easyshift_mouse_macro_5()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_5'")
+end
+
+function easyshift_mouse_macro_6()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_6'")
+end
+
+function easyshift_mouse_macro_7()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_7'")
+end
+
+function easyshift_mouse_macro_8()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_8'")
+end
+
+function easyshift_mouse_macro_9()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_9'")
+end
+
+function easyshift_mouse_macro_10()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_10'")
+end
+
+function easyshift_mouse_macro_11()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_11'")
+end
+
+function easyshift_mouse_macro_12()
+	info("UserMacros: Executing: 'easyshift_mouse_macro_12'")
+end
+
 function easyshift_mouse_wheel_scroll_up()
 	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_up'")
 end
@@ -108,10 +144,9 @@ end
 function update_color_state()
 	if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
 		-- Easy Shift+ key has been pressed
-		local num_keys = get_num_keys()
 
 		-- highlight all keys
-		for i = 0, num_keys do color_map_highlight[i] = color_highlight end
+		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight remapped keys
 		for i = 0, num_keys do
@@ -157,10 +192,9 @@ function update_color_state()
 
 	elseif modifier_map[MODIFIER_KEY] then
 		-- modifier key has been pressed (eg: FN)
-		local num_keys = get_num_keys()
 
 		-- highlight all keys
-		for i = 0, num_keys do color_map_highlight[i] = color_highlight end
+		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight the slot keys
 		color_map_highlight[12] = COLOR_SWITCH_SLOT
@@ -217,6 +251,26 @@ end
 -- find some examples below:
 -- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
 
+-- change the tables below to perform a simple one-to-one mapping
+-- convention is: REMAPPING_TABLE[BUTTON_INDEX] = BUTTON_INDEX
+
+-- remapping of mouse buttons (triggered by HID events)
+-- MOUSE_HID_REMAPPING_TABLE[1]  = 1   --
+-- MOUSE_HID_REMAPPING_TABLE[2]  = 2   --
+-- MOUSE_HID_REMAPPING_TABLE[3]  = 3   --
+-- MOUSE_HID_REMAPPING_TABLE[4]  = 4   --
+-- MOUSE_HID_REMAPPING_TABLE[5]  = 5   --
+-- MOUSE_HID_REMAPPING_TABLE[6]  = 6   --
+-- MOUSE_HID_REMAPPING_TABLE[7]  = 7   --
+-- MOUSE_HID_REMAPPING_TABLE[8]  = 8   --
+-- MOUSE_HID_REMAPPING_TABLE[9]  = 9   --
+-- MOUSE_HID_REMAPPING_TABLE[10] = 10  --
+-- MOUSE_HID_REMAPPING_TABLE[11] = 11  --
+-- MOUSE_HID_REMAPPING_TABLE[12] = 12  --
+-- ...
+
+-- remapping tables for the Easy Shift+ layer
+
 -- Enable the modifier key, while Easy Shift+ is activated
 EASY_SHIFT_REMAPPING_TABLE[1][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[2][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
@@ -263,6 +317,33 @@ EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][2] = easyshift_mouse_dpi_changed  	--
 EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][3] = easyshift_mouse_dpi_changed  	--
 EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][4] = easyshift_mouse_dpi_changed  	--
 EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][5] = easyshift_mouse_dpi_changed  	--
+
+-- assign macros to mouse buttons on the Easy Shift+ layer, triggered by HID events
+-- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][1]	 = easyshift_mouse_macro_1   --
+-- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][2]	 = easyshift_mouse_macro_2   --
+-- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][3]	 = easyshift_mouse_macro_3   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][4]	 = easyshift_mouse_macro_4   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][5]	 = easyshift_mouse_macro_5   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][6]	 = easyshift_mouse_macro_6   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][7]	 = easyshift_mouse_macro_7   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][8]	 = easyshift_mouse_macro_8   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][9]	 = easyshift_mouse_macro_9   --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][10] = easyshift_mouse_macro_10  --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][11] = easyshift_mouse_macro_11  --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][12] = easyshift_mouse_macro_12  --
+
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][1]  = easyshift_mouse_macro_1   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][2]  = easyshift_mouse_macro_2   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][3]  = easyshift_mouse_macro_3   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][4]  = easyshift_mouse_macro_4   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][5]  = easyshift_mouse_macro_5   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][6]  = easyshift_mouse_macro_6   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][7]  = easyshift_mouse_macro_7   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][8]  = easyshift_mouse_macro_8   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][9]  = easyshift_mouse_macro_9   --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][10] = easyshift_mouse_macro_10  --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][11] = easyshift_mouse_macro_11  --
+-- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][12] = easyshift_mouse_macro_12  --
 
 
 -- ****************************************************************************

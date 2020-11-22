@@ -223,8 +223,9 @@ The following scripts are unfinished/still in development, and some of them have
 
 | Name               | Class      | File                  | Progress         | Description                                                                                        |
 | ------------------ | ---------- | --------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
-| Fire               | Background | `fire.lua`            | Approx. 65% done | Shows a bonfire effect on the keyboard                                                             |
+| Fire               | Background | `fire.lua`            | Approx. 85% done | Shows a bonfire effect on the keyboard                                                             |
 | Fireworks          | Background | `fireworks.lua`       | Approx. 85% done | Shows a fireworks effect on the keyboard                                                           |
+| Flight (Perlin)    | Background | `flight-perlin.lua`   | Approx. 85% done | Shows a random flight through Perlin noise                                                         |
 | Halo               | Effect     | `halo.lua`            | Approx. 95% done | Show a spreading rainbow colored animated halo when a key has been pressed                         |
 | Heat Map           | Effect     | `heatmap.lua`         | Approx. 50% done | Shows a heat map of recorded statistics on the keyboard                                            |
 | Gaming             | Effect     | `gaming.lua`          | Approx. 85% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                    |

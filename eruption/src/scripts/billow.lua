@@ -25,15 +25,13 @@ function on_tick(delta)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
-            local x = i / num_rows
-            local y = i / num_cols
+        for i = 0, canvas_size do
+            local x = i / canvas_width
+            local y = i / canvas_height
 
             local val = billow_noise(x / coord_scale,
-                                    y / coord_scale,
-                                    ticks / time_scale)
+                                     y / coord_scale,
+                                     ticks / time_scale)
             val = lerp(0, 360, val)
 
             color_map[i] = hsla_to_color((val / color_divisor) + color_offset,

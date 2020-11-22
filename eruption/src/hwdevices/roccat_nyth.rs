@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use bitvec::prelude::*;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
@@ -32,7 +33,6 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-// pub const NUM_KEYS: usize = 9;
 pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
 
 /// Binds the driver to a device
@@ -70,48 +70,6 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
-/// Event code of a device HID message
-#[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum MouseHidEventCode {
-    #[allow(dead_code)]
-    Unknown(u8),
-
-    KEY_BTN1,
-}
-
-impl MouseHidEventCode {
-    // Instantiate a HidEventCode from raw HID report data
-    // pub fn from_report(report: u8, code: u8) -> Self {
-    //     match report {
-    //         0xfb => match code {
-    //             16 => Self::KEY_BTN1,
-
-    //             _ => Self::Unknown(code),
-    //         },
-
-    //         // 0x0a => match code {
-    //         //     57 => Self::KEY_CAPS_LOCK,
-    //         //     255 => Self::KEY_EASY_SHIFT,
-
-    //         //     _ => Self::Unknown(code),
-    //         // },
-    //         _ => Self::Unknown(code),
-    //     }
-    // }
-}
-
-/// Convert a HidEventCode to an integer code value
-impl Into<u8> for MouseHidEventCode {
-    fn into(self) -> u8 {
-        match self {
-            Self::KEY_BTN1 => 16,
-
-            MouseHidEventCode::Unknown(code) => code,
-        }
-    }
-}
-
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Nyth mouse
 pub struct RoccatNyth {
@@ -122,6 +80,8 @@ pub struct RoccatNyth {
 
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+
+    pub button_states: Arc<Mutex<BitVec>>,
 }
 
 impl RoccatNyth {
@@ -137,6 +97,8 @@ impl RoccatNyth {
 
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
+
+            button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
         }
     }
 
@@ -439,17 +401,78 @@ impl MouseDeviceTrait for RoccatNyth {
             let mut buf = [0; 8];
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
-                Ok(_size) => {
+                Ok(size) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     let event = match buf[0..5] {
-                        // DPI changed
+                        // Button reports (DPI)
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
 
-                        // TODO: Remove this, as soon as we implement the extra keys
-                        _ if buf != [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00] => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| warn!("  {}", s));
-                            MouseHidEvent::Unknown
+                        // Button reports
+                        [button_mask, 0x00, button_mask2, 0x00, _] if size > 0 => {
+                            let mut result = vec![];
+
+                            let button_mask = button_mask.view_bits::<Lsb0>();
+                            let button_mask2 = button_mask2.view_bits::<Lsb0>();
+
+                            let mut button_states = self.button_states.lock();
+
+                            // notify button press events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button press events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            if result.len() > 1 {
+                                error!(
+                                "We missed a HID event, mouse button states will be inconsistent"
+                            );
+                            }
+
+                            if result.is_empty() {
+                                MouseHidEvent::Unknown
+                            } else {
+                                debug!("{:?}", result[0]);
+                                result[0]
+                            }
                         }
 
                         _ => MouseHidEvent::Unknown,

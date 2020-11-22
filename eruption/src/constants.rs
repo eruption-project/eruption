@@ -41,8 +41,17 @@ pub const AFK_TIMEOUT_SECS: u64 = 0;
 /// Default AFK profile
 pub const DEFAULT_AFK_PROFILE: &str = "rainbow-wave.profile";
 
-/// Target "Frames per Second"
+/// Target frames per second
 pub const TARGET_FPS: u64 = 20;
+
+/// The number of "pixels" on the canvas
+pub const CANVAS_SIZE: usize = 144 + 36;
+
+/// The width of the canvas
+pub const CANVAS_WIDTH: usize = 22 + 8;
+
+/// The height of the canvas
+pub const CANVAS_HEIGHT: usize = 6;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
@@ -63,7 +72,10 @@ pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 
 // Wait n seconds before sending the LED "off pattern" on shutdown
-pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 250;
+pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 150;
+
+// Max. supported number of keys on a keyboard
+pub const MAX_KEYS: usize = 144;
 
 // Max. supported number of mouse buttons
 pub const MAX_MOUSE_BUTTONS: usize = 32;

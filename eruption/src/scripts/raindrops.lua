@@ -22,7 +22,6 @@ ticks = 0
 
 -- utility functions --
 local function place_raindrop()
-    local num_keys = get_num_keys()
     local key = rand(0, num_keys)
 
     color_map[key] = rgba_to_color(255, 255, 255, lerp(0, 255, opacity))
@@ -30,16 +29,13 @@ end
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
 end
 
 function on_tick(delta)
     ticks = ticks + delta
-
-    local num_keys = get_num_keys()
 
     -- let it rain
     if ticks % rand(1, rain_intensity_divisor) == 0 then

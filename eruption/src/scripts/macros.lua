@@ -32,6 +32,7 @@ require "macros/modifiers"
 
 -- initialize remapping tables
 REMAPPING_TABLE = {}				-- level 1 remapping table (No modifier keys applied)
+MOUSE_HID_REMAPPING_TABLE = {}		-- level 1 remapping table for mouse events (No modifier keys applied)
 
 ACTIVE_EASY_SHIFT_LAYER = 1			-- level 4 supports up to 6 sub-layers
 EASY_SHIFT_REMAPPING_TABLE = {  	-- level 4 remapping table (Easy Shift+ layer)
@@ -45,6 +46,12 @@ EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE = {	-- macro tables for mouse button down even
 	{}, {}, {}, {}, {}, {}
 }
 EASY_SHIFT_MOUSE_UP_MACRO_TABLE = {		-- macro tables for mouse button up events (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE = { -- macro tables for mouse (HID) button down events (Easy Shift+ layer)
+	{}, {}, {}, {}, {}, {}
+}
+EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE = { -- macro tables for mouse (HID) button up events (Easy Shift+ layer)
 	{}, {}, {}, {}, {}, {}
 }
 EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE = {	-- macro tables for mouse wheel events (Easy Shift+ layer)
@@ -99,9 +106,7 @@ function on_startup(config)
 	modifier_map[RIGHT_MENU] = get_key_state(84)
 	modifier_map[FN] = get_key_state(77)
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map[i] = 0x00000000
 		color_map_highlight[i] = 0x00000000
 		color_map_overlay[i] = 0x00000000
@@ -278,6 +283,36 @@ function on_mouse_hid_event(event_type, arg1)
 				-- call associated function
 				EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][dpi_slot]()
 			end
+		end
+	elseif event_type == 2 then
+		-- Button down event
+		local button_index = arg1
+
+		if game_mode_enabled then
+			-- call complex macros on the Easy Shift+ layer (layer 4)
+			if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+				EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
+
+				-- call associated function
+				EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]()
+			end
+		else
+			simple_mouse_remapping(button_index, true)
+		end
+	elseif event_type == 3 then
+		-- Button up event
+		local button_index = arg1
+
+		if game_mode_enabled then
+			-- call complex macros on the Easy Shift+ layer (layer 4)
+			if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
+				EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index] ~= nil then
+
+				-- call associated function
+				EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]()
+			end
+		else
+			simple_mouse_remapping(button_index, false)
 		end
 	end
 end
@@ -466,6 +501,21 @@ function simple_remapping(key_index, down)
 	end
 end
 
+-- perform a simple remapping (for mouse events)
+function simple_mouse_remapping(button_index, down)
+	if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
+		code = EASY_SHIFT_MOUSE_HID_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]
+		if code ~= nil then
+			inject_mouse_button(code, down)
+		end
+	else
+		code = MOUSE_HID_REMAPPING_TABLE[button_index]
+		if code ~= nil then
+			inject_mouse_button(code, down)
+		end
+	end
+end
+
 function do_switch_slot(index)
 	debug("Macros: Switching to slot #" .. index + 1)
 
@@ -489,15 +539,13 @@ function update_overlay_state()
 	if overlay_state == NO_OVERLAY then
 		overlay_ttl = 0
 	elseif overlay_state == VOLUME_OVERLAY then
-		local num_keys = get_num_keys()
-
 		-- generate color map values
 		local percentage = get_audio_volume()
 
-		local upper_bound = num_keys * (min(percentage, 100) / 100)
+		local upper_bound = canvas_size * (min(percentage, 100) / 100)
 		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
 
-		for i = 0, num_keys do
+		for i = 0, canvas_size do
 			if i <= upper_bound then
 				color_map_overlay[i] = rgb_to_color(255, 255, 255)
 			else
@@ -505,15 +553,13 @@ function update_overlay_state()
 			end
 		end
 	elseif overlay_state == BRIGHTNESS_OVERLAY then
-		local num_keys = get_num_keys()
-
 		-- generate color map values
 		local percentage = get_brightness()
 
-		local upper_bound = num_keys * (min(percentage, 100) / 100)
+		local upper_bound = canvas_size * (min(percentage, 100) / 100)
 		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
 
-		for i = 0, num_keys do
+		for i = 0, canvas_size do
 			if i <= upper_bound then
 				color_map_overlay[i] = rgb_to_color(255, 255, 255)
 			else
@@ -531,11 +577,9 @@ function on_tick(delta)
 
 	if highlight_ttl <= 0 and overlay_ttl <= 0 then return end
 
-    local num_keys = get_num_keys()
-
     -- show key highlight effect or the active overlay
 	if ticks % animation_delay == 0 then
-		for i = 0, num_keys do
+		for i = 0, canvas_size do
 			-- key highlight effect
 			if highlight_ttl > 0 then
 				r, g, b, a = color_to_rgba(color_map_highlight[i])

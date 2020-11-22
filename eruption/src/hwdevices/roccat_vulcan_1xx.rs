@@ -868,37 +868,32 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                     let mut hwmap: [u8; 444] = [0; 444];
 
-                    // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
-                    // values for all 12 keys are first then come the green values etc.
-                    for (i, color) in led_map.iter().enumerate() {
-                        let offset = ((i / 12) * 36) + (i % 12);
+                    if led_map.len() < NUM_KEYS {
+                        error!(
+                            "Received a short LED map: Got {} elements, but should be {}",
+                            led_map.len(),
+                            NUM_KEYS
+                        );
 
-                        hwmap[offset] = color.r;
-                        hwmap[offset + 12] = color.g;
-                        hwmap[offset + 24] = color.b;
-                    }
+                        Err(HwDeviceError::LedMapError {}.into())
+                    } else {
+                        // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
+                        // values for all 12 keys are first then come the green values etc.
 
-                    let (slice, hwmap) = hwmap.split_at(60);
+                        for i in 0..NUM_KEYS {
+                            let color = led_map[i];
+                            let offset = ((i / 12) * 36) + (i % 12);
 
-                    let mut buf: [u8; 65] = [0; 65];
-                    buf[1..5].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
-                    buf[5..65].copy_from_slice(&slice);
-
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                    match led_dev.write(&buf) {
-                        Ok(len) => {
-                            trace!("Wrote: {} bytes", len);
-                            if len < 65 {
-                                return Err(HwDeviceError::WriteError {}.into());
-                            }
+                            hwmap[offset] = color.r;
+                            hwmap[offset + 12] = color.g;
+                            hwmap[offset + 24] = color.b;
                         }
 
-                        Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                    }
+                        let (slice, hwmap) = hwmap.split_at(60);
 
-                    for bytes in hwmap.chunks(64) {
-                        buf[1..65].copy_from_slice(bytes);
+                        let mut buf: [u8; 65] = [0; 65];
+                        buf[1..5].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
+                        buf[5..65].copy_from_slice(&slice);
 
                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
@@ -912,9 +907,26 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                             Err(_) => return Err(HwDeviceError::WriteError {}.into()),
                         }
-                    }
 
-                    Ok(())
+                        for bytes in hwmap.chunks(64) {
+                            buf[1..65].copy_from_slice(bytes);
+
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                            match led_dev.write(&buf) {
+                                Ok(len) => {
+                                    trace!("Wrote: {} bytes", len);
+                                    if len < 65 {
+                                        return Err(HwDeviceError::WriteError {}.into());
+                                    }
+                                }
+
+                                Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                            }
+                        }
+
+                        Ok(())
+                    }
                 }
 
                 None => Err(HwDeviceError::DeviceNotOpened {}.into()),
@@ -932,12 +944,12 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 
@@ -955,12 +967,12 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 

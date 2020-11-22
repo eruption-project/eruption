@@ -136,7 +136,10 @@ Eruption currently ships with the following core functions:
 | `open_simplex_noise_2d(f1, f2) -> f`                  | _core_      | Noise    | since 0.1.4        | Computes an Open Simplex Noise value (2 dimensions)                                                                                                                                        |
 | `open_simplex_noise_4d(f1, f2, f3, f4) -> f`          | _core_      | Noise    | since 0.1.4        | Computes an Open Simplex Noise value (4 dimensions)                                                                                                                                        |
 | `super_simplex_noise(f1, f2, f3) -> f`                | _core_      | Noise    | since 0.1.4        | Computes a Super Simplex Noise value                                                                                                                                                       |
-| `get_num_keys() -> i`                                 | _core_      | Hw       | since before 0.0.9 | Returns the number of keys of the connected device (Approx. 144)                                                                                                                           |
+| `get_canvas_size() -> i`                              | _core_      | Hw       | since 0.1.19       | Returns the number "pixels" on the primary canvas                                                                                                                                          |
+| `get_canvas_width() -> i`                             | _core_      | Hw       | since 0.1.19       | Returns the width of the primary canvas                                                                                                                                                    |
+| `get_canvas_height() -> i`                            | _core_      | Hw       | since 0.1.19       | Returns the height of the primary canvas                                                                                                                                                   |
+| `get_num_keys() -> i`                                 | _core_      | Hw       | since before 0.0.9 | Returns the number of keys of the connected device                                                                                                                                         |
 | `get_key_color(key_index) -> color`                   | _core_      | Hw       | removed in 0.1.18  | Returns the current color of the key `key_index`                                                                                                                                           |
 | `set_key_color(key_index, color)`                     | _core_      | Hw       | removed in 0.1.18  | Sets the current color of the key `key_index` to `color`                                                                                                                                   |
 | `set_color_map([color_map])`                          | _core_      | Hw       | removed in 0.1.18  | Set all LEDs at once to the colors specified in the array `color_map`. This will directly access the keyboard. Please see also: submit_color_map()                                         |
@@ -209,7 +212,7 @@ Eruption currently calls the following event handler functions, if they are pres
 | `on_mouse_wheel(direction)`            | _Mouse_    | direction: 1 == up, 2 == down                                                                                                                                 |                                               |
 | `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates                                                                                                                                    | Coordinates are relative (delta values)       |
 | `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, arg1: data payload e.g.: scan codes/status codes |                                               |
-| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, arg1: data payload e.g.: scan codes/status codes                                                                  |                                               |
+| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index                   |                                               |
 Exhaustive listing of all currently available event callbacks
 
 ## Example Code
@@ -225,12 +228,12 @@ pressed.
 color_map = {}
 
 function on_startup()
-    -- turn off all key LEDs
-    for i = 0, get_num_keys() do
-        color_map[i] = rgba_to_color(0, 0, 0, 0)
+    -- turn off all LEDs
+    for i = 0, get_canvas_size() do
+        color_map[i] = 0x00000000
     end
 
-    -- update keyboard LED state
+    -- update LED state
     submit_color_map(color_map)
 end
 
@@ -238,7 +241,7 @@ function on_key_down(key_index)
     info("Pressed key: " .. key_index)
 
     -- set color of pressed key to red
-    color_map[key_index] = rgb_to_color(255, 0, 0, 255)
+    color_map[key_index] = rgba_to_color(255, 0, 0, 255)
     submit_color_map(color_map)
 end
 ```

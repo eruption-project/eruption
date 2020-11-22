@@ -62,10 +62,9 @@ end
 function update_color_state()
 	if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
 		-- Easy Shift+ key has been pressed
-		local num_keys = get_num_keys()
 
 		-- highlight all keys
-		for i = 0, num_keys do color_map_highlight[i] = color_highlight end
+		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight remapped keys
 		for i = 0, num_keys do
@@ -111,10 +110,9 @@ function update_color_state()
 
 	elseif modifier_map[MODIFIER_KEY] then
 		-- modifier key has been pressed (eg: FN)
-		local num_keys = get_num_keys()
 
 		-- highlight all keys
-		for i = 0, num_keys do color_map_highlight[i] = color_highlight end
+		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight the slot keys
 		color_map_highlight[12] = COLOR_SWITCH_SLOT

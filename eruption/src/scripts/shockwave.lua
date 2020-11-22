@@ -59,9 +59,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-	local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
 		state_map[i] = key_state.idle
 		color_map[i] = 0x00000000
 		color_map_afterglow[i] = 0x00000000
@@ -78,9 +76,7 @@ end
 function on_mouse_button_down(button_index)
 	if not mouse_events then return end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map[i] = color_mouse_click_flash
 	end
 
@@ -90,9 +86,7 @@ end
 function on_mouse_button_up(button_index)
 	if not mouse_events then return end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map[i] = color_mouse_click_flash
 	end
 
@@ -108,9 +102,7 @@ function on_mouse_wheel(direction)
 		c = color_mouse_wheel_flash
 	end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map[i] = c
 	end
 
@@ -122,9 +114,7 @@ function on_mouse_hid_event(event_type, arg1)
 
 	if event_type == 1 then
 		-- DPI change event
-		local num_keys = get_num_keys()
-
-		for i = 0, num_keys do
+		for i = 0, canvas_size do
 			color_map[i] = color_mouse_wheel_flash
 		end
 
@@ -137,14 +127,12 @@ function on_tick(delta)
 
 	if effect_ttl <= 0 then return end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		visited_map[i] = false
 	end
 
 	-- propagate the shockwave
-	for i = 1, num_keys do
+	for i = 1, canvas_size do
 		-- decrease key ttl
 		if state_map[i] > key_state.shockwave_sentinel then
 			state_map[i] = state_map[i] - shockwave_ttl_decrease
