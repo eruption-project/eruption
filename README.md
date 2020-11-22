@@ -16,9 +16,8 @@
 ## Eruption <a name="eruption"></a>
 
 A Linux user-mode input and LED driver for keyboards, mice and other devices
->NOTE:\
 
-The GitHub project and packages have been renamed recently from `eruption-roccat-vulcan` to just `eruption`.
+>NOTE: The GitHub project and packages have been renamed recently from `eruption-roccat-vulcan` to just `eruption`.
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
