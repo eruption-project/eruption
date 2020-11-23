@@ -2284,8 +2284,7 @@ checksum = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
 [[package]]
 name = "rust-pulsectl"
 version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0133fcaf02798ef68c074313bbd5a47de2d7edb1d8db9c61872206bd7f398e8"
+source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#9de2ece4deab0d5475db54a1d86dcd48ad029e0c"
 dependencies = [
  "libpulse-binding",
 ]

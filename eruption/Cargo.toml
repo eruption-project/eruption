@@ -60,7 +60,7 @@ rustfft = "4.0.0"
 hound = "3.4.0"
 libpulse-binding = { version = "2.16", default-features = false }
 libpulse-simple-binding = { version = "2.16", default-features = false }
-rust-pulsectl = "0.2.6"
+rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 dbus = "0.9.0"
 dbus-tree = "0.9.0"
