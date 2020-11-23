@@ -24,9 +24,8 @@ require "debug"
 -- global state variables --
 color_map = {}
 ticks = 0
-max_effect_ttl = 60
-
-effect_ttl = 0
+max_effect_ttl = target_fps * 3
+effect_ttl = max_effect_ttl
 
 -- event handler functions --
 function on_startup(config)

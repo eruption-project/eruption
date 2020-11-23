@@ -18,9 +18,8 @@ require "debug"
 
 -- global state variables --
 color_map = {}
-max_effect_ttl = 40
-
-effect_ttl = 0
+max_effect_ttl = target_fps * 2
+effect_ttl = max_effect_ttl
 
 -- holds a scalar field to simulate a wave
 grid = {}

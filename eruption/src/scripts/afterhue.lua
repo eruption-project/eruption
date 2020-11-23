@@ -21,9 +21,8 @@ color_map = {}
 hue_map = {}
 
 ticks = 0
-max_effect_ttl = 150
-
-effect_ttl = 0
+max_effect_ttl = target_fps * 8
+effect_ttl = max_effect_ttl
 
 -- event handler functions --
 function on_startup(config)

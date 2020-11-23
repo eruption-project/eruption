@@ -73,6 +73,9 @@ color_map = {}
 color_map_highlight = {}
 color_map_overlay = {}
 
+max_effect_ttl = target_fps * 3
+effect_ttl = max_effect_ttl
+
 -- overlays
 NO_OVERLAY = 0
 VOLUME_OVERLAY = 1
@@ -541,29 +544,23 @@ function update_overlay_state()
 	elseif overlay_state == VOLUME_OVERLAY then
 		-- generate color map values
 		local percentage = get_audio_volume()
+		local highlight_columns = num_cols * percentage / 100
 
-		local upper_bound = canvas_size * (min(percentage, 100) / 100)
-		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
-
-		for i = 0, canvas_size do
-			if i <= upper_bound then
-				color_map_overlay[i] = rgb_to_color(255, 255, 255)
-			else
-				color_map_overlay[i] = rgb_to_color(20, 20, 20)
-			end
+		-- compute which keys to highlight
+		local upper_bound = 1
+		for i = 1, highlight_columns do
+			upper_bound = upper_bound + keys_per_col[i]
 		end
-	elseif overlay_state == BRIGHTNESS_OVERLAY then
-		-- generate color map values
-		local percentage = get_brightness()
 
-		local upper_bound = canvas_size * (min(percentage, 100) / 100)
-		upper_bound = upper_bound + (upper_bound % max_keys_per_col)
+		-- fill background
+		for i = 1, num_keys do
+			color_map_overlay[i] = rgb_to_color(16, 16, 16)
+		end
 
-		for i = 0, canvas_size do
-			if i <= upper_bound then
+		-- render volume level as highlight
+		for i = 1, num_keys do
+			if i < upper_bound then
 				color_map_overlay[i] = rgb_to_color(255, 255, 255)
-			else
-				color_map_overlay[i] = rgb_to_color(20, 20, 20)
 			end
 		end
 	end
@@ -575,11 +572,11 @@ function on_tick(delta)
 	update_color_state()
 	update_overlay_state()
 
-	if highlight_ttl <= 0 and overlay_ttl <= 0 then return end
+	if effect_ttl <= 0 and highlight_ttl <= 0 and overlay_ttl <= 0 then return end
 
     -- show key highlight effect or the active overlay
 	if ticks % animation_delay == 0 then
-		for i = 0, canvas_size do
+		for i = 0, num_keys do
 			-- key highlight effect
 			if highlight_ttl > 0 then
 				r, g, b, a = color_to_rgba(color_map_highlight[i])
@@ -612,6 +609,8 @@ function on_tick(delta)
 		if overlay_ttl <= 0 then
 			overlay_state = NO_OVERLAY
 		end
+
+		effect_ttl = effect_ttl - 1
 
 		submit_color_map(color_map)
     end

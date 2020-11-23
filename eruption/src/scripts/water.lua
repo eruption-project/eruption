@@ -24,8 +24,8 @@ key_state = {
 	water_origin = 255,
 }
 
-max_effect_ttl = 250
-effect_ttl = 0
+max_effect_ttl = target_fps * 10
+effect_ttl = max_effect_ttl
 
 -- max ttl of a water cell
 water_ttl = key_state.water_origin - key_state.water_sentinel
