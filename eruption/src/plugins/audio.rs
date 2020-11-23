@@ -102,6 +102,9 @@ pub fn reset_audio_backend() {
     AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
     // AUDIO_BACKEND.lock().take();
 
+    AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(false, Ordering::SeqCst);
+    AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(false, Ordering::SeqCst);
+
     *RATE_LIMIT_TIME.write() = Instant::now()
         .checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS))
         .unwrap();
