@@ -15,12 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crossbeam::channel::Sender;
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
-use dbus_tree::{Access, EmitsChangedSignal, Factory, MethodErr, Signal};
+use dbus_tree::{
+    Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
+};
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -46,8 +48,7 @@ pub enum DbusApiError {
 }
 
 /// D-Bus API support
-pub struct DbusApi
-{
+pub struct DbusApi {
     connection: Option<Arc<Connection>>,
 
     active_slot_changed: Arc<Signal<()>>,
@@ -58,12 +59,11 @@ pub struct DbusApi
 
 impl DbusApi {
     /// Initialize the D-Bus API
-    pub fn new(dbus_tx: Sender<Message>) -> Self {
+    pub fn new(dbus_tx: Sender<Message>) -> Result<Self> {
         let dbus_tx_clone = dbus_tx.clone();
 
-        let c = Connection::get_private(BusType::System).unwrap();
-        c.register_name("org.eruption", NameFlag::ReplaceExisting as u32)
-            .unwrap();
+        let c = Connection::get_private(BusType::System)?;
+        c.register_name("org.eruption", NameFlag::ReplaceExisting as u32)?;
 
         let c_clone = Arc::new(c);
         let c_clone2 = c_clone.clone();
@@ -541,13 +541,13 @@ impl DbusApi {
             .unwrap_or_else(|e| error!("Could not register the tree: {}", e));
         c_clone.add_handler(tree);
 
-        Self {
+        Ok(Self {
             connection: Some(c_clone),
             active_slot_changed: active_slot_changed_signal,
             active_profile_changed: active_profile_changed_signal,
             profiles_changed: profiles_changed_signal,
             brightness_changed: brightness_changed_signal,
-        }
+        })
     }
 
     pub fn notify_brightness_changed(&self) {
@@ -657,7 +657,7 @@ impl DbusApi {
 
 /// Initialize the Eruption D-Bus API support
 pub fn initialize(dbus_tx: Sender<Message>) -> Result<DbusApi> {
-    Ok(DbusApi::new(dbus_tx))
+    DbusApi::new(dbus_tx)
 }
 
 mod perms {

@@ -1,4 +1,4 @@
-![Clippy check](https://github.com/X3n0m0rph59/eruption-roccat-vulcan/workflows/Clippy%20check/badge.svg)
+![Clippy check](https://github.com/X3n0m0rph59/eruption/workflows/Clippy%20check/badge.svg)
 
 # Table of Contents
 
@@ -15,20 +15,11 @@
 
 ## Eruption <a name="eruption"></a>
 
-A Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards.
-Support for other hardware devices is planned and will be included in future releases.
-Please see [TODO.md](./TODO.md) and [CHANGES.md](./CHANGES.md) for further information.
+A Linux user-mode input and LED driver for keyboards, mice and other devices
+
+>NOTE: The GitHub project and packages have been renamed recently from `eruption-roccat-vulcan` to just `eruption`.
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
-
-### __TL;DR__ what you absolutely need to know
-
-- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
-- Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
-- Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode`.
-- You may want to set a different profile for each slot (`F1`-`F4`).
-- Maybe you want to use the GNOME Shell extension [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
 
 ## Supported Devices <a name="devices"></a>
 
@@ -38,14 +29,25 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 
 ### Mouse devices
 
-* ROCCAT Kone Pure Ultra
 * ROCCAT Kone Aimo (experimental)
+* ROCCAT Kone Pure Ultra
+* ROCCAT Kova AIMO (experimental)
 
-## Known Issues <a name="issues"></a>
+### Known Issues <a name="issues"></a>
 
 - Mute button will stay lit even if audio is muted
 
 - Keyboard may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
+
+### ROCCAT Vulcan 100/12x series keyboard:
+
+- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
+- Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
+- Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode`.
+- You may want to set a different profile for each slot (`F1`-`F4`).
+- Maybe you want to use the GNOME Shell extension [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
+or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
+
 
 
 ## Important Information <a name="important"></a>
@@ -85,22 +87,22 @@ prior to sending the resulting final color map to the keyboard.
 #### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
-$ yay -Sy aur/eruption-roccat-vulcan-git
+$ paru -Sy aur/eruption-git
 ```
 
 #### Fedora based
 
 ```sh
-$ sudo dnf copr enable x3n0m0rph59/eruption-roccat-vulcan
-$ sudo dnf install eruption-roccat-vulcan-git
+$ sudo dnf copr enable x3n0m0rph59/eruption
+$ sudo dnf install eruption-git
 ```
 
 #### Ubuntu
 
 ```sh
-sudo add-apt-repository ppa:x3n0m0rph59/eruption-roccat-vulcan
+sudo add-apt-repository ppa:x3n0m0rph59/eruption
 sudo apt update
-sudo apt install eruption-roccat-vulcan-git
+sudo apt install eruption-git
 ```
 
 To activate Eruption now, you may either reboot your system or manually start
@@ -116,8 +118,8 @@ $ sudo systemctl start eruption.service
 #### From Source
 
 ```sh
-$ git clone https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git
-$ cd eruption-roccat-vulcan
+$ git clone https://github.com/X3n0m0rph59/eruption.git
+$ cd eruption
 $ cargo build --all --release
 ```
 

@@ -15,15 +15,15 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{any::Any, sync::Arc};
-
 use hidapi::HidApi;
 use log::*;
 use parking_lot::RwLock;
+use std::any::Any;
+use std::sync::Arc;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
+    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -34,41 +34,47 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     _serial: &str,
-) -> super::Result<MouseDevice> {
-    Ok(Arc::new(RwLock::new(Box::new(GenericMouse::bind(
+) -> super::Result<KeyboardDevice> {
+    Ok(Arc::new(RwLock::new(Box::new(GenericKeyboard::bind(
         usb_vid, usb_pid,
     )))))
 }
 
 #[derive(Clone)]
-/// Device specific code for a generic mouse device
-pub struct GenericMouse {
+/// Device specific code for a generic keyboard device
+pub struct GenericKeyboard {
     usb_vid: u16,
     usb_pid: u16,
 }
 
-impl GenericMouse {
+impl GenericKeyboard {
     /// Binds the driver to the supplied HID devices
     pub fn bind(usb_vid: u16, usb_pid: u16) -> Self {
-        info!("Bound driver: Generic Mouse Device");
+        info!("Bound driver: Generic Keyboard Device");
 
         Self { usb_vid, usb_pid }
     }
 
-    //     fn send_ctrl_report(&mut self, _id: u8) -> Result<()> {
-    //         trace!("Sending control device feature report");
+    // pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
+    //     trace!("Querying control device feature report");
 
-    //         Ok(())
-    //     }
+    //     Ok(())
+    // }
 
-    //     fn wait_for_ctrl_dev(&mut self) -> Result<()> {
-    //         trace!("Waiting for control device to respond...");
+    // fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
+    //     trace!("Sending control device feature report");
 
-    //         Ok(())
-    //     }
+    //     Ok(())
+    // }
+
+    // fn wait_for_ctrl_dev(&mut self) -> Result<()> {
+    //     trace!("Waiting for control device to respond...");
+
+    //     return Ok(());
+    // }
 }
 
-impl DeviceInfoTrait for GenericMouse {
+impl DeviceInfoTrait for GenericKeyboard {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities {}
     }
@@ -85,7 +91,7 @@ impl DeviceInfoTrait for GenericMouse {
     }
 }
 
-impl DeviceTrait for GenericMouse {
+impl DeviceTrait for GenericKeyboard {
     fn get_usb_path(&self) -> String {
         "<unsupported>".to_string()
     }
@@ -136,16 +142,30 @@ impl DeviceTrait for GenericMouse {
     }
 }
 
-impl MouseDeviceTrait for GenericMouse {
+impl KeyboardDeviceTrait for GenericKeyboard {
+    fn set_status_led(&self, _led_kind: LedKind, _on: bool) -> Result<()> {
+        trace!("Setting status LED state");
+
+        Ok(())
+    }
+
     #[inline]
-    fn get_next_event(&self) -> Result<MouseHidEvent> {
+    fn get_next_event(&self) -> Result<KeyboardHidEvent> {
         self.get_next_event_timeout(-1)
     }
 
-    fn get_next_event_timeout(&self, _millis: i32) -> Result<MouseHidEvent> {
+    fn get_next_event_timeout(&self, _millis: i32) -> Result<KeyboardHidEvent> {
         trace!("Querying control device for next event");
 
         Err(HwDeviceError::InvalidResult {}.into())
+    }
+
+    fn hid_event_code_to_key_index(&self, _code: &KeyboardHidEventCode) -> u8 {
+        0
+    }
+
+    fn hid_event_code_to_report(&self, _code: &KeyboardHidEventCode) -> u8 {
+        0
     }
 
     fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
@@ -164,9 +184,5 @@ impl MouseDeviceTrait for GenericMouse {
         trace!("Setting LED off pattern...");
 
         Ok(())
-    }
-
-    fn has_secondary_device(&self) -> bool {
-        false
     }
 }

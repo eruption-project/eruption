@@ -1,10 +1,10 @@
 [package]
 name = "eruption"
-version = "0.1.18"
+version = "0.1.19"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
-description = "Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards"
-repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
+description = "Eruption Linux user-mode input and LED driver for keyboards, mice and other devices"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
 license = "GPLv3+"
 readme = "README.md"
 
@@ -13,9 +13,9 @@ default = []
 
 [dependencies]
 crossbeam = "0.8.0"
-futures = "0.3.7"
-parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
-async-trait = "0.1.41"
+futures = "0.3.8"
+parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
+async-trait = "0.1.42"
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
@@ -25,15 +25,15 @@ prctl = "1.0.0"
 log = "0.4.11"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.22"
-eyre = "0.6.2"
-color-eyre = "0.5.6"
+eyre = "0.6.3"
+color-eyre = "0.5.7"
 toml = "0.5.7"
 serde = { version = "1.0.117", features = ["derive"] }
 serde_json = { version = "1.0.59" }
-tokio = { version = "0.3", features = ["full", "parking_lot"] }
+tokio = { version = "0.2", features = ["full", "parking_lot"] }
 ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.1"
-hotwatch = "0.4.3"
+hotwatch = "0.4.4"
 config = "0.10.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 udev = "0.5.0"
@@ -46,7 +46,7 @@ rayon = "1.5.0"
 lazy_static = "1.4.0"
 rand = "0.7.3"
 palette = "0.5.0"
-nalgebra = "0.23.0"
+nalgebra = "0.23.1"
 noise = "0.6.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
@@ -54,22 +54,21 @@ interpolation = "0.2.0"
 mlua = { version = "0.4.2", features = ["luajit"] }
 mlua_derive = { version = "0.4.0" }
 sysinfo = "0.15"
-systemstat = "0.1.5"
+systemstat = "0.1.6"
 procinfo = "0.4.2"
 rustfft = "4.0.0"
 hound = "3.4.0"
-libpulse-binding = "2.16"
-libpulse-simple-binding = "2.16"
-rust-pulsectl = "0.2.6"
+libpulse-binding = { version = "2.16", default-features = false }
+libpulse-simple-binding = { version = "2.16", default-features = false }
+rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 dbus = "0.9.0"
 dbus-tree = "0.9.0"
 paste = "1.0"
+bitvec = "0.19.4"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"
-# libpulse-binding = { git = "https://github.com/jnqnfe/pulse-binding-rust.git", branch = "travis-bionic-1" }
-# libpulse-simple-binding = { git = "https://github.com/jnqnfe/pulse-binding-rust.git", branch = "travis-bionic-1" }
 
 [dev-dependencies]
-tokio = { version = "0.3", features = ["test-util"] }
+tokio = { version = "0.2", features = ["test-util"] }

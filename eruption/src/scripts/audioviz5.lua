@@ -25,10 +25,8 @@ adaptive_offset = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
-        color_map[i] = color_off
+    for i = 0, canvas_size do
+        color_map[i] = 0x00000000
     end
 end
 
@@ -40,11 +38,9 @@ function on_tick(delta)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
-            local x = i / num_rows
-            local y = i / num_cols
+        for i = 0, canvas_size do
+            local x = i / canvas_width
+            local y = i / canvas_height
 
             local val = open_simplex_noise(x / coord_scale + adaptive_offset,
                                            y / coord_scale + adaptive_offset,

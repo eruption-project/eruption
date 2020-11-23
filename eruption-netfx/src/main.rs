@@ -57,7 +57,7 @@ pub struct Options {
     command: Subcommands,
 }
 
-// Subcommands
+// Sub-commands
 #[derive(Debug, Clap)]
 pub enum Subcommands {
     /// Ping the server

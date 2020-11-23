@@ -26,9 +26,7 @@ ticks = 0
 function on_startup(config)
     percentage = 0
 
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = color_background
     end
 end
@@ -42,12 +40,10 @@ function on_tick(delta)
         trace("Temperature: Temp: " .. get_package_temp() .. " / " .. max_temperature)
     end
 
-    local num_keys = get_num_keys()
-
     -- calculate colors
     local percentage = min(temperature / max_temperature * 100, 100)
 
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
     end
 

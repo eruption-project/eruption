@@ -18,18 +18,22 @@ require "debug"
 
 -- global state variables --
 color_map = {}
+max_effect_ttl = target_fps * 3
+effect_ttl = max_effect_ttl
 
 function on_startup(config)
-  local num_keys = get_num_keys()
+	for i = 0, canvas_size do
+		r, g, b, alpha = color_to_rgba(color_background)
+		color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+	end
 
-  for i = 0, num_keys do
-      r, g, b, alpha = color_to_rgba(color_background)
-      color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
-  end
-
-  submit_color_map(color_map)
+	submit_color_map(color_map)
 end
 
--- function on_tick(delta)
---   submit_color_map(color_map)
--- end
+function on_tick(delta)
+	if effect_ttl <= 0 then return end
+
+	effect_ttl = effect_ttl - 1
+
+	submit_color_map(color_map)
+end

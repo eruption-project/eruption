@@ -4,8 +4,8 @@ version = "0.0.2"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A CLI control utility for the Eruption Linux user-mode driver"
-repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
-homepage = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
+homepage = "https://github.com/X3n0m0rph59/eruption"
 license = "GPLv3+"
 readme = "README.md"
 
@@ -18,7 +18,7 @@ colored = "2.0"
 log = "0.4.11"
 libc = "0.2.80"
 nix = "0.19.0"
-parking_lot = { version = "0.11.0", features = ["deadlock_detection"] }
+parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.117", features = ["derive"] }
 serde_json = { version = "1.0.59" }
 tokio = { version = "0.2", features = ["full", "parking_lot"] }
@@ -28,8 +28,8 @@ tracing-subscriber = "0.2.15"
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 toml = "0.5.7"
 thiserror = "1.0.22"
-eyre = "0.6.2"
-color-eyre = "0.5.6"
+eyre = "0.6.3"
+color-eyre = "0.5.7"
 paste = "1.0"
 dbus = "0.9.0"
 dbus-tokio = "0.6.0"

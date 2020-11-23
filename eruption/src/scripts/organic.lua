@@ -33,13 +33,11 @@ function on_tick(delta)
 
     -- calculate the organic effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
 		local angle = open_simplex_noise_2d(ticks / time_scale, 42)
 
-        for i = 0, num_keys do
-			local x = i / num_rows
-            local y = i / num_cols
+        for i = 0, canvas_size do
+			local x = i / canvas_width
+            local y = i / canvas_height
 
             local x2 = (cos(angle) * x) - (sin(angle) * y)
 			local y2 = (sin(angle) * x) + (cos(angle) * y)

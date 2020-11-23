@@ -77,11 +77,3 @@ function easyshift_macro_3()
   inject_key_with_delay(42, false, 1500) 	-- shift up
 end
 ```
-
-## FAQ
-
-TODO
-
-## References
-
-TODO

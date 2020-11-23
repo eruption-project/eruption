@@ -25,9 +25,7 @@ function on_tick(delta)
 
     -- calculate psychedelic effect
     if ticks % animation_delay == 0 then
-        local num_keys = get_num_keys()
-
-        for i = 0, num_keys do
+        for i = 0, canvas_size do
 			local x = i / num_rows
             local y = i / num_cols
 

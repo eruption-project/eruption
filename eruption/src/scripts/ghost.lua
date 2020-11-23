@@ -29,9 +29,8 @@ key_state = {
 	shockwave_origin = 32,
 }
 
-target_fps = 24
-max_effect_ttl = 50
-effect_ttl = 0
+max_effect_ttl = target_fps * 2
+effect_ttl = max_effect_ttl
 
 -- max ttl of a shockwave cell
 shockwave_ttl = key_state.shockwave_origin - key_state.shockwave_sentinel
@@ -60,10 +59,11 @@ end
 
 -- event handler functions --
 function on_startup(config)
-	local num_keys = get_num_keys()
+	for i = 0, canvas_size do
+        color_map[i] = 0x00000000
+	end
 
     for i = 0, num_keys do
-        color_map[i] = 0x00000000
 		state_map[i] = key_state.idle
     end
 end
@@ -74,8 +74,6 @@ end
 
 function on_tick(delta)
 	ticks = ticks + delta
-
-	local num_keys = get_num_keys()
 
 	if ticks > next_rand then
 		ghost_key(trunc(rand(1, num_keys)))

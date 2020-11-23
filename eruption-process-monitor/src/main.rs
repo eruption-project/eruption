@@ -219,20 +219,20 @@ pub struct Options {
     command: Subcommands,
 }
 
-// Subcommands
+// Sub-commands
 #[derive(Debug, Clap)]
 pub enum Subcommands {
     /// Run in background and monitor running processes
     Daemon,
 
-    /// Rules related subcommands
+    /// Rules related sub-commands
     Rules {
         #[clap(subcommand)]
         command: RulesSubcommands,
     },
 }
 
-/// Subcommands of the "rules" command
+/// Sub-commands of the "rules" command
 #[derive(Debug, Clap)]
 pub enum RulesSubcommands {
     /// List all available rules
@@ -784,8 +784,10 @@ fn load_rules_map() -> Result<()> {
         regex: ".*".to_string(),
     };
 
-    let mut metadata = RuleMetadata::default();
-    metadata.internal = true;
+    let metadata = RuleMetadata {
+        internal: true,
+        ..Default::default()
+    };
 
     let action = Action::SwitchToProfile {
         profile_name: default_profile,

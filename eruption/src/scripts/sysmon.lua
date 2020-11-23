@@ -24,8 +24,8 @@ ticks = 0
 -- event handler functions --
 function on_startup(config)
     percentage = 0
-    local num_keys = get_num_keys()
-    for i = 0, num_keys do
+
+    for i = 0, canvas_size do
         color_map[i] = color_background
     end
 end
@@ -35,16 +35,13 @@ function on_tick(delta)
 
     if ticks % 4 == 0 then return end
 
-    -- update the system state
-    local num_keys = get_num_keys()
-
     -- calculate colors
     temperature = get_package_temp()
     local percentage = min(temperature / max_temperature * 100, 100)
 
     -- info("Temperature: percentage: " .. percentage ..  " max: " .. max_temperature .. " current: " .. temperature)
 
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
     end
 

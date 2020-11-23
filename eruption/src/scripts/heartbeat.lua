@@ -15,18 +15,17 @@
 
 require "declarations"
 require "debug"
+require "easing"
 
 -- global state variables --
-heartbeat_step = get_runnable_tasks() * heartbeat_multiplier
+heartbeat_step = 1.25
 color_map = {}
 ticks = 0
 percentage = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
 end
@@ -34,13 +33,11 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- update system load indicator approximately every 5 seconds
-    if ticks % 100 == 0 then
+    -- update system load indicator approximately every second
+    if ticks % target_fps == 0 then
         heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier, 3.25), 0.25)
         trace("HeartBeat: Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
     end
-
-    local num_keys = get_num_keys()
 
     -- calculate 'fill' percentage for heartbeat effect
     percentage = percentage + ((heartbeat_step * max(delta, 1)) + (easing(percentage) * heartbeat_step))
@@ -53,7 +50,7 @@ function on_tick(delta)
     end
 
     -- generate heartbeat color map values
-    local upper_bound = num_keys * (min(percentage, 100) / 100)
+    local upper_bound = num_keys * (clamp(percentage, 0, 100) / 100)
     for i = 0, num_keys do
         if i <= upper_bound then
             color_map[i] = color_map[i] + rgba_to_color(0, 0, 0, 10)

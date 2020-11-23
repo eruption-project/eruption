@@ -20,9 +20,8 @@ require "debug"
 color_map = {}
 color_map_afterglow = {}
 color_map_effects = {}
-max_effect_ttl = 40
-
-effect_ttl = 0
+max_effect_ttl = target_fps * 2
+effect_ttl = max_effect_ttl
 
 -- holds a scalar field to simulate a wave
 grid = {}
@@ -30,9 +29,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map[i] = 0x00000000
 		color_map_afterglow[i] = 0x00000000
 		color_map_effects[i] = 0x00000000
@@ -43,9 +40,7 @@ end
 function on_mouse_button_down(button_index)
 	if not mouse_events then return end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map_effects[i] = color_mouse_click_flash
 	end
 
@@ -55,9 +50,7 @@ end
 function on_mouse_button_up(button_index)
 	if not mouse_events then return end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map_effects[i] = 0x00000000
 	end
 
@@ -73,9 +66,7 @@ function on_mouse_wheel(direction)
 		c = color_mouse_wheel_flash
 	end
 
-	local num_keys = get_num_keys()
-
-	for i = 0, num_keys do
+	for i = 0, canvas_size do
 		color_map_effects[i] = c
 	end
 
@@ -87,9 +78,7 @@ function on_mouse_hid_event(event_type, arg1)
 
 	if event_type == 1 then
 		-- DPI change event
-		local num_keys = get_num_keys()
-
-		for i = 0, num_keys do
+		for i = 0, canvas_size do
 			color_map_effects[i] = color_mouse_wheel_flash
 		end
 
@@ -118,10 +107,8 @@ function on_tick(delta)
 
 	if effect_ttl <= 0 then return end
 
-	local num_keys = get_num_keys()
-
 	-- compute halo effect
-	for key_index = 1, num_keys do
+	for key_index = 1, canvas_size do
 		local epsilon = 0.1
 		if grid[key_index] >= epsilon then
 			grid[key_index - 1] = grid[key_index] - 0.25

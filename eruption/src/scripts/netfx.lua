@@ -33,7 +33,7 @@ local function split(str, pat)
        if s ~= 1 or cap ~= "" then
           table.insert(t, cap)
        end
-       last_end = e+1
+       last_end = e + 1
        s, e, cap = str:find(fpat, last_end)
     end
 
@@ -47,9 +47,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
 
@@ -164,8 +162,6 @@ function on_tick(delta)
                         if #spec < 2 then
                             if result[1] == "ALL" then
                                 -- predefined zone: all keys
-                                local num_keys = get_num_keys()
-
                                 for i = 0, num_keys do
                                     color_map[i] = color
                                 end

@@ -44,7 +44,7 @@ GNOME Shell extension, for easy switching of profiles on the fly.
 The eruption configuration file `/etc/eruption/eruption.conf`:
 
 ```toml
-# Eruption - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
+# Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 # Main configuration file
 
 [global]
@@ -174,8 +174,8 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 
 ## Available Plugins <a name="plugins"></a>
 
-* Keyboard: Process keyboard events, like e.g. "Key pressed"
-* Mouse: Process mouse events, like e.g. "Button pressed" or "Mouse moved"
+* Keyboard: Keyboard related functions
+* Mouse: Mouse related functions
 * System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 * Sensors: Query system sensor values, like e.g. CPU package temperature
 * Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
@@ -223,8 +223,9 @@ The following scripts are unfinished/still in development, and some of them have
 
 | Name               | Class      | File                  | Progress         | Description                                                                                        |
 | ------------------ | ---------- | --------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
-| Fire               | Background | `fire.lua`            | Approx. 65% done | Shows a bonfire effect on the keyboard                                                             |
+| Fire               | Background | `fire.lua`            | Approx. 85% done | Shows a bonfire effect on the keyboard                                                             |
 | Fireworks          | Background | `fireworks.lua`       | Approx. 85% done | Shows a fireworks effect on the keyboard                                                           |
+| Flight (Perlin)    | Background | `flight-perlin.lua`   | Approx. 85% done | Shows a random flight through Perlin noise                                                         |
 | Halo               | Effect     | `halo.lua`            | Approx. 95% done | Show a spreading rainbow colored animated halo when a key has been pressed                         |
 | Heat Map           | Effect     | `heatmap.lua`         | Approx. 50% done | Shows a heat map of recorded statistics on the keyboard                                            |
 | Gaming             | Effect     | `gaming.lua`          | Approx. 85% done | Highlight a fixed set of keys, like e.g. 'WASD'                                                    |

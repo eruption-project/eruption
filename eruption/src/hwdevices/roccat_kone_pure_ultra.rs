@@ -15,24 +15,53 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use bitvec::prelude::*;
+use hidapi::HidApi;
 use log::*;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
-use std::thread;
 use std::time::Duration;
+use std::{any::Any, thread};
 use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDeviceTrait,
-    MouseHidEvent, NUM_KEYS, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
+    MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
 
-// pub const NUM_KEYS: usize = 9;
-pub const KEYBOARD_SUB_DEVICE: usize = 2;
+pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
+
+// pub const NUM_BUTTONS: usize = 9;
+
+// canvas to LED index mapping
+pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+
+/// Binds the driver to a device
+pub fn bind_hiddev(
+    hidapi: &HidApi,
+    usb_vid: u16,
+    usb_pid: u16,
+    serial: &str,
+) -> super::Result<MouseDevice> {
+    let ctrl_dev = hidapi.device_list().find(|&device| {
+        device.vendor_id() == usb_vid
+            && device.product_id() == usb_pid
+            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.interface_number() == SUB_DEVICE
+    });
+
+    if ctrl_dev.is_none() {
+        Err(HwDeviceError::EnumerationError {}.into())
+    } else {
+        Ok(Arc::new(RwLock::new(Box::new(RoccatKonePureUltra::bind(
+            &ctrl_dev.unwrap(),
+        )))))
+    }
+}
 
 /// ROCCAT Kone Pure Ultra info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
@@ -46,48 +75,6 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
-/// Event code of a device HID message
-#[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum MouseHidEventCode {
-    #[allow(dead_code)]
-    Unknown(u8),
-
-    KEY_BTN1,
-}
-
-impl MouseHidEventCode {
-    // Instantiate a HidEventCode from raw HID report data
-    // pub fn from_report(report: u8, code: u8) -> Self {
-    //     match report {
-    //         0xfb => match code {
-    //             16 => Self::KEY_BTN1,
-
-    //             _ => Self::Unknown(code),
-    //         },
-
-    //         // 0x0a => match code {
-    //         //     57 => Self::KEY_CAPS_LOCK,
-    //         //     255 => Self::KEY_EASY_SHIFT,
-
-    //         //     _ => Self::Unknown(code),
-    //         // },
-    //         _ => Self::Unknown(code),
-    //     }
-    // }
-}
-
-/// Convert a HidEventCode to an integer code value
-impl Into<u8> for MouseHidEventCode {
-    fn into(self) -> u8 {
-        match self {
-            Self::KEY_BTN1 => 16,
-
-            MouseHidEventCode::Unknown(code) => code,
-        }
-    }
-}
-
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kone Pure Ultra mouse
 pub struct RoccatKonePureUltra {
@@ -98,6 +85,8 @@ pub struct RoccatKonePureUltra {
 
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+
+    pub button_states: Arc<Mutex<BitVec>>,
 }
 
 impl RoccatKonePureUltra {
@@ -113,6 +102,8 @@ impl RoccatKonePureUltra {
 
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
+
+            button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
         }
     }
 
@@ -315,6 +306,14 @@ impl DeviceTrait for RoccatKonePureUltra {
             .to_string()
     }
 
+    fn get_usb_vid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().vendor_id()
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        self.ctrl_hiddev_info.as_ref().unwrap().product_id()
+    }
+
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 
@@ -426,6 +425,14 @@ impl DeviceTrait for RoccatKonePureUltra {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 impl MouseDeviceTrait for RoccatKonePureUltra {
@@ -450,37 +457,82 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
             let mut buf = [0; 8];
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
-                Ok(_size) => {
+                Ok(size) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     let event = match buf[0..5] {
-                        // Key reports, incl. KEY_FN, ..
+                        // Button reports (DPI)
                         [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
+
+                        // Button reports
+                        [button_mask, 0x00, button_mask2, 0x00, _] if size > 0 => {
+                            let mut result = vec![];
+
+                            let button_mask = button_mask.view_bits::<Lsb0>();
+                            let button_mask2 = button_mask2.view_bits::<Lsb0>();
+
+                            let mut button_states = self.button_states.lock();
+
+                            // notify button press events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button press events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if *down && !*button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonDown(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 0..7
+                            for (index, down) in button_mask.iter().enumerate() {
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            // notify button release events for the buttons 8..15
+                            for (index, down) in button_mask2.iter().enumerate() {
+                                let index = index + 8; // offset by 8
+
+                                if !*down && *button_states.get(index).unwrap() {
+                                    result.push(MouseHidEvent::ButtonUp(index as u8));
+                                    button_states.set(index, *down);
+
+                                    break;
+                                }
+                            }
+
+                            if result.len() > 1 {
+                                error!(
+                                    "We missed a HID event, mouse button states will be inconsistent"
+                                );
+                            }
+
+                            if result.is_empty() {
+                                MouseHidEvent::Unknown
+                            } else {
+                                debug!("{:?}", result[0]);
+                                result[0]
+                            }
+                        }
 
                         _ => MouseHidEvent::Unknown,
                     };
-
-                    // match event {
-                    //     HidEvent::KeyDown { code } => {
-                    //         // reset "to be dropped" flag
-                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
-                    //         // update our internal representation of the keyboard state
-                    //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write()[index] = true;
-                    //     }
-
-                    //     HidEvent::KeyUp { code } => {
-                    //         // reset "to be dropped" flag
-                    //         macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
-                    //         // update our internal representation of the keyboard state
-                    //         let index = util::hid_code_to_key_index(code) as usize;
-                    //         keyboard::KEY_STATES.write()[index] = false;
-                    //     }
-
-                    //     _ => { /* ignore other events */ }
-                    // }
 
                     Ok(event)
                 }
@@ -503,14 +555,12 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            // use the color of KP_ENTER for now
-
             let buf: [u8; 11] = [
                 0x0d,
                 0x0b,
-                led_map[131].r,
-                led_map[131].g,
-                led_map[131].b,
+                led_map[LED_0].r,
+                led_map[LED_0].g,
+                led_map[LED_0].b,
                 0x00,
                 0x00,
                 0x00,
@@ -541,12 +591,12 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 
@@ -564,12 +614,12 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_map: [RGBA; NUM_KEYS] = [RGBA {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
                 r: 0x00,
                 g: 0x00,
                 b: 0x00,
                 a: 0x00,
-            }; NUM_KEYS];
+            }; constants::CANVAS_SIZE];
 
             self.send_led_map(&led_map)?;
 

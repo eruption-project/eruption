@@ -313,7 +313,7 @@ pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(da: &D, context: &cairo::Context)
     let led_colors = crate::dbus_client::get_led_colors().unwrap();
 
     // paint all keys
-    for i in 0..led_colors.len() {
+    for i in 0..144 {
         // if let Some(index) = KEY_DEFS.iter().position(|e| e.index == i) {
         //     paint_key(index + 1, &led_colors[i], &context);
         // } else {

@@ -18,7 +18,7 @@ support/systemd/eruption.preset lib/systemd/system-preset/
 support/systemd/eruption-process-monitor.service lib/systemd/user/
 support/systemd/eruption-process-monitor.preset lib/systemd/user-preset/
 
-support/udev/99-eruption-roccat-vulcan.rules lib/udev/rules.d/
+support/udev/99-eruption.rules lib/udev/rules.d/
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d/
 
@@ -34,9 +34,12 @@ support/man/eruption-process-monitor.1 usr/share/man/man1/
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles
+support/profiles/fireplace.profile var/lib/eruption/profiles
 support/profiles/fireworks.profile var/lib/eruption/profiles
+support/profiles/flight-perlin.profile var/lib/eruption/profiles
 support/profiles/gaming.profile var/lib/eruption/profiles
 support/profiles/gradient-noise.profile var/lib/eruption/profiles
+support/profiles/heartbeat-sysmon.profile var/lib/eruption/profiles
 support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/heatmap-errors.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
@@ -90,6 +93,8 @@ eruption/src/scripts/checkerboard.lua usr/share/eruption/scripts/
 eruption/src/scripts/checkerboard.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/fbm.lua usr/share/eruption/scripts/
 eruption/src/scripts/fbm.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/flight-perlin.lua usr/share/eruption/scripts/
+eruption/src/scripts/flight-perlin.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/fire.lua usr/share/eruption/scripts/
 eruption/src/scripts/fire.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/fireworks.lua usr/share/eruption/scripts/

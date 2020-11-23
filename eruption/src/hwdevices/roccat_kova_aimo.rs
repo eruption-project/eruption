@@ -35,15 +35,6 @@ pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
 // canvas to LED index mapping
 pub const LED_0: usize = constants::CANVAS_SIZE - 36;
 pub const LED_1: usize = constants::CANVAS_SIZE - 35;
-pub const LED_2: usize = constants::CANVAS_SIZE - 34;
-pub const LED_3: usize = constants::CANVAS_SIZE - 33;
-pub const LED_4: usize = constants::CANVAS_SIZE - 32;
-pub const LED_5: usize = constants::CANVAS_SIZE - 31;
-pub const LED_6: usize = constants::CANVAS_SIZE - 30;
-pub const LED_7: usize = constants::CANVAS_SIZE - 29;
-pub const LED_8: usize = constants::CANVAS_SIZE - 28;
-pub const LED_9: usize = constants::CANVAS_SIZE - 27;
-pub const LED_10: usize = constants::CANVAS_SIZE - 26;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -62,13 +53,13 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatKoneAimo::bind(
+        Ok(Arc::new(RwLock::new(Box::new(RoccatKovaAimo::bind(
             &ctrl_dev.unwrap(),
         )))))
     }
 }
 
-/// ROCCAT Kone Aimo info struct (sent as HID report)
+/// ROCCAT Kova AIMO info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -81,8 +72,8 @@ pub struct DeviceInfo {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Kone Aimo mouse
-pub struct RoccatKoneAimo {
+/// Device specific code for the ROCCAT Kova AIMO mouse
+pub struct RoccatKovaAimo {
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -94,10 +85,10 @@ pub struct RoccatKoneAimo {
     pub button_states: Arc<Mutex<BitVec>>,
 }
 
-impl RoccatKoneAimo {
+impl RoccatKovaAimo {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone Aimo");
+        info!("Bound driver: ROCCAT Kova AIMO");
 
         Self {
             is_initialized: false,
@@ -201,13 +192,8 @@ impl RoccatKoneAimo {
                     }
                 }
 
-                0x0d => {
-                    let buf: [u8; 46] = [
-                        0x0d, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ];
+                0x09 => {
+                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -258,7 +244,7 @@ impl RoccatKoneAimo {
     }
 }
 
-impl DeviceInfoTrait for RoccatKoneAimo {
+impl DeviceInfoTrait for RoccatKovaAimo {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities {}
     }
@@ -303,7 +289,7 @@ impl DeviceInfoTrait for RoccatKoneAimo {
     }
 }
 
-impl DeviceTrait for RoccatKoneAimo {
+impl DeviceTrait for RoccatKovaAimo {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -377,7 +363,7 @@ impl DeviceTrait for RoccatKoneAimo {
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("{}", e));
 
-            self.send_ctrl_report(0x0d)
+            self.send_ctrl_report(0x09)
                 .unwrap_or_else(|e| eprintln!("{}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("{}", e));
@@ -446,7 +432,7 @@ impl DeviceTrait for RoccatKoneAimo {
     }
 }
 
-impl MouseDeviceTrait for RoccatKoneAimo {
+impl MouseDeviceTrait for RoccatKovaAimo {
     #[inline]
     fn get_next_event(&self) -> Result<MouseHidEvent> {
         self.get_next_event_timeout(-1)
@@ -530,8 +516,8 @@ impl MouseDeviceTrait for RoccatKoneAimo {
 
                             if result.len() > 1 {
                                 error!(
-                                "We missed a HID event, mouse button states will be inconsistent"
-                            );
+                                    "We missed a HID event, mouse button states will be inconsistent"
+                                );
                             }
 
                             if result.is_empty() {
@@ -566,53 +552,17 @@ impl MouseDeviceTrait for RoccatKoneAimo {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 46] = [
-                0x0d,
-                0x2e,
+            // use the color of KP_ENTER for now
+
+            let buf: [u8; 8] = [
+                0x0a,
+                0x08,
                 led_map[LED_0].r,
                 led_map[LED_0].g,
                 led_map[LED_0].b,
-                led_map[LED_0].a,
                 led_map[LED_1].r,
                 led_map[LED_1].g,
                 led_map[LED_1].b,
-                led_map[LED_1].a,
-                led_map[LED_2].r,
-                led_map[LED_2].g,
-                led_map[LED_2].b,
-                led_map[LED_2].a,
-                led_map[LED_3].r,
-                led_map[LED_3].g,
-                led_map[LED_3].b,
-                led_map[LED_3].a,
-                led_map[LED_4].r,
-                led_map[LED_4].g,
-                led_map[LED_4].b,
-                led_map[LED_4].a,
-                led_map[LED_5].r,
-                led_map[LED_5].g,
-                led_map[LED_5].b,
-                led_map[LED_5].a,
-                led_map[LED_6].r,
-                led_map[LED_6].g,
-                led_map[LED_6].b,
-                led_map[LED_6].a,
-                led_map[LED_7].r,
-                led_map[LED_7].g,
-                led_map[LED_7].b,
-                led_map[LED_7].a,
-                led_map[LED_8].r,
-                led_map[LED_8].g,
-                led_map[LED_8].b,
-                led_map[LED_8].a,
-                led_map[LED_9].r,
-                led_map[LED_9].g,
-                led_map[LED_9].b,
-                led_map[LED_9].a,
-                led_map[LED_10].r,
-                led_map[LED_10].g,
-                led_map[LED_10].b,
-                led_map[LED_10].a,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

@@ -1,11 +1,11 @@
-%global OrigName eruption-roccat-vulcan
+%global OrigName eruption
 %global ShortName eruption
 
-Name:    eruption-roccat-vulcan-git
-Version: 0.1.18
-Release: 3%{?dist}
-Summary: eruption-roccat-vulcan - Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
-URL:     https://github.com/X3n0m0rph59/eruption-roccat-vulcan
+Name:    eruption-git
+Version: 0.1.19
+Release: 0%{?dist}
+Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
+URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
 Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/master/master.tar.gz
@@ -34,12 +34,13 @@ Requires: luajit
 Recommends: lua-socket-compat
 
 Conflicts: eruption-roccat-vulcan
+Conflicts: eruption-roccat-vulcan-git
 
 %global gittag master
 %global debug_package %{nil}
 
 %description
-Linux user-mode driver for the ROCCAT Vulcan 100/12x series keyboards
+Linux user-mode input and LED driver for keyboards, mice and other devices
 
 %prep
 # %autosetup -n %{name}-%{version}
@@ -83,8 +84,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{b
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
+cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/policykit/org.eruption.policy %{buildroot}%{_datarootdir}/polkit-1/actions/
-cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption-roccat-vulcan.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
@@ -93,9 +94,12 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/fireplace.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fireworks.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/flight-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/gradient-noise.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/heartbeat-sysmon.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -163,7 +167,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 %{_datarootdir}/polkit-1/actions/org.eruption.policy
-/usr/lib/udev/rules.d/99-eruption-roccat-vulcan.rules
+/usr/lib/udev/rules.d/99-eruption.rules
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
@@ -183,6 +187,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
+%{_sharedstatedir}/%{ShortName}/profiles/flight-perlin.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile

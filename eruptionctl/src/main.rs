@@ -53,10 +53,10 @@ pub struct Options {
     command: Subcommands,
 }
 
-// Subcommands
+// Sub-commands
 #[derive(Debug, Clap)]
 pub enum Subcommands {
-    /// Configuration related subcommands
+    /// Configuration related sub-commands
     Config {
         #[clap(subcommand)]
         command: ConfigSubcommands,
@@ -68,7 +68,7 @@ pub enum Subcommands {
         command: SwitchSubcommands,
     },
 
-    /// Profile related subcommands
+    /// Profile related sub-commands
     Profiles {
         #[clap(subcommand)]
         command: ProfilesSubcommands,
@@ -87,7 +87,7 @@ pub enum Subcommands {
     },
 }
 
-/// Subcommands of the "config" command
+/// Sub-commands of the "config" command
 #[derive(Debug, Clap)]
 pub enum ConfigSubcommands {
     /// Get or set the brightness of the LEDs
@@ -97,7 +97,7 @@ pub enum ConfigSubcommands {
     Soundfx { enable: Option<bool> },
 }
 
-/// Subcommands of the "switch" command
+/// Sub-commands of the "switch" command
 #[derive(Debug, Clap)]
 pub enum SwitchSubcommands {
     /// Switch profiles
@@ -107,7 +107,7 @@ pub enum SwitchSubcommands {
     Slot { index: usize },
 }
 
-/// Subcommands of the "profiles" command
+/// Sub-commands of the "profiles" command
 #[derive(Debug, Clap)]
 pub enum ProfilesSubcommands {
     /// Show info about a profile

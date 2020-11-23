@@ -22,12 +22,9 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
     end
-
 
     -- highlight WASD keys
     color_map[9]  = color_highlight

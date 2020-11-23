@@ -1,5 +1,5 @@
 [Unit]
-Description=Driver for ROCCAT Vulcan 100/12x series keyboards
+Description=Linux user-mode input and LED driver for keyboards, mice and other devices
 Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
 Wants=basic.target
 

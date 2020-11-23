@@ -23,9 +23,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    local num_keys = get_num_keys()
-
-    for i = 0, num_keys do
+    for i = 0, canvas_size do
         color_map[i] = color_background
     end
 end
@@ -34,27 +32,25 @@ function on_tick(delta)
     ticks = ticks + delta
 
     -- update the state
-		loudness = get_audio_loudness()
-		if loudness > max_loudness then
-			max_loudness = loudness
-		end
+	loudness = get_audio_loudness()
+	if loudness > max_loudness then
+		max_loudness = loudness
+	end
 
-		max_loudness = max_loudness * 0.999
-		if max_loudness < 8 then
-			max_loudness = 8
-		end
+	max_loudness = max_loudness * 0.999
+	if max_loudness < 8 then
+		max_loudness = 8
+	end
 
-		--debug("AudioViz1: Loudness  " .. loudness .. " / " .. max_loudness)
-
-    local num_keys = get_num_keys()
+	-- debug("AudioViz1: Loudness  " .. loudness .. " / " .. max_loudness)
 
     -- calculate colors
     local percentage = min(loudness / max_loudness * 100, 100)
 
-		color = linear_gradient(color_silence, color_loud, percentage / 100)
-    for i = 0, num_keys do
-        color_map[i] = color
-		end
+	color = linear_gradient(color_silence, color_loud, percentage / 100)
+    for i = 0, canvas_size do
+		color_map[i] = color
+	end
 
     submit_color_map(color_map)
 end
