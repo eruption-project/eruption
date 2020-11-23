@@ -8,6 +8,7 @@ Table of new and noteworthy changes:
 | 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!              |
 | 0.1.19 | Add support for USB HID based event handling for mouse devices. This enables the extra buttons on supported devices     |
 | 0.1.19 | Update Lua scripts to handle the unified canvas                                                                         |
+| 0.1.19 | Fixed brightnes bug: Wrong initial brightness, was only correct after a key has been pressed                            |
 | 0.1.19 | New profiles: "Heartbeat: System Monitor", "Fireplace", "Flight (Perlin)"                                               |
 | 0.1.19 | Improve stability of the core daemon                                                                                    |
 | 0.1.18 | __New Release__                                                                                                         |
