@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=a8c9269bbb1c229537b2af8f987a8589a04b97d0')
+source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=8651df248897ab9a09328fb55e9bdb89fad8c9b9')
 noextract=()
 sha512sums=('SKIP')
 
@@ -239,6 +239,7 @@ package() {
     install -m 644 "support/profiles/psychedelic.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/twinkle.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/rainbow.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/red-wave.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-red-yellow.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-blue-red.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/rainbow-wave.profile" "$pkgdir/var/lib/eruption/profiles/"

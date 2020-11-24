@@ -56,6 +56,7 @@ support/profiles/rainbow.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/rainbow-wave.profile var/lib/eruption/profiles
+support/profiles/red-wave.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/solid-wave.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles

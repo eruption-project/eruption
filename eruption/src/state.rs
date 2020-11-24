@@ -57,9 +57,9 @@ pub fn init_global_runtime_state() -> Result<()> {
     let mut profiles = crate::SLOT_PROFILES.lock();
     profiles.replace(vec![
         PathBuf::from("profile1.profile"),
-        PathBuf::from("profile2.profile"),
-        PathBuf::from("profile3.profile"),
-        PathBuf::from("profile4.profile"),
+        PathBuf::from("red-wave.profile"),
+        PathBuf::from("swirl-perlin.profile"),
+        PathBuf::from("spectrum-analyzer-swirl.profile"),
     ]);
 
     let mut slot_names = crate::SLOT_NAMES.lock();
@@ -94,7 +94,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .write()
         .as_mut()
         .unwrap()
-        .set_default("brightness", 100)
+        .set_default("brightness", 70)
         .unwrap();
 
     STATE
