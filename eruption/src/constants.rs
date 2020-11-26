@@ -69,21 +69,12 @@ pub const DEVICE_SETTLE_MILLIS: u64 = 5;
 pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 
 /// Timeout value to use for D-Bus connections
-// pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
-pub const DBUS_TIMEOUT_MILLIS: u32 = 4000;
+pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 
 /// Timeout value to use for D-Bus connections
 /// that may involve interactivity like e.g.:
 /// PolicyKit authentication
 pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
-
-/// Amount of time that the D-Bus event handler should sleep,
-/// when it has processed at least one message recently
-pub const DBUS_SHORT_SLEEP_MILLIS: u64 = 1;
-
-/// Amount of time that the D-Bus event handler should sleep,
-/// when it has NOT processed any message for a certain amount of time
-pub const DBUS_LONG_SLEEP_MILLIS: u64 = 500;
 
 // Wait n seconds before sending the LED "off pattern" on shutdown
 pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 150;

@@ -101,9 +101,6 @@ lazy_static! {
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
-    /// Last D-Bus event timer, mainly used to control polling interval
-    pub static ref LAST_DBUS_EVENT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
-
     /// Channels to the Lua VMs
     static ref LUA_TXS: Arc<Mutex<Vec<Sender<script::Message>>>> = Arc::new(Mutex::new(vec![]));
 
@@ -272,7 +269,7 @@ fn spawn_dbus_thread(
                     Err(_e) => (),
                 }
 
-                dbus.get_next_event()
+                dbus.get_next_event_timeout(25)
                     .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
             }
         })?;
@@ -1539,7 +1536,7 @@ async fn run_main_loop(
     // used to detect changes of the active slot
     let mut saved_slot = 0;
 
-    let mut saved_brightness = 0;
+    let mut saved_brightness = BRIGHTNESS.load(Ordering::SeqCst);
 
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
@@ -1580,8 +1577,8 @@ async fn run_main_loop(
         ticks += 1;
         start_time = Instant::now();
 
-        // slot changed?
         {
+            // slot changed?
             let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
             if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
                 dbus_api_tx
@@ -1807,6 +1804,8 @@ async fn run_main_loop(
         if delay_time.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
             let delta = (delay_time.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
 
+            delay_time = Instant::now();
+
             // send timer tick events to the Lua VMs
             for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
                 // if this tx failed previously, then skip it completely
@@ -1819,8 +1818,6 @@ async fn run_main_loop(
                         });
                 }
             }
-
-            delay_time = Instant::now();
 
             // finally, update the LEDs if necessary
             let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
@@ -1909,7 +1906,9 @@ async fn run_main_loop(
                     // update the current frame generation
                     saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
 
-                    script::LAST_RENDERED_LED_MAP.write().copy_from_slice(&script::LED_MAP.read());
+                    script::LAST_RENDERED_LED_MAP
+                        .write()
+                        .copy_from_slice(&script::LED_MAP.read());
                 }
 
                 fps_counter += 1;

@@ -48,6 +48,7 @@ struct State {
     started: bool,
     connected: bool,
     active_slot: Option<usize>,
+    current_brightness: Option<i64>,
 }
 
 impl State {
@@ -56,6 +57,7 @@ impl State {
             started: false,
             connected: false,
             active_slot: None,
+            current_brightness: None,
         }
     }
 }
@@ -390,6 +392,8 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::BrightnessChanged(brightness) => {
+                STATE.write().current_brightness = Some(brightness);
+
                 let brightness_scale: gtk::Scale = builder.get_object("brightness_scale").unwrap();
 
                 events::ignore_next_dbus_events(1);

@@ -24,7 +24,6 @@ use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use std::time::Instant;
 
 use crate::plugins::audio;
 use crate::profiles;
@@ -57,6 +56,7 @@ pub struct DbusApi {
     brightness_changed: Arc<Signal<()>>,
 }
 
+#[allow(dead_code)]
 impl DbusApi {
     /// Initialize the D-Bus API
     pub fn new(dbus_tx: Sender<Message>) -> Result<Self> {
@@ -100,8 +100,6 @@ impl DbusApi {
             .property::<u64, _>("ActiveSlot", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -120,8 +118,6 @@ impl DbusApi {
             .property::<String, _>("ActiveProfile", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -148,8 +144,6 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -161,8 +155,6 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -182,8 +174,6 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -196,8 +186,6 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                 if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
@@ -223,8 +211,6 @@ impl DbusApi {
                                 f.property::<bool, _>("Running", ())
                                     .emits_changed(EmitsChangedSignal::True)
                                     .on_get(|i, m| {
-                                        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                         if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
                                             .unwrap_or(false)
                                         {
@@ -235,8 +221,6 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                         if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
                                             .unwrap_or(false)
                                         {
@@ -253,8 +237,6 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetLedColors", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_monitor_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -291,8 +273,6 @@ impl DbusApi {
                             .add_p(brightness_property_clone)
                             .add_m(
                                 f.method("WriteFile", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_manage_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -319,8 +299,6 @@ impl DbusApi {
                             .add_p(active_slot_property_clone.clone())
                             .add_m(
                                 f.method("SwitchSlot", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_settings_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -368,8 +346,6 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetSlotProfiles", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_monitor_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -396,8 +372,6 @@ impl DbusApi {
                                     .emits_changed(EmitsChangedSignal::True)
                                     .auto_emit_on_set(true)
                                     .on_get(|i, m| {
-                                        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                         if perms::has_monitor_permission(
                                             &m.msg.sender().unwrap().to_string(),
                                         )
@@ -412,8 +386,6 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                            *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                             if perms::has_settings_permission(
                                                 &m.msg.sender().unwrap().to_string(),
                                             )
@@ -446,8 +418,6 @@ impl DbusApi {
                             .add_p(active_profile_property_clone.clone())
                             .add_m(
                                 f.method("SwitchProfile", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_settings_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -490,8 +460,6 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("EnumProfiles", (), move |m| {
-                                    *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
                                     if perms::has_monitor_permission(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
@@ -565,8 +533,6 @@ impl DbusApi {
     }
 
     pub fn notify_active_slot_changed(&self) {
-        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
         let active_slot = crate::ACTIVE_SLOT.load(Ordering::SeqCst);
 
         self.connection
@@ -581,8 +547,6 @@ impl DbusApi {
     }
 
     pub fn notify_active_profile_changed(&self) {
-        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
         let active_profile = crate::ACTIVE_PROFILE.lock();
 
         let active_profile = active_profile
@@ -606,8 +570,6 @@ impl DbusApi {
     }
 
     pub fn notify_profiles_changed(&self) {
-        *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
-
         self.connection
             .as_ref()
             .unwrap()
@@ -639,7 +601,25 @@ impl DbusApi {
     pub fn get_next_event(&self) -> Result<()> {
         match self.connection {
             Some(ref connection) => {
-                if let Some(item) = connection.incoming(constants::DBUS_TIMEOUT_MILLIS).next() {
+                if let Some(item) = connection.incoming(0).next() {
+                    // For the actual event handler code please see
+                    // implementation of `struct DbusApi`
+                    debug!("Message: {:?}", item);
+                } else {
+                    trace!("Received a timeout message");
+                }
+
+                Ok(())
+            }
+
+            None => Err(DbusApiError::BusNotConnected {}.into()),
+        }
+    }
+
+    pub fn get_next_event_timeout(&self, timeout_ms: u32) -> Result<()> {
+        match self.connection {
+            Some(ref connection) => {
+                if let Some(item) = connection.incoming(timeout_ms).next() {
                     // For the actual event handler code please see
                     // implementation of `struct DbusApi`
                     debug!("Message: {:?}", item);

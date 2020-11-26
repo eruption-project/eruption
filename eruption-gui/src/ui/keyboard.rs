@@ -15,13 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::util;
 use crate::util::RGBA;
+use crate::{constants, util};
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
+use palette::{Hsva, Saturate, Shade, Srgba};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -246,7 +247,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     drawing_area.connect_draw(&draw_keyboard);
 
     glib::timeout_add_local(
-        1000 / (24 /* FPS */ * 2),
+        1000 / (constants::TARGET_FPS as u32 * 2),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)
@@ -272,15 +273,27 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
 }
 
 /// Paint a key on the keyboard widget
-fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context, scale_factor: f64) {
+fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context, _scale_factor: f64) {
     let key_def = &KEY_DEFS[key];
 
-    cr.set_source_rgba(
+    // compute scaling factor
+    let factor = ((100.0 - crate::STATE.read().current_brightness.unwrap_or_else(|| 0) as f64)
+        / 100.0)
+        * 0.05;
+
+    // post-process color
+    let color = Srgba::new(
         color.r as f64 / 255.0,
         color.g as f64 / 255.0,
         color.b as f64 / 255.0,
-        1.0, // color.a as f64 / 255.0,
+        color.a as f64 / 255.0,
     );
+
+    // saturate and lighten color somewhat
+    let color = Hsva::from(color);
+    let color = Srgba::from(color.saturate(factor).lighten(factor)).into_components();
+
+    cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
     cr.rectangle(key_def.x, key_def.y, key_def.width, key_def.height);
     cr.fill();
 
@@ -295,13 +308,13 @@ fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context, scale_factor: f64) {
 }
 
 /// Draw an animated keyboard with live action colors
-pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(da: &D, context: &cairo::Context) -> gtk::Inhibit {
-    let da = da.as_ref();
+pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(_da: &D, context: &cairo::Context) -> gtk::Inhibit {
+    // let da = da.as_ref();
 
-    let width = da.get_allocated_width();
-    let height = da.get_allocated_height();
+    // let width = da.get_allocated_width();
+    // let height = da.get_allocated_height();
 
-    let scale_factor = (width / height) as f64 * 1.0;
+    let scale_factor = 1.5;
 
     let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/keyboard.png").unwrap();
 
