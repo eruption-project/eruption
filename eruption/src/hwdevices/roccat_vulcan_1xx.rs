@@ -861,13 +861,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
         } else {
             match *self.led_hiddev.lock() {
                 Some(ref led_dev) => {
-                    // TODO: The #' key (on QWERTZ layout) seems to be out of order!?
-                    //       This is an ugly hack, find a better way to fix this
-                    // let mut led_map = led_map.to_vec();
-                    // led_map.swap(81, 96);
-
-                    let mut hwmap: [u8; 444] = [0; 444];
-
                     if led_map.len() < NUM_KEYS {
                         error!(
                             "Received a short LED map: Got {} elements, but should be {}",
@@ -880,42 +873,29 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
 
+                        // TODO: The #' key (on QWERTZ layout) seems to be out of order!?
+                        //       This is an ugly hack, find a better way to fix this
+                        // let mut led_map = led_map.to_vec();
+                        // led_map.swap(81, 96);
+
+                        let mut buffer: [u8; 448] = [0; 448];
+                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
+
                         for i in 0..NUM_KEYS {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            hwmap[offset] = color.r;
-                            hwmap[offset + 12] = color.g;
-                            hwmap[offset + 24] = color.b;
+                            buffer[offset + 4] = color.r;
+                            buffer[offset + 4 + 12] = color.g;
+                            buffer[offset + 4 + 24] = color.b;
                         }
 
-                        let (slice, hwmap) = hwmap.split_at(60);
+                        for bytes in buffer.chunks(64) {
+                            let mut tmp: [u8; 65] = [0; 65];
+                            tmp[1..65].copy_from_slice(&bytes);
 
-                        let mut buf: [u8; 65] = [0; 65];
-                        buf[1..5].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
-                        buf[5..65].copy_from_slice(&slice);
-
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                        match led_dev.write(&buf) {
-                            Ok(len) => {
-                                trace!("Wrote: {} bytes", len);
-                                if len < 65 {
-                                    return Err(HwDeviceError::WriteError {}.into());
-                                }
-                            }
-
-                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        }
-
-                        for bytes in hwmap.chunks(64) {
-                            buf[1..65].copy_from_slice(bytes);
-
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                            match led_dev.write(&buf) {
+                            match led_dev.write(&tmp) {
                                 Ok(len) => {
-                                    trace!("Wrote: {} bytes", len);
                                     if len < 65 {
                                         return Err(HwDeviceError::WriteError {}.into());
                                     }
