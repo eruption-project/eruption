@@ -1785,17 +1785,19 @@ async fn run_main_loop(
             Err(_e) => { /* do nothing */ }
         };
 
-        // poll HID events on all available devices
-        for device in keyboard_devices.iter() {
-            process_keyboard_hid_events(&device.0, &failed_txs)
-                .await
-                .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
-        }
+        if delay_time.elapsed() >= Duration::from_millis(1000 / (constants::TARGET_FPS * 4)) {
+            // poll HID events on all available devices
+            for device in keyboard_devices.iter() {
+                process_keyboard_hid_events(&device.0, &failed_txs)
+                    .await
+                    .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
+            }
 
-        for device in mouse_devices.iter() {
-            process_mouse_hid_events(&device.0, &failed_txs)
-                .await
-                .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
+            for device in mouse_devices.iter() {
+                process_mouse_hid_events(&device.0, &failed_txs)
+                    .await
+                    .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
+            }
         }
 
         if delay_time.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
