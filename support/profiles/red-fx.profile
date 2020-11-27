@@ -57,7 +57,7 @@ value = 0xffff5f00
 [[config.Impact]]
 type = 'color'
 name = 'color_impact'
-value = 0xffffff00
+value = 0x80ffff00
 
 [[config.Raindrops]]
 type = 'float'
