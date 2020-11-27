@@ -110,6 +110,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow.profile %{buildro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-fx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -193,6 +194,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow-wave.profile
+%{_sharedstatedir}/%{ShortName}/profiles/red-fx.profile
 %{_sharedstatedir}/%{ShortName}/profiles/red-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/snake.profile
 %{_sharedstatedir}/%{ShortName}/profiles/solid-wave.profile
