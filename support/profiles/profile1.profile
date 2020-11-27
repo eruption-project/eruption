@@ -7,7 +7,7 @@ active_scripts = [
 #   'phonon.lua',
     'halo.lua',
     'shockwave.lua',
-#   'impact.lua',
+    'impact.lua',
 #   'ghost.lua',
 #   'raindrops.lua',
     'macros.lua',
@@ -32,7 +32,7 @@ value = 0.45
 [[config.Impact]]
 type = 'color'
 name = 'color_impact'
-value = 0xffff001f
+value = 0xffffffff
 
 [[config.Raindrops]]
 type = 'float'
