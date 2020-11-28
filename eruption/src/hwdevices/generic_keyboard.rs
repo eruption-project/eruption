@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::RwLock;
@@ -158,6 +159,10 @@ impl KeyboardDeviceTrait for GenericKeyboard {
         trace!("Querying control device for next event");
 
         Err(HwDeviceError::InvalidResult {}.into())
+    }
+
+    fn ev_key_to_key_index(&self, _key: EV_KEY) -> u8 {
+        0
     }
 
     fn hid_event_code_to_key_index(&self, _code: &KeyboardHidEventCode) -> u8 {

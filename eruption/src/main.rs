@@ -277,6 +277,7 @@ fn spawn_dbus_thread(
 /// Spawns the keyboard events thread and executes it's main loop
 fn spawn_keyboard_input_thread(
     kbd_tx: Sender<Option<evdev_rs::InputEvent>>,
+    keyboard_device: KeyboardDevice,
     device_index: usize,
     usb_vid: u16,
     usb_pid: u16,
@@ -341,7 +342,8 @@ fn spawn_keyboard_input_thread(
                         // update our internal representation of the keyboard state
                         if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
                             let is_pressed = k.1.value > 0;
-                            let index = util::ev_key_to_key_index(code.clone()) as usize;
+                            let index =
+                                keyboard_device.read().ev_key_to_key_index(code.clone()) as usize;
 
                             KEY_STATES.lock()[index] = is_pressed;
                         }
@@ -383,6 +385,7 @@ fn spawn_keyboard_input_thread(
 /// Spawns the mouse events thread and executes it's main loop
 fn spawn_mouse_input_thread(
     mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
+    mouse_device: MouseDevice,
     device_index: usize,
     usb_vid: u16,
     usb_pid: u16,
@@ -447,7 +450,8 @@ fn spawn_mouse_input_thread(
                         // update our internal representation of the device state
                         if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
                             let is_pressed = k.1.value > 0;
-                            let index = util::ev_key_to_button_index(code).unwrap() as usize;
+                            let index =
+                                mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
 
                             BUTTON_STATES.lock()[index] = is_pressed;
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
@@ -512,6 +516,7 @@ fn spawn_mouse_input_thread(
 /// Spawns the mouse events thread for an additional sub-device on the mouse and executes the thread's main loop
 fn spawn_mouse_input_thread_secondary(
     mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
+    mouse_device: MouseDevice,
     device_index: usize,
     usb_vid: u16,
     usb_pid: u16,
@@ -576,7 +581,7 @@ fn spawn_mouse_input_thread_secondary(
                         // update our internal representation of the device state
                         if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
                             let is_pressed = k.1.value > 0;
-                            let index = util::ev_key_to_button_index(code).unwrap() as usize;
+                            let index = mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
 
                             BUTTON_STATES.lock()[index] = is_pressed;
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
@@ -1077,6 +1082,7 @@ async fn process_mouse_hid_events(
 /// Process mouse events
 async fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
+    mouse_device: &MouseDevice,
     failed_txs: &HashSet<usize>,
     mouse_move_event_last_dispatched: &mut Instant,
     mouse_motion_buf: &mut (i32, i32, i32),
@@ -1215,7 +1221,7 @@ async fn process_mouse_event(
         // mouse button event occurred
 
         let is_pressed = raw_event.value > 0;
-        let index = util::ev_key_to_button_index(code).unwrap();
+        let index = mouse_device.read().ev_key_to_button_index(code).unwrap();
 
         if is_pressed {
             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
@@ -1416,6 +1422,7 @@ async fn process_mouse_event(
 /// Process keyboard events
 async fn process_keyboard_event(
     raw_event: &evdev_rs::InputEvent,
+    keyboard_device: &KeyboardDevice,
     failed_txs: &HashSet<usize>,
 ) -> Result<()> {
     // notify all observers of raw events
@@ -1423,7 +1430,7 @@ async fn process_keyboard_event(
 
     if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
         let is_pressed = raw_event.value > 0;
-        let index = util::ev_key_to_key_index(code.clone());
+        let index = keyboard_device.read().ev_key_to_key_index(code.clone());
 
         trace!("Key index: {:#x}", index);
 
@@ -1748,7 +1755,7 @@ async fn run_main_loop(
                     if let Some(event) = keyboard_events.iter().find(|&&e| e.0 == i) {
                         let event = &oper.recv(&(event.1).1);
                         if let Ok(Some(event)) = event {
-                            process_keyboard_event(&event, &failed_txs)
+                            process_keyboard_event(&event, &keyboard_devices[0].0, &failed_txs)
                                 .await
                                 .unwrap_or_else(|e| {
                                     error!("Could not process a keyboard event: {}", e)
@@ -1764,6 +1771,7 @@ async fn run_main_loop(
                         if let Ok(Some(event)) = event {
                             process_mouse_event(
                                 &event,
+                                &mouse_devices[0].0,
                                 &failed_txs,
                                 &mut mouse_move_event_last_dispatched,
                                 &mut mouse_motion_buf,
@@ -2245,11 +2253,17 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     info!("Spawning keyboard input thread...");
 
                     let (kbd_tx, kbd_rx) = unbounded();
-                    spawn_keyboard_input_thread(kbd_tx.clone(), index, usb_vid, usb_pid)
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
+                    spawn_keyboard_input_thread(
+                        kbd_tx.clone(),
+                        device.clone(),
+                        index,
+                        usb_vid,
+                        usb_pid,
+                    )
+                    .unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
 
                     keyboard_devices.push((device, kbd_rx, kbd_tx));
                 }
@@ -2269,11 +2283,17 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
 
-                        spawn_mouse_input_thread(mouse_tx.clone(), index, usb_vid, usb_pid)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
+                        spawn_mouse_input_thread(
+                            mouse_tx.clone(),
+                            device.clone(),
+                            index,
+                            usb_vid,
+                            usb_pid,
+                        )
+                        .unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
 
                         // spawn a thread to handle possible sub-devices
                         if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
@@ -2282,6 +2302,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             info!("Spawning mouse input thread for secondary sub-device...");
                             spawn_mouse_input_thread_secondary(
                                 mouse_secondary_tx,
+                                device.clone(),
                                 index,
                                 usb_vid,
                                 usb_pid,
