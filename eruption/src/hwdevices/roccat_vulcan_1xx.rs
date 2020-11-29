@@ -105,7 +105,7 @@ pub struct RoccatVulcan1xx {
 impl RoccatVulcan1xx {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Vulcan 100/12x");
+        info!("Bound driver: ROCCAT Vulcan 100/12x AIMO");
 
         Self {
             is_initialized: false,
