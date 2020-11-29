@@ -10,7 +10,7 @@ Table of new and noteworthy changes:
 | 0.1.19 | Update Lua scripts to handle the unified canvas                                                                         |
 | 0.1.19 | Fixed brightnes bug: Wrong initial brightness, was only correct after a key has been pressed                            |
 | 0.1.19 | New profiles: "Red FX", "Red Wave", "Heartbeat: System Monitor", "Fireplace", "Flight (Perlin)"                         |
-| 0.1.19 | Improve stability of the core daemon                                                                                    |
+| 0.1.19 | Improve stability of the core daemon as well as the process-monitor daemon                                              |
 | 0.1.18 | __New Release__                                                                                                         |
 | 0.1.18 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!              |
 | 0.1.18 | Refactor code to enable support for other device classes in the future, not just keyboards and mice                     |
