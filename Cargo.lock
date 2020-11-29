@@ -654,7 +654,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -3006,7 +3006,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "232bc353846d5350d7a815c249209f9545f1d5c725dca846a5ae383a70f30fa5"
 dependencies = [
  "gethostname",
- "libc",
  "nix 0.18.0",
  "winapi 0.3.9",
  "winapi-wsapoll",

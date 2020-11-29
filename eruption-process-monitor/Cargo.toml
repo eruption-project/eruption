@@ -1,6 +1,6 @@
 [package]
 name = "eruption-process-monitor"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
@@ -52,7 +52,7 @@ dbus = "0.9.0"
 dbus-tokio = "0.6.0"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
 walkdir = "2.3.1"
-x11rb = {version = "0.7.0", features = ["allow-unsafe-code"] }
+x11rb = "0.7.0"
 
 [dev-dependencies]
 tokio = { version = "0.2", features = ["test-util"] }
