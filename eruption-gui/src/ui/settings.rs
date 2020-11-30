@@ -25,6 +25,16 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
     let host_name: gtk::Entry = builder.get_object("host_name").unwrap();
     let port_number: gtk::SpinButton = builder.get_object("port_number").unwrap();
 
+    host_name.connect_changed(move |entry| {
+        preferences::set_host_name(&entry.get_text())
+            .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
+    });
+
+    port_number.connect_changed(move |entry| {
+        preferences::set_port_number(entry.get_value() as u16)
+            .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
+    });
+
     host_name.set_text(&preferences::get_host_name()?);
     port_number.set_value(preferences::get_port_number()? as f64);
 

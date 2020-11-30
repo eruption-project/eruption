@@ -20,11 +20,13 @@ use std::path::PathBuf;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-// #[derive(Debug, thiserror::Error)]
-// pub enum PreferencesError {
-//     #[error("Unknown error: {description}")]
-//     UnknownError { description: String },
-// }
+#[derive(Debug, thiserror::Error)]
+pub enum PreferencesError {
+    #[error("Could not store preferences")]
+    SetPreferencesError,
+    // #[error("Unknown error: {description}")]
+    // UnknownError { description: String },
+}
 
 fn get_settings() -> Result<gio::Settings> {
     let default_source = gio::SettingsSchemaSource::get_default().unwrap();
@@ -60,8 +62,20 @@ pub fn get_host_name() -> Result<String> {
     Ok(result)
 }
 
-pub fn get_port_number() -> Result<u32> {
-    let result = get_settings()?.get_uint("netfx-port-number");
+pub fn get_port_number() -> Result<u16> {
+    let result = get_settings()?.get_int("netfx-port-number") as u16;
 
     Ok(result)
+}
+
+pub fn set_host_name(host_name: &str) -> Result<()> {
+    get_settings()?
+        .set_string("netfx-host-name", &host_name)
+        .map_err(|_e| PreferencesError::SetPreferencesError {}.into())
+}
+
+pub fn set_port_number(port: u16) -> Result<()> {
+    get_settings()?
+        .set_int("netfx-port-number", port as i32)
+        .map_err(|_e| PreferencesError::SetPreferencesError {}.into())
 }
