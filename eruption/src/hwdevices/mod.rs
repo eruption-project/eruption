@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
 use log::*;
@@ -30,6 +31,7 @@ mod roccat_kone_pure_ultra;
 mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_tkl_pro;
 
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
 pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
@@ -39,10 +41,12 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 7]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 8]>> = Arc::new(Mutex::new([
         // Supported keyboards
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
+
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL Pro", 0x1e7d, 0x311a, &roccat_vulcan_tkl_pro::bind_hiddev),
 
         // Supported mice
         MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev),
@@ -87,6 +91,9 @@ pub enum HwDeviceError {
 
     #[error("LED map has an invalid size")]
     LedMapError {},
+
+    #[error("Could not map an evdev event code to a key or button")]
+    MappingError {},
 }
 
 pub trait DriverMetadata {
@@ -408,6 +415,9 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
     /// Get the next HID event from the control device (with timeout)
     fn get_next_event_timeout(&self, millis: i32) -> Result<KeyboardHidEvent>;
 
+    /// Convert an EV_KEY to an index value
+    fn ev_key_to_key_index(&self, key: EV_KEY) -> u8;
+
     /// Convert a HID event code to a key index
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8;
 
@@ -422,6 +432,12 @@ pub trait MouseDeviceTrait: DeviceTrait {
 
     /// Get the next HID event from the control device (with timeout)
     fn get_next_event_timeout(&self, millis: i32) -> Result<MouseHidEvent>;
+
+    /// Converts an EV_KEY value to a button index
+    fn ev_key_to_button_index(&self, code: EV_KEY) -> Result<u8>;
+
+    /// Converts a button index to an EV_KEY value
+    fn button_index_to_ev_key(&self, index: u32) -> Result<EV_KEY>;
 
     /// Send RGBA LED map to the device
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()>;

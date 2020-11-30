@@ -478,6 +478,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         if let Ok(dev) = device.open_device(&hidapi) {
                             let hwdev = hwdevices::bind_device(
                                 dev,
+                                &hidapi,
                                 device.vendor_id(),
                                 device.product_id(),
                             )?;

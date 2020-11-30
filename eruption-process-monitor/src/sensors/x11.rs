@@ -17,11 +17,9 @@
 
 use crate::constants;
 use byteorder::{ByteOrder, LittleEndian};
-use std::ffi::CString;
-use x11rb::connection::Connection;
 use x11rb::protocol::xproto::*;
 use x11rb::x11_utils::TryParse;
-use x11rb::xcb_ffi::XCBConnection;
+use x11rb::{connection::Connection, rust_connection::RustConnection};
 
 use super::Sensor;
 
@@ -95,7 +93,7 @@ You may want to use the command line tool `xprop` to find the relevant informati
 
     fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         // set up our state
-        let (conn, screen) = XCBConnection::connect(Some(&CString::new(self.display.as_str())?))?;
+        let (conn, screen) = RustConnection::connect(Some(self.display.as_str()))?;
         let root = conn.setup().roots[screen].root;
 
         let net_active_window = conn.intern_atom(false, b"_NET_ACTIVE_WINDOW")?.reply()?;

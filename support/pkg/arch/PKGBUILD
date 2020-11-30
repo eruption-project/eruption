@@ -239,6 +239,7 @@ package() {
     install -m 644 "support/profiles/psychedelic.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/twinkle.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/rainbow.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/red-fx.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/red-wave.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-red-yellow.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/preset-blue-red.profile" "$pkgdir/var/lib/eruption/profiles/"

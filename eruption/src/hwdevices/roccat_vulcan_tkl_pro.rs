@@ -31,7 +31,7 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const NUM_KEYS: usize = 144;
+pub const NUM_KEYS: usize = 0; // TODO: Implement this
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -60,14 +60,14 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() || led_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatVulcan1xx::bind(
+        Ok(Arc::new(RwLock::new(Box::new(RoccatVulcanTKLPro::bind(
             &ctrl_dev.unwrap(),
             &led_dev.unwrap(),
         )))))
     }
 }
 
-/// ROCCAT Vulcan 100/12x device info struct (sent as HID report)
+/// ROCCAT Vulcan ccccc device info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -86,8 +86,8 @@ pub enum DialMode {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Vulcan 100/12x series keyboards
-pub struct RoccatVulcan1xx {
+/// Device specific code for the ROCCAT Vulcan TKL Pro series keyboards
+pub struct RoccatVulcanTKLPro {
     pub is_initialized: bool,
 
     // keyboard
@@ -102,10 +102,10 @@ pub struct RoccatVulcan1xx {
     pub dial_mode: Arc<Mutex<DialMode>>,
 }
 
-impl RoccatVulcan1xx {
+impl RoccatVulcanTKLPro {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Vulcan 100/12x AIMO");
+        info!("Bound driver: ROCCAT Vulcan TKL Pro");
 
         Self {
             is_initialized: false,
@@ -456,7 +456,7 @@ impl RoccatVulcan1xx {
     }
 }
 
-impl DeviceInfoTrait for RoccatVulcan1xx {
+impl DeviceInfoTrait for RoccatVulcanTKLPro {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities {}
     }
@@ -499,7 +499,7 @@ impl DeviceInfoTrait for RoccatVulcan1xx {
     }
 }
 
-impl DeviceTrait for RoccatVulcan1xx {
+impl DeviceTrait for RoccatVulcanTKLPro {
     fn get_usb_path(&self) -> String {
         self.led_hiddev_info
             .clone()
@@ -684,7 +684,7 @@ impl DeviceTrait for RoccatVulcan1xx {
     }
 }
 
-impl KeyboardDeviceTrait for RoccatVulcan1xx {
+impl KeyboardDeviceTrait for RoccatVulcanTKLPro {
     fn set_status_led(&self, led_kind: LedKind, _on: bool) -> Result<()> {
         trace!("Setting status LED state");
 

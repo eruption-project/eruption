@@ -1,6 +1,6 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713095'
-name = 'Blue FX'
-description = 'Default Profile #1'
+id = '5dc62fa6-e965-45cb-a0da-e87d29713059'
+name = 'Red FX'
+description = 'Red FX'
 active_scripts = [
     'solid.lua',
 #   'water.lua',
@@ -17,7 +17,7 @@ active_scripts = [
 [[config."Solid Color"]]
 type = 'color'
 name = 'color_background'
-value = 0xff2020ff
+value = 0xffff000c
 
 [[config."Solid Color"]]
 type = 'float'
@@ -29,10 +29,35 @@ value = 0.45
 # name = 'mouse_events'
 # value = false
 
+[[config.Halo]]
+type = 'color'
+name = 'color_afterglow'
+value = 0xffffaf00
+
+[[config.Halo]]
+type = 'color'
+name = 'color_mouse_click_flash'
+value = 0x1affffff
+
+[[config.Halo]]
+type = 'color'
+name = 'color_mouse_wheel_flash'
+value = 0x1affffff
+
+# [[config.Halo]]
+# type = 'float'
+# name = 'opacity'
+# value = 0.25
+
+[[config.Shockwave]]
+type = 'color'
+name = 'color_shockwave'
+value = 0xffff5f00
+
 [[config.Impact]]
 type = 'color'
 name = 'color_impact'
-value = 0x80ffffff
+value = 0x80ffff00
 
 [[config.Raindrops]]
 type = 'float'
@@ -42,4 +67,4 @@ value = 0.5
 [[config.Macros]]
 type = 'color'
 name = 'color_highlight'
-value = 0x0004040f
+value = 0x000f0000

@@ -437,6 +437,9 @@ async fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
                 } else {
                     error!("Could not get the default rule");
                 }
+
+                // update global state
+                CURRENT_STATE.write().1 = Some(profile_name.clone());
             } else {
                 // we initiated the profile change
                 PROFILE_CHANGING.store(false, Ordering::SeqCst);
@@ -449,40 +452,51 @@ async fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
     Ok(())
 }
 
-async fn process_window_event(event: &sensors::X11SensorData) -> Result<()> {
+async fn process_window_event(event: Option<&sensors::X11SensorData>) -> Result<()> {
     trace!("Sensor data: {:#?}", event);
 
-    for (selector, (metadata, action)) in RULES_MAP.read().iter() {
-        match selector {
-            Selector::WindowFocused { mode, regex } => {
-                if metadata.enabled {
-                    let re = Regex::new(&regex)?;
+    if let Some(event) = event {
+        for (selector, (metadata, action)) in RULES_MAP.read().iter() {
+            match selector {
+                Selector::WindowFocused { mode, regex } => {
+                    if metadata.enabled {
+                        let re = Regex::new(&regex)?;
 
-                    match mode {
-                        WindowFocusedSelectorMode::WindowName => {
-                            if re.is_match(&event.window_name) {
-                                process_action(&action).await?;
-                                break;
+                        match mode {
+                            WindowFocusedSelectorMode::WindowName => {
+                                if re.is_match(&event.window_name) {
+                                    process_action(&action).await?;
+                                    break;
+                                }
                             }
-                        }
 
-                        WindowFocusedSelectorMode::WindowInstance => {
-                            if re.is_match(&event.window_instance) {
-                                process_action(&action).await?;
-                                break;
+                            WindowFocusedSelectorMode::WindowInstance => {
+                                if re.is_match(&event.window_instance) {
+                                    process_action(&action).await?;
+                                    break;
+                                }
                             }
-                        }
-                        WindowFocusedSelectorMode::WindowClass => {
-                            if re.is_match(&event.window_class) {
-                                process_action(&action).await?;
-                                break;
+                            WindowFocusedSelectorMode::WindowClass => {
+                                if re.is_match(&event.window_class) {
+                                    process_action(&action).await?;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            _ => { /* not a window related selector */ }
+                _ => { /* not a window related selector */ }
+            }
+        }
+    } else {
+        let selector = Selector::WindowFocused {
+            mode: WindowFocusedSelectorMode::WindowInstance,
+            regex: ".*".to_string(),
+        };
+
+        if let Some((_metadata, default_action)) = RULES_MAP.read().get(&selector) {
+            process_action(&default_action).await?;
         }
     }
 
@@ -740,13 +754,17 @@ pub async fn run_main_loop(
                 match sensor.poll() {
                     Ok(data) => {
                         if let Some(data) = data.as_any().downcast_ref::<sensors::X11SensorData>() {
-                            process_window_event(&data).await?;
+                            process_window_event(Some(&data)).await?;
                         } else {
                             warn!("Unknown sensor data: {:#?}", data);
                         }
                     }
 
-                    Err(e) => warn!("Could not poll a sensor: {}", e),
+                    Err(e) => {
+                        debug!("Could not poll a sensor: {}", e);
+
+                        process_window_event(None).await?;
+                    }
                 }
             }
         }

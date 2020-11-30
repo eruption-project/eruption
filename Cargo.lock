@@ -431,9 +431,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-epoch"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0f606a85340376eef0d6d8fec399e6d4a544d648386c6645eb6d0653b27d9f"
+checksum = "a1aaa739f95311c2c7887a76863f500026092fb1dce0161dab577e559ef3569d"
 dependencies = [
  "cfg-if 1.0.0",
  "const_fn",
@@ -445,9 +445,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-queue"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b2a58563f049aa3bae172bc4120f093b5901161c629f280a1f40ba55317d774"
+checksum = "0f6cb3c7f5b8e51bc3ebb73a2327ad4abdbd119dc13223f14f961d2f38486756"
 dependencies = [
  "cfg-if 1.0.0",
  "crossbeam-utils",
@@ -455,13 +455,12 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-utils"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec91540d98355f690a86367e566ecad2e9e579f230230eb7c21398372be73ea5"
+checksum = "02d96d1e189ef58269ebe5b97953da3274d83a93af647c2ddd6f9dab28cedb8d"
 dependencies = [
  "autocfg",
  "cfg-if 1.0.0",
- "const_fn",
  "lazy_static",
 ]
 
@@ -627,7 +626,7 @@ dependencies = [
  "mlua",
  "mlua_derive",
  "nalgebra",
- "nix 0.19.0",
+ "nix 0.19.1",
  "noise",
  "palette",
  "parking_lot",
@@ -656,7 +655,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "clap",
  "clap_derive",
@@ -667,7 +666,7 @@ dependencies = [
  "hidapi",
  "libc",
  "log",
- "nix 0.19.0",
+ "nix 0.19.1",
  "parking_lot",
  "paste 1.0.3",
  "pretty_env_logger",
@@ -704,7 +703,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.19.0",
+ "nix 0.19.1",
  "palette",
  "parking_lot",
  "paste 1.0.3",
@@ -735,7 +734,7 @@ dependencies = [
  "image 0.23.12",
  "libc",
  "log",
- "nix 0.19.0",
+ "nix 0.19.1",
  "num-traits 0.2.14",
  "parking_lot",
  "pretty_env_logger",
@@ -753,7 +752,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -776,7 +775,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.19.0",
+ "nix 0.19.1",
  "parking_lot",
  "paste 1.0.3",
  "pretty_env_logger",
@@ -811,7 +810,7 @@ dependencies = [
  "eyre",
  "libc",
  "log",
- "nix 0.19.0",
+ "nix 0.19.1",
  "parking_lot",
  "paste 1.0.3",
  "serde 1.0.117",
@@ -1355,8 +1354,8 @@ dependencies = [
 
 [[package]]
 name = "hidapi"
-version = "1.2.3"
-source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#ce4570675a8f1f3a25bdd098039608a6561196d4"
+version = "1.2.5"
+source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#45a3b9c8fb52ddd310a509b45f645077a5183bf7"
 dependencies = [
  "cc",
  "libc",
@@ -1365,9 +1364,9 @@ dependencies = [
 
 [[package]]
 name = "hotwatch"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b9b80c041295b98b61c919caf04a6dbc9e1c132d938010600ce5689f4e224d"
+checksum = "d61ee702e77f237b41761361a82e5c4bf6277dbb4bc8b6b7d745cb249cc82b31"
 dependencies = [
  "log",
  "notify",
@@ -1582,20 +1581,22 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 
 [[package]]
 name = "libpulse-binding"
-version = "2.16.3"
+version = "2.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f2a85e3f59b8074b49060968b10de62df9fdc396c9b5640f071e669f5806074"
+checksum = "fe925a4d3a96961316c9c1488f97a95938a6093f0d4691eec888776057ce965e"
 dependencies = [
  "libc",
  "libpulse-sys",
+ "num-derive",
+ "num-traits 0.2.14",
  "winapi 0.3.9",
 ]
 
 [[package]]
 name = "libpulse-simple-binding"
-version = "2.16.2"
+version = "2.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1794f9c82ac98870210b49ff059e0c6db1f78cdd0b212679ac9a96477d650a3"
+checksum = "a047f4502997eed57b3e9d8e71f2b860da91a20bb7e15c65d1f183a7b4fb1226"
 dependencies = [
  "libpulse-binding",
  "libpulse-simple-sys",
@@ -1604,9 +1605,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-simple-sys"
-version = "1.13.2"
+version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aacf8fadb867101db732194a0cf250bdb46d567ffca98490d213602168183f"
+checksum = "9b72cb239bc4de6858fa0bbad27419e72cd4466f079ca56f21d94b0a712ab02e"
 dependencies = [
  "libpulse-sys",
  "pkg-config",
@@ -1614,11 +1615,13 @@ dependencies = [
 
 [[package]]
 name = "libpulse-sys"
-version = "1.13.3"
+version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9044e45b7b1c2231850f5e569e39543809a44eb5bad14f7a53f1eb603c14f2eb"
+checksum = "2d9073c83dda6aff9b611dc368e8db6e0aa29027546d8800a18b4417e182b4d5"
 dependencies = [
  "libc",
+ "num-derive",
+ "num-traits 0.2.14",
  "pkg-config",
  "winapi 0.3.9",
 ]
@@ -1712,9 +1715,9 @@ checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
 
 [[package]]
 name = "memoffset"
-version = "0.5.6"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "043175f069eda7b85febe4a74abbaeff828d9f8b448515d3151a14a3542811aa"
+checksum = "157b4208e3059a8f9e78d559edc658e13df41410cb3ae03979c83130067fdd87"
 dependencies = [
  "autocfg",
 ]
@@ -1751,7 +1754,7 @@ dependencies = [
  "kernel32-sys",
  "libc",
  "log",
- "miow 0.2.1",
+ "miow 0.2.2",
  "net2",
  "slab",
  "winapi 0.2.8",
@@ -1794,9 +1797,9 @@ dependencies = [
 
 [[package]]
 name = "miow"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
+checksum = "ebd808424166322d4a38da87083bfddd3ac4c131334ed55856112eb06d46944d"
 dependencies = [
  "kernel32-sys",
  "net2",
@@ -1858,9 +1861,9 @@ dependencies = [
 
 [[package]]
 name = "net2"
-version = "0.2.35"
+version = "0.2.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ebc3ec692ed7c9a255596c67808dee269f64655d8baf7b4f0638e51ba1d6853"
+checksum = "d7cf75f38f16cb05ea017784dc6dbfd354f76c223dba37701734c4f5a9337d02"
 dependencies = [
  "cfg-if 0.1.10",
  "libc",
@@ -1881,13 +1884,13 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.19.0"
+version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85db2feff6bf70ebc3a4793191517d5f0331100a2f10f9bf93b5e5214f32b7b7"
+checksum = "b2ccba0cfe4fdf15982d1674c69b1fd80bad427d293849982668dfe454bd61f2"
 dependencies = [
  "bitflags",
  "cc",
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "libc",
 ]
 
@@ -1926,9 +1929,9 @@ dependencies = [
 
 [[package]]
 name = "nom"
-version = "6.0.0"
+version = "6.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4489ccc7d668957ddf64af7cd027c081728903afa6479d35da7e99bf5728f75f"
+checksum = "88034cfd6b4a0d54dd14f4a507eceee36c0b70e5a02236c4e4df571102be17f0"
 dependencies = [
  "bitvec",
  "lexical-core",
@@ -1970,6 +1973,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "747d632c0c558b87dbabbe6a82f3b4ae03720d0646ac5b7b4dae89394be5f2c5"
 dependencies = [
  "num-traits 0.2.14",
+]
+
+[[package]]
+name = "num-derive"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "876a53fff98e03a936a674b29568b0e605f06b29372c2489ff4de23f1949743d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2327,7 +2341,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "059a34f111a9dee2ce1ac2826a68b24601c4298cfeb1a587c3cb493d5ab46f52"
 dependencies = [
  "libc",
- "nix 0.19.0",
+ "nix 0.19.1",
 ]
 
 [[package]]
@@ -2643,7 +2657,7 @@ checksum = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
 [[package]]
 name = "rust-pulsectl"
 version = "0.2.6"
-source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#9de2ece4deab0d5475db54a1d86dcd48ad029e0c"
+source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#cc5a3ee253ea23cae2c063063d8d6fc7622ed599"
 dependencies = [
  "libpulse-binding",
 ]
@@ -2943,9 +2957,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.51"
+version = "1.0.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b4f34193997d92804d359ed09953e25d5138df6bcc055a71bf68ee89fdf9223"
+checksum = "6c1e438504729046a5cfae47f97c30d6d083c7d91d94603efdae3477fc070d4c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2992,7 +3006,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "libc",
- "nom 6.0.0",
+ "nom 6.0.1",
  "time",
  "winapi 0.3.9",
 ]
@@ -3100,7 +3114,6 @@ dependencies = [
  "mio-named-pipes",
  "mio-uds",
  "num_cpus",
- "parking_lot",
  "pin-project-lite 0.1.11",
  "signal-hook-registry",
  "slab",
@@ -3251,9 +3264,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-segmentation"
-version = "1.7.0"
+version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db8716a166f290ff49dabc18b44aa407cb7c6dbe1aa0971b44b8a24b0ca35aae"
+checksum = "bb0d2e7be6ae3a5fa87eed5fb451aff96f2573d2694942e40543ae0bbe19c796"
 
 [[package]]
 name = "unicode-width"
@@ -3409,7 +3422,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "232bc353846d5350d7a815c249209f9545f1d5c725dca846a5ae383a70f30fa5"
 dependencies = [
  "gethostname",
- "libc",
  "nix 0.18.0",
  "winapi 0.3.9",
  "winapi-wsapoll",
