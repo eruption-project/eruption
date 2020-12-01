@@ -560,11 +560,13 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     ui::keyboard::initialize_keyboard_page(&builder)?;
     ui::mouse::initialize_mouse_page(&builder)?;
     ui::profiles::initialize_profiles_page(&builder)?;
+    ui::process_monitor::initialize_process_monitor_page(&builder)?;
     ui::settings::initialize_settings_page(&builder)?;
 
     initialize_slot_bar(&builder)?;
 
-    dbus_client::spawn_dbus_event_loop(&builder, &update_ui_state)?;
+    dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state)?;
+    dbus_client::spawn_dbus_event_loop_session(&builder, &update_ui_state)?;
 
     main_window.show_all();
 

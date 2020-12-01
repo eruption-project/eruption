@@ -144,6 +144,22 @@ pub fn switch_to_slot(index: usize) -> Result<()> {
     Ok(())
 }
 
+/// Switch to profile `file_name`
+pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
+    if !events::shall_ignore_pending_ui_event() {
+        let file_name = file_name.as_ref();
+
+        // log::info!(
+        //     "Switching to profile: {}",
+        //     file_name.to_string_lossy()
+        // );
+
+        util::switch_profile(&file_name.to_string_lossy())?;
+    }
+
+    Ok(())
+}
+
 /// Switch to slot `slot_index` and then change the current profile to `file_name`
 pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: P) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
@@ -415,6 +431,10 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
+            }
+
+            dbus_client::Message::RulesChanged => {
+                println!("Process-monitor rules changed");
             }
         }
     }

@@ -121,8 +121,8 @@ impl Sensor for ProcessSensor {
 Process:
 rules add exec <comm> [<profile-name.profile>|<slot number>]
 
-rules add exec gnome-calculator organic.profile
-rules add exec gnome-calculator 2
+rules add exec gnome-calc.* organic.profile
+rules add exec gnome-calc.* 2
 "#
         .to_string()
     }

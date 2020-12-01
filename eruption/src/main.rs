@@ -242,13 +242,13 @@ pub enum DbusApiEvent {
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
-fn spawn_dbus_thread(
+fn spawn_dbus_api_thread(
     dbus_tx: Sender<dbus_interface::Message>,
 ) -> plugins::Result<Sender<DbusApiEvent>> {
     let (dbus_api_tx, dbus_api_rx) = unbounded();
 
     thread::Builder::new()
-        .name("dbus".into())
+        .name("dbus_interface".into())
         .spawn(move || -> Result<()> {
             let dbus = dbus_interface::initialize(dbus_tx)?;
 
@@ -2333,7 +2333,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 // initialize the D-Bus API
                 info!("Initializing D-Bus API...");
                 let (dbus_tx, dbus_rx) = unbounded();
-                let dbus_api_tx = spawn_dbus_thread(dbus_tx).unwrap_or_else(|e| {
+                let dbus_api_tx = spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
                     error!("Could not spawn a thread: {}", e);
                     panic!()
                 });

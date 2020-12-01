@@ -17,43 +17,22 @@
 
 #![allow(dead_code)]
 
-/// Default path of eruption master configuration file
-pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
-
+/// Default path of eruption-process-monitor configuration file
 pub const PROCESS_MONITOR_CONFIG_FILE: &str = "/etc/eruption/process-monitor.conf";
-
-/// Default profile directory
-pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
-
-/// Default script directory
-pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
 /// State directory
 pub const STATE_DIR: &str = "~/.local/share/eruption-process-monitor/";
 
-/// Default manifest directory
-pub const DEFAULT_MANIFEST_DIR: &str = "/usr/share/eruption-process-monitor/manifests";
-
-/// Number of slots
-pub const NUM_SLOTS: usize = 4;
-
 /// Main loop delay
 pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 250;
-
-/// Default host name
-pub const DEFAULT_HOST: &str = "localhost";
-
-/// Default port number
-pub const DEFAULT_PORT: u16 = 2359;
 
 /// Timeout of D-Bus operations
 pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
 
-/// Default delay between images, used for animation mode
-pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
-
-/// Default delay between screenshots, used for ambient mode
-pub const DEFAULT_FRAME_DELAY_MILLIS: u64 = 37;
+/// Timeout value to use for D-Bus connections
+/// that may involve interactivity like e.g.:
+/// PolicyKit authentication
+pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
 /// Default X11 display used by the X11 sensor plugin
 pub const DEFAULT_X11_DISPLAY: &str = ":1";

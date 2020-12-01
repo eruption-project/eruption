@@ -57,7 +57,8 @@ package() {
 
     mkdir -p "$pkgdir/usr/lib/udev/rules.d/"
 
-    mkdir -p "$pkgdir/etc/dbus-1/system.d"
+    mkdir -p "$pkgdir/usr/share/dbus-1/system.d"
+    mkdir -p "$pkgdir/usr/share/dbus-1/session.d"
 
     mkdir -p "$pkgdir/usr/share/polkit-1/actions/"
 
@@ -92,7 +93,8 @@ package() {
 
     install -m 644 "support/udev/99-eruption.rules" "$pkgdir/usr/lib/udev/rules.d/"
 
-    install -m 644 "support/dbus/org.eruption.control.conf" "$pkgdir/etc/dbus-1/system.d/"
+    install -m 644 "support/dbus/org.eruption.control.conf" "$pkgdir/usr/share/dbus-1/system.d/"
+    install -m 644 "support/dbus/org.eruption.process_monitor.conf" "$pkgdir/usr/share/dbus-1/session.d/"
 
     install -m 644 "support/policykit/org.eruption.policy" "$pkgdir/usr/share/polkit-1/actions/"
 

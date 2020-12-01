@@ -15,10 +15,13 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod about;
-pub mod keyboard;
-pub mod main;
-pub mod mouse;
-pub mod process_monitor;
-pub mod profiles;
-pub mod settings;
+// use gtk::prelude::*;
+
+type Result<T> = std::result::Result<T, eyre::Error>;
+
+/// Initialize page "Process Monitor"
+pub fn initialize_process_monitor_page(_builder: &gtk::Builder) -> Result<()> {
+    // let host_name: gtk::Entry = builder.get_object("host_name").unwrap();
+
+    Ok(())
+}

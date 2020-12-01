@@ -1,6 +1,6 @@
 [package]
 name = "eruption-process-monitor"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
@@ -19,6 +19,9 @@ clap_derive = "3.0.0-beta.1"
 ctrlc = { version = "3.1.7", features = ["termination"] }
 config = "0.10.1"
 colored = "2.0"
+dbus = "0.9.0"
+dbus-tokio = "0.6.0"
+dbus-tree = "0.9.0"
 dyn-clone = "1.0.3"
 dyn-clonable = "0.9.0"
 indexmap = "1.6.0"
@@ -48,8 +51,6 @@ itertools = "0.9.0"
 rayon = "1.5.0"
 lazy_static = "1.4.0"
 rust-crypto = "0.2.36"
-dbus = "0.9.0"
-dbus-tokio = "0.6.0"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
 walkdir = "2.3.1"
 x11rb = "0.7.0"

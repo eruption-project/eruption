@@ -58,6 +58,12 @@ version = "0.9.0"
 [dependencies.glib]
 version = "0.10.3"
 
+[dependencies.pango]
+version = "0.9.1"
+
+[dependencies.pangocairo]
+version = "0.10.0"
+
 [dependencies.cairo-rs]
 version = "0.9.1"
 

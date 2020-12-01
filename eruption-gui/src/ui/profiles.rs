@@ -32,7 +32,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 fn build_int_config(
     name: &str,
     description: &str,
-    default: i64,
+    _default: i64,
     min: i64,
     max: i64,
     value: i64,
@@ -73,7 +73,7 @@ fn build_int_config(
 fn build_float_config(
     name: &str,
     description: &str,
-    default: f64,
+    _default: f64,
     min: f64,
     max: f64,
     value: f64,
@@ -114,7 +114,7 @@ fn build_float_config(
 fn build_bool_config(
     name: &str,
     description: &str,
-    default: bool,
+    _default: bool,
     value: bool,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()
@@ -144,7 +144,7 @@ fn build_bool_config(
 fn build_string_config(
     name: &str,
     description: &str,
-    default: &str,
+    _default: &str,
     value: &str,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()
@@ -174,7 +174,7 @@ fn build_string_config(
 fn build_color_config(
     name: &str,
     description: &str,
-    default: u32,
+    _default: u32,
     value: u32,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()

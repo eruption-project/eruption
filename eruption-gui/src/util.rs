@@ -16,23 +16,36 @@
 */
 
 // use crate::manifest;
-use crate::{constants, profiles};
+use crate::{constants, preferences, profiles};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 // use manifest::Manifest;
 // use std::fs;
-use std::convert::TryFrom;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
 use std::u8;
+use std::{convert::TryFrom, process::Command};
+use std::{
+    path::{Path, PathBuf},
+    process::Child,
+    sync::Arc,
+};
+use std::{thread, time::Duration};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-// #[derive(Debug, thiserror::Error)]
-// pub enum UtilError {
-//     #[error("Unknown error: {description}")]
-//     UnknownError { description: String },
-// }
+lazy_static! {
+    static ref NETFX_PROCESS_HANDLE: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum UtilError {
+    #[error("Process not running")]
+    ProcessNotRunning,
+    // #[error("Unknown error: {description}")]
+    // UnknownError { description: String },
+}
+
 /// Represents an RGBA color value
 #[derive(Debug, Copy, Clone)]
 pub struct RGBA {
@@ -237,6 +250,33 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
 //     Ok(())
 // }
 
-pub fn toggle_netfx_ambient(_enabled: bool) -> Result<()> {
-    Ok(())
+pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
+    let host_name = preferences::get_host_name()?;
+    let port_number = preferences::get_port_number()?;
+
+    if enabled {
+        switch_profile(&"netfx.profile")?;
+
+        thread::sleep(Duration::from_millis(constants::PROCESS_SPAWN_WAIT_MILLIS));
+
+        let handle = Command::new("/usr/bin/eruption-netfx")
+            .arg(&host_name)
+            .arg(&format!("{}", port_number))
+            .arg(&"ambient")
+            .spawn()?;
+
+        *NETFX_PROCESS_HANDLE.lock() = Some(handle);
+
+        Ok(())
+    } else {
+        if let Some(ref mut handle) = NETFX_PROCESS_HANDLE.lock().as_mut() {
+            handle.kill()?;
+        } else {
+            return Err(UtilError::ProcessNotRunning {}.into());
+        }
+
+        *NETFX_PROCESS_HANDLE.lock() = None;
+
+        Ok(())
+    }
 }

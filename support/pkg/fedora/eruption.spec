@@ -55,6 +55,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_mandir}/man1
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/system.d
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/session.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
 %{__mkdir_p} %{buildroot}%{_datarootdir}/polkit-1/actions/
 %{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
@@ -84,6 +85,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{b
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
+cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.process_monitor.conf %{buildroot}%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-%{version}/support/policykit/org.eruption.policy %{buildroot}%{_datarootdir}/polkit-1/actions/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
@@ -168,6 +170,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
+%{_sysconfdir}/dbus-1/session.d/org.eruption.process_monitor.conf
 %{_datarootdir}/polkit-1/actions/org.eruption.policy
 /usr/lib/udev/rules.d/99-eruption.rules
 /usr/lib/systemd/system-sleep/eruption

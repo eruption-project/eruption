@@ -37,6 +37,7 @@ use std::{sync::atomic::Ordering, thread, time::Duration};
 
 mod constants;
 mod dbus_client;
+mod dbus_interface;
 mod procmon;
 mod sensors;
 mod util;
@@ -395,7 +396,10 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
 }
 
 /// Process filesystem related events
-async fn process_fs_event(event: &FileSystemEvent) -> Result<()> {
+async fn process_fs_event(
+    event: &FileSystemEvent,
+    dbus_api_tx: &Sender<DbusApiEvent>,
+) -> Result<()> {
     match event {
         FileSystemEvent::RulesChanged => {
             info!("Rules changed, reloading...");
@@ -407,6 +411,8 @@ async fn process_fs_event(event: &FileSystemEvent) -> Result<()> {
             for (selector, (metadata, action)) in RULES_MAP.read().iter() {
                 debug!("{} => {} ({})", selector, action, metadata);
             }
+
+            dbus_api_tx.send(DbusApiEvent::RulesChanged {})?;
         }
     }
 
@@ -648,6 +654,39 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+pub enum DbusApiEvent {
+    RulesChanged,
+}
+
+/// Spawns the D-Bus API thread and executes it's main loop
+fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = unbounded();
+
+    thread::Builder::new()
+        .name("dbus_interface".into())
+        .spawn(move || -> Result<()> {
+            let dbus = dbus_interface::initialize(dbus_tx)?;
+
+            loop {
+                // process events, destined for the dbus api
+                match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
+                    Ok(result) => match result {
+                        DbusApiEvent::RulesChanged => dbus.notify_rules_changed(),
+                    },
+
+                    // ignore timeout errors
+                    Err(_e) => (),
+                }
+
+                dbus.get_next_event_timeout(constants::DBUS_TIMEOUT_MILLIS as u32)
+                    .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+            }
+        })?;
+
+    Ok(dbus_api_tx)
+}
+
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -686,6 +725,7 @@ pub async fn run_main_loop(
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
     ctrl_c_rx: &Receiver<bool>,
+    dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
     trace!("Entering main loop...");
 
@@ -712,9 +752,11 @@ pub async fn run_main_loop(
                 i if i == fsevents => {
                     let event = &oper.recv(&fsevents_rx);
                     if let Ok(event) = event {
-                        process_fs_event(&event).await.unwrap_or_else(|e| {
-                            error!("Could not process a filesystem event: {}", e)
-                        })
+                        process_fs_event(&event, &dbus_api_tx)
+                            .await
+                            .unwrap_or_else(|e| {
+                                error!("Could not process a filesystem event: {}", e)
+                            })
                     } else {
                         error!("{}", event.as_ref().unwrap_err());
                     }
@@ -922,11 +964,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             util::create_dir(&rules_dir)?;
             util::create_rules_file_if_not_exists(&rules_file)?;
 
-            let (fsevents_tx, fsevents_rx) = unbounded();
-            register_filesystem_watcher(fsevents_tx, rules_file)?;
-
             let (dbusevents_tx, dbusevents_rx) = unbounded();
             spawn_dbus_thread(dbusevents_tx)?;
+
+            // initialize the D-Bus API
+            let (dbus_tx, _dbus_rx) = unbounded();
+            let dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
+
+            let (fsevents_tx, fsevents_rx) = unbounded();
+            register_filesystem_watcher(fsevents_tx, rules_file)?;
 
             // configure plugins
             let (sysevents_tx, sysevents_rx) = unbounded();
@@ -944,9 +990,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             debug!("Entering the main loop now...");
 
             // enter the main loop
-            run_main_loop(&sysevents_rx, &fsevents_rx, &dbusevents_rx, &ctrl_c_rx)
-                .await
-                .unwrap_or_else(|e| error!("{}", e));
+            run_main_loop(
+                &sysevents_rx,
+                &fsevents_rx,
+                &dbusevents_rx,
+                &ctrl_c_rx,
+                &dbus_api_tx,
+            )
+            .await
+            .unwrap_or_else(|e| error!("{}", e));
 
             debug!("Left the main loop");
         }
