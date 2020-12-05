@@ -246,6 +246,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_datarootdir}/%{ShortName}/scripts/organic.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/batique.lua
 %{_datarootdir}/%{ShortName}/scripts/batique.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/batique-mouse.lua
+%{_datarootdir}/%{ShortName}/scripts/batique-mouse.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/fbm.lua
 %{_datarootdir}/%{ShortName}/scripts/fbm.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/perlin.lua

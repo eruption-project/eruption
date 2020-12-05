@@ -84,6 +84,8 @@ eruption/src/scripts/organic.lua usr/share/eruption/scripts/
 eruption/src/scripts/organic.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/batique.lua usr/share/eruption/scripts/
 eruption/src/scripts/batique.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/batique-mouse.lua usr/share/eruption/scripts/
+eruption/src/scripts/batique-mouse.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/billow.lua usr/share/eruption/scripts/
 eruption/src/scripts/billow.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/checkerboard.lua usr/share/eruption/scripts/
