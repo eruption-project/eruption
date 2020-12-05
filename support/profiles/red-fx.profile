@@ -10,6 +10,7 @@ active_scripts = [
     'impact.lua',
 #   'ghost.lua',
 #   'raindrops.lua',
+#   'batique-mouse.lua',
     'macros.lua',
 #   'stats.lua',
 ]
