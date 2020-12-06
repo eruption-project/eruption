@@ -91,11 +91,13 @@ function on_key_down(key_index)
 
 	grid[key_index] = 1.0
 
-    for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+	if key_index ~= 0 then
+		for i = 0, max_neigh do
+			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-		if neigh_key ~= 0xff then
-			grid[neigh_key] = 1.5
+			if neigh_key ~= 0xff then
+				grid[neigh_key] = 1.5
+			end
 		end
 	end
 

@@ -38,13 +38,15 @@ function on_startup(config)
 end
 
 function on_key_up(key_index)
-    for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+    if key_index ~= 0 then
+        for i = 0, max_neigh do
+            local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-		if neigh_key ~= 0xff then
-			grid[neigh_key] = 0.5
-		end
-	end
+            if neigh_key ~= 0xff then
+                grid[neigh_key] = 0.5
+            end
+        end
+    end
 
 	effect_ttl = max_effect_ttl
 end

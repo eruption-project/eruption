@@ -45,7 +45,7 @@ ticks = 0
 
 -- utility functions --
 local function set_neighbor_states(key_index, value)
-	if key_index ~= nil then
+	if key_index ~= nil and key_index ~= 0 then
 		for i = 0, max_neigh do
 			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset]
 
