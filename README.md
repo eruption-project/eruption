@@ -4,7 +4,7 @@
 
 - <a href="#eruption">Eruption</a>
 - <a href="#devices">Supported Devices</a>
-- <a href="#issues">Known Issues</a>
+- <a href="#issues">Remarks and known Issues</a>
 - <a href="#important">Important Information</a>
 - <a href="#overview">Design Overview</a>
 - <a href="#installation">Installation</a>
@@ -32,7 +32,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 * ROCCAT Kone Pure Ultra
 * ROCCAT Kova AIMO (experimental)
 
-### Known Issues <a name="issues"></a>
+### Remarks and known Issues <a name="issues"></a>
 
 ### ROCCAT Vulcan 100/12x series keyboard:
 
