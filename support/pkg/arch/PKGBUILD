@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=8651df248897ab9a09328fb55e9bdb89fad8c9b9')
+source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=268fe8b4e549f225a82316b2ef95780f5b7f4826')
 noextract=()
 sha512sums=('SKIP')
 
