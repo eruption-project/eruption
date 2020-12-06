@@ -10,14 +10,13 @@
 - <a href="#installation">Installation</a>
 - <a href="#after_setup">After Setup</a>
 - <a href="#audio">Support for Audio Playback and Capture </a>
+- <a href="#process-monitor">The `eruption-process-monitor` Daemon</a>
 - <a href="#info">Further Reading</a>
 - <a href="#contributing">Contributing</a>
 
 ## Eruption <a name="eruption"></a>
 
 A Linux user-mode input and LED driver for keyboards, mice and other devices
-
->NOTE: The GitHub project and packages have been renamed recently from `eruption-roccat-vulcan` to just `eruption`.
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
@@ -35,11 +34,11 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ### Known Issues <a name="issues"></a>
 
+### ROCCAT Vulcan 100/12x series keyboard:
+
 - Mute button will stay lit even if audio is muted
 
 - Keyboard may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
-
-### ROCCAT Vulcan 100/12x series keyboard:
 
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
 - Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
@@ -175,6 +174,52 @@ Finally, restart PulseAudio and Eruption for the changes to take effect:
 $ systemctl --user restart pulseaudio.service
 $ sudo systemctl restart eruption.service
 ```
+
+## The `eruption-process-monitor` Daemon <a name="process-monitor"></a>
+
+As of Eruption `0.1.19`, automatic switching of profiles and slots is now supported via the `eruption-process-monitor` daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine. It currently supports executing actions on process execution, as well as on X11 "window focus changed" events.
+
+### Examples
+
+To enable the daemon please run the command:
+
+`systemctl --user enable --now eruption-process-monitor.service`
+
+To list all rules, run the command:
+
+`eruption-process-monitor rules list`
+
+Switch to `spectrum-analyzer-swirl.profile` when a YouTube tab is active in Google Chrome:
+
+`eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' spectrum-analyzer-swirl.profile`
+
+Switch to `profile3.profile` when a YouTube tab is active in Mozilla Firefox:
+
+`eruption-process-monitor rules add window-name '.*YouTube.*Mozilla Firefox' profile3.profile`
+
+
+To list all supported sensors and actions please run the command:
+
+`eruption-process-monitor rules add help`
+
+### Removing a rule
+
+```Bash
+$ eruption-process-monitor rules list
+
+  0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: spectrum-analyzer-swirl.profile (enabled: false, internal: false)
+  1: On window focused: Name: 'Skype' => Switch to profile: profile: vu-meter.profile (enabled: false, internal: false)
+  2: On window focused: Name: 'Left 4 Dead 2.*' => Switch to profile: gaming.profile (enabled: true, internal: false)
+  3: On window focused: Name: '.*YouTube.*Google Chrome' => Switch to profile: spectrum-analyzer-swirl.profile (enabled: true, internal: false)
+  4: On window focused: Instance: '.*' => Switch to profile: profile1.profile (enabled: true, internal: true)
+
+```
+
+To remove a rule, please run the command:
+
+`eruption-process-monitor rules remove 1`
+
+This will remove the rule for the window named `Skype` from the ruleset.
 
 ## Further Reading <a name="info"></a>
 
