@@ -21,7 +21,7 @@ default = 250.0
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
-default = 25.0
+default = 2.5
 
 [[config]]
 type = 'float'
