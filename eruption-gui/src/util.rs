@@ -225,7 +225,12 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
 // }
 
 pub fn enumerate_profiles<P: AsRef<Path>>(path: P) -> Result<Vec<profiles::Profile>> {
-    profiles::get_profiles(&path.as_ref())
+    let mut result = profiles::get_profiles(&path.as_ref())?;
+
+    // sort profiles by their name
+    result.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name));
+
+    Ok(result)
 }
 
 /// Returns the associated manifest path in `PathBuf` for the script `script_path`.
