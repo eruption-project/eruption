@@ -46,11 +46,13 @@ next_rand = ghost_backoff_secs * target_fps
 local function ghost_key(key_index)
 	color_map[key_index] = color_afterglow
 
-	for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+	if key_index ~= 0 then
+		for i = 0, max_neigh do
+			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-		if neigh_key ~= 0xff then
-			state_map[neigh_key] = key_state.shockwave_origin
+			if neigh_key ~= 0xff then
+				state_map[neigh_key] = key_state.shockwave_origin
+			end
 		end
 	end
 

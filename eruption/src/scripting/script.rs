@@ -683,7 +683,8 @@ pub fn run_script(
             // start execution of the Lua script
             lua_ctx.load(&script).eval::<()>().unwrap_or_else(|e| {
                 error!(
-                    "Lua error: {}\n\t{:?}",
+                    "Lua error in file {}: {}\n\t{:?}",
+                    file.to_string_lossy(),
                     e,
                     e.source().unwrap_or(&UnknownError {})
                 );
@@ -698,7 +699,8 @@ pub fn run_script(
             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_startup") {
                 handler.call::<_, ()>(()).unwrap_or_else(|e| {
                     error!(
-                        "Lua error: {}\n\t{:?}",
+                        "Lua error in file {}: {}\n\t{:?}",
+                        file.to_string_lossy(),
                         e,
                         e.source().unwrap_or(&UnknownError {})
                     );
@@ -723,7 +725,8 @@ pub fn run_script(
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -747,7 +750,8 @@ pub fn run_script(
                                 {
                                     handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                         error!(
-                                            "Lua error: {}\n\t{:?}",
+                                            "Lua error in file {}: {}\n\t{:?}",
+                                            file.to_string_lossy(),
                                             e,
                                             e.source().unwrap_or(&UnknownError {})
                                         );
@@ -805,7 +809,8 @@ pub fn run_script(
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -827,7 +832,8 @@ pub fn run_script(
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_up") {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -910,7 +916,8 @@ pub fn run_script(
                                     .call::<_, ()>((event_type, arg1))
                                     .unwrap_or_else(|e| {
                                         error!(
-                                            "Lua error: {}\n\t{:?}",
+                                            "Lua error in file {}: {}\n\t{:?}",
+                                            file.to_string_lossy(),
                                             e,
                                             e.source().unwrap_or(&UnknownError {})
                                         );
@@ -959,7 +966,8 @@ pub fn run_script(
                                     .call::<_, ()>((event_type, arg1))
                                     .unwrap_or_else(|e| {
                                         error!(
-                                            "Lua error: {}\n\t{:?}",
+                                            "Lua error in file {}: {}\n\t{:?}",
+                                            file.to_string_lossy(),
                                             e,
                                             e.source().unwrap_or(&UnknownError {})
                                         );
@@ -983,7 +991,8 @@ pub fn run_script(
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -1007,7 +1016,8 @@ pub fn run_script(
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -1033,7 +1043,8 @@ pub fn run_script(
                                     handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(
                                         |e| {
                                             error!(
-                                                "Lua error: {}\n\t{:?}",
+                                                "Lua error in file {}: {}\n\t{:?}",
+                                                file.to_string_lossy(),
                                                 e,
                                                 e.source().unwrap_or(&UnknownError {})
                                             );
@@ -1061,7 +1072,8 @@ pub fn run_script(
                             {
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -1091,7 +1103,8 @@ pub fn run_script(
                             if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
                                 handler.call::<_, ()>(()).unwrap_or_else(|e| {
                                     error!(
-                                        "Lua error: {}\n\t{:?}",
+                                        "Lua error in file {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );

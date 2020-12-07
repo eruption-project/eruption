@@ -13,14 +13,14 @@ readme = "README.md"
 # async-std = { version = "1.6.2", features = ["attributes", "tokio02"] }
 # async-macros = "2.0.0"
 clap = "3.0.0-beta.2"
-clap_derive = "3.0.0-beta.1"
-colored = "2.0"
+clap_derive = "3.0.0-beta.2"
+colored = "2.0.0"
 log = "0.4.11"
-libc = "0.2.80"
+libc = "0.2.81"
 nix = "0.19.1"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.117", features = ["derive"] }
-serde_json = { version = "1.0.59" }
+serde = { version = "1.0.118", features = ["derive"] }
+serde_json = { version = "1.0.60" }
 tokio = { version = "0.2", features = ["full"] }
 tracing = "0.1.22"
 tracing-futures = "0.2.4"
@@ -29,8 +29,8 @@ uuid = { version = "0.8.1", features = ["serde", "v4"] }
 toml = "0.5.7"
 thiserror = "1.0.22"
 eyre = "0.6.3"
-color-eyre = "0.5.8"
-paste = "1.0"
+color-eyre = "0.5.10"
+paste = "1.0.3"
 dbus = "0.9.0"
 dbus-tokio = "0.6.0"
 

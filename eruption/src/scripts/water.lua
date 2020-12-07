@@ -47,11 +47,13 @@ end
 function on_key_down(key_index)
 	color_map[key_index] = color_water
 
-	for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+	if key_index ~= 0 then
+		for i = 0, max_neigh do
+			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-		if neigh_key ~= 0xff then
-			state_map[neigh_key] = key_state.water_origin
+			if neigh_key ~= 0xff then
+				state_map[neigh_key] = key_state.water_origin
+			end
 		end
 	end
 
@@ -61,11 +63,13 @@ end
 function on_key_up(key_index)
 	color_map[key_index] = color_water
 
-	for i = 0, max_neigh do
-		local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
+	if key_index ~= 0 then
+		for i = 0, max_neigh do
+			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset] + 1
 
-		if neigh_key ~= 0xff then
-			state_map[neigh_key] = key_state.water_origin
+			if neigh_key ~= 0xff then
+				state_map[neigh_key] = key_state.water_origin
+			end
 		end
 	end
 
