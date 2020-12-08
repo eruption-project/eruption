@@ -48,6 +48,7 @@ struct State {
     started: bool,
     connected: bool,
     active_slot: Option<usize>,
+    active_profile: Option<String>,
     current_brightness: Option<i64>,
 }
 
@@ -57,6 +58,7 @@ impl State {
             started: false,
             connected: false,
             active_slot: None,
+            active_profile: None,
             current_brightness: None,
         }
     }
@@ -275,6 +277,8 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
+
+                ui::profiles::update_profile_state(&builder)?;
             }
 
             dbus_client::Message::SlotNamesChanged(ref names) => {
@@ -405,6 +409,9 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 }
 
                 events::reenable_ui_events();
+
+                STATE.write().active_profile = Some(profile.clone());
+                ui::profiles::update_profile_state(&builder)?;
             }
 
             dbus_client::Message::BrightnessChanged(brightness) => {

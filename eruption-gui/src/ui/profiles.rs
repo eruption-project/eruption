@@ -291,8 +291,11 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
         }
     }
 
-    config_window.add(&container);
-    config_window.show_all();
+    // TODO: Add support for this
+    // config_window.add(&container);
+    // config_window.show_all();
+
+    config_window.hide();
 
     Ok(())
 }
@@ -330,7 +333,9 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
 
     let sourceview = sourceview::View::new_with_buffer(&buffer);
     sourceview.set_show_line_marks(true);
-    sourceview.set_show_line_numbers(true);
+
+    // TODO: Allow modification
+    sourceview.set_editable(false);
 
     let filename = profile
         .as_ref()
@@ -377,6 +382,9 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
                 sourceview.set_show_line_marks(true);
                 sourceview.set_show_line_numbers(true);
 
+                // TODO: Allow modification
+                sourceview.set_editable(false);
+
                 let path = f.file_name().unwrap().to_string_lossy().to_string();
 
                 let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
@@ -408,6 +416,9 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
                 let sourceview = sourceview::View::new_with_buffer(&buffer);
                 sourceview.set_show_line_marks(true);
                 sourceview.set_show_line_numbers(true);
+
+                // TODO: Allow modification
+                sourceview.set_editable(false);
 
                 let path = f.file_name().unwrap().to_string_lossy().to_string();
 
@@ -519,6 +530,33 @@ pub fn initialize_profiles_page(builder: &gtk::Builder) -> Result<()> {
     }));
 
     profiles_treeview.show_all();
+
+    Ok(())
+}
+
+pub fn update_profile_state(builder: &gtk::Builder) -> Result<()> {
+    let profiles_treeview: gtk::TreeView = builder.get_object("profiles_treeview").unwrap();
+
+    let model = profiles_treeview.get_model().unwrap();
+
+    let state = crate::STATE.read();
+    let active_profile = state
+        .active_profile
+        .clone()
+        .unwrap_or_else(|| "".to_string());
+
+    model.foreach(|model, path, iter| {
+        let item = model.get_value(iter, 2).get::<String>().unwrap().unwrap();
+        if item == active_profile {
+            // found a match
+            profiles_treeview.get_selection().select_iter(&iter);
+            profiles_treeview.row_activated(&path, &profiles_treeview.get_column(1).unwrap());
+
+            true
+        } else {
+            false
+        }
+    });
 
     Ok(())
 }
