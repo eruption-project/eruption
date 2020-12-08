@@ -94,7 +94,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .write()
         .as_mut()
         .unwrap()
-        .set_default("brightness", 70)
+        .set_default("brightness", 85)
         .unwrap();
 
     STATE
