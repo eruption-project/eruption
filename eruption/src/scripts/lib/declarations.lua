@@ -24,7 +24,7 @@ canvas_width = get_canvas_width()
 keyboard_zone_start = 0
 keyboard_zone_end = get_num_keys()
 
-mouse_zone_start = 145
+mouse_zone_start = 144
 mouse_zone_end = 144 + 36
 
 -- Keyboard topology maps --

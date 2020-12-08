@@ -188,37 +188,36 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 
 Eruption currently ships with the following Lua scripts:
 
-| Name                            | Class      | File                   | Status | Description                                                                                                                                |
-| ------------------------------- | ---------- | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Afterglow                       | Effect     | `afterglow.lua`        | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                                                     |
-| Afterhue                        | Effect     | `afterhue.lua`         | Ready  | Hit keys cycle through the HSL color-space, using a linearly decreasing hue angle                                                          |
-| Batique                         | Background | `batique.lua`          | Ready  | Batique effect, based on the Super Simplex Noise function that serves as input to get a HSL color                                          |
-| Batique (Mouse)                 | Background | `batique-mouse.lua`    | Ready  | Batique effect, based on the Super Simplex Noise function that serves as input to get a HSL color. Only paint the mouse zone of the canvas |
-| Open Simplex Noise              | Background | `osn.lua`              | Ready  | Effect based on the Open simplex noise function that serves as input to produce a HSL color                                                |
-| Billow                          | Background | `billow.lua`           | Ready  | Effect based on the Billow noise function that serves as input to produce a HSL color                                                      |
-| Fractal Brownian Motion         | Background | `fbm.lua`              | Ready  | Effect based on the Fractal Brownian Motion noise function that serves as input to produce a HSL color                                     |
-| Organic                         | Background | `organic.lua`          | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                                               |
-| Perlin Noise                    | Background | `perlin.lua`           | Ready  | Effect based on the Perlin Noise function that serves as input to produce a HSL color                                                      |
-| Psychedelic                     | Background | `psychedelic.lua`      | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                                               |
-| Ridged Multifractal Noise       | Background | `rmf.lua`              | Ready  | Effect based on the Ridged Multifractal noise function that serves as input to produce a HSL color                                         |
-| Voronoi                         | Background | `voronoi.lua`          | Ready  | Effect based on the Voronoi noise function that serves as input to produce a HSL color                                                     |
-| Checkerboard                    | Background | `checkerboard.lua`     | Ready  | Effect based on the Checkerboard noise function that serves as input to produce a HSL color                                                |
-| Network FX                      | Background | `netfx.lua`            | Ready  | Implements Network FX, a TCP-based network protocol                                                                                        |
-| Heartbeat                       | Effect     | `heartbeat.lua`        | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                                                            |
-| Impact                          | Effect     | `impact.lua`           | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out                               |
-| Raindrops                       | Effect     | `raindrops.lua`        | Ready  | Rain effect, randomly light up keys and fade them out again                                                                                |
-| Ghost                           | Effect     | `ghost.lua`            | Ready  | Ghost typing effect, randomly highlight keys and fade them out again                                                                       |
-| Phonon                          | Effect     | `phonon.lua`           | Ready  | Display a propagating phonon wave effect                                                                                                   |
-| Water                           | Effect     | `water.lua`            | Ready  | Display propagating water ripples effect                                                                                                   |
-| Wave                            | Effect     | `wave.lua`             | Ready  | Display a colored wave where the alpha channel values are based on the sine function                                                       |
-| Solid                           | Background | `solid.lua`            | Ready  | Display a solid color                                                                                                                      |
-| Rainbow                         | Background | `rainbow.lua`          | Ready  | Display a rainbow color gradient                                                                                                           |
-| Stripes                         | Background | `stripes.lua`          | Ready  | Display horizontal stripes of multiple colors                                                                                              |
-| Gradient                        | Background | `gradient.lua`         | Ready  | Gradient Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                                                  |
-| Turbulence                      | Background | `turbulence.lua`       | Ready  | Turbulence Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                                                |
-| Color Swirls (Perlin Noise)     | Background | `swirl-perlin.lua`     | Ready  | Color swirls effect, based on the Perlin Noise function that serves as input to produce a HSL color                                        |
-| Color Swirls (Turbulence Noise) | Background | `swirl-turbulence.lua` | Ready  | Color swirls effect, based on the Turbulence Noise function that serves as input to produce a HSL color                                    |
-| Color Swirls (Voronoi Noise)    | Background | `swirl-voronoi.lua`    | Ready  | Color swirls effect, based on the Voronoi Noise function that serves as input to produce a HSL color                                       |
+| Name                            | Class      | File                   | Status | Description                                                                                                  |
+| ------------------------------- | ---------- | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| Afterglow                       | Effect     | `afterglow.lua`        | Ready  | Hit keys are lit for a certain amount of time, then they are faded out                                       |
+| Afterhue                        | Effect     | `afterhue.lua`         | Ready  | Hit keys cycle through the HSL color-space, using a linearly decreasing hue angle                            |
+| Batique                         | Background | `batique.lua`          | Ready  | Batique effect, based on the Super Simplex Noise function that serves as input to get a HSL color            |
+| Open Simplex Noise              | Background | `osn.lua`              | Ready  | Effect based on the Open simplex noise function that serves as input to produce a HSL color                  |
+| Billow                          | Background | `billow.lua`           | Ready  | Effect based on the Billow noise function that serves as input to produce a HSL color                        |
+| Fractal Brownian Motion         | Background | `fbm.lua`              | Ready  | Effect based on the Fractal Brownian Motion noise function that serves as input to produce a HSL color       |
+| Organic                         | Background | `organic.lua`          | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                 |
+| Perlin Noise                    | Background | `perlin.lua`           | Ready  | Effect based on the Perlin Noise function that serves as input to produce a HSL color                        |
+| Psychedelic                     | Background | `psychedelic.lua`      | Ready  | Effect based on the Super Simplex noise function that serves as input to produce a HSL color                 |
+| Ridged Multifractal Noise       | Background | `rmf.lua`              | Ready  | Effect based on the Ridged Multifractal noise function that serves as input to produce a HSL color           |
+| Voronoi                         | Background | `voronoi.lua`          | Ready  | Effect based on the Voronoi noise function that serves as input to produce a HSL color                       |
+| Checkerboard                    | Background | `checkerboard.lua`     | Ready  | Effect based on the Checkerboard noise function that serves as input to produce a HSL color                  |
+| Network FX                      | Background | `netfx.lua`            | Ready  | Implements Network FX, a TCP-based network protocol                                                          |
+| Heartbeat                       | Effect     | `heartbeat.lua`        | Ready  | Heartbeat effect. The more the system is loaded the faster the heartbeat effect                              |
+| Impact                          | Effect     | `impact.lua`           | Ready  | Hit keys and keys in their immediate vicinity stay lit for a certain amount of time, then they are faded out |
+| Raindrops                       | Effect     | `raindrops.lua`        | Ready  | Rain effect, randomly light up keys and fade them out again                                                  |
+| Ghost                           | Effect     | `ghost.lua`            | Ready  | Ghost typing effect, randomly highlight keys and fade them out again                                         |
+| Phonon                          | Effect     | `phonon.lua`           | Ready  | Display a propagating phonon wave effect                                                                     |
+| Water                           | Effect     | `water.lua`            | Ready  | Display propagating water ripples effect                                                                     |
+| Wave                            | Effect     | `wave.lua`             | Ready  | Display a colored wave where the alpha channel values are based on the sine function                         |
+| Solid                           | Background | `solid.lua`            | Ready  | Display a solid color                                                                                        |
+| Rainbow                         | Background | `rainbow.lua`          | Ready  | Display a rainbow color gradient                                                                             |
+| Stripes                         | Background | `stripes.lua`          | Ready  | Display horizontal stripes of multiple colors                                                                |
+| Gradient                        | Background | `gradient.lua`         | Ready  | Gradient Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                    |
+| Turbulence                      | Background | `turbulence.lua`       | Ready  | Turbulence Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                  |
+| Color Swirls (Perlin Noise)     | Background | `swirl-perlin.lua`     | Ready  | Color swirls effect, based on the Perlin Noise function that serves as input to produce a HSL color          |
+| Color Swirls (Turbulence Noise) | Background | `swirl-turbulence.lua` | Ready  | Color swirls effect, based on the Turbulence Noise function that serves as input to produce a HSL color      |
+| Color Swirls (Voronoi Noise)    | Background | `swirl-voronoi.lua`    | Ready  | Color swirls effect, based on the Voronoi Noise function that serves as input to produce a HSL color         |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:
 

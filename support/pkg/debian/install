@@ -46,6 +46,7 @@ support/profiles/heatmap-errors.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
 support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
+support/profiles/batique-mouse.profile var/lib/eruption/profiles
 support/profiles/checkerboard.profile var/lib/eruption/profiles
 support/profiles/profile1.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
@@ -90,8 +91,6 @@ eruption/src/scripts/organic.lua usr/share/eruption/scripts/
 eruption/src/scripts/organic.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/batique.lua usr/share/eruption/scripts/
 eruption/src/scripts/batique.lua.manifest usr/share/eruption/scripts/
-eruption/src/scripts/batique-mouse.lua usr/share/eruption/scripts/
-eruption/src/scripts/batique-mouse.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/billow.lua usr/share/eruption/scripts/
 eruption/src/scripts/billow.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/checkerboard.lua usr/share/eruption/scripts/

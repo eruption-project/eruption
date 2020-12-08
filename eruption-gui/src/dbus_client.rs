@@ -259,6 +259,21 @@ pub fn test() -> Result<()> {
 //     Ok(result)
 // }
 
+pub fn enumerate_process_monitor_rules() -> Result<Vec<(String, String, String, String)>> {
+    use process_monitor::OrgEruptionProcessMonitorRules;
+
+    let conn = Connection::new_session()?;
+    let proxy = conn.with_proxy(
+        "org.eruption.process_monitor",
+        "/rules",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = proxy.enum_rules()?;
+
+    Ok(result)
+}
+
 /// Fetches all LED color values from the eruption daemon
 pub fn get_led_colors() -> Result<Vec<RGBA>> {
     use status::OrgEruptionStatus;

@@ -22,7 +22,7 @@ use gdk_pixbuf::Pixbuf;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
-use palette::{Hsva, Saturate, Shade, Srgba};
+use palette::{Hsva, Shade, Srgba};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -294,7 +294,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     drawing_area.connect_draw(&draw_keyboard);
 
     glib::timeout_add_local(
-        1000 / (constants::TARGET_FPS as u32 * 2),
+        1000 / (constants::TARGET_FPS as u32 * 4),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)
@@ -353,7 +353,12 @@ fn paint_key(key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layo
 
     // saturate and lighten color somewhat
     let color = Hsva::from(color);
-    let color = Srgba::from(color.saturate(factor).lighten(factor)).into_components();
+    let color = Srgba::from(
+        color
+            // .saturate(factor)
+            .lighten(factor),
+    )
+    .into_components();
 
     cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
     cr.rectangle(key_def.x, key_def.y, key_def.width, key_def.height);
@@ -389,7 +394,7 @@ pub fn draw_keyboard<D: IsA<gtk::DrawingArea>>(_da: &D, context: &cairo::Context
     let led_colors = crate::dbus_client::get_led_colors().unwrap();
 
     let layout = pangocairo::create_layout(&context).unwrap();
-    let desc = pango::FontDescription::from_string("sans-serif demibold 6");
+    let desc = pango::FontDescription::from_string("sans-serif semibold 6");
     layout.set_font_description(Some(&desc));
 
     // paint all keys

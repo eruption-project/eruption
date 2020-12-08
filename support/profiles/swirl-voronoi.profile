@@ -9,6 +9,7 @@ active_scripts = [
 #   'water.lua',
 #   'raindrops.lua',
 #   'sysmon.lua',
+    'batique.lua',
     'macros.lua',
 #   'stats.lua',
 ]
@@ -57,3 +58,19 @@ value = 0x0000ff00
 type = 'color'
 name = 'color_hot'
 value = 0xffff0000
+
+# mouse support
+[[config.Batique]]
+type = 'int'
+name = 'zone_start'
+value = 144
+
+[[config.Batique]]
+type = 'int'
+name = 'zone_end'
+value = 180
+
+[[config.Batique]]
+type = 'float'
+name = 'coord_scale'
+value = 2.5

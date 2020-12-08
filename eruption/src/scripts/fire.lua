@@ -98,13 +98,6 @@ function on_tick(delta)
             end
         end
 
-        -- for the mouse zone on the canvas, we simply copy
-        -- over colors from the keyboard zone
-        local offset = mouse_zone_end - keyboard_zone_end
-        for i = mouse_zone_start, mouse_zone_end do
-            color_map[i] = color_map[i - offset]
-        end
-
         submit_color_map(color_map)
     end
 end

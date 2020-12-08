@@ -21,7 +21,7 @@ default = 250.0
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
-default = 25.0
+default = 2.5
 
 [[config]]
 type = 'float'
@@ -52,3 +52,15 @@ type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
 default = 1.0
+
+[[config]]
+type = 'int'
+name = 'zone_start'
+description = 'Zone on the canvas to paint to (start index)'
+default = 0
+
+[[config]]
+type = 'int'
+name = 'zone_end'
+description = 'Zone on the canvas to paint to (end index)'
+default = 180

@@ -6,6 +6,7 @@ active_scripts = [
     'halo.lua',
     'shockwave.lua',
 	'audioviz3.lua',
+	'batique.lua',
  	'macros.lua',
 #	'stats.lua',
 ]
@@ -54,3 +55,24 @@ value = 0xd0ff0000
 type = 'float'
 name = 'opacity'
 value = 0.85
+
+# mouse support
+[[config.Batique]]
+type = 'int'
+name = 'zone_start'
+value = 144
+
+[[config.Batique]]
+type = 'int'
+name = 'zone_end'
+value = 180
+
+[[config.Batique]]
+type = 'float'
+name = 'coord_scale'
+value = 2.5
+
+[[config.Batique]]
+type = 'float'
+name = 'opacity'
+value = 0.025

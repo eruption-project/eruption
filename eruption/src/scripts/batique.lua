@@ -20,14 +20,21 @@ require "debug"
 ticks = 0
 color_map = {}
 
+-- event handler functions --
+function on_startup(config)
+    for i = 0, canvas_size do
+        color_map[i] = 0x00000000
+    end
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        for i = 0, canvas_size do
-            local x = i / canvas_width
-            local y = i / canvas_height
+        for i = zone_start, zone_end do
+            local x = i / (zone_end - zone_start)
+            local y = i / (zone_end - zone_start)
 
             local val = super_simplex_noise((x / coord_scale),
                                             (y / coord_scale),
