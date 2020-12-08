@@ -29,7 +29,7 @@ eyre = "0.6.3"
 color-eyre = "0.5.10"
 toml = "0.5.7"
 serde = { version = "1.0.118", features = ["derive"] }
-serde_json = { version = "1.0.59" }
+serde_json = { version = "1.0.60" }
 tokio = { version = "0.2", features = ["full"] }
 ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.1"
@@ -58,8 +58,8 @@ systemstat = "0.1.6"
 procinfo = "0.4.2"
 rustfft = "4.0.0"
 hound = "3.4.0"
-libpulse-binding = { version = "2.18", default-features = false }
-libpulse-simple-binding = { version = "2.18", default-features = false }
+libpulse-binding = { version = "2.19.0", default-features = false }
+libpulse-simple-binding = { version = "2.18.1", default-features = false }
 rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
 dbus = "0.9.0"
