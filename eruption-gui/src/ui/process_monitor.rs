@@ -89,7 +89,7 @@ pub fn initialize_process_monitor_page(builder: &gtk::Builder) -> Result<()> {
 
     rules_treeview.set_model(Some(&rules_treestore));
 
-    rules_treeview.connect_row_activated(clone!(@strong builder => move |tv, path, _column| {
+    rules_treeview.connect_row_activated(clone!(@strong builder => move |_tv, _path, _column| {
         // let index = tv.get_model().unwrap().get_value(&tv.get_model().unwrap().get_iter(&path).unwrap(), 0).get::<u64>().unwrap().unwrap();
     }));
 
