@@ -1,6 +1,6 @@
 [package]
 name = "eruption-netfx"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A Network FX protocol client for the Eruption Linux user-mode driver"

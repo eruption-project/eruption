@@ -66,16 +66,16 @@ pub enum Subcommands {
     /// Send Network FX raw protocol commands to the server
     Command { data: String },
 
-    /// Load an image file and display it on the keyboard
+    /// Load an image file and display it on the connected devices
     Image { filename: PathBuf },
 
-    /// Load image files from a directory and display each one on the keyboard
+    /// Load image files from a directory and display each one on the connected devices
     Animation {
         directory_name: PathBuf,
         frame_delay: Option<u64>,
     },
 
-    /// Make the keyboard reflect what is shown on the screen
+    /// Make the LEDs of connected devices reflect what is shown on the screen
     Ambient { frame_delay: Option<u64> },
 }
 

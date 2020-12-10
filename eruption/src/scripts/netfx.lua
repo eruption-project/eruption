@@ -161,19 +161,19 @@ function on_tick(delta)
                         local spec = split(components[idx], '-')
                         if #spec < 2 then
                             if result[1] == "ALL" then
-                                -- predefined zone: all keys
-                                for i = 0, num_keys do
+                                -- predefined zone: full canvas
+                                for i = 0, canvas_size do
                                     color_map[i] = color
                                 end
                             else
-                                -- set a single key to a specific color
+                                -- set a single pixel on the canvas to a specific color
                                 if components[idx] ~= nil and components[idx] ~= '' and
                                    tonumber(components[idx]) > 0 and
-                                   tonumber(components[idx]) <= get_num_keys() then
+                                   tonumber(components[idx]) <= canvas_size then
                                     local index = tonumber(components[idx])
                                     color_map[index] = color
                                 else
-                                    error("Network FX: Invalid key index")
+                                    error("Network FX: Invalid index")
 
                                     conn:send("ERROR: 120\n")
                                     conn:close()
@@ -182,11 +182,11 @@ function on_tick(delta)
                                 end
                             end
                         else
-                            -- set a range of keys to a specific color
+                            -- set a range of pixels to a specific color
                             if spec[1] ~= nil and spec[2] ~= nil and
                                spec[1] ~= ''  and spec[2] ~= '' and
-                               tonumber(spec[1]) > 0 and tonumber(spec[1]) <= get_num_keys() and
-                               tonumber(spec[2]) > 0 and tonumber(spec[2]) <= get_num_keys() then
+                               tonumber(spec[1]) > 0 and tonumber(spec[1]) <= canvas_size and
+                               tonumber(spec[2]) > 0 and tonumber(spec[2]) <= canvas_size then
                                 local low = tonumber(spec[1])
                                 local high = tonumber(spec[2])
 
@@ -194,7 +194,7 @@ function on_tick(delta)
                                     color_map[index] = color
                                 end
                             else
-                                error("Network FX: Invalid key index")
+                                error("Network FX: Invalid index")
 
                                 conn:send("ERROR: 120\n")
                                 conn:close()
