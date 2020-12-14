@@ -48,7 +48,6 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
 
 
-
 ## Important Information <a name="important"></a>
 
 This project is still in an early stage of development, and thus may contain
@@ -96,7 +95,7 @@ $ sudo dnf copr enable x3n0m0rph59/eruption
 $ sudo dnf install eruption-git
 ```
 
-#### Ubuntu
+#### Ubuntu or Pop!_OS
 
 ```sh
 sudo add-apt-repository ppa:x3n0m0rph59/eruption
