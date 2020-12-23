@@ -86,7 +86,7 @@ prior to sending the resulting final color map to the keyboard.
 #### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
-$ paru -Sy aur/eruption-git
+$ paru -Syu aur/eruption-git
 ```
 
 #### Fedora based
