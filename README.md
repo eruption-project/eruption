@@ -2,25 +2,25 @@
 
 # Table of Contents
 
-- <a href="#eruption">Eruption</a>
-- <a href="#devices">Supported Devices</a>
-- <a href="#issues">Remarks and known Issues</a>
-- <a href="#important">Important Information</a>
-- <a href="#overview">Design Overview</a>
-- <a href="#installation">Installation</a>
-- <a href="#after_setup">After Setup</a>
-- <a href="#audio">Support for Audio Playback and Capture </a>
-- <a href="#process-monitor">The `eruption-process-monitor` Daemon</a>
-- <a href="#info">Further Reading</a>
-- <a href="#contributing">Contributing</a>
+- [Eruption](#eruption)
+- [Supported Devices](#supported-devices)
+- [Remarks and known Issues](#remarks-and-known-issues)
+- [Important Information](#important-information)
+- [Design Overview](#design-overview)
+- [Installation](#installation)
+- [After Setup](#after-setup)
+- [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
+- [The `eruption-process-monitor` Daemon](#the-eruption-process-monitor-daemon)
+- [Further Reading](#further-reading)
+- [Contributing](#contributing)
 
-## Eruption <a name="eruption"></a>
+## Eruption
 
 A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
-## Supported Devices <a name="devices"></a>
+## Supported Devices
 
 ### Keyboard devices
 
@@ -32,9 +32,9 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 * ROCCAT Kone Pure Ultra
 * ROCCAT Kova AIMO (experimental)
 
-### Remarks and known Issues <a name="issues"></a>
+### Remarks and known Issues
 
-### ROCCAT Vulcan 100/12x series keyboard:
+#### ROCCAT Vulcan 100/12x series keyboard:
 
 - Mute button will stay lit even if audio is muted
 
@@ -49,7 +49,7 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 
 
 
-## Important Information <a name="important"></a>
+## Important Information
 
 This project is still in an early stage of development, and thus may contain
 some, possibly serious bugs.
@@ -69,7 +69,7 @@ You can always re-enable the Eruption service with the command:
 $ sudo systemctl unmask eruption.service
 ```
 
-## Design Overview <a name="overview"></a>
+## Design Overview
 
 Eruption is a Linux daemon written in Rust, consisting of a core, an integrated
 Lua interpreter and additional plugin components. Its intended usage is to
@@ -81,22 +81,22 @@ map" will be combined with all other scripts "submitted color maps" using a
 compositor that does an alpha blending step on each color map,
 prior to sending the resulting final color map to the keyboard.
 
-## Installation <a name="installation"></a>
+## Installation
 
-#### Arch Linux and derivatives like ArcoLinux or Manjaro
+### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
 $ paru -Syu aur/eruption-git
 ```
 
-#### Fedora based
+### Fedora based
 
 ```sh
 $ sudo dnf copr enable x3n0m0rph59/eruption
 $ sudo dnf install eruption-git
 ```
 
-#### Ubuntu
+### Ubuntu
 
 ```sh
 sudo add-apt-repository ppa:x3n0m0rph59/eruption
@@ -114,7 +114,7 @@ $ sudo systemctl start eruption.service
 > Note: You don't have to enable the eruption service, since it is started by an
 `udev` rule as soon as a compatible keyboard device is plugged into your system.
 
-#### From Source
+### From Source
 
 ```sh
 $ git clone https://github.com/X3n0m0rph59/eruption.git
@@ -122,14 +122,14 @@ $ cd eruption
 $ cargo build --all --release
 ```
 
-## After Setup <a name="after_setup"></a>
+## After Setup
 
 > You may want to try the
 [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
 GNOME Shell extension, for easy switching of profiles on the fly.
 
 
-### Support for Audio Playback and Capture <a name="audio"></a>
+### Support for Audio Playback and Capture
 
 If you want Eruption to be able to play back sound effects, or use one of the
 audio visualizer Lua scripts, then you have to perform a few additional steps.
@@ -175,7 +175,7 @@ $ systemctl --user restart pulseaudio.service
 $ sudo systemctl restart eruption.service
 ```
 
-## The `eruption-process-monitor` Daemon <a name="process-monitor"></a>
+## The `eruption-process-monitor` Daemon
 
 As of Eruption `0.1.19`, automatic switching of profiles and slots is now supported via the `eruption-process-monitor` daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine. It currently supports executing actions on process execution, as well as on X11 "window focus changed" events.
 
@@ -219,7 +219,7 @@ To remove a rule, please run the following command:
 
 This will remove the rule for the window named `Skype` from the ruleset.
 
-## Further Reading <a name="info"></a>
+## Further Reading
 
 Please see [DOCUMENTATION.md](./DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use and customize it properly.
 
@@ -227,7 +227,7 @@ For further information about the supported Lua functions and libraries, please 
 
 For a detailed documentation on how to write your own macros, please refer to [MACROS.md](./MACROS.md)
 
-## Contributing <a name="contributing"></a>
+## Contributing
 
 Contributions are welcome!
 Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
