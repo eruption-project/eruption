@@ -366,10 +366,9 @@ mod backends {
     use pulsectl::controllers::DeviceControl;
     use pulsectl::controllers::SinkController;
 
-    use rustfft::algorithm::Radix4;
     use rustfft::num_complex::Complex;
-    use rustfft::num_traits::Zero;
-    use rustfft::FFT;
+    use rustfft::Fft;
+    use rustfft::{algorithm::Radix4, FftDirection};
     use std::f32::consts::PI;
 
     /// Audio backend trait, defines an interface to the player and
@@ -414,7 +413,7 @@ mod backends {
 
         pub fn init_playback() -> Result<psimple::Simple> {
             let spec = sample::Spec {
-                format: sample::SAMPLE_S16NE,
+                format: sample::Format::S16NE,
                 channels: 2,
                 rate: 44100,
             };
@@ -440,7 +439,7 @@ mod backends {
 
         pub fn init_grabber() -> Result<psimple::Simple> {
             let spec = sample::Spec {
-                format: sample::SAMPLE_S16NE,
+                format: sample::Format::S16NE,
                 channels: 2,
                 rate: 44100,
             };
@@ -550,10 +549,9 @@ mod backends {
                                 .take(FFT_SIZE)
                                 .map(|e| Complex::from(*e as f32))
                                 .collect();
-                            let mut output = vec![Complex::zero(); FFT_SIZE];
 
-                            let fft = Radix4::new(FFT_SIZE, false);
-                            fft.process(&mut data, &mut output);
+                            let fft = Radix4::new(FFT_SIZE, FftDirection::Forward);
+                            fft.process(&mut data);
 
                             // apply post processing steps: normalization, window function and smoothing
                             let one_over_fft_len_sqrt = 1.0 / ((FFT_SIZE / 2) as f32).sqrt();
@@ -561,7 +559,7 @@ mod backends {
                             let mut phase = 0.0;
                             const DELTA: f32 = (2.0 * PI) / (FFT_SIZE / 2) as f32;
 
-                            let result: Vec<f32> = output[(FFT_SIZE / 2)..]
+                            let result: Vec<f32> = data[(FFT_SIZE / 2)..]
                                 .iter()
                                 // normalize
                                 .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())

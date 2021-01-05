@@ -503,7 +503,7 @@ mod callbacks {
     /// Compute Checkerboard noise (3D)
     pub(crate) fn checkerboard_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
         // no seed needed
-        let noise = noise::Checkerboard::new();
+        let noise = noise::Checkerboard::new(0);
         noise.get([f1, f2, f3]) / 2.0 + 0.5
     }
 
@@ -1256,7 +1256,7 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     globals.set("round", round)?;
 
     let rand =
-        lua_ctx.create_function(|_, (l, h): (i64, i64)| Ok(rand::thread_rng().gen_range(l, h)))?;
+        lua_ctx.create_function(|_, (l, h): (i64, i64)| Ok(rand::thread_rng().gen_range(l..h)))?;
     globals.set("rand", rand)?;
 
     let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
