@@ -1,19 +1,19 @@
 # Table of Contents
 
-- <a href="#features">Features</a>
-- <a href="#experimental">Experimental Features</a>
-- <a href="#config">Configuration and Usage</a>
-- <a href="#profiles">Profiles</a>
-- <a href="#scripts">Lua Scripts and Manifests</a>
-- <a href="#macro_support">Support for Macros </a>
-- <a href="#plugins">Available Plugins</a>
-- <a href="#effects">Available Effects</a>
-- <a href="#macros">Available Macro Definitions</a>
-- <a href="#info">Further Reading</a>
-- <a href="#process-monitor">Process Monitor</a>
-- <a href="#contributing">Contributing</a>
+- [Features](#features)
+- [Experimental Features](#experimental-features)
+- [Configuration and Usage](#configuration-and-usage)
+- [Profiles](#profiles)
+- [Lua Scripts and Manifests](#lua-scripts-and-manifests)
+- [Support for Macros](#support-for-macros)
+- [Available Plugins](#available-plugins)
+- [Available Effects](#available-effects-scripts)
+- [Available Macro Definitions](#available-macro-definitions)
+- [Further Reading](#further-reading)
+- [Process Monitor](#process-monitor)
+- [Contributing](#contributing)
 
-## Features <a name="features"></a>
+## Features
 
 Overview:
 
@@ -26,14 +26,13 @@ Overview:
 * Profiles may be switched at runtime via a D-Bus method
 * A GNOME based profile switcher extension is available
 
-## Experimental Features <a name="experimental"></a>
+## Experimental Features
 
 * Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
 
 * Eruption `0.1.12` somewhat relaxed the mouse grabbing mode. It now is possible for Eruption to process mouse events without grabbing the mouse exclusively. Injection of mouse events wont work in that mode though. This feature has been added to support setups, where another software should be granted exclusive access to the mouse device.
 
-
-## Configuration and Usage <a name="config"></a>
+## Configuration and Usage
 
 ### Eruption configuration file
 
@@ -68,7 +67,7 @@ grab_mouse = true
 *grab_mouse* = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.
 
 
-### Profiles <a name="profiles"></a>
+### Profiles
 
 The file `default.profile` from the directory `/var/lib/eruption/profiles`
 
@@ -125,13 +124,13 @@ or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switc
 
 You may switch the currently active slot to `profile1.profile` with the following command:
 
-#### Switch Profile
+##### Switch Profile
 
 ```sh
 $ eruptionctl switch profile profile1.profile
 ```
 
-#### Switch Slot
+##### Switch Slot
 
 Slots can be switched with the following command:
 
@@ -141,14 +140,14 @@ Slots can be switched with the following command:
 $ eruptionctl switch slot 2
 ```
 
-### Lua Scripts and Manifests <a name="scripts"></a>
+### Lua Scripts and Manifests
 
 All script files and their corresponding manifests reside in the directory
 `/usr/share/eruption/scripts`. You may use the provided scripts as a starting
 point to write your own effects.
 
 
-### Support for Macros <a name="macro_support"></a>
+### Support for Macros
 
 Eruption 0.1.1 added the infrastructure to support injection of keystrokes
 (to support "macros").
@@ -172,7 +171,7 @@ You may use it to implement your own macros.
 
 Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is roughly implemented in the same way as the previously mentioned keyboard support, by adding a "virtual mouse" device to the system that injects events as needed. The "real hardware" mouse will be grabbed exclusively (this can be disabled) on startup of the daemon. This allows Eruption to filter out or inject "virtual" mouse events.
 
-## Available Plugins <a name="plugins"></a>
+## Available Plugins
 
 * Keyboard: Keyboard related functions
 * Mouse: Mouse related functions
@@ -184,7 +183,7 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 * Profiles: Switch slots, switch profiles based on system state, ...
 * Macros: Inject programmable key stroke sequences
 
-## Available Effects Scripts <a name="effects"></a>
+## Available Effects Scripts
 
 Eruption currently ships with the following Lua scripts:
 
@@ -245,7 +244,7 @@ The following scripts are unfinished/still in development, and some of them have
 Scripts are combined to so called "effect pipelines" using a `.profile` file. E.g.: You may use one or more backgrounds, and then stack multiple
 effects scripts on top of that.
 
-## Available Macro Definitions <a name="macros"></a>
+## Available Macro Definitions
 
 The macro files are stored in `/usr/share/eruption/scripts/lib/macros/`. Each file provides the Lua code that controls illumination and colors of each of the modifier layers, additionally they provide the code that gets executed when a macro key or Easy Shift shortcut is pressed. Eruption currently ships with custom keyboard macros for the following software:
 
@@ -256,17 +255,17 @@ The macro files are stored in `/usr/share/eruption/scripts/lib/macros/`. Each fi
 
 For a detailed documentation on how to write your own macros, please refer to [MACROS.md](./MACROS.md)
 
-## Further Reading <a name="info"></a>
+## Further Reading
 
 For a documentation of the supported Lua functions and libraries, please
 refer to the developer documentation [LIBRARY.md](./LIBRARY.md)
 
-## Process Monitor <a name="process-monitor"></a>
+## Process Monitor
 
 Eruption `0.1.17` added a new daemon called `eruption-process-monitor`, which allows for dynamic switching of profiles and slots using a rule matching engine.
 
 
-## Contributing <a name="contributing"></a>
+## Contributing
 
 Contributions are welcome!
 Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
