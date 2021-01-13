@@ -13,36 +13,36 @@ readme = "README.md"
 # async-std = { version = "1.6.2", features = ["attributes", "tokio02"] }
 # async-macros = "2.0.0"
 async-trait = "0.1.42"
-byteorder = "1.3.4"
+byteorder = "1.4.2"
 clap = "3.0.0-beta.2"
 clap_derive = "3.0.0-beta.2"
 ctrlc = { version = "3.1.7", features = ["termination"] }
 config = "0.10.1"
 colored = "2.0"
-dbus = "0.9.0"
-dbus-tokio = "0.6.0"
+dbus = "0.9.1"
+dbus-tokio = "0.7.3"
 dbus-tree = "0.9.0"
 dyn-clone = "1.0.4"
 dyn-clonable = "0.9.0"
 indexmap = "1.6.1"
-log = "0.4.11"
-libc = "0.2.81"
+log = "0.4.13"
+libc = "0.2.82"
 nix = "0.19.1"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-regex = "1.4.2"
-serde = { version = "1.0.118", features = ["derive"] }
+regex = "1.4.3"
+serde = { version = "1.0.119", features = ["derive"] }
 serde_json = "1.0.61"
 serde_yaml = "0.8"
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "1.0.1", features = ["full"] }
 tracing = "0.1.22"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
 crossbeam = "0.8.0"
-uuid = { version = "0.8.1", features = ["serde", "v4"] }
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
 thiserror = "1.0.23"
-eyre = "0.6.4"
+eyre = "0.6.5"
 color-eyre = "0.5.10"
 paste = "1.0"
 hotwatch = "0.4.5"
@@ -53,7 +53,7 @@ lazy_static = "1.4.0"
 rust-crypto = "0.2.36"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
 walkdir = "2.3.1"
-x11rb = "0.7.0"
+x11rb = "0.8.0"
 
 [dev-dependencies]
-tokio = { version = "0.2", features = ["test-util"] }
+tokio = { version = "1.0.1", features = ["test-util"] }
