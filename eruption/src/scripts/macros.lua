@@ -145,6 +145,18 @@ function on_hid_event(event_type, arg1)
 		end
 	end
 
+	-- special handling for keys in game mode
+	if game_mode_enabled then
+		-- handle the super key
+		if ENABLE_SUPER_KEY_IN_GAME_MODE and key_code == 31 then
+			if is_pressed then
+				inject_key(125, true)  -- EV_KEY::LEFTMETA
+			else
+				inject_key(125, false) -- EV_KEY::LEFTMETA
+			end
+		end
+	end
+
 	-- slot keys (F1 - F4)
 	if is_pressed then
 		if modifier_map[MODIFIER_KEY] and key_code == 16 then

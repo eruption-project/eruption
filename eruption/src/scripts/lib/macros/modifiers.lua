@@ -16,6 +16,9 @@
 ENABLE_EASY_SHIFT = true   -- set this to false if you don't want to
 						   -- use the Easy Shift+ functionality
 
+ENABLE_SUPER_KEY_IN_GAME_MODE = false -- set this to true to enable the Windows key even when in game mode
+
+
 -- comment out the declarations below to change the modifier key you want to use; default is the "FN" key:
 
 MODIFIER_KEY = FN		       --
