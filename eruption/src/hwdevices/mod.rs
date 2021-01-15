@@ -31,6 +31,7 @@ mod roccat_kone_pure_ultra;
 mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_tkl;
 mod roccat_vulcan_tkl_pro;
 
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
@@ -46,7 +47,9 @@ lazy_static! {
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan TKL Pro", 0x1e7d, 0x311a, &roccat_vulcan_tkl_pro::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL", 0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
+
+        // KeyboardDriver::register("ROCCAT", "Vulcan TKL Pro", 0x1e7d, 0x311a, &roccat_vulcan_tkl_pro::bind_hiddev),
 
         // Supported mice
         MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev),
