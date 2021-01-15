@@ -19,10 +19,9 @@ use clap::Clap;
 use colored::Colorize;
 use std::path::PathBuf;
 use std::{env, thread};
-use tokio::io;
+use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt};
 use tokio::io::{AsyncReadExt, BufReader};
 use tokio::net::TcpStream;
-use tokio::prelude::*;
 use tokio::time::Duration;
 use walkdir::WalkDir;
 
