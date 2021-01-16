@@ -896,7 +896,7 @@ pub fn get_input_sub_dev_from_udev(
 pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
     match Enumerator::new() {
         Ok(mut enumerator) => {
-            enumerator.match_subsystem("input").unwrap();
+            // enumerator.match_subsystem("input").unwrap();
 
             match enumerator.scan_devices() {
                 Ok(devices) => {
