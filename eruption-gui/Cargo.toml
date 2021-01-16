@@ -24,7 +24,7 @@ walkdir = "2.3.1"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.119", features = ["derive"] }
 serde_json = { version = "1.0.61" }
-# tokio = { version = "1.0.1", features = ["full", "parking_lot"] }
+# tokio = { version = "1.0.2", features = ["full"] }
 tracing = "0.1.22"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
@@ -72,4 +72,4 @@ version = "0.9.1"
 features = ["v2_44"]
 
 [dev-dependencies]
-tokio = { version = "1.0.1", features = ["test-util"] }
+tokio = { version = "1.0.2", features = ["test-util"] }
