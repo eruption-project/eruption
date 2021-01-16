@@ -67,7 +67,7 @@ pub fn bind_hiddev(
     }
 }
 
-/// ROCCAT Vulcan ccccc device info struct (sent as HID report)
+/// ROCCAT Vulcan TKL device info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -574,9 +574,9 @@ impl DeviceTrait for RoccatVulcanTKL {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             let firmware_version = self.get_device_info()?.firmware_version;
-            if firmware_version < 136 {
+            if firmware_version < 115 {
                 warn!(
-                    "Outdated firmware version: {}, should be: >= 136",
+                    "Outdated firmware version: {}, should be: >= 115",
                     firmware_version
                 );
             }
