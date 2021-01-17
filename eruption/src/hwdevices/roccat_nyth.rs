@@ -403,7 +403,8 @@ impl MouseDeviceTrait for RoccatNyth {
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
                 Ok(size) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    // hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
 
                     let event = match buf[0..5] {
                         // Button reports (DPI)
