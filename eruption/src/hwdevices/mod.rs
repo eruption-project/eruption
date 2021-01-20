@@ -31,6 +31,7 @@ mod roccat_kone_pure_ultra;
 mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_pro;
 mod roccat_vulcan_tkl;
 mod roccat_vulcan_tkl_pro;
 
@@ -42,19 +43,27 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 8]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 10]>> = Arc::new(Mutex::new([
         // Supported keyboards
+
+        // Vulcan 100/12x/Pro series
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan TKL", 0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro", 0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
 
-        // KeyboardDriver::register("ROCCAT", "Vulcan TKL Pro", 0x1e7d, 0x311a, &roccat_vulcan_tkl_pro::bind_hiddev),
+        // Vulcan TKL (Pro) series
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
+
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL Pro", 0x1e7d, 0x311a, &roccat_vulcan_tkl_pro::bind_hiddev),
 
         // Supported mice
         MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev),
+
         MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev),
+
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev),
+
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev),
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev),
     ]));
