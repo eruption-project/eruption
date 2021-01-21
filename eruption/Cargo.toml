@@ -51,7 +51,7 @@ noise = "0.7.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
 # lua-src = "540.0.0"
-mlua = { version = "0.5.0", features = ["luajit"] }
+mlua = { version = "0.5.1", features = ["luajit"] }
 mlua_derive = { version = "0.5.0" }
 sysinfo = "0.15"
 systemstat = "0.1.6"
