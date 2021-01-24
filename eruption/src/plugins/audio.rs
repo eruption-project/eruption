@@ -70,7 +70,7 @@ static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
 static ERROR_RATE_LIMIT_MILLIS: u64 = 10000;
 
 lazy_static! {
-    /// Pluggable audio backend. Currently supported backends are "Null", ALSA and PulseAudio
+    /// Pluggable audio backend. Currently supported backends are "Null" and PulseAudio
     pub static ref AUDIO_BACKEND: Arc<Mutex<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
         // Arc::new(Mutex::new(backends::PulseAudioBackend::new().expect("Could not instantiate the audio backend!")));
         Arc::new(Mutex::new(None));
