@@ -606,7 +606,7 @@ dependencies = [
  "prctl",
  "pretty_env_logger",
  "procinfo",
- "rand 0.8.2",
+ "rand 0.8.3",
  "rayon",
  "rust-pulsectl",
  "rustfft",
@@ -2397,9 +2397,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18519b42a40024d661e1714153e9ad0c3de27cd495760ceb09710920f1098b1e"
+checksum = "0ef9e7e66b4468674bfcb0c81af8b7fa0bb154fa9f28eb840da5c447baeb8d7e"
 dependencies = [
  "libc",
  "rand_chacha 0.3.0",
@@ -3198,12 +3198,13 @@ checksum = "373c8a200f9e67a0c95e62a4f52fbf80c23b4381c05a17845531982fa99e6b33"
 
 [[package]]
 name = "udev"
-version = "0.5.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77d60b10bce00b310f5c10792a5e0142cb5238d92850de7b94e746013b3c208f"
+checksum = "307c2b8c8a320a38365def5bb3ee92d146d405655196230f7a445fe4da6749f6"
 dependencies = [
  "libc",
  "libudev-sys",
+ "pkg-config",
 ]
 
 [[package]]
