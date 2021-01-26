@@ -50,7 +50,7 @@ lazy_static! {
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro", 0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
 
         // Vulcan TKL (Pro) series
         KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),

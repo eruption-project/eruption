@@ -253,7 +253,7 @@ impl DeviceTrait for RoccatNyth {
     }
 
     fn send_test_pattern(&self) -> Result<()> {
-        self.send_led_map(&vec![RGBA {
+        self.send_led_map(&[RGBA {
             r: 255,
             g: 0,
             b: 0,
@@ -262,7 +262,7 @@ impl DeviceTrait for RoccatNyth {
 
         thread::sleep(Duration::from_millis(500));
 
-        self.send_led_map(&vec![RGBA {
+        self.send_led_map(&[RGBA {
             r: 0,
             g: 0,
             b: 255,

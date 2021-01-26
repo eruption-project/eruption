@@ -95,9 +95,7 @@ impl RoccatKovaAimo {
                 }
 
                 0x09 => {
-                    let buf: [u8; 8] = [
-                        0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00
-                    ];
+                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -230,7 +228,7 @@ impl DeviceTrait for RoccatKovaAimo {
                 led_map[0].b,
                 led_map[0].r,
                 led_map[0].g,
-                led_map[0].b
+                led_map[0].b,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {
@@ -246,7 +244,7 @@ impl DeviceTrait for RoccatKovaAimo {
     }
 
     fn send_test_pattern(&self) -> Result<()> {
-        self.send_led_map(&vec![RGBA {
+        self.send_led_map(&[RGBA {
             r: 255,
             g: 0,
             b: 0,
@@ -255,7 +253,7 @@ impl DeviceTrait for RoccatKovaAimo {
 
         thread::sleep(Duration::from_millis(500));
 
-        self.send_led_map(&vec![RGBA {
+        self.send_led_map(&[RGBA {
             r: 0,
             g: 0,
             b: 255,

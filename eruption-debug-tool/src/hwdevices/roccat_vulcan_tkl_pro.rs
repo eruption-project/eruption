@@ -26,7 +26,7 @@ use super::{DeviceTrait, HwDeviceError, RGBA};
 
 pub type Result<T> = super::Result<T>;
 
-pub const NUM_KEYS: usize = 0; // TODO: Implement this
+pub const NUM_KEYS: usize = 144; // TODO: Implement this
 
 // pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -532,27 +532,25 @@ impl DeviceTrait for RoccatVulcanTKLPro {
     }
 
     fn send_test_pattern(&self) -> Result<()> {
-        self.send_led_map(&vec![
-            RGBA {
+        self.send_led_map(
+            &[RGBA {
                 r: 255,
                 g: 0,
                 b: 0,
                 a: 255,
-            };
-            144
-        ])?;
+            }; 144],
+        )?;
 
         thread::sleep(Duration::from_millis(500));
 
-        self.send_led_map(&vec![
-            RGBA {
+        self.send_led_map(
+            &[RGBA {
                 r: 0,
                 g: 0,
                 b: 255,
                 a: 255,
-            };
-            144
-        ])?;
+            }; 144],
+        )?;
 
         Ok(())
     }

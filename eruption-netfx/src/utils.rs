@@ -32,7 +32,7 @@ pub fn process_image_buffer(buffer: &[u8]) -> Result<String> {
         for y in 0..NUM_ROWS {
             let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
 
-            if key_index < 1 || key_index > NUM_KEYS {
+            if !(1..=NUM_KEYS).contains(&key_index) {
                 continue;
             }
 
@@ -63,7 +63,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P) -> Result<String> {
         for y in 0..NUM_ROWS {
             let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
 
-            if key_index < 1 || key_index > NUM_KEYS {
+            if !(1..=NUM_KEYS).contains(&key_index) {
                 continue;
             }
 
@@ -93,7 +93,7 @@ pub fn process_screenshot(image: &Image) -> Result<String> {
         for y in 0..NUM_ROWS {
             let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
 
-            if key_index < 1 || key_index > NUM_KEYS {
+            if !(1..=NUM_KEYS).contains(&key_index) {
                 continue;
             }
 
