@@ -29,7 +29,7 @@ nix = "0.19.1"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 regex = "1.4.3"
-serde = { version = "1.0.121", features = ["derive"] }
+serde = { version = "1.0.123", features = ["derive"] }
 serde_json = "1.0.61"
 serde_yaml = "0.8"
 tokio = { version = "1.1.0", features = ["full"] }
