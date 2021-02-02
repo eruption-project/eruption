@@ -31,6 +31,7 @@ pub type HwDevice = dyn DeviceTrait + Sync + Send;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 enum HwDeviceError {
     #[error("The device is not bound")]
@@ -342,6 +343,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
 }
 
 /// Get the path of the USB device from udev
+#[allow(dead_code)]
 pub fn get_input_sub_dev_from_udev(
     usb_vid: u16,
     usb_pid: u16,
@@ -475,6 +477,7 @@ pub fn get_input_sub_dev_from_udev(
 // }
 
 /// Queries udev for the device class of an USB input device
+#[allow(dead_code)]
 pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
     match Enumerator::new() {
         Ok(mut enumerator) => {

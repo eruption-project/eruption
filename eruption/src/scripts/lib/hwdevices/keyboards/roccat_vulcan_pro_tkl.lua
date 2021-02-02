@@ -14,7 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global config
-ENABLE_MACRO_KEYS = false
+ENABLE_MACRO_KEYS = false  -- the ROCCAT Vulcan TKL variant does not have any macro keys
 
 -- HID key codes
 GAME_MODE_KEY = 106
@@ -23,7 +23,19 @@ EASY_SHIFT_KEY = 21
 -- character to key index mapping
 key_to_index = {}
 
+key_to_index['GAME_MODE'] = 95
+
+key_to_index['FN'] = 65
 key_to_index['CAPS_LOCK'] = 6
+key_to_index['LEFT_SHIFT'] = 1
+key_to_index['RIGHT_SHIFT'] = 76
+key_to_index['LEFT_CTRL'] = 2
+key_to_index['RIGHT_CTRL'] = 77
+key_to_index['LEFT_ALT'] = 13
+key_to_index['RIGHT_ALT'] = 59
+key_to_index['RIGHT_MENU'] = 71
+
+key_to_index['ESC'] = 3
 
 key_to_index['F1'] = 14
 key_to_index['F2'] = 21
@@ -39,6 +51,13 @@ key_to_index['F9'] = 41
 key_to_index['F10'] = 48
 key_to_index['F11'] = 54
 key_to_index['F12'] = 60
+
+key_to_index['INSERT'] = 85
+key_to_index['POS1'] = 89
+key_to_index['PGUP'] = 94
+key_to_index['DEL'] = 86
+key_to_index['END'] = 90
+key_to_index['PGDWN'] = 95
 
 key_to_index['1'] = 9
 key_to_index['2'] = 15

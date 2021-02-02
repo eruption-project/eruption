@@ -197,7 +197,7 @@ mod thread_util {
 
 /// Spawns the keyboard events thread and executes it's main loop
 fn spawn_keyboard_input_thread(
-    keyboard_device: Arc<Mutex<Box<HwDevice>>>,
+    _keyboard_device: Arc<Mutex<Box<HwDevice>>>,
     kbd_tx: Sender<Option<evdev_rs::InputEvent>>,
     device_index: usize,
     usb_vid: u16,
@@ -1294,7 +1294,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 // main loop: highlight keys
                                 for key_index in topology {
-                                    thread::sleep(Duration::from_millis(800));
+                                    thread::sleep(Duration::from_millis(400));
 
                                     // clear all LEDs
                                     let mut led_map = [RGBA {
@@ -1366,9 +1366,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 hwdev.send_init_sequence()?;
 
                                 let topology = hwdev.get_cols_topology();
-                                let keys_per_col = 6; // TODO: Implement this
+                                let keys_per_col = 7; // TODO: Implement this
 
-                                // main loop: highlight full rows at once
+                                // main loop: highlight full columns at once
                                 for key_indices in topology.chunks(keys_per_col) {
                                     thread::sleep(Duration::from_millis(800));
 
@@ -1406,7 +1406,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 // main loop: highlight keys
                                 for key_index in topology {
-                                    thread::sleep(Duration::from_millis(800));
+                                    thread::sleep(Duration::from_millis(400));
 
                                     // clear all LEDs
                                     let mut led_map = [RGBA {
@@ -1465,6 +1465,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 device.interface_number()
                             );
 
+                            let num_keys = 144; // TODO: Implement this
+
                             if let Ok(dev) = device.open_device(&hidapi) {
                                 let hwdev = hwdevices::bind_device(
                                     dev,
@@ -1475,11 +1477,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 hwdev.send_init_sequence()?;
 
-                                let topology = hwdev.get_neighbor_topology();
-
                                 // main loop: highlight keys
-                                for key_index in topology {
-                                    thread::sleep(Duration::from_millis(1000));
+                                for i in 1..=num_keys {
+                                    thread::sleep(Duration::from_millis(800));
 
                                     // clear all LEDs
                                     let mut led_map = [RGBA {
@@ -1489,19 +1489,33 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                         a: 0,
                                     }; 144];
 
-                                    if (0..144).contains(&key_index) {
-                                        // set highlighted LEDs
-                                        led_map[key_index as usize] = RGBA {
-                                            r: 255,
-                                            g: 0,
-                                            b: 0,
-                                            a: 0,
-                                        };
+                                    // set highlighted LEDs
+                                    led_map[i as usize] = RGBA {
+                                        r: 255,
+                                        g: 0,
+                                        b: 0,
+                                        a: 0,
+                                    };
 
-                                        hwdev.send_led_map(&led_map)?;
-                                        println!("Highlighted key: 0x{:02x}", key_index);
-                                    } else {
-                                        println!("Sentinel element");
+                                    let topology = hwdev.get_neighbor_topology();
+                                    let topology =
+                                        topology.chunks(10).nth(i).unwrap().iter().take(10);
+
+                                    for key_index in topology {
+                                        if (0..144).contains(key_index) {
+                                            // set highlighted LEDs
+                                            led_map[*key_index as usize] = RGBA {
+                                                r: 255,
+                                                g: 200,
+                                                b: 200,
+                                                a: 0,
+                                            };
+
+                                            hwdev.send_led_map(&led_map)?;
+                                            println!("Highlighted key: 0x{:02x}", key_index);
+                                        } else {
+                                            println!("Sentinel element");
+                                        }
                                     }
                                 }
                             } else {

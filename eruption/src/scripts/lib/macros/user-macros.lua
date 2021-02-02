@@ -165,29 +165,27 @@ function update_color_state()
 		-- Highlight Easy Shift+ key
 		color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL
 
-		if ENABLE_MACRO_KEYS then
-			-- highlight the macro keys (INSERT - PAGEDOWN)
-			color_map_highlight[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
-			color_map_highlight[105] = COLOR_SWITCH_EASY_SHIFT_LAYER
-			color_map_highlight[110] = COLOR_SWITCH_EASY_SHIFT_LAYER
-			color_map_highlight[102] = COLOR_SWITCH_EASY_SHIFT_LAYER
-			color_map_highlight[106] = COLOR_SWITCH_EASY_SHIFT_LAYER
-			color_map_highlight[111] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		end
+		-- highlight the macro keys (INSERT - PAGEDOWN)
+		color_map_highlight[key_to_index['INSERT']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_to_index['POS1']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_to_index['PGUP']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_to_index['DEL']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_to_index['END']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_to_index['PGDWN']] = COLOR_SWITCH_EASY_SHIFT_LAYER
 
 		-- highlight the active slot in a different color
 		if ACTIVE_EASY_SHIFT_LAYER == 1 then
-			color_map_highlight[101] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['INSERT']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
-			color_map_highlight[105] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['POS1']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 3 then
-			color_map_highlight[110] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['PGUP']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 4 then
-			color_map_highlight[102] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['DEL']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 5 then
-			color_map_highlight[106] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['END']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 6 then
-			color_map_highlight[111] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_to_index['PGDWN']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		end
 
 		highlight_ttl = highlight_max_ttl
@@ -226,7 +224,7 @@ function update_color_state()
 			color_map_highlight[key_to_index['F11']] = COLOR_FUNCTION_KEY  -- F11 action
 			color_map_highlight[key_to_index['F12']] = COLOR_FUNCTION_KEY  -- F12 action
 
-			color_map_highlight[104] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
+			color_map_highlight[key_to_index['GAME_MODE']] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
 
 			if ENABLE_EASY_SHIFT and game_mode_enabled then
 				color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
@@ -235,12 +233,12 @@ function update_color_state()
 
 		if ENABLE_MACRO_KEYS then
 			-- highlight the macro keys (INSERT - PAGEDOWN)
-			color_map_highlight[101] = COLOR_MACRO_KEY
-			color_map_highlight[105] = COLOR_MACRO_KEY
-			color_map_highlight[110] = COLOR_MACRO_KEY
-			color_map_highlight[102] = COLOR_MACRO_KEY
-			color_map_highlight[106] = COLOR_MACRO_KEY
-			color_map_highlight[111] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['INSERT']] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['POS1']] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['PGUP']] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['DEL']] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['END']] = COLOR_MACRO_KEY
+			color_map_highlight[key_to_index['PGDWN']] = COLOR_MACRO_KEY
 		end
 
 		highlight_ttl = highlight_max_ttl
@@ -283,7 +281,7 @@ EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 
-EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['ESC']]  = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- map F1 - F12 => F13 - F21 on the Easy Shift+ layer
 EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F1']]	= 183

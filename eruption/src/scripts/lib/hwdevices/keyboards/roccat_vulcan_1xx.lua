@@ -23,7 +23,19 @@ EASY_SHIFT_KEY = 255
 -- character to key index mapping
 key_to_index = {}
 
+key_to_index['GAME_MODE'] = 104
+
+key_to_index['FN'] = 77
 key_to_index['CAPS_LOCK'] = 4
+key_to_index['LEFT_SHIFT'] = 5
+key_to_index['RIGHT_SHIFT'] = 83
+key_to_index['LEFT_CTRL'] = 6
+key_to_index['RIGHT_CTRL'] = 90
+key_to_index['LEFT_ALT'] = 17
+key_to_index['RIGHT_ALT'] = 71
+key_to_index['RIGHT_MENU'] = 84
+
+key_to_index['ESC'] = 1
 
 key_to_index['F1'] = 12
 key_to_index['F2'] = 18
@@ -39,6 +51,13 @@ key_to_index['F9'] = 79
 key_to_index['F10'] = 85
 key_to_index['F11'] = 86
 key_to_index['F12'] = 87
+
+key_to_index['INSERT'] = 101
+key_to_index['POS1'] = 105
+key_to_index['PGUP'] = 110
+key_to_index['DEL'] = 102
+key_to_index['END'] = 106
+key_to_index['PGDWN'] = 111
 
 key_to_index['1'] = 7
 key_to_index['2'] = 13

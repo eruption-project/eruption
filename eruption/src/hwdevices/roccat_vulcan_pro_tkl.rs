@@ -690,10 +690,10 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
 
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
         match code {
-            KeyboardHidEventCode::KEY_FN => 77,
+            KeyboardHidEventCode::KEY_FN => 65,
 
-            KeyboardHidEventCode::KEY_CAPS_LOCK => 4,
-            KeyboardHidEventCode::KEY_EASY_SHIFT => 4,
+            KeyboardHidEventCode::KEY_CAPS_LOCK => 6,
+            KeyboardHidEventCode::KEY_EASY_SHIFT => 6,
 
             // We don't need all the other key codes, for now
             _ => 0,

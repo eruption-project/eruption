@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- available modifier keys
@@ -100,14 +101,14 @@ end
 -- event handler functions --
 function on_startup(config)
 	modifier_map[CAPS_LOCK] = get_key_state(key_to_index['CAPS_LOCK'])
-	modifier_map[LEFT_SHIFT] = get_key_state(5)
-	modifier_map[RIGHT_SHIFT] = get_key_state(83)
-	modifier_map[LEFT_CTRL] = get_key_state(6)
-	modifier_map[RIGHT_CTRL] = get_key_state(90)
-	modifier_map[LEFT_ALT] = get_key_state(17)
-	modifier_map[RIGHT_ALT] = get_key_state(71)
-	modifier_map[RIGHT_MENU] = get_key_state(84)
-	modifier_map[FN] = get_key_state(77)
+	modifier_map[LEFT_SHIFT] = get_key_state(key_to_index['LEFT_SHIFT'])
+	modifier_map[RIGHT_SHIFT] = get_key_state(key_to_index['RIGHT_SHIFT'])
+	modifier_map[LEFT_CTRL] = get_key_state(key_to_index['LEFT_CTRL'])
+	modifier_map[RIGHT_CTRL] = get_key_state(key_to_index['RIGHT_CTRL'])
+	modifier_map[LEFT_ALT] = get_key_state(key_to_index['LEFT_ALT'])
+	modifier_map[RIGHT_ALT] = get_key_state(key_to_index['RIGHT_ALT'])
+	modifier_map[RIGHT_MENU] = get_key_state(key_to_index['RIGHT_MENU'])
+	modifier_map[FN] = get_key_state(key_to_index['FN'])
 
 	for i = 0, canvas_size do
 		color_map[i] = 0x00000000
@@ -345,19 +346,19 @@ function on_key_down(key_index)
 		end
 	end
 
-	if key_index == 5 then
+	if key_index == key_to_index['LEFT_SHIFT'] then
 		modifier_map[LEFT_SHIFT] = true
-	elseif key_index == 83 then
+	elseif key_index == key_to_index['RIGHT_SHIFT'] then
 		modifier_map[RIGHT_SHIFT] = true
-	elseif key_index == 6 then
+	elseif key_index == key_to_index['LEFT_CTRL'] then
 		modifier_map[LEFT_CTRL] = true
-	elseif key_index == 90 then
+	elseif key_index == key_to_index['RIGHT_CTRL'] then
 		modifier_map[RIGHT_CTRL] = true
-	elseif key_index == 17 then
+	elseif key_index == key_to_index['LEFT_ALT'] then
 		modifier_map[LEFT_ALT] = true
-	elseif key_index == 71 then
+	elseif key_index == key_to_index['RIGHT_ALT'] then
 		modifier_map[RIGHT_ALT] = true
-	elseif key_index == 84 then
+	elseif key_index == key_to_index['RIGHT_MENU'] then
 		modifier_map[RIGHT_MENU] = true
 
 		if MODIFIER_KEY == RIGHT_MENU then
@@ -379,33 +380,33 @@ function on_key_down(key_index)
 
 	-- macro keys (INSERT - PAGEDOWN)
 	if ENABLE_MACRO_KEYS then
-		if modifier_map[MODIFIER_KEY] and key_index == 101 then
+		if modifier_map[MODIFIER_KEY] and key_index == key_to_index['INSERT'] then
 			on_macro_key_down(0)
-		elseif modifier_map[MODIFIER_KEY] and key_index == 105 then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['POS1'] then
 			on_macro_key_down(1)
-		elseif modifier_map[MODIFIER_KEY] and key_index == 110 then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['PGUP'] then
 			on_macro_key_down(2)
-		elseif modifier_map[MODIFIER_KEY] and key_index == 102 then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['DEL'] then
 			on_macro_key_down(3)
-		elseif modifier_map[MODIFIER_KEY] and key_index == 106 then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['END'] then
 			on_macro_key_down(4)
-		elseif modifier_map[MODIFIER_KEY] and key_index == 111 then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['PGDWN'] then
 			on_macro_key_down(5)
 		end
 	end
 
 	-- switch Easy Shift+ layers via Caps Lock + macro keys
-	if modifier_map[CAPS_LOCK] and key_index == 101 then
+	if modifier_map[CAPS_LOCK] and key_index == key_to_index['INSERT'] then
 		do_switch_easy_shift_layer(0)
-	elseif modifier_map[CAPS_LOCK] and key_index == 105 then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['POS1'] then
 		do_switch_easy_shift_layer(1)
-	elseif modifier_map[CAPS_LOCK] and key_index == 110 then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['PGUP'] then
 		do_switch_easy_shift_layer(2)
-	elseif modifier_map[CAPS_LOCK] and key_index == 102 then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['DEL'] then
 		do_switch_easy_shift_layer(3)
-	elseif modifier_map[CAPS_LOCK] and key_index == 106 then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['END'] then
 		do_switch_easy_shift_layer(4)
-	elseif modifier_map[CAPS_LOCK] and key_index == 111 then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['PGDWN'] then
 		do_switch_easy_shift_layer(5)
 	end
 
@@ -437,19 +438,19 @@ function on_key_up(key_index)
 		end
 	end
 
-	if key_index == 5 then
+	if key_index == key_to_index['LEFT_SHIFT'] then
 		modifier_map[LEFT_SHIFT] = false
-	elseif key_index == 83 then
+	elseif key_index == key_to_index['RIGHT_SHIFT'] then
 		modifier_map[RIGHT_SHIFT] = false
-	elseif key_index == 6 then
+	elseif key_index == key_to_index['LEFT_CTRL'] then
 		modifier_map[LEFT_CTRL] = false
-	elseif key_index == 90 then
+	elseif key_index == key_to_index['RIGHT_CTRL'] then
 		modifier_map[RIGHT_CTRL] = false
-	elseif key_index == 17 then
+	elseif key_index == key_to_index['LEFT_ALT'] then
 		modifier_map[LEFT_ALT] = false
-	elseif key_index == 71 then
+	elseif key_index == key_to_index['RIGHT_ALT'] then
 		modifier_map[RIGHT_ALT] = false
-	elseif key_index == 84 then
+	elseif key_index == key_to_index['RIGHT_MENU'] then
 		modifier_map[RIGHT_MENU] = false
 
 		if MODIFIER_KEY == RIGHT_MENU then
