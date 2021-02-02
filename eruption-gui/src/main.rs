@@ -44,8 +44,6 @@ pub enum MainError {
 /// Global application state
 #[derive(Default)]
 struct State {
-    started: bool,
-    connected: bool,
     active_slot: Option<usize>,
     active_profile: Option<String>,
     current_brightness: Option<i64>,
@@ -54,8 +52,6 @@ struct State {
 impl State {
     fn new() -> Self {
         Self {
-            started: false,
-            connected: false,
             active_slot: None,
             active_profile: None,
             current_brightness: None,
@@ -472,10 +468,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 // initialize global state
                 let mut state = STATE.write();
 
-                state.started = true;
                 state.active_slot = util::get_active_slot().ok();
                 state.active_profile = util::get_active_profile().ok();
-                state.connected = true;
             }
 
             // load the compiled resource bundle
