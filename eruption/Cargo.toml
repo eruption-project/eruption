@@ -19,7 +19,7 @@ async-trait = "0.1.42"
 tracing = "0.1.22"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
-libc = "0.2.83"
+libc = "0.2.84"
 nix = "0.19.1"
 prctl = "1.0.0"
 log = "0.4.14"
@@ -30,7 +30,7 @@ color-eyre = "0.5.10"
 toml = "0.5.8"
 serde = { version = "1.0.123", features = ["derive"] }
 serde_json = { version = "1.0.61" }
-tokio = { version = "1.1.0", features = ["full"] }
+tokio = { version = "1.1.1", features = ["full"] }
 ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
@@ -46,20 +46,20 @@ rayon = "1.5.0"
 lazy_static = "1.4.0"
 rand = "0.8.3"
 palette = "0.5.0"
-nalgebra = "0.24.0"
+nalgebra = "0.24.1"
 noise = "0.7.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
 # lua-src = "540.0.0"
 mlua = { version = "0.5.1", features = ["luajit"] }
 mlua_derive = { version = "0.5.0" }
-sysinfo = "0.15"
+sysinfo = "0.16"
 systemstat = "0.1.6"
 procinfo = "0.4.2"
 rustfft = "5.0.1"
 hound = "3.4.0"
-libpulse-binding = { version = "2.22.0", default-features = false }
-libpulse-simple-binding = { version = "2.20.1", default-features = false }
+libpulse-binding = { version = "2.23.0", default-features = false }
+libpulse-simple-binding = { version = "2.23.0", default-features = false }
 rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 dbus = "0.9.1"
@@ -71,4 +71,4 @@ bitvec = "0.20.1"
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
-tokio = { version = "1.1.0", features = ["test-util"] }
+tokio = { version = "1.1.1", features = ["test-util"] }
