@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -37,7 +38,7 @@ function on_tick(delta)
 																	lerp(0, 255, opacity))
 
 			for j = 1, max_keys_per_row do
-				local index = rows_topology[j + (i * max_keys_per_row)] + 1
+				local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
 				color_map[index] = color
 			end
         end

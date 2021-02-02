@@ -236,6 +236,16 @@ mod callbacks {
         constants::TARGET_FPS
     }
 
+    /// Returns the Lua support scripts for all connected devices
+    pub(crate) fn get_support_script_files() -> Vec<String> {
+        let mut result = Vec::new();
+
+        result.push("keyboards/roccat_vulcan_pro_tkl".to_string());
+        result.push("mice/roccat_kone_pure_ultra".to_string());
+
+        result
+    }
+
     /// Returns the number of "pixels" on the canvas
     pub(crate) fn get_canvas_size() -> usize {
         constants::CANVAS_SIZE
@@ -1203,6 +1213,10 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     // eruption engine status
     let get_target_fps = lua_ctx.create_function(|_, ()| Ok(callbacks::get_target_fps()))?;
     globals.set("get_target_fps", get_target_fps)?;
+
+    let get_support_script_files =
+        lua_ctx.create_function(|_, ()| Ok(callbacks::get_support_script_files()))?;
+    globals.set("get_support_script_files", get_support_script_files)?;
 
     // canvas related functions
     let get_canvas_size = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_size()))?;

@@ -1,6 +1,7 @@
 target/release/eruption usr/bin/
 target/release/eruptionctl usr/bin/
 target/release/eruption-netfx usr/bin/
+target/release/eruption-util usr/bin/
 target/release/eruption-debug-tool usr/bin/
 target/release/eruption-process-monitor usr/bin/
 target/release/eruption-gui usr/bin/

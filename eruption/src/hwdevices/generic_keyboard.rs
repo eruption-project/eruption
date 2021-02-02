@@ -105,6 +105,10 @@ impl DeviceTrait for GenericKeyboard {
         self.usb_pid
     }
 
+    fn get_support_script_file(&self) -> String {
+        "keyboards/generic_keyboard".to_string()
+    }
+
     fn open(&mut self, _api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 

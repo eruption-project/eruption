@@ -19,6 +19,7 @@
 -------------------------------------------------------------------------------
 
 require "declarations"
+require "utilities"
 require "debug"
 
 key_state = {
@@ -47,7 +48,7 @@ ticks = 0
 local function set_neighbor_states(key_index, value)
 	if key_index ~= nil and key_index ~= 0 then
 		for i = 0, max_neigh do
-			local neigh_key = neighbor_topology[(key_index * max_neigh) + i + table_offset]
+			local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i + table_offset])
 
 			if neigh_key ~= nil and neigh_key ~= 0xff then
 				state_map[neigh_key + 1] = value
@@ -143,7 +144,7 @@ function on_tick(delta)
 
 		-- propagate wave effect
 		if not visited_map[i] and state_map[i] >= key_state.shockwave_sentinel then
-			local neigh_key = neighbor_topology[(i * max_neigh) + 0 + table_offset] + 1
+			local neigh_key = n(neighbor_topology[(i * max_neigh) + 0 + table_offset]) + 1
 
 			if neigh_key ~= nil and neigh_key ~= 0xff then
 				state_map[neigh_key] = state_map[i] - shockwave_ttl_decrease
@@ -152,7 +153,7 @@ function on_tick(delta)
 				set_neighbor_states(i, state_map[neigh_key])
 			end
 		else
-			local neigh_key = neighbor_topology[(i * max_neigh) + 0 + table_offset] + 1
+			local neigh_key = n(neighbor_topology[(i * max_neigh) + 0 + table_offset]) + 1
 
 			if neigh_key ~= 0xff then
 				state_map[neigh_key] = key_state.idle

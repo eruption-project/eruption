@@ -115,10 +115,10 @@ function update_color_state()
 		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight the slot keys
-		color_map_highlight[12] = COLOR_SWITCH_SLOT
-		color_map_highlight[18] = COLOR_SWITCH_SLOT
-		color_map_highlight[24] = COLOR_SWITCH_SLOT
-		color_map_highlight[29] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F1']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F2']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F3']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F4']] = COLOR_SWITCH_SLOT
 
 		-- highlight the active slot in a different color
 		if get_current_slot() == 0 then

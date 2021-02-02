@@ -74,6 +74,7 @@ package() {
     install -m 755 "target/release/eruption" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruptionctl" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-netfx" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-util" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-debug-tool" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"

@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -52,10 +53,10 @@ function on_tick(delta)
 		-- 		 " Bucket: " .. bucket .. " p: " .. p)
 
 		for i = num_rows - 1, p, -1 do
-			local index = rows_topology[col + i * max_keys_per_row] + 1
+			local index = n(rows_topology[col + i * max_keys_per_row]) + 1
 			color_map[index] = linear_gradient(color_hot, color_cold, i / num_rows)
 
-			local peak_index = rows_topology[col + p * max_keys_per_row] + 1
+			local peak_index = n(rows_topology[col + p * max_keys_per_row]) + 1
 			if i ~= p then
 				color_map[peak_index] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
 			end

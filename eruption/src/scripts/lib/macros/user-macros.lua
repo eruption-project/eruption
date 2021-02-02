@@ -163,15 +163,17 @@ function update_color_state()
 		end
 
 		-- Highlight Easy Shift+ key
-		color_map_highlight[4] = COLOR_FUNCTION_KEY_SPECIAL
+		color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL
 
-		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map_highlight[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[105] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[110] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[102] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[106] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[111] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		if ENABLE_MACRO_KEYS then
+			-- highlight the macro keys (INSERT - PAGEDOWN)
+			color_map_highlight[101] = COLOR_SWITCH_EASY_SHIFT_LAYER
+			color_map_highlight[105] = COLOR_SWITCH_EASY_SHIFT_LAYER
+			color_map_highlight[110] = COLOR_SWITCH_EASY_SHIFT_LAYER
+			color_map_highlight[102] = COLOR_SWITCH_EASY_SHIFT_LAYER
+			color_map_highlight[106] = COLOR_SWITCH_EASY_SHIFT_LAYER
+			color_map_highlight[111] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		end
 
 		-- highlight the active slot in a different color
 		if ACTIVE_EASY_SHIFT_LAYER == 1 then
@@ -197,47 +199,49 @@ function update_color_state()
 		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight the slot keys
-		color_map_highlight[12] = COLOR_SWITCH_SLOT
-		color_map_highlight[18] = COLOR_SWITCH_SLOT
-		color_map_highlight[24] = COLOR_SWITCH_SLOT
-		color_map_highlight[29] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F1']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F2']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F3']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_to_index['F4']] = COLOR_SWITCH_SLOT
 
 		-- highlight the active slot in a different color
 		if get_current_slot() == 0 then
-			color_map_highlight[12] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_to_index['F1']] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 1 then
-			color_map_highlight[18] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_to_index['F2']] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 2 then
-			color_map_highlight[24] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_to_index['F3']] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 3 then
-			color_map_highlight[29] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_to_index['F4']] = COLOR_ACTIVE_SLOT
 		end
 
 		-- highlight function keys
 		if MODIFIER_KEY == FN then
-			color_map_highlight[49] = COLOR_FUNCTION_KEY  -- F5 action
-			color_map_highlight[54] = COLOR_FUNCTION_KEY  -- F6 action
-			color_map_highlight[60] = COLOR_FUNCTION_KEY  -- F7 action
-			color_map_highlight[66] = COLOR_FUNCTION_KEY  -- F8 action
-			color_map_highlight[79] = COLOR_FUNCTION_KEY  -- F9 action
-			color_map_highlight[85] = COLOR_FUNCTION_KEY  -- F10 action
-			color_map_highlight[86] = COLOR_FUNCTION_KEY  -- F11 action
-			color_map_highlight[87] = COLOR_FUNCTION_KEY  -- F12 action
+			color_map_highlight[key_to_index['F5']] = COLOR_FUNCTION_KEY  -- F5 action
+			color_map_highlight[key_to_index['F6']] = COLOR_FUNCTION_KEY  -- F6 action
+			color_map_highlight[key_to_index['F7']] = COLOR_FUNCTION_KEY  -- F7 action
+			color_map_highlight[key_to_index['F8']] = COLOR_FUNCTION_KEY  -- F8 action
+			color_map_highlight[key_to_index['F9']] = COLOR_FUNCTION_KEY  -- F9 action
+			color_map_highlight[key_to_index['F10']] = COLOR_FUNCTION_KEY  -- F10 action
+			color_map_highlight[key_to_index['F11']] = COLOR_FUNCTION_KEY  -- F11 action
+			color_map_highlight[key_to_index['F12']] = COLOR_FUNCTION_KEY  -- F12 action
 
 			color_map_highlight[104] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
 
 			if ENABLE_EASY_SHIFT and game_mode_enabled then
-				color_map_highlight[4] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
+				color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
 			end
 		end
 
-		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map_highlight[101] = COLOR_MACRO_KEY
-		color_map_highlight[105] = COLOR_MACRO_KEY
-		color_map_highlight[110] = COLOR_MACRO_KEY
-		color_map_highlight[102] = COLOR_MACRO_KEY
-		color_map_highlight[106] = COLOR_MACRO_KEY
-		color_map_highlight[111] = COLOR_MACRO_KEY
+		if ENABLE_MACRO_KEYS then
+			-- highlight the macro keys (INSERT - PAGEDOWN)
+			color_map_highlight[101] = COLOR_MACRO_KEY
+			color_map_highlight[105] = COLOR_MACRO_KEY
+			color_map_highlight[110] = COLOR_MACRO_KEY
+			color_map_highlight[102] = COLOR_MACRO_KEY
+			color_map_highlight[106] = COLOR_MACRO_KEY
+			color_map_highlight[111] = COLOR_MACRO_KEY
+		end
 
 		highlight_ttl = highlight_max_ttl
 	end
@@ -282,23 +286,23 @@ EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[1][1]    = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- map F1 - F12 => F13 - F21 on the Easy Shift+ layer
-EASY_SHIFT_REMAPPING_TABLE[1][12]	= 183
-EASY_SHIFT_REMAPPING_TABLE[1][18]	= 184
-EASY_SHIFT_REMAPPING_TABLE[1][24]	= 185
-EASY_SHIFT_REMAPPING_TABLE[1][29]	= 186
-EASY_SHIFT_REMAPPING_TABLE[1][49]	= 187
-EASY_SHIFT_REMAPPING_TABLE[1][54]	= 188
-EASY_SHIFT_REMAPPING_TABLE[1][60]	= 189
-EASY_SHIFT_REMAPPING_TABLE[1][66]	= 190
-EASY_SHIFT_REMAPPING_TABLE[1][79]	= 191
-EASY_SHIFT_REMAPPING_TABLE[1][85]	= 192
-EASY_SHIFT_REMAPPING_TABLE[1][86]	= 193
-EASY_SHIFT_REMAPPING_TABLE[1][87]	= 194
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F1']]	= 183
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F2']]	= 184
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F3']]	= 185
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F4']]	= 186
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F5']]	= 187
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F6']]	= 188
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F7']]	= 189
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F8']]	= 190
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F9']]	= 191
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F10']]	= 192
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F11']]	= 193
+EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['F12']]	= 194
 
 -- assign macros to keys on the Easy Shift+ layer
-EASY_SHIFT_MACRO_TABLE[1][7]		= easyshift_macro_1  --
-EASY_SHIFT_MACRO_TABLE[1][13]		= easyshift_macro_2  --
-EASY_SHIFT_MACRO_TABLE[1][19]		= easyshift_macro_3  --
+EASY_SHIFT_MACRO_TABLE[1][key_to_index['1']]		= easyshift_macro_1  --
+EASY_SHIFT_MACRO_TABLE[1][key_to_index['2']]		= easyshift_macro_2  --
+EASY_SHIFT_MACRO_TABLE[1][key_to_index['3']]		= easyshift_macro_3  --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer
 EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --

@@ -518,6 +518,10 @@ impl DeviceTrait for RoccatVulcan1xx {
         self.ctrl_hiddev_info.as_ref().unwrap().product_id()
     }
 
+    fn get_support_script_file(&self) -> String {
+        "keyboards/roccat_vulcan_1xx".to_string()
+    }
+
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 

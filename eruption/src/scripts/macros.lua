@@ -99,7 +99,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-	modifier_map[CAPS_LOCK] = get_key_state(4)
+	modifier_map[CAPS_LOCK] = get_key_state(key_to_index['CAPS_LOCK'])
 	modifier_map[LEFT_SHIFT] = get_key_state(5)
 	modifier_map[RIGHT_SHIFT] = get_key_state(83)
 	modifier_map[LEFT_CTRL] = get_key_state(6)
@@ -131,10 +131,10 @@ function on_hid_event(event_type, arg1)
 	if key_code == 119 then
 		-- "FN" key event
 		modifier_map[FN] = is_pressed
-	elseif key_code == 255 then
+	elseif key_code == EASY_SHIFT_KEY then
 		-- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
 		modifier_map[CAPS_LOCK] = is_pressed
-	elseif key_code == 96 then
+	elseif key_code == GAME_MODE_KEY then
 		-- "SCROLL LOCK/GAME MODE" key event
 		local fn_pressed = modifier_map[FN]
 		if is_pressed and fn_pressed then
@@ -336,7 +336,7 @@ function on_key_down(key_index)
 	debug("Macros: Key down: Index: " .. key_index)
 
 	-- update the modifier_map
-	if key_index == 4 then
+	if key_index == key_to_index['CAPS_LOCK'] then
 		modifier_map[CAPS_LOCK] = true
 
 		-- consume the CAPS_LOCK key while in game mode
@@ -367,29 +367,31 @@ function on_key_down(key_index)
 	end
 
 	-- slot keys (F1 - F4)
-	if modifier_map[MODIFIER_KEY] and key_index == 12 then
+	if modifier_map[MODIFIER_KEY] and key_index == key_to_index['F1'] then
 		do_switch_slot(0)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 18 then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F2'] then
 		do_switch_slot(1)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 24 then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F3'] then
 		do_switch_slot(2)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 29 then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F4'] then
 		do_switch_slot(3)
 	end
 
 	-- macro keys (INSERT - PAGEDOWN)
-	if modifier_map[MODIFIER_KEY] and key_index == 101 then
-		on_macro_key_down(0)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 105 then
-		on_macro_key_down(1)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 110 then
-		on_macro_key_down(2)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 102 then
-		on_macro_key_down(3)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 106 then
-		on_macro_key_down(4)
-	elseif modifier_map[MODIFIER_KEY] and key_index == 111 then
-		on_macro_key_down(5)
+	if ENABLE_MACRO_KEYS then
+		if modifier_map[MODIFIER_KEY] and key_index == 101 then
+			on_macro_key_down(0)
+		elseif modifier_map[MODIFIER_KEY] and key_index == 105 then
+			on_macro_key_down(1)
+		elseif modifier_map[MODIFIER_KEY] and key_index == 110 then
+			on_macro_key_down(2)
+		elseif modifier_map[MODIFIER_KEY] and key_index == 102 then
+			on_macro_key_down(3)
+		elseif modifier_map[MODIFIER_KEY] and key_index == 106 then
+			on_macro_key_down(4)
+		elseif modifier_map[MODIFIER_KEY] and key_index == 111 then
+			on_macro_key_down(5)
+		end
 	end
 
 	-- switch Easy Shift+ layers via Caps Lock + macro keys
@@ -426,7 +428,7 @@ function on_key_up(key_index)
 	debug("Macros: Key up: Index: " .. key_index)
 
 	-- update the modifier_map
-	if key_index == 4 then
+	if key_index == key_to_index['CAPS_LOCK'] then
 		modifier_map[CAPS_LOCK] = false
 
 		-- consume CAPS_LOCK key while in game mode

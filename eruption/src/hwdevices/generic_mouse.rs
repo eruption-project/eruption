@@ -99,6 +99,10 @@ impl DeviceTrait for GenericMouse {
         self.usb_pid
     }
 
+    fn get_support_script_file(&self) -> String {
+        "mice/generic_mouse".to_string()
+    }
+
     fn open(&mut self, _api: &hidapi::HidApi) -> Result<()> {
         trace!("Opening HID devices now...");
 

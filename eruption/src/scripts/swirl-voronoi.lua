@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -47,7 +48,7 @@ function on_tick(delta)
                                           (ticks + (offsets[3] / 256)) / time_scale)
                 val = lerp(0, 360, val)
 
-                local index = rows_topology[j + (i * max_keys_per_row)] + 1
+                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
                 color_map[index] = hsla_to_color((val / color_divisor) + color_offset,
                                                   color_saturation, color_lightness,
                                                   lerp(0, 255, opacity))

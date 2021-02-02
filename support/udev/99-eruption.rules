@@ -2,12 +2,29 @@
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
 
+# ROCCAT Vulcan Pro
+ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="30f7", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
+# ROCCAT Vulcan TKL
+ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2fee", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
+# ROCCAT Vulcan Pro TKL
+ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="311a", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
+
+# ROCCAT Kone Aimo
+# ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e27", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
 # ROCCAT Kone Pure Ultra
 # ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2dd2", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
+# ROCCAT Kova AIMO
+# ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2cf1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
 
 # ROCCAT Nyth
 # ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
 # ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7d", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption.service"
+
 
 # ACTION=="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", RUN+="/usr/bin/systemctl stop eruption.service"
 # ACTION=="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", RUN+="/usr/bin/systemctl stop eruption.service"

@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -90,7 +91,7 @@ function on_tick(delta)
                             fire_grid[(y + 1) * fire_grid_cols + (x + 1)]
 
                 local avg = trunc(sum / 8)
-                local idx = rows_topology[trunc(x + (y * max_keys_per_row))]
+                local idx = n(rows_topology[trunc(x + (y * max_keys_per_row))])
 
                 if idx ~= nil then
                     color_map[idx] = color_palette[clamp(avg, 0, 255)]

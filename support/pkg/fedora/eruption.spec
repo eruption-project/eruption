@@ -147,6 +147,7 @@ cp -a %{_builddir}/%{name}-%{version}/eruption-gui/schemas/gschemas.compiled %{b
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
@@ -178,6 +179,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
 %{_bindir}/eruption-netfx
+%{_bindir}/eruption-util
 %{_bindir}/eruption-debug-tool
 %caps(cap_net_admin=ep) %{_bindir}/eruption-process-monitor
 %{_unitdir}/eruption.service
