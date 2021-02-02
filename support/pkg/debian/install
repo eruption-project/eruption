@@ -178,6 +178,14 @@ eruption/src/scripts/lib/themes/gaming.lua usr/share/eruption/scripts/lib/themes
 eruption/src/scripts/lib/macros/modifiers.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/user-macros.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/starcraft2.lua usr/share/eruption/scripts/lib/macros
+eruption/src/scripts/lib/hwdevices/keyboards/generic_keyboard.lua usr/share/eruption/scripts/lib/hwdevices/keyboards
+eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua usr/share/eruption/scripts/lib/hwdevices/keyboards
+eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro_tkl.lua usr/share/eruption/scripts/lib/hwdevices/keyboards
+eruption/src/scripts/lib/hwdevices/mice/generic_mouse.lua usr/share/eruption/scripts/lib/hwdevices/mice
+eruption/src/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua usr/share/eruption/scripts/lib/hwdevices/mice
+eruption/src/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua usr/share/eruption/scripts/lib/hwdevices/mice
+eruption/src/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua usr/share/eruption/scripts/lib/hwdevices/mice
+eruption/src/scripts/lib/hwdevices/mice/roccat_nyth.lua usr/share/eruption/scripts/lib/hwdevices/mice
 eruption/src/scripts/examples usr/share/eruption/scripts/
 eruption/src/scripts/examples/simple.lua usr/share/eruption/scripts/
 

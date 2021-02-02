@@ -41,6 +41,8 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
+    mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards"
+    mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/examples"
 
     mkdir -p "$pkgdir/usr/share/eruption-gui/schemas/"
@@ -212,6 +214,14 @@ package() {
     install -m 644 "eruption/src/scripts/lib/macros/modifiers.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/user-macros.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/starcraft2.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/generic_keyboard.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro_tkl.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/generic_mouse.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_nyth.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/examples/simple.lua" "$pkgdir/usr/share/eruption/scripts/examples/"
 
     install -m 644 "support/sfx/typewriter1.wav" "$pkgdir/usr/share/eruption/sfx/"

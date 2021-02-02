@@ -69,6 +69,8 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/macros
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
 %{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
@@ -235,6 +237,14 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/generic_keyboard.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro_tkl.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/generic_mouse.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_nyth.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
