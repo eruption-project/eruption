@@ -33,13 +33,13 @@ pub const LED_INTERFACE: i32 = 3; // LED USB sub device
 
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Vulcan Pro TKL series keyboards
-pub struct RoccatVulcanTKLPro {
+pub struct RoccatVulcanProTKL {
     pub is_bound: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 }
 
-impl RoccatVulcanTKLPro {
+impl RoccatVulcanProTKL {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: hidapi::HidDevice, led_dev: hidapi::HidDevice) -> Self {
         println!("Bound driver: ROCCAT Vulcan Pro TKL");
@@ -338,7 +338,7 @@ impl RoccatVulcanTKLPro {
     }
 }
 
-impl DeviceTrait for RoccatVulcanTKLPro {
+impl DeviceTrait for RoccatVulcanProTKL {
     fn send_init_sequence(&self) -> Result<()> {
         trace!("Sending device init sequence...");
 

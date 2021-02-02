@@ -233,7 +233,7 @@ pub fn bind_device(
                 .open_device(&hidapi)
                 .expect("Could not open LED sub-device");
 
-            Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanTKLPro::bind(
+            Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(
                 hiddev, leddev,
             )))
         }
