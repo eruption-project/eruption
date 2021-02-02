@@ -14,26 +14,3 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-.small-font {
-    font-size: small;
-}
-
-/* .notification {
-    font-style: italic;
-    font-size: larger;
-} */
-
-.slot_indicator {
-    border-radius: 8px;
-    border: 3px dotted gray;
-}
-
-.slot_indicator.active {
-    font-weight: bold;
-    border: 3px solid gray;
-}
-
-/* .slot_indicator combobox {
-    font-size: small;
-} */

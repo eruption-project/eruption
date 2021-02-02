@@ -21,4 +21,5 @@ pub mod main;
 pub mod mouse;
 pub mod process_monitor;
 pub mod profiles;
+pub mod rule;
 pub mod settings;

@@ -42,6 +42,9 @@ lazy_static! {
 pub enum UtilError {
     #[error("Process not running")]
     ProcessNotRunning,
+
+    #[error("Daemon restart failed")]
+    RestartFailed,
     // #[error("Unknown error: {description}")]
     // UnknownError { description: String },
 }
@@ -96,6 +99,20 @@ pub fn switch_slot(index: usize) -> Result<()> {
         proxy.method_call("org.eruption.Slot", "SwitchSlot", (index as u64,))?;
 
     Ok(())
+}
+
+/// Returns the currently active profile
+pub fn get_active_profile() -> Result<String> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/profile",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result: String = proxy.get("org.eruption.Profile", "ActiveProfile")?;
+
+    Ok(result)
 }
 
 /// Returns the currently active slot
@@ -283,5 +300,19 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
         *NETFX_PROCESS_HANDLE.lock() = None;
 
         Ok(())
+    }
+}
+
+pub fn restart_process_monitor_daemon() -> Result<()> {
+    let status = Command::new("/usr/bin/systemctl")
+        .arg("--user")
+        .arg("restart")
+        .arg("eruption-process-monitor.service")
+        .status()?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(UtilError::RestartFailed {}.into())
     }
 }

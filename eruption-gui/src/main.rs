@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use eyre;
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::Application;
@@ -469,9 +468,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     {
         application.connect_activate(move |app| {
-            STATE.write().started = true;
-            STATE.write().active_slot = util::get_active_slot().ok();
-            STATE.write().connected = true;
+            {
+                // initialize global state
+                let mut state = STATE.write();
+
+                state.started = true;
+                state.active_slot = util::get_active_slot().ok();
+                state.active_profile = util::get_active_profile().ok();
+                state.connected = true;
+            }
 
             // load the compiled resource bundle
             let resources_bytes = include_bytes!("../resources/resources.gresource");
@@ -482,7 +487,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             if let Err(e) = ui::main::initialize_main_window(app) {
                 log::error!("Could not start the Eruption GUI: {}", e);
 
-                let message = format!("Could not start the Eruption GUI, is the daemon running?");
+                let message =
+                    "Could not start the Eruption GUI, is the daemon running?".to_string();
                 let secondary = format!("Reason:\n{}", e);
 
                 let message_dialog = gtk::MessageDialogBuilder::new()

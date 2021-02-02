@@ -23,7 +23,6 @@ use crate::update_ui_state;
 use crate::util;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
-use eyre;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;

@@ -15,25 +15,25 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-.small-font {
-    font-size: small;
-}
+// use eyre;
+// use gtk::prelude::*;
 
-/* .notification {
-    font-style: italic;
-    font-size: larger;
-} */
+// type Result<T> = std::result::Result<T, eyre::Error>;
 
-.slot_indicator {
-    border-radius: 8px;
-    border: 3px dotted gray;
-}
+// #[derive(Debug, thiserror::Error)]
+// pub enum AboutError {
+//     #[error("Unknown error: {description}")]
+//     UnknownError { description: String },
+// }
 
-.slot_indicator.active {
-    font-weight: bold;
-    border: 3px solid gray;
-}
+// Shows the rule dialog
+// pub fn show_rule_dialog<W: IsA<gtk::Window>>(parent: &W) {
+//     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
+//     let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
 
-/* .slot_indicator combobox {
-    font-size: small;
-} */
+//     rule_dialog.set_transient_for(Some(parent));
+//     rule_dialog.set_modal(true);
+
+//     rule_dialog.run();
+//     rule_dialog.hide();
+// }

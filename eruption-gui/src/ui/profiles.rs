@@ -301,21 +301,22 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 }
 
 /// Remove unused elements from the profiles stack, except the "Configuration" page
-fn remove_elements_from_stack_widget(builder: &gtk::Builder) -> Result<()> {
+fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
     let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
 
     stack_widget.foreach(|widget| {
         stack_widget.remove(widget);
     });
-
-    Ok(())
 }
 
 /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
 /// showing the respective files contents
 fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
     let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
-    // let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
+    let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
+
+    let context = stack_switcher.get_style_context();
+    context.add_class("small-font");
 
     let language_manager = sourceview::LanguageManager::get_default().unwrap();
 
@@ -333,6 +334,7 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
 
     let sourceview = sourceview::View::new_with_buffer(&buffer);
     sourceview.set_show_line_marks(true);
+    sourceview.set_show_line_numbers(true);
 
     // TODO: Allow modification
     sourceview.set_editable(false);
@@ -525,11 +527,13 @@ pub fn initialize_profiles_page(builder: &gtk::Builder) -> Result<()> {
 
         populate_visual_config_editor(&builder, &profile).unwrap();
 
-        remove_elements_from_stack_widget(&builder).unwrap();
+        remove_elements_from_stack_widget(&builder);
         populate_stack_widget(&builder, &profile).unwrap();
     }));
 
     profiles_treeview.show_all();
+
+    update_profile_state(&builder)?;
 
     Ok(())
 }

@@ -15,25 +15,26 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-.small-font {
-    font-size: small;
+use crate::util::RGBA;
+
+mod generic_mouse;
+
+pub struct Rectangle {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
 }
 
-/* .notification {
-    font-style: italic;
-    font-size: larger;
-} */
+pub trait Mouse {
+    /// Draw an animated mouse with live action colors
+    fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
 
-.slot_indicator {
-    border-radius: 8px;
-    border: 3px dotted gray;
+    /// Paint a cell on the Mouse widget
+    fn paint_cell(&self, cell_index: usize, color: &RGBA, cr: &cairo::Context);
 }
 
-.slot_indicator.active {
-    font-weight: bold;
-    border: 3px solid gray;
+pub fn get_mouse_device() -> Box<dyn Mouse> {
+    // TODO: Make this generic
+    Box::new(generic_mouse::GenericMouse::new())
 }
-
-/* .slot_indicator combobox {
-    font-size: small;
-} */
