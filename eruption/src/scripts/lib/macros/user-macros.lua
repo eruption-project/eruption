@@ -213,16 +213,21 @@ function update_color_state()
 			color_map_highlight[key_to_index['F4']] = COLOR_ACTIVE_SLOT
 		end
 
-		-- highlight function keys
+		-- highlight function and media keys
 		if MODIFIER_KEY == FN then
-			color_map_highlight[key_to_index['F5']] = COLOR_FUNCTION_KEY  -- F5 action
-			color_map_highlight[key_to_index['F6']] = COLOR_FUNCTION_KEY  -- F6 action
-			color_map_highlight[key_to_index['F7']] = COLOR_FUNCTION_KEY  -- F7 action
-			color_map_highlight[key_to_index['F8']] = COLOR_FUNCTION_KEY  -- F8 action
-			color_map_highlight[key_to_index['F9']] = COLOR_FUNCTION_KEY  -- F9 action
-			color_map_highlight[key_to_index['F10']] = COLOR_FUNCTION_KEY  -- F10 action
-			color_map_highlight[key_to_index['F11']] = COLOR_FUNCTION_KEY  -- F11 action
-			color_map_highlight[key_to_index['F12']] = COLOR_FUNCTION_KEY  -- F12 action
+			if ENABLE_FUNCTION_KEYS then
+				color_map_highlight[key_to_index['F5']] = COLOR_FUNCTION_KEY  -- F5 action
+				color_map_highlight[key_to_index['F6']] = COLOR_FUNCTION_KEY  -- F6 action
+				color_map_highlight[key_to_index['F7']] = COLOR_FUNCTION_KEY  -- F7 action
+				color_map_highlight[key_to_index['F8']] = COLOR_FUNCTION_KEY  -- F8 action
+			end
+
+			if ENABLE_MEDIA_KEYS then
+				color_map_highlight[key_to_index['F9']] = COLOR_FUNCTION_KEY  -- F9 action
+				color_map_highlight[key_to_index['F10']] = COLOR_FUNCTION_KEY  -- F10 action
+				color_map_highlight[key_to_index['F11']] = COLOR_FUNCTION_KEY  -- F11 action
+				color_map_highlight[key_to_index['F12']] = COLOR_FUNCTION_KEY  -- F12 action
+			end
 
 			color_map_highlight[key_to_index['GAME_MODE']] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
 
@@ -243,6 +248,9 @@ function update_color_state()
 
 		highlight_ttl = highlight_max_ttl
 	end
+
+	-- in addition to the generic key highlighting, perform device specific key highlights
+	device_specific_key_highlights()
 end
 
 -- remapping tables

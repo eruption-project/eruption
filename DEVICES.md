@@ -21,12 +21,12 @@
 
 ### Keyboard Devices
 
-| Vendor | Product        | Status           | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Functions via F5-F8 Keys |
-| ------ | -------------- | ---------------- | ---------- | -------------- | ------------------------------ | ------------------------ |
-| ROCCAT | Vulcan 100/12x | 100%             | Yes        | Yes            | Yes                            | Yes                      |
-| ROCCAT | Vulcan Pro TKL | 98%              | No         | Yes            | Yes (*inofficial)              | Yes (*inofficial)        |
-| ROCCAT | Vulcan TKL     | work-in-progress | No         | Yes            | Yes (*inofficial)              | Yes (*inofficial)        |
-| ROCCAT | Vulcan Pro     | unknown/pending  | Yes        | Yes            | Yes                            | Yes                      |
+| Vendor | Product        | Status           | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys   | Media keys F9-F12 |
+| ------ | -------------- | ---------------- | ---------- | -------------- | ------------------------------ | ---------------------------------- | ----------------- |
+| ROCCAT | Vulcan 100/12x | 100%             | Yes        | Yes            | Yes                            | Yes                                | Yes               |
+| ROCCAT | Vulcan Pro TKL | 98%              | No         | Yes            | Yes (*inofficial)              | No, but maybe forced (*inofficial) | Yes               |
+| ROCCAT | Vulcan TKL     | work-in-progress | No         | Yes            | Yes (*inofficial)              | No, but maybe forced (*inofficial) | Yes               |
+| ROCCAT | Vulcan Pro     | unknown/pending  | Yes        | Yes            | Yes                            | Yes                                | Yes               |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -34,9 +34,9 @@
 
 | Vendor | Product         | Status | Macro Keys | Easy Shift Key |
 | ------ | --------------- | ------ | ---------- | -------------- |
-| ROCCAT | Kone Pure Ultra | 100%   | No         | No             |
-| ROCCAT | Kone Aimo       | ??%    | No         | No             |
-| ROCCAT | Kova AIMO       | ??%    | No         | No             |
+| ROCCAT | Kone Pure Ultra | 100%   | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo       | ??%    | N.a.       | N.a.           |
+| ROCCAT | Kova AIMO       | ??%    | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 

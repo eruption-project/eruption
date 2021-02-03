@@ -14,7 +14,9 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global config
-ENABLE_MACRO_KEYS = false  -- the ROCCAT Vulcan TKL variant does not have any macro keys
+ENABLE_FUNCTION_KEYS = false	-- ROCCAT Vulcan TKL variant does not have special function keys
+ENABLE_MEDIA_KEYS 	 = true
+ENABLE_MACRO_KEYS 	 = false	-- ROCCAT Vulcan TKL variant does not have any macro keys
 
 -- HID key codes
 GAME_MODE_KEY = 106
@@ -47,10 +49,10 @@ key_to_index['F6'] = 48
 key_to_index['F7'] = 54
 key_to_index['F8'] = 60
 
-key_to_index['F9'] = 41
-key_to_index['F10'] = 48
-key_to_index['F11'] = 54
-key_to_index['F12'] = 60
+key_to_index['F9'] = 66
+key_to_index['F10'] = 72
+key_to_index['F11'] = 78
+key_to_index['F12'] = 80
 
 key_to_index['INSERT'] = 85
 key_to_index['POS1'] = 89
@@ -58,6 +60,11 @@ key_to_index['PGUP'] = 94
 key_to_index['DEL'] = 86
 key_to_index['END'] = 90
 key_to_index['PGDWN'] = 95
+
+key_to_index['UP'] = 91
+key_to_index['DOWN'] = 92
+key_to_index['LEFT'] = 87
+key_to_index['RIGHT'] = 96
 
 key_to_index['1'] = 9
 key_to_index['2'] = 15
@@ -67,6 +74,26 @@ key_to_index['W'] = 16
 key_to_index['A'] = 11
 key_to_index['S'] = 17
 key_to_index['D'] = 24
+
+-- support functions
+function device_specific_key_highlights()
+	if MODIFIER_KEY == FN and modifier_map[MODIFIER_KEY] then
+		color_map_highlight[key_to_index['INSERT']] = COLOR_FUNCTION_KEY -- print screen
+		color_map_highlight[key_to_index['POS1']]   = COLOR_FUNCTION_KEY -- scroll lock
+		color_map_highlight[key_to_index['PGUP']]   = COLOR_FUNCTION_KEY -- pause
+		-- color_map_highlight[key_to_index['PGDWN']]  = COLOR_FUNCTION_KEY -- toggle game mode
+
+		color_map_highlight[key_to_index['DEL']] = COLOR_FUNCTION_KEY -- enable/disable F/FN
+		color_map_highlight[key_to_index['END']] = COLOR_FUNCTION_KEY -- enable/disable FN/Win
+
+		color_map_highlight[key_to_index['RIGHT_CTRL']] = COLOR_FUNCTION_KEY -- enable/disable LEDs
+
+		color_map_highlight[key_to_index['UP']]    = COLOR_FUNCTION_KEY	-- brightness up
+		color_map_highlight[key_to_index['DOWN']]  = COLOR_FUNCTION_KEY	-- brightness down
+		color_map_highlight[key_to_index['LEFT']]  = COLOR_FUNCTION_KEY	-- previous profile slot
+		color_map_highlight[key_to_index['RIGHT']] = COLOR_FUNCTION_KEY	-- next profile slot
+	end
+end
 
 -- coordinates to key index mapping
 coordinates_to_index = {

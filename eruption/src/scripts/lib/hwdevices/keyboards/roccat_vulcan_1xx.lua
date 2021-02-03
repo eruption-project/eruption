@@ -14,7 +14,9 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global config
-ENABLE_MACRO_KEYS = true
+ENABLE_FUNCTION_KEYS = true
+ENABLE_MEDIA_KEYS 	 = true
+ENABLE_MACRO_KEYS 	 = true
 
 -- HID key codes
 GAME_MODE_KEY = 96
@@ -68,6 +70,9 @@ key_to_index['A'] = 14
 key_to_index['S'] = 15
 key_to_index['D'] = 21
 
+-- support functions
+function device_specific_key_highlights()
+end
 
 -- coordinates to key index mapping
 coordinates_to_index = {

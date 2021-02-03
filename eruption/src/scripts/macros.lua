@@ -172,48 +172,52 @@ function on_hid_event(event_type, arg1)
 	end
 
 	-- function keys (F5 - F8)
-	if is_pressed then
-		if modifier_map[MODIFIER_KEY] and key_code == 40 then
-			inject_key(144, true) -- EV_KEY::FILE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
-			inject_key(172, true) -- EV_KEY::HOMEPAGE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
-			inject_key(155, true) -- EV_KEY::MAIL
-		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
-			inject_key(140, true) -- EV_KEY::CALC
-		end
-	else
-		if modifier_map[MODIFIER_KEY] and key_code == 40 then
-			inject_key(144, false) -- EV_KEY::FILE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
-			inject_key(172, false) -- EV_KEY::HOMEPAGE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
-			inject_key(155, false) -- EV_KEY::MAIL
-		elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
-			inject_key(140, false) -- EV_KEY::CALC
+	if ENABLE_FUNCTION_KEYS then
+		if is_pressed then
+			if modifier_map[MODIFIER_KEY] and key_code == 40 then
+				inject_key(144, true) -- EV_KEY::FILE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
+				inject_key(172, true) -- EV_KEY::HOMEPAGE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
+				inject_key(155, true) -- EV_KEY::MAIL
+			elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
+				inject_key(140, true) -- EV_KEY::CALC
+			end
+		else
+			if modifier_map[MODIFIER_KEY] and key_code == 40 then
+				inject_key(144, false) -- EV_KEY::FILE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 48 then
+				inject_key(172, false) -- EV_KEY::HOMEPAGE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 56 then
+				inject_key(155, false) -- EV_KEY::MAIL
+			elseif modifier_map[MODIFIER_KEY] and key_code == 57 then
+				inject_key(140, false) -- EV_KEY::CALC
+			end
 		end
 	end
 
 	-- media keys (F9 - F12)
-	if is_pressed then
-		if modifier_map[MODIFIER_KEY] and key_code == 64 then
-			inject_key(165, true) -- EV_KEY::PREVSONG
-		elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
-			inject_key(166, true) -- EV_KEY::STOPCD
-		elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
-			inject_key(164, true) -- EV_KEY::PLAYPAUSE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
-			inject_key(163, true) -- EV_KEY::NEXTSONG
-		end
-	else
-		if modifier_map[MODIFIER_KEY] and key_code == 64 then
-			inject_key(165, false) -- EV_KEY::PREVSONG
-		elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
-			inject_key(166, false) -- EV_KEY::STOPCD
-		elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
-			inject_key(164, false) -- EV_KEY::PLAYPAUSE
-		elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
-			inject_key(163, false) -- EV_KEY::NEXTSONG
+	if ENABLE_MEDIA_KEYS then
+		if is_pressed then
+			if modifier_map[MODIFIER_KEY] and key_code == 64 then
+				inject_key(165, true) -- EV_KEY::PREVSONG
+			elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
+				inject_key(166, true) -- EV_KEY::STOPCD
+			elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
+				inject_key(164, true) -- EV_KEY::PLAYPAUSE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
+				inject_key(163, true) -- EV_KEY::NEXTSONG
+			end
+		else
+			if modifier_map[MODIFIER_KEY] and key_code == 64 then
+				inject_key(165, false) -- EV_KEY::PREVSONG
+			elseif modifier_map[MODIFIER_KEY] and key_code == 72 then
+				inject_key(166, false) -- EV_KEY::STOPCD
+			elseif modifier_map[MODIFIER_KEY] and key_code == 80 then
+				inject_key(164, false) -- EV_KEY::PLAYPAUSE
+			elseif modifier_map[MODIFIER_KEY] and key_code == 81 then
+				inject_key(163, false) -- EV_KEY::NEXTSONG
+			end
 		end
 	end
 
