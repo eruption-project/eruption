@@ -256,7 +256,7 @@ function on_hid_event(event_type, arg1)
 			end
 		end
 	elseif event_type == 5 then
-		-- Brightness dial knob rotation
+		-- Brightness dial knob rotation or brightness shortcut pressed
 		local event_handled = false
 		if on_dial_knob_rotate_left ~= nil and on_dial_knob_rotate_right ~= nil then
 			if key_code == 0 then
@@ -284,6 +284,32 @@ function on_hid_event(event_type, arg1)
 			brightness = clamp(brightness, 0, 100)
 
 			set_brightness(brightness)
+		end
+	elseif event_type == 7 then
+		-- Slot switching shortcuts
+		local event_handled = false
+		if on_previous_slot ~= nil and on_next_slot ~= nil then
+			if key_code == 0 then
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_previous_slot(key_code)
+			else
+				-- default behaviour may be overridden by a user macro
+				event_handled = on_next_slot(key_code)
+			end
+		end
+
+		if not event_handled then
+			local current_slot = get_current_slot()
+
+			if key_code == 0 then
+				if current_slot - 1 >= 0 then
+					do_switch_slot(current_slot - 1)
+				end
+			else
+				if current_slot + 1 < 4 then
+					do_switch_slot(current_slot + 1)
+				end
+			end
 		end
 	end
 end

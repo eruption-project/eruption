@@ -916,6 +916,16 @@ pub fn run_script(
                                         6
                                     }
 
+                                    KeyboardHidEvent::NextSlot => {
+                                        arg1 = 1;
+                                        7
+                                    }
+
+                                    KeyboardHidEvent::PreviousSlot => {
+                                        arg1 = 0;
+                                        7
+                                    }
+
                                     _ => {
                                         arg1 = 0;
                                         0

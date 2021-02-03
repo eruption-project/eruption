@@ -256,6 +256,10 @@ pub enum KeyboardHidEvent {
     KeyDown { code: KeyboardHidEventCode },
     KeyUp { code: KeyboardHidEventCode },
 
+    // Slot switching
+    NextSlot,
+    PreviousSlot,
+
     // Brightness related
     BrightnessUp,
     BrightnessDown,

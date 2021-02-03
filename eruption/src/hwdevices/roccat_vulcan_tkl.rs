@@ -590,16 +590,22 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
 
                     let event = match buf[0..5] {
                         // Key reports, incl. KEY_FN, ..
-                        [0x03, 0x00, 0xfb, code, status] => match status {
-                            0x00 => KeyboardHidEvent::KeyUp {
-                                code: keyboard_hid_event_code_from_report(0xfb, code),
-                            },
+                        [0x03, 0x00, 0xfb, code, status] => match code {
+                            0x6d => KeyboardHidEvent::PreviousSlot,
 
-                            0x01 => KeyboardHidEvent::KeyDown {
-                                code: keyboard_hid_event_code_from_report(0xfb, code),
-                            },
+                            0x7d => KeyboardHidEvent::NextSlot,
 
-                            _ => KeyboardHidEvent::Unknown,
+                            _ => match status {
+                                0x00 => KeyboardHidEvent::KeyUp {
+                                    code: keyboard_hid_event_code_from_report(0xfb, code),
+                                },
+
+                                0x01 => KeyboardHidEvent::KeyDown {
+                                    code: keyboard_hid_event_code_from_report(0xfb, code),
+                                },
+
+                                _ => KeyboardHidEvent::Unknown,
+                            },
                         },
 
                         // CAPS LOCK, Easy Shift+, ..
