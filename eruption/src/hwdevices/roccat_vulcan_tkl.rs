@@ -588,12 +588,14 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                     //     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     // }
 
+                    let fn_down = false;
+
                     let event = match buf[0..5] {
                         // Key reports, incl. KEY_FN, ..
                         [0x03, 0x00, 0xfb, code, status] => match code {
-                            0x6d => KeyboardHidEvent::PreviousSlot,
+                            0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
 
-                            0x7d => KeyboardHidEvent::NextSlot,
+                            0x7d if fn_down => KeyboardHidEvent::NextSlot,
 
                             _ => match status {
                                 0x00 => KeyboardHidEvent::KeyUp {
@@ -753,31 +755,24 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                         // values for all 12 keys are first then come the green values etc.
 
                         let mut buffer: [u8; 448] = [0; 448];
+                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
+
                         for i in 0..NUM_KEYS {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            buffer[offset] = color.r;
-                            buffer[offset + 12] = color.g;
-                            buffer[offset + 24] = color.b;
+                            buffer[offset + 4] = color.r;
+                            buffer[offset + 4 + 12] = color.g;
+                            buffer[offset + 4 + 24] = color.b;
                         }
 
-                        for (cntr, bytes) in buffer.chunks(60).take(5).enumerate() {
-                            let mut tmp: [u8; 64] = [0; 64];
-
-                            if cntr < 1 {
-                                tmp[0..4].copy_from_slice(&[0xa1, 0x01, 0x34, 0x01]);
-                            } else {
-                                tmp[0..4].copy_from_slice(&[0xa1, cntr as u8 + 1, 0x00, 0x00]);
-                            }
-
-                            tmp[4..64].copy_from_slice(&bytes);
-
-                            hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+                        for bytes in buffer.chunks(64) {
+                            let mut tmp: [u8; 65] = [0; 65];
+                            tmp[1..65].copy_from_slice(&bytes);
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {
-                                    if len < 64 {
+                                    if len < 65 {
                                         return Err(HwDeviceError::WriteError {}.into());
                                     }
                                 }
