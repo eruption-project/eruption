@@ -49,6 +49,7 @@ support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
 support/profiles/batique-mouse.profile var/lib/eruption/profiles
 support/profiles/checkerboard.profile var/lib/eruption/profiles
+support/profiles/blue-fx-swirl-perlin.profile var/lib/eruption/profiles
 support/profiles/profile1.profile var/lib/eruption/profiles
 support/profiles/profile2.profile var/lib/eruption/profiles
 support/profiles/profile3.profile var/lib/eruption/profiles
