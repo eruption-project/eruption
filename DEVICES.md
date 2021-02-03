@@ -1,7 +1,7 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Known Issues](#known-issues)
+  - [Known Issues and Remarks](#known-issues-and-remarks)
   - [Feature Matrix](#feature-matrix)
     - [Keyboard Devices](#keyboard-devices)
     - [Mouse Devices](#mouse-devices)
@@ -13,20 +13,21 @@
     - [Remarks and known Issues](#remarks-and-known-issues-1)
   - [Other Devices](#other-devices)
 
-## Known Issues
+## Known Issues and Remarks
 
+- You may want to set a different profile for each slot (`F1`-`F4`).
 - Some keyboards may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
 
 ## Feature Matrix
 
 ### Keyboard Devices
 
-| Vendor | Product        | Status           | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys   | Media keys F9-F12 |
-| ------ | -------------- | ---------------- | ---------- | -------------- | ------------------------------ | ---------------------------------- | ----------------- |
-| ROCCAT | Vulcan 100/12x | 100%             | Yes        | Yes            | Yes                            | Yes                                | Yes               |
-| ROCCAT | Vulcan Pro TKL | 98%              | No         | Yes            | Yes (*inofficial)              | No, but maybe forced (*inofficial) | Yes               |
-| ROCCAT | Vulcan TKL     | work-in-progress | No         | Yes            | Yes (*inofficial)              | No, but maybe forced (*inofficial) | Yes               |
-| ROCCAT | Vulcan Pro     | unknown/pending  | Yes        | Yes            | Yes                            | Yes                                | Yes               |
+| Vendor | Product        | Status           | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys    | Media keys F9-F12 |
+| ------ | -------------- | ---------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
+| ROCCAT | Vulcan 100/12x | 100%             | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
+| ROCCAT | Vulcan Pro TKL | 98%              | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
+| ROCCAT | Vulcan TKL     | work-in-progress | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
+| ROCCAT | Vulcan Pro     | unknown/pending  | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -35,8 +36,8 @@
 | Vendor | Product         | Status | Macro Keys | Easy Shift Key |
 | ------ | --------------- | ------ | ---------- | -------------- |
 | ROCCAT | Kone Pure Ultra | 100%   | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo       | ??%    | N.a.       | N.a.           |
-| ROCCAT | Kova AIMO       | ??%    | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo       | 80%    | N.a.       | N.a.           |
+| ROCCAT | Kova AIMO       | 80%    | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -53,7 +54,6 @@ Fully supported
 - Use the `FN` key to access special function keys (`F5`-`F8`)
 - Use the `FN` key to access media functions (`F9`-`F12`)
 - Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode` and then `CAPS LOCK`.
-- You may want to set a different profile for each slot (`F1`-`F4`).
 
 ## ROCCAT Vulcan Pro TKL series keyboard
 
@@ -65,15 +65,12 @@ Nearly fully supported, as of `0.1.19`
 
 - GUI support is incomplete
 - NetworkFX shows garbled output, support for NetworkFX is still a TODO
-- `F/FN` and `FN/Win` keys are not fully supported yet
-- Setting of LED brightness via `FN + UP` and `FN + DOWN` is not fully supported yet
-- Slots may currently only be switched via `FN` + `F1-F4`, not via `FN + LEFT` or `FN + RIGHT`
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
-- Neighbor topology tables are currently not fully correct, may lead to mis-rendering of some effects
+- Slots may currently only be switched via `FN` + `F1-F4`, switching via `FN + LEFT` or `FN + RIGHT` causes problems
+- Neighbor topology tables are currently not fully correct, this may lead to mis-rendering of some effects
 - You can use the `FN` key to access special function keys (`F5`-`F8`) (*inofficial) like on the ROCCAT Vulcan Pro / ROCCAT Vulcan 100/12x
 - Use the `FN` key too to access media functions (`F9`-`F12`)
-- Easy Shift+ may be activated by pressing `FN`+`Page down/GameMode` and then `CAPS LOCK`.
-- You may want to set a different profile for each slot (`F1`-`F4`).
+- Easy Shift+ may be activated by pressing `FN`+`Page Down/GameMode` and then `CAPS LOCK`.
 
 ## Other Devices
 

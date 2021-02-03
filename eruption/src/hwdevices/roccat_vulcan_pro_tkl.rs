@@ -588,12 +588,14 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
                     //     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     // }
 
+                    let fn_down = false;
+
                     let event = match buf[0..5] {
                         // Key reports, incl. KEY_FN, ..
                         [0x03, 0x00, 0xfb, code, status] => match code {
-                            0x6d => KeyboardHidEvent::PreviousSlot,
+                            0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
 
-                            0x7d => KeyboardHidEvent::NextSlot,
+                            0x7d if fn_down => KeyboardHidEvent::NextSlot,
 
                             _ => match status {
                                 0x00 => KeyboardHidEvent::KeyUp {
