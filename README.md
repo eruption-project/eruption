@@ -7,8 +7,6 @@
   - [Supported Devices](#supported-devices)
     - [Keyboard devices](#keyboard-devices)
     - [Mouse devices](#mouse-devices)
-    - [Remarks and known Issues](#remarks-and-known-issues)
-      - [ROCCAT Vulcan 100/12x series keyboard:](#roccat-vulcan-10012x-series-keyboard)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
   - [Installation](#installation)
@@ -34,9 +32,9 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ### Keyboard devices
 
-* ROCCAT Vulcan 100/12x series keyboard
-* ROCCAT Vulcan TKL series keyboard (work-in-progress, experimental)
-* ROCCAT Vulcan Pro TKL series keyboard (work-in-progress, experimental)
+* ROCCAT Vulcan 100/12x series keyboard (fully supported)
+* ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
+* ROCCAT Vulcan TKL series keyboard (work-in-progress as of version `0.1.19`, experimental, untested)
 
 ### Mouse devices
 
@@ -44,21 +42,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 * ROCCAT Kone Pure Ultra
 * ROCCAT Kova AIMO (experimental)
 
-### Remarks and known Issues
-
-#### ROCCAT Vulcan 100/12x series keyboard:
-
-- Mute button will stay lit even if audio is muted
-
-- Keyboard may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
-
-- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or access macros (`M1-M6`).
-- Use the `FN` key too to access special keys/media functions (`F5`-`F12`)
-- Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode`.
-- You may want to set a different profile for each slot (`F1`-`F4`).
-- Maybe you want to use the GNOME Shell extension [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
-
+Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
