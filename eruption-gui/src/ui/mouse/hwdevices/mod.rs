@@ -35,6 +35,6 @@ pub trait Mouse {
 }
 
 pub fn get_mouse_device() -> Box<dyn Mouse> {
-    // TODO: Make this generic
+    // TODO: Implement this
     Box::new(generic_mouse::GenericMouse::new())
 }

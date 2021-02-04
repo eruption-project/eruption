@@ -6,6 +6,7 @@
     <file compressed="true">ui/rule.glade</file>
     <file>styles/app.css</file>
     <file>img/eruption-gui.png</file>
-    <file>img/keyboard.png</file>
+    <file>img/keyboard-generic.png</file>
+    <file>img/keyboard-generic-tkl.png</file>
   </gresource>
 </gresources>

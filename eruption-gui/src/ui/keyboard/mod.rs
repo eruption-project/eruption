@@ -32,7 +32,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Initialize page "Keyboard"
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
+    // let keyboard_model = util::get_keyboard_model()?;
     let keyboard_device = hwdevices::get_keyboard_device();
+
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area").unwrap();
 
     let networkfx_ambient_switch: gtk::Switch =

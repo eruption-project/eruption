@@ -16,19 +16,16 @@
 */
 
 use crate::util::RGBA;
-use std::cell::RefCell;
-use std::thread_local;
 
+mod generic_layout;
+mod generic_tkl_layout;
 mod roccat_vulcan_1xx;
-
-thread_local! {
-    // Pango font description, used to render the captions on the visual representation of keyboard
-    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("sans-serif demibold 5"));
-}
+mod roccat_vulcan_pro_tkl;
+mod roccat_vulcan_tkl;
 
 pub fn get_keyboard_device() -> Box<dyn Keyboard> {
     // TODO: Make this generic
-    Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new())
+    Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())
 }
 
 pub trait Keyboard {
