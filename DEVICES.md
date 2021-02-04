@@ -27,7 +27,6 @@
 | ROCCAT | Vulcan 100/12x | 100%             | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 | ROCCAT | Vulcan Pro TKL | 98%              | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
 | ROCCAT | Vulcan TKL     | work-in-progress | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
-| ROCCAT | Vulcan Pro     | unknown/pending  | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 

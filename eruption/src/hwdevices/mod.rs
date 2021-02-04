@@ -43,7 +43,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 10]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 9]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -52,7 +52,7 @@ lazy_static! {
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
+        // KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
 
         KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
 
