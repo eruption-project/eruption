@@ -15,19 +15,32 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use roccat_vulcan_1xx::RoccatVulcan1xx;
-
 use crate::util::RGBA;
 
-mod generic_layout;
-mod generic_tkl_layout;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
 
-pub fn get_keyboard_device() -> Box<dyn Keyboard> {
-    // TODO: Make this generic
-    Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new())
+pub enum KeyboardModel {
+    RoccatVulcan1xx,
+    RoccatVulcanPro,
+    RoccatVulcanProTKL,
+    RoccatVulcanTKL,
+}
+
+pub fn get_keyboard_device(keyboard_type: &KeyboardModel) -> Box<dyn Keyboard> {
+    match keyboard_type {
+        KeyboardModel::RoccatVulcan1xx => Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()),
+
+        KeyboardModel::RoccatVulcanPro => Box::new(roccat_vulcan_pro::RoccatVulcanPro::new()),
+
+        KeyboardModel::RoccatVulcanProTKL => {
+            Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())
+        }
+
+        KeyboardModel::RoccatVulcanTKL => Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new()),
+    }
 }
 
 pub trait Keyboard {
