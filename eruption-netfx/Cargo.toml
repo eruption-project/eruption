@@ -30,7 +30,7 @@ thiserror = "1.0.23"
 eyre = "0.6.5"
 color-eyre = "0.5.10"
 num-traits = "0.2.14"
-image = "0.23.12"
+image = "0.23.13"
 x11 = { version = "2.18.2", features = ["xlib", "xrandr"] }
 
 [dev-dependencies]
