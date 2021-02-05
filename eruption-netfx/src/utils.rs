@@ -15,26 +15,29 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::hwdevices::*;
-
-use crate::xwrap::Image;
+use crate::{hwdevices::KeyboardDevice, xwrap::Image};
 use image::{imageops::FilterType, DynamicImage, GenericImageView};
 use std::path::Path;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Converts an image buffer to a Network FX command stream
-pub fn process_image_buffer(buffer: &[u8]) -> Result<String> {
+pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
     let img = image::load_from_memory(&buffer)?;
-    let img = img.resize_exact(NUM_COLS as u32, NUM_ROWS as u32, FilterType::Gaussian);
+    let img = img.resize_exact(
+        device.get_num_cols() as u32,
+        device.get_num_rows() as u32,
+        FilterType::Gaussian,
+    );
 
-    for x in 0..NUM_COLS {
-        for y in 0..NUM_ROWS {
-            let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
+    for x in 0..device.get_num_cols() {
+        for y in 0..device.get_num_rows() {
+            let key_index: usize =
+                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
 
-            if !(1..=NUM_KEYS).contains(&key_index) {
+            if !(1..=device.get_num_keys()).contains(&key_index) {
                 continue;
             }
 
@@ -53,19 +56,24 @@ pub fn process_image_buffer(buffer: &[u8]) -> Result<String> {
 }
 
 /// Loads and converts an image file to a Network FX command stream
-pub fn process_image_file<P: AsRef<Path>>(filename: P) -> Result<String> {
+pub fn process_image_file<P: AsRef<Path>>(filename: P, device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
     let filename = filename.as_ref();
 
     let img = image::open(&filename)?;
-    let img = img.resize_exact(NUM_COLS as u32, NUM_ROWS as u32, FilterType::Gaussian);
+    let img = img.resize_exact(
+        device.get_num_cols() as u32,
+        device.get_num_rows() as u32,
+        FilterType::Gaussian,
+    );
 
-    for x in 0..NUM_COLS {
-        for y in 0..NUM_ROWS {
-            let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
+    for x in 0..device.get_num_cols() {
+        for y in 0..device.get_num_rows() {
+            let key_index: usize =
+                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
 
-            if !(1..=NUM_KEYS).contains(&key_index) {
+            if !(1..=device.get_num_keys()).contains(&key_index) {
                 continue;
             }
 
@@ -84,18 +92,23 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P) -> Result<String> {
 }
 
 /// Converts an image buffer to a Network FX command stream
-pub fn process_screenshot(image: &Image) -> Result<String> {
+pub fn process_screenshot(image: &Image, device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
     let buffer = image.into_image_buffer().unwrap();
     let img = DynamicImage::ImageRgba8(buffer);
-    let img = img.resize_exact(NUM_COLS as u32, NUM_ROWS as u32, FilterType::Gaussian);
+    let img = img.resize_exact(
+        device.get_num_cols() as u32,
+        device.get_num_rows() as u32,
+        FilterType::Gaussian,
+    );
 
-    for x in 0..NUM_COLS {
-        for y in 0..NUM_ROWS {
-            let key_index: usize = (ROWS_TOPOLOGY[x + (y * (NUM_COLS + 1))]) as usize + 1;
+    for x in 0..device.get_num_cols() {
+        for y in 0..device.get_num_rows() {
+            let key_index: usize =
+                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
 
-            if !(1..=NUM_KEYS).contains(&key_index) {
+            if !(1..=device.get_num_keys()).contains(&key_index) {
                 continue;
             }
 

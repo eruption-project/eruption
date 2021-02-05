@@ -206,6 +206,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Image { filename } => {
+            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -226,7 +228,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     let mut buffer = Vec::new();
                     let _len = reader.read_to_end(&mut buffer).await?;
 
-                    let commands = utils::process_image_buffer(&buffer)?;
+                    let commands = utils::process_image_buffer(&buffer, &device)?;
 
                     // print and send the specified command
                     if opts.verbose > 0 {
@@ -248,7 +250,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
             } else {
-                let commands = utils::process_image_file(&filename)?;
+                let commands = utils::process_image_file(&filename, &device)?;
 
                 // print and send the specified command
                 if opts.verbose > 0 {
@@ -271,6 +273,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             directory_name,
             frame_delay,
         } => {
+            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -304,7 +308,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", &filename.path().to_string_lossy());
                 }
 
-                let commands = utils::process_image_file(&filename.path())?;
+                let commands = utils::process_image_file(&filename.path(), &device)?;
 
                 processed_images.push(commands);
             }
@@ -344,6 +348,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Ambient { frame_delay } => {
+            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -370,7 +376,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 let image = display
                     .get_image(window, sel, xwrap::ALL_PLANES, x11::xlib::ZPixmap)
                     .unwrap();
-                let commands = utils::process_screenshot(&image)?;
+                let commands = utils::process_screenshot(&image, &device)?;
 
                 // print and send the specified commands
                 if opts.verbose > 0 {

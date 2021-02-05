@@ -17,15 +17,15 @@
 
 use super::Keyboard;
 
-pub struct RoccatVulcanProTKL {}
+pub struct RoccatVulcanTKL {}
 
-impl RoccatVulcanProTKL {
+impl RoccatVulcanTKL {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Keyboard for RoccatVulcanProTKL {
+impl Keyboard for RoccatVulcanTKL {
     fn get_num_keys(&self) -> usize {
         NUM_KEYS
     }
