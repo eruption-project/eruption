@@ -22,7 +22,7 @@ parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.123", features = ["derive"] }
 serde_json = { version = "1.0.61" }
 tokio = { version = "1.1.1", features = ["full"] }
-tracing = "0.1.22"
+tracing = "0.1.23"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
 crossbeam = "0.8.0"
