@@ -240,8 +240,13 @@ mod callbacks {
     pub(crate) fn get_support_script_files() -> Vec<String> {
         let mut result = Vec::new();
 
-        result.push("keyboards/roccat_vulcan_pro_tkl".to_string());
-        result.push("mice/roccat_kone_pure_ultra".to_string());
+        for device in crate::KEYBOARD_DEVICES.lock().iter() {
+            result.push(device.read().get_support_script_file());
+        }
+
+        for device in crate::MOUSE_DEVICES.lock().iter() {
+            result.push(device.read().get_support_script_file());
+        }
 
         result
     }

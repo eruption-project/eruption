@@ -15,31 +15,38 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::util::RGBA;
+use crate::{dbus_client, util::RGBA};
 
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
 
-pub enum KeyboardModel {
-    RoccatVulcan1xx,
-    RoccatVulcanPro,
-    RoccatVulcanProTKL,
-    RoccatVulcanTKL,
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum HwDevicesError {
+    #[error("The device is not supported")]
+    UnsupportedDevice,
 }
 
-pub fn get_keyboard_device(keyboard_type: &KeyboardModel) -> Box<dyn Keyboard> {
-    match keyboard_type {
-        KeyboardModel::RoccatVulcan1xx => Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()),
-
-        KeyboardModel::RoccatVulcanPro => Box::new(roccat_vulcan_pro::RoccatVulcanPro::new()),
-
-        KeyboardModel::RoccatVulcanProTKL => {
-            Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())
+pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
+    match dbus_client::get_managed_devices()?[0] {
+        // ROCCAT Vulcan 1xx series
+        (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
+            Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
         }
 
-        KeyboardModel::RoccatVulcanTKL => Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new()),
+        // ROCCAT Vulcan Pro series
+        (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new())),
+
+        // ROCCAT Vulcan Pro TKL series
+        (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())),
+
+        // ROCCAT Vulcan TKL series
+        (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
+
+        _ => Err(HwDevicesError::UnsupportedDevice {}.into()),
     }
 }
 

@@ -211,8 +211,10 @@ impl DbusApi {
                                 f.property::<bool, _>("Running", ())
                                     .emits_changed(EmitsChangedSignal::True)
                                     .on_get(|i, m| {
-                                        if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
-                                            .unwrap_or(false)
+                                        if perms::has_monitor_permission(
+                                            &m.msg.sender().unwrap().to_string(),
+                                        )
+                                        .unwrap_or(false)
                                         {
                                             i.append(true);
                                             Ok(())
@@ -221,8 +223,10 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                        if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
-                                            .unwrap_or(false)
+                                        if perms::has_settings_permission(
+                                            &m.msg.sender().unwrap().to_string(),
+                                        )
+                                        .unwrap_or(false)
                                         {
                                             let _b: bool = i.read()?;
 
@@ -242,9 +246,11 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
-                                        let s = script::LAST_RENDERED_LED_MAP.read().iter().map(|v| {
-                                            (v.r, v.g, v.b, v.a)
-                                        }).collect::<Vec<(u8, u8, u8, u8)>>();
+                                        let s = script::LAST_RENDERED_LED_MAP
+                                            .read()
+                                            .iter()
+                                            .map(|v| (v.r, v.g, v.b, v.a))
+                                            .collect::<Vec<(u8, u8, u8, u8)>>();
 
                                         Ok(vec![m.msg.method_return().append1(s)])
                                     } else {
@@ -257,10 +263,43 @@ impl DbusApi {
                             //     f.method("SetLedColors", (), move |m| {
                             //         *crate::LAST_DBUS_EVENT_TIME.lock() = Instant::now();
                             //         let s = *script::LED_MAP.read();
-
                             //         Ok(vec![m.msg.method_return().append_all(s)])
                             //     }), // .outarg::<Vec<RGBA>, _>("values"),
-                            // ),
+                            // )
+                            .add_m(
+                                f.method("GetManagedDevices", (), move |m| {
+                                    if perms::has_monitor_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let mut s: Vec<(u16, u16)> = Vec::new();
+
+                                        s.extend(crate::KEYBOARD_DEVICES.lock().iter().map(
+                                            |device| {
+                                                (
+                                                    device.read().get_usb_vid(),
+                                                    device.read().get_usb_pid(),
+                                                )
+                                            },
+                                        ));
+
+                                        s.extend(crate::MOUSE_DEVICES.lock().iter().map(
+                                            |device| {
+                                                (
+                                                    device.read().get_usb_vid(),
+                                                    device.read().get_usb_pid(),
+                                                )
+                                            },
+                                        ));
+
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<Vec<(u16, u16)>, _>("values"),
+                            ),
                     ),
             )
             .add(
@@ -352,14 +391,14 @@ impl DbusApi {
                                     .unwrap_or(false)
                                     {
                                         let s: Vec<String> = crate::SLOT_PROFILES
-                                        .lock()
-                                        .as_ref()
-                                        .unwrap()
-                                        .iter()
-                                        .map(|p| p.to_string_lossy().to_string())
-                                        .collect();
+                                            .lock()
+                                            .as_ref()
+                                            .unwrap()
+                                            .iter()
+                                            .map(|p| p.to_string_lossy().to_string())
+                                            .collect();
 
-                                    Ok(vec![m.msg.method_return().append1(s)])
+                                        Ok(vec![m.msg.method_return().append1(s)])
                                     } else {
                                         Err(MethodErr::failed("Authentication failed"))
                                     }
@@ -386,26 +425,25 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                            if perms::has_settings_permission(
-                                                &m.msg.sender().unwrap().to_string(),
-                                            )
-                                            .unwrap_or(false)
-                                            {
-                                                let n: Vec<String> = i.read()?;
+                                        if perms::has_settings_permission(
+                                            &m.msg.sender().unwrap().to_string(),
+                                        )
+                                        .unwrap_or(false)
+                                        {
+                                            let n: Vec<String> = i.read()?;
 
-                                                if n.len() >= constants::NUM_SLOTS {
-                                                    *crate::SLOT_NAMES.lock() = n;
+                                            if n.len() >= constants::NUM_SLOTS {
+                                                *crate::SLOT_NAMES.lock() = n;
 
-                                                    Ok(())
-                                                } else {
-                                                    Err(MethodErr::failed("Invalid number of elements"))
-                                                }
+                                                Ok(())
                                             } else {
-                                                Err(MethodErr::failed("Authentication failed"))
+                                                Err(MethodErr::failed("Invalid number of elements"))
                                             }
-                                    })
-                        ),
-
+                                        } else {
+                                            Err(MethodErr::failed("Authentication failed"))
+                                        }
+                                    }),
+                            ),
                     ),
             )
             .add(
@@ -428,7 +466,10 @@ impl DbusApi {
                                         dbus_tx_clone
                                             .send(Message::SwitchProfile(PathBuf::from(n)))
                                             .unwrap_or_else(|e| {
-                                                error!("Could not send a pending D-Bus event: {}", e)
+                                                error!(
+                                                    "Could not send a pending D-Bus event: {}",
+                                                    e
+                                                )
                                             });
 
                                         // reset the audio backend, it will be enabled again if needed

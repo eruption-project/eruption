@@ -57,6 +57,12 @@ use scripting::manifest::Manifest;
 use scripting::script;
 
 lazy_static! {
+    /// Managed keyboard devices
+    pub static ref KEYBOARD_DEVICES: Arc<Mutex<Vec<hwdevices::KeyboardDevice>>> = Arc::new(Mutex::new(Vec::new()));
+
+    /// Managed mouse devices
+    pub static ref MOUSE_DEVICES: Arc<Mutex<Vec<hwdevices::MouseDevice>>> = Arc::new(Mutex::new(Vec::new()));
+
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
 
@@ -2273,6 +2279,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     });
 
                     keyboard_devices.push((device, kbd_rx, kbd_tx));
+                    crate::KEYBOARD_DEVICES.lock().push(device.clone());
                 }
 
                 // initialize mouse devices
@@ -2321,6 +2328,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         }
 
                         mouse_devices.push((device, mouse_rx, mouse_tx));
+                        crate::MOUSE_DEVICES.lock().push(device.clone());
                     } else {
                         info!("Found mouse device, but mouse support is DISABLED by configuration");
                     }
