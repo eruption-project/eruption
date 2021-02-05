@@ -5,14 +5,14 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                        |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.19 | __New Release__                                                                                                                    |
-| 0.1.19 | Add support for ROCCAT Vulcan Pro TKL                                                                                              |
+| 0.1.19 | Add support for `ROCCAT Vulcan Pro TKL` series keyboards                                                                           |
 | 0.1.19 | First beginnings of a GTK+ based GUI for Eruption                                                                                  |
 | 0.1.19 | Add support for USB HID based event handling for mouse devices. This should enable the extra buttons on supported devices          |
 | 0.1.19 | Update Lua scripts to better handle the unified canvas                                                                             |
 | 0.1.19 | Add profile `batique-mouse.profile` specifically for mice                                                                          |
 | 0.1.19 | Network FX protocol supports painting to the full canvas now, not only to the keyboard                                             |
 | 0.1.19 | Fixed brightnes bug: Wrong initial brightness, was only correct after a key has been pressed                                       |
-| 0.1.19 | New profiles: "Blue FX + Color Swirls (Perlin)", "Red FX", "Red Wave", "Heartbeat: System Monitor", "Fireplace", "Flight (Perlin)" |
+| 0.1.19 | New profiles: `Blue FX + Color Swirls (Perlin)`, `Red FX`, `Red Wave`, `Heartbeat: System Monitor`, `Fireplace`, `Flight (Perlin)` |
 | 0.1.19 | Improve stability of the core daemon as well as the process-monitor daemon                                                         |
 | 0.1.18 | __New Release__                                                                                                                    |
 | 0.1.18 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                         |

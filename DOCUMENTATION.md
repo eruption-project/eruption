@@ -23,20 +23,20 @@
 
 Overview:
 
-* Integrated Lua interpreter
-* AIMO LED Control via Lua scripts
-* Multiple Lua scripts may be executed in parallel, with their outputs combined
-* Allows for construction of complex "effect pipelines"
-* Event-based architecture
-* Daemon plugins may export functions to Lua
-* Profiles may be switched at runtime via a D-Bus method
-* A GNOME based profile switcher extension is available
+- Integrated Lua interpreter
+- AIMO LED Control via Lua scripts
+- Multiple Lua scripts may be executed in parallel, with their outputs combined
+- Allows for construction of complex "effect pipelines"
+- Event-based architecture
+- Daemon plugins may export functions to Lua
+- Profiles may be switched at runtime via a D-Bus method
+- A GNOME based profile switcher extension is available
 
 ## Experimental Features
 
-* Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
+- Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
 
-* Eruption `0.1.12` somewhat relaxed the mouse grabbing mode. It now is possible for Eruption to process mouse events without grabbing the mouse exclusively. Injection of mouse events wont work in that mode though. This feature has been added to support setups, where another software should be granted exclusive access to the mouse device.
+- Eruption `0.1.12` somewhat relaxed the mouse grabbing mode. It now is possible for Eruption to process mouse events without grabbing the mouse exclusively. Injection of mouse events wont work in that mode though. This feature has been added to support setups, where another software should be granted exclusive access to the mouse device.
 
 ## Configuration and Usage
 
@@ -71,7 +71,6 @@ grab_mouse = true
 *enable_mouse* = Enable support for mouse events. This will allow Eruption to react on mouse events.
 
 *grab_mouse* = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.
-
 
 ### Profiles
 
@@ -133,7 +132,7 @@ You may switch the currently active slot to `profile1.profile` with the followin
 ##### Switch Profile
 
 ```sh
-$ eruptionctl switch profile profile1.profile
+ $ eruptionctl switch profile profile1.profile
 ```
 
 ##### Switch Slot
@@ -143,7 +142,7 @@ Slots can be switched with the following command:
 **Switch to slot 2:**
 
 ```sh
-$ eruptionctl switch slot 2
+ $ eruptionctl switch slot 2
 ```
 
 ### Lua Scripts and Manifests

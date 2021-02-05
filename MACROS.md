@@ -6,21 +6,27 @@ If you want to implement custom macros for Eruption, you need to complete the fo
 `mygame` with a name of your choice.
 
 * Create a new Lua macros file for example by copying an existing file, and using it as a starting point:
+
   ```bash
-  $ sudo cp -v /usr/share/eruption/scripts/lib/macros/user-macros.lua /usr/share/eruption/scripts/lib/macros/mygame.lua
+   $ sudo cp -v /usr/share/eruption/scripts/lib/macros/user-macros.lua /usr/share/eruption/scripts/lib/macros/mygame.lua
   ```
+
 * Edit the newly created file and perform customizations
+
   ```bash
-  $ sudoedit /usr/share/eruption/scripts/lib/macros/mygame.lua
+   $ sudoedit /usr/share/eruption/scripts/lib/macros/mygame.lua
   ```
+
 * To wire-up the newly created Lua file with an existing profile,
   add the following configuration stanza to the `.profile` file:
+
   ```toml
   [[config.Macros]]
   type = 'string'
   name = 'requires'
   value = 'macros/mygame'
   ```
+
 * Decide whether you just need a simple key remapping, or if you want to inject complex sequences of keystrokes
 * Implement simple key remapping using the table based remapping infrastructure
 * Write complex macro sequences as Lua functions that perform calls to `inject_key(...)` or `inject_key_with_delay(...)`
@@ -46,6 +52,7 @@ In this example, the second 'l' will be sent to the system `200ms` after the fir
 ```
 
 A Lua function, that slowly types the string 'Hello!':
+
 ```lua
 function easyshift_macro_3()
   debug("Executing: 'easyshift_macro_3'")

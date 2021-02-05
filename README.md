@@ -32,15 +32,15 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ### Keyboard devices
 
-* ROCCAT Vulcan 100/12x series keyboard (fully supported)
-* ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
-* ROCCAT Vulcan TKL series keyboard (work-in-progress as of version `0.1.19`, experimental, untested)
+- ROCCAT Vulcan 100/12x series keyboard (fully supported)
+- ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
+- ROCCAT Vulcan TKL series keyboard (work-in-progress as of version `0.1.19`, experimental, untested)
 
 ### Mouse devices
 
-* ROCCAT Kone Aimo (experimental)
-* ROCCAT Kone Pure Ultra
-* ROCCAT Kova AIMO (experimental)
+- ROCCAT Kone Pure Ultra
+- ROCCAT Kone Aimo (experimental)
+- ROCCAT Kova AIMO (experimental)
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
@@ -53,15 +53,19 @@ If you ever need to forcefully disable the Eruption daemon you may do so by addi
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 
 ```sh
-  systemd.mask=eruption.service
+ systemd.mask=eruption.service
 ```
+
 Or with systemctl to mask the service:
+
 ```sh
-$ sudo systemctl mask eruption.service
+ $ sudo systemctl mask eruption.service
 ```
+
 You can always re-enable the Eruption service with the command:
+
 ```sh
-$ sudo systemctl unmask eruption.service
+ $ sudo systemctl unmask eruption.service
 ```
 
 ## Design Overview
@@ -81,29 +85,29 @@ prior to sending the resulting final color map to the keyboard.
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
-$ paru -Syu aur/eruption-git
+ $ paru -Syu aur/eruption-git
 ```
 
 ### Fedora based
 
 ```sh
-$ sudo dnf copr enable x3n0m0rph59/eruption
-$ sudo dnf install eruption-git
+ $ sudo dnf copr enable x3n0m0rph59/eruption
+ $ sudo dnf install eruption-git
 ```
 
 ### Ubuntu or Pop!_OS
 
 ```sh
-sudo add-apt-repository ppa:x3n0m0rph59/eruption
-sudo apt update
-sudo apt install eruption-git
+ $ sudo add-apt-repository ppa:x3n0m0rph59/eruption
+ $ sudo apt update
+ $ sudo apt install eruption-git
 ```
 
 To activate Eruption now, you may either reboot your system or manually start
 the daemon with the command:
 
 ```sh
-$ sudo systemctl start eruption.service
+ $ sudo systemctl start eruption.service
 ```
 
 > Note: You don't have to enable the eruption service, since it is started by an
@@ -112,9 +116,9 @@ $ sudo systemctl start eruption.service
 ### From Source
 
 ```sh
-$ git clone https://github.com/X3n0m0rph59/eruption.git
-$ cd eruption
-$ cargo build --all --release
+ $ git clone https://github.com/X3n0m0rph59/eruption.git
+ $ cd eruption
+ $ cargo build --all --release
 ```
 
 ## After Setup
@@ -122,7 +126,6 @@ $ cargo build --all --release
 > You may want to try the
 [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
 GNOME Shell extension, for easy switching of profiles on the fly.
-
 
 ### Support for Audio Playback and Capture
 
@@ -135,14 +138,14 @@ Create the PulseAudio config directory and edit the server configuration file
 for your user account:
 
 ```sh
-$ mkdir -p ~/.config/pulse/
-$ cp /etc/pulse/default.pa ~/.config/pulse/default.pa
-$ nano ~/.config/pulse/default.pa
+ $ mkdir -p ~/.config/pulse/
+ $ cp /etc/pulse/default.pa ~/.config/pulse/default.pa
+ $ nano ~/.config/pulse/default.pa
 ```
 
 then add the following line at the end of the file:
 
-```
+```conf
 load-module module-native-protocol-unix auth-group=root socket=/tmp/pulse-server
 ```
 
@@ -151,8 +154,8 @@ file in `/root/.config/pulse/client.conf` for the user that Eruption runs as
 (default: root)
 
 ```sh
-$ sudo mkdir -p /root/.config/pulse/
-$ EDITOR=nano sudoedit /root/.config/pulse/client.conf
+ $ sudo mkdir -p /root/.config/pulse/
+ $ EDITOR=nano sudoedit /root/.config/pulse/client.conf
 ```
 
 and then add the following lines:
@@ -166,8 +169,8 @@ enable-memfd = yes
 Finally, restart PulseAudio and Eruption for the changes to take effect:
 
 ```sh
-$ systemctl --user restart pulseaudio.service
-$ sudo systemctl restart eruption.service
+ $ systemctl --user restart pulseaudio.service
+ $ sudo systemctl restart eruption.service
 ```
 
 ## The `eruption-process-monitor` Daemon
@@ -199,7 +202,7 @@ To list all supported sensors and actions please run the command:
 
 ### Removing a rule
 
-```Bash
+```bash
 $ eruption-process-monitor rules list
   0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: spectrum-analyzer-swirl.profile (enabled: false, internal: false)
   1: On window focused: Name: 'Skype' => Switch to profile: vu-meter.profile (enabled: false, internal: false)
@@ -210,7 +213,9 @@ $ eruption-process-monitor rules list
 
 To remove a rule, please run the following command:
 
-`eruption-process-monitor rules remove 1`
+```
+ $ eruption-process-monitor rules remove 1
+```
 
 This will remove the rule for the window named `Skype` from the ruleset.
 
