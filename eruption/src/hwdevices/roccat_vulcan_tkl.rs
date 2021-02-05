@@ -529,13 +529,13 @@ impl DeviceTrait for RoccatVulcanTKL {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let firmware_version = self.get_device_info()?.firmware_version;
-            // if firmware_version < 136 {
-            //     warn!(
-            //         "Outdated firmware version: {}, should be: >= 136",
-            //         firmware_version
-            //     );
-            // }
+            let firmware_version = self.get_device_info()?.firmware_version;
+            if firmware_version < 115 {
+                warn!(
+                    "Outdated firmware version: {}, should be: >= 115",
+                    firmware_version
+                );
+            }
 
             self.query_ctrl_report(0x0f)
                 .unwrap_or_else(|e| error!("{}", e));
