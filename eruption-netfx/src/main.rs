@@ -26,6 +26,7 @@ use tokio::time::Duration;
 use walkdir::WalkDir;
 
 mod constants;
+mod hwdevices;
 mod utils;
 mod xwrap;
 
