@@ -62,8 +62,6 @@ Nearly fully supported, as of `0.1.19`
 
 ### Remarks and known Issues
 
-- GUI support is incomplete
-- NetworkFX shows garbled output, support for NetworkFX is still a TODO
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
 - Slots may currently only be switched via `FN` + `F1-F4`, switching via `FN + LEFT` or `FN + RIGHT` causes problems
 - Neighbor topology tables are currently not fully correct, this may lead to mis-rendering of some effects
