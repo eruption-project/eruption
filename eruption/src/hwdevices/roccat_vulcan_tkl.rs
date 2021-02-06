@@ -122,37 +122,37 @@ impl RoccatVulcanTKL {
         }
     }
 
-    pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
-        trace!("Querying control device feature report");
+    // pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
+    //     trace!("Querying control device feature report");
 
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else {
-            match id {
-                0x0f => {
-                    let mut buf: [u8; 256] = [0; 256];
-                    buf[0] = id;
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
+    //     } else if !self.is_opened {
+    //         Err(HwDeviceError::DeviceNotOpened {}.into())
+    //     } else {
+    //         match id {
+    //             0x0f => {
+    //                 let mut buf: [u8; 256] = [0; 256];
+    //                 buf[0] = id;
 
-                    let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                    let ctrl_dev = ctrl_dev.as_ref().unwrap();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                    match ctrl_dev.get_feature_report(&mut buf) {
-                        Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //                 match ctrl_dev.get_feature_report(&mut buf) {
+    //                     Ok(_result) => {
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                            Ok(())
-                        }
+    //                         Ok(())
+    //                     }
 
-                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-                    }
-                }
+    //                     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+    //                 }
+    //             }
 
-                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
-            }
-        }
-    }
+    //             _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+    //         }
+    //     }
+    // }
 
     fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
         trace!("Sending control device feature report");
@@ -383,27 +383,31 @@ impl RoccatVulcanTKL {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            loop {
-                let mut buf: [u8; 4] = [0; 4];
-                buf[0] = 0x04;
+            thread::sleep(Duration::from_millis(5));
 
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            Ok(())
 
-                match ctrl_dev.get_feature_report(&mut buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            // loop {
+            //     let mut buf: [u8; 4] = [0; 4];
+            //     buf[0] = 0x04;
 
-                        if buf[1] == 0x01 {
-                            return Ok(());
-                        }
-                    }
+            //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                    Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-                }
+            //     match ctrl_dev.get_feature_report(&mut buf) {
+            //         Ok(_result) => {
+            //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-            }
+            //             if buf[1] == 0x01 {
+            //                 return Ok(());
+            //             }
+            //         }
+
+            //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+            //     }
+
+            //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+            // }
         }
     }
 }
@@ -529,16 +533,13 @@ impl DeviceTrait for RoccatVulcanTKL {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let firmware_version = self.get_device_info()?.firmware_version;
-            if firmware_version < 115 {
-                warn!(
-                    "Outdated firmware version: {}, should be: >= 115",
-                    firmware_version
-                );
-            }
-
-            self.query_ctrl_report(0x0f)
-                .unwrap_or_else(|e| error!("{}", e));
+            // let firmware_version = self.get_device_info()?.firmware_version;
+            // if firmware_version < 115 {
+            //     warn!(
+            //         "Outdated firmware version: {}, should be: >= 115",
+            //         firmware_version
+            //     );
+            // }
 
             self.send_ctrl_report(0x15)
                 .unwrap_or_else(|e| error!("{}", e));
