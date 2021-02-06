@@ -29,8 +29,8 @@ eyre = "0.6.5"
 color-eyre = "0.5.10"
 toml = "0.5.8"
 serde = { version = "1.0.123", features = ["derive"] }
-serde_json = { version = "1.0.61" }
-tokio = { version = "1.1.1", features = ["full"] }
+serde_json = { version = "1.0.62" }
+tokio = { version = "1.2.0", features = ["full"] }
 ctrlc = { version = "3.1.7", features = ["termination"] }
 clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
@@ -71,4 +71,4 @@ bitvec = "0.20.1"
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
-tokio = { version = "1.1.1", features = ["test-util"] }
+tokio = { version = "1.2.0", features = ["test-util"] }
