@@ -50,6 +50,9 @@ pub struct Options {
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
 
+    /// The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"
+    model: Option<String>,
+
     hostname: Option<String>,
     port: Option<u16>,
 
@@ -206,7 +209,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Image { filename } => {
-            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+            let device = hwdevices::get_keyboard_device(&opts.model)?;
 
             let address = format!(
                 "{}:{}",
@@ -273,7 +276,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             directory_name,
             frame_delay,
         } => {
-            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+            let device = hwdevices::get_keyboard_device(&opts.model)?;
 
             let address = format!(
                 "{}:{}",
@@ -348,7 +351,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Ambient { frame_delay } => {
-            let device = hwdevices::get_keyboard_device(0x0000, 0x0000);
+            let device = hwdevices::get_keyboard_device(&opts.model)?;
 
             let address = format!(
                 "{}:{}",
