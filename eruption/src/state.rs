@@ -47,6 +47,7 @@ lazy_static! {
 #[serde(rename_all = "lowercase")]
 struct State {
     active_slot: usize,
+    slot_names: Vec<String>,
     profiles: Vec<PathBuf>,
     enable_sfx: bool,
     brightness: i64,
@@ -61,14 +62,6 @@ pub fn init_global_runtime_state() -> Result<()> {
         PathBuf::from("swirl-perlin.profile"),
         PathBuf::from("spectrum-analyzer-swirl.profile"),
     ]);
-
-    let mut slot_names = crate::SLOT_NAMES.lock();
-    *slot_names = vec![
-        "Profile Slot 1".to_string(),
-        "Profile Slot 2".to_string(),
-        "Profile Slot 3".to_string(),
-        "Profile Slot 4".to_string(),
-    ];
 
     // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
@@ -129,16 +122,6 @@ pub fn init_global_runtime_state() -> Result<()> {
         })
         .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
 
-    STATE
-        .read()
-        .as_ref()
-        .unwrap()
-        .get("slot_names")
-        .map(|p| {
-            *slot_names = p;
-        })
-        .unwrap_or_else(|_| warn!("Invalid saved state: slot_names"));
-
     crate::ACTIVE_SLOT.store(
         STATE
             .read()
@@ -159,6 +142,21 @@ pub fn init_global_runtime_state() -> Result<()> {
         Ordering::SeqCst,
     );
 
+    let mut slot_names = crate::SLOT_NAMES.lock();
+    *slot_names = STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get::<Vec<String>>("slot_names")
+        .unwrap_or_else(|_| {
+            vec![
+                "Profile Slot 1".to_string(),
+                "Profile Slot 2".to_string(),
+                "Profile Slot 3".to_string(),
+                "Profile Slot 4".to_string(),
+            ]
+        });
+
     perform_sanity_checks();
 
     Ok(())
@@ -169,6 +167,7 @@ pub fn save_runtime_state() -> Result<()> {
 
     let config = State {
         active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
+        slot_names: crate::SLOT_NAMES.lock().clone(),
         profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
