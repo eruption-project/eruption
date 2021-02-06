@@ -39,6 +39,26 @@ Author: X3n0m0rph59
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkImage" id="edit_image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="edit_image1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="edit_image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="edit_image3">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
   <object class="GtkMenu" id="main_menu">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -193,7 +213,7 @@ Author: X3n0m0rph59
                     <property name="width-request">1200</property>
                     <property name="height-request">442</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="margin-start">8</property>
@@ -221,6 +241,10 @@ Author: X3n0m0rph59
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
+                <property name="margin-top">8</property>
+                <property name="margin-bottom">8</property>
                 <property name="row-spacing">8</property>
                 <property name="column-spacing">8</property>
                 <child>
@@ -249,27 +273,11 @@ Author: X3n0m0rph59
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">8</property>
-                    <property name="margin-end">16</property>
-                    <property name="margin-top">8</property>
+                    <property name="margin-end">32</property>
+                    <property name="margin-top">32</property>
                     <property name="margin-bottom">8</property>
                     <property name="row-spacing">8</property>
-                    <property name="column-spacing">8</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="margin-top">8</property>
-                        <property name="label" translatable="yes">Mouse Device Status and Configuration</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                        <property name="width">2</property>
-                      </packing>
-                    </child>
+                    <property name="column-spacing">16</property>
                     <child>
                       <object class="GtkLabel" id="mouse_device_name_label">
                         <property name="visible">True</property>
@@ -278,24 +286,27 @@ Author: X3n0m0rph59
                         <property name="label" translatable="yes">&lt;Unknown Mouse Device&gt;</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
+                          <attribute name="scale" value="2"/>
                         </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="valign">center</property>
                         <property name="pixel-size">64</property>
                         <property name="icon-name">mouse-symbolic</property>
                         <property name="icon_size">0</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
@@ -307,7 +318,7 @@ Author: X3n0m0rph59
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
-                        <property name="top-attach">2</property>
+                        <property name="top-attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -319,7 +330,7 @@ Author: X3n0m0rph59
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
-                        <property name="top-attach">2</property>
+                        <property name="top-attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -331,31 +342,7 @@ Author: X3n0m0rph59
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
-                        <property name="top-attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="label" translatable="yes">label1</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">4</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="label" translatable="yes">label</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">5</property>
+                        <property name="top-attach">2</property>
                       </packing>
                     </child>
                     <child>
@@ -367,32 +354,26 @@ Author: X3n0m0rph59
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
-                        <property name="top-attach">3</property>
+                        <property name="top-attach">2</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">label</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">4</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">label</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">5</property>
-                      </packing>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -802,29 +783,55 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkRadioButton" id="slot1_radio_button">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
-                            <property name="tooltip-text" translatable="yes">Activate Slot 1</property>
-                            <property name="draw-indicator">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="hexpand">True</property>
                             <child>
-                              <object class="GtkEntry" id="slot1_entry">
+                              <object class="GtkRadioButton" id="slot1_radio_button">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="margin-start">8</property>
-                                <property name="margin-end">8</property>
-                                <property name="margin-top">8</property>
-                                <property name="margin-bottom">8</property>
-                                <property name="editable">False</property>
-                                <property name="has-frame">False</property>
-                                <property name="text" translatable="yes">Profile Slot 1</property>
-                                <property name="secondary-icon-stock">gtk-edit</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="primary-icon-sensitive">False</property>
-                                <property name="placeholder-text" translatable="yes">Profile Slot Name</property>
-                                <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">Activate Slot 1</property>
+                                <property name="hexpand">True</property>
+                                <property name="draw-indicator">True</property>
+                                <child>
+                                  <object class="GtkEntry" id="slot1_entry">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-end">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="has-frame">False</property>
+                                    <property name="text" translatable="yes">Profile Slot 1</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                  </object>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="edit_slot1_button">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="halign">end</property>
+                                <property name="image">edit_image</property>
+                                <property name="relief">none</property>
+                                <property name="always-show-image">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>
@@ -885,30 +892,55 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkRadioButton" id="slot2_radio_button">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
-                            <property name="tooltip-text" translatable="yes">Activate Slot 2</property>
-                            <property name="draw-indicator">True</property>
-                            <property name="group">slot1_radio_button</property>
+                            <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkEntry" id="slot2_entry">
+                              <object class="GtkRadioButton" id="slot2_radio_button">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="margin-start">8</property>
-                                <property name="margin-end">8</property>
-                                <property name="margin-top">8</property>
-                                <property name="margin-bottom">8</property>
-                                <property name="editable">False</property>
-                                <property name="has-frame">False</property>
-                                <property name="text" translatable="yes">Profile Slot 2</property>
-                                <property name="secondary-icon-stock">gtk-edit</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="primary-icon-sensitive">False</property>
-                                <property name="placeholder-text" translatable="yes">Profile Slot Name</property>
-                                <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">Activate Slot 2</property>
+                                <property name="hexpand">True</property>
+                                <property name="draw-indicator">True</property>
+                                <property name="group">slot1_radio_button</property>
+                                <child>
+                                  <object class="GtkEntry" id="slot2_entry">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-end">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="has-frame">False</property>
+                                    <property name="text" translatable="yes">Profile Slot 2</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                  </object>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="edit_slot2_button">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="halign">end</property>
+                                <property name="image">edit_image1</property>
+                                <property name="relief">none</property>
+                                <property name="always-show-image">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>
@@ -970,30 +1002,55 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkRadioButton" id="slot3_radio_button">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
-                            <property name="tooltip-text" translatable="yes">Activate Slot 3</property>
-                            <property name="draw-indicator">True</property>
-                            <property name="group">slot1_radio_button</property>
+                            <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkEntry" id="slot3_entry">
+                              <object class="GtkRadioButton" id="slot3_radio_button">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="margin-start">8</property>
-                                <property name="margin-end">8</property>
-                                <property name="margin-top">8</property>
-                                <property name="margin-bottom">8</property>
-                                <property name="editable">False</property>
-                                <property name="has-frame">False</property>
-                                <property name="text" translatable="yes">Profile Slot 3</property>
-                                <property name="secondary-icon-stock">gtk-edit</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="primary-icon-sensitive">False</property>
-                                <property name="placeholder-text" translatable="yes">Profile Slot Name</property>
-                                <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">Activate Slot 3</property>
+                                <property name="hexpand">True</property>
+                                <property name="draw-indicator">True</property>
+                                <property name="group">slot1_radio_button</property>
+                                <child>
+                                  <object class="GtkEntry" id="slot3_entry">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-end">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="has-frame">False</property>
+                                    <property name="text" translatable="yes">Profile Slot 3</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                  </object>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="edit_slot3_button">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="halign">end</property>
+                                <property name="image">edit_image2</property>
+                                <property name="relief">none</property>
+                                <property name="always-show-image">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>
@@ -1055,30 +1112,57 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkRadioButton" id="slot4_radio_button">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
-                            <property name="tooltip-text" translatable="yes">Activate Slot 4</property>
-                            <property name="draw-indicator">True</property>
-                            <property name="group">slot1_radio_button</property>
+                            <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkEntry" id="slot4_entry">
+                              <object class="GtkRadioButton" id="slot4_radio_button">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
-                                <property name="margin-start">8</property>
-                                <property name="margin-end">8</property>
-                                <property name="margin-top">8</property>
-                                <property name="margin-bottom">8</property>
-                                <property name="editable">False</property>
-                                <property name="has-frame">False</property>
-                                <property name="text" translatable="yes">Profile Slot 4</property>
-                                <property name="secondary-icon-stock">gtk-edit</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="primary-icon-sensitive">False</property>
-                                <property name="placeholder-text" translatable="yes">Profile Slot Name</property>
-                                <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">Activate Slot 4</property>
+                                <property name="hexpand">True</property>
+                                <property name="draw-indicator">True</property>
+                                <property name="group">slot1_radio_button</property>
+                                <child>
+                                  <object class="GtkEntry" id="slot4_entry">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-end">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="has-frame">False</property>
+                                    <property name="text" translatable="yes">Profile Slot 4</property>
+                                    <property name="primary-icon-activatable">False</property>
+                                    <property name="primary-icon-sensitive">False</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                  </object>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="edit_slot4_button">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="halign">end</property>
+                                <property name="image">edit_image3</property>
+                                <property name="relief">none</property>
+                                <property name="always-show-image">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>

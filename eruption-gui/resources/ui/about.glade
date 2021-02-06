@@ -34,7 +34,7 @@ Author: X3n0m0rph59
     <property name="program-name">Eruption GUI</property>
     <property name="version">0.0.0</property>
     <property name="copyright" translatable="yes">Copyright (c) 2019-2021, The Eruption Development Team</property>
-    <property name="comments" translatable="yes">This is a Preview Version of the Software</property>
+    <property name="comments" translatable="yes">This is a Technology Preview Version of the Software</property>
     <property name="website">https://github.com/X3n0m0rph59/eruption</property>
     <property name="authors">X3n0m0rph59</property>
     <property name="logo-icon-name">image-missing</property>

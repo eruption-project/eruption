@@ -94,6 +94,11 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     let slot3_entry: gtk::Entry = builder.get_object("slot3_entry").unwrap();
     let slot4_entry: gtk::Entry = builder.get_object("slot4_entry").unwrap();
 
+    let edit_slot1_button: gtk::Button = builder.get_object("edit_slot1_button").unwrap();
+    let edit_slot2_button: gtk::Button = builder.get_object("edit_slot2_button").unwrap();
+    let edit_slot3_button: gtk::Button = builder.get_object("edit_slot3_button").unwrap();
+    let edit_slot4_button: gtk::Button = builder.get_object("edit_slot4_button").unwrap();
+
     let slot1_combo: gtk::ComboBox = builder.get_object("slot1_combo").unwrap();
     let slot2_combo: gtk::ComboBox = builder.get_object("slot2_combo").unwrap();
     let slot3_combo: gtk::ComboBox = builder.get_object("slot3_combo").unwrap();
@@ -111,6 +116,50 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot2_entry.set_text(names.get(1).unwrap_or(&"Profile Slot 2".to_string()));
     slot3_entry.set_text(names.get(2).unwrap_or(&"Profile Slot 3".to_string()));
     slot4_entry.set_text(names.get(3).unwrap_or(&"Profile Slot 4".to_string()));
+
+    edit_slot1_button.connect_clicked(clone!(@strong window, @strong slot1_entry => move |_btn| {
+            window.set_focus(Some(&slot1_entry));
+    }));
+
+    edit_slot2_button.connect_clicked(clone!(@strong window, @strong slot2_entry => move |_btn| {
+            window.set_focus(Some(&slot2_entry));
+    }));
+
+    edit_slot3_button.connect_clicked(clone!(@strong window, @strong slot3_entry => move |_btn| {
+        window.set_focus(Some(&slot3_entry));
+    }));
+
+    edit_slot4_button.connect_clicked(clone!(@strong window, @strong slot4_entry => move |_btn| {
+        window.set_focus(Some(&slot4_entry));
+    }));
+
+    slot1_entry.connect_focus_out_event(|edit, _event| {
+        let slot_name = edit.get_text().to_string();
+        util::set_slot_name(0, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+
+        gtk::Inhibit(false)
+    });
+
+    slot2_entry.connect_focus_out_event(|edit, _event| {
+        let slot_name = edit.get_text().to_string();
+        util::set_slot_name(1, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+
+        gtk::Inhibit(false)
+    });
+
+    slot3_entry.connect_focus_out_event(|edit, _event| {
+        let slot_name = edit.get_text().to_string();
+        util::set_slot_name(2, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+
+        gtk::Inhibit(false)
+    });
+
+    slot4_entry.connect_focus_out_event(|edit, _event| {
+        let slot_name = edit.get_text().to_string();
+        util::set_slot_name(3, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+
+        gtk::Inhibit(false)
+    });
 
     // profiles list
     let profiles_treestore = gtk::TreeStore::new(&[
@@ -320,19 +369,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     };
 
     events::reenable_ui_events();
-
-    // TODO: Make this work
-    slot1_radio_button.connect_focus(
-        clone!(@strong window, @strong slot1_entry => move |_rb, _dir| {
-            window.set_focus(Some(&slot1_entry));
-
-            Inhibit(false)
-        }),
-    );
-
-    slot1_entry.connect_icon_press(|_e, _pos, _ev| {
-        log::info!("press");
-    });
 
     Ok(())
 }

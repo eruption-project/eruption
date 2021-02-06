@@ -130,6 +130,25 @@ pub fn get_active_slot() -> Result<usize> {
 }
 
 /// Returns all slot names
+pub fn set_slot_name(index: usize, name: &str) -> Result<()> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/slot",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let names = get_slot_names()?;
+    let mut names = names.iter().map(|v| v.as_ref()).collect::<Vec<_>>();
+    names[index] = name;
+
+    let arg = Box::new(names);
+    let result = proxy.set("org.eruption.Slot", "SlotNames", arg)?;
+
+    Ok(result)
+}
+
+/// Returns all slot names
 pub fn get_slot_names() -> Result<Vec<String>> {
     let conn = Connection::new_system()?;
     let proxy = conn.with_proxy(
