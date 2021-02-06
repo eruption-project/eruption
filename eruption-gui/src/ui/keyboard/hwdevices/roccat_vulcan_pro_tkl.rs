@@ -23,6 +23,8 @@ use gdk_pixbuf::Pixbuf;
 use palette::{Hsva, Srgba};
 use std::cell::RefCell;
 
+const BORDER: (f64, f64) = (65.0, 35.0);
+
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
     static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("sans-serif demibold 6"));
@@ -39,11 +41,6 @@ impl RoccatVulcanProTKL {
 
 impl Keyboard for RoccatVulcanProTKL {
     fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) {
-        // let da = da.as_ref();
-
-        // let width = da.get_allocated_width();
-        // let height = da.get_allocated_height();
-
         let scale_factor = 1.5;
 
         let pixbuf =
@@ -52,7 +49,7 @@ impl Keyboard for RoccatVulcanProTKL {
 
         // paint the schematic drawing
         context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
+        context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint();
 
         let led_colors = crate::dbus_client::get_led_colors().unwrap();
@@ -95,13 +92,18 @@ impl Keyboard for RoccatVulcanProTKL {
         .into_components();
 
         cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
-        cr.rectangle(key_def.x, key_def.y, key_def.width, key_def.height);
+        cr.rectangle(
+            key_def.x + BORDER.0,
+            key_def.y + BORDER.1,
+            key_def.width + 1.0,
+            key_def.height + 1.0,
+        );
         cr.fill();
 
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
         cr.move_to(
-            7.0 + key_def.x + key_def.caption.x_offset,
-            23.0 + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0)),
+            BORDER.0 + 7.0 + key_def.x + key_def.caption.x_offset,
+            BORDER.1 + 23.0 + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0)),
         );
 
         layout.set_text(&key_def.caption.text);
@@ -141,82 +143,82 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(74.0, 135.0, 32.0, 32.0, Caption::simple("A"), 11), // A
 
     // column 3
-    KeyDef::new(117.0, 170.0, 32.0, 32.0, Caption::simple("Y"), 12), // Y
+    KeyDef::new(118.0, 170.0, 32.0, 32.0, Caption::simple("Y"), 12), // Y
     KeyDef::new(107.0, 205.0, 32.0, 32.0, Caption::simple("ALT"), 13), // ALT
     KeyDef::new(78.0, 13.0, 32.0, 32.0, Caption::simple("F1"), 14), // F1
     KeyDef::new(83.0, 66.0, 32.0, 32.0, Caption::simple("2"), 15),  // 2
     KeyDef::new(100.0, 100.0, 32.0, 32.0, Caption::simple("W"), 16), // W
-    KeyDef::new(107.0, 135.0, 32.0, 32.0, Caption::simple("S"), 17), // S
+    KeyDef::new(108.0, 135.0, 32.0, 32.0, Caption::simple("S"), 17), // S
 
     // column 4
-    KeyDef::new(151.0, 170.0, 32.0, 32.0, Caption::simple("X"), 18), // X
+    KeyDef::new(152.0, 170.0, 32.0, 32.0, Caption::simple("X"), 18), // X
     KeyDef::dummy(19),                                               // filler
     KeyDef::dummy(20),                                               // filler
     KeyDef::new(112.0, 13.0, 32.0, 32.0, Caption::simple("F2"), 21), // F2
     KeyDef::new(117.0, 66.0, 32.0, 32.0, Caption::simple("3"), 22),  // 3
     KeyDef::new(134.0, 100.0, 32.0, 32.0, Caption::simple("E"), 23), // E
-    KeyDef::new(141.0, 135.0, 32.0, 32.0, Caption::simple("D"), 24), // D
+    KeyDef::new(142.0, 135.0, 32.0, 32.0, Caption::simple("D"), 24), // D
 
     // column 5
-    KeyDef::new(184.0, 170.0, 32.0, 32.0, Caption::simple("C"), 25), // C
+    KeyDef::new(186.0, 170.0, 32.0, 32.0, Caption::simple("C"), 25), // C
     KeyDef::new(146.0, 13.0, 32.0, 32.0, Caption::simple("F3"), 26), // F3
     KeyDef::new(151.0, 66.0, 32.0, 32.0, Caption::simple("4"), 27),  // 4
     KeyDef::new(168.0, 100.0, 32.0, 32.0, Caption::simple("R"), 28), // R
-    KeyDef::new(175.0, 135.0, 32.0, 32.0, Caption::simple("F"), 29), // F
+    KeyDef::new(176.0, 135.0, 32.0, 32.0, Caption::simple("F"), 29), // F
 
     // column 6
-    KeyDef::new(218.0, 170.0, 32.0, 32.0, Caption::simple("V"), 30), // V
+    KeyDef::new(220.0, 170.0, 32.0, 32.0, Caption::simple("V"), 30), // V
     KeyDef::new(180.0, 13.0, 32.0, 32.0, Caption::simple("F4"), 31), // F4
     KeyDef::new(185.0, 66.0, 32.0, 32.0, Caption::simple("5"), 32),  // 5
     KeyDef::new(202.0, 100.0, 32.0, 32.0, Caption::simple("T"), 33), // T
-    KeyDef::new(209.0, 135.0, 32.0, 32.0, Caption::simple("G"), 34), // G
+    KeyDef::new(210.0, 135.0, 32.0, 32.0, Caption::simple("G"), 34), // G
 
     // column 7
-    KeyDef::new(252.0, 170.0, 32.0, 32.0, Caption::simple("B"), 35), // B
+    KeyDef::new(254.0, 170.0, 32.0, 32.0, Caption::simple("B"), 35), // B
     KeyDef::new(141.0, 205.0, 148.0, 32.0, Caption::simple("SPACE BAR"), 36), // SPACE
     KeyDef::new(219.0, 66.0, 32.0, 32.0, Caption::simple("6"), 37), // 6
     KeyDef::new(236.0, 100.0, 32.0, 32.0, Caption::simple("Z"), 38), // Z
-    KeyDef::new(243.0, 135.0, 32.0, 32.0, Caption::simple("H"), 39), // H
+    KeyDef::new(244.0, 135.0, 32.0, 32.0, Caption::simple("H"), 39), // H
 
     // column 8
-    KeyDef::new(286.0, 170.0, 32.0, 32.0, Caption::simple("N"), 40), // N
+    KeyDef::new(288.0, 170.0, 32.0, 32.0, Caption::simple("N"), 40), // N
     KeyDef::new(225.0, 13.0, 32.0, 32.0, Caption::simple("F5"), 41), // F5
     KeyDef::new(253.0, 66.0, 32.0, 32.0, Caption::simple("7"), 42), // 7
     KeyDef::new(270.0, 100.0, 32.0, 32.0, Caption::simple("U"), 43), // U
-    KeyDef::new(277.0, 135.0, 32.0, 32.0, Caption::simple("J"), 44), // J
+    KeyDef::new(278.0, 135.0, 32.0, 32.0, Caption::simple("J"), 44), // J
 
     // column 9
-    KeyDef::new(320.0, 170.0, 32.0, 32.0, Caption::simple("M"), 45), // M
+    KeyDef::new(322.0, 170.0, 32.0, 32.0, Caption::simple("M"), 45), // M
     KeyDef::dummy(46),                                              // filler
     KeyDef::dummy(47),                                              // filler
     KeyDef::new(259.0, 13.0, 32.0, 32.0, Caption::simple("F6"), 48), // F6
     KeyDef::new(287.0, 66.0, 32.0, 32.0, Caption::simple("8"), 49), // 8
     KeyDef::new(304.0, 100.0, 32.0, 32.0, Caption::simple("I"), 50), // I
-    KeyDef::new(311.0, 135.0, 32.0, 32.0, Caption::simple("K"), 51), // K
+    KeyDef::new(312.0, 135.0, 32.0, 32.0, Caption::simple("K"), 51), // K
 
     // column 10
-    KeyDef::new(354.0, 170.0, 32.0, 32.0, Caption::simple(","), 52), // ,
+    KeyDef::new(356.0, 170.0, 32.0, 32.0, Caption::simple(","), 52), // ,
     KeyDef::dummy(53),                                              // filler
     KeyDef::new(293.0, 13.0, 32.0, 32.0, Caption::simple("F7"), 54), // F7
     KeyDef::new(321.0, 66.0, 32.0, 32.0, Caption::simple("9"), 55), // 9
     KeyDef::new(338.0, 100.0, 32.0, 32.0, Caption::simple("O"), 56), // O
-    KeyDef::new(345.0, 135.0, 32.0, 32.0, Caption::simple("L"), 57), // L
+    KeyDef::new(346.0, 135.0, 32.0, 32.0, Caption::simple("L"), 57), // L
 
     // column 11
-    KeyDef::new(389.0, 170.0, 32.0, 32.0, Caption::simple("."), 58), // .
+    KeyDef::new(390.0, 170.0, 32.0, 32.0, Caption::simple("."), 58), // .
     KeyDef::new(292.0, 205.0, 50.0, 32.0, Caption::simple("ALT GR"), 59), // ALT GR
     KeyDef::new(327.0, 13.0, 32.0, 32.0, Caption::simple("F8"), 60), // F8
     KeyDef::new(355.0, 66.0, 32.0, 32.0, Caption::simple("0"), 61), // 0
     KeyDef::new(372.0, 100.0, 32.0, 32.0, Caption::simple("P"), 62), // P
-    KeyDef::new(379.0, 135.0, 32.0, 32.0, Caption::simple("Ö"), 63), // Ö
+    KeyDef::new(380.0, 135.0, 32.0, 32.0, Caption::simple("Ö"), 63), // Ö
 
     // column 12
-    KeyDef::new(423.0, 170.0, 32.0, 32.0, Caption::simple("-"), 64), // -
+    KeyDef::new(424.0, 170.0, 32.0, 32.0, Caption::simple("-"), 64), // -
     KeyDef::new(346.0, 205.0, 50.0, 32.0, Caption::simple("FN"), 65), // FN
     KeyDef::new(371.0, 13.0, 32.0, 32.0, Caption::simple("F9"), 66), // F9
     KeyDef::new(389.0, 66.0, 32.0, 32.0, Caption::simple("ß"), 67), // ß
     KeyDef::new(406.0, 100.0, 32.0, 32.0, Caption::simple("Ü"), 68), // Ü
-    KeyDef::new(413.0, 135.0, 32.0, 32.0, Caption::simple("Ä"), 69), // Ä
+    KeyDef::new(414.0, 135.0, 32.0, 32.0, Caption::simple("Ä"), 69), // Ä
 
     //
     KeyDef::dummy(70),                                               // filler
@@ -227,7 +229,7 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(424.0, 66.0, 32.0, 32.0, Caption::simple("´"), 73), // ´
     KeyDef::new(441.0, 100.0, 32.0, 32.0, Caption::simple("+"), 74), // +
     KeyDef::new(448.0, 135.0, 26.0, 32.0, Caption::simple("#"),75), // #
-    KeyDef::new(457.0, 170.0, 51.0, 32.0, Caption::simple("SHIFT"), 76), // SHIFT
+    KeyDef::new(459.0, 170.0, 49.0, 32.0, Caption::simple("SHIFT"), 76), // SHIFT
 
     // column 14
     KeyDef::new(452.0, 205.0, 56.0, 32.0, Caption::simple("CTRL"), 77), // CTRL
@@ -300,82 +302,82 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     KeyDef::new(74.0, 135.0, 32.0, 32.0, Caption::simple("A"), 11), // A
 
     // column 3
-    KeyDef::new(117.0, 170.0, 32.0, 32.0, Caption::simple("Y"), 12), // Y
+    KeyDef::new(118.0, 170.0, 32.0, 32.0, Caption::simple("Y"), 12), // Y
     KeyDef::new(107.0, 205.0, 32.0, 32.0, Caption::simple("ALT"), 13), // ALT
     KeyDef::new(78.0, 13.0, 32.0, 32.0, Caption::simple("F1"), 14), // F1
     KeyDef::new(83.0, 66.0, 32.0, 32.0, Caption::simple("2"), 15),  // 2
     KeyDef::new(100.0, 100.0, 32.0, 32.0, Caption::simple("W"), 16), // W
-    KeyDef::new(107.0, 135.0, 32.0, 32.0, Caption::simple("S"), 17), // S
+    KeyDef::new(108.0, 135.0, 32.0, 32.0, Caption::simple("S"), 17), // S
 
     // column 4
-    KeyDef::new(151.0, 170.0, 32.0, 32.0, Caption::simple("X"), 18), // X
+    KeyDef::new(152.0, 170.0, 32.0, 32.0, Caption::simple("X"), 18), // X
     KeyDef::dummy(19),                                               // filler
     KeyDef::dummy(20),                                               // filler
     KeyDef::new(112.0, 13.0, 32.0, 32.0, Caption::simple("F2"), 21), // F2
     KeyDef::new(117.0, 66.0, 32.0, 32.0, Caption::simple("3"), 22),  // 3
     KeyDef::new(134.0, 100.0, 32.0, 32.0, Caption::simple("E"), 23), // E
-    KeyDef::new(141.0, 135.0, 32.0, 32.0, Caption::simple("D"), 24), // D
+    KeyDef::new(142.0, 135.0, 32.0, 32.0, Caption::simple("D"), 24), // D
 
     // column 5
-    KeyDef::new(184.0, 170.0, 32.0, 32.0, Caption::simple("C"), 25), // C
+    KeyDef::new(186.0, 170.0, 32.0, 32.0, Caption::simple("C"), 25), // C
     KeyDef::new(146.0, 13.0, 32.0, 32.0, Caption::simple("F3"), 26), // F3
     KeyDef::new(151.0, 66.0, 32.0, 32.0, Caption::simple("4"), 27),  // 4
     KeyDef::new(168.0, 100.0, 32.0, 32.0, Caption::simple("R"), 28), // R
-    KeyDef::new(175.0, 135.0, 32.0, 32.0, Caption::simple("F"), 29), // F
+    KeyDef::new(176.0, 135.0, 32.0, 32.0, Caption::simple("F"), 29), // F
 
     // column 6
-    KeyDef::new(218.0, 170.0, 32.0, 32.0, Caption::simple("V"), 30), // V
+    KeyDef::new(220.0, 170.0, 32.0, 32.0, Caption::simple("V"), 30), // V
     KeyDef::new(180.0, 13.0, 32.0, 32.0, Caption::simple("F4"), 31), // F4
     KeyDef::new(185.0, 66.0, 32.0, 32.0, Caption::simple("5"), 32),  // 5
     KeyDef::new(202.0, 100.0, 32.0, 32.0, Caption::simple("T"), 33), // T
-    KeyDef::new(209.0, 135.0, 32.0, 32.0, Caption::simple("G"), 34), // G
+    KeyDef::new(210.0, 135.0, 32.0, 32.0, Caption::simple("G"), 34), // G
 
     // column 7
-    KeyDef::new(252.0, 170.0, 32.0, 32.0, Caption::simple("B"), 35), // B
+    KeyDef::new(254.0, 170.0, 32.0, 32.0, Caption::simple("B"), 35), // B
     KeyDef::new(141.0, 205.0, 148.0, 32.0, Caption::simple("SPACE BAR"), 36), // SPACE
     KeyDef::new(219.0, 66.0, 32.0, 32.0, Caption::simple("6"), 37), // 6
     KeyDef::new(236.0, 100.0, 32.0, 32.0, Caption::simple("Z"), 38), // Z
-    KeyDef::new(243.0, 135.0, 32.0, 32.0, Caption::simple("H"), 39), // H
+    KeyDef::new(244.0, 135.0, 32.0, 32.0, Caption::simple("H"), 39), // H
 
     // column 8
-    KeyDef::new(286.0, 170.0, 32.0, 32.0, Caption::simple("N"), 40), // N
+    KeyDef::new(288.0, 170.0, 32.0, 32.0, Caption::simple("N"), 40), // N
     KeyDef::new(225.0, 13.0, 32.0, 32.0, Caption::simple("F5"), 41), // F5
     KeyDef::new(253.0, 66.0, 32.0, 32.0, Caption::simple("7"), 42), // 7
     KeyDef::new(270.0, 100.0, 32.0, 32.0, Caption::simple("U"), 43), // U
-    KeyDef::new(277.0, 135.0, 32.0, 32.0, Caption::simple("J"), 44), // J
+    KeyDef::new(278.0, 135.0, 32.0, 32.0, Caption::simple("J"), 44), // J
 
     // column 9
-    KeyDef::new(320.0, 170.0, 32.0, 32.0, Caption::simple("M"), 45), // M
+    KeyDef::new(322.0, 170.0, 32.0, 32.0, Caption::simple("M"), 45), // M
     KeyDef::dummy(46),                                              // filler
     KeyDef::dummy(47),                                              // filler
     KeyDef::new(259.0, 13.0, 32.0, 32.0, Caption::simple("F6"), 48), // F6
     KeyDef::new(287.0, 66.0, 32.0, 32.0, Caption::simple("8"), 49), // 8
     KeyDef::new(304.0, 100.0, 32.0, 32.0, Caption::simple("I"), 50), // I
-    KeyDef::new(311.0, 135.0, 32.0, 32.0, Caption::simple("K"), 51), // K
+    KeyDef::new(312.0, 135.0, 32.0, 32.0, Caption::simple("K"), 51), // K
 
     // column 10
-    KeyDef::new(354.0, 170.0, 32.0, 32.0, Caption::simple(","), 52), // ,
+    KeyDef::new(356.0, 170.0, 32.0, 32.0, Caption::simple(","), 52), // ,
     KeyDef::dummy(53),                                              // filler
     KeyDef::new(293.0, 13.0, 32.0, 32.0, Caption::simple("F7"), 54), // F7
     KeyDef::new(321.0, 66.0, 32.0, 32.0, Caption::simple("9"), 55), // 9
     KeyDef::new(338.0, 100.0, 32.0, 32.0, Caption::simple("O"), 56), // O
-    KeyDef::new(345.0, 135.0, 32.0, 32.0, Caption::simple("L"), 57), // L
+    KeyDef::new(346.0, 135.0, 32.0, 32.0, Caption::simple("L"), 57), // L
 
     // column 11
-    KeyDef::new(389.0, 170.0, 32.0, 32.0, Caption::simple("."), 58), // .
+    KeyDef::new(390.0, 170.0, 32.0, 32.0, Caption::simple("."), 58), // .
     KeyDef::new(292.0, 205.0, 50.0, 32.0, Caption::simple("ALT GR"), 59), // ALT GR
     KeyDef::new(327.0, 13.0, 32.0, 32.0, Caption::simple("F8"), 60), // F8
     KeyDef::new(355.0, 66.0, 32.0, 32.0, Caption::simple("0"), 61), // 0
     KeyDef::new(372.0, 100.0, 32.0, 32.0, Caption::simple("P"), 62), // P
-    KeyDef::new(379.0, 135.0, 32.0, 32.0, Caption::simple("Ö"), 63), // Ö
+    KeyDef::new(380.0, 135.0, 32.0, 32.0, Caption::simple("Ö"), 63), // Ö
 
     // column 12
-    KeyDef::new(423.0, 170.0, 32.0, 32.0, Caption::simple("-"), 64), // -
+    KeyDef::new(424.0, 170.0, 32.0, 32.0, Caption::simple("-"), 64), // -
     KeyDef::new(346.0, 205.0, 50.0, 32.0, Caption::simple("FN"), 65), // FN
     KeyDef::new(371.0, 13.0, 32.0, 32.0, Caption::simple("F9"), 66), // F9
     KeyDef::new(389.0, 66.0, 32.0, 32.0, Caption::simple("ß"), 67), // ß
     KeyDef::new(406.0, 100.0, 32.0, 32.0, Caption::simple("Ü"), 68), // Ü
-    KeyDef::new(413.0, 135.0, 32.0, 32.0, Caption::simple("Ä"), 69), // Ä
+    KeyDef::new(414.0, 135.0, 32.0, 32.0, Caption::simple("Ä"), 69), // Ä
 
     //
     KeyDef::dummy(70),                                               // filler
@@ -386,7 +388,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     KeyDef::new(424.0, 66.0, 32.0, 32.0, Caption::simple("´"), 73), // ´
     KeyDef::new(441.0, 100.0, 32.0, 32.0, Caption::simple("+"), 74), // +
     KeyDef::new(448.0, 135.0, 26.0, 32.0, Caption::simple("#"),75), // #
-    KeyDef::new(457.0, 170.0, 51.0, 32.0, Caption::simple("SHIFT"), 76), // SHIFT
+    KeyDef::new(459.0, 170.0, 49.0, 32.0, Caption::simple("SHIFT"), 76), // SHIFT
 
     // column 14
     KeyDef::new(452.0, 205.0, 56.0, 32.0, Caption::simple("CTRL"), 77), // CTRL

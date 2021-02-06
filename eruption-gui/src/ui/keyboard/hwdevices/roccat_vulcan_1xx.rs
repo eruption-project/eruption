@@ -23,6 +23,8 @@ use gdk_pixbuf::Pixbuf;
 use palette::{Hsva, Srgba};
 use std::cell::RefCell;
 
+const BORDER: (f64, f64) = (0.0, 35.0);
+
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
     static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("sans-serif demibold 6"));
@@ -39,11 +41,6 @@ impl RoccatVulcan1xx {
 
 impl Keyboard for RoccatVulcan1xx {
     fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) {
-        // let da = da.as_ref();
-
-        // let width = da.get_allocated_width();
-        // let height = da.get_allocated_height();
-
         let scale_factor = 1.5;
 
         let pixbuf =
@@ -51,7 +48,7 @@ impl Keyboard for RoccatVulcan1xx {
 
         // paint the schematic drawing
         context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
+        context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint();
 
         let led_colors = crate::dbus_client::get_led_colors().unwrap();
@@ -94,13 +91,18 @@ impl Keyboard for RoccatVulcan1xx {
         .into_components();
 
         cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
-        cr.rectangle(key_def.x, key_def.y, key_def.width, key_def.height);
+        cr.rectangle(
+            key_def.x + BORDER.0,
+            key_def.y + BORDER.1,
+            key_def.width + 1.0,
+            key_def.height + 1.0,
+        );
         cr.fill();
 
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
         cr.move_to(
-            7.0 + key_def.x + key_def.caption.x_offset,
-            23.0 + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0)),
+            BORDER.0 + 7.0 + key_def.x + key_def.caption.x_offset,
+            BORDER.1 + 23.0 + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0)),
         );
 
         layout.set_text(&key_def.caption.text);
