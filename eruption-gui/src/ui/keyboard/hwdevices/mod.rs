@@ -60,6 +60,7 @@ pub trait Keyboard {
 
 #[derive(Debug, PartialEq)]
 pub struct KeyDef<'a> {
+    is_dummy: bool,
     x: f64,
     y: f64,
     width: f64,
@@ -78,6 +79,7 @@ impl<'a> KeyDef<'a> {
         _index: usize,
     ) -> Self {
         Self {
+            is_dummy: false,
             x,
             y,
             width,
@@ -89,6 +91,7 @@ impl<'a> KeyDef<'a> {
 
     const fn dummy(_index: usize) -> Self {
         Self {
+            is_dummy: true,
             x: 0.0,
             y: 0.0,
             width: 0.0,

@@ -20,7 +20,7 @@ use super::{Caption, KeyDef};
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
-use palette::{Hsva, Srgba};
+use palette::{Hsva, Shade, Srgba};
 use std::cell::RefCell;
 
 const BORDER: (f64, f64) = (0.0, 35.0);
@@ -67,47 +67,119 @@ impl Keyboard for RoccatVulcan1xx {
 
     /// Paint a key on the keyboard widget
     fn paint_key(&self, key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layout) {
+        fn rounded_rectangle(
+            cr: &cairo::Context,
+            x: f64,
+            y: f64,
+            width: f64,
+            height: f64,
+            radius: f64,
+            color: &(f64, f64, f64, f64),
+            color2: &(f64, f64, f64, f64),
+        ) {
+            let aspect = 1.0; // aspect ratio
+            let corner_radius = height / radius; // corner curvature radius
+
+            let radius = corner_radius / aspect;
+            let degrees = std::f64::consts::PI / 180.0;
+
+            cr.new_sub_path();
+            cr.arc(
+                x + width - radius,
+                y + radius,
+                radius,
+                -90.0 * degrees,
+                0.0 * degrees,
+            );
+            cr.arc(
+                x + width - radius,
+                y + height - radius,
+                radius,
+                0.0 * degrees,
+                90.0 * degrees,
+            );
+            cr.arc(
+                x + radius,
+                y + height - radius,
+                radius,
+                90.0 * degrees,
+                180.0 * degrees,
+            );
+            cr.arc(
+                x + radius,
+                y + radius,
+                radius,
+                180.0 * degrees,
+                270.0 * degrees,
+            );
+            cr.close_path();
+
+            cr.set_source_rgba(color2.0, color2.1, color2.2, 1.0 - color2.3);
+            cr.fill_preserve();
+
+            cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
+            cr.set_line_width(4.85);
+            cr.stroke();
+        }
+
         let key_def = &self.get_key_defs("generic")[key];
 
-        // compute scaling factor
-        // let factor =
-        //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+        if !key_def.is_dummy {
+            // compute scaling factor
+            // let factor =
+            //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
-        // post-process color
-        let color = Srgba::new(
-            color.r as f64 / 255.0,
-            color.g as f64 / 255.0,
-            color.b as f64 / 255.0,
-            color.a as f64 / 255.0,
-        );
+            // post-process color
+            let source_color = Srgba::new(
+                color.r as f64 / 255.0,
+                color.g as f64 / 255.0,
+                color.b as f64 / 255.0,
+                color.a as f64 / 255.0,
+            );
 
-        // saturate and lighten color somewhat
-        let color = Hsva::from(color);
-        let color = Srgba::from(
-            color
-                // .saturate(factor)
-                // .lighten(factor),
-        )
-        .into_components();
+            // saturate and lighten color somewhat to use as the border color
+            let border_color = Hsva::from(source_color);
+            let border_color = Srgba::from(
+                border_color
+                    // .saturate(0.75)
+                    .lighten(0.375),
+            )
+            .into_components();
 
-        cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
-        cr.rectangle(
-            key_def.x + BORDER.0,
-            key_def.y + BORDER.1,
-            key_def.width + 1.0,
-            key_def.height + 1.0,
-        );
-        cr.fill();
+            // saturate and darken color somewhat to use as the key color
+            let key_color = Hsva::from(source_color);
+            let key_color = Srgba::from(
+                key_color
+                    // .saturate(0.75)
+                    .darken(0.475),
+            )
+            .into_components();
 
-        cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
-        cr.move_to(
-            BORDER.0 + 7.0 + key_def.x + key_def.caption.x_offset,
-            BORDER.1 + 23.0 + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0)),
-        );
+            rounded_rectangle(
+                &cr,
+                key_def.x + BORDER.0 + 2.0,
+                key_def.y + BORDER.1 + 2.0,
+                key_def.width + 1.0 - 2.0,
+                key_def.height + 1.0 - 2.0,
+                500.0,
+                &border_color,
+                &key_color,
+            );
 
-        layout.set_text(&key_def.caption.text);
+            // draw caption
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+            cr.move_to(
+                BORDER.0 + 7.0 + key_def.x + key_def.caption.x_offset + 2.5,
+                BORDER.1
+                    + 23.0
+                    + ((key_def.y + key_def.caption.y_offset) - (key_def.height / 2.0))
+                    + 2.0,
+            );
 
-        pangocairo::show_layout(&cr, &layout);
+            layout.set_text(&key_def.caption.text);
+
+            pangocairo::show_layout(&cr, &layout);
+        }
     }
 
     /// Returns a slice of `KeyDef`s representing the currently selected keyboard layout
