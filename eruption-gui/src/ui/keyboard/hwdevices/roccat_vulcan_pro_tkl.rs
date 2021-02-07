@@ -119,7 +119,7 @@ impl Keyboard for RoccatVulcanProTKL {
             cr.fill_preserve();
 
             cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
-            cr.set_line_width(4.85);
+            cr.set_line_width(1.85);
             cr.stroke();
         }
 
