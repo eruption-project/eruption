@@ -1343,7 +1343,7 @@ dependencies = [
 [[package]]
 name = "hidapi"
 version = "1.2.5"
-source = "git+https://github.com/ruabmbua/hidapi-rs.git#45a3b9c8fb52ddd310a509b45f645077a5183bf7"
+source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#45a3b9c8fb52ddd310a509b45f645077a5183bf7"
 dependencies = [
  "cc",
  "libc",
@@ -2642,7 +2642,7 @@ checksum = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
 [[package]]
 name = "rust-pulsectl"
 version = "0.2.6"
-source = "git+https://github.com/X3n0m0rph59/pulsectl.git#9f0d1cfd785d78252ce0d5a993d15728e990f9b7"
+source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#9f0d1cfd785d78252ce0d5a993d15728e990f9b7"
 dependencies = [
  "libpulse-binding",
 ]

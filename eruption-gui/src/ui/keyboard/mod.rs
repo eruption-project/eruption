@@ -34,11 +34,16 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     let keyboard_device = hwdevices::get_keyboard_device().unwrap();
 
+    let keyboard_name_label: gtk::Label = builder.get_object("keyboard_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area").unwrap();
 
     let networkfx_ambient_switch: gtk::Switch =
         builder.get_object("networkfx_ambient_switch").unwrap();
     let soundfx_switch: gtk::Switch = builder.get_object("soundfx_switch").unwrap();
+
+    // device name and status
+    let make_and_model = keyboard_device.get_make_and_model();
+    keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
     // drawing area / keyboard indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {

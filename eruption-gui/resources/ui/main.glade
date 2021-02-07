@@ -78,8 +78,7 @@ Author: X3n0m0rph59
     </child>
   </object>
   <object class="GtkApplicationWindow" id="main_window">
-    <property name="width-request">850</property>
-    <property name="height-request">768</property>
+    <property name="height-request">750</property>
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
     <property name="icon-name">/org/eruption/eruption-gui/img/eruption-gui.png</property>
@@ -98,7 +97,7 @@ Author: X3n0m0rph59
             <property name="transition-type">crossfade</property>
             <property name="interpolate-size">True</property>
             <child>
-              <!-- n-columns=3 n-rows=2 -->
+              <!-- n-columns=4 n-rows=2 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -210,16 +209,9 @@ Author: X3n0m0rph59
                 </child>
                 <child>
                   <object class="GtkDrawingArea" id="drawing_area">
-                    <property name="width-request">1200</property>
-                    <property name="height-request">442</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
+                    <property name="has-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                   </object>
@@ -228,6 +220,111 @@ Author: X3n0m0rph59
                     <property name="top-attach">0</property>
                     <property name="width">3</property>
                   </packing>
+                </child>
+                <child>
+                  <!-- n-columns=2 n-rows=7 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="row-spacing">8</property>
+                    <property name="column-spacing">16</property>
+                    <child>
+                      <object class="GtkLabel" id="keyboard_device_name_label">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">&lt;Unknown Keyboard Device&gt;</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                          <attribute name="scale" value="2"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="valign">center</property>
+                        <property name="pixel-size">64</property>
+                        <property name="icon-name">keyboard-symbolic</property>
+                        <property name="icon_size">0</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="label" translatable="yes">Firmware</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="keyboard_firmware_label">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">000</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">3</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -249,16 +346,12 @@ Author: X3n0m0rph59
                 <property name="column-spacing">8</property>
                 <child>
                   <object class="GtkDrawingArea" id="drawing_area_mouse">
-                    <property name="width-request">360</property>
-                    <property name="height-request">360</property>
+                    <property name="width-request">320</property>
+                    <property name="height-request">320</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                   </object>
@@ -273,8 +366,8 @@ Author: X3n0m0rph59
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">8</property>
-                    <property name="margin-end">32</property>
-                    <property name="margin-top">32</property>
+                    <property name="margin-end">8</property>
+                    <property name="margin-top">8</property>
                     <property name="margin-bottom">8</property>
                     <property name="row-spacing">8</property>
                     <property name="column-spacing">16</property>

@@ -8,5 +8,9 @@
     <file>img/eruption-gui.png</file>
     <file>img/keyboard-generic.png</file>
     <file>img/keyboard-generic-tkl.png</file>
+    <file>img/roccat-vulcan-1xx.png</file>
+    <file>img/roccat-vulcan-pro.png</file>
+    <file>img/roccat-vulcan-pro-tkl.png</file>
+    <file>img/roccat-vulcan-tkl.png</file>
   </gresource>
 </gresources>

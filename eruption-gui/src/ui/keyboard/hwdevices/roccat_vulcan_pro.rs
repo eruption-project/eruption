@@ -23,7 +23,7 @@ use gdk_pixbuf::Pixbuf;
 use palette::{Hsva, Shade, Srgba};
 use std::cell::RefCell;
 
-const BORDER: (f64, f64) = (0.0, 35.0);
+const BORDER: (f64, f64) = (16.0, 16.0);
 
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
@@ -40,11 +40,15 @@ impl RoccatVulcanPro {
 }
 
 impl Keyboard for RoccatVulcanPro {
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("ROCCAT", "Vulcan Pro")
+    }
+
     fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) {
-        let scale_factor = 1.5;
+        let scale_factor = 1.25;
 
         let pixbuf =
-            Pixbuf::from_resource("/org/eruption/eruption-gui/img/keyboard-generic.png").unwrap();
+            Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-pro.png").unwrap();
 
         // paint the schematic drawing
         context.scale(scale_factor, scale_factor);
@@ -142,7 +146,7 @@ impl Keyboard for RoccatVulcanPro {
             let border_color = Srgba::from(
                 border_color
                     // .saturate(0.75)
-                    .lighten(0.375),
+                    .lighten(0.4),
             )
             .into_components();
 
@@ -151,7 +155,7 @@ impl Keyboard for RoccatVulcanPro {
             let key_color = Srgba::from(
                 key_color
                     // .saturate(0.75)
-                    .darken(0.475),
+                    // .darken(0.15),
             )
             .into_components();
 

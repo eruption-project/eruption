@@ -51,6 +51,8 @@ pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
 }
 
 pub trait Keyboard {
+    fn get_make_and_model(&self) -> (&'static str, &'static str);
+
     /// Draw an animated keyboard with live action colors
     fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
 
