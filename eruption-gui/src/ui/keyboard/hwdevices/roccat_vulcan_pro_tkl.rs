@@ -20,6 +20,7 @@ use super::{Caption, KeyDef};
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
+use gtk::WidgetExt;
 use palette::{Hsva, Shade, Srgba};
 use std::cell::RefCell;
 
@@ -44,14 +45,17 @@ impl Keyboard for RoccatVulcanProTKL {
         ("ROCCAT", "Vulcan Pro TKL")
     }
 
-    fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) {
-        let scale_factor = 1.4;
-
+    fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
         let pixbuf =
             Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-pro-tkl.png")
                 .unwrap();
 
-        // paint the schematic drawing
+        let width = da.get_allocated_width() as f64;
+        // let height = da.get_allocated_height() as f64;
+
+        let scale_factor = (width / pixbuf.get_width() as f64) * 0.85;
+
+        // paint the image
         context.scale(scale_factor, scale_factor);
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint();
