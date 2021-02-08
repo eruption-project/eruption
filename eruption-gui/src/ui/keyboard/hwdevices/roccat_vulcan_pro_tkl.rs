@@ -53,7 +53,7 @@ impl Keyboard for RoccatVulcanProTKL {
         let width = da.get_allocated_width() as f64;
         // let height = da.get_allocated_height() as f64;
 
-        let scale_factor = (width / pixbuf.get_width() as f64) * 0.85;
+        let scale_factor = (width / pixbuf.get_width() as f64) * 0.95;
 
         // paint the image
         context.scale(scale_factor, scale_factor);
