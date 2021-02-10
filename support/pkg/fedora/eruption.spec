@@ -78,6 +78,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
 %{__mkdir_p} %{buildroot}%{_datarootdir}/bash-completion/completions/
+%{__mkdir_p} %{buildroot}%{_datarootdir}/fish/completions/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/zsh/site-functions/
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/

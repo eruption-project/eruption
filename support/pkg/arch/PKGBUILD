@@ -69,6 +69,7 @@ package() {
     mkdir -p "$pkgdir/usr/share/man/man1"
 
     mkdir -p "$pkgdir/usr/share/bash-completion/completions"
+    mkdir -p "$pkgdir/usr/share/fish/completions"
     mkdir -p "$pkgdir/usr/share/zsh/site-functions"
     mkdir -p "$pkgdir/usr/share/eruption/i18n"
     mkdir -p "$pkgdir/usr/share/eruption/sfx"
