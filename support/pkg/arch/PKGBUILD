@@ -4,7 +4,7 @@ pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.19'
-pkgrel='13'
+pkgrel='14'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption'
@@ -107,6 +107,21 @@ package() {
     install -m 644 "support/man/eruptionctl.1" "$pkgdir/usr/share/man/man1/"
     install -m 644 "support/man/eruption-netfx.1" "$pkgdir/usr/share/man/man1/"
     install -m 644 "support/man/eruption-process-monitor.1" "$pkgdir/usr/share/man/man1/"
+
+    install -m 644 -T "support/shell/completions/en_US/eruption-debug-tool.bash-completion" "$pkgdir/usr/share/bash-completion/completions/eruption-debug-tool"
+    install -m 644 -T "support/shell/completions/en_US/eruption-netfx.bash-completion" "$pkgdir/usr/share/bash-completion/completions/eruption-netfx"
+    install -m 644 -T "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "$pkgdir/usr/share/bash-completion/completions/eruption-process-monitor"
+    install -m 644 -T "support/shell/completions/en_US/eruptionctl.bash-completion" "$pkgdir/usr/share/bash-completion/completions/eruptionctl"
+
+    install -m 644 -T "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "$pkgdir/usr/share/fish/completions/eruption-debug-tool.fish"
+    install -m 644 -T "support/shell/completions/en_US/eruption-netfx.fish-completion" "$pkgdir/usr/share/fish/completions/eruption-netfx.fish"
+    install -m 644 -T "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "$pkgdir/usr/share/fish/completions/eruption-process-monitor.fish"
+    install -m 644 -T "support/shell/completions/en_US/eruptionctl.fish-completion" "$pkgdir/usr/share/fish/completions/eruptionctl.fish"
+
+    install -m 644 -T "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruption-debug-tool"
+    install -m 644 -T "support/shell/completions/en_US/eruption-netfx.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruption-netfx"
+    install -m 644 -T "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruption-process-monitor"
+    install -m 644 -T "support/shell/completions/en_US/eruptionctl.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruptionctl"
 
     install -m 644 "eruption/src/scripts/macros.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/macros.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"

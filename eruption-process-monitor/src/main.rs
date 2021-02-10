@@ -231,6 +231,12 @@ pub enum Subcommands {
         #[clap(subcommand)]
         command: RulesSubcommands,
     },
+
+    /// Generate shell completions
+    Completions {
+        #[clap(subcommand)]
+        command: CompletionsSubcommands,
+    },
 }
 
 /// Sub-commands of the "rules" command
@@ -250,6 +256,20 @@ pub enum RulesSubcommands {
 
     /// Remove a rule by index
     Remove { rule_index: usize },
+}
+
+/// Subcommands of the "completions" command
+#[derive(Debug, Clap)]
+pub enum CompletionsSubcommands {
+    Bash,
+
+    Elvish,
+
+    Fish,
+
+    PowerShell,
+
+    Zsh,
 }
 
 #[derive(Debug, Clone)]
@@ -1146,6 +1166,38 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 save_rules_map()?;
             }
         },
+
+        Subcommands::Completions { command } => {
+            use clap::IntoApp;
+            use clap_generate::{generate, generators::*};
+
+            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+            let mut app = Options::into_app();
+            let mut fd = std::io::stdout();
+
+            match command {
+                CompletionsSubcommands::Bash => {
+                    generate::<Bash, _>(&mut app, BIN_NAME, &mut fd);
+                }
+
+                CompletionsSubcommands::Elvish => {
+                    generate::<Elvish, _>(&mut app, BIN_NAME, &mut fd);
+                }
+
+                CompletionsSubcommands::Fish => {
+                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
+                }
+
+                CompletionsSubcommands::PowerShell => {
+                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
+                }
+
+                CompletionsSubcommands::Zsh => {
+                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
+                }
+            }
+        }
     }
 
     info!("Saving rules...");

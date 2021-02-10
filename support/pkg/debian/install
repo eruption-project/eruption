@@ -33,6 +33,21 @@ support/man/eruptionctl.1 usr/share/man/man1/
 support/man/eruption-netfx.1 usr/share/man/man1/
 support/man/eruption-process-monitor.1 usr/share/man/man1/
 
+support/shell/completions/en_US/eruption-debug-tool.bash-completion usr/share/bash-completion/completions/eruption-debug-tool
+support/shell/completions/en_US/eruption-netfx.bash-completion usr/share/bash-completion/completions/eruption-netfx
+support/shell/completions/en_US/eruption-process-monitor.bash-completion usr/share/bash-completion/completions/eruption-process-monitor
+support/shell/completions/en_US/eruptionctl.bash-completion usr/share/bash-completion/completions/eruptionctl
+
+support/shell/completions/en_US/eruption-debug-tool.fish-completion usr/share/fish/completions/eruption-debug-tool.fish
+support/shell/completions/en_US/eruption-netfx.fish-completion share/fish/completions/eruption-netfx.fish
+support/shell/completions/en_US/eruption-process-monitor.fish-completion usr/share/fish/completions/eruption-process-monitor.fish
+support/shell/completions/en_US/eruptionctl.fish-completion usr/share/fish/completions/eruptionctl.fish
+
+support/shell/completions/en_US/eruption-debug-tool.zsh-completion usr/share/zsh/site-functions/_eruption-debug-tool
+support/shell/completions/en_US/eruption-netfx.zsh-completion usr/share/zsh/site-functions/_eruption-netfx
+support/shell/completions/en_US/eruption-process-monitor.zsh-completion usr/share/zsh/site-functions/_eruption-process-monitor
+support/shell/completions/en_US/eruptionctl.zsh-completion usr/share/zsh/site-functions/_eruptionctl
+
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles

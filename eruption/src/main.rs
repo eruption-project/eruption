@@ -236,6 +236,13 @@ fn parse_commandline() -> clap::ArgMatches {
                 .about("Sets the configuration file to use")
                 .takes_value(true),
         )
+        // .arg(
+        //     Arg::new("completions")
+        //         .long("completions")
+        //         .value_name("SHELL")
+        //         .about("Generate shell completions")
+        //         .takes_value(true),
+        // )
         .get_matches()
 }
 

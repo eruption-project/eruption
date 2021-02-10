@@ -1,0 +1,132 @@
+
+ Please stop the Eruption daemon prior to running this tool:
+ $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+
+ You can re-enable Eruption with this command afterwards:
+ $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
+ 
+
+edit:completion:arg-completer[eruption-debug-tool] = [@words]{
+    fn spaces [n]{
+        repeat $n ' ' | joins ''
+    }
+    fn cand [text desc]{
+        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    command = 'eruption-debug-tool'
+    for word $words[1:-1] {
+        if (has-prefix $word '-') {
+            break
+        }
+        command = $command';'$word
+    }
+    completions = [
+        &'eruption-debug-tool'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand list 'List available devices, use this first to find out the index of the device to use'
+            cand report 'Generate a report for the specified device'
+            cand trace 'Dump a trace of events originating from the specified device (May hang the device)'
+            cand state-diff 'Read out the device state and show differences to previous state (May hang the device)'
+            cand read 'Read a single USB HID feature report from device'
+            cand write 'Send a single USB HID feature report to device (dangerous)'
+            cand run-tests 'Send a device specific init sequence and try to set colors'
+            cand completions 'Generate shell completions'
+            cand help 'Prints this message or the help of the given subcommand(s)'
+        }
+        &'eruption-debug-tool;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;report'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;trace'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;state-diff'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;read'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;write'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;run-tests'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;completions'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand bash 'bash'
+            cand elvish 'elvish'
+            cand fish 'fish'
+            cand power-shell 'power-shell'
+            cand zsh 'zsh'
+        }
+        &'eruption-debug-tool;completions;bash'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;completions;elvish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;completions;fish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;completions;power-shell'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;completions;zsh'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-debug-tool;help'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+    ]
+    $completions[$command]
+}

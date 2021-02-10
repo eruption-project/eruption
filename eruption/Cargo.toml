@@ -19,7 +19,7 @@ async-trait = "0.1.42"
 tracing = "0.1.23"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
-libc = "0.2.85"
+libc = "0.2.86"
 nix = "0.19.1"
 prctl = "1.0.0"
 log = "0.4.14"
@@ -54,7 +54,7 @@ interpolation = "0.2.0"
 mlua = { version = "0.5.1", features = ["luajit"] }
 mlua_derive = { version = "0.5.0" }
 sysinfo = "0.16"
-systemstat = "0.1.6"
+systemstat = "0.1.7"
 procinfo = "0.4.2"
 rustfft = "5.0.1"
 hound = "3.4.0"
@@ -71,4 +71,5 @@ bitvec = "0.20.1"
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
+thiserror = "1.0.23"
 tokio = { version = "1.2.0", features = ["test-util"] }

@@ -1,0 +1,127 @@
+
+edit:completion:arg-completer[eruption-process-monitor] = [@words]{
+    fn spaces [n]{
+        repeat $n ' ' | joins ''
+    }
+    fn cand [text desc]{
+        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    command = 'eruption-process-monitor'
+    for word $words[1:-1] {
+        if (has-prefix $word '-') {
+            break
+        }
+        command = $command';'$word
+    }
+    completions = [
+        &'eruption-process-monitor'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand daemon 'Run in background and monitor running processes'
+            cand rules 'Rules related sub-commands'
+            cand completions 'Generate shell completions'
+            cand help 'Prints this message or the help of the given subcommand(s)'
+        }
+        &'eruption-process-monitor;daemon'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;rules'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand list 'List all available rules'
+            cand enable 'Mark a rule as enabled'
+            cand disable 'Mark a rule as disabled'
+            cand add 'Add a new rule'
+            cand remove 'Remove a rule by index'
+        }
+        &'eruption-process-monitor;rules;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;rules;enable'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;rules;disable'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;rules;add'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;rules;remove'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;completions'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand bash 'bash'
+            cand elvish 'elvish'
+            cand fish 'fish'
+            cand power-shell 'power-shell'
+            cand zsh 'zsh'
+        }
+        &'eruption-process-monitor;completions;bash'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;completions;elvish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;completions;fish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;completions;power-shell'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;completions;zsh'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-process-monitor;help'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+    ]
+    $completions[$command]
+}

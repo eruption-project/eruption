@@ -1,0 +1,202 @@
+
+edit:completion:arg-completer[eruptionctl] = [@words]{
+    fn spaces [n]{
+        repeat $n ' ' | joins ''
+    }
+    fn cand [text desc]{
+        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    command = 'eruptionctl'
+    for word $words[1:-1] {
+        if (has-prefix $word '-') {
+            break
+        }
+        command = $command';'$word
+    }
+    completions = [
+        &'eruptionctl'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand config 'Configuration related sub-commands'
+            cand switch 'Switch to a different profile or slot'
+            cand profiles 'Profile related sub-commands'
+            cand names 'Naming related commands such as renaming of profile slots'
+            cand scripts 'Script related subcommands'
+            cand completions 'Generate shell completions'
+            cand help 'Prints this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;config'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand brightness 'Get or set the brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+        }
+        &'eruptionctl;config;brightness'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;config;soundfx'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;switch'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+        }
+        &'eruptionctl;switch;profile'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;switch;slot'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;profiles'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand info 'Show info about a profile'
+            cand edit 'Edit a profile'
+            cand list 'List available profiles'
+        }
+        &'eruptionctl;profiles;info'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;profiles;edit'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;profiles;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;names'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+        }
+        &'eruptionctl;names;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;names;set'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;names;set-all'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;scripts'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand info 'Show info about a script'
+            cand edit 'Edit a script'
+            cand list 'List available scripts'
+        }
+        &'eruptionctl;scripts;info'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;scripts;edit'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;scripts;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;completions'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand bash 'bash'
+            cand elvish 'elvish'
+            cand fish 'fish'
+            cand power-shell 'power-shell'
+            cand zsh 'zsh'
+        }
+        &'eruptionctl;completions;bash'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;completions;elvish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;completions;fish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;completions;power-shell'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;completions;zsh'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;help'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+    ]
+    $completions[$command]
+}

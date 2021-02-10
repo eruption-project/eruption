@@ -77,6 +77,8 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
+%{__mkdir_p} %{buildroot}%{_datarootdir}/bash-completion/completions/
+%{__mkdir_p} %{buildroot}%{_datarootdir}/zsh/site-functions/
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
@@ -84,6 +86,18 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.conf.5 %{build
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-debug-tool
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-netfx
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-process-monitor
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruptionctl
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-debug-tool.fish
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-netfx.fish
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-process-monitor.fish
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruptionctl.fish
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-debug-tool
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-netfx
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-process-monitor
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruptionctl
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/

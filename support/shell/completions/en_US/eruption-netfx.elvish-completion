@@ -1,0 +1,111 @@
+
+edit:completion:arg-completer[eruption-netfx] = [@words]{
+    fn spaces [n]{
+        repeat $n ' ' | joins ''
+    }
+    fn cand [text desc]{
+        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    command = 'eruption-netfx'
+    for word $words[1:-1] {
+        if (has-prefix $word '-') {
+            break
+        }
+        command = $command';'$word
+    }
+    completions = [
+        &'eruption-netfx'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand ping 'Ping the server'
+            cand command 'Send Network FX raw protocol commands to the server'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand completions 'Generate shell completions'
+            cand help 'Prints this message or the help of the given subcommand(s)'
+        }
+        &'eruption-netfx;ping'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;command'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;image'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;animation'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;ambient'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;completions'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand bash 'bash'
+            cand elvish 'elvish'
+            cand fish 'fish'
+            cand power-shell 'power-shell'
+            cand zsh 'zsh'
+        }
+        &'eruption-netfx;completions;bash'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;completions;elvish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;completions;fish'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;completions;power-shell'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;completions;zsh'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruption-netfx;help'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+    ]
+    $completions[$command]
+}

@@ -12,8 +12,8 @@ readme = "README.md"
 [dependencies]
 async-trait = "0.1.42"
 byteorder = "1.4.2"
-clap = "3.0.0-beta.2"
-clap_derive = "3.0.0-beta.2"
+clap =  { version = "3.0.0-beta.2", features = ["derive"] }
+clap_generate = "3.0.0-beta.2"
 ctrlc = { version = "3.1.7", features = ["termination"] }
 config = "0.10.1"
 colored = "2.0"
@@ -24,7 +24,7 @@ dyn-clone = "1.0.4"
 dyn-clonable = "0.9.0"
 indexmap = "1.6.1"
 log = "0.4.14"
-libc = "0.2.85"
+libc = "0.2.86"
 nix = "0.19.1"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
