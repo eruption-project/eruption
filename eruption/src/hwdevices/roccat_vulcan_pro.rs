@@ -594,9 +594,9 @@ impl DeviceTrait for RoccatVulcanPro {
                 }
             }
 
-            self.query_ctrl_report(0x0f)
-                .unwrap_or_else(|e| error!("Step 1: {}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("Wait 1: {}", e));
+            // self.query_ctrl_report(0x0f)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x15)
                 .unwrap_or_else(|e| error!("Step 2: {}", e));

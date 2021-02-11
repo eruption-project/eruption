@@ -592,55 +592,50 @@ impl DeviceTrait for RoccatVulcan1xx {
                 }
             }
 
-            self.query_ctrl_report(0x0f)
+            self.send_ctrl_report(0x15)
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
-            self.send_ctrl_report(0x15)
+            self.send_ctrl_report(0x05)
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
-            self.send_ctrl_report(0x05)
+            self.send_ctrl_report(0x07)
                 .unwrap_or_else(|e| error!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 3: {}", e));
 
-            self.send_ctrl_report(0x07)
+            self.send_ctrl_report(0x0a)
                 .unwrap_or_else(|e| error!("Step 4: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 4: {}", e));
 
-            self.send_ctrl_report(0x0a)
+            self.send_ctrl_report(0x0b)
                 .unwrap_or_else(|e| error!("Step 5: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 5: {}", e));
 
-            self.send_ctrl_report(0x0b)
+            self.send_ctrl_report(0x06)
                 .unwrap_or_else(|e| error!("Step 6: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 6: {}", e));
 
-            self.send_ctrl_report(0x06)
+            self.send_ctrl_report(0x09)
                 .unwrap_or_else(|e| error!("Step 7: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 7: {}", e));
 
-            self.send_ctrl_report(0x09)
+            self.send_ctrl_report(0x0d)
                 .unwrap_or_else(|e| error!("Step 8: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 8: {}", e));
 
-            self.send_ctrl_report(0x0d)
+            self.send_ctrl_report(0x13)
                 .unwrap_or_else(|e| error!("Step 9: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 9: {}", e));
-
-            self.send_ctrl_report(0x13)
-                .unwrap_or_else(|e| error!("Step 10: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 10: {}", e));
 
             self.is_initialized = true;
 
