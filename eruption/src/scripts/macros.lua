@@ -589,7 +589,7 @@ function update_overlay_state()
 	elseif overlay_state == VOLUME_OVERLAY then
 		-- generate color map values
 		local percentage = get_audio_volume()
-		local highlight_columns = num_cols * percentage / 100
+		local highlight_columns = (num_cols + 1) * percentage / 100
 
 		-- compute which keys to highlight
 		local upper_bound = 1
