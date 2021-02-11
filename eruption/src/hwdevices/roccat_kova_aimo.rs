@@ -359,19 +359,19 @@ impl DeviceTrait for RoccatKovaAimo {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Step 1: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
             self.send_ctrl_report(0x09)
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("{}", e));
+                .unwrap_or_else(|e| error!("Wait 3: {}", e));
 
             self.is_initialized = true;
 

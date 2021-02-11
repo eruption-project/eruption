@@ -357,9 +357,9 @@ impl DeviceTrait for RoccatVulcanProTKL {
                 .unwrap_or_else(|e| error!("{}", e));
             self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
 
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("{}", e));
+            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
 
             self.send_ctrl_report(0x0e)
                 .unwrap_or_else(|e| error!("{}", e));

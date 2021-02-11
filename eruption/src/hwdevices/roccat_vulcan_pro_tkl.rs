@@ -309,7 +309,7 @@ impl RoccatVulcanProTKL {
             //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             // }
 
-            thread::sleep(Duration::from_millis(5));
+            thread::sleep(Duration::from_millis(80));
 
             Ok(())
         }
@@ -438,37 +438,40 @@ impl DeviceTrait for RoccatVulcanProTKL {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             // TODO: Implement this
-            // let firmware_version = self.get_device_info()?.firmware_version;
-            // if firmware_version < 115 {
-            //     warn!(
-            //         "Outdated firmware version: {}, should be: >= 115",
-            //         firmware_version
-            //     );
+            // match self.get_device_info() {
+            //     Ok(device_info) => {
+            //         if device_info.firmware_version < 115 {
+            //             warn!(
+            //                 "Outdated firmware version: {}, should be: >= 115",
+            //                 device_info.firmware_version
+            //             );
+            //         }
+            //     }
+
+            //     Err(e) => {
+            //         error!("Could not get firmware version: {}", e);
+            //     }
             // }
 
-            self.send_ctrl_report(0x00)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
-
-            self.send_ctrl_report(0x00)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
-
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Step 1: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("Step 2: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Step 3: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 3: {}", e));
 
             self.send_ctrl_report(0x11)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Step 4: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 4: {}", e));
 
             self.is_initialized = true;
 

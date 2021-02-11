@@ -153,10 +153,10 @@ impl DeviceTrait for RoccatKonePureUltra {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("{}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("{}", e));
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| eprintln!("{}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| eprintln!("{}", e));
 
             self.send_ctrl_report(0x0e)
                 .unwrap_or_else(|e| eprintln!("{}", e));

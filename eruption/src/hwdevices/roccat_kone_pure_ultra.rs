@@ -263,8 +263,6 @@ impl DeviceInfoTrait for RoccatKonePureUltra {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
@@ -364,17 +362,35 @@ impl DeviceTrait for RoccatKonePureUltra {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            match self.get_device_info() {
+                Ok(device_info) => {
+                    if device_info.firmware_version < 106 {
+                        warn!(
+                            "Outdated firmware version: {}, should be: >= 106",
+                            device_info.firmware_version
+                        );
+                    }
+                }
+
+                Err(e) => {
+                    error!("Could not get firmware version: {}", e);
+                }
+            }
+
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Step 2: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Step 3: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 3: {}", e));
 
             self.is_initialized = true;
 
