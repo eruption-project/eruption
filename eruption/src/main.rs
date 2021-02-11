@@ -269,7 +269,7 @@ fn spawn_dbus_api_thread(
             let mut event_received = false;
 
             loop {
-                let timeout = if event_received { 0 } else { 50 };
+                let timeout = if event_received { 0 } else { 15 };
 
                 // process events, destined for the dbus api
                 match dbus_api_rx.recv_timeout(Duration::from_millis(timeout)) {
