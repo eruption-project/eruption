@@ -41,7 +41,7 @@ pub const AFK_TIMEOUT_SECS: u64 = 0;
 /// Default AFK profile
 pub const DEFAULT_AFK_PROFILE: &str = "rainbow-wave.profile";
 
-/// The time to wait before an external process is spawned, after the profile has been switched
+/// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
 /// Target frames per second

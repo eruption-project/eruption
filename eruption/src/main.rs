@@ -1017,7 +1017,7 @@ async fn process_keyboard_hid_events(
             }
         }
 
-        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+        if !event_processed || loop_counter >= constants::MAX_EVENTS_PER_ITERATION {
             break 'HID_EVENTS_LOOP; // no more events in queue or iteration limit reached
         }
 
@@ -1085,7 +1085,7 @@ async fn process_mouse_hid_events(
             }
         }
 
-        if !event_processed || loop_counter > constants::MAX_EVENTS_PER_ITERATION {
+        if !event_processed || loop_counter >= constants::MAX_EVENTS_PER_ITERATION {
             break 'HID_EVENTS_LOOP; // no more events in queue or iteration limit reached
         }
 
