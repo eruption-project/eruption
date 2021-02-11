@@ -405,7 +405,7 @@ impl RoccatVulcanTKL {
             //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             // }
 
-            thread::sleep(Duration::from_millis(5));
+            thread::sleep(Duration::from_millis(80));
 
             Ok(())
         }
