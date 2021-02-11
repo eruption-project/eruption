@@ -639,36 +639,40 @@ impl DbusApi {
     }
 
     /// Get the next event from D-Bus
-    pub fn get_next_event(&self) -> Result<()> {
+    pub fn get_next_event(&self) -> Result<bool> {
         match self.connection {
             Some(ref connection) => {
                 if let Some(item) = connection.incoming(0).next() {
                     // For the actual event handler code please see
                     // implementation of `struct DbusApi`
                     debug!("Message: {:?}", item);
+
+                    Ok(true)
                 } else {
                     trace!("Received a timeout message");
-                }
 
-                Ok(())
+                    Ok(false)
+                }
             }
 
             None => Err(DbusApiError::BusNotConnected {}.into()),
         }
     }
 
-    pub fn get_next_event_timeout(&self, timeout_ms: u32) -> Result<()> {
+    pub fn get_next_event_timeout(&self, timeout_ms: u32) -> Result<bool> {
         match self.connection {
             Some(ref connection) => {
                 if let Some(item) = connection.incoming(timeout_ms).next() {
                     // For the actual event handler code please see
                     // implementation of `struct DbusApi`
                     debug!("Message: {:?}", item);
+
+                    Ok(true)
                 } else {
                     trace!("Received a timeout message");
-                }
 
-                Ok(())
+                    Ok(false)
+                }
             }
 
             None => Err(DbusApiError::BusNotConnected {}.into()),

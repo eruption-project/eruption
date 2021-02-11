@@ -60,10 +60,10 @@ pub const CANVAS_HEIGHT: usize = 6;
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 8;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 32;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
-pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
+pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
 
 /// Amount of time that has to pass before we retry sending a command to the LED control device
 pub const DEVICE_SETTLE_MILLIS: u64 = 50;
@@ -75,8 +75,7 @@ pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 
 /// Timeout value to use for D-Bus connections
-/// that may involve interactivity like e.g.:
-/// PolicyKit authentication
+/// that may involve interactivity like e.g.: PolicyKit authentication
 pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
 // Wait n seconds before sending the LED "off pattern" on shutdown

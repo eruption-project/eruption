@@ -53,7 +53,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
-        1000 / (constants::TARGET_FPS as u32 * 4),
+        1000 / (constants::TARGET_FPS as u32 * 5),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)

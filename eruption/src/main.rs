@@ -265,9 +265,14 @@ fn spawn_dbus_api_thread(
         .spawn(move || -> Result<()> {
             let dbus = dbus_interface::initialize(dbus_tx)?;
 
+            // will be set to true if we received a dbus event in the current iteration of the loop
+            let mut event_received = false;
+
             loop {
+                let timeout = if event_received { 0 } else { 50 };
+
                 // process events, destined for the dbus api
-                match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
+                match dbus_api_rx.recv_timeout(Duration::from_millis(timeout)) {
                     Ok(result) => match result {
                         DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed(),
 
@@ -278,12 +283,14 @@ fn spawn_dbus_api_thread(
                         DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed(),
                     },
 
-                    // ignore timeout errors
-                    Err(_e) => (),
-                }
+                    Err(_e) => {
+                        event_received = dbus.get_next_event_timeout(0).unwrap_or_else(|e| {
+                            error!("Could not get the next D-Bus event: {}", e);
 
-                dbus.get_next_event_timeout(25)
-                    .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+                            false
+                        });
+                    }
+                }
             }
         })?;
 
@@ -1896,9 +1903,10 @@ async fn run_main_loop(
                 }
 
                 // number of pending blend ops should have reached zero by now
+                // may currently occur during switching of profiles
                 let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
                 if ops_pending > 0 {
-                    error!(
+                    debug!(
                         "Pending blend ops before writing LED map to device: {}",
                         ops_pending
                     );
