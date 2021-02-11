@@ -60,13 +60,13 @@ pub const CANVAS_HEIGHT: usize = 6;
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 7;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 8;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 10;
 
 /// Amount of time that has to pass before we retry sending a command to the LED control device
-pub const DEVICE_SETTLE_MILLIS: u64 = 25;
+pub const DEVICE_SETTLE_MILLIS: u64 = 50;
 
 /// Update sensors every n seconds
 pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
