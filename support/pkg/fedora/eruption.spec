@@ -3,7 +3,7 @@
 
 Name:    eruption-git
 Version: 0.1.19
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
@@ -211,19 +211,31 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_userunitdir}/eruption-process-monitor.service
 %{_userpresetdir}/50-eruption-process-monitor.preset
 %{_bindir}/eruption-gui
-%{_unitdir}/eruption.service
-%{_presetdir}/50-eruption.preset
 %{_datarootdir}/applications/eruption-gui.desktop
 %{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 %{_datarootdir}/eruption-gui/schemas/gschemas.compiled
+%{_datarootdir}/bash-completion/completions/eruption-debug-tool
+%{_datarootdir}/bash-completion/completions/eruption-netfx
+%{_datarootdir}/bash-completion/completions/eruption-process-monitor
+%{_datarootdir}/bash-completion/completions/eruptionctl
+%{_datarootdir}/fish/completions/eruption-debug-tool.fish
+%{_datarootdir}/fish/completions/eruption-netfx.fish
+%{_datarootdir}/fish/completions/eruption-process-monitor.fish
+%{_datarootdir}/fish/completions/eruptionctl.fish
+%{_datarootdir}/zsh/site-functions/_eruption-debug-tool
+%{_datarootdir}/zsh/site-functions/_eruption-netfx
+%{_datarootdir}/zsh/site-functions/_eruption-process-monitor
+%{_datarootdir}/zsh/site-functions/_eruptionctl
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx2.profile
+%{_sharedstatedir}/%{ShortName}/profiles/fireplace.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fireworks.profile
 %{_sharedstatedir}/%{ShortName}/profiles/flight-perlin.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gaming.profile
 %{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
+%{_sharedstatedir}/%{ShortName}/profiles/heartbeat-sysmon.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap-errors.profile
 %{_sharedstatedir}/%{ShortName}/profiles/lava-lamp.profile
