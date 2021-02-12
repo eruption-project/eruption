@@ -121,6 +121,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/gradient-noise.profile %{
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heartbeat-sysmon.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/lava-lamp.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/lava-lamp-pastel.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/netfx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -218,6 +220,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/gradient-noise.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap.profile
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap-errors.profile
+%{_sharedstatedir}/%{ShortName}/profiles/lava-lamp.profile
+%{_sharedstatedir}/%{ShortName}/profiles/lava-lamp-pastel.profile
 %{_sharedstatedir}/%{ShortName}/profiles/matrix.profile
 %{_sharedstatedir}/%{ShortName}/profiles/netfx.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile
@@ -328,6 +332,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/heatmap.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/impact.lua
 %{_datarootdir}/%{ShortName}/scripts/impact.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/lava-lamp.lua
+%{_datarootdir}/%{ShortName}/scripts/lava-lamp.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua
 %{_datarootdir}/%{ShortName}/scripts/multigradient.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/netfx.lua

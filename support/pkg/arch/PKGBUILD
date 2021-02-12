@@ -4,7 +4,7 @@ pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.19'
-pkgrel='16'
+pkgrel='17'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption'
@@ -168,6 +168,8 @@ package() {
     install -m 644 "eruption/src/scripts/halo.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/heatmap.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/heatmap.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/lava-lamp.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/lava-lamp.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/linear-gradient.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/linear-gradient.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/heartbeat.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -258,6 +260,8 @@ package() {
     install -m 644 "support/profiles/heartbeat-sysmon.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/heatmap.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/heatmap-errors.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/lava-lamp.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/lava-lamp-pastel.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/matrix.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/netfx.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/batique.profile" "$pkgdir/var/lib/eruption/profiles/"

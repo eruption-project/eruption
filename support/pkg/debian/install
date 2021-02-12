@@ -59,6 +59,8 @@ support/profiles/gradient-noise.profile var/lib/eruption/profiles
 support/profiles/heartbeat-sysmon.profile var/lib/eruption/profiles
 support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/heatmap-errors.profile var/lib/eruption/profiles
+support/profiles/lava-lamp.profile var/lib/eruption/profiles
+support/profiles/lava-lamp-pastel.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
 support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles
@@ -126,6 +128,8 @@ eruption/src/scripts/ghost.lua usr/share/eruption/scripts/
 eruption/src/scripts/ghost.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/gradient.lua usr/share/eruption/scripts/
 eruption/src/scripts/gradient.lua.manifest usr/share/eruption/scripts/
+eruption/src/scripts/lava-lamp.lua usr/share/eruption/scripts/
+eruption/src/scripts/lava-lamp.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/linear-gradient.lua usr/share/eruption/scripts/
 eruption/src/scripts/linear-gradient.lua.manifest usr/share/eruption/scripts/
 eruption/src/scripts/heartbeat.lua usr/share/eruption/scripts/

@@ -1,0 +1,36 @@
+name = "Lava Lamp"
+description = "Compute a lava lamp effect"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.19"
+tags = ['Background', 'Vendor', 'Noise']
+
+[[config]]
+type = 'float'
+name = 'animation_delay'
+description = 'Step animation every [n] frames'
+default = 1.0
+
+[[config]]
+type = 'float'
+name = 'time_scale'
+description = 'Scale of time axis (3rd coordinate of the noise function)'
+default = 120.0
+
+[[config]]
+type = 'float'
+name = 'coord_scale'
+description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
+default = 4.0
+
+[[config]]
+type = 'string'
+name = 'stock_gradient'
+description = 'The gradient to use'
+default = "rainbow-sharp"
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+default = 1.0

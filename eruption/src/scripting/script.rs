@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use callbacks::CallbacksError;
 use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
 use log::*;
@@ -101,6 +102,9 @@ thread_local! {
 
     /// True, if LED color map was modified at least once in this thread
     pub static LOCAL_LED_MAP_MODIFIED: RefCell<bool> = RefCell::new(false);
+
+    /// Vec of allocated gradient objects
+    pub static ALLOCATED_GRADIENTS: RefCell<HashMap<usize, colorgrad::Gradient>> = RefCell::new(HashMap::new());
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -144,6 +148,15 @@ mod callbacks {
     use crate::{constants, hwdevices::RGBA};
 
     pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+    #[derive(Debug, Clone, thiserror::Error)]
+    pub enum CallbacksError {
+        #[error("Invalid handle supplied")]
+        InvalidHandle {},
+
+        #[error("Could not parse param value")]
+        ParseParamError {},
+    }
 
     fn seed() -> u32 {
         use std::time::{SystemTime, UNIX_EPOCH};
@@ -408,6 +421,125 @@ mod callbacks {
             (rgb.2 * 255.0) as u8,
             a,
         )
+    }
+
+    /// Convert a CSS color value to a 32 bits color value.
+    pub(crate) fn parse_color(val: &str) -> Result<u32> {
+        match csscolorparser::parse(&val) {
+            Ok(color) => {
+                let (r, g, b, a) = color.rgba_u8();
+
+                Ok(rgba_to_color(r, g, b, a))
+            }
+
+            Err(e) => {
+                error!(
+                    "Could not parse value, not a valid CSS color definition: {}",
+                    e
+                );
+                Err(CallbacksError::ParseParamError {}.into())
+            }
+        }
+    }
+
+    /// Convert a gradient name to an opaque handle, representing that gradient
+    pub(crate) fn gradient_from_name(val: &str) -> Result<usize> {
+        match val {
+            "rainbow-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::rainbow();
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            "sinebow-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::sinebow();
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            "spectral-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::spectral();
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            "rainbow-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::rainbow().sharp(5, 0.15);
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            "sinebow-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::sinebow().sharp(5, 0.15);
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            "spectral-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
+
+                let gradient = colorgrad::spectral().sharp(5, 0.15);
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            _ => {
+                error!("Could not parse value, not a valid stock-gradient");
+
+                Err(CallbacksError::ParseParamError {}.into())
+            }
+        }
+    }
+
+    /// De-allocates a gradient from an opaque handle, representing that gradient
+    pub(crate) fn gradient_destroy(handle: usize) -> Result<()> {
+        super::ALLOCATED_GRADIENTS.with(|f| {
+            let mut m = f.borrow_mut();
+
+            if m.remove(&handle).is_some() {
+                Ok(())
+            } else {
+                Err(CallbacksError::InvalidHandle {}.into())
+            }
+        })
+    }
+
+    /// Returns the color at the position `pos`
+    pub(crate) fn gradient_color_at(handle: usize, pos: f64) -> Result<u32> {
+        super::ALLOCATED_GRADIENTS.with(|f| {
+            let m = f.borrow();
+
+            if let Some(gradient) = m.get(&handle) {
+                let color = gradient.at(pos);
+                let (r, g, b, a) = color.rgba_u8();
+
+                Ok(rgba_to_color(r, g, b, a))
+            } else {
+                Err(CallbacksError::InvalidHandle {}.into())
+            }
+        })
     }
 
     /// Generate a linear RGB color gradient from start to dest color,
@@ -1359,6 +1491,29 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
         Ok(callbacks::hsla_to_color(h, s, l, a))
     })?;
     globals.set("hsla_to_color", hsla_to_color)?;
+
+    let parse_color = lua_ctx.create_function(|_, val: String| {
+        callbacks::parse_color(&val)
+            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
+    })?;
+    globals.set("parse_color", parse_color)?;
+
+    let gradient_from_name = lua_ctx.create_function(|_, name: String| {
+        callbacks::gradient_from_name(&name)
+            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
+    })?;
+    globals.set("gradient_from_name", gradient_from_name)?;
+
+    let gradient_destroy = lua_ctx.create_function(|_, handle: usize| {
+        callbacks::gradient_destroy(handle)
+            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
+    })?;
+    globals.set("gradient_destroy", gradient_destroy)?;
+
+    let gradient_color_at = lua_ctx.create_function(|_, (handle, pos): (usize, f64)| {
+        Ok(callbacks::gradient_color_at(handle, pos).unwrap_or(0))
+    })?;
+    globals.set("gradient_color_at", gradient_color_at)?;
 
     let linear_gradient = lua_ctx.create_function(|_, (start, dest, p): (u32, u32, f64)| {
         Ok(callbacks::linear_gradient(start, dest, p))
