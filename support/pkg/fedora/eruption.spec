@@ -76,6 +76,8 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
+%{__mkdir_p} %{buildroot}%{_datarootdir}/applications/
+%{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/64x64/apps/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
 %{__mkdir_p} %{buildroot}%{_datarootdir}/bash-completion/completions/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/fish/completions/
@@ -209,6 +211,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_bindir}/eruption-gui
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
+%{_datarootdir}/applications/eruption-gui.desktop
+%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 %{_datarootdir}/eruption-gui/schemas/gschemas.compiled
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile

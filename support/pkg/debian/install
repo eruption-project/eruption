@@ -1,17 +1,17 @@
 #!/usr/bin/dh-exec
 
-target/release/eruption usr/bin/
-target/release/eruptionctl usr/bin/
-target/release/eruption-netfx usr/bin/
-target/release/eruption-util usr/bin/
-target/release/eruption-debug-tool usr/bin/
-target/release/eruption-process-monitor usr/bin/
-target/release/eruption-gui usr/bin/
+target/release/eruption usr/bin
+target/release/eruptionctl usr/bin
+target/release/eruption-netfx usr/bin
+target/release/eruption-util usr/bin
+target/release/eruption-debug-tool usr/bin
+target/release/eruption-process-monitor usr/bin
+target/release/eruption-gui usr/bin
 
 support/systemd/eruption-suspend.sh => lib/systemd/system-sleep/eruption
 
 support/assets/eruption-gui/eruption-gui.desktop usr/share/applications
-support/assets/eruption-gui/eruption-gui.png usr/local/share/icons/hicolor/64x64/apps
+support/assets/eruption-gui/eruption-gui.png usr/share/icons/hicolor/64x64/apps
 eruption-gui/schemas/gschemas.compiled usr/share/eruption-gui/schemas
 
 support/config/eruption.conf etc/eruption

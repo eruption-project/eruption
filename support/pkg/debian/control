@@ -3,6 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: X3n0m0rph59 <x3n0m0rph59@gmail.com>
 Build-Depends: debhelper (>= 11),
+		dh-exec (>= 0.23.2),
 		cargo (>= 0.35),
 		rustc (>= 1.34),
 		libusb-1.0-0-dev (>= 2:1.0.21),
