@@ -3,7 +3,7 @@
 
 Name:    eruption-git
 Version: 0.1.19
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
@@ -164,6 +164,8 @@ cp -ra %{_builddir}/%{name}-%{version}/eruption/src/scripts %{buildroot}%{_datar
 
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
+cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
 cp -a %{_builddir}/%{name}-%{version}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
