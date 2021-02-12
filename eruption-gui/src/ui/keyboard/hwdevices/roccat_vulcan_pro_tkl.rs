@@ -355,8 +355,22 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(93),                                               // filler
 
     // column 17
-    KeyDef::new(583.0, 66.0, 32.0, 32.0, Caption::simple("PGUP"), 94), // PAGE UP
-    KeyDef::new(583.0, 100.0, 32.0, 32.0, Caption::simple("PGDN"), 95), // PAGE DOWN
+    KeyDef::new(
+        583.0,
+        66.0,
+        32.0,
+        32.0,
+        Caption::new("PGUP", -4.0, 0.0),
+        94,
+    ), // PAGE UP
+    KeyDef::new(
+        583.0,
+        100.0,
+        32.0,
+        32.0,
+        Caption::new("PGDN", -4.0, 0.0),
+        95,
+    ), // PAGE DOWN
     KeyDef::new(583.0, 205.0, 32.0, 32.0, Caption::simple("→"), 96), // RIGHT
 ];
 

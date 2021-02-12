@@ -78,7 +78,7 @@ Author: X3n0m0rph59
     </child>
   </object>
   <object class="GtkApplicationWindow" id="main_window">
-    <property name="height-request">750</property>
+    <property name="height-request">800</property>
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
     <property name="icon-name">/org/eruption/eruption-gui/img/eruption-gui.png</property>
@@ -119,13 +119,14 @@ Author: X3n0m0rph59
                         <property name="halign">start</property>
                         <property name="left-padding">12</property>
                         <child>
-                          <!-- n-columns=3 n-rows=3 -->
+                          <!-- n-columns=2 n-rows=2 -->
                           <object class="GtkGrid">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="border-width">8</property>
                             <property name="row-spacing">8</property>
                             <property name="column-spacing">16</property>
+                            <property name="row-homogeneous">True</property>
                             <child>
                               <object class="GtkAccelLabel">
                                 <property name="visible">True</property>
@@ -173,21 +174,6 @@ Author: X3n0m0rph59
                                 <property name="left-attach">1</property>
                                 <property name="top-attach">1</property>
                               </packing>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
                             </child>
                           </object>
                         </child>
