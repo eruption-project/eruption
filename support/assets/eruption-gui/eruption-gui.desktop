@@ -4,5 +4,5 @@ Encoding=UTF-8
 Name=Eruption GUI
 Comment=A simple GUI for the Eruption driver
 Exec=/usr/bin/eruption-gui
-Icon=keyboard
+Icon=keyboard-brightness-symbolic
 Terminal=false

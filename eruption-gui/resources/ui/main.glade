@@ -223,7 +223,7 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">&lt;Unknown Keyboard Device&gt;</property>
+                        <property name="label" translatable="yes">&lt;Unknown&gt;</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                           <attribute name="scale" value="2"/>
@@ -241,7 +241,7 @@ Author: X3n0m0rph59
                         <property name="halign">end</property>
                         <property name="valign">center</property>
                         <property name="pixel-size">64</property>
-                        <property name="icon-name">keyboard-symbolic</property>
+                        <property name="icon-name">input-keyboard-symbolic</property>
                         <property name="icon_size">0</property>
                       </object>
                       <packing>
@@ -266,7 +266,7 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">000</property>
+                        <property name="label" translatable="yes">&lt;unknown&gt;</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -316,7 +316,7 @@ Author: X3n0m0rph59
               <packing>
                 <property name="name">page0</property>
                 <property name="title" translatable="yes">Keyboard</property>
-                <property name="icon-name">keyboard-symbolic</property>
+                <property name="icon-name">keyboard-brightness-symbolic</property>
               </packing>
             </child>
             <child>
@@ -362,7 +362,7 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">&lt;Unknown Mouse Device&gt;</property>
+                        <property name="label" translatable="yes">&lt;Unknown&gt;</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                           <attribute name="scale" value="2"/>
@@ -380,7 +380,7 @@ Author: X3n0m0rph59
                         <property name="halign">end</property>
                         <property name="valign">center</property>
                         <property name="pixel-size">64</property>
-                        <property name="icon-name">mouse-symbolic</property>
+                        <property name="icon-name">input-mouse-symbolic</property>
                         <property name="icon_size">0</property>
                       </object>
                       <packing>
@@ -405,7 +405,7 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">000</property>
+                        <property name="label" translatable="yes">&lt;unknown&gt;</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -429,7 +429,7 @@ Author: X3n0m0rph59
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">000</property>
+                        <property name="label" translatable="yes">&lt;unknown&gt;</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -491,7 +491,7 @@ Author: X3n0m0rph59
               <packing>
                 <property name="name">page1</property>
                 <property name="title" translatable="yes">Mouse</property>
-                <property name="icon-name">mouse-symbolic</property>
+                <property name="icon-name">input-mouse-symbolic</property>
                 <property name="position">1</property>
               </packing>
             </child>
