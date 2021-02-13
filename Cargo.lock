@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "async-trait",
  "bitvec 0.20.1",
@@ -687,7 +687,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "cairo-rs",
  "clap",
