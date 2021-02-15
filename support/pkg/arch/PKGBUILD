@@ -136,6 +136,8 @@ package() {
     install -m 644 "eruption/src/scripts/afterglow.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/afterhue.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/afterhue.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/animal.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/animal.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/audioviz1.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/audioviz1.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/audioviz2.lua" "$pkgdir/usr/share/eruption/scripts/"
@@ -253,6 +255,8 @@ package() {
     ln -s "phaser1.wav" "$pkgdir/usr/share/eruption/sfx/key-down.wav"
     ln -s "phaser2.wav" "$pkgdir/usr/share/eruption/sfx/key-up.wav"
 
+    install -m 644 "support/profiles/animal-blobby.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/animal-blobby-swirl.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/default.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/fx1.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/fx2.profile" "$pkgdir/var/lib/eruption/profiles/"

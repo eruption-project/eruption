@@ -111,6 +111,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroo
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.service %{buildroot}/%{_userunitdir}/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-blobby.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-blobby-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -226,6 +228,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/zsh/site-functions/_eruption-netfx
 %{_datarootdir}/zsh/site-functions/_eruption-process-monitor
 %{_datarootdir}/zsh/site-functions/_eruptionctl
+%{_sharedstatedir}/%{ShortName}/profiles/animal-blobby.profile
+%{_sharedstatedir}/%{ShortName}/profiles/animal-blobby-swirl.profile
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
@@ -298,6 +302,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/afterglow.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/afterhue.lua
 %{_datarootdir}/%{ShortName}/scripts/afterhue.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/animal.lua
+%{_datarootdir}/%{ShortName}/scripts/animal.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/audioviz1.lua
 %{_datarootdir}/%{ShortName}/scripts/audioviz1.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/audioviz2.lua

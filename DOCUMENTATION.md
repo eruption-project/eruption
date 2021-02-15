@@ -188,6 +188,9 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 * Profiles: Switch slots, switch profiles based on system state, ...
 * Macros: Inject programmable key stroke sequences
 
+**Additional Plugins:**
+* Animal: Simulation of organic movements (support library)
+
 ## Available Effects Scripts
 
 Eruption currently ships with the following Lua scripts:
@@ -214,6 +217,7 @@ Eruption currently ships with the following Lua scripts:
 | Phonon                          | Effect     | `phonon.lua`           | Ready  | Display a propagating phonon wave effect                                                                     |
 | Water                           | Effect     | `water.lua`            | Ready  | Display propagating water ripples effect                                                                     |
 | Wave                            | Effect     | `wave.lua`             | Ready  | Display a colored wave where the alpha channel values are based on the sine function                         |
+| Animal                          | Effect     | `animal.lua`           | Ready  | Display an organically moving lifeform on the keyboard                                                       |
 | Solid                           | Background | `solid.lua`            | Ready  | Display a solid color                                                                                        |
 | Rainbow                         | Background | `rainbow.lua`          | Ready  | Display a rainbow color gradient                                                                             |
 | Stripes                         | Background | `stripes.lua`          | Ready  | Display horizontal stripes of multiple colors                                                                |

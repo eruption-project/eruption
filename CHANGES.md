@@ -5,6 +5,8 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                           |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.20 | __New Release__                                                                                                                                                       |
+| 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
+| 0.1.20 | New Effect Plugin/Lua Script/Profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                      |
 | 0.1.19 | __New Release__                                                                                                                                                       |
 | 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
 | 0.1.19 | Add support for `ROCCAT Vulcan Pro TKL` series keyboards                                                                                                              |

@@ -52,6 +52,8 @@ support/shell/completions/en_US/eruption-netfx.zsh-completion => usr/share/zsh/s
 support/shell/completions/en_US/eruption-process-monitor.zsh-completion => usr/share/zsh/site-functions/_eruption-process-monitor
 support/shell/completions/en_US/eruptionctl.zsh-completion => usr/share/zsh/site-functions/_eruptionctl
 
+support/profiles/animal-blobby.profile var/lib/eruption/profiles
+support/profiles/animal-blobby-swirl.profile var/lib/eruption/profiles
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles
@@ -100,6 +102,8 @@ eruption/src/scripts/afterglow.lua usr/share/eruption/scripts
 eruption/src/scripts/afterglow.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/afterhue.lua usr/share/eruption/scripts
 eruption/src/scripts/afterhue.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/animal.lua usr/share/eruption/scripts
+eruption/src/scripts/animal.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/audioviz1.lua usr/share/eruption/scripts
 eruption/src/scripts/audioviz1.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/audioviz2.lua usr/share/eruption/scripts

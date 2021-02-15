@@ -447,6 +447,21 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
 
     /// Convert a HID event code back to a report code
     fn hid_event_code_to_report(&self, code: &KeyboardHidEventCode) -> u8;
+
+    /// Returns the number of keys
+    fn get_num_keys(&self) -> usize;
+
+    /// Returns the number of rows (vertical number of keys)
+    fn get_num_rows(&self) -> usize;
+
+    /// Returns the number of columns (horizontal number of keys)
+    fn get_num_cols(&self) -> usize;
+
+    /// Returns the indices of the keys in row `row`
+    fn get_row_topology(&self, row: usize) -> &'static [u8];
+
+    /// Returns the indices of the keys in column `col`
+    fn get_col_topology(&self, col: usize) -> &'static [u8];
 }
 
 /// Device like e.g. a supported mouse

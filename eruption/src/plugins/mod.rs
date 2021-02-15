@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+pub mod animal;
 pub mod audio;
 pub mod introspection;
 pub mod keyboard;
@@ -26,6 +27,7 @@ pub mod profiles;
 pub mod sensors;
 pub mod system;
 
+pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
@@ -58,6 +60,7 @@ pub fn register_plugins() -> Result<()> {
 
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
+    // Base plugins
     plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(MousePlugin::new()))?;
     plugin_manager.register_plugin(Box::new(MacrosPlugin::new()))?;
@@ -67,6 +70,9 @@ pub fn register_plugins() -> Result<()> {
     plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(SensorsPlugin::new()))?;
     plugin_manager.register_plugin(Box::new(AudioPlugin::new()))?;
+
+    // Additional plugins
+    plugin_manager.register_plugin(Box::new(AnimalPlugin::new()))?;
 
     trace!("Done registering all available plugins");
 
