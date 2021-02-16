@@ -15,8 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
@@ -1338,5 +1336,3 @@ pub const COLS_TOPOLOGY: [u8; 252] = [
     0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0xff,
     0x81, 0x82, 0x83, 0xff, 0xff, 0xff
 ];
-
-*/
