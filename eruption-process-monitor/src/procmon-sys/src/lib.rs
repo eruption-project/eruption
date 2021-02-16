@@ -18,13 +18,13 @@
 #[repr(C)]
 pub struct Event {
     pub event_type: u32,
-    pub pid:  libc::pid_t,
+    pub pid: libc::pid_t,
     pub ppid: libc::pid_t,
-    pub tgid: libc::pid_t
+    pub tgid: libc::pid_t,
 }
 
-#[link(name="procmon")]
-extern {
+#[link(name = "procmon")]
+extern "C" {
     pub fn nl_connect() -> i32;
     pub fn set_proc_ev_listen(nl_sock: i32, enable: bool) -> i32;
     pub fn handle_proc_ev(nl_sock: i32, event: *mut Event) -> i32;

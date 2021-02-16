@@ -1350,7 +1350,7 @@ mod ternimal {
             assert!(radius > 0.0);
             assert!(0.0 <= start && start < TWO_PI);
             assert!(0.0 <= end && end < TWO_PI);
-            assert!(start != end);
+            assert!((start - end).abs() > f64::EPSILON);
 
             let mut arc = Arc {
                 center,

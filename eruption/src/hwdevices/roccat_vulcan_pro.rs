@@ -15,8 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
@@ -127,37 +125,37 @@ impl RoccatVulcanPro {
         }
     }
 
-    pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
-        trace!("Querying control device feature report");
+    // pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
+    //     trace!("Querying control device feature report");
 
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else {
-            match id {
-                0x0f => {
-                    let mut buf: [u8; 256] = [0; 256];
-                    buf[0] = id;
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
+    //     } else if !self.is_opened {
+    //         Err(HwDeviceError::DeviceNotOpened {}.into())
+    //     } else {
+    //         match id {
+    //             0x0f => {
+    //                 let mut buf: [u8; 256] = [0; 256];
+    //                 buf[0] = id;
 
-                    let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                    let ctrl_dev = ctrl_dev.as_ref().unwrap();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                    match ctrl_dev.get_feature_report(&mut buf) {
-                        Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //                 match ctrl_dev.get_feature_report(&mut buf) {
+    //                     Ok(_result) => {
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                            Ok(())
-                        }
+    //                         Ok(())
+    //                     }
 
-                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-                    }
-                }
+    //                     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+    //                 }
+    //             }
 
-                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
-            }
-        }
-    }
+    //             _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+    //         }
+    //     }
+    // }
 
     fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
         trace!("Sending control device feature report");
@@ -1338,5 +1336,3 @@ pub const COLS_TOPOLOGY: [u8; 252] = [
     0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0xff,
     0x81, 0x82, 0x83, 0xff, 0xff, 0xff
 ];
-
-*/
