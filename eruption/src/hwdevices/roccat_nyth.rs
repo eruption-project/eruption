@@ -34,7 +34,7 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
+pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
