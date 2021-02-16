@@ -257,6 +257,9 @@ package() {
 
     install -m 644 "support/profiles/animal-blobby.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/animal-blobby-swirl.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/animal-breathing-1.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/animal-breathing-2.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/animal-breathing-3.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/default.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/fx1.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/fx2.profile" "$pkgdir/var/lib/eruption/profiles/"

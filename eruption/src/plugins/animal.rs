@@ -102,6 +102,7 @@ impl Animal {
         speed: f64,
         len_min: f64,
         len_max: f64,
+        max_radius: f64,
         gradient_stop_1: (f64, u32),
         gradient_stop_2: (f64, u32),
         gradient_stop_3: (f64, u32),
@@ -134,8 +135,8 @@ impl Animal {
             let num_cols = keyboard_device.read().get_num_cols();
             let num_rows = keyboard_device.read().get_num_rows();
 
-            width = (num_cols + 1) * SUPER_SAMPLES.0; // 60; // 1, 500;
-            height = (num_rows + 1) * SUPER_SAMPLES.1; // 1, 500;
+            width = (num_cols + 1) * SUPER_SAMPLES.0;
+            height = (num_rows + 1) * SUPER_SAMPLES.1;
 
             if height % 2 != 0 {
                 return Err(AnimalError::InvalidHeight {}.into());
@@ -188,7 +189,7 @@ impl Animal {
         // Minimum distance between the path and the boundary of the arena, in blocks
         let padding = f64::min(max_thickness, max_padding); // 0.0, max_padding;
 
-        let max_radius = 0.8 * (((min(width, height) as f64) / 2.0) - padding);
+        // let max_radius = 0.8 * (((min(width, height) as f64) / 2.0) - padding);
 
         // Minimum and maximum radius of the arcs comprising the path, in blocks
         let radius_range =
@@ -387,6 +388,7 @@ impl Plugin for AnimalPlugin {
                 speed,
                 len_min,
                 len_max,
+                max_radius,
                 gradient_stop_1,
                 gradient_stop_2,
                 gradient_stop_3,
@@ -394,6 +396,7 @@ impl Plugin for AnimalPlugin {
                 coefficients,
             ): (
                 String,
+                f64,
                 f64,
                 f64,
                 f64,
@@ -455,6 +458,7 @@ impl Plugin for AnimalPlugin {
                             speed,
                             len_min,
                             len_max,
+                            max_radius,
                             (gradient_stop_1_pos, gradient_stop_1_color),
                             (gradient_stop_2_pos, gradient_stop_2_color),
                             (gradient_stop_3_pos, gradient_stop_3_color),

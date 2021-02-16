@@ -21,12 +21,16 @@ require "debug"
 ticks = 0
 color_map = {}
 
-handle = animal_create(name, speed, len_min, len_max,
+handle = animal_create(name, speed, len_min, len_max, max_radius,
 					   -- color gradient definitions
-					   { 0.4, color1 }, { 0.6, color2 }, { 1.0, color3 }, opacity,
+					   { gradient_stop_1, color_1 },
+					   { gradient_stop_2, color_2 },
+					   { gradient_stop_3, color_3 },
+					   opacity,
 					   -- coefficients of the movement computation
-					   { coefficient_1, coefficient_2, coefficient_3,
-					     coefficient_4, coefficient_5 })
+					   { coefficient_1, coefficient_2,
+					   	 coefficient_3, coefficient_4,
+						 coefficient_5 })
 
 -- event handler functions --
 function on_startup(config)

@@ -27,37 +27,61 @@ default = 10.75
 type = 'float'
 name = 'len_min'
 description = 'The minimum length of the animal'
-default = 1.75
+default = 4.0
 
 [[config]]
 type = 'float'
 name = 'len_max'
 description = 'The maximum length of the animal'
-default = 12.5
+default = 10.0
+
+[[config]]
+type = 'float'
+name = 'max_radius'
+description = 'The maximum radius of the motion'
+default = 4.59
 
 [[config]]
 type = 'color'
-name = 'color1'
+name = 'color_1'
 description = 'Color gradient color #1'
 default = 0xffffffff
 
 [[config]]
+type = 'float'
+name = 'gradient_stop_1'
+description = 'Gradient stop #1'
+default = 0.4
+
+[[config]]
 type = 'color'
-name = 'color2'
+name = 'color_2'
 description = 'Color gradient color #2'
 default = 0xff5f5fff
 
 [[config]]
+type = 'float'
+name = 'gradient_stop_2'
+description = 'Gradient stop #2'
+default = 0.6
+
+[[config]]
 type = 'color'
-name = 'color3'
+name = 'color_3'
 description = 'Color gradient color #3'
 default = 0xff1010ff
 
 [[config]]
 type = 'float'
+name = 'gradient_stop_3'
+description = 'Gradient stop #3'
+default = 1.0
+
+[[config]]
+type = 'float'
 name = 'coefficient_1'
 description = 'The coefficient #1 of the motion computation'
-default = 3.55
+default = 4.0
 
 [[config]]
 type = 'float'
@@ -69,19 +93,19 @@ default = 1.0
 type = 'float'
 name = 'coefficient_3'
 description = 'The coefficient #3 of the motion computation'
-default = 2.5
+default = 3.5
 
 [[config]]
 type = 'float'
 name = 'coefficient_4'
 description = 'The coefficient #4 of the motion computation'
-default = 2.0
+default = 0.0
 
 [[config]]
 type = 'float'
 name = 'coefficient_5'
 description = 'The coefficient #5 of the motion computation'
-default = 2.0
+default = 0.0
 
 [[config]]
 type = 'float'

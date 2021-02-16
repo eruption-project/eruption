@@ -1,5 +1,5 @@
 id = '5cd23fa6-e965-45cb-a0cd-e87d28713091'
-name = 'Animal: Blobby'
+name = 'Animal: Blobby + Wave'
 description = 'Simulate a lifeform with organic movements'
 active_scripts = [
 	'solid.lua',
