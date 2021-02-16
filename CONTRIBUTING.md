@@ -1,6 +1,6 @@
 # Contributing to Eruption
 
-+1tada First off, thanks for taking the time to contribute to Eruption! tada+1
+First off, thanks for taking the time to contribute to Eruption!
 
 ## How Can I Contribute
 
