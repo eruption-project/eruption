@@ -34,7 +34,8 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 - ROCCAT Vulcan 100/12x series keyboard (fully supported)
 - ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
-- ROCCAT Vulcan TKL series keyboard (work-in-progress as of version `0.1.19`, experimental, untested)
+- ROCCAT Vulcan TKL series keyboard (reported as working, as of version `0.1.19`, experimental)
+- ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 
 ### Mouse devices
 
