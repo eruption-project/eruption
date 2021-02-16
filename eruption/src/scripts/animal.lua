@@ -22,10 +22,8 @@ ticks = 0
 color_map = {}
 
 handle = animal_create(name, speed, len_min, len_max,
-
 					   -- color gradient definitions
 					   { 0.4, color1 }, { 0.6, color2 }, { 1.0, color3 }, opacity,
-
 					   -- coefficients of the movement computation
 					   { coefficient_1, coefficient_2, coefficient_3,
 					     coefficient_4, coefficient_5 })
@@ -47,6 +45,7 @@ function on_tick(delta)
 
 		-- render the animal
 		color_map = animal_render(handle)
+
 		submit_color_map(color_map)
 	end
 end
