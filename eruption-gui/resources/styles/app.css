@@ -30,10 +30,17 @@
 }
 
 .slot_indicator.active {
-    font-weight: bold;
+    background-color: dimgray;
     border: 3px solid gray;
 }
 
 /* .slot_indicator combobox {
     font-size: small;
 } */
+
+.script_heading {
+    font-size: x-large;
+    /* font-style: italic; */
+    font-weight: bold;
+    margin-left: 16px;
+}

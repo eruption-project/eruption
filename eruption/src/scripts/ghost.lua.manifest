@@ -9,18 +9,24 @@ tags = ['Effect', 'Vendor']
 type = 'int'
 name = 'ghost_backoff_secs'
 description = 'Time (in seconds) that has to pass, before ghost typing commences'
+min = 0
+max = 120
 default = 10
 
 [[config]]
 type = 'float'
 name = 'ghost_intensity'
 description = 'The higher the value, the more ghost typing'
+min = 0.0
+max = 10.0
 default = 1.5
 
 [[config]]
 type = 'float'
 name = 'afterglow_step'
 description = 'Step afterglow animation every [n] frames'
+min = 0.0
+max = 10.0
 default = 1.0
 
 [[config]]
@@ -50,5 +56,7 @@ default = 0x05050505
 [[config]]
 type = 'int'
 name = 'shockwave_divisor'
-description = 'Controls the spread of the shockwave. Range: [1..10], lower values mean less spread'
+description = 'Controls the spread of the shockwave. Range: [1..15], lower values mean less spread'
+min = 1
+max = 15
 default = 12

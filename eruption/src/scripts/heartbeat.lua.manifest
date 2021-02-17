@@ -9,22 +9,30 @@ tags = ['Background', 'Vendor', 'Demo']
 type = 'float'
 name = 'heartbeat_multiplier'
 description = 'Heartbeat speed multiplier'
+min = 0.0
+max = 100.0
 default = 1
 
 [[config]]
 type = 'float'
 name = 'heartbeat_upper_lim'
 description = 'Heartbeat max extent'
-default = -0
+min = 0.0
+max = 100.0
+default = -0.0
 
 [[config]]
 type = 'float'
 name = 'heartbeat_lower_lim'
 description = 'Heartbeat min extent'
-default = 0
+min = 0.0
+max = 100.0
+default = 0.0
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0

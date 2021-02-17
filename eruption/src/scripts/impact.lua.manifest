@@ -9,6 +9,8 @@ tags = ['Effect', 'Vendor']
 type = 'float'
 name = 'impact_step'
 description = 'Step impact animation every [n] frames'
+min = 0.0
+max = 10.0
 default = 1.0
 
 [[config]]
@@ -21,4 +23,6 @@ default = 0xffffffaa
 type = 'int'
 name = 'alpha_step_impact'
 description = 'Value that gets subtracted from the impact effects alpha channel every [n] frames'
+min = 0
+max = 255
 default = 16

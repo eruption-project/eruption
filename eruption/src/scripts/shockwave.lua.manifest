@@ -33,6 +33,8 @@ default = 0x0a0a0000
 type = 'int'
 name = 'shockwave_divisor'
 description = 'Controls the spread of the shockwave. Range: [1..10], lower values mean less spread'
+min = 0
+max = 10
 default = 5
 
 [[config]]

@@ -21,18 +21,24 @@ default = -1
 type = 'float'
 name = 'scale_factor'
 description = 'Scale factor of the alpha value'
+min = 0.0
+max = 255.0
 default = 127.0
 
 [[config]]
 type = 'float'
 name = 'speed_divisor'
 description = 'Speed of the wave'
+min = 0.0
+max = 1000.0
 default = 25.0
 
 [[config]]
 type = 'float'
 name = 'wave_length'
 description = 'Wave length divisor'
+min = 0.0
+max = 1000.0
 default = 4.0
 
 [[config]]
@@ -45,4 +51,6 @@ default = 0x00000000
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0

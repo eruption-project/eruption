@@ -9,18 +9,24 @@ tags = ['Background', 'Vendor', 'Gradient']
 type = 'float'
 name = 'gradient_step'
 description = 'Update gradient every [n] frames'
-default = 1
+min = 0.0
+max = 10.0
+default = 1.0
 
 [[config]]
 type = 'float'
 name = 'gradient_speed'
 description = 'Animation speed'
-default = 1
+min = 0.0
+max = 100.0
+default = 1.0
 
 [[config]]
 type = 'int'
 name = 'color_divisor'
 description = 'Divisor'
+min = 1
+max = 256
 default = 256
 
 [[config]]

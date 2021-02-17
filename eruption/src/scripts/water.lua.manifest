@@ -15,4 +15,6 @@ default = 0xffff0000
 type = 'int'
 name = 'wave_divisor'
 description = 'Controls the spread of the wave. Range: [1..10], lower values mean less spread'
+min = 1
+max = 10
 default = 2

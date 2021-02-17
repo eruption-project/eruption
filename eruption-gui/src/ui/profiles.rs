@@ -20,7 +20,7 @@ use crate::{manifest::Manifest, util};
 use gdk::RGBA;
 use glib::clone;
 use glib::prelude::*;
-use gtk::{prelude::*, Orientation};
+use gtk::{prelude::*, Align, Orientation};
 use gtk::{ShadowType, StackExt};
 use sourceview::prelude::*;
 use sourceview::BufferBuilder;
@@ -33,8 +33,8 @@ fn build_int_config(
     name: &str,
     description: &str,
     _default: i64,
-    min: i64,
-    max: i64,
+    min: Option<i64>,
+    max: Option<i64>,
     value: i64,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()
@@ -55,10 +55,18 @@ fn build_int_config(
     let child = gtk::LabelBuilder::new().label(&description).build();
     container.attach(&child, 1, 0, 1, 1);
 
-    let adjustment = gtk::AdjustmentBuilder::new()
-        .lower(min as f64)
-        .upper(max as f64)
-        .build();
+    // set constraints
+    let mut adjustment = gtk::AdjustmentBuilder::new();
+
+    if let Some(min) = min {
+        adjustment = adjustment.lower(min as f64);
+    }
+
+    if let Some(max) = max {
+        adjustment = adjustment.upper(max as f64);
+    }
+
+    let adjustment = adjustment.build();
 
     let child = gtk::ScaleBuilder::new()
         .adjustment(&adjustment)
@@ -74,8 +82,8 @@ fn build_float_config(
     name: &str,
     description: &str,
     _default: f64,
-    min: f64,
-    max: f64,
+    min: Option<f64>,
+    max: Option<f64>,
     value: f64,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()
@@ -96,10 +104,18 @@ fn build_float_config(
     let child = gtk::LabelBuilder::new().label(&description).build();
     container.attach(&child, 1, 0, 1, 1);
 
-    let adjustment = gtk::AdjustmentBuilder::new()
-        .lower(min as f64)
-        .upper(max as f64)
-        .build();
+    // set constraints
+    let mut adjustment = gtk::AdjustmentBuilder::new();
+
+    if let Some(min) = min {
+        adjustment = adjustment.lower(min as f64);
+    }
+
+    if let Some(max) = max {
+        adjustment = adjustment.upper(max as f64);
+    }
+
+    let adjustment = adjustment.build();
 
     let child = gtk::ScaleBuilder::new()
         .adjustment(&adjustment)
@@ -175,6 +191,8 @@ fn build_color_config(
     name: &str,
     description: &str,
     _default: u32,
+    _min: Option<u32>,
+    _max: Option<u32>,
     value: u32,
 ) -> Result<gtk::Grid> {
     let container = gtk::GridBuilder::new()
@@ -212,22 +230,26 @@ fn build_color_config(
 fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
     let outer = gtk::FrameBuilder::new().border_width(10).build();
 
-    match param {
+    match &param {
         manifest::ConfigParam::Int {
             name,
             description,
+            min,
+            max,
             default,
         } => {
-            let widget = build_int_config(&name, description, *default, 0, 200, 123)?;
+            let widget = build_int_config(&name, &description, *default, *min, *max, 123)?;
             outer.add(&widget);
         }
 
         manifest::ConfigParam::Float {
             name,
             description,
+            min,
+            max,
             default,
         } => {
-            let widget = build_float_config(&name, description, *default, 0.0, 200.0, 123.59)?;
+            let widget = build_float_config(&name, &description, *default, *min, *max, 123.59)?;
             outer.add(&widget);
         }
 
@@ -236,7 +258,7 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             description,
             default,
         } => {
-            let widget = build_bool_config(&name, description, *default, true)?;
+            let widget = build_bool_config(&name, &description, *default, true)?;
             outer.add(&widget);
         }
 
@@ -245,16 +267,18 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             description,
             default,
         } => {
-            let widget = build_string_config(&name, description, default, "123")?;
+            let widget = build_string_config(&name, &description, &default, "123")?;
             outer.add(&widget);
         }
 
         manifest::ConfigParam::Color {
             name,
             description,
+            min,
+            max,
             default,
         } => {
-            let widget = build_color_config(&name, description, *default, 123)?;
+            let widget = build_color_config(&name, &description, *default, *min, *max, 123)?;
             outer.add(&widget);
         }
     }
@@ -274,6 +298,8 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
     // then add config items
     let container = gtk::BoxBuilder::new()
         .orientation(Orientation::Vertical)
+        .spacing(8)
+        .homogeneous(false)
         .build();
 
     let profile = Profile::new(profile.as_ref())?;
@@ -283,19 +309,29 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
     for f in profile.active_scripts.iter() {
         let manifest = Manifest::from(&script_path.join(&f))?;
 
+        let label = gtk::LabelBuilder::new()
+            .label(&format!("{} ({})", &manifest.name, &f.display()))
+            .justify(gtk::Justification::Fill)
+            .halign(Align::Start)
+            .margin_top(8)
+            .margin_start(8)
+            .build();
+
+        let context = label.get_style_context();
+        context.add_class("script_heading");
+
+        container.pack_start(&label, true, true, 8);
+
         if let Some(params) = manifest.config {
             for param in params {
                 let child = create_config_editor(&param)?;
-                container.pack_start(&child, false, true, 10);
+                container.pack_start(&child, false, true, 8);
             }
         }
     }
 
-    // TODO: Add support for this
-    // config_window.add(&container);
-    // config_window.show_all();
-
-    config_window.hide();
+    config_window.add(&container);
+    config_window.show_all();
 
     Ok(())
 }

@@ -57,11 +57,15 @@ pub enum ConfigParam {
     Int {
         name: String,
         description: String,
+        min: Option<i64>,
+        max: Option<i64>,
         default: i64,
     },
     Float {
         name: String,
         description: String,
+        min: Option<f64>,
+        max: Option<f64>,
         default: f64,
     },
     Bool {
@@ -77,6 +81,8 @@ pub enum ConfigParam {
     Color {
         name: String,
         description: String,
+        min: Option<u32>,
+        max: Option<u32>,
         default: u32,
     },
 }

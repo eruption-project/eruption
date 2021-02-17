@@ -9,10 +9,14 @@ tags = ['Background', 'Vendor']
 type = 'int'
 name = 'fire_speed'
 description = 'Step fire animation every [n] frames'
+min = 0
+max = 10
 default = 1
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0

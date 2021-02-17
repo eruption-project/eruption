@@ -21,4 +21,6 @@ default = 0xffff0000
 type = 'float'
 name = 'max_temperature'
 description = 'Package max. temperature'
+min = 0.0
+max = 120.0
 default = 95.0

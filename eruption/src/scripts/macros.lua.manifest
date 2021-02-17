@@ -9,6 +9,8 @@ tags = ['Macros', 'Vendor']
 type = 'float'
 name = 'animation_delay'
 description = 'Step animation every [n] frames'
+min = 0.0
+max = 10.0
 default = 1.0
 
 [[config]]
@@ -21,30 +23,40 @@ default = 0xff101010
 type = 'float'
 name = 'highlight_opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'overlay_opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0
 
 [[config]]
 type = 'int'
 name = 'highlight_step'
 description = 'Step TTL value for highlight effect each frame by [n]'
+min = 0
+max = 256
 default = 32
 
 [[config]]
 type = 'int'
 name = 'overlay_step'
 description = 'Step TTL value for overlays each frame by [n]'
+min = 0
+max = 255
 default = 6
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0
 
 [[config]]

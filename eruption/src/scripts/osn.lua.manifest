@@ -9,46 +9,62 @@ tags = ['Background', 'Vendor', 'Noise']
 type = 'float'
 name = 'animation_delay'
 description = 'Step animation every [n] frames'
+min = 0.0
+max = 10.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'time_scale'
 description = 'Scale of time axis (3rd coordinate of the noise function)'
+min = 0.0
+max = 1000.0
 default = 250.0
 
 [[config]]
 type = 'float'
 name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
+min = 0.0
+max = 1000.0
 default = 25.0
 
 [[config]]
 type = 'float'
 name = 'color_saturation'
 description = 'Saturation in the range 0.0 .. 1.0'
+min = 0.0
+max = 1.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'color_lightness'
 description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
+min = 0.0
+max = 1.0
 default = 0.5
 
 [[config]]
 type = 'float'
 name = 'color_divisor'
 description = 'Divide resulting hue angle by color_divisor. Final value will be mapped to the interval [0..360)'
+min = 0.0
+max = 360.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'color_offset'
 description = 'Offset resulting hue angle by color_offset. Final value will be mapped to the interval [0..360)'
+min = 0.0
+max = 360.0
 default = 0.0
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0

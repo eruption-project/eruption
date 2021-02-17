@@ -9,6 +9,8 @@ tags = ['Effect', 'Vendor']
 type = 'float'
 name = 'animation_delay'
 description = 'Step animation every [n] frames'
+min = 0.0
+max = 10.0
 default = 1.0
 
 [[config]]
@@ -21,24 +23,32 @@ default = 'Unknown Lifeform'
 type = 'float'
 name = 'speed'
 description = 'The movement speed of the animal'
+min = 0.0
+max = 100.0
 default = 10.75
 
 [[config]]
 type = 'float'
 name = 'len_min'
 description = 'The minimum length of the animal'
+min = 0.0
+max = 100.0
 default = 4.0
 
 [[config]]
 type = 'float'
 name = 'len_max'
 description = 'The maximum length of the animal'
+min = 0.0
+max = 100.0
 default = 10.0
 
 [[config]]
 type = 'float'
 name = 'max_radius'
 description = 'The maximum radius of the motion'
+min = 0.0
+max = 4.6
 default = 4.59
 
 [[config]]
@@ -81,34 +91,46 @@ default = 1.0
 type = 'float'
 name = 'coefficient_1'
 description = 'The coefficient #1 of the motion computation'
+min = 0.0
+max = 100.0
 default = 4.0
 
 [[config]]
 type = 'float'
 name = 'coefficient_2'
 description = 'The coefficient #2 of the motion computation'
+min = 0.0
+max = 100.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'coefficient_3'
 description = 'The coefficient #3 of the motion computation'
+min = 0.0
+max = 100.0
 default = 3.5
 
 [[config]]
 type = 'float'
 name = 'coefficient_4'
 description = 'The coefficient #4 of the motion computation'
+min = 0.0
+max = 100.0
 default = 0.0
 
 [[config]]
 type = 'float'
 name = 'coefficient_5'
 description = 'The coefficient #5 of the motion computation'
+min = 0.0
+max = 100.0
 default = 0.0
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0

@@ -20,6 +20,7 @@ use std::process::Command;
 fn main() {
     // Tell Cargo that if the given file changes, to rerun this build script.
     println!("cargo:rerun-if-changed=schemas/org.eruption.eruption-gui.gschema.xml");
+    println!("cargo:rerun-if-changed=resources/");
 
     let _ = Command::new("sh")
         .args(&["-c", "cd schemas && glib-compile-schemas ."])

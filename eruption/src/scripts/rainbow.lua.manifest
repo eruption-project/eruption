@@ -9,28 +9,38 @@ tags = ['Background', 'Vendor', 'Gradient']
 type = 'float'
 name = 'gradient_speed'
 description = 'Animation speed'
-default = 1
+min = 0.0
+max = 10.0
+default = 1.0
 
 [[config]]
 type = 'float'
 name = 'hue_multiplier'
 description = 'Hue multiplier'
+min = 0.0
+max = 1.0
 default = 0.25
 
 [[config]]
 type = 'float'
 name = 'color_saturation'
 description = 'Saturation in the range 0.0 .. 1.0'
+min = 0.0
+max = 1.0
 default = 1.0
 
 [[config]]
 type = 'float'
 name = 'color_lightness'
 description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
+min = 0.0
+max = 1.0
 default = 0.5
 
 [[config]]
 type = 'float'
 name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
 default = 1.0
