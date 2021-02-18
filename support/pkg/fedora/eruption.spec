@@ -30,6 +30,7 @@ Requires: dbus
 Requires: hidapi
 Requires: libevdev
 Requires: luajit
+Requires: gtksourceview3
 
 Recommends: lua-socket-compat
 
