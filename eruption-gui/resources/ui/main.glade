@@ -1303,6 +1303,9 @@ Author: X3n0m0rph59
             <property name="position">3</property>
           </packing>
         </child>
+        <style>
+          <class name="client"/>
+        </style>
       </object>
     </child>
     <child type="titlebar">
@@ -1392,5 +1395,8 @@ Author: X3n0m0rph59
         <property name="AtkObject::accessible-role" translatable="yes">application</property>
       </object>
     </child>
+    <style>
+      <class name="window"/>
+    </style>
   </object>
 </interface>

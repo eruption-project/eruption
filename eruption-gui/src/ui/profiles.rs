@@ -253,7 +253,7 @@ fn create_config_editor(
 ) -> Result<gtk::Frame> {
     let outer = gtk::FrameBuilder::new()
         .border_width(16)
-        .label(&format!("Parameter: {}", param.get_name()))
+        .label(&format!("{}", param.get_name()))
         .label_xalign(0.0085)
         .build();
 
@@ -414,21 +414,43 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 
     let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
 
+    // let profile_file_name = profile.profile_file.file_name().unwrap_or(OsStr::new(""));
+
+    let label = gtk::LabelBuilder::new()
+        .label(&format!("{}", &profile.name,))
+        .justify(gtk::Justification::Fill)
+        .halign(Align::Start)
+        .build();
+
+    let context = label.get_style_context();
+    context.add_class("heading");
+
+    container.pack_start(&label, false, false, 8);
+
     for f in profile.active_scripts.iter() {
         let manifest = Manifest::from(&script_path.join(&f))?;
 
-        let label = gtk::LabelBuilder::new()
+        let expander = gtk::ExpanderBuilder::new()
+            .border_width(8)
             .label(&format!("{} ({})", &manifest.name, &f.display()))
-            .justify(gtk::Justification::Fill)
-            .halign(Align::Start)
             .build();
 
-        let context = label.get_style_context();
-        context.add_class("script_heading");
+        let expander_frame = gtk::FrameBuilder::new()
+            .border_width(8)
+            .shadow_type(ShadowType::None)
+            .build();
 
-        container.pack_start(&label, false, false, 8);
+        let expander_container = gtk::BoxBuilder::new()
+            .orientation(Orientation::Vertical)
+            .homogeneous(false)
+            .build();
 
-        if let Some(params) = manifest.config {
+        expander_frame.add(&expander_container);
+        expander.add(&expander_frame);
+
+        container.pack_start(&expander, false, false, 8);
+
+        if let Some(params) = &manifest.config {
             for param in params {
                 let name = match &param {
                     manifest::ConfigParam::Int { name, .. } => name,
@@ -453,7 +475,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
                 };
 
                 let child = create_config_editor(&param, &value)?;
-                container.pack_start(&child, false, true, 8);
+                expander_container.pack_start(&child, false, true, 0);
             }
         }
     }
