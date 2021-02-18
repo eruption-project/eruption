@@ -540,11 +540,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
 
                 CompletionsSubcommands::PowerShell => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
+                    generate::<PowerShell, _>(&mut app, BIN_NAME, &mut fd);
                 }
 
                 CompletionsSubcommands::Zsh => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
+                    generate::<Zsh, _>(&mut app, BIN_NAME, &mut fd);
                 }
             }
         }
