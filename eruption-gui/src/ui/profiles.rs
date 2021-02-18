@@ -15,19 +15,30 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::{constants, manifest, profiles::Profile};
+use crate::profiles::FindConfig;
+use crate::{
+    constants, manifest,
+    profiles::{self, Profile},
+};
 use crate::{manifest::Manifest, util};
 use gdk::RGBA;
 use glib::clone;
 use glib::prelude::*;
 use gtk::{prelude::*, Align, Orientation};
 use gtk::{ShadowType, StackExt};
+use manifest::GetAttr;
 use sourceview::prelude::*;
 use sourceview::BufferBuilder;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, Clone, thiserror::Error)]
+pub enum ProfilesError {
+    #[error("Parameter has an invalid data type")]
+    TypeMismatch {},
+}
 
 fn build_int_config(
     name: &str,
@@ -79,30 +90,34 @@ fn build_int_config(
 }
 
 fn build_float_config(
-    name: &str,
+    _name: &str,
     description: &str,
     _default: f64,
     min: Option<f64>,
     max: Option<f64>,
     value: f64,
-) -> Result<gtk::Grid> {
-    let container = gtk::GridBuilder::new()
-        .border_width(10)
-        .column_spacing(10)
-        .row_spacing(10)
+) -> Result<gtk::Box> {
+    let container = gtk::BoxBuilder::new()
+        .border_width(8)
+        .orientation(Orientation::Vertical)
+        .homogeneous(false)
+        .expand(false)
         .build();
 
     // let child = gtk::LabelBuilder::new().label("float").build();
     // container.pack_start(&child, true, true, 8);
 
-    let child = gtk::LabelBuilder::new()
-        .use_markup(true)
-        .label(&format!("<b>{}</b>", name))
-        .build();
-    container.attach(&child, 0, 0, 1, 1);
+    // let child = gtk::LabelBuilder::new()
+    //     .use_markup(true)
+    //     .label(&format!("<b>{}</b>", name))
+    //     .build();
+    // container.attach(&child, 0, 0, 1, 1);
 
-    let child = gtk::LabelBuilder::new().label(&description).build();
-    container.attach(&child, 1, 0, 1, 1);
+    let child = gtk::LabelBuilder::new()
+        .label(&description)
+        .xalign(0.0075)
+        .build();
+    container.pack_start(&child, false, false, 8);
 
     // set constraints
     let mut adjustment = gtk::AdjustmentBuilder::new();
@@ -115,14 +130,16 @@ fn build_float_config(
         adjustment = adjustment.upper(max as f64);
     }
 
+    adjustment = adjustment.value(value as f64);
+
     let adjustment = adjustment.build();
 
     let child = gtk::ScaleBuilder::new()
+        .orientation(Orientation::Horizontal)
         .adjustment(&adjustment)
-        .fill_level(value as f64)
         .build();
 
-    container.attach(&child, 0, 1, 2, 1);
+    container.pack_start(&child, false, false, 8);
 
     Ok(container)
 }
@@ -151,7 +168,10 @@ fn build_bool_config(
     let child = gtk::LabelBuilder::new().label(&description).build();
     container.attach(&child, 1, 0, 1, 1);
 
-    let child = gtk::SwitchBuilder::new().expand(false).state(value).build();
+    let child = gtk::SwitchBuilder::new()
+        .halign(Align::Start)
+        .state(value)
+        .build();
     container.attach(&child, 0, 1, 1, 1);
 
     Ok(container)
@@ -227,8 +247,15 @@ fn build_color_config(
     Ok(container)
 }
 
-fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
-    let outer = gtk::FrameBuilder::new().border_width(10).build();
+fn create_config_editor(
+    param: &manifest::ConfigParam,
+    value: &Option<&profiles::ConfigParam>,
+) -> Result<gtk::Frame> {
+    let outer = gtk::FrameBuilder::new()
+        .border_width(16)
+        .label(&format!("Parameter: {}", param.get_name()))
+        .label_xalign(0.0085)
+        .build();
 
     match &param {
         manifest::ConfigParam::Int {
@@ -238,7 +265,23 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             max,
             default,
         } => {
-            let widget = build_int_config(&name, &description, *default, *min, *max, 123)?;
+            let value = if let Some(value) = value {
+                match value {
+                    profiles::ConfigParam::Int { name: _, value, .. } => value,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            } else {
+                match param {
+                    manifest::ConfigParam::Int {
+                        name: _, default, ..
+                    } => default,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            };
+
+            let widget = build_int_config(&name, &description, *default, *min, *max, *value)?;
             outer.add(&widget);
         }
 
@@ -249,7 +292,23 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             max,
             default,
         } => {
-            let widget = build_float_config(&name, &description, *default, *min, *max, 123.59)?;
+            let value = if let Some(value) = value {
+                match value {
+                    profiles::ConfigParam::Float { name: _, value, .. } => value,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            } else {
+                match param {
+                    manifest::ConfigParam::Float {
+                        name: _, default, ..
+                    } => default,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            };
+
+            let widget = build_float_config(&name, &description, *default, *min, *max, *value)?;
             outer.add(&widget);
         }
 
@@ -258,7 +317,23 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             description,
             default,
         } => {
-            let widget = build_bool_config(&name, &description, *default, true)?;
+            let value = if let Some(value) = value {
+                match value {
+                    profiles::ConfigParam::Bool { name: _, value, .. } => value,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            } else {
+                match param {
+                    manifest::ConfigParam::Bool {
+                        name: _, default, ..
+                    } => default,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            };
+
+            let widget = build_bool_config(&name, &description, *default, *value)?;
             outer.add(&widget);
         }
 
@@ -267,7 +342,23 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             description,
             default,
         } => {
-            let widget = build_string_config(&name, &description, &default, "123")?;
+            let value = if let Some(value) = value {
+                match value {
+                    profiles::ConfigParam::String { name: _, value, .. } => value,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            } else {
+                match param {
+                    manifest::ConfigParam::String {
+                        name: _, default, ..
+                    } => default,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            };
+
+            let widget = build_string_config(&name, &description, &default, &value)?;
             outer.add(&widget);
         }
 
@@ -278,7 +369,23 @@ fn create_config_editor(param: &manifest::ConfigParam) -> Result<gtk::Frame> {
             max,
             default,
         } => {
-            let widget = build_color_config(&name, &description, *default, *min, *max, 123)?;
+            let value = if let Some(value) = value {
+                match value {
+                    profiles::ConfigParam::Color { name: _, value, .. } => value,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            } else {
+                match param {
+                    manifest::ConfigParam::Color {
+                        name: _, default, ..
+                    } => default,
+
+                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
+                }
+            };
+
+            let widget = build_color_config(&name, &description, *default, *min, *max, *value)?;
             outer.add(&widget);
         }
     }
@@ -297,6 +404,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 
     // then add config items
     let container = gtk::BoxBuilder::new()
+        .border_width(8)
         .orientation(Orientation::Vertical)
         .spacing(8)
         .homogeneous(false)
@@ -313,18 +421,38 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
             .label(&format!("{} ({})", &manifest.name, &f.display()))
             .justify(gtk::Justification::Fill)
             .halign(Align::Start)
-            .margin_top(8)
-            .margin_start(8)
             .build();
 
         let context = label.get_style_context();
         context.add_class("script_heading");
 
-        container.pack_start(&label, true, true, 8);
+        container.pack_start(&label, false, false, 8);
 
         if let Some(params) = manifest.config {
             for param in params {
-                let child = create_config_editor(&param)?;
+                let name = match &param {
+                    manifest::ConfigParam::Int { name, .. } => name,
+
+                    manifest::ConfigParam::Float { name, .. } => name,
+
+                    manifest::ConfigParam::Bool { name, .. } => name,
+
+                    manifest::ConfigParam::String { name, .. } => name,
+
+                    manifest::ConfigParam::Color { name, .. } => name,
+                };
+
+                let value = if let Some(ref values) = profile.config {
+                    match values.get(name) {
+                        Some(e) => e.find_config_param(&name),
+
+                        None => None,
+                    }
+                } else {
+                    None
+                };
+
+                let child = create_config_editor(&param, &value)?;
                 container.pack_start(&child, false, true, 8);
             }
         }

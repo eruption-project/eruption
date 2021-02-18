@@ -499,16 +499,13 @@ Author: X3n0m0rph59
               <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="position">280</property>
                 <property name="position-set">True</property>
                 <property name="wide-handle">True</property>
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="hscrollbar-policy">always</property>
-                    <property name="vscrollbar-policy">always</property>
-                    <property name="propagate-natural-width">True</property>
+                    <property name="overlay-scrolling">False</property>
                     <child>
                       <object class="GtkTreeView" id="profiles_treeview">
                         <property name="visible">True</property>
@@ -544,6 +541,7 @@ Author: X3n0m0rph59
                       <object class="GtkScrolledWindow" id="config_window">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="overlay-scrolling">False</property>
                       </object>
                     </child>
                     <child type="tab">
@@ -577,14 +575,28 @@ Author: X3n0m0rph59
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkStackSwitcher" id="profile_stack_switcher">
+                          <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">8</property>
-                            <property name="margin-end">8</property>
-                            <property name="margin-top">8</property>
-                            <property name="margin-bottom">8</property>
-                            <property name="stack">profile_stack</property>
+                            <property name="can-focus">True</property>
+                            <property name="vscrollbar-policy">never</property>
+                            <property name="propagate-natural-width">True</property>
+                            <child>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkStackSwitcher" id="profile_stack_switcher">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-end">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="stack">profile_stack</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
