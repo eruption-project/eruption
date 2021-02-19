@@ -72,65 +72,26 @@ impl Keyboard for RoccatVulcanProTKL {
                 self.paint_key(i + 1, &led_colors[i], &context, &layout);
             }
         });
+
+        // paint all other elements
+
+        // paint the mute button
+        const MUTE_BUTTON_INDEX: usize = 92;
+
+        let color = (
+            (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
+        );
+
+        let black = (0.0, 0.0, 0.0, 1.0);
+
+        rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color);
     }
 
     /// Paint a key on the keyboard widget
     fn paint_key(&self, key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layout) {
-        fn rounded_rectangle(
-            cr: &cairo::Context,
-            x: f64,
-            y: f64,
-            width: f64,
-            height: f64,
-            radius: f64,
-            color: &(f64, f64, f64, f64),
-            color2: &(f64, f64, f64, f64),
-        ) {
-            let aspect = 1.0; // aspect ratio
-            let corner_radius = height / radius; // corner curvature radius
-
-            let radius = corner_radius / aspect;
-            let degrees = std::f64::consts::PI / 180.0;
-
-            cr.new_sub_path();
-            cr.arc(
-                x + width - radius,
-                y + radius,
-                radius,
-                -90.0 * degrees,
-                0.0 * degrees,
-            );
-            cr.arc(
-                x + width - radius,
-                y + height - radius,
-                radius,
-                0.0 * degrees,
-                90.0 * degrees,
-            );
-            cr.arc(
-                x + radius,
-                y + height - radius,
-                radius,
-                90.0 * degrees,
-                180.0 * degrees,
-            );
-            cr.arc(
-                x + radius,
-                y + radius,
-                radius,
-                180.0 * degrees,
-                270.0 * degrees,
-            );
-            cr.close_path();
-
-            cr.set_source_rgba(color2.0, color2.1, color2.2, 1.0 - color2.3);
-            cr.fill_preserve();
-
-            cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
-            cr.set_line_width(1.85);
-            cr.stroke();
-        }
-
         let key_def = &self.get_key_defs("generic")[key];
 
         if !key_def.is_dummy {
@@ -200,6 +161,61 @@ impl Keyboard for RoccatVulcanProTKL {
             _ => &KEY_DEFS_GENERIC_QWERTZ,
         }
     }
+}
+
+fn rounded_rectangle(
+    cr: &cairo::Context,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+    radius: f64,
+    color: &(f64, f64, f64, f64),
+    color2: &(f64, f64, f64, f64),
+) {
+    let aspect = 1.0; // aspect ratio
+    let corner_radius = height / radius; // corner curvature radius
+
+    let radius = corner_radius / aspect;
+    let degrees = std::f64::consts::PI / 180.0;
+
+    cr.new_sub_path();
+    cr.arc(
+        x + width - radius,
+        y + radius,
+        radius,
+        -90.0 * degrees,
+        0.0 * degrees,
+    );
+    cr.arc(
+        x + width - radius,
+        y + height - radius,
+        radius,
+        0.0 * degrees,
+        90.0 * degrees,
+    );
+    cr.arc(
+        x + radius,
+        y + height - radius,
+        radius,
+        90.0 * degrees,
+        180.0 * degrees,
+    );
+    cr.arc(
+        x + radius,
+        y + radius,
+        radius,
+        180.0 * degrees,
+        270.0 * degrees,
+    );
+    cr.close_path();
+
+    cr.set_source_rgba(color2.0, color2.1, color2.2, 1.0 - color2.3);
+    cr.fill_preserve();
+
+    cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
+    cr.set_line_width(1.85);
+    cr.stroke();
 }
 
 // Key definitions for a generic keyboard with QWERTZ (de_DE) Layout
