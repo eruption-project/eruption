@@ -2374,6 +2374,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 info!("Device enumeration completed");
 
+                if crate::KEYBOARD_DEVICES.lock().is_empty()
+                    && crate::MOUSE_DEVICES.lock().is_empty()
+                {
+                    error!("No supported devices found, exiting now");
+                    process::exit(5);
+                }
+
                 info!("Performing late initializations...");
 
                 // initialize the D-Bus API
