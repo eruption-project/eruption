@@ -21,12 +21,11 @@ use crate::{
     profiles::{self, Profile},
 };
 use crate::{manifest::Manifest, util};
-use gdk::RGBA;
 use glib::clone;
 use glib::prelude::*;
-use gtk::{prelude::*, Align, Orientation};
+use gtk::{prelude::*, Align, IconSize, Justification, Orientation, PositionType};
 use gtk::{ShadowType, StackExt};
-use manifest::GetAttr;
+use paste::paste;
 use sourceview::prelude::*;
 use sourceview::BufferBuilder;
 use std::ffi::OsStr;
@@ -40,221 +39,537 @@ pub enum ProfilesError {
     TypeMismatch {},
 }
 
-fn build_int_config(
-    name: &str,
-    description: &str,
-    _default: i64,
-    min: Option<i64>,
-    max: Option<i64>,
-    value: i64,
-) -> Result<gtk::Grid> {
-    let container = gtk::GridBuilder::new()
-        .border_width(10)
-        .column_spacing(10)
-        .row_spacing(10)
-        .build();
+macro_rules! declare_config_widget_numeric {
+    (i64) => {
+        paste! {
+            fn [<build_config_widget_ i64>] <F: Fn(i64) + 'static>(
+                name: &str,
+                description: &str,
+                default: i64,
+                min: Option<i64>,
+                max: Option<i64>,
+                value:i64,
+                callback: F,
+            ) -> Result<gtk::Box> {
+                let container = gtk::BoxBuilder::new()
+                    .border_width(16)
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .orientation(Orientation::Vertical)
+                    .homogeneous(false)
+                    .build();
 
-    // let child = gtk::LabelBuilder::new().label("integer").build();
-    // container.pack_start(&child, true, true, 8);
+                let row1 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
 
-    let child = gtk::LabelBuilder::new()
-        .use_markup(true)
-        .label(&format!("<b>{}</b>", name))
-        .build();
-    container.attach(&child, 0, 0, 1, 1);
+                container.pack_start(&row1, true, true, 8);
 
-    let child = gtk::LabelBuilder::new().label(&description).build();
-    container.attach(&child, 1, 0, 1, 1);
+                let row2 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
 
-    // set constraints
-    let mut adjustment = gtk::AdjustmentBuilder::new();
+                container.pack_start(&row2, true, true, 8);
 
-    if let Some(min) = min {
-        adjustment = adjustment.lower(min as f64);
-    }
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .use_markup(true)
+                    .label(&format!("<b>{}</b>", name))
+                    .build();
 
-    if let Some(max) = max {
-        adjustment = adjustment.upper(max as f64);
-    }
+                row1.pack_start(&label, false, false, 8);
 
-    let adjustment = adjustment.build();
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .label(&description)
+                    .build();
 
-    let child = gtk::ScaleBuilder::new()
-        .adjustment(&adjustment)
-        .fill_level(value as f64)
-        .build();
+                row1.pack_start(&label, false, false, 8);
 
-    container.attach(&child, 0, 1, 2, 1);
+                // "reset to default value" button
+                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = gtk::ButtonBuilder::new()
+                    .halign(Align::Start)
+                    .image(&image)
+                    .tooltip_text("Reset this parameter to its default value")
+                    .build();
 
-    Ok(container)
-}
+                row2.pack_start(&reset_button, false, false, 8);
 
-fn build_float_config(
-    _name: &str,
-    description: &str,
-    _default: f64,
-    min: Option<f64>,
-    max: Option<f64>,
-    value: f64,
-) -> Result<gtk::Box> {
-    let container = gtk::BoxBuilder::new()
-        .border_width(8)
-        .orientation(Orientation::Vertical)
-        .homogeneous(false)
-        .expand(false)
-        .build();
+                // scale widget
+                // set constraints
+                let mut adjustment = gtk::AdjustmentBuilder::new();
 
-    // let child = gtk::LabelBuilder::new().label("float").build();
-    // container.pack_start(&child, true, true, 8);
+                adjustment = adjustment.value(value as f64);
+                adjustment = adjustment.step_increment(1.0);
 
-    // let child = gtk::LabelBuilder::new()
-    //     .use_markup(true)
-    //     .label(&format!("<b>{}</b>", name))
-    //     .build();
-    // container.attach(&child, 0, 0, 1, 1);
+                if let Some(min) = min {
+                    adjustment = adjustment.lower(min as f64);
+                }
 
-    let child = gtk::LabelBuilder::new()
-        .label(&description)
-        .xalign(0.0075)
-        .build();
-    container.pack_start(&child, false, false, 8);
+                if let Some(max) = max {
+                    adjustment = adjustment.upper(max as f64);
+                }
 
-    // set constraints
-    let mut adjustment = gtk::AdjustmentBuilder::new();
+                let adjustment = adjustment.build();
 
-    if let Some(min) = min {
-        adjustment = adjustment.lower(min as f64);
-    }
+                let scale = gtk::ScaleBuilder::new()
+                    .halign(Align::Fill)
+                    .hexpand(true)
+                    .adjustment(&adjustment)
+                    .digits(0)
+                    .value_pos(PositionType::Left)
+                    .build();
 
-    if let Some(max) = max {
-        adjustment = adjustment.upper(max as f64);
-    }
+                row2.pack_start(&scale, false, true, 8);
 
-    adjustment = adjustment.value(value as f64);
+                scale.connect_value_changed(move |c| {
+                    let value = c.get_value() as i64;
+                    callback(value);
+                });
 
-    let adjustment = adjustment.build();
+                reset_button.connect_clicked(clone!(@strong adjustment => move |_b| {
+                    adjustment.set_value(default as f64);
+                }));
 
-    let child = gtk::ScaleBuilder::new()
-        .orientation(Orientation::Horizontal)
-        .adjustment(&adjustment)
-        .build();
-
-    container.pack_start(&child, false, false, 8);
-
-    Ok(container)
-}
-
-fn build_bool_config(
-    name: &str,
-    description: &str,
-    _default: bool,
-    value: bool,
-) -> Result<gtk::Grid> {
-    let container = gtk::GridBuilder::new()
-        .border_width(10)
-        .column_spacing(10)
-        .row_spacing(10)
-        .build();
-
-    // let child = gtk::LabelBuilder::new().label("boolean").build();
-    // container.pack_start(&child, true, true, 8);
-
-    let child = gtk::LabelBuilder::new()
-        .use_markup(true)
-        .label(&format!("<b>{}</b>", name))
-        .build();
-    container.attach(&child, 0, 0, 1, 1);
-
-    let child = gtk::LabelBuilder::new().label(&description).build();
-    container.attach(&child, 1, 0, 1, 1);
-
-    let child = gtk::SwitchBuilder::new()
-        .halign(Align::Start)
-        .state(value)
-        .build();
-    container.attach(&child, 0, 1, 1, 1);
-
-    Ok(container)
-}
-
-fn build_string_config(
-    name: &str,
-    description: &str,
-    _default: &str,
-    value: &str,
-) -> Result<gtk::Grid> {
-    let container = gtk::GridBuilder::new()
-        .border_width(10)
-        .column_spacing(10)
-        .row_spacing(10)
-        .build();
-
-    // let child = gtk::LabelBuilder::new().label("string").build();
-    // container.pack_start(&child, true, true, 8);
-
-    let child = gtk::LabelBuilder::new()
-        .use_markup(true)
-        .label(&format!("<b>{}</b>", name))
-        .build();
-    container.attach(&child, 0, 0, 1, 1);
-
-    let child = gtk::LabelBuilder::new().label(&description).build();
-    container.attach(&child, 1, 0, 1, 1);
-
-    let child = gtk::EntryBuilder::new().text(&value).build();
-    container.attach(&child, 0, 1, 2, 1);
-
-    Ok(container)
-}
-
-fn build_color_config(
-    name: &str,
-    description: &str,
-    _default: u32,
-    _min: Option<u32>,
-    _max: Option<u32>,
-    value: u32,
-) -> Result<gtk::Grid> {
-    let container = gtk::GridBuilder::new()
-        .border_width(10)
-        .column_spacing(10)
-        .row_spacing(10)
-        .build();
-
-    // let child = gtk::LabelBuilder::new().label("color").build();
-    // container.pack_start(&child, true, true, 8);
-
-    let child = gtk::LabelBuilder::new()
-        .use_markup(true)
-        .label(&format!("<b>{}</b>", name))
-        .build();
-    container.attach(&child, 0, 0, 1, 1);
-
-    let child = gtk::LabelBuilder::new().label(&description).build();
-    container.attach(&child, 1, 0, 1, 1);
-
-    let colors = util::color_to_rgba(value);
-    let rgba = RGBA {
-        red: colors.0 as f64 / 255.0,
-        green: colors.1 as f64 / 255.0,
-        blue: colors.2 as f64 / 255.0,
-        alpha: colors.3 as f64 / 255.0,
+                Ok(container)
+            }
+        }
     };
 
-    let child = gtk::ColorChooserWidgetBuilder::new().rgba(&rgba).build();
-    container.attach(&child, 0, 1, 2, 1);
+    ($t:ty) => {
+        paste! {
+            fn [<build_config_widget_ $t>] <F: Fn($t) + 'static>(
+                name: &str,
+                description: &str,
+                default: $t,
+                min: Option<$t>,
+                max: Option<$t>,
+                value: $t,
+                callback: F,
+            ) -> Result<gtk::Box> {
+                let container = gtk::BoxBuilder::new()
+                    .border_width(16)
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .orientation(Orientation::Vertical)
+                    .homogeneous(false)
+                    .build();
 
-    Ok(container)
+                let row1 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row1, true, true, 8);
+
+                let row2 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row2, true, true, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .use_markup(true)
+                    .label(&format!("<b>{}</b>", name))
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .label(&description)
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                // "reset to default value" button
+                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = gtk::ButtonBuilder::new()
+                    .halign(Align::Start)
+                    .image(&image)
+                    .tooltip_text("Reset this parameter to its default value")
+                    .build();
+
+                row2.pack_start(&reset_button, false, false, 8);
+
+                // scale widget
+                // set constraints
+                let mut adjustment = gtk::AdjustmentBuilder::new();
+
+                adjustment = adjustment.value(value as f64);
+                adjustment = adjustment.step_increment(0.01);
+
+                if let Some(min) = min {
+                    adjustment = adjustment.lower(min as f64);
+                }
+
+                if let Some(max) = max {
+                    adjustment = adjustment.upper(max as f64);
+                }
+
+                let adjustment = adjustment.build();
+
+                let scale = gtk::ScaleBuilder::new()
+                    .halign(Align::Fill)
+                    .hexpand(true)
+                    .adjustment(&adjustment)
+                    .digits(2)
+                    .value_pos(PositionType::Left)
+                    .build();
+
+                row2.pack_start(&scale, false, true, 8);
+
+                scale.connect_value_changed(move |c| {
+                    let value = c.get_value() as $t;
+                    callback(value);
+                });
+
+                reset_button.connect_clicked(clone!(@strong adjustment => move |_b| {
+                    adjustment.set_value(default as f64);
+                }));
+
+                Ok(container)
+            }
+        }
+    };
 }
 
+macro_rules! declare_config_widget_input {
+    ($t:ty) => {
+        paste! {
+            fn [<build_config_widget_input_ $t:lower>] <F: Fn($t) + 'static>(
+                name: &str,
+                description: &str,
+                default: String,
+                value: String,
+                callback: F,
+            ) -> Result<gtk::Box> {
+                let container = gtk::BoxBuilder::new()
+                    .border_width(16)
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .orientation(Orientation::Vertical)
+                    .homogeneous(false)
+                    .build();
+
+                let row1 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row1, true, true, 8);
+
+                let row2 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row2, true, true, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .use_markup(true)
+                    .label(&format!("<b>{}</b>", name))
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .label(&description)
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                // "reset to default value" button
+                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = gtk::ButtonBuilder::new()
+                    .halign(Align::Start)
+                    .image(&image)
+                    .tooltip_text("Reset this parameter to its default value")
+                    .build();
+
+                row2.pack_start(&reset_button, false, false, 8);
+
+                // entry widget
+                let entry = gtk::EntryBuilder::new().text(&value).build();
+
+                row2.pack_start(&entry, false, true, 8);
+
+                entry.connect_changed(move |e| {
+                    let value = e.get_text();
+                    callback(value.to_string());
+                });
+
+                reset_button.connect_clicked(clone!(@strong entry, @strong default => move |_b| {
+                    entry.set_text(&default);
+                }));
+
+                Ok(container)
+            }
+        }
+    };
+}
+
+macro_rules! declare_config_widget_color {
+    ($t:ty) => {
+        paste! {
+            fn [<build_config_widget_color_ $t>] <F: Clone + Fn($t) + 'static>(
+                name: &str,
+                description: &str,
+                default: $t,
+                _min: Option<$t>,
+                _max: Option<$t>,
+                value: $t,
+                callback: F,
+            ) -> Result<gtk::Box> {
+                let container = gtk::BoxBuilder::new()
+                    .border_width(16)
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .orientation(Orientation::Vertical)
+                    .homogeneous(false)
+                    .build();
+
+                let row1 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row1, true, true, 8);
+
+                let row2 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row2, true, true, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .use_markup(true)
+                    .label(&format!("<b>{}</b>", name))
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .label(&description)
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                // "reset to default value" button
+                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = gtk::ButtonBuilder::new()
+                    .halign(Align::Start)
+                    .image(&image)
+                    .tooltip_text("Reset this parameter to its default value")
+                    .build();
+
+                row2.pack_start(&reset_button, false, false, 8);
+
+                // color chooser widget
+                let rgba = util::color_to_gdk_rgba(value);
+                let chooser = gtk::ColorChooserWidgetBuilder::new()
+                    .rgba(&rgba)
+                    .use_alpha(true)
+                    .show_editor(false)
+                    .build();
+
+                row2.pack_start(&chooser, false, true, 8);
+
+                chooser.connect_color_activated(clone!(@strong callback => move |_c, color| {
+                    let value = util::gdk_rgba_to_color(color);
+                    callback(value);
+                }));
+
+                reset_button.connect_clicked(clone!(@strong callback, @strong chooser => move |_b| {
+                    chooser.set_rgba(&util::color_to_gdk_rgba(default));
+                    callback(default);
+                }));
+
+                Ok(container)
+            }
+        }
+    };
+}
+
+macro_rules! declare_config_widget_switch {
+    ($t:ty) => {
+        paste! {
+            fn [<build_config_widget_switch_ $t>] <F: Fn($t) + 'static>(
+                name: &str,
+                description: &str,
+                default: $t,
+                value: $t,
+                callback: F,
+            ) -> Result<gtk::Box> {
+                let container = gtk::BoxBuilder::new()
+                    .border_width(16)
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .orientation(Orientation::Vertical)
+                    .homogeneous(false)
+                    .build();
+
+                let row1 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row1, true, true, 8);
+
+                let row2 = gtk::BoxBuilder::new()
+                    .halign(Align::Fill)
+                    .valign(Align::Fill)
+                    .spacing(8)
+                    .orientation(Orientation::Horizontal)
+                    .homogeneous(false)
+                    .build();
+
+                container.pack_start(&row2, true, true, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .use_markup(true)
+                    .label(&format!("<b>{}</b>", name))
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                let label = gtk::LabelBuilder::new()
+                    .expand(false)
+                    .halign(Align::Start)
+                    .justify(Justification::Left)
+                    .label(&description)
+                    .build();
+
+                row1.pack_start(&label, false, false, 8);
+
+                // "reset to default value" button
+                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = gtk::ButtonBuilder::new()
+                    .halign(Align::Start)
+                    .image(&image)
+                    .tooltip_text("Reset this parameter to its default value")
+                    .build();
+
+                row2.pack_start(&reset_button, false, false, 8);
+
+                // switch widget
+                let switch = gtk::SwitchBuilder::new()
+                    .expand(false)
+                    .valign(Align::Center)
+                    .state(value)
+                    .build();
+
+                row2.pack_start(&switch, false, false, 8);
+
+                switch.connect_changed_active(move |s| {
+                    let value = s.get_state();
+                    callback(value);
+                });
+
+                reset_button.connect_clicked(clone!(@strong switch => move |_| {
+                    switch.set_state(default);
+                }));
+
+                Ok(container)
+            }
+        }
+    };
+}
+
+declare_config_widget_numeric!(i64);
+declare_config_widget_numeric!(f64);
+
+declare_config_widget_input!(String);
+declare_config_widget_color!(u32);
+declare_config_widget_switch!(bool);
+
 fn create_config_editor(
+    profile: &Profile,
+    script: &Manifest,
     param: &manifest::ConfigParam,
     value: &Option<&profiles::ConfigParam>,
 ) -> Result<gtk::Frame> {
+    fn parameter_changed<T>(profile: &Profile, script: &Manifest, name: &str, value: T)
+    where
+        T: std::fmt::Display,
+    {
+        log::debug!(
+            "Setting parameter {}: {}: {} to '{}'",
+            &profile.profile_file.display(),
+            &script.script_file.display(),
+            &name,
+            &value
+        );
+
+        crate::dbus_client::set_parameter(
+            &profile.profile_file.to_string_lossy(),
+            &script.script_file.to_string_lossy(),
+            &name,
+            &format!("{}", &value),
+        )
+        .unwrap();
+    }
+
     let outer = gtk::FrameBuilder::new()
         .border_width(16)
-        .label(&format!("{}", param.get_name()))
-        .label_xalign(0.0085)
+        // .label(&format!("{}", param.get_name()))
+        // .label_xalign(0.0085)
         .build();
 
     match &param {
@@ -281,7 +596,18 @@ fn create_config_editor(
                 }
             };
 
-            let widget = build_int_config(&name, &description, *default, *min, *max, *value)?;
+            let widget = build_config_widget_i64(
+                &name,
+                &description,
+                *default,
+                *min,
+                *max,
+                *value,
+                clone!(@strong profile, @strong script, @strong name => move |value| {
+                    parameter_changed(&profile, &script, &name, &value);
+                }),
+            )?;
+
             outer.add(&widget);
         }
 
@@ -308,7 +634,18 @@ fn create_config_editor(
                 }
             };
 
-            let widget = build_float_config(&name, &description, *default, *min, *max, *value)?;
+            let widget = build_config_widget_f64(
+                &name,
+                &description,
+                *default,
+                *min,
+                *max,
+                *value,
+                clone!(@strong profile, @strong script, @strong name => move |value| {
+                    parameter_changed(&profile, &script, &name, &value);
+                }),
+            )?;
+
             outer.add(&widget);
         }
 
@@ -333,7 +670,16 @@ fn create_config_editor(
                 }
             };
 
-            let widget = build_bool_config(&name, &description, *default, *value)?;
+            let widget = build_config_widget_switch_bool(
+                &name,
+                &description,
+                *default,
+                *value,
+                clone!(@strong profile, @strong script, @strong name => move |value| {
+                    parameter_changed(&profile, &script, &name, &value);
+                }),
+            )?;
+
             outer.add(&widget);
         }
 
@@ -358,7 +704,16 @@ fn create_config_editor(
                 }
             };
 
-            let widget = build_string_config(&name, &description, &default, &value)?;
+            let widget = build_config_widget_input_string(
+                &name,
+                &description,
+                default.clone(),
+                value.clone(),
+                clone!(@strong profile, @strong script, @strong name => move |value| {
+                    parameter_changed(&profile, &script, &name, &value);
+                }),
+            )?;
+
             outer.add(&widget);
         }
 
@@ -385,7 +740,18 @@ fn create_config_editor(
                 }
             };
 
-            let widget = build_color_config(&name, &description, *default, *min, *max, *value)?;
+            let widget = build_config_widget_color_u32(
+                &name,
+                &description,
+                *default,
+                *min,
+                *max,
+                *value,
+                clone!(@strong profile, @strong script, @strong name => move |value| {
+                    parameter_changed(&profile, &script, &name, &value);
+                }),
+            )?;
+
             outer.add(&widget);
         }
     }
@@ -474,7 +840,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
                     None
                 };
 
-                let child = create_config_editor(&param, &value)?;
+                let child = create_config_editor(&profile, &manifest, &param, &value)?;
                 expander_container.pack_start(&child, false, true, 0);
             }
         }

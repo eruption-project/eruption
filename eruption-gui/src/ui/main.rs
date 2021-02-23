@@ -605,8 +605,5 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     main_window.show_all();
 
-    // TODO: add support for privileged write operations
-    lock_button.hide();
-
     Ok(())
 }

@@ -30,6 +30,20 @@ function on_startup(config)
 	submit_color_map(color_map)
 end
 
+function on_apply_parameter(parameter, value)
+	local update_fn = load("" .. parameter .. " = " .. value)
+
+	update_fn()
+
+	-- update state
+	for i = 0, canvas_size do
+		r, g, b, alpha = color_to_rgba(color_background)
+		color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+	end
+
+	submit_color_map(color_map)
+end
+
 function on_tick(delta)
 	if effect_ttl <= 0 then return end
 

@@ -44,6 +44,9 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum DbusApiError {
     #[error("D-Bus not connected")]
     BusNotConnected {},
+
+    #[error("Could not find script file")]
+    ScriptNotFound {},
 }
 
 /// D-Bus API support
@@ -317,6 +320,8 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
+                                        // TODO: Implement this
+
                                         let s = true;
                                         Ok(vec![m.msg.method_return().append1(s)])
                                     } else {
@@ -542,6 +547,44 @@ impl DbusApi {
                                     }
                                 })
                                 .outarg::<Vec<(String, String)>, _>("profiles"),
+                            )
+                            .add_m(
+                                f.method("SetParameter", (), move |m| {
+                                    if perms::has_settings_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let (profile_file, script_file, param_name, value): (
+                                            &str,
+                                            &str,
+                                            &str,
+                                            &str,
+                                        ) = m.msg.read4()?;
+
+                                        debug!(
+                                            "Setting parameter {}:{} {} to '{}'",
+                                            &profile_file, &script_file, &param_name, &value
+                                        );
+
+                                        let _result = apply_parameter(
+                                            &profile_file,
+                                            &script_file,
+                                            &param_name,
+                                            &value,
+                                        )
+                                        .map_err(|_e| MethodErr::invalid_arg(&value))?;
+
+                                        Ok(vec![m.msg.method_return().append1(true)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<&str, _>("profile_file")
+                                .inarg::<&str, _>("script_file")
+                                .inarg::<&str, _>("param_name")
+                                .inarg::<&str, _>("value")
+                                .outarg::<bool, _>("status"),
                             ),
                     ),
             );
@@ -683,6 +726,47 @@ impl DbusApi {
 /// Initialize the Eruption D-Bus API support
 pub fn initialize(dbus_tx: Sender<Message>) -> Result<DbusApi> {
     DbusApi::new(dbus_tx)
+}
+
+fn apply_parameter(
+    _profile_file: &str,
+    script_file: &str,
+    param_name: &str,
+    value: &str,
+) -> Result<()> {
+    // let _profile_dir = PathBuf::from(
+    //     CONFIG
+    //         .lock()
+    //         .as_ref()
+    //         .unwrap()
+    //         .get_str("global.profile_dir")
+    //         .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
+    // );
+
+    // let profile_path = PathBuf::from(&profile_file);
+
+    let script_path = PathBuf::from(&script_file);
+
+    let mut found = false;
+    for lua_tx in crate::LUA_TXS.lock().iter() {
+        // TODO: compare full paths here, as soon as the GUI supports /etc/eruption.conf
+        if lua_tx.script_file.file_name() == script_path.file_name() {
+            found = true;
+
+            lua_tx.send(script::Message::SetParameter {
+                param_name: param_name.to_owned(),
+                value: value.to_owned(),
+            })?;
+
+            break;
+        }
+    }
+
+    if found {
+        Ok(())
+    } else {
+        Err(DbusApiError::ScriptNotFound {}.into())
+    }
 }
 
 mod perms {

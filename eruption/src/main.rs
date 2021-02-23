@@ -108,7 +108,7 @@ lazy_static! {
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
     /// Channels to the Lua VMs
-    static ref LUA_TXS: Arc<Mutex<Vec<Sender<script::Message>>>> = Arc::new(Mutex::new(vec![]));
+    static ref LUA_TXS: Arc<Mutex<Vec<LuaTx>>> = Arc::new(Mutex::new(vec![]));
 
     /// Key states
     pub static ref KEY_STATES: Arc<Mutex<Vec<bool>>> =
@@ -195,6 +195,29 @@ pub enum EvdevError {
 
     #[error("Could not create a libevdev device handle")]
     EvdevHandleError {},
+}
+
+/// A LuaTx holds a Sender<T> as well as the path to the running script file
+pub struct LuaTx {
+    pub script_file: PathBuf,
+    pub sender: Sender<script::Message>,
+}
+
+impl LuaTx {
+    pub fn new(script_file: PathBuf, sender: Sender<script::Message>) -> Self {
+        Self {
+            script_file,
+            sender,
+        }
+    }
+}
+
+impl std::ops::Deref for LuaTx {
+    type Target = Sender<script::Message>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.sender
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -810,7 +833,7 @@ fn switch_profile<P: AsRef<Path>>(
             error!("Could not spawn a thread: {}", e);
         });
 
-        lua_txs.push(lua_tx);
+        lua_txs.push(LuaTx::new(script_path.clone(), lua_tx));
     }
 
     // finally assign the globally active profile

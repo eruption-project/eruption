@@ -68,6 +68,11 @@ pub enum Message {
 
     /// blend LOCAL_LED_MAP with LED_MAP ("realize" the color map)
     RealizeColorMap,
+
+    SetParameter {
+        param_name: String,
+        value: String,
+    },
 }
 
 lazy_static! {
@@ -1281,6 +1286,53 @@ pub fn run_script(
                                     file.file_name().unwrap().to_string_lossy()
                                 );
                                 return Ok(RunScriptResult::TerminatedGracefully);
+                            }
+                        }
+
+                        Message::SetParameter { param_name, value } => {
+                            let mut errors_present = false;
+
+                            if let Ok(handler) =
+                                lua_ctx.globals().get::<_, Function>("on_apply_parameter")
+                            {
+                                // the script declared an "on_apply_parameter" function
+                                handler
+                                    .call::<_, ()>((param_name, value))
+                                    .unwrap_or_else(|e| {
+                                        error!(
+                                            "Lua error in file {}: {}\n\t{:?}",
+                                            file.to_string_lossy(),
+                                            e,
+                                            e.source().unwrap_or(&UnknownError {})
+                                        );
+                                        errors_present = true;
+                                    })
+                            } else {
+                                // no special handling available in the script, so we just inject the parameter
+                                lua_ctx
+                                    .load(&format!("{} = {}", param_name, value))
+                                    .exec()
+                                    .unwrap_or_else(|e| {
+                                        error!(
+                                            "Lua error in file {}: {}\n\t{:?}",
+                                            file.to_string_lossy(),
+                                            e,
+                                            e.source().unwrap_or(&UnknownError {})
+                                        );
+                                        errors_present = true;
+                                    });
+                            }
+
+                            if errors_present {
+                                error!(
+                                    "Lua script '{}': Could not apply parameter",
+                                    file.file_name().unwrap().to_string_lossy()
+                                );
+                            } else {
+                                debug!(
+                                    "Lua script '{}': Successfully applied parameter",
+                                    file.file_name().unwrap().to_string_lossy()
+                                );
                             }
                         }
                     }

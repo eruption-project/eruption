@@ -28,6 +28,7 @@ tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
+byteorder = "1.4.2"
 itertools = "0.10.0"
 lazy_static = "1.4.0"
 palette = "0.5.0"

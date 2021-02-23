@@ -17,6 +17,7 @@
 
 // use crate::manifest;
 use crate::{constants, dbus_client, preferences, profiles};
+use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 // use manifest::Manifest;
@@ -59,14 +60,40 @@ pub struct RGBA {
 }
 
 /// Get RGB components of a 32 bits color value.
-#[allow(clippy::many_single_char_names)]
-pub fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
-    let a = u8::try_from((c >> 24) & 0xff).unwrap();
-    let r = u8::try_from((c >> 16) & 0xff).unwrap();
-    let g = u8::try_from((c >> 8) & 0xff).unwrap();
-    let b = u8::try_from(c & 0xff).unwrap();
+// #[allow(clippy::many_single_char_names)]
+// pub fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
+//     let a = u8::try_from((c >> 24) & 0xff).unwrap();
+//     let r = u8::try_from((c >> 16) & 0xff).unwrap();
+//     let g = u8::try_from((c >> 8) & 0xff).unwrap();
+//     let b = u8::try_from(c & 0xff).unwrap();
 
-    (r, g, b, a)
+//     (r, g, b, a)
+// }
+
+/// Convert RGBA components to a 32 bits color value.
+pub fn gdk_rgba_to_color(color: &gdk::RGBA) -> u32 {
+    LittleEndian::read_u32(&[
+        (color.blue * 255.0) as u8,
+        (color.green * 255.0) as u8,
+        (color.red * 255.0) as u8,
+        (color.alpha * 255.0) as u8,
+    ])
+}
+
+/// Get RGB components of a 32 bits color value.
+#[allow(clippy::many_single_char_names)]
+pub fn color_to_gdk_rgba(c: u32) -> gdk::RGBA {
+    let alpha = u8::try_from((c >> 24) & 0xff).unwrap();
+    let red = u8::try_from((c >> 16) & 0xff).unwrap();
+    let green = u8::try_from((c >> 8) & 0xff).unwrap();
+    let blue = u8::try_from(c & 0xff).unwrap();
+
+    gdk::RGBA {
+        red: (red as f64 / 255.0),
+        green: (green as f64 / 255.0),
+        blue: (blue as f64 / 255.0),
+        alpha: (alpha as f64 / 255.0),
+    }
 }
 
 /// Switch the currently active profile

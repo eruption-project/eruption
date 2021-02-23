@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -167,9 +168,8 @@ function on_tick(delta)
                                 end
                             else
                                 -- set a single pixel on the canvas to a specific color
-                                if components[idx] ~= nil and components[idx] ~= '' and
-                                   tonumber(components[idx]) > 0 and
-                                   tonumber(components[idx]) <= canvas_size then
+                                local num = tonumber(components[idx])
+                                if n(num) > 0 and n(num) <= canvas_size then
                                     local index = tonumber(components[idx])
                                     color_map[index] = color
                                 else

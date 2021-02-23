@@ -36,6 +36,15 @@ function on_startup(config)
     end
 end
 
+function on_apply_parameter(parameter, value)
+	local update_fn = load("" .. parameter .. " = " .. value)
+
+	update_fn()
+
+	-- update state
+	on_startup(nil)
+end
+
 function on_tick(delta)
     if not animate_gradient then return end
 
