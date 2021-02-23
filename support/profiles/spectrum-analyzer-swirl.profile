@@ -3,9 +3,9 @@ name = "Spectrum Analyzer + Color Swirls (Perlin)"
 description = "Spectrum Analyzer"
 active_scripts = [
 	'swirl-perlin.lua',
+	'audioviz3.lua',
     'halo.lua',
     'shockwave.lua',
-	'audioviz3.lua',
 	'batique.lua',
  	'macros.lua',
 #	'stats.lua',
