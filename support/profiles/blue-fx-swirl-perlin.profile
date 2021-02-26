@@ -19,48 +19,58 @@ active_scripts = [
 type = 'float'
 name = 'color_divisor'
 value = 1.0
+default = 1.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_offset'
 value = 0.0
+default = 0.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'time_scale'
 value = 150.0
+default = 150.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'coord_scale'
 value = 14.0
+default = 14.0
 
 [[config."Solid Color"]]
 type = 'color'
 name = 'color_background'
 value = 0xff2020ff
+default = 0xff2020ff
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.70
+default = 0.70
 
 # [[config.Halo]]
 # type = 'bool'
 # name = 'mouse_events'
 # value = false
+# default = false
 
 [[config.Impact]]
 type = 'color'
 name = 'color_impact'
 value = 0x80ffffff
+default = 0x80ffffff
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5
 
 [[config.Macros]]
 type = 'color'
 name = 'color_highlight'
 value = 0x0004040f
+default = 0x0004040f

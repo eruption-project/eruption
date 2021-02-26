@@ -13,18 +13,22 @@ active_scripts = [
 type = 'color'
 name = 'color_start'
 value = 0xffff0000
+default = 0xffff0000
 
 [[config.Gradient]]
 type = 'color'
 name = 'color_end'
 value = 0xff0000ff
+default = 0xff0000ff
 
 [[config.Gradient]]
 type = 'int'
 name = 'color_divisor'
 value = 5
+default = 5
 
 [[config.Gradient]]
 type = 'bool'
 name = 'animate_gradient'
 value = true
+default = true

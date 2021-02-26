@@ -15,8 +15,10 @@ active_scripts = [
 type = 'float'
 name = 'opacity'
 value = 1.0
+default = 1.0
 
 [[config.'Raindrops']]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5

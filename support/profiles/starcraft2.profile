@@ -15,23 +15,28 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xff2020ff
+default = 0xff2020ff
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.35
+default = 0.35
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5
 
 [[config.Macros]]
 type = 'color'
 name = 'color_highlight'
 value = 0x0004040f
+default = 0x0004040f
 
 [[config.Macros]]
 type = 'string'
 name = 'requires'
 value = 'macros/starcraft2'
+default = 'macros/starcraft2'

@@ -13,8 +13,10 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xffffffff
+default = 0xffffffff
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.2
+default = 0.2

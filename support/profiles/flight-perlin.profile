@@ -16,53 +16,64 @@ active_scripts = [
 type = 'float'
 name = 'color_divisor'
 value = 2.35
+default = 2.35
 
 [[config."Perlin Flight"]]
 type = 'float'
 name = 'color_offset'
 value = 0.0
+default = 0.0
 
 [[config."Perlin Flight"]]
 type = 'float'
 name = 'time_scale'
 value = 140.0
+default = 140.0
 
 [[config."Perlin Flight"]]
 type = 'float'
 name = 'coord_scale'
 value = 30.0
+default = 30.0
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_step_shockwave'
 value = 0x05010000
+default = 0x05010000
 
 [[config.Shockwave]]
 type = 'bool'
 name = 'mouse_events'
 value = true
+default = true
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_mouse_click_flash'
 value = 0xa0ff0000
+default = 0xa0ff0000
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_mouse_wheel_flash'
 value = 0xd0ff0000
+default = 0xd0ff0000
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.75
+default = 0.75
 
 [[config."System Monitor"]]
 type = 'color'
 name = 'color_cold'
 value = 0x0000ff00
+default = 0x0000ff00
 
 [[config."System Monitor"]]
 type = 'color'
 name = 'color_hot'
 value = 0xffff0000
+default = 0xffff0000

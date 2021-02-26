@@ -14,38 +14,46 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xffff0000
+default = 0xffff0000
 
 # [[config.Wave]]
 # type = 'bool'
 # name = 'horizontal'
 # value = true
+# default = true
 
 # [[config.Wave]]
 # type = 'int'
 # name = 'direction'
 # value = -1
+# default = -1
 
 # [[config.Wave]]
 # type = 'float'
 # name = 'scale_factor'
 # value = 127.0
+# default = 127.0
 
 # [[config.Wave]]
 # type = 'float'
 # name = 'speed_divisor'
 # value = 25.0
+# default = 25.0
 
 # [[config.Wave]]
 # type = 'float'
 # name = 'wave_length'
 # value = 4.0
+# default = 4.0
 
 [[config.Wave]]
 type = 'color'
 name = 'color_wave'
 value = 0x00ffff00
+default = 0x00ffff00
 
 [[config.Wave]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5

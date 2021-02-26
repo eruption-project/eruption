@@ -15,23 +15,28 @@ active_scripts = [
 type = 'color'
 name = 'color_step_shockwave'
 value = 0x05010000
+default = 0x05010000
 
 [[config.Shockwave]]
 type = 'bool'
 name = 'mouse_events'
 value = true
+default = true
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_mouse_click_flash'
 value = 0xa0ff0000
+default = 0xa0ff0000
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_mouse_wheel_flash'
 value = 0xd0ff0000
+default = 0xd0ff0000
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.75
+default = 0.75

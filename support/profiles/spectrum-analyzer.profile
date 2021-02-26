@@ -12,3 +12,4 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xff1f1f1f
+default = 0xff1f1f1f

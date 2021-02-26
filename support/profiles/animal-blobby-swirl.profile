@@ -13,33 +13,40 @@ active_scripts = [
 type = 'float'
 name = 'color_divisor'
 value = 2.0
+default = 2.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_offset'
 value = -110.0
+default = -110.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'time_scale'
 value = 250.0
+default = 250.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'coord_scale'
 value = 15.0
+default = 15.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'opacity'
 value = 0.1
+default = 0.1
 
 [[config.Animal]]
 type = 'string'
 name = 'name'
 value = 'Blobby'
+default = 'Blobby'
 
 [[config.Animal]]
 type = 'float'
 name = 'opacity'
 value = 1.0
+default = 1.0

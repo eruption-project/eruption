@@ -13,3 +13,4 @@ active_scripts = [
 type = 'float'
 name = 'opacity'
 value = 0.90
+default = 0.90

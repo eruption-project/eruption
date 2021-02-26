@@ -18,53 +18,64 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xffff000c
+default = 0xffff000c
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.45
+default = 0.45
 
 # [[config.Halo]]
 # type = 'bool'
 # name = 'mouse_events'
 # value = false
+# default = false
 
 [[config.Halo]]
 type = 'color'
 name = 'color_afterglow'
 value = 0xffffaf00
+default = 0xffffaf00
 
 [[config.Halo]]
 type = 'color'
 name = 'color_mouse_click_flash'
 value = 0x1affffff
+default = 0x1affffff
 
 [[config.Halo]]
 type = 'color'
 name = 'color_mouse_wheel_flash'
 value = 0x1affffff
+default = 0x1affffff
 
 # [[config.Halo]]
 # type = 'float'
 # name = 'opacity'
 # value = 0.25
+# default = 0.25
 
 [[config.Shockwave]]
 type = 'color'
 name = 'color_shockwave'
 value = 0xffff5f00
+default = 0xffff5f00
 
 [[config.Impact]]
 type = 'color'
 name = 'color_impact'
 value = 0x80ffff00
+default = 0x80ffff00
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5
 
 [[config.Macros]]
 type = 'color'
 name = 'color_highlight'
 value = 0x000f0000
+default = 0x000f0000

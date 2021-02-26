@@ -13,8 +13,10 @@ active_scripts = [
 type = 'float'
 name = 'color_boost'
 value = 25
+default = 25
 
 [[config."Psychedelic"]]
 type = 'float'
 name = 'saturation_boost'
 value = 2
+default = 2

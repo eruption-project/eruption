@@ -11,3 +11,4 @@ active_scripts = [
 type = 'string'
 name = 'histogram_name'
 value = 'key_histogram'
+default = 'key_histogram'

@@ -18,11 +18,13 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xff2020ff
+default = 0xff2020ff
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.45
+default = 0.45
 
 # [[config.Halo]]
 # type = 'bool'
@@ -33,13 +35,16 @@ value = 0.45
 type = 'color'
 name = 'color_impact'
 value = 0x80ffffff
+default = 0x80ffffff
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5
 
 [[config.Macros]]
 type = 'color'
 name = 'color_highlight'
 value = 0x0004040f
+default = 0x0004040f

@@ -15,13 +15,16 @@ active_scripts = [
 type = 'color'
 name = 'color_background'
 value = 0xffffffff
+default = 0xffffffff
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
 value = 0.25
+default = 0.25
 
 [[config.Raindrops]]
 type = 'float'
 name = 'opacity'
 value = 0.5
+default = 0.5
