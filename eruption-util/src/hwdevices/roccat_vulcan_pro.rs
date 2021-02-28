@@ -216,27 +216,31 @@ impl RoccatVulcanPro {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            loop {
-                let mut buf: [u8; 4] = [0; 4];
-                buf[0] = 0x04;
+            // loop {
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //     let mut buf: [u8; 4] = [0; 4];
+            //     buf[0] = 0x04;
 
-                match ctrl_dev.get_feature_report(&mut buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                        if buf[1] == 0x01 {
-                            return Ok(());
-                        }
-                    }
+            //     match ctrl_dev.get_feature_report(&mut buf) {
+            //         Ok(_result) => {
+            //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-                }
+            //             if buf[1] == 0x01 {
+            //                 return Ok(());
+            //             }
+            //         }
 
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-            }
+            //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+            //     }
+
+            //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+            // }
+
+            Ok(())
         }
     }
 }

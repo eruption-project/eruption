@@ -295,27 +295,31 @@ impl RoccatVulcanPro {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            loop {
-                let mut buf: [u8; 4] = [0; 4];
-                buf[0] = 0x04;
+            // loop {
+            //     let mut buf: [u8; 4] = [0; 4];
+            //     buf[0] = 0x04;
 
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                match ctrl_dev.get_feature_report(&mut buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //     match ctrl_dev.get_feature_report(&mut buf) {
+            //         Ok(_result) => {
+            //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                        if buf[1] == 0x01 {
-                            return Ok(());
-                        }
-                    }
+            //             if buf[1] == 0x01 {
+            //                 return Ok(());
+            //             }
+            //         }
 
-                    Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-                }
+            //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+            //     }
 
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-            }
+            //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+            // }
+
+            thread::sleep(Duration::from_millis(80));
+
+            Ok(())
         }
     }
 }
