@@ -49,16 +49,42 @@ pub enum ProfileError {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ConfigParam {
-    Int { name: String, value: i64 },
-    Float { name: String, value: f64 },
-    Bool { name: String, value: bool },
-    String { name: String, value: String },
-    Color { name: String, value: u32 },
+    Int {
+        name: String,
+        value: i64,
+        #[serde(default)]
+        default: i64,
+    },
+    Float {
+        name: String,
+        value: f64,
+        #[serde(default)]
+        default: f64,
+    },
+    Bool {
+        name: String,
+        value: bool,
+        #[serde(default)]
+        default: bool,
+    },
+    String {
+        name: String,
+        value: String,
+        #[serde(default)]
+        default: String,
+    },
+    Color {
+        name: String,
+        value: u32,
+        #[serde(default)]
+        default: u32,
+    },
 }
 
 pub trait GetAttr {
     fn get_name(&self) -> &String;
     fn get_value(&self) -> String;
+    fn get_default(&self) -> String;
 }
 
 impl GetAttr for ConfigParam {
@@ -87,6 +113,20 @@ impl GetAttr for ConfigParam {
             ConfigParam::String { ref value, .. } => value.to_owned(),
 
             ConfigParam::Color { ref value, .. } => format!("#{:06x}", value),
+        }
+    }
+
+    fn get_default(&self) -> String {
+        match self {
+            ConfigParam::Int { ref default, .. } => format!("{}", default),
+
+            ConfigParam::Float { ref default, .. } => format!("{}", default),
+
+            ConfigParam::Bool { ref default, .. } => format!("{}", default),
+
+            ConfigParam::String { ref default, .. } => default.to_owned(),
+
+            ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
         }
     }
 }
@@ -250,6 +290,7 @@ macro_rules! set_config_value {
                                 cfg.push($pval {
                                     name: name.to_string(),
                                     value: val.to_owned(),
+                                    default: val.to_owned(),
                                 });
                                 Ok(())
                             }
@@ -260,6 +301,7 @@ macro_rules! set_config_value {
                             vec![$pval {
                                 name: name.to_string(),
                                 value: val.to_owned(),
+                                default: val.to_owned(),
                             }],
                         );
 

@@ -95,7 +95,7 @@ impl ParseConfig for Vec<ConfigParam> {
     fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam> {
         for p in self.iter() {
             match &p {
-                ConfigParam::Int { name, .. } => {
+                ConfigParam::Int { name, default, .. } => {
                     if name == param {
                         let value =
                             i64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
@@ -103,11 +103,12 @@ impl ParseConfig for Vec<ConfigParam> {
                         return Ok(profiles::ConfigParam::Int {
                             name: name.to_string(),
                             value,
+                            default: *default,
                         });
                     }
                 }
 
-                ConfigParam::Float { name, .. } => {
+                ConfigParam::Float { name, default, .. } => {
                     if name == param {
                         let value =
                             f64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
@@ -115,11 +116,12 @@ impl ParseConfig for Vec<ConfigParam> {
                         return Ok(profiles::ConfigParam::Float {
                             name: name.to_string(),
                             value,
+                            default: *default,
                         });
                     }
                 }
 
-                ConfigParam::Bool { name, .. } => {
+                ConfigParam::Bool { name, default, .. } => {
                     if name == param {
                         let value =
                             bool::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
@@ -127,22 +129,24 @@ impl ParseConfig for Vec<ConfigParam> {
                         return Ok(profiles::ConfigParam::Bool {
                             name: name.to_string(),
                             value,
+                            default: *default,
                         });
                     }
                 }
 
-                ConfigParam::String { name, .. } => {
+                ConfigParam::String { name, default, .. } => {
                     if name == param {
                         let value = val.to_owned();
 
                         return Ok(profiles::ConfigParam::String {
                             name: name.to_string(),
                             value,
+                            default: default.to_owned(),
                         });
                     }
                 }
 
-                ConfigParam::Color { name, .. } => {
+                ConfigParam::Color { name, default, .. } => {
                     if name == param {
                         let value = u32::from_str_radix(&val[1..], 16)
                             .map_err(|_e| ManifestError::ParseParamError {})?;
@@ -150,6 +154,7 @@ impl ParseConfig for Vec<ConfigParam> {
                         return Ok(profiles::ConfigParam::Color {
                             name: name.to_string(),
                             value,
+                            default: *default,
                         });
                     }
                 }
