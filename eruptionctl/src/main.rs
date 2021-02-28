@@ -20,11 +20,14 @@ use colored::*;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
-use std::collections::HashMap;
+use manifest::GetAttr;
+use profiles::GetAttr as GetAttrProfile;
 use std::sync::Arc;
 use std::time::Duration;
+use std::{collections::HashMap, path::PathBuf};
 
 mod constants;
+mod dbus_client;
 mod manifest;
 mod profiles;
 mod util;
@@ -54,7 +57,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap /*, IntoApp*/)]
+#[derive(Debug, Clap)]
 pub enum Subcommands {
     /// Configuration related sub-commands
     Config {
@@ -84,6 +87,13 @@ pub enum Subcommands {
     Scripts {
         #[clap(subcommand)]
         command: ScriptsSubcommands,
+    },
+
+    /// Get or set script parameters on the currently active profile
+    Param {
+        script: Option<String>,
+        parameter: Option<String>,
+        value: Option<String>,
     },
 
     /// Generate shell completions
@@ -218,6 +228,16 @@ pub async fn switch_profile(name: &str) -> Result<()> {
         .await?;
 
     Ok(())
+}
+
+/// Get the name of the currently active profile
+pub async fn get_active_profile() -> Result<String> {
+    let result: String = dbus_system_bus("/org/eruption/profile")
+        .await?
+        .get("org.eruption.Profile", "ActiveProfile")
+        .await?;
+
+    Ok(result)
 }
 
 /// Switch the currently active slot
@@ -412,7 +432,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         == profile_name
                 }) {
                     println!(
-                        "Profile:\t{} ({})\nDescription:\t{}\nScripte:\t{:?}\n\n{:#?}",
+                        "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n\n{:#?}",
                         profile.name,
                         profile.id,
                         profile.description,
@@ -505,6 +525,247 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             }
         },
+
+        // parameter
+        Subcommands::Param {
+            script,
+            parameter,
+            value,
+        } => {
+            // determine mode of operation
+            if script.is_none() && parameter.is_none() && value.is_none() {
+                // list parameters from all scripts in the currently active profile
+                let profile_name = get_active_profile().await.map_err(|e| {
+                    eprintln!("Could not determine the currently active profile! Is the Eruption daemon running?");
+                    e
+                })?;
+
+                // TODO: Get profile dir from the daemon
+                let path = constants::DEFAULT_PROFILE_DIR;
+                let profiles = util::enumerate_profiles(path)?;
+
+                if let Some(profile) = profiles.iter().find(|&p| {
+                    *p.profile_file
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        == profile_name
+                }) {
+                    println!(
+                        "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                        profile.name, profile.id, profile.description, profile.active_scripts,
+                    );
+
+                    // dump parameters set in .profile file
+
+                    println!("Profile parameters:\n");
+
+                    let empty = HashMap::new();
+
+                    let path = constants::DEFAULT_SCRIPT_DIR;
+                    let scripts = util::enumerate_scripts(&path)?;
+
+                    for script in &scripts {
+                        if profile.active_scripts.contains(&PathBuf::from(
+                            script.script_file.file_name().unwrap_or_default(),
+                        )) {
+                            let config = profile.config.as_ref().unwrap_or_else(|| &empty);
+                            let config_params = config.get(&script.name);
+
+                            if let Some(config_params) = config_params {
+                                for config in config_params.iter() {
+                                    // read param value
+                                    let value = if config.get_value() == config.get_default() {
+                                        format!("{}", &config.get_value()).normal()
+                                    } else {
+                                        format!("{}", &config.get_value()).bold()
+                                    };
+
+                                    println!(
+                                        "\"{}\" {} {} (default: {})",
+                                        &script.name,
+                                        &config.get_name(),
+                                        &value,
+                                        &config.get_default(),
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    if opts.verbose > 0 {
+                        // dump all available parameters that could be set in the .profile file
+                        println!();
+                        println!("Available parameters:\n");
+
+                        for script in &scripts {
+                            if profile.active_scripts.contains(&PathBuf::from(
+                                script.script_file.file_name().unwrap_or_default(),
+                            )) {
+                                if let Some(config_params) = script.config.as_ref() {
+                                    for config in config_params.iter() {
+                                        // read param defaults
+                                        let value = config.get_default();
+
+                                        println!(
+                                            "\"{}\" {} (default: {})",
+                                            &script.name,
+                                            &config.get_name(),
+                                            &value,
+                                        );
+                                    }
+                                }
+
+                                println!();
+                            }
+                        }
+                    }
+                } else {
+                    eprintln!("Could not load the current profile");
+                }
+            } else if let Some(script) = script {
+                let profile_name = get_active_profile().await.map_err(|e| {
+                    eprintln!("Could not determine the currently active profile! Is the Eruption daemon running?");
+                    e
+                })?;
+
+                if let Some(value) = value {
+                    // set a parameter from the specified script in the currently active profile
+
+                    let parameter = parameter.unwrap();
+
+                    let path = constants::DEFAULT_PROFILE_DIR;
+                    let profiles = util::enumerate_profiles(path)?;
+
+                    if let Some(profile) = profiles.iter().find(|&p| {
+                        *p.profile_file
+                            .file_name()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            == profile_name
+                    }) {
+                        println!(
+                            "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                            profile.name, profile.id, profile.description, profile.active_scripts,
+                        );
+
+                        let path = constants::DEFAULT_SCRIPT_DIR;
+                        let scripts = util::enumerate_scripts(&path)?;
+
+                        for scr in scripts {
+                            if scr.name == script {
+                                // set param value
+                                dbus_client::set_parameter(
+                                    &profile.profile_file.to_string_lossy(),
+                                    &scr.script_file.to_string_lossy(),
+                                    &parameter,
+                                    &value,
+                                )?;
+
+                                println!("\"{}\" {} {}", &scr.name, &parameter, &value.bold(),);
+
+                                break;
+                            }
+                        }
+                    } else {
+                        eprintln!("Could not load the current profile");
+                    }
+                } else if let Some(parameter) = parameter {
+                    // list parameters from the specified script in the currently active profile
+
+                    let path = constants::DEFAULT_PROFILE_DIR;
+                    let profiles = util::enumerate_profiles(path)?;
+
+                    if let Some(profile) = profiles.iter().find(|&p| {
+                        *p.profile_file
+                            .file_name()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            == profile_name
+                    }) {
+                        let empty = HashMap::new();
+
+                        let path = constants::DEFAULT_SCRIPT_DIR;
+                        let scripts = util::enumerate_scripts(&path)?;
+
+                        'OUTER_LOOP: for script in scripts {
+                            if profile.active_scripts.contains(&PathBuf::from(
+                                script.script_file.file_name().unwrap_or_default(),
+                            )) {
+                                let config = profile.config.as_ref().unwrap_or_else(|| &empty);
+                                if let Some(config) = config.get(&script.name) {
+                                    for config in config.iter() {
+                                        if config.get_name() == &parameter {
+                                            if let Some(value) = &value {
+                                                println!(
+                                                    "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                                                    profile.name, profile.id, profile.description, profile.active_scripts,
+                                                );
+
+                                                // set param value
+                                                dbus_client::set_parameter(
+                                                    &profile.profile_file.to_string_lossy(),
+                                                    &script.script_file.to_string_lossy(),
+                                                    &parameter,
+                                                    &value,
+                                                )?;
+
+                                                println!(
+                                                    "\"{}\" {} {}",
+                                                    &script.name,
+                                                    &parameter,
+                                                    &value.bold(),
+                                                );
+
+                                                break 'OUTER_LOOP;
+                                            } else {
+                                                println!(
+                                                    "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                                                    profile.name, profile.id, profile.description, profile.active_scripts,
+                                                );
+
+                                                // read param value
+                                                println!(
+                                                    "\"{}\" {} {}",
+                                                    &script.name,
+                                                    &config.get_name(),
+                                                    &config.get_value().bold(),
+                                                );
+
+                                                break 'OUTER_LOOP;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        eprintln!("No matches found");
+                    }
+                } else {
+                    // list parameters from the specified script
+                    println!("Dumping all parameters from the specified script:\n");
+
+                    let path = constants::DEFAULT_SCRIPT_DIR;
+                    let scripts = util::enumerate_scripts(&path)?;
+
+                    for scr in scripts {
+                        if scr.name == script {
+                            for param in scr.config.unwrap_or_else(|| Vec::new()) {
+                                println!(
+                                    "\"{}\" {} default: {}",
+                                    scr.name,
+                                    param.get_name().bold(),
+                                    param.get_default()
+                                );
+                            }
+                        }
+                    }
+                }
+            } else {
+                println!("Nothing to do");
+            }
+        }
 
         // convenience operations: switch profile or slot
         Subcommands::Switch { command } => match command {
