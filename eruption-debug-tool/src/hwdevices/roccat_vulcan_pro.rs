@@ -209,6 +209,110 @@ impl RoccatVulcanPro {
         }
     }
 
+    fn send_led_data(&self, id: u8) -> Result<()> {
+        trace!("Sending data to LED device");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = led_dev.as_ref().unwrap();
+
+            match id {
+                0xa1 => {
+                    let buf: [u8; 64] = [
+                        0xa1, 0x01, 0x80, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ];
+
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
+
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+
+                    let buf: [u8; 64] = [
+                        0xa1, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ];
+
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
+
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+
+                    let buf: [u8; 64] = [
+                        0xa1, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ];
+
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
+
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+
+                    let buf: [u8; 64] = [
+                        0xa1, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ];
+
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
+
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+
+                    let buf: [u8; 64] = [
+                        0xa1, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ];
+
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
+
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+
+                    Ok(())
+                }
+
+                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+            }
+        }
+    }
+
     fn wait_for_ctrl_dev(&self) -> Result<()> {
         trace!("Waiting for control device to respond...");
 
@@ -247,25 +351,36 @@ impl DeviceTrait for RoccatVulcanPro {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
+            println!("Step 1");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("Step 1: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 1: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
 
+            println!("Step 2 skipped");
+            // println!("Step 2");
             // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| error!("Step 2: {}", e));
+            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
             // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| error!("Wait 2: {}", e));
+            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
 
+            println!("Step 3");
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| error!("Step 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
 
+            println!("Step 4");
             self.send_ctrl_report(0x11)
-                .unwrap_or_else(|e| error!("Step 4: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 4: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+
+            // init colors
+            println!("Step 5");
+            self.send_led_data(0xa1)
+                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }
@@ -332,30 +447,32 @@ impl DeviceTrait for RoccatVulcanPro {
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
 
-                        // TODO: The #' key (on QWERTZ layout) seems to be out of order!?
-                        //       This is an ugly hack, find a better way to fix this
-                        // let mut led_map = led_map.to_vec();
-                        // led_map.swap(81, 96);
-
                         let mut buffer: [u8; 448] = [0; 448];
-                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
-
                         for i in 0..NUM_KEYS {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            buffer[offset + 4] = color.r;
-                            buffer[offset + 4 + 12] = color.g;
-                            buffer[offset + 4 + 24] = color.b;
+                            buffer[offset] = color.r;
+                            buffer[offset + 12] = color.g;
+                            buffer[offset + 24] = color.b;
                         }
 
-                        for bytes in buffer.chunks(64) {
-                            let mut tmp: [u8; 65] = [0; 65];
-                            tmp[1..65].copy_from_slice(&bytes);
+                        for (cntr, bytes) in buffer.chunks(60).take(5).enumerate() {
+                            let mut tmp: [u8; 64] = [0; 64];
+
+                            if cntr < 1 {
+                                tmp[0..4].copy_from_slice(&[0xa1, 0x01, 0x80, 0x01]);
+                            } else {
+                                tmp[0..4].copy_from_slice(&[0xa1, cntr as u8 + 1, 0x00, 0x00]);
+                            }
+
+                            tmp[4..64].copy_from_slice(&bytes);
+
+                            hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {
-                                    if len < 65 {
+                                    if len < 64 {
                                         return Err(HwDeviceError::WriteError {}.into());
                                     }
                                 }

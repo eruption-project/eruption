@@ -386,44 +386,63 @@ impl DeviceTrait for RoccatVulcan1xx {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
+            println!("Step 1");
             self.query_ctrl_report(0x0f)
-                .unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
 
+            println!("Step 2");
             self.send_ctrl_report(0x15)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
 
+            println!("Step 3");
             self.send_ctrl_report(0x05)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
 
+            println!("Step 4");
             self.send_ctrl_report(0x07)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
 
+            println!("Step 5");
             self.send_ctrl_report(0x0a)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
 
+            println!("Step 6");
             self.send_ctrl_report(0x0b)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 6: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 6: {}", e));
 
+            println!("Step 7");
             self.send_ctrl_report(0x06)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 7: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 7: {}", e));
 
+            println!("Step 8");
             self.send_ctrl_report(0x09)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 8: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 8: {}", e));
 
+            println!("Step 9");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 9: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 9: {}", e));
 
+            println!("Step 10");
             self.send_ctrl_report(0x13)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 10: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 10: {}", e));
 
             Ok(())
         }
