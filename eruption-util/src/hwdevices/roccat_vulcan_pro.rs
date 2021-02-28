@@ -442,30 +442,32 @@ impl DeviceTrait for RoccatVulcanPro {
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
 
-                        // TODO: The #' key (on QWERTZ layout) seems to be out of order!?
-                        //       This is an ugly hack, find a better way to fix this
-                        // let mut led_map = led_map.to_vec();
-                        // led_map.swap(81, 96);
-
                         let mut buffer: [u8; 448] = [0; 448];
-                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
-
                         for i in 0..NUM_KEYS {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            buffer[offset + 4] = color.r;
-                            buffer[offset + 4 + 12] = color.g;
-                            buffer[offset + 4 + 24] = color.b;
+                            buffer[offset] = color.r;
+                            buffer[offset + 12] = color.g;
+                            buffer[offset + 24] = color.b;
                         }
 
-                        for bytes in buffer.chunks(64) {
-                            let mut tmp: [u8; 65] = [0; 65];
-                            tmp[1..65].copy_from_slice(&bytes);
+                        for (cntr, bytes) in buffer.chunks(60).take(5).enumerate() {
+                            let mut tmp: [u8; 64] = [0; 64];
+
+                            if cntr < 1 {
+                                tmp[0..4].copy_from_slice(&[0xa1, 0x01, 0x80, 0x01]);
+                            } else {
+                                tmp[0..4].copy_from_slice(&[0xa1, cntr as u8 + 1, 0x00, 0x00]);
+                            }
+
+                            tmp[4..64].copy_from_slice(&bytes);
+
+                            hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {
-                                    if len < 65 {
+                                    if len < 64 {
                                         return Err(HwDeviceError::WriteError {}.into());
                                     }
                                 }
