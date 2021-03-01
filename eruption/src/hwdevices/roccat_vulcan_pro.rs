@@ -767,7 +767,7 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
                             buffer[offset + 24] = color.b;
                         }
 
-                        for (cntr, bytes) in buffer.chunks(60).take(5).enumerate() {
+                        for (cntr, bytes) in buffer.chunks(60).take(6).enumerate() {
                             let mut tmp: [u8; 64] = [0; 64];
 
                             if cntr < 1 {
