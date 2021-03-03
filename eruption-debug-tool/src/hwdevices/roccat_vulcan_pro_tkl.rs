@@ -345,32 +345,35 @@ impl DeviceTrait for RoccatVulcanProTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            self.send_ctrl_report(0x00)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
-
-            self.send_ctrl_report(0x00)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
-
+            println!("Step 1");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
 
+            println!("Step 2 skipped");
+            // println!("Step 2");
             // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| error!("{}", e));
-            // self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
 
+            println!("Step 3");
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
 
+            println!("Step 4");
             self.send_ctrl_report(0x11)
-                .unwrap_or_else(|e| error!("{}", e));
-            self.wait_for_ctrl_dev().unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
 
             // init colors
-            self.send_led_data(0xa1).unwrap_or_else(|e| error!("{}", e));
+            println!("Step 5");
+            self.send_led_data(0xa1)
+                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
             thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())

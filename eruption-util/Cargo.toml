@@ -12,21 +12,21 @@ readme = "README.md"
 [dependencies]
 clap =  { version = "3.0.0-beta.2", features = ["derive"] }
 clap_generate = "3.0.0-beta.2"
-ctrlc = { version = "3.1.7", features = ["termination"] }
+ctrlc = { version = "3.1.8", features = ["termination"] }
 colored = "2.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
 libc = "0.2.86"
-nix = "0.19.1"
+nix = "0.20.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.123", features = ["derive"] }
-serde_json = { version = "1.0.62" }
+serde_json = "1.0.63"
 tokio = { version = "1.2.0", features = ["full"] }
-tracing = "0.1.23"
-tracing-futures = "0.2.4"
-tracing-subscriber = "0.2.15"
+tracing = "0.1.25"
+tracing-futures = "0.2.5"
+tracing-subscriber = "0.2.16"
 crossbeam = "0.8.0"
-thiserror = "1.0.23"
+thiserror = "1.0.24"
 eyre = "0.6.5"
 color-eyre = "0.5.10"
 paste = "1.0.4"
