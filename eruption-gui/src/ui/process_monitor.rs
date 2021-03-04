@@ -129,11 +129,11 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
 
         rules_treeview.set_model(Some(&rules_treestore));
 
-        rules_treeview.connect_row_activated(
-            clone!(@strong builder => move |_tv, _path, _column| {
-                // let index = tv.get_model().unwrap().get_value(&tv.get_model().unwrap().get_iter(&path).unwrap(), 0).get::<u64>().unwrap().unwrap();
-            }),
-        );
+        // rules_treeview.connect_row_activated(
+        //     clone!(@strong builder => move |_tv, _path, _column| {
+        //         // let index = tv.get_model().unwrap().get_value(&tv.get_model().unwrap().get_iter(&path).unwrap(), 0).get::<u64>().unwrap().unwrap();
+        //     }),
+        // );
 
         // rules_treeview.connect_button_press_event(clone!(@strong main_window => move |_, _e| {
         //         ui::rule::show_rule_dialog(&main_window);
