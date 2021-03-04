@@ -39,11 +39,12 @@
 
 ### Mouse Devices
 
-| Vendor | Product         | Status | Macro Keys | Easy Shift Key |
-| ------ | --------------- | ------ | ---------- | -------------- |
-| ROCCAT | Kone Pure Ultra | 100%   | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo       | 80%    | N.a.       | N.a.           |
-| ROCCAT | Kova AIMO       | 80%    | N.a.       | N.a.           |
+| Vendor | Product              | Status | Macro Keys | Easy Shift Key |
+| ------ | -------------------- | ------ | ---------- | -------------- |
+| ROCCAT | Kone Pure Ultra      | 100%   | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo            | 80%    | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo Remastered | 80%    | N.a.       | N.a.           |
+| ROCCAT | Kova AIMO            | 80%    | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
