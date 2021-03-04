@@ -41,6 +41,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 - ROCCAT Kone Pure Ultra
 - ROCCAT Kone Aimo (experimental)
+- ROCCAT Kone Aimo Remastered (experimental)
 - ROCCAT Kova AIMO (experimental)
 
 Please see [DEVICES.md](DEVICES.md) for further information

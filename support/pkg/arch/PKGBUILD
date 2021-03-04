@@ -245,6 +245,7 @@ package() {
     install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/generic_mouse.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_aimo_remastered.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_nyth.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
