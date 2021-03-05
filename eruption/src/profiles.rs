@@ -473,3 +473,119 @@ pub fn find_path_by_uuid(uuid: Uuid, profile_path: &Path) -> Option<PathBuf> {
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{path::PathBuf, str::FromStr};
+
+    use uuid::Uuid;
+
+    use super::FindConfig;
+
+    #[test]
+    fn enum_profile_files() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let files = super::get_profile_files(&path.join("../support/tests/assets/"))?;
+
+        assert!(
+            files.contains(&path.join("../support/tests/assets/default.profile")),
+            "Missing default.profile: {:#?}",
+            files
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn enum_profiles() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profiles = super::get_profiles(&path.join("../support/tests/assets/"))?;
+
+        assert!(
+            profiles
+                .iter()
+                .map(|p| p.name.as_ref())
+                .collect::<Vec<&str>>()
+                .contains(&"Organic FX"),
+            "Missing profile 'Organic FX' in profiles: {:#?}",
+            profiles
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn find_profile_path_by_uuid() -> super::Result<()> {
+        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path =
+            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+
+        assert!(
+            profile_path == PathBuf::from(path.join("../support/tests/assets/default.profile")),
+            "Invalid path {:#?}",
+            profile_path
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_by_path() -> super::Result<()> {
+        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path =
+            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+
+        let profile = super::Profile::from(&profile_path)?;
+
+        assert_eq!(profile.id, uuid);
+        assert_eq!(profile.name, "Organic FX");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_profile_parameters() -> super::Result<()> {
+        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path =
+            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+
+        let profile = super::Profile::from(&profile_path)?;
+
+        assert_eq!(profile.id, uuid);
+        assert_eq!(profile.name, "Organic FX");
+
+        let config = profile.config.unwrap();
+
+        let param = config["Shockwave"]
+            .find_config_param("color_step_shockwave")
+            .unwrap();
+
+        assert_eq!(
+            param,
+            &super::ConfigParam::Color {
+                name: String::from("color_step_shockwave"),
+                value: 0x05010000
+            }
+        );
+
+        let param = config["Shockwave"]
+            .find_config_param("mouse_events")
+            .unwrap();
+
+        assert_eq!(
+            param,
+            &super::ConfigParam::Bool {
+                name: String::from("mouse_events"),
+                value: true
+            }
+        );
+
+        Ok(())
+    }
+}
