@@ -19,6 +19,7 @@
 
 use crate::constants;
 use log::*;
+use paste::paste;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::default::Default;
@@ -159,6 +160,47 @@ pub struct Profile {
     pub active_scripts: Vec<PathBuf>,
 
     pub config: Option<HashMap<String, Vec<ConfigParam>>>,
+}
+
+macro_rules! get_default_value {
+    ($t:ident, $tval:ty, $rval:ty) => {
+        paste! {
+            pub fn [<get_default_ $t>] (&self, script_name: &str, name: &str) -> Option<$rval> {
+                match self.config.as_ref() {
+                    Some(config) =>
+                        match config.get(&script_name.to_owned()) {
+                        Some(script_config) =>
+                            match script_config.find_config_param(&name) {
+                                Some(p) => match p {
+                                    $tval {
+                                        name: _,
+                                        value: _,
+                                        default,
+                                    } => Some(default.clone()),
+
+                                    _ => None,
+                                },
+
+                                _ => None,
+                            },
+
+                        _ => None,
+                    }
+
+                    _ => None,
+                }
+            }
+        }
+    };
+}
+
+impl Profile {
+    // instantiate default value getters
+    get_default_value!(int, ConfigParam::Int, i64);
+    get_default_value!(float, ConfigParam::Float, f64);
+    get_default_value!(bool, ConfigParam::Bool, bool);
+    get_default_value!(string, ConfigParam::String, String);
+    get_default_value!(color, ConfigParam::Color, u32);
 }
 
 pub trait FindConfig {

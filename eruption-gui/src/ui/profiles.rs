@@ -582,7 +582,7 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Int { name: _, value, .. } => value,
+                    profiles::ConfigParam::Int { name: _, value, .. } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -590,19 +590,27 @@ fn create_config_editor(
                 match param {
                     manifest::ConfigParam::Int {
                         name: _, default, ..
-                    } => default,
+                    } => profile
+                        .get_default_int(&script.name, &name)
+                        .or_else(|| Some(*default))
+                        .unwrap(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
+            let default = profile
+                .get_default_int(&script.name, &name)
+                .or_else(|| Some(*default))
+                .unwrap();
+
             let widget = build_config_widget_i64(
                 &name,
                 &description,
-                *default,
+                default,
                 *min,
                 *max,
-                *value,
+                value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
@@ -620,7 +628,7 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Float { name: _, value, .. } => value,
+                    profiles::ConfigParam::Float { name: _, value, .. } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -628,19 +636,27 @@ fn create_config_editor(
                 match param {
                     manifest::ConfigParam::Float {
                         name: _, default, ..
-                    } => default,
+                    } => profile
+                        .get_default_float(&script.name, &name)
+                        .or_else(|| Some(*default))
+                        .unwrap(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
+            let default = profile
+                .get_default_float(&script.name, &name)
+                .or_else(|| Some(*default))
+                .unwrap();
+
             let widget = build_config_widget_f64(
                 &name,
                 &description,
-                *default,
+                default,
                 *min,
                 *max,
-                *value,
+                value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
@@ -656,7 +672,7 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Bool { name: _, value, .. } => value,
+                    profiles::ConfigParam::Bool { name: _, value, .. } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -664,17 +680,25 @@ fn create_config_editor(
                 match param {
                     manifest::ConfigParam::Bool {
                         name: _, default, ..
-                    } => default,
+                    } => profile
+                        .get_default_bool(&script.name, &name)
+                        .or_else(|| Some(*default))
+                        .unwrap(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
+            let default = profile
+                .get_default_bool(&script.name, &name)
+                .or_else(|| Some(*default))
+                .unwrap();
+
             let widget = build_config_widget_switch_bool(
                 &name,
                 &description,
-                *default,
-                *value,
+                default,
+                value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
@@ -688,9 +712,9 @@ fn create_config_editor(
             description,
             default,
         } => {
-            let value = if let Some(value) = value {
+            let value = if let Some(value) = *value {
                 match value {
-                    profiles::ConfigParam::String { name: _, value, .. } => value,
+                    profiles::ConfigParam::String { name: _, value, .. } => value.clone(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -698,17 +722,25 @@ fn create_config_editor(
                 match param {
                     manifest::ConfigParam::String {
                         name: _, default, ..
-                    } => default,
-
+                    } => profile
+                        .get_default_string(&script.name, &name)
+                        .or_else(|| Some(default.clone()))
+                        .unwrap()
+                        .to_owned(),
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
+
+            let default = profile
+                .get_default_string(&script.name, &name)
+                .or_else(|| Some(default.clone()))
+                .unwrap();
 
             let widget = build_config_widget_input_string(
                 &name,
                 &description,
                 default.clone(),
-                value.clone(),
+                value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
@@ -726,7 +758,7 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Color { name: _, value, .. } => value,
+                    profiles::ConfigParam::Color { name: _, value, .. } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -734,19 +766,27 @@ fn create_config_editor(
                 match param {
                     manifest::ConfigParam::Color {
                         name: _, default, ..
-                    } => default,
+                    } => profile
+                        .get_default_color(&script.name, &name)
+                        .or_else(|| Some(*default))
+                        .unwrap(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
+            let default = profile
+                .get_default_color(&script.name, &name)
+                .or_else(|| Some(*default))
+                .unwrap();
+
             let widget = build_config_widget_color_u32(
                 &name,
                 &description,
-                *default,
+                default,
                 *min,
                 *max,
-                *value,
+                value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
@@ -776,7 +816,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
         .homogeneous(false)
         .build();
 
-    let profile = Profile::new(profile.as_ref())?;
+    let profile = Profile::from(profile.as_ref())?;
 
     let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
 
