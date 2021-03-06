@@ -121,7 +121,11 @@ the daemon with the command:
  $ git clone https://github.com/X3n0m0rph59/eruption.git
  $ cd eruption
  $ cargo build --all --release
+
+ $ sudo target/release/eruption -c support/config/eruption.conf
 ```
+
+Please refer to [INSTALL.md](INSTALL.md) for further information.
 
 ## After Setup
 
