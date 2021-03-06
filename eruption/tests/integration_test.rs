@@ -14,3 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+use std::{path::PathBuf, process::Command};
+
+#[test]
+fn test_eruption_version() {
+    let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption"));
+
+    let output = Command::new(&command)
+        .args(&["-V"])
+        .output()
+        .expect("Failed to execute the test");
+
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout),
+        format!("Eruption {}\n", env!("CARGO_PKG_VERSION"))
+    );
+}

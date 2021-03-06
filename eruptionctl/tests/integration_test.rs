@@ -15,3 +15,19 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::{path::PathBuf, process::Command};
+
+#[test]
+fn test_eruptionctl_version() {
+    let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruptionctl"));
+
+    let output = Command::new(&command)
+        .args(&["-V"])
+        .output()
+        .expect("Failed to execute the test");
+
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout),
+        format!("eruptionctl {}\n", env!("CARGO_PKG_VERSION"))
+    );
+}

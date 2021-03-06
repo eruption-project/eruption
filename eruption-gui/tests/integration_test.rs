@@ -15,3 +15,16 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::{path::PathBuf, process::Command};
+
+#[test]
+fn test_eruption_gui_version() {
+    let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-gui"));
+
+    let output = Command::new(&command)
+        .args(&["--help"])
+        .output()
+        .expect("Failed to execute the test");
+
+    assert!(String::from_utf8_lossy(&output.stdout).contains(&"eruption-gui"));
+}
