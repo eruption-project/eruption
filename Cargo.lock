@@ -1798,9 +1798,9 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.25.1"
+version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2ac95d3b4b9ee72d70be9131c9bd23ab9982d45fc58d7c4cb171b03ef3b6540"
+checksum = "f413299f376cd2f0eb4f82798d656e18696e5b7f296567bf55478868bb723b3e"
 dependencies = [
  "approx 0.4.0",
  "generic-array",
