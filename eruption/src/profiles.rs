@@ -612,7 +612,8 @@ mod tests {
             param,
             &super::ConfigParam::Color {
                 name: String::from("color_step_shockwave"),
-                value: 0x05010000
+                value: 0x05010000,
+                default: Default::default(),
             }
         );
 
@@ -624,7 +625,8 @@ mod tests {
             param,
             &super::ConfigParam::Bool {
                 name: String::from("mouse_events"),
-                value: true
+                value: true,
+                default: Default::default(),
             }
         );
 
