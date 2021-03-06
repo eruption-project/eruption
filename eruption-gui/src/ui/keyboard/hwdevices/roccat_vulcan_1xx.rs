@@ -42,7 +42,7 @@ impl RoccatVulcan1xx {
 
 impl Keyboard for RoccatVulcan1xx {
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Vulcan 1xx")
+        ("ROCCAT", "Vulcan 100/12x AIMO")
     }
 
     fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
