@@ -6,7 +6,8 @@ Table of new and noteworthy changes:
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.20 | __New Release__                                                                                                                                                       |
 | 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
-| 0.1.20 | New Effect Plugin/Lua Script/Profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                      |
+| 0.1.20 | Updated the Eruption GUI to the latest version `0.0.7` (this is a technology preview)                                                                                 |
+| 0.1.20 | New effect plugin/Lua script/profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                      |
 | 0.1.20 | Add experimental support for the ROCCAT Kone Aimo Remastered                                                                                                          |
 | 0.1.19 | __New Release__                                                                                                                                                       |
 | 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
