@@ -1,7 +1,11 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [How to build and install Eruption from Source](#how-to-build-and-install-eruption-from-source)
+- [How to build and install Eruption from source](#how-to-build-and-install-eruption-from-source)
+    - [Install build dependencies](#install-build-dependencies)
+      - [On Arch-based distros](#on-arch-based-distros)
+      - [On Fedora-based distros](#on-fedora-based-distros)
+      - [On Debian-based distros](#on-debian-based-distros)
     - [Clone the project and build the release binaries](#clone-the-project-and-build-the-release-binaries)
     - [Create the target directories and copy over all the required files](#create-the-target-directories-and-copy-over-all-the-required-files)
       - [1. Create the target directories](#1-create-the-target-directories)
@@ -10,9 +14,36 @@
       - [4. Copy over scripts and profiles](#4-copy-over-scripts-and-profiles)
     - [Run Eruption](#run-eruption)
 
-# How to build and install Eruption from Source
+# How to build and install Eruption from source
+
+To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.50.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most Linux based systems.
+
+### Install build dependencies
+
+#### On Arch-based distros
+
+```sh
+ $ sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua51-socket gtksourceview3
+ $ sudo pacman -Sy xorg-server-devel libxrandr gtk3
+```
+
+#### On Fedora-based distros
+
+```sh
+$ sudo dnf install systemd dbus hidapi libevdev luajit gtksourceview3 lua-socket-compat
+$ sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
+ pulseaudio-libs-devel luajit-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview3-devel
+```
+
+#### On Debian-based distros
+
+```sh
+ $ sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev \
+ libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev \
+ libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-3.0-dev
+```
 
 ### Clone the project and build the release binaries
 
@@ -125,3 +156,5 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo systemctl daemon-reload
  sudo systemctl start eruption.service
 ```
+
+You do not need to `enable` the systemd service, since Eruption ist started by an `udev` rule.
