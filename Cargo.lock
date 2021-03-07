@@ -73,9 +73,9 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "async-trait"
-version = "0.1.46"
+version = "0.1.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4968268c4b1be4c2ee4a619dba411ec2db09acde6c26da368cb01a330b60f06c"
+checksum = "7e098e9c493fdf92832223594d9a164f96bdf17ba81a42aff86f85c76768726a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1788,9 +1788,9 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.25.2"
+version = "0.25.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f413299f376cd2f0eb4f82798d656e18696e5b7f296567bf55478868bb723b3e"
+checksum = "5cb5960baf61e6cc763d6a7ab1443381ae0091073861e26cd9d792d06d478a79"
 dependencies = [
  "approx 0.4.0",
  "generic-array",
