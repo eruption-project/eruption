@@ -14,7 +14,7 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global config
-ENABLE_FUNCTION_KEYS = false	-- ROCCAT Vulcan Pro variant does not have special function keys
+ENABLE_FUNCTION_KEYS = true
 ENABLE_MEDIA_KEYS 	 = true
 ENABLE_MACRO_KEYS 	 = true
 
