@@ -695,9 +695,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
-                                // the table that will be filled
-                                let mut topology: Vec<u8> = vec![0xff; 102];
-
                                 let hwdev = Arc::new(Mutex::new(hwdevices::bind_device(
                                     dev,
                                     &hidapi,
@@ -746,7 +743,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!();
 
                                 let keys_per_row = hwdev.lock().get_num_cols() + 1;
+                                let num_cols = hwdev.lock().get_num_cols();
                                 let num_rows = hwdev.lock().get_num_rows();
+
+                                // the table that will be filled
+                                let mut topology: Vec<u8> = vec![0xff; num_cols * num_rows];
 
                                 for i in 0..num_rows {
                                     let mut led_map = [RGBA {
@@ -888,9 +889,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             //     .parse::<usize>()
                             //     .expect("Invalid number");
 
-                            // the table that will be filled
-                            let mut topology: Vec<u8> = vec![0xff; 102];
-
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                                 format!("{:02}", index).bold(),
@@ -949,8 +947,12 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
+                                let keys_per_row = hwdev.lock().get_num_cols() + 1;
                                 let num_cols = hwdev.lock().get_num_cols();
                                 let num_rows = hwdev.lock().get_num_rows();
+
+                                // the table that will be filled
+                                let mut topology: Vec<u8> = vec![0xff; num_cols * num_rows];
 
                                 for i in 0..num_rows {
                                     let mut led_map = [RGBA {
@@ -977,7 +979,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                     let mut key_index = 0;
                                     loop {
-                                        if key_index >= num_cols {
+                                        if key_index >= keys_per_row {
                                             break;
                                         }
 
