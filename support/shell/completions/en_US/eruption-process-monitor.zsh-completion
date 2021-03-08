@@ -1,50 +1,297 @@
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -s c -l config -d 'Sets the configuration file to use' -r
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -f -a "daemon" -d 'Run in background and monitor running processes'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -f -a "rules" -d 'Rules related sub-commands'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
-complete -c eruption-process-monitor -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from daemon" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from daemon" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -f -a "list" -d 'List all available rules'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -f -a "enable" -d 'Mark a rule as enabled'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -f -a "disable" -d 'Mark a rule as disabled'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -f -a "add" -d 'Add a new rule'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules" -f -a "remove" -d 'Remove a rule by index'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from list" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from list" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from enable" -r
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from enable" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from enable" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from disable" -r
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from disable" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from disable" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from add" -r
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from add" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from add" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from remove" -r
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from remove" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from remove" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -f -a "bash"
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -f -a "elvish"
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -f -a "fish"
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -f -a "power-shell"
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -f -a "zsh"
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from bash" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from bash" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from elvish" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from elvish" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from fish" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from fish" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from power-shell" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from power-shell" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from zsh" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from zsh" -s V -l version -d 'Prints version information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from help" -s h -l help -d 'Prints help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from help" -s V -l version -d 'Prints version information'
+#compdef eruption-process-monitor
+
+autoload -U is-at-least
+
+_eruption-process-monitor() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'-c+[Sets the configuration file to use]' \
+'--config=[Sets the configuration file to use]' \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'::hostname:' \
+'::port:' \
+":: :_eruption-process-monitor_commands" \
+"*::: :->eruption-process-monitor" \
+&& ret=0
+    case $state in
+    (eruption-process-monitor)
+        words=($line[3] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-command-$line[3]:"
+        case $line[3] in
+            (daemon)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(rules)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruption-process-monitor__rules_commands" \
+"*::: :->rules" \
+&& ret=0
+case $state in
+    (rules)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-rules-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':rule-index:' \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':rule-index:' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'*::rule:' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':rule-index:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruption-process-monitor__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-completions-command-$line[1]:"
+        case $line[1] in
+            (bash)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(elvish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(fish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(power-shell)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(zsh)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-process-monitor_commands] )) ||
+_eruption-process-monitor_commands() {
+    local commands; commands=(
+        "daemon:Run in background and monitor running processes" \
+"rules:Rules related sub-commands" \
+"completions:Generate shell completions" \
+"help:Prints this message or the help of the given subcommand(s)" \
+    )
+    _describe -t commands 'eruption-process-monitor commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__add_commands] )) ||
+_eruption-process-monitor__rules__add_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor rules add commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions__bash_commands] )) ||
+_eruption-process-monitor__completions__bash_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor completions bash commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions_commands] )) ||
+_eruption-process-monitor__completions_commands() {
+    local commands; commands=(
+        "bash:" \
+"elvish:" \
+"fish:" \
+"power-shell:" \
+"zsh:" \
+    )
+    _describe -t commands 'eruption-process-monitor completions commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__daemon_commands] )) ||
+_eruption-process-monitor__daemon_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor daemon commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__disable_commands] )) ||
+_eruption-process-monitor__rules__disable_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor rules disable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions__elvish_commands] )) ||
+_eruption-process-monitor__completions__elvish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor completions elvish commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__enable_commands] )) ||
+_eruption-process-monitor__rules__enable_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor rules enable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions__fish_commands] )) ||
+_eruption-process-monitor__completions__fish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor completions fish commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help_commands] )) ||
+_eruption-process-monitor__help_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor help commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__list_commands] )) ||
+_eruption-process-monitor__rules__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor rules list commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions__power-shell_commands] )) ||
+_eruption-process-monitor__completions__power-shell_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor completions power-shell commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__remove_commands] )) ||
+_eruption-process-monitor__rules__remove_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor rules remove commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules_commands] )) ||
+_eruption-process-monitor__rules_commands() {
+    local commands; commands=(
+        "list:List all available rules" \
+"enable:Mark a rule as enabled" \
+"disable:Mark a rule as disabled" \
+"add:Add a new rule" \
+"remove:Remove a rule by index" \
+    )
+    _describe -t commands 'eruption-process-monitor rules commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions__zsh_commands] )) ||
+_eruption-process-monitor__completions__zsh_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-process-monitor completions zsh commands' commands "$@"
+}
+
+_eruption-process-monitor "$@"

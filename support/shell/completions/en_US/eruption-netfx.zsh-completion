@@ -1,44 +1,255 @@
-complete -c eruption-netfx -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
-complete -c eruption-netfx -n "__fish_use_subcommand" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_use_subcommand" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "ping" -d 'Ping the server'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "command" -d 'Send Network FX raw protocol commands to the server'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "image" -d 'Load an image file and display it on the connected devices'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "animation" -d 'Load image files from a directory and display each one on the connected devices'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "ambient" -d 'Make the LEDs of connected devices reflect what is shown on the screen'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
-complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ping" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ping" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "bash"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "elvish"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "fish"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "power-shell"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "zsh"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from bash" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from bash" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from elvish" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from elvish" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from fish" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from fish" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from power-shell" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from power-shell" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from zsh" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from zsh" -s V -l version -d 'Prints version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from help" -s h -l help -d 'Prints help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from help" -s V -l version -d 'Prints version information'
+#compdef eruption-netfx
+
+autoload -U is-at-least
+
+_eruption-netfx() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'::model -- The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d\:311a":' \
+'::hostname:' \
+'::port:' \
+":: :_eruption-netfx_commands" \
+"*::: :->eruption-netfx" \
+&& ret=0
+    case $state in
+    (eruption-netfx)
+        words=($line[4] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-netfx-command-$line[4]:"
+        case $line[4] in
+            (ping)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(command)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':data:' \
+&& ret=0
+;;
+(image)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':filename:' \
+&& ret=0
+;;
+(animation)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':directory-name:' \
+'::frame-delay:' \
+&& ret=0
+;;
+(ambient)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'::frame-delay:' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruption-netfx__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-netfx-completions-command-$line[1]:"
+        case $line[1] in
+            (bash)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(elvish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(fish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(power-shell)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(zsh)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-netfx_commands] )) ||
+_eruption-netfx_commands() {
+    local commands; commands=(
+        "ping:Ping the server" \
+"command:Send Network FX raw protocol commands to the server" \
+"image:Load an image file and display it on the connected devices" \
+"animation:Load image files from a directory and display each one on the connected devices" \
+"ambient:Make the LEDs of connected devices reflect what is shown on the screen" \
+"completions:Generate shell completions" \
+"help:Prints this message or the help of the given subcommand(s)" \
+    )
+    _describe -t commands 'eruption-netfx commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__ambient_commands] )) ||
+_eruption-netfx__ambient_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx ambient commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__animation_commands] )) ||
+_eruption-netfx__animation_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx animation commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions__bash_commands] )) ||
+_eruption-netfx__completions__bash_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx completions bash commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__command_commands] )) ||
+_eruption-netfx__command_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx command commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions_commands] )) ||
+_eruption-netfx__completions_commands() {
+    local commands; commands=(
+        "bash:" \
+"elvish:" \
+"fish:" \
+"power-shell:" \
+"zsh:" \
+    )
+    _describe -t commands 'eruption-netfx completions commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions__elvish_commands] )) ||
+_eruption-netfx__completions__elvish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx completions elvish commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions__fish_commands] )) ||
+_eruption-netfx__completions__fish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx completions fish commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__help_commands] )) ||
+_eruption-netfx__help_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx help commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__image_commands] )) ||
+_eruption-netfx__image_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx image commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__ping_commands] )) ||
+_eruption-netfx__ping_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx ping commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions__power-shell_commands] )) ||
+_eruption-netfx__completions__power-shell_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx completions power-shell commands' commands "$@"
+}
+(( $+functions[_eruption-netfx__completions__zsh_commands] )) ||
+_eruption-netfx__completions__zsh_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-netfx completions zsh commands' commands "$@"
+}
+
+_eruption-netfx "$@"

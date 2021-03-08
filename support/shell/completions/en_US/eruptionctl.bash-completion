@@ -46,6 +46,9 @@ _eruptionctl() {
             names)
                 cmd+="__names"
                 ;;
+            param)
+                cmd+="__param"
+                ;;
             power-shell)
                 cmd+="__power__shell"
                 ;;
@@ -70,6 +73,9 @@ _eruptionctl() {
             soundfx)
                 cmd+="__soundfx"
                 ;;
+            status)
+                cmd+="__status"
+                ;;
             switch)
                 cmd+="__switch"
                 ;;
@@ -83,7 +89,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts=" -v -h -V  --verbose --help --version  config switch profiles names scripts completions help"
+            opts=" -v -h -V  --verbose --help --version  config status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -308,6 +314,21 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruptionctl__param)
+            opts=" -h -V  --help --version  <script> <parameter> <value> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruptionctl__profiles)
             opts=" -h -V  --help --version  info edit list"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -414,6 +435,51 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__scripts__list)
+            opts=" -h -V  --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__status)
+            opts=" -h -V  --help --version  profile slot"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__status__profile)
+            opts=" -h -V  --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__status__slot)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

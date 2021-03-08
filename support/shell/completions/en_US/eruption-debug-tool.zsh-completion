@@ -5,57 +5,291 @@
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
  
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "list" -d 'List available devices, use this first to find out the index of the device to use'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "report" -d 'Generate a report for the specified device'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "trace" -d 'Dump a trace of events originating from the specified device (May hang the device)'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "state-diff" -d 'Read out the device state and show differences to previous state (May hang the device)'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "read" -d 'Read a single USB HID feature report from device'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "write" -d 'Send a single USB HID feature report to device (dangerous)'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "run-tests" -d 'Send a device specific init sequence and try to set colors'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
-complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from list" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from list" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from report" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from report" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from report" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from trace" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from trace" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from trace" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from state-diff" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from state-diff" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from state-diff" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read" -d 'ID of the USB HID report' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read" -d 'Length in bytes to read' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -d 'Hex bytes e.g.: [0x09, 0x00, 0x1f]' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -d 'The index of the device, can be found with the list sub-command' -r
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "bash"
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "elvish"
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "fish"
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "power-shell"
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "zsh"
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from bash" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from bash" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from elvish" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from elvish" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from fish" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from fish" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from power-shell" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from power-shell" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from zsh" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from zsh" -s V -l version -d 'Prints version information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from help" -s h -l help -d 'Prints help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from help" -s V -l version -d 'Prints version information'
+#compdef eruption-debug-tool
+
+autoload -U is-at-least
+
+_eruption-debug-tool() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruption-debug-tool_commands" \
+"*::: :->eruption-debug-tool" \
+&& ret=0
+    case $state in
+    (eruption-debug-tool)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(report)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(trace)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(state-diff)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(read)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':report-id -- ID of the USB HID report:' \
+':length -- Length in bytes to read:' \
+&& ret=0
+;;
+(write)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
+&& ret=0
+;;
+(run-tests)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruption-debug-tool__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-completions-command-$line[1]:"
+        case $line[1] in
+            (bash)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(elvish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(fish)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(power-shell)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(zsh)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-debug-tool_commands] )) ||
+_eruption-debug-tool_commands() {
+    local commands; commands=(
+        "list:List available devices, use this first to find out the index of the device to use" \
+"report:Generate a report for the specified device" \
+"trace:Dump a trace of events originating from the specified device (May hang the device)" \
+"state-diff:Read out the device state and show differences to previous state (May hang the device)" \
+"read:Read a single USB HID feature report from device" \
+"write:Send a single USB HID feature report to device (dangerous)" \
+"run-tests:Send a device specific init sequence and try to set colors" \
+"completions:Generate shell completions" \
+"help:Prints this message or the help of the given subcommand(s)" \
+    )
+    _describe -t commands 'eruption-debug-tool commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions__bash_commands] )) ||
+_eruption-debug-tool__completions__bash_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool completions bash commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions_commands] )) ||
+_eruption-debug-tool__completions_commands() {
+    local commands; commands=(
+        "bash:" \
+"elvish:" \
+"fish:" \
+"power-shell:" \
+"zsh:" \
+    )
+    _describe -t commands 'eruption-debug-tool completions commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions__elvish_commands] )) ||
+_eruption-debug-tool__completions__elvish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool completions elvish commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions__fish_commands] )) ||
+_eruption-debug-tool__completions__fish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool completions fish commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help_commands] )) ||
+_eruption-debug-tool__help_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool help commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__list_commands] )) ||
+_eruption-debug-tool__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool list commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions__power-shell_commands] )) ||
+_eruption-debug-tool__completions__power-shell_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool completions power-shell commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__read_commands] )) ||
+_eruption-debug-tool__read_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool read commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__report_commands] )) ||
+_eruption-debug-tool__report_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool report commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__run-tests_commands] )) ||
+_eruption-debug-tool__run-tests_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool run-tests commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__state-diff_commands] )) ||
+_eruption-debug-tool__state-diff_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool state-diff commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__trace_commands] )) ||
+_eruption-debug-tool__trace_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool trace commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__write_commands] )) ||
+_eruption-debug-tool__write_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool write commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions__zsh_commands] )) ||
+_eruption-debug-tool__completions__zsh_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruption-debug-tool completions zsh commands' commands "$@"
+}
+
+_eruption-debug-tool "$@"

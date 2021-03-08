@@ -22,10 +22,12 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand -V 'Prints version information'
             cand --version 'Prints version information'
             cand config 'Configuration related sub-commands'
+            cand status 'Shows the currently active profile or slot'
             cand switch 'Switch to a different profile or slot'
             cand profiles 'Profile related sub-commands'
             cand names 'Naming related commands such as renaming of profile slots'
             cand scripts 'Script related subcommands'
+            cand param 'Get or set script parameters on the currently active profile'
             cand completions 'Generate shell completions'
             cand help 'Prints this message or the help of the given subcommand(s)'
         }
@@ -44,6 +46,26 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Prints version information'
         }
         &'eruptionctl;config;soundfx'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;status'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+        }
+        &'eruptionctl;status;profile'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;status;slot'= {
             cand -h 'Prints help information'
             cand --help 'Prints help information'
             cand -V 'Prints version information'
@@ -145,6 +167,12 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Prints version information'
         }
         &'eruptionctl;scripts;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;param'= {
             cand -h 'Prints help information'
             cand --help 'Prints help information'
             cand -V 'Prints version information'

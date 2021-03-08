@@ -2,10 +2,12 @@ complete -c eruptionctl -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose m
 complete -c eruptionctl -n "__fish_use_subcommand" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_use_subcommand" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "config" -d 'Configuration related sub-commands'
+complete -c eruptionctl -n "__fish_use_subcommand" -f -a "status" -d 'Shows the currently active profile or slot'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "switch" -d 'Switch to a different profile or slot'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "profiles" -d 'Profile related sub-commands'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "names" -d 'Naming related commands such as renaming of profile slots'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "scripts" -d 'Script related subcommands'
+complete -c eruptionctl -n "__fish_use_subcommand" -f -a "param" -d 'Get or set script parameters on the currently active profile'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
 complete -c eruptionctl -n "__fish_seen_subcommand_from config" -s h -l help -d 'Prints help information'
@@ -18,6 +20,14 @@ complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -s V -l vers
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -r
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from status" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from status" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from status" -f -a "profile" -d 'Shows the currently active profile'
+complete -c eruptionctl -n "__fish_seen_subcommand_from status" -f -a "slot" -d 'Shows the currently active slot'
+complete -c eruptionctl -n "__fish_seen_subcommand_from profile" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from profile" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from slot" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from slot" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from switch" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from switch" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from switch" -f -a "profile" -d 'Switch profiles'
@@ -68,6 +78,11 @@ complete -c eruptionctl -n "__fish_seen_subcommand_from edit" -s h -l help -d 'P
 complete -c eruptionctl -n "__fish_seen_subcommand_from edit" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from list" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from list" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from param" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from param" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from param" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from param" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from param" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from completions" -f -a "bash"
