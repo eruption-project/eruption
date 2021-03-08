@@ -65,6 +65,12 @@ pub enum Subcommands {
         command: ConfigSubcommands,
     },
 
+    /// Shows the currently active profile or slot
+    Status {
+        #[clap(subcommand)]
+        command: StatusSubcommands,
+    },
+
     /// Switch to a different profile or slot
     Switch {
         #[clap(subcommand)]
@@ -111,6 +117,16 @@ pub enum ConfigSubcommands {
 
     /// Get or set the state of SoundFX
     Soundfx { enable: Option<bool> },
+}
+
+/// Sub-commands of the "status" command
+#[derive(Debug, Clap)]
+pub enum StatusSubcommands {
+    /// Shows the currently active profile
+    Profile,
+
+    /// Shows the currently active slot
+    Slot,
 }
 
 /// Sub-commands of the "switch" command
@@ -228,6 +244,16 @@ pub async fn switch_profile(name: &str) -> Result<()> {
         .await?;
 
     Ok(())
+}
+
+/// Get the index of the currently active slot
+pub async fn get_active_slot() -> Result<usize> {
+    let result: u64 = dbus_system_bus("/org/eruption/slot")
+        .await?
+        .get("org.eruption.Slot", "ActiveSlot")
+        .await?;
+
+    Ok(result as usize)
 }
 
 /// Get the name of the currently active profile
@@ -766,6 +792,19 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 println!("Nothing to do");
             }
         }
+
+        // convenience operations: switch profile or slot
+        Subcommands::Status { command } => match command {
+            StatusSubcommands::Profile => {
+                let profile_name = get_active_profile().await?;
+                println!("Current profile: {}", profile_name.bold());
+            }
+
+            StatusSubcommands::Slot => {
+                let index = get_active_slot().await? + 1;
+                println!("Current slot: {}", format!("{}", index).bold());
+            }
+        },
 
         // convenience operations: switch profile or slot
         Subcommands::Switch { command } => match command {
