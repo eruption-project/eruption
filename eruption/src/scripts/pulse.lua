@@ -114,10 +114,10 @@ function on_tick(delta)
 	end
 
 	-- highlight WASD keys
-	color_map[key_to_index['W']] = color
-	color_map[key_to_index['A']] = color
-	color_map[key_to_index['S']] = color
-	color_map[key_to_index['D']] = color
+	color_map[key_name_to_index("W")] = color
+	color_map[key_name_to_index("A")] = color
+	color_map[key_name_to_index("S")] = color
+	color_map[key_name_to_index("D")] = color
 
 	submit_color_map(color_map)
 end

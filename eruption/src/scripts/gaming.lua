@@ -28,10 +28,10 @@ function on_startup(config)
     end
 
     -- highlight WASD keys
-    color_map[key_to_index['W']] = color_highlight
-    color_map[key_to_index['A']] = color_highlight
-    color_map[key_to_index['S']] = color_highlight
-    color_map[key_to_index['D']] = color_highlight
+    color_map[key_name_to_index("W")] = color_highlight
+    color_map[key_name_to_index("A")] = color_highlight
+    color_map[key_name_to_index("S")] = color_highlight
+    color_map[key_name_to_index("D")] = color_highlight
 
     submit_color_map(color_map)
 end

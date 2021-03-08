@@ -35,6 +35,22 @@ function n2(val, ret)
     end
 end
 
+-- converts a key name to a key index
+function key_name_to_index(name)
+    if key_to_index ~= nil then
+        local idx = key_to_index[name]
+        if idx ~= nil then
+            return idx
+        else
+            -- error("Could not find the index of key " .. name)
+            return 0
+        end
+    else
+        -- error("No supported hardware found, no device support scripts have been loaded")
+        return 0
+    end
+end
+
 -- returns the key index corresponding to the specified coordinates
 function key_index(x, y)
     if x > max_keys_per_row or y > max_keys_per_col then

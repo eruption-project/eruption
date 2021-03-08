@@ -100,15 +100,15 @@ end
 
 -- event handler functions --
 function on_startup(config)
-	modifier_map[CAPS_LOCK] = get_key_state(key_to_index['CAPS_LOCK'])
-	modifier_map[LEFT_SHIFT] = get_key_state(key_to_index['LEFT_SHIFT'])
-	modifier_map[RIGHT_SHIFT] = get_key_state(key_to_index['RIGHT_SHIFT'])
-	modifier_map[LEFT_CTRL] = get_key_state(key_to_index['LEFT_CTRL'])
-	modifier_map[RIGHT_CTRL] = get_key_state(key_to_index['RIGHT_CTRL'])
-	modifier_map[LEFT_ALT] = get_key_state(key_to_index['LEFT_ALT'])
-	modifier_map[RIGHT_ALT] = get_key_state(key_to_index['RIGHT_ALT'])
-	modifier_map[RIGHT_MENU] = get_key_state(key_to_index['RIGHT_MENU'])
-	modifier_map[FN] = get_key_state(key_to_index['FN'])
+	modifier_map[CAPS_LOCK] = get_key_state(key_name_to_index("CAPS_LOCK"))
+	modifier_map[LEFT_SHIFT] = get_key_state(key_name_to_index("LEFT_SHIFT"))
+	modifier_map[RIGHT_SHIFT] = get_key_state(key_name_to_index("RIGHT_SHIFT"))
+	modifier_map[LEFT_CTRL] = get_key_state(key_name_to_index("LEFT_CTRL"))
+	modifier_map[RIGHT_CTRL] = get_key_state(key_name_to_index("RIGHT_CTRL"))
+	modifier_map[LEFT_ALT] = get_key_state(key_name_to_index("LEFT_ALT"))
+	modifier_map[RIGHT_ALT] = get_key_state(key_name_to_index("RIGHT_ALT"))
+	modifier_map[RIGHT_MENU] = get_key_state(key_name_to_index("RIGHT_MENU"))
+	modifier_map[FN] = get_key_state(key_name_to_index("FN"))
 
 	for i = 0, canvas_size do
 		color_map[i] = 0x00000000
@@ -367,7 +367,7 @@ function on_key_down(key_index)
 	debug("Macros: Key down: Index: " .. key_index)
 
 	-- update the modifier_map
-	if key_index == key_to_index['CAPS_LOCK'] then
+	if key_index == key_name_to_index("CAPS_LOCK") then
 		modifier_map[CAPS_LOCK] = true
 
 		-- consume the CAPS_LOCK key while in game mode
@@ -376,19 +376,19 @@ function on_key_down(key_index)
 		end
 	end
 
-	if key_index == key_to_index['LEFT_SHIFT'] then
+	if key_index == key_name_to_index("LEFT_SHIFT") then
 		modifier_map[LEFT_SHIFT] = true
-	elseif key_index == key_to_index['RIGHT_SHIFT'] then
+	elseif key_index == key_name_to_index("RIGHT_SHIFT") then
 		modifier_map[RIGHT_SHIFT] = true
-	elseif key_index == key_to_index['LEFT_CTRL'] then
+	elseif key_index == key_name_to_index("LEFT_CTRL") then
 		modifier_map[LEFT_CTRL] = true
-	elseif key_index == key_to_index['RIGHT_CTRL'] then
+	elseif key_index == key_name_to_index("RIGHT_CTRL") then
 		modifier_map[RIGHT_CTRL] = true
-	elseif key_index == key_to_index['LEFT_ALT'] then
+	elseif key_index == key_name_to_index("LEFT_ALT") then
 		modifier_map[LEFT_ALT] = true
-	elseif key_index == key_to_index['RIGHT_ALT'] then
+	elseif key_index == key_name_to_index("RIGHT_ALT") then
 		modifier_map[RIGHT_ALT] = true
-	elseif key_index == key_to_index['RIGHT_MENU'] then
+	elseif key_index == key_name_to_index("RIGHT_MENU") then
 		modifier_map[RIGHT_MENU] = true
 
 		if MODIFIER_KEY == RIGHT_MENU then
@@ -398,45 +398,45 @@ function on_key_down(key_index)
 	end
 
 	-- slot keys (F1 - F4)
-	if modifier_map[MODIFIER_KEY] and key_index == key_to_index['F1'] then
+	if modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("F1") then
 		do_switch_slot(0)
-	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F2'] then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("F2") then
 		do_switch_slot(1)
-	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F3'] then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("F3") then
 		do_switch_slot(2)
-	elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['F4'] then
+	elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("F4") then
 		do_switch_slot(3)
 	end
 
 	-- macro keys (INSERT - PAGEDOWN)
 	if ENABLE_MACRO_KEYS then
-		if modifier_map[MODIFIER_KEY] and key_index == key_to_index['INSERT'] then
+		if modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("INSERT") then
 			on_macro_key_down(0)
-		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['POS1'] then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("POS1") then
 			on_macro_key_down(1)
-		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['PGUP'] then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("PGUP") then
 			on_macro_key_down(2)
-		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['DEL'] then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("DEL") then
 			on_macro_key_down(3)
-		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['END'] then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("END") then
 			on_macro_key_down(4)
-		elseif modifier_map[MODIFIER_KEY] and key_index == key_to_index['PGDWN'] then
+		elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("PGDWN") then
 			on_macro_key_down(5)
 		end
 	end
 
 	-- switch Easy Shift+ layers via Caps Lock + macro keys
-	if modifier_map[CAPS_LOCK] and key_index == key_to_index['INSERT'] then
+	if modifier_map[CAPS_LOCK] and key_index == key_name_to_index("INSERT") then
 		do_switch_easy_shift_layer(0)
-	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['POS1'] then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("POS1") then
 		do_switch_easy_shift_layer(1)
-	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['PGUP'] then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("PGUP") then
 		do_switch_easy_shift_layer(2)
-	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['DEL'] then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("DEL") then
 		do_switch_easy_shift_layer(3)
-	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['END'] then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("END") then
 		do_switch_easy_shift_layer(4)
-	elseif modifier_map[CAPS_LOCK] and key_index == key_to_index['PGDWN'] then
+	elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("PGDWN") then
 		do_switch_easy_shift_layer(5)
 	end
 
@@ -459,7 +459,7 @@ function on_key_up(key_index)
 	debug("Macros: Key up: Index: " .. key_index)
 
 	-- update the modifier_map
-	if key_index == key_to_index['CAPS_LOCK'] then
+	if key_index == key_name_to_index("CAPS_LOCK") then
 		modifier_map[CAPS_LOCK] = false
 
 		-- consume CAPS_LOCK key while in game mode
@@ -468,19 +468,19 @@ function on_key_up(key_index)
 		end
 	end
 
-	if key_index == key_to_index['LEFT_SHIFT'] then
+	if key_index == key_name_to_index("LEFT_SHIFT") then
 		modifier_map[LEFT_SHIFT] = false
-	elseif key_index == key_to_index['RIGHT_SHIFT'] then
+	elseif key_index == key_name_to_index("RIGHT_SHIFT") then
 		modifier_map[RIGHT_SHIFT] = false
-	elseif key_index == key_to_index['LEFT_CTRL'] then
+	elseif key_index == key_name_to_index("LEFT_CTRL") then
 		modifier_map[LEFT_CTRL] = false
-	elseif key_index == key_to_index['RIGHT_CTRL'] then
+	elseif key_index == key_name_to_index("RIGHT_CTRL") then
 		modifier_map[RIGHT_CTRL] = false
-	elseif key_index == key_to_index['LEFT_ALT'] then
+	elseif key_index == key_name_to_index("LEFT_ALT") then
 		modifier_map[LEFT_ALT] = false
-	elseif key_index == key_to_index['RIGHT_ALT'] then
+	elseif key_index == key_name_to_index("RIGHT_ALT") then
 		modifier_map[RIGHT_ALT] = false
-	elseif key_index == key_to_index['RIGHT_MENU'] then
+	elseif key_index == key_name_to_index("RIGHT_MENU") then
 		modifier_map[RIGHT_MENU] = false
 
 		if MODIFIER_KEY == RIGHT_MENU then

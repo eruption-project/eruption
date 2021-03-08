@@ -81,29 +81,29 @@ function update_color_state()
 		end
 
 		-- Highlight Easy Shift+ key
-		color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL
+		color_map_highlight[key_name_to_index("CAPS_LOCK")] = COLOR_FUNCTION_KEY_SPECIAL
 
 		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map_highlight[key_to_index['INSERT']] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_to_index['POS1']] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_to_index['PGUP']] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_to_index['DEL']] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_to_index['END']] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_to_index['PGDWN']] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("INSERT")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("POS1")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("PGUP")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("DEL")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("END")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+		color_map_highlight[key_name_to_index("PGDWN")] = COLOR_SWITCH_EASY_SHIFT_LAYER
 
 		-- highlight the active slot in a different color
 		if ACTIVE_EASY_SHIFT_LAYER == 1 then
-			color_map_highlight[key_to_index['INSERT']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("INSERT")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
-			color_map_highlight[key_to_index['POS1']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("POS1")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 3 then
-			color_map_highlight[key_to_index['PGUP']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("PGUP")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 4 then
-			color_map_highlight[key_to_index['DEL']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("DEL")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 5 then
-			color_map_highlight[key_to_index['END']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("END")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		elseif ACTIVE_EASY_SHIFT_LAYER == 6 then
-			color_map_highlight[key_to_index['PGDWN']] = COLOR_ACTIVE_EASY_SHIFT_LAYER
+			color_map_highlight[key_name_to_index("PGDWN")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
 		end
 
 		highlight_ttl = highlight_max_ttl
@@ -115,53 +115,53 @@ function update_color_state()
 		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
 
 		-- highlight the slot keys
-		color_map_highlight[key_to_index['F1']] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_to_index['F2']] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_to_index['F3']] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_to_index['F4']] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_name_to_index("F1")] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_name_to_index("F2")] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_name_to_index("F3")] = COLOR_SWITCH_SLOT
+		color_map_highlight[key_name_to_index("F4")] = COLOR_SWITCH_SLOT
 
 		-- highlight the active slot in a different color
 		if get_current_slot() == 0 then
-			color_map_highlight[key_to_index['F1']] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_name_to_index("F1")] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 1 then
-			color_map_highlight[key_to_index['F2']] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_name_to_index("F2")] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 2 then
-			color_map_highlight[key_to_index['F3']] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_name_to_index("F3")] = COLOR_ACTIVE_SLOT
 		elseif get_current_slot() == 3 then
-			color_map_highlight[key_to_index['F4']] = COLOR_ACTIVE_SLOT
+			color_map_highlight[key_name_to_index("F4")] = COLOR_ACTIVE_SLOT
 		end
 
 		-- highlight function and media keys
 		if MODIFIER_KEY == FN then
 			if ENABLE_FUNCTION_KEYS then
-				color_map_highlight[key_to_index['F5']] = COLOR_FUNCTION_KEY  -- F5 action
-				color_map_highlight[key_to_index['F6']] = COLOR_FUNCTION_KEY  -- F6 action
-				color_map_highlight[key_to_index['F7']] = COLOR_FUNCTION_KEY  -- F7 action
-				color_map_highlight[key_to_index['F8']] = COLOR_FUNCTION_KEY  -- F8 action
+				color_map_highlight[key_name_to_index("F5")] = COLOR_FUNCTION_KEY  -- F5 action
+				color_map_highlight[key_name_to_index("F6")] = COLOR_FUNCTION_KEY  -- F6 action
+				color_map_highlight[key_name_to_index("F7")] = COLOR_FUNCTION_KEY  -- F7 action
+				color_map_highlight[key_name_to_index("F8")] = COLOR_FUNCTION_KEY  -- F8 action
 			end
 
 			if ENABLE_MEDIA_KEYS then
-				color_map_highlight[key_to_index['F9']] = COLOR_FUNCTION_KEY  -- F9 action
-				color_map_highlight[key_to_index['F10']] = COLOR_FUNCTION_KEY  -- F10 action
-				color_map_highlight[key_to_index['F11']] = COLOR_FUNCTION_KEY  -- F11 action
-				color_map_highlight[key_to_index['F12']] = COLOR_FUNCTION_KEY  -- F12 action
+				color_map_highlight[key_name_to_index("F9")] = COLOR_FUNCTION_KEY  -- F9 action
+				color_map_highlight[key_name_to_index("F10")] = COLOR_FUNCTION_KEY  -- F10 action
+				color_map_highlight[key_name_to_index("F11")] = COLOR_FUNCTION_KEY  -- F11 action
+				color_map_highlight[key_name_to_index("F12")] = COLOR_FUNCTION_KEY  -- F12 action
 			end
 
-			color_map_highlight[key_to_index['GAME_MODE']] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
+			color_map_highlight[key_name_to_index("GAME_MODE")] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
 
 			if ENABLE_EASY_SHIFT and game_mode_enabled then
-				color_map_highlight[key_to_index['CAPS_LOCK']] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
+				color_map_highlight[key_name_to_index("CAPS_LOCK")] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
 			end
 		end
 
 		if ENABLE_MACRO_KEYS then
 			-- highlight the macro keys (INSERT - PAGEDOWN)
-			color_map_highlight[key_to_index['INSERT']] = COLOR_MACRO_KEY
-			color_map_highlight[key_to_index['POS1']] = COLOR_MACRO_KEY
-			color_map_highlight[key_to_index['PGUP']] = COLOR_MACRO_KEY
-			color_map_highlight[key_to_index['DEL']] = COLOR_MACRO_KEY
-			color_map_highlight[key_to_index['END']] = COLOR_MACRO_KEY
-			color_map_highlight[key_to_index['PGDWN']] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("INSERT")] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("POS1")] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("PGUP")] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("DEL")] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("END")] = COLOR_MACRO_KEY
+			color_map_highlight[key_name_to_index("PGDWN")] = COLOR_MACRO_KEY
 		end
 
 		highlight_ttl = highlight_max_ttl
@@ -187,12 +187,12 @@ EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 
-EASY_SHIFT_REMAPPING_TABLE[1][key_to_index['ESC']]  = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("ESC")]  = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- assign macros to keys on the Easy Shift+ layer
-EASY_SHIFT_MACRO_TABLE[1][key_to_index['1']]	= macro_select_idle_scvs  	 --
-EASY_SHIFT_MACRO_TABLE[1][key_to_index['2']]	= macro_select_all_military  --
--- EASY_SHIFT_MACRO_TABLE[1][key_to_index['3']]	= easyshift_macro_3  	 	 --
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("1")]	= macro_select_idle_scvs  	 --
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("2")]	= macro_select_all_military  --
+-- EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("3")]	= easyshift_macro_3  	 	 --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer
 -- EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --

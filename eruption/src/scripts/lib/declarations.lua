@@ -32,6 +32,35 @@ mouse_zone_end = 144 + 36
 -- table_offset = get_num_keys() + 1
 table_offset = 0
 
+-- character to key index mapping
+key_to_index = {}
+
+-- coordinates to key index mapping
+coordinates_to_index = {}
+
+keys_per_col = {}
+
+num_keys = 0
+
+-- rows
+num_rows = 0
+max_keys_per_row = 0
+rows_topology = {}
+
+-- columns
+num_cols = 0
+max_keys_per_col = 0
+cols_topology = {}
+
+-- neighbor tables
+max_neigh = 0
+neighbor_topology = {}
+
+-- support functions
+function device_specific_key_highlights()
+	-- empty stub
+end
+
 -- Load support scripts that contain hardware specific declarations
 local function load_support_scripts()
 	local support_files = get_support_script_files()
