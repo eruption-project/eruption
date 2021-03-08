@@ -28,6 +28,8 @@ use super::{DeviceTrait, HwDeviceError, KeyboardHidEvent, KeyboardHidEventCode, 
 pub type Result<T> = super::Result<T>;
 
 pub const NUM_KEYS: usize = 144;
+pub const NUM_ROWS: usize = 6;
+pub const NUM_COLS: usize = 21;
 
 // pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -414,11 +416,23 @@ impl DeviceTrait for RoccatVulcanPro {
         }
     }
 
-    fn get_rows_topology(&self) -> Vec<u8> {
+    fn get_num_keys(&self) -> usize {
+        NUM_KEYS
+    }
+
+    fn get_num_rows(&self) -> usize {
+        NUM_ROWS
+    }
+
+    fn get_num_cols(&self) -> usize {
+        NUM_COLS
+    }
+
+    fn get_row_topology(&self) -> Vec<u8> {
         ROWS_TOPOLOGY.to_vec()
     }
 
-    fn get_cols_topology(&self) -> Vec<u8> {
+    fn get_col_topology(&self) -> Vec<u8> {
         COLS_TOPOLOGY.to_vec()
     }
 

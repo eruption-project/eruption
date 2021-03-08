@@ -148,8 +148,17 @@ pub trait DeviceTrait {
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8;
     fn hid_event_code_to_report(&self, code: &KeyboardHidEventCode) -> u8;
 
-    fn get_rows_topology(&self) -> Vec<u8>;
-    fn get_cols_topology(&self) -> Vec<u8>;
+    /// Returns the number of keys
+    fn get_num_keys(&self) -> usize;
+
+    /// Returns the number of rows (vertical number of keys)
+    fn get_num_rows(&self) -> usize;
+
+    /// Returns the number of columns (horizontal number of keys)
+    fn get_num_cols(&self) -> usize;
+
+    fn get_row_topology(&self) -> Vec<u8>;
+    fn get_col_topology(&self) -> Vec<u8>;
     fn get_neighbor_topology(&self) -> Vec<u8>;
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()>;

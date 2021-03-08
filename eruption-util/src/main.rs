@@ -386,7 +386,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         if let Some((index, device)) =
                             hidapi.device_list().enumerate().nth(device_index)
                         {
-                            println!("Please specify the number of keys to iterate over");
+                            println!("Please specify the number of keys, to iterate over");
                             let num_keys = util::get_input("Number of keys: ")
                                 .expect("Input error")
                                 .parse::<usize>()
@@ -520,7 +520,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!("Dumping generated table:");
                                 println!();
 
-                                println!("let EV_TO_INDEX: [u8; 0x2ff + 1] = [");
+                                println!("let EV_TO_INDEX_<model>: [u8; 0x2ff + 1] = [");
                                 for row in ev_to_index.chunks(16) {
                                     print!("\t");
 
@@ -627,7 +627,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                 info!("{:?}", ev);
 
                                                 if let evdev_rs::enums::EventCode::EV_KEY(ref code) = ev.event_code {
-                                                    let key_index = hwdev.lock().ev_key_to_key_index(code.clone()) as usize + 1;
+                                                    let key_index = hwdev.lock().ev_key_to_key_index(code.clone()) as usize - 1;
 
                                                     // set highlighted LEDs
                                                     led_map[key_index] = RGBA {
@@ -684,9 +684,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             //     .parse::<usize>()
                             //     .expect("Invalid number");
 
-                            // the table that will be filled
-                            let mut topology: Vec<u8> = vec![0x00; 102];
-
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
                                 format!("{:02}", index).bold(),
@@ -698,6 +695,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
+                                // the table that will be filled
+                                let mut topology: Vec<u8> = vec![0xff; 102];
+
                                 let hwdev = Arc::new(Mutex::new(hwdevices::bind_device(
                                     dev,
                                     &hidapi,
@@ -745,7 +745,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
-                                for i in 0..6 {
+                                let keys_per_row = hwdev.lock().get_num_cols() + 1;
+                                let num_rows = hwdev.lock().get_num_rows();
+
+                                for i in 0..num_rows {
                                     let mut led_map = [RGBA {
                                         r: 0,
                                         g: 0,
@@ -770,7 +773,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                     let mut key_index = 0;
                                     loop {
-                                        if key_index >= 17 {
+                                        if key_index >= keys_per_row {
                                             break;
                                         }
 
@@ -794,7 +797,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                                                 info!("Recorded key with index {}", idx);
 
-                                                                topology[(i * 17) + key_index] = idx;
+                                                                topology[(i * keys_per_row) + key_index] = idx;
                                                                 key_index += 1;
 
                                                                 // set highlighted LEDs
@@ -829,8 +832,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!("Dumping generated table:");
                                 println!();
 
-                                println!("pub static ROWS_TOPOLOGY: [u8; 102] = [");
-                                for row in topology.chunks(17) {
+                                println!("pub static ROWS_TOPOLOGY: [u8; {}] = [", topology.len());
+                                for row in topology.chunks(keys_per_row) {
                                     print!("\t");
 
                                     for e in row {
@@ -840,6 +843,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                     println!();
                                 }
                                 println!("];");
+
+                                println!();
+
+                                println!("rows_topology = {{");
+                                for row in topology.chunks(keys_per_row) {
+                                    print!("\t");
+
+                                    for e in row {
+                                        print!("0x{:02x}, ", e);
+                                    }
+
+                                    println!();
+                                }
+                                println!("}}");
                             } else {
                                 error!("Could not open the device, is the device in use?");
                             }
@@ -872,7 +889,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             //     .expect("Invalid number");
 
                             // the table that will be filled
-                            let mut topology: Vec<u8> = vec![0x00; 102];
+                            let mut topology: Vec<u8> = vec![0xff; 102];
 
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
@@ -932,7 +949,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
-                                for i in 0..17 {
+                                let num_cols = hwdev.lock().get_num_cols();
+                                let num_rows = hwdev.lock().get_num_rows();
+
+                                for i in 0..num_rows {
                                     let mut led_map = [RGBA {
                                         r: 0,
                                         g: 0,
@@ -957,7 +977,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                     let mut key_index = 0;
                                     loop {
-                                        if key_index >= 6 {
+                                        if key_index >= num_cols {
                                             break;
                                         }
 
@@ -981,7 +1001,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                                                 info!("Recorded key with index {}", idx);
 
-                                                                topology[(i * 6) + key_index] = idx;
+                                                                topology[(i * num_rows) + key_index] = idx;
                                                                 key_index += 1;
 
                                                                 // set highlighted LEDs
@@ -1016,8 +1036,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!("Dumping generated table:");
                                 println!();
 
-                                println!("pub static COLS_TOPOLOGY: [u8; 102] = [");
-                                for row in topology.chunks(6) {
+                                println!("pub static COLS_TOPOLOGY: [u8; {}] = [", topology.len());
+                                for row in topology.chunks(num_rows) {
                                     print!("\t");
 
                                     for e in row {
@@ -1031,7 +1051,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!();
 
                                 println!("cols_topology = {{");
-                                for row in topology.chunks(6) {
+                                for row in topology.chunks(num_rows) {
                                     print!("\t");
 
                                     for e in row {
@@ -1056,7 +1076,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             RecordTopologySubcommands::Neighbor { device_index } => {
                 println!();
                 println!("Generate neighbor topology information table");
-                println!("This feature needs updated evdev event-code to key index mapping!");
+                println!("This feature needs an updated evdev event-code to key index mapping!");
                 println!();
 
                 // create the one and only hidapi instance
@@ -1213,7 +1233,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!("Dumping generated table:");
                                 println!();
 
-                                println!("pub static NEIGHBOR_TOPOLOGY: [u8; 2900] = [");
+                                println!(
+                                    "pub static NEIGHBOR_TOPOLOGY: [u8; {}] = [",
+                                    neighbor_topology.len()
+                                );
                                 for row in neighbor_topology.chunks(10) {
                                     print!("\t");
 
@@ -1224,6 +1247,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                     println!();
                                 }
                                 println!("];");
+
+                                println!();
+
+                                println!("neighbor_topology = {{");
+                                for (_idx, row) in neighbor_topology.chunks(10).enumerate() {
+                                    print!("\t");
+
+                                    for e in row {
+                                        print!("0x{:02x}, ", e);
+                                    }
+
+                                    println!();
+                                }
+                                println!("}}");
                             } else {
                                 error!("Could not open the device, is the device in use?");
                             }
@@ -1273,8 +1310,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 hwdev.send_init_sequence()?;
 
-                                let topology = hwdev.get_rows_topology();
-                                let keys_per_row = 17; // TODO: Implement this
+                                let topology = hwdev.get_row_topology();
+                                let keys_per_row = hwdev.get_num_cols() + 1;
 
                                 // main loop: highlight full rows at once
                                 for key_indices in topology.chunks(keys_per_row) {
@@ -1385,8 +1422,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                                 hwdev.send_init_sequence()?;
 
-                                let topology = hwdev.get_cols_topology();
-                                let keys_per_col = 7; // TODO: Implement this
+                                let topology = hwdev.get_col_topology();
+                                let keys_per_col = hwdev.get_num_cols() + 1;
 
                                 // main loop: highlight full columns at once
                                 for key_indices in topology.chunks(keys_per_col) {
