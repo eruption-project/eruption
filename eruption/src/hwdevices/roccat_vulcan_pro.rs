@@ -665,8 +665,8 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
 
                         [0x03, 0x00, 0x0c, val, _] => KeyboardHidEvent::SetBrightness(val),
 
-                        [0x02, 0xe2, 0x00, 0x00, _] => KeyboardHidEvent::MuteDown,
-                        [0x02, 0x00, 0x00, 0x00, _] => KeyboardHidEvent::MuteUp,
+                        [0x42, 0xe2, 0x00, 0x00, _] => KeyboardHidEvent::MuteDown,
+                        [0x42, 0x00, 0x00, 0x00, _] => KeyboardHidEvent::MuteUp,
 
                         _ => KeyboardHidEvent::Unknown,
                     };
