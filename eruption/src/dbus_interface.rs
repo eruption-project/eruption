@@ -748,7 +748,7 @@ fn apply_parameter(
     let script_path = PathBuf::from(&script_file);
 
     let mut found = false;
-    for lua_tx in crate::LUA_TXS.lock().iter() {
+    for lua_tx in crate::LUA_TXS.iter() {
         // TODO: compare full paths here, as soon as the GUI supports /etc/eruption.conf
         if lua_tx.script_file.file_name() == script_path.file_name() {
             found = true;

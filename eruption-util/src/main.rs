@@ -308,7 +308,7 @@ fn spawn_keyboard_input_thread(
     Ok(())
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 

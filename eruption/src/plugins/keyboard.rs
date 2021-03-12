@@ -33,7 +33,10 @@ impl KeyboardPlugin {
     }
 
     pub(crate) fn get_key_state(key_index: usize) -> bool {
-        crate::KEY_STATES.lock()[key_index]
+        crate::KEY_STATES
+            .get(&key_index)
+            .map(|v| *v)
+            .unwrap_or(false)
     }
 }
 

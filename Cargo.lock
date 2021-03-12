@@ -174,9 +174,9 @@ checksum = "bed57e2090563b83ba8f83366628ce535a7584c9afa4c9fc0612a03925c6df58"
 
 [[package]]
 name = "byteorder"
-version = "1.4.2"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae44d1a3d5a19df61dd0c8beb138458ac2a53a7ac09eba97d55592540004306b"
+checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
 name = "bytes"
@@ -462,8 +462,18 @@ version = "3.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c15b8ec3b5755a188c141c1f6a98e76de31b936209bf066b647979e2a84764a9"
 dependencies = [
- "nix 0.20.0",
+ "nix",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "dashmap"
+version = "4.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
+dependencies = [
+ "cfg-if 1.0.0",
+ "num_cpus",
 ]
 
 [[package]]
@@ -581,6 +591,7 @@ dependencies = [
  "crossbeam",
  "csscolorparser",
  "ctrlc",
+ "dashmap",
  "dbus",
  "dbus-tree",
  "evdev-rs",
@@ -600,7 +611,8 @@ dependencies = [
  "mlua",
  "mlua_derive",
  "nalgebra",
- "nix 0.20.0",
+ "nix",
+ "nohash-hasher",
  "noise",
  "palette",
  "parking_lot",
@@ -640,7 +652,7 @@ dependencies = [
  "hidapi",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "parking_lot",
  "paste 1.0.4",
  "pretty_env_logger",
@@ -678,7 +690,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "palette",
  "pango",
  "pangocairo",
@@ -711,7 +723,7 @@ dependencies = [
  "image",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "num-traits 0.2.14",
  "parking_lot",
  "pretty_env_logger",
@@ -753,7 +765,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "parking_lot",
  "paste 1.0.4",
  "pretty_env_logger",
@@ -792,7 +804,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "parking_lot",
  "paste 1.0.4",
  "pretty_env_logger",
@@ -819,7 +831,7 @@ dependencies = [
  "eyre",
  "libc",
  "log",
- "nix 0.20.0",
+ "nix",
  "parking_lot",
  "paste 1.0.4",
  "serde 1.0.124",
@@ -1815,18 +1827,6 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.19.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2ccba0cfe4fdf15982d1674c69b1fd80bad427d293849982668dfe454bd61f2"
-dependencies = [
- "bitflags",
- "cc",
- "cfg-if 1.0.0",
- "libc",
-]
-
-[[package]]
-name = "nix"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa9b4819da1bc61c0ea48b63b7bc8604064dd43013e7cc325df098d49cd7c18a"
@@ -1836,6 +1836,12 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
 ]
+
+[[package]]
+name = "nohash-hasher"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
 
 [[package]]
 name = "noise"
@@ -2267,7 +2273,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "059a34f111a9dee2ce1ac2826a68b24601c4298cfeb1a587c3cb493d5ab46f52"
 dependencies = [
  "libc",
- "nix 0.20.0",
+ "nix",
 ]
 
 [[package]]
@@ -2579,14 +2585,13 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.4.3"
+version = "1.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9251239e129e16308e70d853559389de218ac275b515068abc96829d05b948a"
+checksum = "54fd1046a3107eb58f42de31d656fee6853e5d276c455fd943742dce89fc3dd3"
 dependencies = [
  "aho-corasick",
  "memchr 2.3.4",
  "regex-syntax",
- "thread_local",
 ]
 
 [[package]]
@@ -2601,9 +2606,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.22"
+version = "0.6.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
+checksum = "24d5f089152e60f62d28b835fbff2cd2e8dc0baf1ac13343bef92ab7eed84548"
 
 [[package]]
 name = "rust-crypto"
@@ -3114,9 +3119,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-attributes"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8a9bd1db7706f2373a190b0d067146caa39350c486f3d455b0e33b431f94c07"
+checksum = "41768be5b9f3489491825f56f01f25290aa1d3e7cc97e182d4d34360493ba6fa"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3377,12 +3382,12 @@ dependencies = [
 
 [[package]]
 name = "x11rb"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4122702a684f01cf35cf8e00d0ba513f7c4c7d46f9881d9a699f3de787e61e4"
+checksum = "6ffb080b3f2f616242a4eb8e7d325035312127901025b0052bc3154a282d0f19"
 dependencies = [
  "gethostname",
- "nix 0.19.1",
+ "nix",
  "winapi 0.3.9",
  "winapi-wsapoll",
 ]
