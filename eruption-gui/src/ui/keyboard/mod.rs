@@ -15,7 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::{constants, util};
+use crate::constants;
+use crate::util;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
@@ -53,7 +54,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
-        1000 / (constants::TARGET_FPS as u32 * 5),
+        (1000 / constants::TARGET_FPS as u32) / 2,
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)

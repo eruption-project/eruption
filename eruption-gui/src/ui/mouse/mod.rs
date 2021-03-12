@@ -15,10 +15,9 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crate::constants;
 use glib::clone;
 use gtk::prelude::*;
-
-use crate::constants;
 
 mod hwdevices;
 
@@ -37,7 +36,7 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
-        1000 / (constants::TARGET_FPS as u32 * 5),
+        (1000 / constants::TARGET_FPS as u32) / 2,
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)
