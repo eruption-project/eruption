@@ -1189,7 +1189,7 @@ async fn process_mouse_event(
                     }
 
                     // wait until all Lua VMs completed the event handler
-                    loop {
+                    /*loop {
                         let mut pending =
                             UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
 
@@ -1203,7 +1203,7 @@ async fn process_mouse_event(
                         if *pending == 0 {
                             break;
                         }
-                    }
+                    }*/
                 }
 
                 events::notify_observers(events::Event::MouseMove(
