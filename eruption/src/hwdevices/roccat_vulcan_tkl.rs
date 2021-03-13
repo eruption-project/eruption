@@ -710,9 +710,9 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
                 Ok(_size) => {
-                    // if buf.iter().any(|e| *e != 0) {
-                    //     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    // }
+                    if buf.iter().any(|e| *e != 0) {
+                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+                    }
 
                     let event = match buf[0..5] {
                         // Key reports, incl. KEY_FN, ..

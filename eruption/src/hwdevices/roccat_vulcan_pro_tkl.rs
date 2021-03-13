@@ -590,9 +590,9 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
 
             match ctrl_dev.read_timeout(&mut buf, millis) {
                 Ok(_size) => {
-                    // if buf.iter().any(|e| *e != 0) {
-                    //     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    // }
+                    if buf.iter().any(|e| *e != 0) {
+                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+                    }
 
                     let fn_down = false;
 
