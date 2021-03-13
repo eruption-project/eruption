@@ -78,8 +78,8 @@ pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
 /// that may involve interactivity like e.g.: PolicyKit authentication
 pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
-// Wait n seconds before sending the LED "off pattern" on shutdown
-pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = 150;
+/// Wait n seconds before sending the LED "off pattern" on shutdown
+pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
 
 // Max. supported number of keys on a keyboard
 pub const MAX_KEYS: usize = 144;

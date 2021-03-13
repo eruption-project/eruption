@@ -38,6 +38,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashSet, thread};
+use tokio::join;
 
 mod util;
 
@@ -2431,6 +2432,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 debug!("Left the main loop");
 
                 // we left the main loop, so send a final message to the running Lua VMs
+                info!("Shutting down all Lua VMs now...");
+
                 *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.len();
 
                 for lua_tx in LUA_TXS.iter() {
@@ -2461,35 +2464,40 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 plugins::PersistencePlugin::store_persistent_data()
                     .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
 
+                // close all managed devices
+                info!("Closing all devices now...");
+
                 thread::sleep(Duration::from_millis(
                     constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
                 ));
 
                 // set LEDs of all keyboards to a known final state, then close all associated devices
-                for device in keyboard_devices.iter() {
-                    device
-                        .0
-                        .write()
-                        .set_led_off_pattern()
-                        .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
+                let shutdown_keyboards = async {
+                    for device in keyboard_devices.iter() {
+                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
+                            error!("Could not finalize LEDs configuration: {}", e)
+                        });
 
-                    device.0.write().close_all().unwrap_or_else(|e| {
-                        warn!("Could not close the device: {}", e);
-                    });
-                }
+                        device.0.write().close_all().unwrap_or_else(|e| {
+                            warn!("Could not close the device: {}", e);
+                        });
+                    }
+                };
 
                 // set LEDs of all mice to a known final state, then close all associated devices
-                for device in mouse_devices.iter() {
-                    device
-                        .0
-                        .write()
-                        .set_led_off_pattern()
-                        .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
+                let shutdown_mice = async {
+                    for device in mouse_devices.iter() {
+                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
+                            error!("Could not finalize LEDs configuration: {}", e)
+                        });
 
-                    device.0.write().close_all().unwrap_or_else(|e| {
-                        warn!("Could not close the device: {}", e);
-                    });
-                }
+                        device.0.write().close_all().unwrap_or_else(|e| {
+                            warn!("Could not close the device: {}", e);
+                        });
+                    }
+                };
+
+                join!(shutdown_keyboards, shutdown_mice);
             } else {
                 error!("Could not enumerate connected devices");
                 process::exit(2);
