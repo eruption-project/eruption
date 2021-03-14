@@ -27,7 +27,7 @@ key_to_index = {}
 
 key_to_index['GAME_MODE'] = 95
 
-key_to_index['FN'] = 65
+key_to_index['FN'] = 77
 key_to_index['CAPS_LOCK'] = 6
 key_to_index['LEFT_SHIFT'] = 1
 key_to_index['RIGHT_SHIFT'] = 76
