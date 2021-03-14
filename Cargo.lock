@@ -616,7 +616,7 @@ dependencies = [
  "noise",
  "palette",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "prctl",
  "pretty_env_logger",
  "procinfo",
@@ -654,7 +654,7 @@ dependencies = [
  "log",
  "nix",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "pretty_env_logger",
  "serde 1.0.124",
  "serde_json",
@@ -695,7 +695,7 @@ dependencies = [
  "pango",
  "pangocairo",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "pretty_env_logger",
  "rayon",
  "serde 1.0.124",
@@ -767,7 +767,7 @@ dependencies = [
  "log",
  "nix",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "pretty_env_logger",
  "procmon-sys",
  "rayon",
@@ -806,7 +806,7 @@ dependencies = [
  "log",
  "nix",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "pretty_env_logger",
  "serde 1.0.124",
  "serde_json",
@@ -833,7 +833,7 @@ dependencies = [
  "log",
  "nix",
  "parking_lot",
- "paste 1.0.4",
+ "paste 1.0.5",
  "serde 1.0.124",
  "serde_json",
  "thiserror",
@@ -2133,9 +2133,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.4"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5d65c4d95931acda4498f675e332fcbdc9a06705cd07086c510e9b6009cd1c1"
+checksum = "acbf547ad0c65e31259204bd90935776d1c693cec2f4ff7abb7a1bbbd40dfe58"
 
 [[package]]
 name = "paste-impl"
@@ -2812,7 +2812,7 @@ dependencies = [
  "approx 0.4.0",
  "num-complex",
  "num-traits 0.2.14",
- "paste 1.0.4",
+ "paste 1.0.5",
 ]
 
 [[package]]
@@ -2925,9 +2925,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.63"
+version = "1.0.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fd9bc7ccc2688b3344c2f48b9b546648b25ce0b20fc717ee7fa7981a8ca9717"
+checksum = "3fd9d1e9976102a03c542daa2eff1b43f9d72306342f3f8b3ed5fb8908195d6f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3212,9 +3212,9 @@ dependencies = [
 
 [[package]]
 name = "typenum"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "373c8a200f9e67a0c95e62a4f52fbf80c23b4381c05a17845531982fa99e6b33"
+checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
 
 [[package]]
 name = "udev"
