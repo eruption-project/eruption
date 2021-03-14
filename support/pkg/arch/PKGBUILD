@@ -4,7 +4,7 @@ pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.20'
-pkgrel='12'
+pkgrel='13'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption'
@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=12f2054865db1b2a4f3acfc4527f3903a68c0825')
+source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=491f9ea0d5f78da3bfc826f3806c84d2e8674888')
 noextract=()
 sha512sums=('SKIP')
 
