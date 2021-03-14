@@ -137,47 +137,8 @@ GNOME Shell extension, for easy switching of profiles on the fly.
 
 If you want Eruption to be able to play back sound effects, or use one of the
 audio visualizer Lua scripts, then you have to perform a few additional steps.
-The following steps will allow the Eruption daemon to access the PulseAudio
-server of the current user, for playback and for capturing of audio signals.
 
-Create the PulseAudio config directory and edit the server configuration file
-for your user account:
-
-```sh
- $ mkdir -p ~/.config/pulse/
- $ cp /etc/pulse/default.pa ~/.config/pulse/default.pa
- $ nano ~/.config/pulse/default.pa
-```
-
-then add the following line at the end of the file:
-
-```conf
-load-module module-native-protocol-unix auth-group=root socket=/tmp/pulse-server
-```
-
-Create the PulseAudio configuration directory and edit the client configuration
-file in `/root/.config/pulse/client.conf` for the user that Eruption runs as
-(default: root)
-
-```sh
- $ sudo mkdir -p /root/.config/pulse/
- $ EDITOR=nano sudoedit /root/.config/pulse/client.conf
-```
-
-and then add the following lines:
-
-```ini
-autospawn = no
-default-server = unix:/tmp/pulse-server
-enable-memfd = yes
-```
-
-Finally, restart PulseAudio and Eruption for the changes to take effect:
-
-```sh
- $ systemctl --user restart pulseaudio.service
- $ sudo systemctl restart eruption.service
-```
+Please refer to [SETUP_AUDIO.md](SETUP_AUDIO.md) for detailed instructions.
 
 ## The `eruption-process-monitor` Daemon
 
