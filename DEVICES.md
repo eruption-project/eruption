@@ -32,8 +32,8 @@
 | ------ | -------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
 | ROCCAT | Vulcan 100/12x | 100%                       | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 | ROCCAT | Vulcan Pro TKL | 98%                        | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
-| ROCCAT | Vulcan TKL     | reportedly working         | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
-| ROCCAT | Vulcan Pro     | work-in-progress. untested | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
+| ROCCAT | Vulcan TKL     | work-in-progress, untested | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
+| ROCCAT | Vulcan Pro     | work-in-progress, untested | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -81,7 +81,7 @@ Nearly fully supported, as of `0.1.19`
 
 ### Support status
 
-Reported as working but not verified, as of `0.1.19`.
+Work-in-progress, completely untested, as of `0.1.20`.
 
 ### Remarks and known Issues
 
@@ -96,7 +96,7 @@ Reported as working but not verified, as of `0.1.19`.
 
 ### Support status
 
-Work-in-progress, completely untested. Probably no working, as of `0.1.20`
+Work-in-progress, completely untested. Probably not working, as of `0.1.20`
 
 ### Remarks and known Issues
 
