@@ -6,9 +6,16 @@ Table of new and noteworthy changes:
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.20 | __New Release__                                                                                                                                                       |
 | 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
-| 0.1.20 | Updated the Eruption GUI to the latest version `0.0.7` (this is a technology preview)                                                                                 |
+| 0.1.20 | Update the Eruption GUI to the latest version `0.0.7` (this is a technology preview only; it is not production ready)                                                 |
 | 0.1.20 | New effect plugin/Lua script/profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                      |
-| 0.1.20 | Add experimental support for the ROCCAT Kone Aimo Remastered                                                                                                          |
+| 0.1.20 | New profiles: `Animal: Blobby + Color Swirls (Perlin)`, `Animal: Blobby + Wave`, `Animal: Breathing (1)`, `Animal: Breathing (2)`, `Animal: Breathing (3)`            |
+| 0.1.20 | Add experimental support for the `ROCCAT Kone Aimo Remastered` series mice                                                                                            |
+| 0.1.20 | Add experimental support for `ROCCAT Vulcan Pro` series keyboards                                                                                                     |
+| 0.1.20 | Add experimental support for `ROCCAT Vulcan TKL` series keyboards                                                                                                     |
+| 0.1.20 | Allow changing script parameters during runtime via `eruptionctl` and via the Eruption GUI                                                                            |
+| 0.1.20 | The companion tool `eruptionctl` gained the ability to query the currently active script and the currently active slot                                                |
+| 0.1.20 | Add official support and documentation for using Eruption with PipeWire                                                                                               |
+| 0.1.20 | Multiple bugs and paper cuts have been fixed                                                                                                                          |
 | 0.1.19 | __New Release__                                                                                                                                                       |
 | 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
 | 0.1.19 | Add support for `ROCCAT Vulcan Pro TKL` series keyboards                                                                                                              |
