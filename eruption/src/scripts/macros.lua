@@ -129,12 +129,16 @@ function on_hid_event(event_type, arg1)
 		is_pressed = false
 	end
 
-	if key_code == 119 then
+	if key_code == FN_KEY then
 		-- "FN" key event
 		modifier_map[FN] = is_pressed
+
+		debug("Macros: FN key event registered")
 	elseif key_code == EASY_SHIFT_KEY then
 		-- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
 		modifier_map[CAPS_LOCK] = is_pressed
+
+		debug("Macros: Easy Shift+ key event registered")
 	elseif key_code == GAME_MODE_KEY then
 		-- "SCROLL LOCK/GAME MODE" key event
 		local fn_pressed = modifier_map[FN]

@@ -19,6 +19,7 @@ ENABLE_MEDIA_KEYS 	 = true
 ENABLE_MACRO_KEYS 	 = true
 
 -- HID key codes
+FN_KEY = 119
 GAME_MODE_KEY = 106
 EASY_SHIFT_KEY = 21
 
