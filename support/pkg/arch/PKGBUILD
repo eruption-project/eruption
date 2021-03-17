@@ -4,7 +4,7 @@ pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.20'
-pkgrel='14'
+pkgrel='15'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption'
@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/s
 options=()
 install='eruption.install'
 changelog=
-source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=27cd6fd75b0aa2e0e013af36190730106aca3fc4')
+source=('git+https://github.com/X3n0m0rph59/eruption.git#commit=3a3a9527da9ea0bd38be87427a2397d2e72094ef')
 noextract=()
 sha512sums=('SKIP')
 
@@ -128,9 +128,8 @@ package() {
     install -m 644 -T "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruption-process-monitor"
     install -m 644 -T "support/shell/completions/en_US/eruptionctl.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruptionctl"
 
-    install -m 644 "eruption/src/scripts/failsafe.lua" "$pkgdir/usr/share/eruption/scripts/lib"
-    install -m 644 "eruption/src/scripts/failsafe.lua.manifest" "$pkgdir/usr/share/eruption/scripts/lib"
-
+    install -m 644 "eruption/src/scripts/lib/failsafe.lua" "$pkgdir/usr/share/eruption/scripts/lib"
+    install -m 644 "eruption/src/scripts/lib/failsafe.lua.manifest" "$pkgdir/usr/share/eruption/scripts/lib"
     install -m 644 "eruption/src/scripts/macros.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/macros.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/stats.lua" "$pkgdir/usr/share/eruption/scripts/"

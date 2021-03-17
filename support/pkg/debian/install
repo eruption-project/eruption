@@ -101,8 +101,8 @@ support/profiles/swirl-perlin-red-yellow.profile var/lib/eruption/profiles
 support/profiles/swirl-turbulence.profile var/lib/eruption/profiles
 support/profiles/swirl-voronoi.profile var/lib/eruption/profiles
 
-eruption/src/scripts/failsafe.lua usr/share/eruption/scripts/lib
-eruption/src/scripts/failsafe.lua.manifest usr/share/eruption/scripts/lib
+eruption/src/scripts/lib/failsafe.lua usr/share/eruption/scripts/lib
+eruption/src/scripts/lib/failsafe.lua.manifest usr/share/eruption/scripts/lib
 eruption/src/scripts/afterglow.lua usr/share/eruption/scripts
 eruption/src/scripts/afterglow.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/afterhue.lua usr/share/eruption/scripts
