@@ -15,6 +15,7 @@ Table of new and noteworthy changes:
 | 0.1.20 | Allow changing script parameters during runtime via `eruptionctl` and via the Eruption GUI                                                                            |
 | 0.1.20 | The companion tool `eruptionctl` gained the ability to query the currently active profile and the currently active slot                                               |
 | 0.1.20 | Add official support and documentation for using Eruption with PipeWire                                                                                               |
+| 0.1.20 | Eruption now has a failsafe mode, that gets activated whenever an irrecoverable error is encountered                                                                  |
 | 0.1.20 | Multiple bugs and paper cuts have been fixed                                                                                                                          |
 | 0.1.19 | __New Release__                                                                                                                                                       |
 | 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                            |
