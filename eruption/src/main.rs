@@ -99,6 +99,9 @@ lazy_static! {
     /// Global "is AFK" status flag
     pub static ref AFK: AtomicBool = AtomicBool::new(false);
 
+    /// Global "request to enter failsafe mode" flag
+    pub static ref REQUEST_FAILSAFE_MODE: AtomicBool = AtomicBool::new(false);
+
     /// Global "enable experimental features" flag
     pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
 
@@ -205,6 +208,7 @@ pub enum EvdevError {
 pub struct LuaTx {
     pub script_file: PathBuf,
     pub sender: Sender<script::Message>,
+    pub is_failed: bool,
 }
 
 impl LuaTx {
@@ -212,6 +216,7 @@ impl LuaTx {
         Self {
             script_file,
             sender,
+            is_failed: false,
         }
     }
 }
@@ -700,6 +705,11 @@ fn spawn_lua_thread(
     keyboard_devices: Vec<KeyboardDevice>,
     mouse_devices: Vec<MouseDevice>,
 ) -> Result<()> {
+    info!(
+        "Loading Lua script: '{}'",
+        &script_path.file_name().unwrap().to_string_lossy()
+    );
+
     let result = util::is_file_accessible(&script_path);
     if let Err(result) = result {
         error!(
@@ -736,120 +746,302 @@ fn spawn_lua_thread(
                 &lua_rx,
                 &keyboard_devices.clone(),
                 &mouse_devices.clone(),
-            )?;
+            );
 
             match result {
-                //script::RunScriptResult::ReExecuteOtherScript(script_file) => {
-                //script_path = script_file;
-                //continue;
-                //}
-                script::RunScriptResult::TerminatedGracefully => break,
+                Ok(script::RunScriptResult::TerminatedGracefully) => return Ok(()),
 
-                script::RunScriptResult::TerminatedWithErrors => {
+                Ok(script::RunScriptResult::TerminatedWithErrors) => {
                     error!("Script execution failed");
 
-                    // TODO: Try to get rid of this! We currently need it here since
-                    //       otherwise, we may deadlock on error sometimes.
-                    std::process::abort();
+                    // LUA_TXS.get_mut(&thread_idx).unwrap().is_failed = true;
+                    REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
-                    // return Err(MainError::ScriptExecError {}.into());
+                    return Err(MainError::ScriptExecError {}.into());
+                }
+
+                Err(_e) => {
+                    error!("Script execution failed due to an unknown error");
+
+                    // LUA_TXS.get_mut(&thread_idx).unwrap().is_failed = true;
+                    REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
+
+                    return Err(MainError::ScriptExecError {}.into());
                 }
             }
         }
-
-        Ok(())
     })?;
 
     Ok(())
 }
 
 /// Switches the currently active profile to the profile file `profile_path`
-fn switch_profile<P: AsRef<Path>>(
-    profile_file: P,
+/// Returns Ok(true) if the new profile has been activated or the old profile was kept,
+/// otherwise returns Ok(false) when we entered failsafe mode. If an error occurred during
+/// switching to failsafe mode, we return an Err() to signal a fatal error
+fn switch_profile(
+    profile_file: Option<&Path>,
     dbus_api_tx: &Sender<DbusApiEvent>,
     keyboard_devices: &[KeyboardDevice],
     mouse_devices: &[MouseDevice],
-) -> Result<()> {
-    info!("Switching to profile: {}", &profile_file.as_ref().display());
+) -> Result<bool> {
+    fn switch_to_failsafe_profile(
+        dbus_api_tx: &Sender<DbusApiEvent>,
+        keyboard_devices: &[KeyboardDevice],
+        mouse_devices: &[MouseDevice],
+    ) -> Result<()> {
+        let mut errors_present = false;
 
-    let script_dir = PathBuf::from(
-        CONFIG
-            .lock()
-            .as_ref()
-            .unwrap()
-            .get_str("global.script_dir")
-            .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
-    );
+        // let script_dir = PathBuf::from(
+        //     CONFIG
+        //         .lock()
+        //         .as_ref()
+        //         .unwrap()
+        //         .get_str("global.script_dir")
+        //         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
+        // );
 
-    let profile_dir = PathBuf::from(
-        CONFIG
-            .lock()
-            .as_ref()
-            .unwrap()
-            .get_str("global.profile_dir")
-            .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
-    );
+        // force hardcoded directory for failsafe scripts
+        let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
 
-    let profile_path = profile_dir.join(&profile_file);
-    let profile = profiles::Profile::from(&profile_path)?;
+        let profile = profiles::get_fail_safe_profile();
 
-    // verify script files first; better fail early if we can
-    let script_files = profile.active_scripts.clone();
-    for script_file in script_files.iter() {
-        let script_path = script_dir.join(&script_file);
+        // now spawn a new set of Lua VMs, with scripts from the failsafe profile
+        for (thread_idx, script_file) in profile.active_scripts.iter().enumerate() {
+            let script_path = script_dir.join(&script_file);
 
-        if !util::is_script_file_accessible(&script_path)
-            || !util::is_manifest_file_accessible(&script_path)
-        {
-            error!(
-                "Script file or manifest inaccessible: {}",
-                script_path.display()
-            );
-            return Err(MainError::SwitchProfileError {}.into());
+            let (lua_tx, lua_rx) = unbounded();
+            spawn_lua_thread(
+                thread_idx,
+                lua_rx,
+                script_path.clone(),
+                keyboard_devices.to_owned(),
+                mouse_devices.to_owned(),
+            )
+            .unwrap_or_else(|e| {
+                errors_present = true;
+
+                error!("Could not spawn a thread: {}", e);
+            });
+
+            let mut tx = LuaTx::new(script_path.clone(), lua_tx);
+
+            if errors_present {
+                tx.is_failed = true
+            }
+
+            LUA_TXS.insert(LUA_TXS.len(), tx);
+        }
+
+        // finally assign the globally active profile
+        *ACTIVE_PROFILE.lock() = Some(profile);
+
+        dbus_api_tx
+            .send(DbusApiEvent::ActiveProfileChanged)
+            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+        // let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+
+        // let mut slot_profiles = SLOT_PROFILES.lock();
+        // slot_profiles.as_mut().unwrap()[active_slot] = "failsafe".into();
+
+        if errors_present {
+            error!("Fatal error: An error occurred while loading the failsafe profile");
+            Err(MainError::SwitchProfileError {}.into())
+        } else {
+            Ok(())
         }
     }
 
-    // now request termination of all Lua VMs
-    for lua_tx in LUA_TXS.iter() {
-        lua_tx
-            .send(script::Message::Unload)
-            .unwrap_or_else(|e| error!("Could not send an event to a Lua VM: {}", e));
+    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+        debug!("Preparing to enter failsafe mode...");
+
+        // request termination of all Lua VMs
+        for lua_tx in LUA_TXS.iter() {
+            if !lua_tx.is_failed {
+                lua_tx
+                    .send(script::Message::Unload)
+                    .unwrap_or_else(|e| error!("Could not send an event to a Lua VM: {}", e));
+            } else {
+                warn!("Skipping unload of a failed tx");
+            }
+        }
+
+        // be safe and clear any leftover channels
+        LUA_TXS.clear();
+
+        switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+        REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
+
+        debug!("Successfully entered failsafe mode");
+
+        Ok(false)
+    } else {
+        // we require profile_file to be set in this branch
+        let profile_file = if let Some(profile_file) = profile_file {
+            profile_file
+        } else {
+            error!("Undefined profile");
+            return Err(MainError::SwitchProfileError {}.into());
+        };
+
+        info!("Switching to profile: {}", &profile_file.display());
+
+        let script_dir = PathBuf::from(
+            CONFIG
+                .lock()
+                .as_ref()
+                .unwrap()
+                .get_str("global.script_dir")
+                .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
+        );
+
+        let profile_dir = PathBuf::from(
+            CONFIG
+                .lock()
+                .as_ref()
+                .unwrap()
+                .get_str("global.profile_dir")
+                .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
+        );
+
+        let profile_path = profile_dir.join(&profile_file);
+        let profile = profiles::Profile::from(&profile_path);
+
+        if let Ok(profile) = profile {
+            let mut errors_present = false;
+
+            // verify script files first; better fail early if we can
+            let script_files = profile.active_scripts.clone();
+            for script_file in script_files.iter() {
+                let script_path = script_dir.join(&script_file);
+
+                if !util::is_script_file_accessible(&script_path)
+                    || !util::is_manifest_file_accessible(&script_path)
+                {
+                    error!(
+                        "Script file or manifest inaccessible: {}",
+                        script_path.display()
+                    );
+
+                    // errors_present = true;
+
+                    // the profile to switch to refers to invalid script files, so we need to refuse to
+                    // switch profiles and simply keep the current one, or load a failsafe profile if we
+                    // do not have a currently active profile, like e.g. during startup
+                    if crate::ACTIVE_PROFILE.lock().is_none() {
+                        error!("An error occurred during switching of profiles, loading failsafe profile now");
+                        switch_to_failsafe_profile(
+                            &dbus_api_tx,
+                            &keyboard_devices,
+                            &mouse_devices,
+                        )?;
+
+                        return Ok(false);
+                    } else {
+                        error!(
+                            "Invalid profile file: '{}', refusing to switch profiles",
+                            profile_file.display()
+                        );
+
+                        return Ok(true);
+                    }
+                }
+            }
+
+            // now request termination of all Lua VMs
+            for lua_tx in LUA_TXS.iter() {
+                if !lua_tx.is_failed {
+                    lua_tx
+                        .send(script::Message::Unload)
+                        .unwrap_or_else(|e| error!("Could not send an event to a Lua VM: {}", e));
+                } else {
+                    warn!("Skipping unload of a failed tx");
+                }
+            }
+
+            // be safe and clear any leftover channels
+            LUA_TXS.clear();
+
+            // we passed the point of no return, from here on we can't just go back
+            // but need to switch to failsafe mode when we encounter any critical errors
+
+            let mut num_vms = 0; // only valid if no errors occurred
+
+            // now spawn a new set of Lua VMs, with scripts from the new profile
+            for (thread_idx, script_file) in script_files.iter().enumerate() {
+                let script_path = script_dir.join(&script_file);
+
+                let (lua_tx, lua_rx) = unbounded();
+                if let Err(e) = spawn_lua_thread(
+                    thread_idx,
+                    lua_rx,
+                    script_path.clone(),
+                    keyboard_devices.to_owned(),
+                    mouse_devices.to_owned(),
+                ) {
+                    errors_present = true;
+
+                    error!("Could not spawn a thread: {}", e);
+                }
+
+                let mut tx = LuaTx::new(script_path.clone(), lua_tx);
+
+                if !errors_present {
+                    num_vms += 1;
+                } else {
+                    tx.is_failed = true;
+                }
+
+                LUA_TXS.insert(LUA_TXS.len(), tx);
+            }
+
+            // it seems that at least one Lua VM failed during loading of the new profile,
+            // so we have to switch to failsafe mode to be safe
+            if errors_present || num_vms == 0 {
+                error!(
+                    "An error occurred during switching of profiles, loading failsafe profile now"
+                );
+                switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+
+                Ok(false)
+            } else {
+                // everything is fine, finally assign the globally active profile
+                debug!("Switch successful");
+
+                *ACTIVE_PROFILE.lock() = Some(profile);
+
+                dbus_api_tx
+                    .send(DbusApiEvent::ActiveProfileChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+                let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+                let mut slot_profiles = SLOT_PROFILES.lock();
+                slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
+
+                Ok(true)
+            }
+        } else {
+            // the profile file to switch to is corrupted, so we need to refuse to switch profiles
+            // and simply keep the current one, or load a failsafe profile if we do not have a
+            // currently active profile, like e.g. during startup of the daemon
+            if crate::ACTIVE_PROFILE.lock().is_none() {
+                error!(
+                    "An error occurred during switching of profiles, loading failsafe profile now"
+                );
+                switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+
+                Ok(false)
+            } else {
+                error!(
+                    "Invalid profile file: '{}', refusing to switch profiles",
+                    profile_file.display()
+                );
+
+                Ok(true)
+            }
+        }
     }
-
-    // be safe and clear any leftover channels
-    LUA_TXS.clear();
-
-    // now spawn a new set of Lua VMs, with scripts from the new profile
-    for (thread_idx, script_file) in script_files.iter().enumerate() {
-        let script_path = script_dir.join(&script_file);
-
-        let (lua_tx, lua_rx) = unbounded();
-        spawn_lua_thread(
-            thread_idx,
-            lua_rx,
-            script_path.clone(),
-            keyboard_devices.to_owned(),
-            mouse_devices.to_owned(),
-        )
-        .unwrap_or_else(|e| {
-            error!("Could not spawn a thread: {}", e);
-        });
-
-        LUA_TXS.insert(LUA_TXS.len(), LuaTx::new(script_path.clone(), lua_tx));
-    }
-
-    // finally assign the globally active profile
-    *ACTIVE_PROFILE.lock() = Some(profile);
-
-    dbus_api_tx
-        .send(DbusApiEvent::ActiveProfileChanged)
-        .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-
-    let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-    let mut slot_profiles = SLOT_PROFILES.lock();
-    slot_profiles.as_mut().unwrap()[active_slot] = profile_file.as_ref().into();
-
-    Ok(())
 }
 
 /// Process file system related events
@@ -892,13 +1084,14 @@ async fn process_dbus_event(
         dbus_interface::Message::SwitchProfile(profile_path) => {
             info!("Loading profile: {}", profile_path.display());
 
-            switch_profile(
-                &profile_path,
+            if let Err(e) = switch_profile(
+                Some(&profile_path),
                 &dbus_api_tx,
                 &keyboard_devices,
                 &mouse_devices,
-            )
-            .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+            ) {
+                error!("Could not switch profiles: {}", e);
+            }
         }
     }
 
@@ -1191,6 +1384,11 @@ async fn process_mouse_event(
 
                     // wait until all Lua VMs completed the event handler
                     /*loop {
+                        if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                            *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() = 0;
+                            break;
+                        }
+
                         let mut pending =
                             UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
 
@@ -1239,6 +1437,11 @@ async fn process_mouse_event(
 
                 // wait until all Lua VMs completed the event handler
                 loop {
+                    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                        *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() = 0;
+                        break;
+                    }
+
                     let mut pending =
                         UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
 
@@ -1285,6 +1488,11 @@ async fn process_mouse_event(
 
             // wait until all Lua VMs completed the event handler
             loop {
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() = 0;
+                    break;
+                }
+
                 let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
 
                 UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
@@ -1316,6 +1524,11 @@ async fn process_mouse_event(
 
             // wait until all Lua VMs completed the event handler
             loop {
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = 0;
+                    break;
+                }
+
                 let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
 
                 UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
@@ -1482,7 +1695,7 @@ async fn process_keyboard_event(
             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.len() - failed_txs.len();
 
             for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) {
+                if !failed_txs.contains(&e.key()) && !e.is_failed {
                     e.value()
                         .send(script::Message::KeyDown(index))
                         .unwrap_or_else(|e| {
@@ -1495,6 +1708,13 @@ async fn process_keyboard_event(
 
             // wait until all Lua VMs completed the event handler
             loop {
+                // this is required to avoid a deadlock when a Lua script fails
+                // and a key event is pending
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                    break;
+                }
+
                 let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
 
                 UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
@@ -1513,7 +1733,7 @@ async fn process_keyboard_event(
             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.len() - failed_txs.len();
 
             for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) {
+                if !failed_txs.contains(&e.key()) && !e.is_failed {
                     e.value()
                         .send(script::Message::KeyUp(index))
                         .unwrap_or_else(|e| {
@@ -1526,6 +1746,13 @@ async fn process_keyboard_event(
 
             // wait until all Lua VMs completed the event handler
             loop {
+                // this is required to avoid a deadlock when a Lua script fails
+                // and a key event is pending
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                    break;
+                }
+
                 let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
 
                 UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
@@ -1626,6 +1853,31 @@ async fn run_main_loop(
         start_time = Instant::now();
 
         {
+            if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                warn!("Entering failsafe mode now, due to previous irrecoverable errors");
+
+                // forbid changing of profile and/or slots now
+                *ACTIVE_PROFILE_NAME.lock() = None;
+                saved_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+
+                dbus_api_tx
+                    .send(DbusApiEvent::ActiveProfileChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
+
+                if let Err(e) =
+                    switch_profile(None, &dbus_api_tx, &keyboard_devices_c, &mouse_devices_c)
+                {
+                    error!("Could not switch profiles: {}", e);
+                }
+
+                failed_txs.clear();
+            }
+        }
+
+        {
             // slot changed?
             let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
             if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
@@ -1642,7 +1894,7 @@ async fn run_main_loop(
                 };
 
                 switch_profile(
-                    &profile_path,
+                    Some(&profile_path),
                     &dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
@@ -1715,13 +1967,14 @@ async fn run_main_loop(
 
                 let profile_path = Path::new(active_profile);
 
-                switch_profile(
-                    &profile_path,
+                if let Err(e) = switch_profile(
+                    Some(&profile_path),
                     &dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
-                )
-                .unwrap_or_else(|e| error!("Could not switch profiles: {}", e));
+                ) {
+                    error!("Could not switch profiles: {}", e);
+                }
 
                 failed_txs.clear();
             }

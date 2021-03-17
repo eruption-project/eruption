@@ -287,6 +287,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/queue.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/utilities.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/generic_keyboard.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_tkl.lua

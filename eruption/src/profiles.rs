@@ -384,6 +384,17 @@ impl Profile {
         }
     }
 
+    /// Returns a failsafe profile that will work in almost all cases
+    pub fn new_fail_safe() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            name: "Failsafe mode".to_string(),
+            description: "Failsafe mode profile".to_string(),
+            active_scripts: vec![PathBuf::from("lib/failsafe.lua")],
+            ..Default::default()
+        }
+    }
+
     pub fn from(profile_file: &Path) -> Result<Self> {
         // parse manifest
         match fs::read_to_string(profile_file) {
@@ -556,6 +567,10 @@ pub fn find_path_by_uuid(uuid: Uuid, profile_path: &Path) -> Option<PathBuf> {
     }
 
     result
+}
+
+pub fn get_fail_safe_profile() -> Profile {
+    Profile::new_fail_safe()
 }
 
 #[cfg(test)]

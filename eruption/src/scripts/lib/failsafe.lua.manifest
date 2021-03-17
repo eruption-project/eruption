@@ -1,0 +1,6 @@
+name = "Failsafe"
+description = "Failsafe mode"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.20"
+tags = ['Macros', 'Vendor']

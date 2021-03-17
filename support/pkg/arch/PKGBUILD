@@ -128,6 +128,9 @@ package() {
     install -m 644 -T "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruption-process-monitor"
     install -m 644 -T "support/shell/completions/en_US/eruptionctl.zsh-completion" "$pkgdir/usr/share/zsh/site-functions/_eruptionctl"
 
+    install -m 644 "eruption/src/scripts/failsafe.lua" "$pkgdir/usr/share/eruption/scripts/lib"
+    install -m 644 "eruption/src/scripts/failsafe.lua.manifest" "$pkgdir/usr/share/eruption/scripts/lib"
+
     install -m 644 "eruption/src/scripts/macros.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/macros.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/stats.lua" "$pkgdir/usr/share/eruption/scripts/"
