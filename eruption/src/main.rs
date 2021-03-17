@@ -1132,6 +1132,13 @@ async fn process_keyboard_hid_events(
 
                 // wait until all Lua VMs completed the event handler
                 loop {
+                    // this is required to avoid a deadlock when a Lua script fails
+                    // and a key event is pending
+                    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                        *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() = 0;
+                        break;
+                    }
+
                     let mut pending = UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
 
                     UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.wait_for(
@@ -1168,6 +1175,13 @@ async fn process_keyboard_hid_events(
 
                             // wait until all Lua VMs completed the event handler
                             loop {
+                                // this is required to avoid a deadlock when a Lua script fails
+                                // and a key event is pending
+                                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                                    break;
+                                }
+
                                 let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
 
                                 UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
@@ -1209,6 +1223,13 @@ async fn process_keyboard_hid_events(
 
                             // wait until all Lua VMs completed the event handler
                             loop {
+                                // this is required to avoid a deadlock when a Lua script fails
+                                // and a key event is pending
+                                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                                    break;
+                                }
+
                                 let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
 
                                 UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
@@ -1284,6 +1305,13 @@ async fn process_mouse_hid_events(
 
                 // wait until all Lua VMs completed the event handler
                 loop {
+                    // this is required to avoid a deadlock when a Lua script fails
+                    // and an event is pending
+                    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                        *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() = 0;
+                        break;
+                    }
+
                     let mut pending = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
 
                     UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.wait_for(
@@ -1567,111 +1595,117 @@ async fn process_mouse_event(
 //     mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
 //     failed_txs: &HashSet<usize>,
 // ) -> Result<()> {
+//     // send pending mouse events to the Lua VMs and to the event dispatcher
+//     match mouse_rx.recv_timeout(Duration::from_millis(0)) {
+//         Ok(result) => {
+//             match result {
+//                 Some(raw_event) => {
+//                     // notify all observers of raw events
+//                     events::notify_observers(events::Event::RawMouseEvent(raw_event.clone())).ok();
 
-//         // send pending mouse events to the Lua VMs and to the event dispatcher
-//         match mouse_rx.recv_timeout(Duration::from_millis(0)) {
-//             Ok(result) => {
-//                 match result {
-//                     Some(raw_event) => {
-//                         // notify all observers of raw events
-//                         events::notify_observers(events::Event::RawMouseEvent(raw_event.clone()))
-//                             .ok();
+//                     if let evdev_rs::enums::EventCode::EV_KEY(code) = raw_event.clone().event_code {
+//                         // mouse button event occurred
 
-//                         if let evdev_rs::enums::EventCode::EV_KEY(code) =
-//                             raw_event.clone().event_code
-//                         {
-//                             // mouse button event occurred
+//                         let is_pressed = raw_event.value > 0;
+//                         let index = util::ev_key_to_button_index(code).unwrap();
 
-//                             let is_pressed = raw_event.value > 0;
-//                             let index = util::ev_key_to_button_index(code).unwrap();
+//                         if is_pressed {
+//                             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
+//                                 LUA_TXS.lock().len() - failed_txs.len();
 
-//                             if is_pressed {
-//                                 *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
-//                                     LUA_TXS.lock().len() - failed_txs.len();
-
-//                                 for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-//                                     if !failed_txs.contains(&idx) {
-//                                         lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
+//                             for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+//                                 if !failed_txs.contains(&idx) {
+//                                     lua_tx.send(script::Message::MouseButtonDown(index)).unwrap_or_else(
 //                                                 |e| {
 //                                                     error!("Could not send a pending mouse event to a Lua VM: {}", e)
 //                                                 },
 //                                             );
-//                                     } else {
-//                                         warn!("Not sending a message to a failed tx");
-//                                     }
+//                                 } else {
+//                                     warn!("Not sending a message to a failed tx");
 //                                 }
-
-//                                 // wait until all Lua VMs completed the event handler
-//                                 loop {
-//                                     let mut pending =
-//                                         UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
-
-//                                     UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
-//                                         &mut pending,
-//                                         Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-//                                     );
-
-//                                     if *pending == 0 {
-//                                         break;
-//                                     }
-//                                 }
-
-//                                 events::notify_observers(events::Event::MouseButtonDown(index))
-//                                     .unwrap_or_else(|e| error!("{}", e));
-//                             } else {
-//                                 *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
-//                                     LUA_TXS.lock().len() - failed_txs.len();
-
-//                                 for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-//                                     if !failed_txs.contains(&idx) {
-//                                         lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
-//                                                 |e| {
-//                                                     error!("Could not send a pending mouse event to a Lua VM: {}", e)
-//                                                 },
-//                                             );
-//                                     } else {
-//                                         warn!("Not sending a message to a failed tx");
-//                                     }
-//                                 }
-
-//                                 // wait until all Lua VMs completed the event handler
-//                                 loop {
-//                                     let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
-
-//                                     UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
-//                                         &mut pending,
-//                                         Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-//                                     );
-
-//                                     if *pending == 0 {
-//                                         break;
-//                                     }
-//                                 }
-
-//                                 events::notify_observers(events::Event::MouseButtonUp(index))
-//                                     .unwrap_or_else(|e| error!("{}", e));
 //                             }
+
+//                             // wait until all Lua VMs completed the event handler
+//                             loop {
+//                                 // this is required to avoid a deadlock when a Lua script fails
+//                                 // and an event is pending
+//                                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+//                                     *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() = 0;
+//                                     break;
+//                                 }
+
+//                                 let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+
+//                                 UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
+//                                     &mut pending,
+//                                     Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+//                                 );
+
+//                                 if *pending == 0 {
+//                                     break;
+//                                 }
+//                             }
+
+//                             events::notify_observers(events::Event::MouseButtonDown(index))
+//                                 .unwrap_or_else(|e| error!("{}", e));
+//                         } else {
+//                             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
+//                                 LUA_TXS.lock().len() - failed_txs.len();
+
+//                             for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+//                                 if !failed_txs.contains(&idx) {
+//                                     lua_tx.send(script::Message::MouseButtonUp(index)).unwrap_or_else(
+//                                                 |e| {
+//                                                     error!("Could not send a pending mouse event to a Lua VM: {}", e)
+//                                                 },
+//                                             );
+//                                 } else {
+//                                     warn!("Not sending a message to a failed tx");
+//                                 }
+//                             }
+
+//                             // wait until all Lua VMs completed the event handler
+//                             loop {
+//                                 // this is required to avoid a deadlock when a Lua script fails
+//                                 // and an event is pending
+//                                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+//                                     *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = 0;
+//                                     break;
+//                                 }
+
+//                                 let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+
+//                                 UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
+//                                     &mut pending,
+//                                     Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+//                                 );
+
+//                                 if *pending == 0 {
+//                                     break;
+//                                 }
+//                             }
+
+//                             events::notify_observers(events::Event::MouseButtonUp(index))
+//                                 .unwrap_or_else(|e| error!("{}", e));
 //                         }
-
-//                         // mirror all events, except pointer motion events.
-//                         // Pointer motion events currently can not be overridden,
-//                         // they are mirrored to the virtual mouse directly after they are
-//                         // received by the mouse plugin. This is done to reduce input lag
-//                         macros::UINPUT_TX
-//                             .lock()
-//                             .as_ref()
-//                             .unwrap()
-//                             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
-//                             .unwrap_or_else(|e| {
-//                                 error!("Could not send a pending mouse event: {}", e)
-//                             });
-
-//                         event_processed = true;
 //                     }
 
+//                     // mirror all events, except pointer motion events.
+//                     // Pointer motion events currently can not be overridden,
+//                     // they are mirrored to the virtual mouse directly after they are
+//                     // received by the mouse plugin. This is done to reduce input lag
+//                     macros::UINPUT_TX
+//                         .lock()
+//                         .as_ref()
+//                         .unwrap()
+//                         .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
+//                         .unwrap_or_else(|e| error!("Could not send a pending mouse event: {}", e));
+
+//                     event_processed = true;
 //                 }
 //             }
 //         }
+//     }
 
 //     Ok(())
 // }
