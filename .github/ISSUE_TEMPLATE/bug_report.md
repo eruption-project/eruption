@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+**Please describe the bug**
 A clear and concise description of what the bug is.
 
 **To Reproduce**
@@ -17,7 +17,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Logs**
-Provide logs `sudo systemctl -u eruption.service -b`
+Provide logs `sudo journalctl -u eruption.service -b`
 
 **Screenshots (optional)**
 If applicable, add screenshots to help explain your problem.
