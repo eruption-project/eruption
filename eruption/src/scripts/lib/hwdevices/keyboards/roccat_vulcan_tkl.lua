@@ -20,13 +20,13 @@ ENABLE_MACRO_KEYS 	 = false	-- ROCCAT Vulcan TKL variant does not have any macro
 
 -- HID key codes
 FN_KEY = 119
-GAME_MODE_KEY = 96
+GAME_MODE_KEY = 106
 EASY_SHIFT_KEY = 255
 
 -- character to key index mapping
 key_to_index = {}
 
-key_to_index['GAME_MODE'] = 104
+key_to_index['GAME_MODE'] = 111
 
 key_to_index['FN'] = 77
 key_to_index['CAPS_LOCK'] = 4
