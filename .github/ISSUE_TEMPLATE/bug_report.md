@@ -1,11 +1,14 @@
 ---
 name: Bug report
-about: Create a report to help us improve Eruption
+about: Create a bug report to help us improve Eruption
 title: ''
 labels: ''
 assignees: ''
 
 ---
+
+**Introduction**
+Introductory text.
 
 **Please describe the bug**
 A clear and concise description of what the bug is.
@@ -17,14 +20,15 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Logs**
-Provide logs `sudo journalctl -u eruption.service -b`
+Please provide logs: `sudo journalctl -u eruption.service -b`
 
 **Screenshots (optional)**
 If applicable, add screenshots to help explain your problem.
 
 **Please complete the following information:**
- - Eruption version [e.g. 0.1.20]
- - Your device(s) (`sudo lsusb`)
+
+ * Eruption version [e.g. 0.1.20]
+ * Your device(s) (`sudo lsusb`)
 
 **Additional context**
 Add any other context about the problem here.
