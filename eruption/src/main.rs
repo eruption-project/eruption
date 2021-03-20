@@ -257,7 +257,19 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline() -> clap::ArgMatches {
     App::new("Eruption")
-        .version(env!("CARGO_PKG_VERSION"))
+        .version(
+            format!(
+                "{} ({}) ({} build)",
+                env!("CARGO_PKG_VERSION"),
+                env!("ERUPTION_GIT_PKG_VERSION"),
+                if cfg!(debug_assertions) {
+                    "debug"
+                } else {
+                    "release"
+                }
+            )
+            .as_str(),
+        )
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("A Linux user-mode input and LED driver for keyboards, mice and other devices")
         .arg(
