@@ -1,4 +1,5 @@
-![Clippy check](https://github.com/X3n0m0rph59/eruption/workflows/Clippy%20check/badge.svg)
+![Clippy Check](https://github.com/X3n0m0rph59/eruption/workflows/Clippy%20check/badge.svg)
+![Test Suite](https://github.com/X3n0m0rph59/eruption/workflows/test/badge.svg)
 
 # Table of Contents
 
