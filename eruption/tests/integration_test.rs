@@ -28,6 +28,15 @@ fn test_eruption_version() {
 
     assert_eq!(
         String::from_utf8_lossy(&output.stdout),
-        format!("Eruption {}\n", env!("CARGO_PKG_VERSION"))
+        format!(
+            "Eruption {} ({}) ({} build)\n",
+            env!("CARGO_PKG_VERSION"),
+            env!("ERUPTION_GIT_PKG_VERSION"),
+            if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            }
+        )
     );
 }
