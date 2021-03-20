@@ -2499,8 +2499,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     }
 
     info!(
-        "Starting Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices: Version {} ({} build)",
+        "Starting Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices: Version {} ({}) ({} build)",
         env!("CARGO_PKG_VERSION"),
+        env!("ERUPTION_GIT_PKG_VERSION"),
         if cfg!(debug_assertions) {
             "debug"
         } else {
