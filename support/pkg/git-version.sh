@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+git describe --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
