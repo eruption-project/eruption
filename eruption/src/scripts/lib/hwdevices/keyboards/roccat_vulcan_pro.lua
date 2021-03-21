@@ -21,12 +21,12 @@ ENABLE_MACRO_KEYS 	 = true
 -- HID key codes
 FN_KEY = 119
 GAME_MODE_KEY = 106
-EASY_SHIFT_KEY = 21
+EASY_SHIFT_KEY = 255
 
 -- character to key index mapping
 key_to_index = {}
 
-key_to_index['GAME_MODE'] = 95
+key_to_index['GAME_MODE'] = 104
 
 key_to_index['FN'] = 65
 key_to_index['CAPS_LOCK'] = 4
@@ -40,36 +40,41 @@ key_to_index['RIGHT_MENU'] = 84
 
 key_to_index['ESC'] = 1
 
-key_to_index['F1'] = 12
-key_to_index['F2'] = 18
-key_to_index['F3'] = 24
-key_to_index['F4'] = 29
+key_to_index['F1'] = 14
+key_to_index['F2'] = 21
+key_to_index['F3'] = 26
+key_to_index['F4'] = 31
 
-key_to_index['F5'] = 49
-key_to_index['F6'] = 54
-key_to_index['F7'] = 60
-key_to_index['F8'] = 66
+key_to_index['F5'] = 41
+key_to_index['F6'] = 48
+key_to_index['F7'] = 54
+key_to_index['F8'] = 60
 
-key_to_index['F9'] = 79
-key_to_index['F10'] = 85
-key_to_index['F11'] = 86
-key_to_index['F12'] = 87
+key_to_index['F9'] = 66
+key_to_index['F10'] = 72
+key_to_index['F11'] = 78
+key_to_index['F12'] = 80
 
-key_to_index['INSERT'] = 101
-key_to_index['POS1'] = 105
-key_to_index['PGUP'] = 110
-key_to_index['DEL'] = 102
-key_to_index['END'] = 106
-key_to_index['PGDWN'] = 111
+key_to_index['INSERT'] = 85
+key_to_index['POS1'] = 89
+key_to_index['PGUP'] = 94
+key_to_index['DEL'] = 86
+key_to_index['END'] = 90
+key_to_index['PGDWN'] = 95
 
-key_to_index['1'] = 7
-key_to_index['2'] = 13
-key_to_index['3'] = 19
+key_to_index['UP'] = 91
+key_to_index['DOWN'] = 92
+key_to_index['LEFT'] = 87
+key_to_index['RIGHT'] = 96
 
-key_to_index['W'] = 9
-key_to_index['A'] = 14
-key_to_index['S'] = 15
-key_to_index['D'] = 21
+key_to_index['1'] = 9
+key_to_index['2'] = 15
+key_to_index['3'] = 22
+
+key_to_index['W'] = 16
+key_to_index['A'] = 11
+key_to_index['S'] = 17
+key_to_index['D'] = 24
 
 -- support functions
 function device_specific_key_highlights()
