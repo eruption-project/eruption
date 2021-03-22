@@ -60,34 +60,38 @@ impl Keyboard for RoccatVulcanProTKL {
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint();
 
-        let led_colors = crate::dbus_client::get_led_colors().unwrap();
+        match crate::dbus_client::get_led_colors() {
+            Ok(led_colors) => {
+                let layout = pangocairo::create_layout(&context).unwrap();
+                FONT_DESC.with(|f| {
+                    let desc = f.borrow();
+                    layout.set_font_description(Some(&desc));
 
-        let layout = pangocairo::create_layout(&context).unwrap();
-        FONT_DESC.with(|f| {
-            let desc = f.borrow();
-            layout.set_font_description(Some(&desc));
+                    // paint all keys
+                    for i in 0..96 {
+                        self.paint_key(i + 1, &led_colors[i], &context, &layout);
+                    }
+                });
 
-            // paint all keys
-            for i in 0..96 {
-                self.paint_key(i + 1, &led_colors[i], &context, &layout);
+                // paint all other elements
+
+                // paint the mute button
+                const MUTE_BUTTON_INDEX: usize = 92;
+
+                let color = (
+                    (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
+                    (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
+                    (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
+                    (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
+                );
+
+                let black = (0.0, 0.0, 0.0, 1.0);
+
+                rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color);
             }
-        });
 
-        // paint all other elements
-
-        // paint the mute button
-        const MUTE_BUTTON_INDEX: usize = 92;
-
-        let color = (
-            (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
-            (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
-            (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
-            (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
-        );
-
-        let black = (0.0, 0.0, 0.0, 1.0);
-
-        rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color);
+            Err(_e) => {}
+        }
     }
 
     /// Paint a key on the keyboard widget

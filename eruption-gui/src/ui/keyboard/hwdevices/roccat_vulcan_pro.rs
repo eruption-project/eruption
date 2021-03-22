@@ -59,18 +59,22 @@ impl Keyboard for RoccatVulcanPro {
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint();
 
-        let led_colors = crate::dbus_client::get_led_colors().unwrap();
+        match crate::dbus_client::get_led_colors() {
+            Ok(led_colors) => {
+                let layout = pangocairo::create_layout(&context).unwrap();
+                FONT_DESC.with(|f| {
+                    let desc = f.borrow();
+                    layout.set_font_description(Some(&desc));
 
-        let layout = pangocairo::create_layout(&context).unwrap();
-        FONT_DESC.with(|f| {
-            let desc = f.borrow();
-            layout.set_font_description(Some(&desc));
-
-            // paint all keys
-            for i in 0..144 {
-                self.paint_key(i + 1, &led_colors[i], &context, &layout);
+                    // paint all keys
+                    for i in 0..144 {
+                        self.paint_key(i + 1, &led_colors[i], &context, &layout);
+                    }
+                });
             }
-        });
+
+            Err(_e) => {}
+        }
     }
 
     /// Paint a key on the keyboard widget

@@ -42,26 +42,36 @@ impl Mouse for RoccatKonePureUltra {
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
         let width = da.get_allocated_width() as f64;
-        // let height = da.get_allocated_height() as f64;
+        let height = da.get_allocated_height() as f64;
 
-        let led_colors = crate::dbus_client::get_led_colors().unwrap();
-
-        // paint all cells in the "mouse zone" of the canvas
-        for i in 144..(144 + 1) {
-            self.paint_cell(i - 144, &led_colors[i], &context, width);
-        }
-
-        let pixbuf =
-            Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png")
+        match crate::dbus_client::get_led_colors() {
+            Ok(led_colors) => {
+                let pixbuf = Pixbuf::from_resource(
+                    "/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png",
+                )
                 .unwrap();
 
-        // let scale_factor = (height / pixbuf.get_height() as f64) * 0.75;
-        let scale_factor = 0.715;
+                let scale_factor = (height / pixbuf.get_height() as f64) * 0.725;
 
-        // paint the image
-        context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-        context.paint();
+                for i in 144..(144 + 1) {
+                    self.paint_cell(
+                        i - 144,
+                        &led_colors[i],
+                        &context,
+                        width,
+                        height,
+                        scale_factor,
+                    );
+                }
+
+                // paint the image
+                context.scale(scale_factor, scale_factor);
+                context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
+                context.paint();
+            }
+
+            Err(_e) => {}
+        }
     }
 
     fn paint_cell(
@@ -70,14 +80,14 @@ impl Mouse for RoccatKonePureUltra {
         color: &crate::util::RGBA,
         cr: &cairo::Context,
         width: f64,
+        height: f64,
+        scale_factor: f64,
     ) {
-        let scale_factor = 0.715;
-
         let cell_def = Rectangle {
-            x: ((width / 2.0) + 95.0 + BORDER.0) * scale_factor,
-            y: (BORDER.1 + 470.0) * scale_factor,
-            width: 80.0,
-            height: 70.0,
+            x: ((width / 2.0) + 100.0 + BORDER.0 * scale_factor) * scale_factor,
+            y: ((height / 2.0) + BORDER.1 * scale_factor) + (80.0 * scale_factor),
+            width: 110.0 * scale_factor,
+            height: 80.0 * scale_factor,
         };
 
         // compute scaling factor

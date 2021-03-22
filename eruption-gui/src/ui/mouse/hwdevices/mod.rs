@@ -18,6 +18,7 @@
 use crate::{dbus_client, util::RGBA};
 
 mod generic_mouse;
+mod null_mouse;
 mod roccat_kone_pure_ultra;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -29,11 +30,15 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 // }
 
 pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
-    match dbus_client::get_managed_devices()?[1] {
-        // ROCCAT Kone Pure Ultra
-        (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),
+    match dbus_client::get_managed_devices()?.get(1) {
+        Some(device) => match device {
+            // ROCCAT Kone Pure Ultra
+            (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),
 
-        _ => Ok(Box::new(generic_mouse::GenericMouse::new())),
+            _ => Ok(Box::new(generic_mouse::GenericMouse::new())),
+        },
+
+        None => Ok(Box::new(null_mouse::NullMouse::new())),
     }
 }
 
@@ -51,5 +56,13 @@ pub trait Mouse {
     fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
 
     /// Paint a cell on the Mouse widget
-    fn paint_cell(&self, cell_index: usize, color: &RGBA, cr: &cairo::Context, width: f64);
+    fn paint_cell(
+        &self,
+        cell_index: usize,
+        color: &RGBA,
+        cr: &cairo::Context,
+        width: f64,
+        height: f64,
+        scale_factor: f64,
+    );
 }

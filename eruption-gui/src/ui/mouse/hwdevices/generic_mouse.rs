@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use gtk::WidgetExt;
 use palette::{Hsva, Shade, Srgba};
 
 use super::{Mouse, Rectangle};
@@ -35,13 +36,11 @@ impl Mouse for GenericMouse {
         ("Unknown", "Generic Mouse")
     }
 
-    fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context) {
-        // let da = da.as_ref();
+    fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
+        let width = da.get_allocated_width() as f64;
+        let height = da.get_allocated_height() as f64;
 
-        // let width = da.get_allocated_width();
-        // let height = da.get_allocated_height();
-
-        // let scale_factor = 1.5;
+        let scale_factor = 1.0;
 
         // let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/mouse.png").unwrap();
 
@@ -50,11 +49,22 @@ impl Mouse for GenericMouse {
         // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
         // context.paint();
 
-        let led_colors = crate::dbus_client::get_led_colors().unwrap();
+        match crate::dbus_client::get_led_colors() {
+            Ok(led_colors) => {
+                // paint all cells in the "mouse zone" of the canvas
+                for i in 144..(144 + 36) {
+                    self.paint_cell(
+                        i - 144,
+                        &led_colors[i],
+                        &context,
+                        width,
+                        height,
+                        scale_factor,
+                    );
+                }
+            }
 
-        // paint all cells in the "mouse zone" of the canvas
-        for i in 144..(144 + 36) {
-            self.paint_cell(i - 144, &led_colors[i], &context, 0.0);
+            Err(_e) => {}
         }
     }
 
@@ -63,10 +73,12 @@ impl Mouse for GenericMouse {
         cell_index: usize,
         color: &crate::util::RGBA,
         cr: &cairo::Context,
-        _width: f64,
+        width: f64,
+        _height: f64,
+        _scale_factor: f64,
     ) {
         let cell_def = Rectangle {
-            x: (cell_index % 6 * 45) as f64,
+            x: (width / 2.0 - 100.0) + (cell_index % 6 * 45) as f64,
             y: (cell_index / 6 * 45) as f64,
             width: 43.0,
             height: 43.0,
