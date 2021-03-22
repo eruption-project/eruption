@@ -15,9 +15,27 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::util::RGBA;
+use crate::{dbus_client, util::RGBA};
 
 mod generic_mouse;
+mod roccat_kone_pure_ultra;
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+// #[derive(Debug, thiserror::Error)]
+// pub enum HwDevicesError {
+//     #[error("The device is not supported")]
+//     UnsupportedDevice,
+// }
+
+pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
+    match dbus_client::get_managed_devices()?[1] {
+        // ROCCAT Kone Pure Ultra
+        (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),
+
+        _ => Ok(Box::new(generic_mouse::GenericMouse::new())),
+    }
+}
 
 pub struct Rectangle {
     x: f64,
@@ -27,14 +45,11 @@ pub struct Rectangle {
 }
 
 pub trait Mouse {
+    fn get_make_and_model(&self) -> (&'static str, &'static str);
+
     /// Draw an animated mouse with live action colors
     fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
 
     /// Paint a cell on the Mouse widget
-    fn paint_cell(&self, cell_index: usize, color: &RGBA, cr: &cairo::Context);
-}
-
-pub fn get_mouse_device() -> Box<dyn Mouse> {
-    // TODO: Implement this
-    Box::new(generic_mouse::GenericMouse::new())
+    fn paint_cell(&self, cell_index: usize, color: &RGBA, cr: &cairo::Context, width: f64);
 }

@@ -42,22 +42,18 @@ Author: X3n0m0rph59
   <object class="GtkImage" id="edit_image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-edit</property>
   </object>
   <object class="GtkImage" id="edit_image1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-edit</property>
   </object>
   <object class="GtkImage" id="edit_image2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-edit</property>
   </object>
   <object class="GtkImage" id="edit_image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-edit</property>
   </object>
   <object class="GtkMenu" id="main_menu">
     <property name="visible">True</property>
@@ -112,70 +108,61 @@ Author: X3n0m0rph59
                     <property name="label-xalign">0</property>
                     <property name="shadow-type">none</property>
                     <child>
-                      <object class="GtkAlignment">
-                        <property name="width-request">0</property>
+                      <!-- n-columns=2 n-rows=2 -->
+                      <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="left-padding">12</property>
+                        <property name="border-width">8</property>
+                        <property name="row-spacing">8</property>
+                        <property name="column-spacing">16</property>
+                        <property name="row-homogeneous">True</property>
                         <child>
-                          <!-- n-columns=2 n-rows=2 -->
-                          <object class="GtkGrid">
+                          <object class="GtkAccelLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="border-width">8</property>
-                            <property name="row-spacing">8</property>
-                            <property name="column-spacing">16</property>
-                            <property name="row-homogeneous">True</property>
-                            <child>
-                              <object class="GtkAccelLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_SoundFX Audio Effects</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">soundfx_switch</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkSwitch" id="networkfx_ambient_switch">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkAccelLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">networkfx_ambient_switch</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkSwitch" id="soundfx_switch">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_SoundFX Audio Effects</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">soundfx_switch</property>
                           </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="networkfx_ambient_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">networkfx_ambient_switch</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="soundfx_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
                         </child>
                       </object>
                     </child>
@@ -332,12 +319,8 @@ Author: X3n0m0rph59
                 <property name="column-spacing">8</property>
                 <child>
                   <object class="GtkDrawingArea" id="drawing_area_mouse">
-                    <property name="width-request">320</property>
-                    <property name="height-request">320</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                   </object>
@@ -514,7 +497,6 @@ Author: X3n0m0rph59
                         <property name="valign">start</property>
                         <property name="hscroll-policy">natural</property>
                         <property name="vscroll-policy">natural</property>
-                        <property name="rules-hint">True</property>
                         <property name="search-column">1</property>
                         <property name="hover-expand">True</property>
                         <property name="show-expanders">False</property>
@@ -716,89 +698,82 @@ Author: X3n0m0rph59
                     <property name="label-xalign">0</property>
                     <property name="shadow-type">none</property>
                     <child>
-                      <object class="GtkAlignment">
+                      <!-- n-columns=3 n-rows=3 -->
+                      <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="left-padding">12</property>
+                        <property name="margin-top">16</property>
+                        <property name="row-spacing">8</property>
+                        <property name="column-spacing">16</property>
+                        <property name="row-homogeneous">True</property>
+                        <property name="column-homogeneous">True</property>
                         <child>
-                          <!-- n-columns=3 n-rows=3 -->
-                          <object class="GtkGrid">
+                          <object class="GtkAccelLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="margin-top">16</property>
-                            <property name="row-spacing">8</property>
-                            <property name="column-spacing">16</property>
-                            <property name="row-homogeneous">True</property>
-                            <property name="column-homogeneous">True</property>
-                            <child>
-                              <object class="GtkAccelLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_Host Name</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">host_name</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkEntry" id="host_name">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="text" translatable="yes">localhost</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkAccelLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_Port Number</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">port_number</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkSpinButton" id="port_number">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="input-purpose">digits</property>
-                                <property name="adjustment">adjustment_port</property>
-                                <property name="numeric">True</property>
-                                <property name="wrap">True</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_Host Name</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">host_name</property>
                           </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="host_name">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="text" translatable="yes">localhost</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_Port Number</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">port_number</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="port_number">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="input-purpose">digits</property>
+                            <property name="adjustment">adjustment_port</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                     </child>

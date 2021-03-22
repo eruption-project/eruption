@@ -25,8 +25,14 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Initialize page "Mouse"
 pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
-    let mouse_device = hwdevices::get_mouse_device();
+    let mouse_device = hwdevices::get_mouse_device()?;
+
+    let mouse_name_label: gtk::Label = builder.get_object("mouse_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area_mouse").unwrap();
+
+    // device name and status
+    let make_and_model = mouse_device.get_make_and_model();
+    mouse_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
     // drawing area / mouse indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {

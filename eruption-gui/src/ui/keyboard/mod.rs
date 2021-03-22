@@ -33,7 +33,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Initialize page "Keyboard"
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
-    let keyboard_device = hwdevices::get_keyboard_device().unwrap();
+    let keyboard_device = hwdevices::get_keyboard_device()?;
 
     let keyboard_name_label: gtk::Label = builder.get_object("keyboard_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area").unwrap();
