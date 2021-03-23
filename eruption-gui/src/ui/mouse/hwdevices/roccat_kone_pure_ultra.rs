@@ -51,7 +51,7 @@ impl Mouse for RoccatKonePureUltra {
                 )
                 .unwrap();
 
-                let scale_factor = (height / pixbuf.get_height() as f64) * 0.725;
+                let scale_factor = (height / pixbuf.get_height() as f64) * 0.85;
 
                 for i in 144..(144 + 1) {
                     self.paint_cell(
@@ -85,7 +85,7 @@ impl Mouse for RoccatKonePureUltra {
     ) {
         let cell_def = Rectangle {
             x: ((width / 2.0) + 100.0 + BORDER.0 * scale_factor) * scale_factor,
-            y: ((height / 2.0) + BORDER.1 * scale_factor) + (80.0 * scale_factor),
+            y: ((height / 2.0) + BORDER.1 * scale_factor) + (140.0 * scale_factor),
             width: 110.0 * scale_factor,
             height: 80.0 * scale_factor,
         };
