@@ -6,12 +6,13 @@
     <file compressed="true">ui/rule.glade</file>
     <file>styles/app.css</file>
     <file>img/eruption-gui.png</file>
-    <file>img/keyboard-generic.png</file>
-    <file>img/keyboard-generic-tkl.png</file>
+    <file>img/generic-keyboard.png</file>
+    <file>img/generic-mouse.png</file>
     <file>img/roccat-vulcan-1xx.png</file>
     <file>img/roccat-vulcan-pro.png</file>
     <file>img/roccat-vulcan-pro-tkl.png</file>
     <file>img/roccat-vulcan-tkl.png</file>
     <file>img/roccat-kone-pure-ultra.png</file>
+    <file>img/roccat-burst-pro.png</file>
   </gresource>
 </gresources>

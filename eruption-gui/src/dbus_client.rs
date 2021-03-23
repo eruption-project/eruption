@@ -22,8 +22,8 @@ use dbus::arg::RefArg;
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use glib::clone;
-use std::thread;
 use std::time::Duration;
+use std::{path::Path, thread};
 
 /// Messages received via D-Bus
 pub enum Message {
@@ -49,9 +49,15 @@ pub enum Message {
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
-pub enum AboutError {
+pub enum DbusClientError {
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
+
+    #[error("Authentication failed: {description}")]
+    AuthError { description: String },
+
+    #[error("Method call failed: {description}")]
+    MethodFailed { description: String },
 }
 
 type CallbackFn = dyn Fn(&gtk::Builder, &Message) -> crate::Result<()>;
@@ -224,7 +230,8 @@ pub fn spawn_dbus_event_loop_session(
     Ok(())
 }
 
-pub fn test() -> Result<()> {
+/// Instruct the daemon to write a .profile file or a Lua script or manifest
+pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
     use config::OrgEruptionConfig;
 
     let conn = Connection::new_system()?;
@@ -234,9 +241,29 @@ pub fn test() -> Result<()> {
         Duration::from_secs(35),
     );
 
-    if proxy.write_file("name", "data").is_err() {
-        log::error!("Auth Error");
+    if let Err(e) = proxy.write_file(&path.as_ref().to_string_lossy(), &data) {
+        log::error!("{}", e);
+
+        Err(DbusClientError::MethodFailed {
+            description: format!("{}", e),
+        }
+        .into())
+    } else {
+        Ok(())
     }
+}
+
+pub fn ping() -> Result<()> {
+    // use config::OrgEruptionConfig;
+
+    let conn = Connection::new_system()?;
+    let _proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/config",
+        Duration::from_secs(35),
+    );
+
+    // TODO: Implement this
 
     Ok(())
 }

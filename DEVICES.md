@@ -42,6 +42,7 @@
 | Vendor | Product              | Status | Macro Keys | Easy Shift Key |
 | ------ | -------------------- | ------ | ---------- | -------------- |
 | ROCCAT | Kone Pure Ultra      | 100%   | N.a.       | N.a.           |
+| ROCCAT | Burst Pro            | 100%   | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo            | 80%    | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo Remastered | 80%    | N.a.       | N.a.           |
 | ROCCAT | Kova AIMO            | 80%    | N.a.       | N.a.           |

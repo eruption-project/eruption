@@ -23,17 +23,21 @@ use gtk::prelude::*;
 
 mod hwdevices;
 
-type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-// #[derive(Debug, thiserror::Error)]
-// pub enum KeyboardError {
-//     #[error("Invalid layout type specified")]
-//     InvalidLayout,
-// }
+#[derive(Debug, thiserror::Error)]
+pub enum KeyboardError {
+    #[error("Communication with the Eruption daemon failed")]
+    CommunicationError,
+    // #[error("Invalid layout type specified")]
+    // InvalidLayout,
+}
 
 /// Initialize page "Keyboard"
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     let keyboard_device = hwdevices::get_keyboard_device()?;
+
+    let notification_box_global: gtk::Box = builder.get_object("notification_box_global").unwrap();
 
     let keyboard_name_label: gtk::Label = builder.get_object("keyboard_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area").unwrap();
@@ -42,13 +46,22 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
         builder.get_object("networkfx_ambient_switch").unwrap();
     let soundfx_switch: gtk::Switch = builder.get_object("soundfx_switch").unwrap();
 
+    // update the rules view or show an error notification
+    crate::dbus_client::ping().unwrap_or_else(|_e| {
+        notification_box_global.show_now();
+    });
+
     // device name and status
     let make_and_model = keyboard_device.get_make_and_model();
     keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
     // drawing area / keyboard indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
-        keyboard_device.draw_keyboard(&da, &context);
+        if let Err(_e) = keyboard_device.draw_keyboard(&da, &context) {
+            notification_box_global.show();
+        } else {
+            notification_box_global.hide();
+        }
 
         gtk::Inhibit(false)
     });
@@ -83,7 +96,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
         gtk::Inhibit(false)
     });
 
-    soundfx_switch.set_state(util::get_sound_fx()?);
+    soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
 
     soundfx_switch.connect_state_set(move |_sw, enabled| {
         util::set_sound_fx(enabled).unwrap();

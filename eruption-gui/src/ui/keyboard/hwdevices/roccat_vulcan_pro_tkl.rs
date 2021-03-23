@@ -17,7 +17,7 @@
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
-use crate::util::RGBA;
+use crate::{ui::keyboard::KeyboardError, util::RGBA};
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::WidgetExt;
@@ -25,6 +25,8 @@ use palette::{Hsva, Shade, Srgba};
 use std::cell::RefCell;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
+
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
@@ -45,7 +47,7 @@ impl Keyboard for RoccatVulcanProTKL {
         ("ROCCAT", "Vulcan Pro TKL")
     }
 
-    fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
+    fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
         let pixbuf =
             Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-pro-tkl.png")
                 .unwrap();
@@ -88,9 +90,11 @@ impl Keyboard for RoccatVulcanProTKL {
                 let black = (0.0, 0.0, 0.0, 1.0);
 
                 rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color);
+
+                Ok(())
             }
 
-            Err(_e) => {}
+            Err(_e) => Err(KeyboardError::CommunicationError {}.into()),
         }
     }
 

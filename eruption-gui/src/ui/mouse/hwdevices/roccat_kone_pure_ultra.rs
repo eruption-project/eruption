@@ -20,6 +20,8 @@ use gdk_pixbuf::Pixbuf;
 use gtk::WidgetExt;
 use palette::{Hsva, Shade, Srgba};
 
+use crate::ui::mouse::MouseError;
+
 use super::{Mouse, Rectangle};
 
 const BORDER: (f64, f64) = (32.0, 32.0);
@@ -40,7 +42,7 @@ impl Mouse for RoccatKonePureUltra {
         ("ROCCAT", "Kone Pure Ultra")
     }
 
-    fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
+    fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
         let width = da.get_allocated_width() as f64;
         let height = da.get_allocated_height() as f64;
 
@@ -68,9 +70,11 @@ impl Mouse for RoccatKonePureUltra {
                 context.scale(scale_factor, scale_factor);
                 context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
                 context.paint();
+
+                Ok(())
             }
 
-            Err(_e) => {}
+            Err(_e) => Err(MouseError::CommunicationError {}.into()),
         }
     }
 
@@ -84,10 +88,10 @@ impl Mouse for RoccatKonePureUltra {
         scale_factor: f64,
     ) {
         let cell_def = Rectangle {
-            x: ((width / 2.0) + 100.0 + BORDER.0 * scale_factor) * scale_factor,
-            y: ((height / 2.0) + BORDER.1 * scale_factor) + (140.0 * scale_factor),
-            width: 110.0 * scale_factor,
-            height: 80.0 * scale_factor,
+            x: ((width / 2.0) + 120.0 + BORDER.0 * scale_factor) * scale_factor,
+            y: ((height / 2.0) + BORDER.1 * scale_factor) + (162.0 * scale_factor),
+            width: 125.0 * scale_factor,
+            height: 90.0 * scale_factor,
         };
 
         // compute scaling factor

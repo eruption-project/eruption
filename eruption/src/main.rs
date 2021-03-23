@@ -99,6 +99,9 @@ lazy_static! {
     /// Global "is AFK" status flag
     pub static ref AFK: AtomicBool = AtomicBool::new(false);
 
+    /// Global "request to reload the profile" flag
+    pub static ref REQUEST_PROFILE_RELOAD: AtomicBool = AtomicBool::new(false);
+
     /// Global "request to enter failsafe mode" flag
     pub static ref REQUEST_FAILSAFE_MODE: AtomicBool = AtomicBool::new(false);
 
@@ -796,11 +799,13 @@ fn switch_profile(
     dbus_api_tx: &Sender<DbusApiEvent>,
     keyboard_devices: &[KeyboardDevice],
     mouse_devices: &[MouseDevice],
+    notify: bool,
 ) -> Result<bool> {
     fn switch_to_failsafe_profile(
         dbus_api_tx: &Sender<DbusApiEvent>,
         keyboard_devices: &[KeyboardDevice],
         mouse_devices: &[MouseDevice],
+        notify: bool,
     ) -> Result<()> {
         let mut errors_present = false;
 
@@ -848,9 +853,11 @@ fn switch_profile(
         // finally assign the globally active profile
         *ACTIVE_PROFILE.lock() = Some(profile);
 
-        dbus_api_tx
-            .send(DbusApiEvent::ActiveProfileChanged)
-            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+        if notify {
+            dbus_api_tx
+                .send(DbusApiEvent::ActiveProfileChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+        }
 
         // let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
@@ -882,7 +889,7 @@ fn switch_profile(
         // be safe and clear any leftover channels
         LUA_TXS.clear();
 
-        switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+        switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
 
         debug!("Successfully entered failsafe mode");
@@ -947,6 +954,7 @@ fn switch_profile(
                             &dbus_api_tx,
                             &keyboard_devices,
                             &mouse_devices,
+                            notify,
                         )?;
 
                         return Ok(false);
@@ -1014,7 +1022,12 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+                switch_to_failsafe_profile(
+                    &dbus_api_tx,
+                    &keyboard_devices,
+                    &mouse_devices,
+                    notify,
+                )?;
 
                 Ok(false)
             } else {
@@ -1023,9 +1036,13 @@ fn switch_profile(
 
                 *ACTIVE_PROFILE.lock() = Some(profile);
 
-                dbus_api_tx
-                    .send(DbusApiEvent::ActiveProfileChanged)
-                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+                if notify {
+                    dbus_api_tx
+                        .send(DbusApiEvent::ActiveProfileChanged)
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
+                }
 
                 let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
                 let mut slot_profiles = SLOT_PROFILES.lock();
@@ -1041,7 +1058,12 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices)?;
+                switch_to_failsafe_profile(
+                    &dbus_api_tx,
+                    &keyboard_devices,
+                    &mouse_devices,
+                    notify,
+                )?;
 
                 Ok(false)
             } else {
@@ -1071,6 +1093,9 @@ async fn process_filesystem_event(
             dbus_api_tx
                 .send(DbusApiEvent::ProfilesChanged)
                 .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            // TODO: maybe make this more fine grained
+            REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
 
         FileSystemEvent::ScriptsChanged => {}
@@ -1101,6 +1126,7 @@ async fn process_dbus_event(
                 &dbus_api_tx,
                 &keyboard_devices,
                 &mouse_devices,
+                true,
             ) {
                 error!("Could not switch profiles: {}", e);
             }
@@ -1913,9 +1939,13 @@ async fn run_main_loop(
                 // reset the audio backend, it will be enabled again if needed
                 plugins::audio::reset_audio_backend();
 
-                if let Err(e) =
-                    switch_profile(None, &dbus_api_tx, &keyboard_devices_c, &mouse_devices_c)
-                {
+                if let Err(e) = switch_profile(
+                    None,
+                    &dbus_api_tx,
+                    &keyboard_devices_c,
+                    &mouse_devices_c,
+                    true,
+                ) {
                     error!("Could not switch profiles: {}", e);
                 }
 
@@ -1944,6 +1974,7 @@ async fn run_main_loop(
                     &dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
+                    true,
                 )?;
 
                 saved_slot = active_slot;
@@ -2018,6 +2049,7 @@ async fn run_main_loop(
                     &dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
+                    true,
                 ) {
                     error!("Could not switch profiles: {}", e);
                 }
@@ -2026,6 +2058,39 @@ async fn run_main_loop(
             }
 
             *ACTIVE_PROFILE_NAME.lock() = None;
+        }
+
+        {
+            // reload of current profile requested?
+            if REQUEST_PROFILE_RELOAD.load(Ordering::SeqCst) {
+                // don't notify "active profile changed", since it may deadlock
+
+                // dbus_api_tx
+                //     .send(DbusApiEvent::ActiveProfileChanged)
+                //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
+
+                let active_profile = ACTIVE_PROFILE.lock();
+                let profile_clone = active_profile.clone();
+                // ACTIVE_PROFILE.lock() needs to be released here, or otherwise we will deadlock
+                drop(active_profile);
+
+                if let Some(profile) = &profile_clone {
+                    if let Err(e) = switch_profile(
+                        Some(&profile.profile_file),
+                        &dbus_api_tx,
+                        &keyboard_devices_c,
+                        &mouse_devices_c,
+                        false,
+                    ) {
+                        error!("Could not reload profile: {}", e);
+                    }
+                }
+
+                REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
+            }
         }
 
         // prepare to call main loop hook
@@ -2356,6 +2421,7 @@ pub fn register_filesystem_watcher(
                         .watch(profile_dir, move |event: Event| {
                             if let Event::Write(event) = event {
                                 info!("Existing profile modified: {:?}", event);
+                                fsevents_tx_c.send(FileSystemEvent::ProfilesChanged).unwrap();
                             } else if let Event::Create(event) = event {
                                 info!("New profile created: {:?}", event);
                             } else if let Event::Rename(from, to) = event {
@@ -2364,7 +2430,6 @@ pub fn register_filesystem_watcher(
                                 info!("Profile deleted: {:?}", event);
                             }
 
-                            fsevents_tx_c.send(FileSystemEvent::ProfilesChanged).unwrap();
 
                             Flow::Continue
                         })

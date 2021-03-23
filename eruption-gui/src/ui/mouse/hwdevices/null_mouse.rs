@@ -33,7 +33,9 @@ impl Mouse for NullMouse {
         ("Unknown", "Unknown")
     }
 
-    fn draw_mouse(&self, _da: &gtk::DrawingArea, _context: &cairo::Context) {}
+    fn draw_mouse(&self, _da: &gtk::DrawingArea, _context: &cairo::Context) -> super::Result<()> {
+        Ok(())
+    }
 
     fn paint_cell(
         &self,

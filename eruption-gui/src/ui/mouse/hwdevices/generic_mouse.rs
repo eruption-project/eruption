@@ -18,6 +18,8 @@
 use gtk::WidgetExt;
 use palette::{Hsva, Shade, Srgba};
 
+use crate::ui::mouse::MouseError;
+
 use super::{Mouse, Rectangle};
 
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -36,13 +38,13 @@ impl Mouse for GenericMouse {
         ("Unknown", "Generic Mouse")
     }
 
-    fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) {
+    fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
         let width = da.get_allocated_width() as f64;
         let height = da.get_allocated_height() as f64;
 
         let scale_factor = 1.0;
 
-        // let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/mouse.png").unwrap();
+        // let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-mouse.png").unwrap();
 
         // paint the schematic drawing
         // context.scale(scale_factor, scale_factor);
@@ -62,9 +64,11 @@ impl Mouse for GenericMouse {
                         scale_factor,
                     );
                 }
+
+                Ok(())
             }
 
-            Err(_e) => {}
+            Err(_e) => Err(MouseError::CommunicationError {}.into()),
         }
     }
 

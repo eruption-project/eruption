@@ -23,9 +23,19 @@ mod hwdevices;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[derive(Debug, thiserror::Error)]
+pub enum MouseError {
+    #[error("Communication with the Eruption daemon failed")]
+    CommunicationError,
+    // #[error("Invalid layout type specified")]
+    // InvalidLayout,
+}
+
 /// Initialize page "Mouse"
 pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     let mouse_device = hwdevices::get_mouse_device()?;
+
+    let notification_box_global: gtk::Box = builder.get_object("notification_box_global").unwrap();
 
     let mouse_name_label: gtk::Label = builder.get_object("mouse_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area_mouse").unwrap();
@@ -36,7 +46,11 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
 
     // drawing area / mouse indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
-        mouse_device.draw_mouse(&da, &context);
+        if let Err(_e) = mouse_device.draw_mouse(&da, &context) {
+            notification_box_global.show();
+        } else {
+            notification_box_global.hide();
+        }
 
         gtk::Inhibit(false)
     });

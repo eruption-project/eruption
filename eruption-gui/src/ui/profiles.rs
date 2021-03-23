@@ -15,28 +15,40 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::profiles::FindConfig;
 use crate::{
     constants, manifest,
     profiles::{self, Profile},
 };
+use crate::{dbus_client, profiles::FindConfig};
 use crate::{manifest::Manifest, util};
+use gio::ActionMapExt;
 use glib::clone;
 use glib::prelude::*;
+use gtk::ShadowType;
 use gtk::{prelude::*, Align, IconSize, Justification, Orientation, PositionType};
-use gtk::{ShadowType, StackExt};
 use paste::paste;
 use sourceview::prelude::*;
 use sourceview::BufferBuilder;
-use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
+thread_local! {
+    /// Holds the source code buffers and the respective paths in the file system
+    static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, sourceview::Buffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+}
+
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum ProfilesError {
+    #[error("Unknown error: {description}")]
+    UnknownError { description: String },
+
     #[error("Parameter has an invalid data type")]
     TypeMismatch {},
+
+    #[error("Method call failed: {description}")]
+    MethodCallError { description: String },
 }
 
 macro_rules! declare_config_widget_numeric {
@@ -899,6 +911,59 @@ fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
     stack_widget.foreach(|widget| {
         stack_widget.remove(widget);
     });
+
+    TEXT_BUFFERS.with(|b| b.borrow_mut().clear());
+}
+
+fn save_buffer_contents_to_file<P: AsRef<Path>>(
+    path: &P,
+    buffer: &sourceview::Buffer,
+) -> Result<()> {
+    let (start, end) = buffer.get_bounds();
+    let data = buffer.get_text(&start, &end, true).map(|gs| gs.to_owned());
+
+    match data {
+        Some(data) => {
+            // log::debug!("{}", &data);
+
+            if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
+                log::error!("{}", e);
+
+                let message = "Could not write file".to_string();
+                let secondary = format!("{}", e);
+
+                let message_dialog = gtk::MessageDialogBuilder::new()
+                    .destroy_with_parent(true)
+                    .decorated(true)
+                    .message_type(gtk::MessageType::Error)
+                    .text(&message)
+                    .secondary_text(&secondary)
+                    .title("Error")
+                    .buttons(gtk::ButtonsType::Ok)
+                    .build();
+
+                message_dialog.run();
+
+                Err(ProfilesError::MethodCallError {
+                    description: "Could not write file".to_string(),
+                }
+                .into())
+            } else {
+                log::info!("Wrote file: {}", &path.as_ref().display());
+
+                Ok(())
+            }
+        }
+
+        _ => {
+            log::error!("Could not get buffer contents");
+
+            Err(ProfilesError::UnknownError {
+                description: "Could not get buffer contents".to_string(),
+            }
+            .into())
+        }
+    }
 }
 
 /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
@@ -918,18 +983,29 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
     // load and show .profile file
     let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
 
+    let mut buffer_index = 0;
     let buffer = BufferBuilder::new()
         .language(&toml)
         .highlight_syntax(true)
         .text(&source_code)
         .build();
 
+    // add buffer to global text buffers map for later reference
+    TEXT_BUFFERS.with(|b| {
+        let mut text_buffers = b.borrow_mut();
+        text_buffers.insert(
+            PathBuf::from(&profile.as_ref()),
+            (buffer_index, buffer.clone()),
+        );
+    });
+
+    buffer_index += 1;
+
     let sourceview = sourceview::View::new_with_buffer(&buffer);
     sourceview.set_show_line_marks(true);
     sourceview.set_show_line_numbers(true);
 
-    // TODO: Allow modification
-    sourceview.set_editable(false);
+    sourceview.set_editable(true);
 
     let filename = profile
         .as_ref()
@@ -971,13 +1047,20 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
                     .text(&source_code)
                     .build();
 
+                // add buffer to global text buffers map for later reference
+                TEXT_BUFFERS.with(|b| {
+                    let mut text_buffers = b.borrow_mut();
+                    text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                });
+
+                buffer_index += 1;
+
                 // script file editor
                 let sourceview = sourceview::View::new_with_buffer(&buffer);
                 sourceview.set_show_line_marks(true);
                 sourceview.set_show_line_numbers(true);
 
-                // TODO: Allow modification
-                sourceview.set_editable(false);
+                sourceview.set_editable(true);
 
                 let path = f.file_name().unwrap().to_string_lossy().to_string();
 
@@ -1006,13 +1089,20 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
                     .text(&manifest_data)
                     .build();
 
+                // add buffer to global text buffers map for later reference
+                TEXT_BUFFERS.with(|b| {
+                    let mut text_buffers = b.borrow_mut();
+                    text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                });
+
+                buffer_index += 1;
+
                 // manifest file editor
                 let sourceview = sourceview::View::new_with_buffer(&buffer);
                 sourceview.set_show_line_marks(true);
                 sourceview.set_show_line_numbers(true);
 
-                // TODO: Allow modification
-                sourceview.set_editable(false);
+                sourceview.set_editable(true);
 
                 let path = f.file_name().unwrap().to_string_lossy().to_string();
 
@@ -1036,7 +1126,10 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
 }
 
 /// Initialize page "Profiles"
-pub fn initialize_profiles_page(builder: &gtk::Builder) -> Result<()> {
+pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
+    application: &A,
+    builder: &gtk::Builder,
+) -> Result<()> {
     let profiles_treeview: gtk::TreeView = builder.get_object("profiles_treeview").unwrap();
     // let sourceview: sourceview::View = builder.get_object("source_view").unwrap();
 
@@ -1126,6 +1219,60 @@ pub fn initialize_profiles_page(builder: &gtk::Builder) -> Result<()> {
     profiles_treeview.show_all();
 
     update_profile_state(&builder)?;
+    register_actions(application, &builder)?;
+
+    Ok(())
+}
+
+/// Register global actions and keyboard accelerators
+fn register_actions<A: IsA<gtk::Application>>(
+    application: &A,
+    builder: &gtk::Builder,
+) -> Result<()> {
+    let application = application.as_ref();
+
+    let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
+    // let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
+
+    let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
+    save_current_buffer.connect_activate(move |_, _| {
+        if let Some(view) = stack_widget.get_visible_child()
+        // .map(|w| w.dynamic_cast::<sourceview::View>().unwrap())
+        {
+            let index = stack_widget.get_child_position(&view) as usize;
+
+            TEXT_BUFFERS.with(|b| {
+                if let Some((path, buffer)) = b
+                    .borrow()
+                    .iter()
+                    .find(|v| v.1 .0 == index)
+                    .map(|v| (v.0, &v.1 .1))
+                {
+                    let _result = save_buffer_contents_to_file(&path, &buffer);
+                }
+            });
+        }
+    });
+
+    application.add_action(&save_current_buffer);
+    application.set_accels_for_action("app.save-current-buffer", &["<Primary>S"]);
+
+    let save_all_buffers = gio::SimpleAction::new("save-all-buffers", None);
+    save_all_buffers.connect_activate(move |_, _| {
+        TEXT_BUFFERS.with(|b| {
+            'SAVE_LOOP: for (k, (_, v)) in b.borrow().iter() {
+                let result = save_buffer_contents_to_file(&k, &v);
+
+                // stop saving files if an error occurred, or auth has failed
+                if result.is_err() {
+                    break 'SAVE_LOOP;
+                }
+            }
+        });
+    });
+
+    application.add_action(&save_all_buffers);
+    application.set_accels_for_action("app.save-all-buffers", &["<Primary><Shift>S"]);
 
     Ok(())
 }

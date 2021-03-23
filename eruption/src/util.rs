@@ -15,17 +15,20 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// use std::fs::File;
-// use std::io::prelude::*;
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
-// use log::*;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
-
-// #[derive(Debug, thiserror::Error)]
-// pub enum UtilError {}
+#[derive(Debug, thiserror::Error)]
+pub enum UtilError {
+    #[error("Write failed: {description}")]
+    FileWriteError {
+        #[source]
+        source: io::Error,
+        description: String,
+    },
+}
 
 /// Returns the associated manifest path in `PathBuf` for the script `script_path`.
 pub fn get_manifest_for(script_file: &Path) -> PathBuf {
@@ -49,4 +52,18 @@ pub fn is_script_file_accessible(script_file: &Path) -> bool {
 #[allow(dead_code)]
 pub fn is_manifest_file_accessible(script_file: &Path) -> bool {
     fs::read_to_string(get_manifest_for(script_file)).is_ok()
+}
+
+/// write `data` to file `filename`
+pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
+    let path = path.as_ref();
+
+    log::info!("Writing to file: {}", &path.display());
+
+    fs::write(&path, &data).map_err(|e| UtilError::FileWriteError {
+        description: format!("{}", e),
+        source: e,
+    })?;
+
+    Ok(())
 }

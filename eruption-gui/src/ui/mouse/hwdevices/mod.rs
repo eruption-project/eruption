@@ -19,6 +19,7 @@ use crate::{dbus_client, util::RGBA};
 
 mod generic_mouse;
 mod null_mouse;
+mod roccat_burst_pro;
 mod roccat_kone_pure_ultra;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -34,6 +35,9 @@ pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
         Some(device) => match device {
             // ROCCAT Kone Pure Ultra
             (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),
+
+            // ROCCAT Burst Pro
+            (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new())),
 
             _ => Ok(Box::new(generic_mouse::GenericMouse::new())),
         },
@@ -53,7 +57,7 @@ pub trait Mouse {
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     /// Draw an animated mouse with live action colors
-    fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
+    fn draw_mouse(&self, _da: &gtk::DrawingArea, context: &cairo::Context) -> Result<()>;
 
     /// Paint a cell on the Mouse widget
     fn paint_cell(

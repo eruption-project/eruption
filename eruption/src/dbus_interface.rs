@@ -320,7 +320,15 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
-                                        // TODO: Implement this
+                                        let (filename, data): (String, String) = m.msg.read2()?;
+
+                                        crate::util::write_file(&PathBuf::from(filename), &data)
+                                            .map_err(|e| {
+                                                MethodErr::failed(&format!(
+                                                    "Error writing file: {}",
+                                                    e
+                                                ))
+                                            })?;
 
                                         let s = true;
                                         Ok(vec![m.msg.method_return().append1(s)])

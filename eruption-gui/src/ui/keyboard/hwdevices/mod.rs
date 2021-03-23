@@ -17,13 +17,14 @@
 
 use crate::{dbus_client, util::RGBA};
 
+mod generic_keyboard;
 mod null_keyboard;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+type Result<T> = std::result::Result<T, eyre::Error>;
 
 // #[derive(Debug, thiserror::Error)]
 // pub enum HwDevicesError {
@@ -48,7 +49,7 @@ pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
             // ROCCAT Vulcan TKL series
             (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
 
-            _ => Ok(Box::new(null_keyboard::NullKeyboard::new())),
+            _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new())),
         },
 
         _ => Ok(Box::new(null_keyboard::NullKeyboard::new())),
@@ -59,7 +60,7 @@ pub trait Keyboard {
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     /// Draw an animated keyboard with live action colors
-    fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context);
+    fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) -> Result<()>;
 
     fn paint_key(&self, key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layout);
     fn get_key_defs(&self, layout: &str) -> &[KeyDef];

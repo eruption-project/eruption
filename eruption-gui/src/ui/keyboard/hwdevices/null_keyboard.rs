@@ -19,6 +19,8 @@ use super::KeyDef;
 use super::Keyboard;
 use crate::util::RGBA;
 
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
+
 #[derive(Debug)]
 pub struct NullKeyboard {}
 
@@ -33,7 +35,13 @@ impl Keyboard for NullKeyboard {
         ("Unknown", "Unknown")
     }
 
-    fn draw_keyboard(&self, _da: &gtk::DrawingArea, _context: &cairo::Context) {}
+    fn draw_keyboard(
+        &self,
+        _da: &gtk::DrawingArea,
+        _context: &cairo::Context,
+    ) -> super::Result<()> {
+        Ok(())
+    }
 
     /// Paint a key on the keyboard widget
     fn paint_key(&self, _key: usize, _color: &RGBA, _cr: &cairo::Context, _layout: &pango::Layout) {

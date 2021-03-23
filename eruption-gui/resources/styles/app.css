@@ -28,6 +28,11 @@
     margin-left: 8px;
 }
 
+.notification {
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
 .small-font {
     font-size: small;
 }

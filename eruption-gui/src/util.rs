@@ -368,6 +368,19 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
     }
 }
 
+pub fn restart_eruption_daemon() -> Result<()> {
+    let status = Command::new("/usr/bin/systemctl")
+        .arg("restart")
+        .arg("eruption.service")
+        .status()?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(UtilError::RestartFailed {}.into())
+    }
+}
+
 pub fn restart_process_monitor_daemon() -> Result<()> {
     let status = Command::new("/usr/bin/systemctl")
         .arg("--user")

@@ -465,6 +465,51 @@ fn register_actions<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
+    // let stack_switcher: gtk::StackSwitcher = builder.get_object("stack_switcher").unwrap();
+    let main_stack: gtk::Stack = builder.get_object("main_stack").unwrap();
+
+    // switching between stack pages
+    let switch_to_page1 = gio::SimpleAction::new("switch-to-page-1", None);
+    switch_to_page1.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page0");
+    }));
+
+    application.add_action(&switch_to_page1);
+    application.set_accels_for_action("app.switch-to-page-1", &["<alt>1"]);
+
+    let switch_to_page2 = gio::SimpleAction::new("switch-to-page-2", None);
+    switch_to_page2.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page1");
+    }));
+
+    application.add_action(&switch_to_page2);
+    application.set_accels_for_action("app.switch-to-page-2", &["<alt>2"]);
+
+    let switch_to_page3 = gio::SimpleAction::new("switch-to-page-3", None);
+    switch_to_page3.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page2");
+    }));
+
+    application.add_action(&switch_to_page3);
+    application.set_accels_for_action("app.switch-to-page-3", &["<alt>3"]);
+
+    let switch_to_page4 = gio::SimpleAction::new("switch-to-page-4", None);
+    switch_to_page4.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page3");
+    }));
+
+    application.add_action(&switch_to_page4);
+    application.set_accels_for_action("app.switch-to-page-4", &["<alt>4"]);
+
+    let switch_to_page5 = gio::SimpleAction::new("switch-to-page-5", None);
+    switch_to_page5.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page4");
+    }));
+
+    application.add_action(&switch_to_page5);
+    application.set_accels_for_action("app.switch-to-page-5", &["<alt>5"]);
+
+    // switching between slots
     let switch_to_slot1 = gio::SimpleAction::new("switch-to-slot-1", None);
     switch_to_slot1.connect_activate(clone!(@strong builder => move |_, _| {
         if !events::shall_ignore_pending_ui_event() {
@@ -535,6 +580,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/main.glade");
 
     let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+
+    let restart_eruption_daemon_button: gtk::Button =
+        builder.get_object("restart_eruption_button").unwrap();
+
     let header_bar: gtk::HeaderBar = builder.get_object("header_bar").unwrap();
     let brightness_scale: gtk::Scale = builder.get_object("brightness_scale").unwrap();
     let about_item: gtk::MenuItem = builder.get_object("about_item").unwrap();
@@ -568,9 +617,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // TODO: implement this
     lock_button.set_permission::<gio::Permission>(None);
 
-    lock_button.connect_clicked(|_btn| {
-        dbus_client::test().unwrap();
-    });
+    // lock_button.connect_clicked(|_btn| {
+    //     dbus_client::ping().unwrap();
+    // });
 
     // main menu items
     about_item.connect_activate(clone!(@weak main_window => move |_| {
@@ -592,9 +641,25 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }
     });
 
+    restart_eruption_daemon_button.connect_clicked(clone!(@strong builder => move |_| {
+        util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
+
+        glib::timeout_add_local(
+            1000,
+            clone!(@strong builder => move || {
+                if let Err(e) = ui::keyboard::initialize_keyboard_page(&builder) {
+                    log::error!("{}", e);
+                    Continue(true)
+                } else {
+                    Continue(false)
+                }
+            }),
+        );
+    }));
+
     ui::keyboard::initialize_keyboard_page(&builder)?;
     ui::mouse::initialize_mouse_page(&builder)?;
-    ui::profiles::initialize_profiles_page(&builder)?;
+    ui::profiles::initialize_profiles_page(application, &builder)?;
     ui::process_monitor::initialize_process_monitor_page(&builder)?;
     ui::settings::initialize_settings_page(&builder)?;
 
