@@ -617,9 +617,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // TODO: implement this
     lock_button.set_permission::<gio::Permission>(None);
 
-    // lock_button.connect_clicked(|_btn| {
-    //     dbus_client::ping().unwrap();
-    // });
+    lock_button.connect_clicked(|_btn| {
+        let _result = dbus_client::ping_privileged();
+    });
 
     // main menu items
     about_item.connect_activate(clone!(@weak main_window => move |_| {

@@ -94,9 +94,9 @@ impl Mouse for RoccatBurstPro {
         match cell_index {
             0 => {
                 let cell_def = Rectangle {
-                    x: ((width / 2.0) + 120.0 + BORDER.0 * scale_factor) * scale_factor,
+                    x: ((width / 2.0) + 110.0 + BORDER.0 * scale_factor) * scale_factor,
                     y: ((height / 2.0) + BORDER.1 * scale_factor) - (200.0 * scale_factor),
-                    width: 60.0 * scale_factor,
+                    width: 70.0 * scale_factor,
                     height: 100.0 * scale_factor,
                 };
 
@@ -125,9 +125,9 @@ impl Mouse for RoccatBurstPro {
             35 => {
                 let cell_def = Rectangle {
                     x: ((width / 2.0) + 50.0 + BORDER.0 * scale_factor) * scale_factor,
-                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (220.0 * scale_factor),
+                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (110.0 * scale_factor),
                     width: 187.0 * scale_factor,
-                    height: 420.0 * scale_factor,
+                    height: 300.0 * scale_factor,
                 };
 
                 // post-process color

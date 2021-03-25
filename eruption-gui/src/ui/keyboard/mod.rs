@@ -46,7 +46,6 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
         builder.get_object("networkfx_ambient_switch").unwrap();
     let soundfx_switch: gtk::Switch = builder.get_object("soundfx_switch").unwrap();
 
-    // update the rules view or show an error notification
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
     });

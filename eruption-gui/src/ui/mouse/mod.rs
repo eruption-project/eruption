@@ -40,6 +40,10 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     let mouse_name_label: gtk::Label = builder.get_object("mouse_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area_mouse").unwrap();
 
+    crate::dbus_client::ping().unwrap_or_else(|_e| {
+        notification_box_global.show_now();
+    });
+
     // device name and status
     let make_and_model = mouse_device.get_make_and_model();
     mouse_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));

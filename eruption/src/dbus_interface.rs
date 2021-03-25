@@ -339,6 +339,36 @@ impl DbusApi {
                                 .inarg::<String, _>("filename")
                                 .inarg::<String, _>("data")
                                 .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("Ping", (), move |m| {
+                                    if perms::has_monitor_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let s = true;
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("PingPrivileged", (), move |m| {
+                                    if perms::has_manage_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let s = true;
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<bool, _>("status"),
                             ),
                     ),
             )

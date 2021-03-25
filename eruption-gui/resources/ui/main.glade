@@ -59,6 +59,26 @@ Author: X3n0m0rph59
     <property name="can-focus">False</property>
     <property name="icon-name">edit</property>
   </object>
+  <object class="GtkImage" id="image_new_profile">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-new-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_new_profile1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-new-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_remove_profile">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-revert-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_remove_profile1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-revert-symbolic</property>
+  </object>
   <object class="GtkMenu" id="main_menu">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -86,6 +106,11 @@ Author: X3n0m0rph59
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+  </object>
+  <object class="GtkImage" id="save_all_image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-save-symbolic</property>
   </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="height-request">720</property>
@@ -543,31 +568,86 @@ Author: X3n0m0rph59
               <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="position">256</property>
                 <property name="position-set">True</property>
                 <property name="wide-handle">True</property>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="overlay-scrolling">False</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkTreeView" id="profiles_treeview">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">start</property>
-                        <property name="hscroll-policy">natural</property>
-                        <property name="vscroll-policy">natural</property>
-                        <property name="search-column">1</property>
-                        <property name="hover-expand">True</property>
-                        <property name="show-expanders">False</property>
-                        <property name="enable-grid-lines">both</property>
-                        <property name="enable-tree-lines">True</property>
-                        <property name="activate-on-single-click">True</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
+                        <child>
+                          <object class="GtkTreeView" id="profiles_treeview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="search-column">1</property>
+                            <property name="enable-grid-lines">both</property>
+                            <property name="enable-tree-lines">True</property>
+                            <property name="tooltip-column">2</property>
+                            <property name="activate-on-single-click">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
+                          </object>
                         </child>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButtonBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="spacing">4</property>
+                        <property name="layout-style">start</property>
+                        <child>
+                          <object class="GtkButton" id="new_profile_button">
+                            <property name="label" translatable="yes">Add new...</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="receives-default">True</property>
+                            <property name="tooltip-text" translatable="yes">New Profile</property>
+                            <property name="image">image_new_profile1</property>
+                            <property name="always-show-image">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="remove_profile_button">
+                            <property name="label" translatable="yes">Remove</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="receives-default">True</property>
+                            <property name="tooltip-text" translatable="yes">Remove Profile</property>
+                            <property name="image">image_remove_profile1</property>
+                            <property name="always-show-image">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="padding">8</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -579,6 +659,7 @@ Author: X3n0m0rph59
                   <object class="GtkNotebook">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="show-border">False</property>
                     <property name="scrollable">True</property>
                     <child>
                       <object class="GtkScrolledWindow" id="config_window">
@@ -606,7 +687,7 @@ Author: X3n0m0rph59
                           <object class="GtkStack" id="profile_stack">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="transition-type">slide-left-right</property>
+                            <property name="transition-type">under-down</property>
                             <child>
                               <placeholder/>
                             </child>
@@ -660,6 +741,34 @@ Author: X3n0m0rph59
                       </object>
                       <packing>
                         <property name="position">1</property>
+                        <property name="tab-fill">False</property>
+                      </packing>
+                    </child>
+                    <child type="action-end">
+                      <object class="GtkButtonBox" id="buffer_button_box">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="layout-style">end</property>
+                        <child>
+                          <object class="GtkButton" id="save_all_button">
+                            <property name="label" translatable="yes">Save all</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="receives-default">True</property>
+                            <property name="action-name">app.save-all-buffers</property>
+                            <property name="image">save_all_image</property>
+                            <property name="always-show-image">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                            <property name="secondary">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
                         <property name="tab-fill">False</property>
                       </packing>
                     </child>
@@ -732,6 +841,11 @@ Author: X3n0m0rph59
                   <object class="GtkTreeView" id="rules_treeview">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="search-column">3</property>
+                    <property name="enable-grid-lines">both</property>
+                    <property name="enable-tree-lines">True</property>
+                    <property name="tooltip-column">4</property>
+                    <property name="activate-on-single-click">True</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
@@ -1388,8 +1502,8 @@ Author: X3n0m0rph59
           <object class="GtkLockButton" id="lock_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="text-lock" translatable="yes"/>
-            <property name="text-unlock" translatable="yes"/>
+            <property name="text-lock" translatable="yes">Lock</property>
+            <property name="text-unlock" translatable="yes">Unlock</property>
             <property name="tooltip-lock" translatable="yes"/>
             <property name="tooltip-unlock" translatable="yes"/>
             <property name="tooltip-not-authorized" translatable="yes"/>
