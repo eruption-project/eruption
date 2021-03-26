@@ -5,6 +5,7 @@ target/release/eruptionctl usr/bin
 target/release/eruption-netfx usr/bin
 target/release/eruption-util usr/bin
 target/release/eruption-debug-tool usr/bin
+target/release/eruption-hotplug-helper usr/bin
 target/release/eruption-process-monitor usr/bin
 target/release/eruption-gui usr/bin
 
@@ -22,6 +23,9 @@ support/systemd/eruption.preset lib/systemd/system-preset
 
 support/systemd/eruption-process-monitor.service lib/systemd/user
 support/systemd/eruption-process-monitor.preset lib/systemd/user-preset
+
+support/systemd/eruption-hotplug-helper.service lib/systemd/system
+support/systemd/eruption-hotplug-helper.preset lib/systemd/system-preset
 
 support/udev/99-eruption.rules lib/udev/rules.d
 

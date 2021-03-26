@@ -1,0 +1,19 @@
+[Unit]
+Description=Eruption device hotplug notification daemon
+Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
+Wants=basic.target
+
+[Service]
+ExecStart=/usr/bin/eruption-hotplug-helper hotplug
+PIDFile=/run/eruption-hotplug-helper.pid
+Type=exec
+Restart=no
+#ProtectHome=yes
+#ProtectSystem=full
+#ProtectKernelTunables=yes
+#ProtectControlGroups=yes
+#PrivateDevices=no
+#PrivateTmp=yes
+
+[Install]
+WantedBy=basic.target

@@ -106,15 +106,12 @@ prior to sending the resulting final color map to the keyboard.
  $ sudo apt install eruption-git
 ```
 
-To activate Eruption now, you may either reboot your system or manually start
+To activate Eruption now, you may either hotplug a supported device, or manually start
 the daemon with the command:
 
 ```sh
- $ sudo systemctl start eruption.service
+ $ sudo systemctl enable --now eruption.service
 ```
-
-> Note: You don't have to enable the eruption service, since it is started by an
-`udev` rule as soon as a compatible keyboard device is plugged into your system.
 
 ### From Source
 

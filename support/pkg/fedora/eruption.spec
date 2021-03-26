@@ -112,6 +112,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroo
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.service %{buildroot}/%{_userunitdir}/
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-hotplug-helper.preset %{buildroot}/%{_presetdir}/50-eruption-hotplug-helper.preset
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-hotplug-helper.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-blobby.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-blobby-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-breathing-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -179,6 +181,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-hotplug-helper %{buildroot}%{_bindir}/eruption-hotplug-helper
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
@@ -211,11 +214,14 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-util
 %{_bindir}/eruption-debug-tool
+%{_bindir}/eruption-hotplug-helper
 %caps(cap_net_admin=ep) %{_bindir}/eruption-process-monitor
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_userunitdir}/eruption-process-monitor.service
 %{_userpresetdir}/50-eruption-process-monitor.preset
+%{_unitdir}/eruption-hotplug-helper.service
+%{_presetdir}/50-eruption-hotplug-helper.preset
 %{_bindir}/eruption-gui
 %{_datarootdir}/applications/eruption-gui.desktop
 %{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
