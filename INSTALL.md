@@ -10,13 +10,13 @@
     - [Create the target directories and copy over all the required files](#create-the-target-directories-and-copy-over-all-the-required-files)
       - [1. Create the target directories](#1-create-the-target-directories)
       - [2. Copy over the base files](#2-copy-over-the-base-files)
-      - [3. Copy over the binaries](#3-copy-over-the-binaries)
-      - [4. Copy over scripts and profiles](#4-copy-over-scripts-and-profiles)
+      - [3. Copy over scripts and profiles](#3-copy-over-scripts-and-profiles)
+      - [4. Copy over the binaries](#4-copy-over-the-binaries)
     - [Run Eruption](#run-eruption)
 
 # How to build and install Eruption from source
 
-To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.50.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
+To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.51.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most Linux based systems.
 
@@ -99,6 +99,8 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo cp "support/systemd/eruption.preset" "/usr/lib/systemd/system-preset/50-eruption.preset"
  sudo cp "support/systemd/eruption-process-monitor.service" "/usr/lib/systemd/user/"
  sudo cp "support/systemd/eruption-process-monitor.preset" "/usr/lib/systemd/user-preset/50-eruption-process-monitor.preset"
+ sudo cp "support/systemd/eruption-hotplug-helper.service" "/usr/lib/systemd/system/"
+ sudo cp "support/systemd/eruption-hotplug-helper.preset" "/usr/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
  sudo cp "support/udev/99-eruption.rules" "/usr/lib/udev/rules.d/"
  sudo cp "support/dbus/org.eruption.control.conf" "/usr/share/dbus-1/system.d/"
  sudo cp "support/dbus/org.eruption.process_monitor.conf" "/usr/share/dbus-1/session.d/"
@@ -137,24 +139,30 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo ln -s "phaser2.wav" "/usr/share/eruption/sfx/key-up.wav"
 ```
 
-#### 3. Copy over the binaries
-
-```sh
- sudo cp target/release/eruption{,ctl,-netfx,-debug-tool,-gui,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
-```
-
-#### 4. Copy over scripts and profiles
+#### 3. Copy over scripts and profiles
 
 ```sh
  sudo cp -r eruption/src/scripts/* /usr/share/eruption/scripts/
  sudo cp -r support/profiles/* /var/lib/eruption/profiles/
 ```
 
+#### 4. Copy over the binaries
+
+```sh
+ sudo cp target/release/eruption{,ctl,-netfx,-debug-tool,-hotplug-helper,-gui,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
+```
+
 ### Run Eruption
+
+Notify systemd of the changes with:
 
 ```sh
  sudo systemctl daemon-reload
- sudo systemctl start eruption.service
 ```
 
-You do not need to `enable` the systemd service, since Eruption ist started by an `udev` rule.
+To activate Eruption now, you may either hotplug a supported device, or manually start
+the daemon with the command:
+
+```sh
+ $ sudo systemctl enable --now eruption.service
+```

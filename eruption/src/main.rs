@@ -2774,6 +2774,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 info!("Startup completed");
 
+                // debug!("Removing eruption-hotplug-helper.lock file...");
+                // fs::remove_file("/run/lock/eruption-hotplug-helper.lock")
+                //     .unwrap_or_else(|e| error!("Could not remove lock file: {}", e));
+
                 debug!("Entering the main loop now...");
 
                 // enter the main loop

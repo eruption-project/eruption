@@ -712,6 +712,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "eruption-hotplug-helper"
+version = "0.0.1"
+dependencies = [
+ "clap",
+ "clap_generate",
+ "color-eyre",
+ "colored",
+ "eyre",
+ "libc",
+ "lockfile",
+ "log",
+ "nix",
+ "parking_lot",
+ "paste 1.0.5",
+ "pretty_env_logger",
+ "serde 1.0.125",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "eruption-netfx"
 version = "0.0.4"
 dependencies = [
@@ -1626,6 +1651,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd96ffd135b2fd7b973ac026d28085defbe8983df057ced3eb4f2130b0831312"
 dependencies = [
  "scopeguard",
+]
+
+[[package]]
+name = "lockfile"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e9b01c4735c76fec1c390661ac8794722f0af0b5eb742500308f94b2caae40f"
+dependencies = [
+ "log",
 ]
 
 [[package]]

@@ -86,6 +86,7 @@ package() {
     install -m 755 "target/release/eruption-netfx" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-util" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-debug-tool" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-hotplug-helper" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"
 
@@ -103,6 +104,9 @@ package() {
 
     install -m 644 "support/systemd/eruption-process-monitor.service" "$pkgdir/usr/lib/systemd/user/"
     install -m 644 "support/systemd/eruption-process-monitor.preset" "$pkgdir/usr/lib/systemd/user-preset/50-eruption-process-monitor.preset"
+
+    install -m 644 "support/systemd/eruption-hotplug-helper.service" "$pkgdir/usr/lib/systemd/system/"
+    install -m 644 "support/systemd/eruption-hotplug-helper.preset" "$pkgdir/usr/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
 
     install -m 644 "support/udev/99-eruption.rules" "$pkgdir/usr/lib/udev/rules.d/"
 
