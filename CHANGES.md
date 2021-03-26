@@ -6,7 +6,7 @@ Table of new and noteworthy changes:
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0.1.20 | __New Release__                                                                                                                                                          |
 | 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                               |
-| 0.1.20 | Update the Eruption GUI to the latest version `0.0.7` (this is a technology preview only; it is not production ready)                                                    |
+| 0.1.20 | Update the Eruption GUI to the latest version `0.0.8` (this is a technology preview only; it is not production ready)                                                    |
 | 0.1.20 | New effect plugin/Lua script/profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                         |
 | 0.1.20 | New profiles: `Animal: Blobby + Color Swirls (Perlin)`, `Animal: Blobby + Wave`, `Animal: Breathing (1)`, `Animal: Breathing (2)`, `Animal: Breathing (3)`               |
 | 0.1.20 | Add experimental support for `ROCCAT Kone Aimo Remastered` series mice                                                                                                   |
