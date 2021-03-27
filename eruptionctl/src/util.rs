@@ -21,6 +21,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::constants;
 use crate::manifest::{self, Manifest};
 use crate::profiles;
 
@@ -30,8 +31,46 @@ pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
     manifest::get_scripts(&path.as_ref())
 }
 
-pub fn enumerate_profiles<P: AsRef<Path>>(path: P) -> Result<Vec<profiles::Profile>> {
-    profiles::get_profiles(&path.as_ref())
+pub fn get_profile_dirs() -> Vec<PathBuf> {
+    // process configuration file
+    let config_file = constants::DEFAULT_CONFIG_FILE;
+
+    let mut config = config::Config::default();
+    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
+        log::error!("Could not parse configuration file: {}", e);
+    }
+
+    let mut result = vec![];
+
+    let profile_dirs = config
+        .get::<Vec<String>>("global.profile_dirs")
+        .unwrap_or_else(|_| vec![]);
+
+    let mut profile_dirs = profile_dirs
+        .iter()
+        .map(|e| PathBuf::from(e))
+        .collect::<Vec<PathBuf>>();
+
+    result.append(&mut profile_dirs);
+
+    // if we could not determine a valid set of paths, use a hard coded fallback instead
+    if result.is_empty() {
+        log::warn!("Using default fallback profile directory");
+
+        let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
+        result.push(path);
+    }
+
+    result
+}
+
+pub fn enumerate_profiles() -> Result<Vec<profiles::Profile>> {
+    let mut result = profiles::get_profiles()?;
+
+    // sort profiles by their name
+    result.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name));
+
+    Ok(result)
 }
 
 /// Returns the associated manifest path in `PathBuf` for the script `script_path`.

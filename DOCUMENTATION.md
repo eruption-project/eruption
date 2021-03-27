@@ -53,8 +53,8 @@ The eruption configuration file `/etc/eruption/eruption.conf`:
 # Main configuration file
 
 [global]
-profile_dir = "/var/lib/eruption/profiles/"
-script_dir = "/usr/share/eruption/scripts/"
+profile_dirs = ["/var/lib/eruption/profiles/"]
+script_dirs = ["/usr/share/eruption/scripts/"]
 
 # select your keyboard variant
 # keyboard_variant = "ANSI"

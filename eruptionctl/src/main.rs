@@ -422,8 +422,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         // profile related sub-commands
         Subcommands::Profiles { command } => match command {
             ProfilesSubcommands::Edit { profile_name } => {
-                let path = constants::DEFAULT_PROFILE_DIR;
-                let profiles = util::enumerate_profiles(&path)?;
+                let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
                 if let Some(profile) = profiles.iter().find(|p| {
                     *p.profile_file
@@ -445,8 +444,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
 
             ProfilesSubcommands::Info { profile_name } => {
-                let path = constants::DEFAULT_PROFILE_DIR;
-                let profiles = util::enumerate_profiles(path)?;
+                let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
                 let empty = HashMap::new();
 
@@ -566,9 +564,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     e
                 })?;
 
-                // TODO: Get profile dir from the daemon
-                let path = constants::DEFAULT_PROFILE_DIR;
-                let profiles = util::enumerate_profiles(path)?;
+                let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
                 if let Some(profile) = profiles.iter().find(|&p| {
                     *p.profile_file
@@ -660,8 +656,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                     let parameter = parameter.unwrap();
 
-                    let path = constants::DEFAULT_PROFILE_DIR;
-                    let profiles = util::enumerate_profiles(path)?;
+                    let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
                     if let Some(profile) = profiles.iter().find(|&p| {
                         *p.profile_file
@@ -699,8 +694,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 } else if let Some(parameter) = parameter {
                     // list parameters from the specified script in the currently active profile
 
-                    let path = constants::DEFAULT_PROFILE_DIR;
-                    let profiles = util::enumerate_profiles(path)?;
+                    let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
                     if let Some(profile) = profiles.iter().find(|&p| {
                         *p.profile_file

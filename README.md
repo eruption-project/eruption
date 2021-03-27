@@ -169,11 +169,11 @@ To list all supported sensors and actions please run the command:
 
 ```bash
 $ eruption-process-monitor rules list
-  0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: spectrum-analyzer-swirl.profile (enabled: false, internal: false)
-  1: On window focused: Name: 'Skype' => Switch to profile: vu-meter.profile (enabled: false, internal: false)
-  2: On window focused: Name: 'Left 4 Dead 2.*' => Switch to profile: gaming.profile (enabled: true, internal: false)
-  3: On window focused: Name: '.*YouTube.*Google Chrome' => Switch to profile: spectrum-analyzer-swirl.profile (enabled: true, internal: false)
-  4: On window focused: Instance: '.*' => Switch to profile: profile1.profile (enabled: true, internal: true)
+  0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile (enabled: false, internal: false)
+  1: On window focused: Name: 'Skype' => Switch to profile: /var/lib/eruption/profiles/vu-meter.profile (enabled: false, internal: false)
+  2: On window focused: Name: 'Left 4 Dead 2.*' => Switch to profile: /var/lib/eruption/profiles/gaming.profile (enabled: true, internal: false)
+  3: On window focused: Name: '.*YouTube.*Google Chrome' => Switch to profile: /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile (enabled: true, internal: false)
+  4: On window focused: Instance: '.*' => Switch to profile: /var/lib/eruption/profiles/profile1.profile (enabled: true, internal: true)
 ```
 
 To remove a rule, please run the following command:

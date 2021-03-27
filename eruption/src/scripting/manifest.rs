@@ -288,7 +288,7 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
             Err(e) => {
                 errors_present = true;
                 error!(
-                    "Could not process manifest file for script '{}': {}",
+                    "Could not process manifest file for script {}: {}",
                     script_file.display(),
                     e
                 );

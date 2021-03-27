@@ -121,7 +121,7 @@ impl Sensor for ProcessSensor {
 Process:
 rules add exec <comm> [<profile-name.profile>|<slot number>]
 
-rules add exec gnome-calc.* organic.profile
+rules add exec gnome-calc.* /var/lib/eruption/profiles/profile1.profile
 rules add exec gnome-calc.* 2
 "#
         .to_string()

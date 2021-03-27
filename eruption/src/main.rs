@@ -233,9 +233,16 @@ impl std::ops::Deref for LuaTx {
 }
 
 #[derive(Debug, Clone)]
+pub enum EventAction {
+    Created,
+    Modified,
+    Deleted,
+}
+
+#[derive(Debug, Clone)]
 pub enum FileSystemEvent {
-    ProfilesChanged,
-    ScriptsChanged,
+    ProfileChanged { action: EventAction, path: PathBuf },
+    ScriptChanged,
 }
 
 fn print_header() {
@@ -721,14 +728,14 @@ fn spawn_lua_thread(
     mouse_devices: Vec<MouseDevice>,
 ) -> Result<()> {
     info!(
-        "Loading Lua script: '{}'",
+        "Loading Lua script: {}",
         &script_path.file_name().unwrap().to_string_lossy()
     );
 
     let result = util::is_file_accessible(&script_path);
     if let Err(result) = result {
         error!(
-            "Script file '{}' is not accessible: {}",
+            "Script file {} is not accessible: {}",
             script_path.display(),
             result
         );
@@ -739,7 +746,7 @@ fn spawn_lua_thread(
     let result = util::is_file_accessible(util::get_manifest_for(&script_path));
     if let Err(result) = result {
         error!(
-            "Manifest file for script '{}' is not accessible: {}",
+            "Manifest file for script {} is not accessible: {}",
             script_path.display(),
             result
         );
@@ -809,15 +816,6 @@ fn switch_profile(
     ) -> Result<()> {
         let mut errors_present = false;
 
-        // let script_dir = PathBuf::from(
-        //     CONFIG
-        //         .lock()
-        //         .as_ref()
-        //         .unwrap()
-        //         .get_str("global.script_dir")
-        //         .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
-        // );
-
         // force hardcoded directory for failsafe scripts
         let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
 
@@ -862,7 +860,7 @@ fn switch_profile(
         // let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
         // let mut slot_profiles = SLOT_PROFILES.lock();
-        // slot_profiles.as_mut().unwrap()[active_slot] = "failsafe".into();
+        // slot_profiles.as_mut().unwrap()[active_slot] = "failsafe.profile".into();
 
         if errors_present {
             error!("Fatal error: An error occurred while loading the failsafe profile");
@@ -915,17 +913,7 @@ fn switch_profile(
                 .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
         );
 
-        let profile_dir = PathBuf::from(
-            CONFIG
-                .lock()
-                .as_ref()
-                .unwrap()
-                .get_str("global.profile_dir")
-                .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
-        );
-
-        let profile_path = profile_dir.join(&profile_file);
-        let profile = profiles::Profile::from(&profile_path);
+        let profile = profiles::Profile::from(&profile_file);
 
         if let Ok(profile) = profile {
             let mut errors_present = false;
@@ -960,7 +948,7 @@ fn switch_profile(
                         return Ok(false);
                     } else {
                         error!(
-                            "Invalid profile file: '{}', refusing to switch profiles",
+                            "Invalid profile: {}, refusing to switch profiles",
                             profile_file.display()
                         );
 
@@ -1068,7 +1056,7 @@ fn switch_profile(
                 Ok(false)
             } else {
                 error!(
-                    "Invalid profile file: '{}', refusing to switch profiles",
+                    "Invalid profile: {}, refusing to switch profiles",
                     profile_file.display()
                 );
 
@@ -1084,11 +1072,9 @@ async fn process_filesystem_event(
     dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
     match fsevent {
-        FileSystemEvent::ProfilesChanged => {
-            events::notify_observers(events::Event::FileSystemEvent(
-                FileSystemEvent::ProfilesChanged,
-            ))
-            .unwrap_or_else(|e| error!("{}", e));
+        FileSystemEvent::ProfileChanged { action: _, path: _ } => {
+            events::notify_observers(events::Event::FileSystemEvent(fsevent.clone()))
+                .unwrap_or_else(|e| error!("{}", e));
 
             dbus_api_tx
                 .send(DbusApiEvent::ProfilesChanged)
@@ -1098,7 +1084,7 @@ async fn process_filesystem_event(
             REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
 
-        FileSystemEvent::ScriptsChanged => {}
+        FileSystemEvent::ScriptChanged => {}
     }
 
     Ok(())
@@ -2395,8 +2381,6 @@ async fn run_main_loop(
 pub fn register_filesystem_watcher(
     fsevents_tx: Sender<FileSystemEvent>,
     config_file: PathBuf,
-    profile_dir: PathBuf,
-    script_dir: PathBuf,
 ) -> Result<()> {
     debug!("Registering filesystem watcher...");
 
@@ -2415,38 +2399,47 @@ pub fn register_filesystem_watcher(
                         })
                         .unwrap_or_else(|e| error!("Could not register file watch: {}", e));
 
-                    let fsevents_tx_c = fsevents_tx.clone();
+                        for profile_dir in profiles::get_profile_dirs() {
+                            let fsevents_tx_c = fsevents_tx.clone();
 
-                    hotwatch
-                        .watch(profile_dir, move |event: Event| {
-                            if let Event::Write(event) = event {
-                                info!("Existing profile modified: {:?}", event);
-                                fsevents_tx_c.send(FileSystemEvent::ProfilesChanged).unwrap();
-                            } else if let Event::Create(event) = event {
-                                info!("New profile created: {:?}", event);
-                            } else if let Event::Rename(from, to) = event {
-                                info!("Profile file renamed: {:?}", (from, to));
-                            } else if let Event::Remove(event) = event {
-                                info!("Profile deleted: {:?}", event);
-                            }
+                            hotwatch
+                                .watch(&profile_dir, move |event: Event| {
+                                    if let Event::Write(event) = event {
+                                        info!("Existing profile modified: {:?}", event);
 
+                                        fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: event}).unwrap();
+                                    } else if let Event::Create(event) = event {
+                                        info!("New profile created: {:?}", event);
 
-                            Flow::Continue
-                        })
-                        .unwrap_or_else(|e| error!("Could not register directory watch: {}", e));
+                                        fsevents_tx_c.send(FileSystemEvent::ProfileChanged  { action: EventAction::Created , path: event }).unwrap();
+                                    } else if let Event::Rename(from, to) = event {
+                                        info!("Profile file renamed: {:?}", (&from, &to));
 
-                    let fsevents_tx_c = fsevents_tx.clone();
+                                        fsevents_tx_c.send(FileSystemEvent::ProfileChanged  { action: EventAction::Modified , path: to }).unwrap();
+                                    } else if let Event::Remove(event) = event {
+                                        info!("Profile deleted: {:?}", event);
 
-                    hotwatch
-                        .watch(script_dir, move |event: Event| {
-                            info!("Script file or manifest changed: {:?}", event);
+                                        fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Deleted , path: event }).unwrap();
+                                    }
 
-                            fsevents_tx_c.send(FileSystemEvent::ScriptsChanged).unwrap();
+                                    Flow::Continue
+                                })
+                                .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &profile_dir.display(), e));
+                        }
 
-                            Flow::Continue
-                        })
-                        .unwrap_or_else(|e| error!("Could not register directory watch: {}", e));
+                        for script_dir in util::get_script_dirs() {
+                            let fsevents_tx_c = fsevents_tx.clone();
 
+                            hotwatch
+                                .watch(&script_dir, move |event: Event| {
+                                    info!("Script file or manifest changed: {:?}", event);
+
+                                    fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+
+                                    Flow::Continue
+                                })
+                                .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &script_dir.display(), e));
+                        }
 
                     hotwatch.run();
                 }
@@ -2628,16 +2621,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     state::init_global_runtime_state()
         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
 
-    // default directories
-    let profile_dir = config
-        .get_str("global.profile_dir")
-        .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string());
-    let profile_path = PathBuf::from(&profile_dir);
-
-    let script_dir = config
-        .get_str("global.script_dir")
-        .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string());
-
     // enable the mouse
     let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
 
@@ -2762,13 +2745,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 });
 
                 let (fsevents_tx, fsevents_rx) = unbounded();
-                register_filesystem_watcher(
-                    fsevents_tx,
-                    PathBuf::from(&config_file),
-                    profile_path,
-                    PathBuf::from(&script_dir),
-                )
-                .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
+                register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
+                    .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
 
                 info!("Late initializations completed");
 

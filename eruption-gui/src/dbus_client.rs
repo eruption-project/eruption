@@ -232,7 +232,7 @@ pub fn spawn_dbus_event_loop_session(
 
 /// Instruct the daemon to write a .profile file or a Lua script or manifest
 pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
-    use config::OrgEruptionConfig;
+    use self::config::OrgEruptionConfig;
 
     let conn = Connection::new_system()?;
     let proxy = conn.with_proxy(
@@ -254,7 +254,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
 }
 
 pub fn ping() -> Result<()> {
-    use config::OrgEruptionConfig;
+    use self::config::OrgEruptionConfig;
 
     let conn = Connection::new_system()?;
     let proxy = conn.with_proxy(
@@ -276,7 +276,7 @@ pub fn ping() -> Result<()> {
 }
 
 pub fn ping_privileged() -> Result<()> {
-    use config::OrgEruptionConfig;
+    use self::config::OrgEruptionConfig;
 
     let conn = Connection::new_system()?;
     let proxy = conn.with_proxy(

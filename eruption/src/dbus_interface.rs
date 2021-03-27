@@ -28,7 +28,6 @@ use std::sync::Arc;
 use crate::plugins::audio;
 use crate::profiles;
 use crate::script;
-use crate::CONFIG;
 use crate::{constants, plugins};
 
 /// D-Bus messages and signals that are processed by the main thread
@@ -129,9 +128,8 @@ impl DbusApi {
                     result
                         .as_ref()
                         .and_then(|p| {
-                            p.profile_file.file_name().map(|v| {
-                                i.append(&*v.to_string_lossy());
-                            })
+                            i.append(&*p.profile_file.to_string_lossy());
+                            Some(())
                         })
                         .ok_or_else(|| MethodErr::failed("Method failed"))
                 } else {
@@ -549,33 +547,19 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
-                                        let profile_dir = PathBuf::from(
-                                            CONFIG
-                                                .lock()
-                                                .as_ref()
-                                                .unwrap()
-                                                .get_str("global.profile_dir")
-                                                .unwrap_or_else(|_| {
-                                                    constants::DEFAULT_PROFILE_DIR.to_string()
-                                                }),
-                                        );
-
-                                        let mut s: Vec<(String, String)> =
-                                            profiles::get_profiles(&profile_dir)
-                                                .unwrap()
-                                                .iter()
-                                                .map(|profile| {
-                                                    (
-                                                        profile.name.clone(),
-                                                        profile
-                                                            .profile_file
-                                                            .file_name()
-                                                            .unwrap()
-                                                            .to_string_lossy()
-                                                            .to_string(),
-                                                    )
-                                                })
-                                                .collect();
+                                        let mut s: Vec<(String, String)> = profiles::get_profiles()
+                                            .unwrap_or_else(|_| vec![])
+                                            .iter()
+                                            .map(|profile| {
+                                                (
+                                                    profile.name.clone(),
+                                                    profile
+                                                        .profile_file
+                                                        .to_string_lossy()
+                                                        .to_string(),
+                                                )
+                                            })
+                                            .collect();
 
                                         s.sort_by(|lhs, rhs| lhs.0.cmp(&rhs.0));
 
@@ -675,8 +659,6 @@ impl DbusApi {
             .as_ref()
             .unwrap()
             .profile_file
-            .file_name()
-            .unwrap()
             .to_str()
             .unwrap();
 
@@ -772,22 +754,10 @@ fn apply_parameter(
     param_name: &str,
     value: &str,
 ) -> Result<()> {
-    // let _profile_dir = PathBuf::from(
-    //     CONFIG
-    //         .lock()
-    //         .as_ref()
-    //         .unwrap()
-    //         .get_str("global.profile_dir")
-    //         .unwrap_or_else(|_| constants::DEFAULT_PROFILE_DIR.to_string()),
-    // );
-
-    // let profile_path = PathBuf::from(&profile_file);
-
     let script_path = PathBuf::from(&script_file);
 
     let mut found = false;
     for lua_tx in crate::LUA_TXS.iter() {
-        // TODO: compare full paths here, as soon as the GUI supports /etc/eruption.conf
         if lua_tx.script_file.file_name() == script_path.file_name() {
             found = true;
 

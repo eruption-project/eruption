@@ -75,7 +75,7 @@ impl Sensor for X11Sensor {
 X11:
 rules add window-[class|instance|name] <regex> [<profile-name.profile>|<slot number>]
 
-rules add window-name '.*YouTube.*Mozilla Firefox' profile3.profile
+rules add window-name '.*YouTube.*Mozilla Firefox' /var/lib/eruption/profiles/profile1.profile
 rules add window-instance gnome-calculator 2
 
 You may want to use the command line tool `xprop` to find the relevant information

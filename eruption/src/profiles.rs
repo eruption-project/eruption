@@ -21,10 +21,10 @@ use crate::constants;
 use log::*;
 use paste::paste;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::default::Default;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::{collections::HashMap, ffi::OsStr};
 use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -42,6 +42,9 @@ pub enum ProfileError {
 
     #[error("Could not find profile file from UUID")]
     FindError {},
+
+    #[error("Could not enumerate profile files")]
+    EnumError {},
 
     #[error("Could not set a config value in a profile: {msg}")]
     SetValueError { msg: String },
@@ -389,7 +392,8 @@ impl Profile {
         Self {
             id: Uuid::new_v4(),
             name: "Failsafe mode".to_string(),
-            description: "Failsafe mode profile".to_string(),
+            description: "Failsafe mode virtual profile".to_string(),
+            profile_file: PathBuf::from("failsafe.profile"),
             active_scripts: vec![PathBuf::from("lib/failsafe.lua")],
             ..Default::default()
         }
@@ -420,25 +424,26 @@ impl Profile {
         }
     }
 
-    pub fn find_by_uuid(uuid: Uuid, profile_path: &Path) -> Result<Self> {
-        let profile_files = get_profile_files(&profile_path).unwrap();
+    pub fn find_by_uuid(uuid: Uuid) -> Result<Self> {
         let mut result = Err(ProfileError::FindError {}.into());
 
-        'PROFILE_LOOP: for profile_file in profile_files.iter() {
-            match Profile::from(&profile_file) {
-                Ok(profile) => {
-                    if profile.id == uuid {
-                        result = Ok(profile);
-                        break 'PROFILE_LOOP;
+        if let Ok(profile_files) = get_profile_files() {
+            'PROFILE_LOOP: for profile_file in profile_files.iter() {
+                match Profile::from(&profile_file) {
+                    Ok(profile) => {
+                        if profile.id == uuid {
+                            result = Ok(profile);
+                            break 'PROFILE_LOOP;
+                        }
                     }
-                }
 
-                Err(e) => {
-                    error!(
-                        "Could not process profile '{}': {}",
-                        profile_file.display(),
-                        e
-                    );
+                    Err(e) => {
+                        error!(
+                            "Could not process profile {}: {}",
+                            profile_file.display(),
+                            e
+                        );
+                    }
                 }
             }
         }
@@ -490,11 +495,51 @@ impl Default for Profile {
     }
 }
 
-pub fn get_profiles(profile_path: &Path) -> Result<Vec<Profile>> {
-    let profile_files = get_profile_files(&profile_path).unwrap();
+pub fn get_profile_dirs() -> Vec<PathBuf> {
+    // process configuration file
+    let config_file = constants::DEFAULT_CONFIG_FILE;
 
-    let mut errors_present = false;
+    let mut config = config::Config::default();
+    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
+        log::error!("Could not parse configuration file: {}", e);
+    }
+
+    let mut result = vec![];
+
+    let profile_dirs = config
+        .get::<Vec<String>>("global.profile_dirs")
+        .unwrap_or_else(|_| vec![]);
+
+    let mut profile_dirs = profile_dirs
+        .iter()
+        .map(|e| PathBuf::from(e))
+        .collect::<Vec<PathBuf>>();
+
+    result.append(&mut profile_dirs);
+
+    // if we could not determine a valid set of paths, use a hard coded fallback instead
+    if result.is_empty() {
+        log::warn!("Using default fallback profile directory");
+
+        let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
+        result.push(path);
+    }
+
+    result
+}
+
+pub fn get_profiles() -> Result<Vec<Profile>> {
+    get_profiles_from(&get_profile_dirs())
+}
+
+pub fn get_profiles_from(profile_dirs: &Vec<PathBuf>) -> Result<Vec<Profile>> {
     let mut result: Vec<Profile> = vec![];
+    let mut errors_present = false;
+
+    let profile_files = get_profile_files_from(&profile_dirs).unwrap_or_else(|e| {
+        log::warn!("Could not enumerate profiles: {}", &e);
+        vec![]
+    });
 
     for profile_file in profile_files.iter() {
         match Profile::from(&profile_file) {
@@ -505,7 +550,7 @@ pub fn get_profiles(profile_path: &Path) -> Result<Vec<Profile>> {
             Err(e) => {
                 errors_present = true;
                 error!(
-                    "Could not process profile '{}': {}",
+                    "Could not process profile {}: {}",
                     profile_file.display(),
                     e
                 );
@@ -520,24 +565,39 @@ pub fn get_profiles(profile_path: &Path) -> Result<Vec<Profile>> {
     Ok(result)
 }
 
-pub fn get_profile_files(profile_path: &Path) -> Result<Vec<PathBuf>> {
-    let paths = fs::read_dir(&profile_path).unwrap();
-
-    Ok(paths
-        .map(|p| p.unwrap().path())
-        .filter(|p| {
-            if p.extension().is_some() {
-                return p.extension().unwrap() == "profile";
-            }
-
-            false
-        })
-        .collect())
+pub fn get_profile_files() -> Result<Vec<PathBuf>> {
+    get_profile_files_from(&get_profile_dirs())
 }
 
-#[allow(dead_code)]
-pub fn find_path_by_uuid(uuid: Uuid, profile_path: &Path) -> Option<PathBuf> {
-    let profile_files = get_profile_files(&profile_path).unwrap();
+pub fn get_profile_files_from(profile_dirs: &Vec<PathBuf>) -> Result<Vec<PathBuf>> {
+    let mut result = vec![];
+
+    for profile_path in profile_dirs {
+        if let Ok(paths) = fs::read_dir(&profile_path) {
+            let mut profile_paths = paths
+                .map(|p| p.unwrap().path())
+                .filter(|p| {
+                    if p.extension().is_some() {
+                        return p.extension().unwrap_or_else(|| OsStr::new("")) == "profile";
+                    }
+
+                    false
+                })
+                .collect::<Vec<PathBuf>>();
+
+            result.append(&mut profile_paths);
+        }
+    }
+
+    Ok(result)
+}
+
+pub fn find_path_by_uuid(uuid: Uuid) -> Option<PathBuf> {
+    find_path_by_uuid_from(uuid, &get_profile_dirs())
+}
+
+pub fn find_path_by_uuid_from(uuid: Uuid, profile_dirs: &Vec<PathBuf>) -> Option<PathBuf> {
+    let profile_files = get_profile_files_from(&profile_dirs).unwrap_or_else(|_| vec![]);
 
     let mut errors_present = false;
     let mut result = None;
@@ -554,7 +614,7 @@ pub fn find_path_by_uuid(uuid: Uuid, profile_path: &Path) -> Option<PathBuf> {
             Err(e) => {
                 errors_present = true;
                 error!(
-                    "Could not process profile '{}': {}",
+                    "Could not process profile {}: {}",
                     profile_file.display(),
                     e
                 );
@@ -584,7 +644,7 @@ mod tests {
     #[test]
     fn enum_profile_files() -> super::Result<()> {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        let files = super::get_profile_files(&path.join("../support/tests/assets/"))?;
+        let files = super::get_profile_files_from(&vec![path.join("../support/tests/assets/")])?;
 
         assert!(
             files.contains(&path.join("../support/tests/assets/default.profile")),
@@ -598,7 +658,7 @@ mod tests {
     #[test]
     fn enum_profiles() -> super::Result<()> {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        let profiles = super::get_profiles(&path.join("../support/tests/assets/"))?;
+        let profiles = super::get_profiles_from(&vec![path.join("../support/tests/assets/")])?;
 
         assert!(
             profiles
@@ -619,7 +679,8 @@ mod tests {
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =
-            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+            super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
+                .unwrap();
 
         assert!(
             profile_path == PathBuf::from(path.join("../support/tests/assets/default.profile")),
@@ -636,7 +697,8 @@ mod tests {
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =
-            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+            super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
+                .unwrap();
 
         let profile = super::Profile::from(&profile_path)?;
 
@@ -652,7 +714,8 @@ mod tests {
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =
-            super::find_path_by_uuid(uuid, &path.join("../support/tests/assets/")).unwrap();
+            super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
+                .unwrap();
 
         let profile = super::Profile::from(&profile_path)?;
 

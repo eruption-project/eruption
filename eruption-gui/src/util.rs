@@ -298,12 +298,45 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
+// pub fn get_script_dirs() -> Vec<PathBuf> {
+//     // process configuration file
+//     let config_file = constants::DEFAULT_CONFIG_FILE;
+
+//     let mut config = config::Config::default();
+//     if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
+//         log::error!("Could not parse configuration file: {}", e);
+//     }
+
+//     let mut result = vec![];
+
+//     let script_dirs = config
+//         .get::<Vec<String>>("global.script_dirs")
+//         .unwrap_or_else(|_| vec![]);
+
+//     let mut script_dirs = script_dirs
+//         .iter()
+//         .map(|e| PathBuf::from(e))
+//         .collect::<Vec<PathBuf>>();
+
+//     result.append(&mut script_dirs);
+
+//     // if we could not determine a valid set of paths, use a hard coded fallback instead
+//     if result.is_empty() {
+//         log::warn!("Using default fallback script directory");
+
+//         let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+//         result.push(path);
+//     }
+
+//     result
+// }
+
 // pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
 //     manifest::get_scripts(&path.as_ref())
 // }
 
-pub fn enumerate_profiles<P: AsRef<Path>>(path: P) -> Result<Vec<profiles::Profile>> {
-    let mut result = profiles::get_profiles(&path.as_ref())?;
+pub fn enumerate_profiles() -> Result<Vec<profiles::Profile>> {
+    let mut result = profiles::get_profiles()?;
 
     // sort profiles by their name
     result.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name));
@@ -318,20 +351,6 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
 
     manifest_path
 }
-
-// pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
-//     fs::read_to_string(p)
-// }
-
-// pub fn edit_file<P: AsRef<Path>>(file_name: P) -> Result<()> {
-//     println!("Editing: {}", &file_name.as_ref().to_string_lossy());
-
-//     Command::new(std::env::var("EDITOR").unwrap_or_else(|_| "/usr/bin/nano".to_string()))
-//         .args(&[file_name.as_ref().to_string_lossy().to_string()])
-//         .status()?;
-
-//     Ok(())
-// }
 
 pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
     let (vid, pid) = dbus_client::get_managed_devices()?[0];

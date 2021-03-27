@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::constants;
 use crate::dbus_client;
 use crate::events;
 use crate::ui;
@@ -55,7 +54,7 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
             .unwrap();
         let path = PathBuf::from(&file);
 
-        if slot_profile_path.file_name() == path.file_name() {
+        if slot_profile_path == path {
             found = true;
             return true;
         }
@@ -168,9 +167,7 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
         String::static_type(),
     ]);
 
-    // TODO: use configuration values from eruption.conf
-    let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
-    for profile in util::enumerate_profiles(&path)? {
+    for profile in util::enumerate_profiles()? {
         let name = profile.name;
         let filename = profile
             .profile_file

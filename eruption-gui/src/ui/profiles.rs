@@ -832,8 +832,6 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 
     let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
 
-    // let profile_file_name = profile.profile_file.file_name().unwrap_or(OsStr::new(""));
-
     let label = gtk::LabelBuilder::new()
         .label(&format!("{}", &profile.name,))
         .justify(gtk::Justification::Fill)
@@ -1031,9 +1029,7 @@ fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> 
 
     // add associated .lua files
 
-    // TODO: use configuration values from eruption.conf
-    let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
-    for p in util::enumerate_profiles(&path)? {
+    for p in util::enumerate_profiles()? {
         if p.profile_file == profile.as_ref() {
             for f in p.active_scripts {
                 // TODO: use configuration values from eruption.conf
@@ -1141,9 +1137,11 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
         String::static_type(),
     ]);
 
-    // TODO: use configuration values from eruption.conf
-    let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
-    for (index, ref profile) in util::enumerate_profiles(&path)?.iter().enumerate() {
+    for (index, ref profile) in util::enumerate_profiles()
+        .unwrap_or_else(|_| vec![])
+        .iter()
+        .enumerate()
+    {
         let name = &profile.name;
         let filename = profile
             .profile_file

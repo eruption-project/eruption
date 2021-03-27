@@ -50,7 +50,7 @@ impl ProfilesPlugin {
 
     pub(crate) fn get_current_profile() -> Option<String> {
         if let Some(profile) = &*crate::ACTIVE_PROFILE.lock() {
-            Some((*profile.profile_file.file_name().unwrap().to_string_lossy()).to_string())
+            Some((*profile.profile_file.to_string_lossy()).to_string())
         } else {
             None
         }

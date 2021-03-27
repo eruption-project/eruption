@@ -18,6 +18,8 @@
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use crate::constants;
+
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
@@ -66,4 +68,37 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
     })?;
 
     Ok(())
+}
+
+pub fn get_script_dirs() -> Vec<PathBuf> {
+    // process configuration file
+    let config_file = constants::DEFAULT_CONFIG_FILE;
+
+    let mut config = config::Config::default();
+    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
+        log::error!("Could not parse configuration file: {}", e);
+    }
+
+    let mut result = vec![];
+
+    let script_dirs = config
+        .get::<Vec<String>>("global.script_dirs")
+        .unwrap_or_else(|_| vec![]);
+
+    let mut script_dirs = script_dirs
+        .iter()
+        .map(|e| PathBuf::from(e))
+        .collect::<Vec<PathBuf>>();
+
+    result.append(&mut script_dirs);
+
+    // if we could not determine a valid set of paths, use a hard coded fallback instead
+    if result.is_empty() {
+        log::warn!("Using default fallback script directory");
+
+        let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+        result.push(path);
+    }
+
+    result
 }

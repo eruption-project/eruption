@@ -806,7 +806,7 @@ pub fn run_script(
             let manifest = Manifest::from(&file);
             if let Err(error) = manifest {
                 error!(
-                    "Could not parse manifest file for script '{}': {}",
+                    "Could not parse manifest file for script {}: {}",
                     file.display(),
                     error
                 );
@@ -1235,7 +1235,7 @@ pub fn run_script(
                                 handler.call::<_, ()>(param).unwrap_or_else(|e| {
                                     error!(
                                         "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
+                                        file.display(),
                                         e,
                                         e.source().unwrap_or(&UnknownError {})
                                     );
@@ -1256,7 +1256,7 @@ pub fn run_script(
                         //}
 
                         // Message::Abort => {
-                        //     error!("Lua script '{}' terminated with errors", file.file_name().unwrap().to_string_lossy());
+                        //     error!("Lua script {} terminated with errors", file.display());
                         //     return Ok(RunScriptResult::TerminatedWithErrors);
                         // }
                         Message::Unload => {
@@ -1275,16 +1275,10 @@ pub fn run_script(
                             }
 
                             if errors_present {
-                                error!(
-                                    "Lua script '{}' terminated with errors",
-                                    file.file_name().unwrap().to_string_lossy()
-                                );
+                                error!("Lua script {} terminated with errors", file.display());
                                 return Ok(RunScriptResult::TerminatedWithErrors);
                             } else {
-                                debug!(
-                                    "Lua script '{}' terminated gracefully",
-                                    file.file_name().unwrap().to_string_lossy()
-                                );
+                                debug!("Lua script {} terminated gracefully", file.display());
                                 return Ok(RunScriptResult::TerminatedGracefully);
                             }
                         }
@@ -1324,14 +1318,11 @@ pub fn run_script(
                             }
 
                             if errors_present {
-                                error!(
-                                    "Lua script '{}': Could not apply parameter",
-                                    file.file_name().unwrap().to_string_lossy()
-                                );
+                                error!("Lua script {}: Could not apply parameter", file.display());
                             } else {
                                 debug!(
-                                    "Lua script '{}': Successfully applied parameter",
-                                    file.file_name().unwrap().to_string_lossy()
+                                    "Lua script {}: Successfully applied parameter",
+                                    file.display()
                                 );
                             }
                         }
