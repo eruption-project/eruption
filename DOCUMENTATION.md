@@ -132,7 +132,7 @@ You may switch the currently active slot to `profile1.profile` with the followin
 ##### Switch Profile
 
 ```sh
- $ eruptionctl switch profile profile1.profile
+ $ eruptionctl switch profile /var/lib/eruption/profiles/profile1.profile
 ```
 
 ##### Switch Slot
