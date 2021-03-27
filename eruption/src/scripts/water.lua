@@ -14,6 +14,7 @@
 -- along with Eruption.  If not, see <http:--www.gnu.org/licenses/>.
 
 require "declarations"
+require "utilities"
 require "debug"
 
 key_state = {
