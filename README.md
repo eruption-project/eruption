@@ -154,11 +154,11 @@ To list all rules, run the command:
 
 Switch to `spectrum-analyzer-swirl.profile` when a YouTube tab is active in Google Chrome:
 
-`eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' spectrum-analyzer-swirl.profile`
+`eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile`
 
 Switch to `profile3.profile` when a YouTube tab is active in Mozilla Firefox:
 
-`eruption-process-monitor rules add window-name '.*YouTube.*Mozilla Firefox' profile3.profile`
+`eruption-process-monitor rules add window-name '.*YouTube.*Mozilla Firefox' /var/lib/eruption/profiles/profile3.profile`
 
 
 To list all supported sensors and actions please run the command:
