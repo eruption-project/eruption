@@ -424,13 +424,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             ProfilesSubcommands::Edit { profile_name } => {
                 let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
-                if let Some(profile) = profiles.iter().find(|p| {
-                    *p.profile_file
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        == profile_name
-                }) {
+                if let Some(profile) = profiles
+                    .iter()
+                    .find(|p| *p.profile_file.to_string_lossy() == profile_name)
+                {
                     util::edit_file(&profile.profile_file)?
                 } else {
                     eprintln!("No matches found");
@@ -448,13 +445,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 let empty = HashMap::new();
 
-                if let Some(profile) = profiles.iter().find(|p| {
-                    *p.profile_file
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        == profile_name
-                }) {
+                if let Some(profile) = profiles
+                    .iter()
+                    .find(|p| *p.profile_file.to_string_lossy() == profile_name)
+                {
                     println!(
                         "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n\n{:#?}",
                         profile.name,
@@ -503,13 +497,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 let path = constants::DEFAULT_SCRIPT_DIR;
                 let scripts = util::enumerate_scripts(&path)?;
 
-                if let Some(script) = scripts.iter().find(|s| {
-                    *s.script_file
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        == script_name
-                }) {
+                if let Some(script) = scripts
+                    .iter()
+                    .find(|s| *s.script_file.to_string_lossy() == script_name)
+                {
                     util::edit_file(&script.script_file)?
                 } else {
                     eprintln!("No matches found");
@@ -528,13 +519,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 let empty = vec![];
 
-                if let Some(script) = scripts.iter().find(|s| {
-                    *s.script_file
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        == script_name
-                }) {
+                if let Some(script) = scripts
+                    .iter()
+                    .find(|s| *s.script_file.to_string_lossy() == script_name)
+                {
                     println!(
                         "Lua script:\t{} ({})\nDaemon version:\t{}\nAuthor:\t\t{}\nDescription:\t{}\nTags:\t\t{:?}",
                         script.name,
@@ -566,13 +554,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
-                if let Some(profile) = profiles.iter().find(|&p| {
-                    *p.profile_file
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        == profile_name
-                }) {
+                if let Some(profile) = profiles
+                    .iter()
+                    .find(|&p| *p.profile_file.to_string_lossy() == profile_name)
+                {
                     println!(
                         "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
                         profile.name, profile.id, profile.description, profile.active_scripts,
@@ -658,13 +643,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                     let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
-                    if let Some(profile) = profiles.iter().find(|&p| {
-                        *p.profile_file
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            == profile_name
-                    }) {
+                    if let Some(profile) = profiles
+                        .iter()
+                        .find(|&p| *p.profile_file.to_string_lossy() == profile_name)
+                    {
                         println!(
                             "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
                             profile.name, profile.id, profile.description, profile.active_scripts,
@@ -696,13 +678,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                     let profiles = util::enumerate_profiles().unwrap_or_else(|_| vec![]);
 
-                    if let Some(profile) = profiles.iter().find(|&p| {
-                        *p.profile_file
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            == profile_name
-                    }) {
+                    if let Some(profile) = profiles
+                        .iter()
+                        .find(|&p| *p.profile_file.to_string_lossy() == profile_name)
+                    {
                         let empty = HashMap::new();
 
                         let path = constants::DEFAULT_SCRIPT_DIR;
