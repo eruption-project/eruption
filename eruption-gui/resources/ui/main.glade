@@ -113,9 +113,10 @@ Author: X3n0m0rph59
     <property name="icon-name">document-save-symbolic</property>
   </object>
   <object class="GtkApplicationWindow" id="main_window">
-    <property name="height-request">720</property>
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
+    <property name="default-width">1440</property>
+    <property name="default-height">768</property>
     <property name="icon-name">/org/eruption/eruption-gui/img/eruption-gui.png</property>
     <property name="show-menubar">False</property>
     <child>

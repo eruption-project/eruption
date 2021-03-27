@@ -1287,7 +1287,7 @@ pub fn update_profile_state(builder: &gtk::Builder) -> Result<()> {
         .unwrap_or_else(|| "".to_string());
 
     model.foreach(|model, path, iter| {
-        let item = model.get_value(iter, 2).get::<String>().unwrap().unwrap();
+        let item = model.get_value(iter, 3).get::<String>().unwrap().unwrap();
         if item == active_profile {
             // found a match
             profiles_treeview.get_selection().select_iter(&iter);

@@ -302,11 +302,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                             .foreach(|model, _path, iter| {
                                 let file =
                                     model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file)
-                                    .file_name()
-                                    .unwrap()
-                                    .to_string_lossy()
-                                    .to_string();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
                                 if *profile == file {
                                     // found a match
@@ -329,11 +325,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                             .foreach(|model, _path, iter| {
                                 let file =
                                     model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file)
-                                    .file_name()
-                                    .unwrap()
-                                    .to_string_lossy()
-                                    .to_string();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
                                 if *profile == file {
                                     // found a match
@@ -356,11 +348,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                             .foreach(|model, _path, iter| {
                                 let file =
                                     model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file)
-                                    .file_name()
-                                    .unwrap()
-                                    .to_string_lossy()
-                                    .to_string();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
                                 if *profile == file {
                                     // found a match
@@ -383,11 +371,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                             .foreach(|model, _path, iter| {
                                 let file =
                                     model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file)
-                                    .file_name()
-                                    .unwrap()
-                                    .to_string_lossy()
-                                    .to_string();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
                                 if *profile == file {
                                     // found a match
