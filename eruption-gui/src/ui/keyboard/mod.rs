@@ -37,6 +37,8 @@ pub enum KeyboardError {
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     let keyboard_device = hwdevices::get_keyboard_device()?;
 
+    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+
     let notification_box_global: gtk::Box = builder.get_object("notification_box_global").unwrap();
 
     let keyboard_name_label: gtk::Label = builder.get_object("keyboard_device_name_label").unwrap();
@@ -75,22 +77,51 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
 
     // special options
     networkfx_ambient_switch.connect_state_set(move |_sw, enabled| {
-        util::toggle_netfx_ambient(enabled).unwrap_or_else(|e| {
-            let message = "Could not toggle Network FX".to_string();
-            let secondary = format!("{}", e);
+        if enabled {
+            crate::STATE.write().saved_profile = util::get_active_profile().ok();
 
-            let message_dialog = gtk::MessageDialogBuilder::new()
-                .destroy_with_parent(true)
-                .decorated(true)
-                .message_type(gtk::MessageType::Error)
-                .text(&message)
-                .secondary_text(&secondary)
-                .title("Error")
-                .buttons(gtk::ButtonsType::Ok)
-                .build();
+            util::toggle_netfx_ambient(true).unwrap_or_else(|e| {
+                let message = "Could not toggle Network FX".to_string();
+                let secondary = format!("{}", e);
 
-            message_dialog.run();
-        });
+                let message_dialog = gtk::MessageDialogBuilder::new()
+                    .parent(&main_window)
+                    .destroy_with_parent(true)
+                    .decorated(true)
+                    .message_type(gtk::MessageType::Error)
+                    .text(&message)
+                    .secondary_text(&secondary)
+                    .title("Error")
+                    .buttons(gtk::ButtonsType::Ok)
+                    .build();
+
+                message_dialog.run();
+                message_dialog.hide();
+            });
+        } else {
+            util::toggle_netfx_ambient(false).unwrap_or_else(|e| {
+                let message = "Could not toggle Network FX".to_string();
+                let secondary = format!("{}", e);
+
+                let message_dialog = gtk::MessageDialogBuilder::new()
+                    .parent(&main_window)
+                    .destroy_with_parent(true)
+                    .decorated(true)
+                    .message_type(gtk::MessageType::Error)
+                    .text(&message)
+                    .secondary_text(&secondary)
+                    .title("Error")
+                    .buttons(gtk::ButtonsType::Ok)
+                    .build();
+
+                message_dialog.run();
+                message_dialog.hide();
+            });
+
+            if let Some(saved_profile) = &crate::STATE.read().saved_profile {
+                let _result = util::switch_profile(&saved_profile);
+            }
+        }
 
         gtk::Inhibit(false)
     });

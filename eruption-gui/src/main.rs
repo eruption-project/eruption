@@ -46,6 +46,7 @@ pub enum MainError {
 struct State {
     active_slot: Option<usize>,
     active_profile: Option<String>,
+    saved_profile: Option<String>,
     current_brightness: Option<i64>,
 }
 
@@ -54,6 +55,7 @@ impl State {
         Self {
             active_slot: None,
             active_profile: None,
+            saved_profile: None,
             current_brightness: None,
         }
     }
@@ -420,7 +422,8 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::RulesChanged => {
-                println!("Process-monitor rules changed");
+                log::info!("Process monitor ruleset has changed");
+                ui::process_monitor::update_rules_view(&builder)?;
             }
         }
     }
@@ -480,6 +483,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                     .build();
 
                 message_dialog.run();
+                message_dialog.hide();
 
                 app.quit();
             }

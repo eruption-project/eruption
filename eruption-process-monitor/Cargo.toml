@@ -1,6 +1,6 @@
 [package]
 name = "eruption-process-monitor"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
@@ -24,7 +24,7 @@ dyn-clone = "1.0.4"
 dyn-clonable = "0.9.0"
 indexmap = "1.6.2"
 log = "0.4.14"
-libc = "0.2.91"
+libc = "0.2.92"
 nix = "0.20.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }

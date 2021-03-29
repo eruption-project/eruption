@@ -360,7 +360,13 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
     let port_number = preferences::get_port_number()?;
 
     if enabled {
-        switch_profile(&"netfx.profile")?;
+        switch_profile(
+            &Path::join(
+                &PathBuf::from(&constants::DEFAULT_PROFILE_DIR),
+                "netfx.profile",
+            )
+            .to_string_lossy(),
+        )?;
 
         thread::sleep(Duration::from_millis(constants::PROCESS_SPAWN_WAIT_MILLIS));
 

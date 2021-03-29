@@ -26,6 +26,7 @@ use std::time::Duration;
 use std::{path::Path, thread};
 
 /// Messages received via D-Bus
+#[derive(Debug)]
 pub enum Message {
     /// Slot has been changed
     SlotChanged(usize),
@@ -69,37 +70,35 @@ pub fn spawn_dbus_event_loop_system(
 ) -> Result<()> {
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    thread::spawn(move || {
+    thread::spawn(move || -> Result<()> {
         let conn = Connection::new_system().unwrap();
         let slot_proxy = conn.with_proxy(
             "org.eruption",
             "/org/eruption/slot",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_millis(4000),
         );
 
         let profile_proxy = conn.with_proxy(
             "org.eruption",
             "/org/eruption/profile",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_millis(4000),
         );
 
         let config_proxy = conn.with_proxy(
             "org.eruption",
             "/org/eruption/config",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_millis(4000),
         );
 
-        let _id1 = slot_proxy
-            .match_signal(
-                clone!(@strong tx => move |h: slot::OrgEruptionSlotActiveSlotChanged,
-                      _: &Connection,
-                      _message: &dbus::Message| {
-                    tx.send(Message::SlotChanged(h.new_slot as usize)).unwrap();
+        let _id1 = slot_proxy.match_signal(
+            clone!(@strong tx => move |h: slot::OrgEruptionSlotActiveSlotChanged,
+                  _: &Connection,
+                  _message: &dbus::Message| {
+                tx.send(Message::SlotChanged(h.new_slot as usize)).unwrap();
 
-                    true
-                }),
-            )
-            .unwrap();
+                true
+            }),
+        )?;
 
         let _id1_1 = slot_proxy
             .match_signal(
@@ -115,37 +114,32 @@ pub fn spawn_dbus_event_loop_system(
 
                     true
                 }),
-            )
-            .unwrap();
+            )?;
 
-        let _id2 = profile_proxy
-            .match_signal(
-                clone!(@strong tx => move |h: profile::OrgEruptionProfileActiveProfileChanged,
-                      _: &Connection,
-                      _message: &dbus::Message| {
-                    tx.send(Message::ProfileChanged(h.new_profile_name))
-                        .unwrap();
+        let _id2 = profile_proxy.match_signal(
+            clone!(@strong tx => move |h: profile::OrgEruptionProfileActiveProfileChanged,
+                  _: &Connection,
+                  _message: &dbus::Message| {
+                tx.send(Message::ProfileChanged(h.new_profile_name))
+                    .unwrap();
 
-                    true
-                }),
-            )
-            .unwrap();
+                true
+            }),
+        )?;
 
-        let _id3 = config_proxy
-            .match_signal(
-                clone!(@strong tx => move |h: config::OrgEruptionConfigBrightnessChanged,
-                      _: &Connection,
-                      _message: &dbus::Message| {
-                    tx.send(Message::BrightnessChanged(h.current_brightness))
-                        .unwrap();
+        let _id3 = config_proxy.match_signal(
+            clone!(@strong tx => move |h: config::OrgEruptionConfigBrightnessChanged,
+                  _: &Connection,
+                  _message: &dbus::Message| {
+                tx.send(Message::BrightnessChanged(h.current_brightness))
+                    .unwrap();
 
-                    true
-                }),
-            )
-            .unwrap();
+                true
+            }),
+        )?;
 
-        let _id3_1 = config_proxy
-            .match_signal(clone!(@strong tx => move |h: PropertiesPropertiesChanged,
+        let _id3_1 = config_proxy.match_signal(
+            clone!(@strong tx => move |h: PropertiesPropertiesChanged,
                   _: &Connection,
                   _message: &dbus::Message| {
 
@@ -164,11 +158,11 @@ pub fn spawn_dbus_event_loop_system(
                 }
 
                 true
-            }))
-            .unwrap();
+            }),
+        )?;
 
         loop {
-            conn.process(Duration::from_millis(1000)).unwrap();
+            conn.process(Duration::from_millis(4000))?;
         }
     });
 
@@ -190,14 +184,16 @@ pub fn spawn_dbus_event_loop_session(
     builder: &gtk::Builder,
     callback: &'static CallbackFn,
 ) -> Result<()> {
+    // use process_monitor::OrgEruptionProcessMonitorRules;
+
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    thread::spawn(move || {
-        let conn = Connection::new_session().unwrap();
+    thread::spawn(move || -> Result<()> {
+        let conn = Connection::new_session()?;
         let rules_proxy = conn.with_proxy(
-            "org.eruption.process_monitor.Rules",
-            "/rules",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            "org.eruption.process_monitor",
+            "/org/eruption/process_monitor/rules",
+            Duration::from_millis(4000),
         );
 
         let _id1 = rules_proxy
@@ -205,15 +201,23 @@ pub fn spawn_dbus_event_loop_session(
                 clone!(@strong tx => move |_h: process_monitor::OrgEruptionProcessMonitorRulesRulesChanged,
                       _: &Connection,
                       _message: &dbus::Message| {
-                    tx.send(Message::RulesChanged).unwrap();
 
-                    true
+                        tx.send(Message::RulesChanged).unwrap();
+
+                        false
                 }),
-            )
-            .unwrap();
+            )?;
+
+        // let _id1_1 = rules_proxy.match_signal(
+        //     move |h: PropertiesPropertiesChanged, _: &Connection, _message: &dbus::Message| {
+        //         log::info!("{:?}", h);
+
+        //         true
+        //     },
+        // )?;
 
         loop {
-            conn.process(Duration::from_millis(1000)).unwrap();
+            conn.process(Duration::from_millis(4000))?;
         }
     });
 
@@ -340,7 +344,7 @@ pub fn enumerate_process_monitor_rules() -> Result<Vec<(String, String, String, 
     let conn = Connection::new_session()?;
     let proxy = conn.with_proxy(
         "org.eruption.process_monitor",
-        "/rules",
+        "/org/eruption/process_monitor/rules",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
@@ -355,7 +359,7 @@ pub fn transmit_process_monitor_rules(rules: &[(&str, &str, &str, &str)]) -> Res
     let conn = Connection::new_session()?;
     let proxy = conn.with_proxy(
         "org.eruption.process_monitor",
-        "/rules",
+        "/org/eruption/process_monitor/rules",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
@@ -1182,7 +1186,8 @@ mod status {
 }
 
 mod process_monitor {
-    // This code was autogenerated with `dbus-codegen-rust -d org.eruption.process_monitor -p /rules -m None`, see https://github.com/diwic/dbus-rs
+    // This code was autogenerated with `dbus-codegen-rust -d org.eruption.process_monitor -p /org/eruption/process_monitor/rules -m None`, see https://github.com/diwic/dbus-rs
+    use dbus;
     #[allow(unused_imports)]
     use dbus::arg;
     use dbus::blocking;
