@@ -1,0 +1,46 @@
+name = "Ripple"
+description = "Display a ripple effect"
+version = "0.0.1"
+author = "The Eruption development team"
+min_supported_version = "0.1.20"
+tags = ['Effect', 'Vendor', 'Gradient']
+
+[[config]]
+type = 'float'
+name = 'hue_multiplier'
+description = 'Hue multiplier'
+min = 0.0
+max = 55.0
+default = 32.0
+
+[[config]]
+type = 'float'
+name = 'color_saturation'
+description = 'Saturation in the range 0.0 .. 1.0'
+min = 0.0
+max = 1.0
+default = 1.0
+
+[[config]]
+type = 'float'
+name = 'color_lightness'
+description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
+min = 0.0
+max = 1.0
+default = 0.7
+
+[[config]]
+type = 'float'
+name = 'wave_length'
+description = 'Wave length divisor'
+min = 0.0
+max = 1000.0
+default = 15.0
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
+default = 1.0
