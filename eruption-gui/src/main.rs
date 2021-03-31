@@ -15,15 +15,17 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use gio::prelude::*;
+use gio::{prelude::*, ApplicationFlags};
+use glib::{OptionArg, OptionFlags};
+// use glib::{OptionArg, OptionFlags};
 use gtk::prelude::*;
 use gtk::Application;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
-use std::env;
+use parking_lot::{Mutex, RwLock};
 use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::{env, process};
 
 mod constants;
 mod dbus_client;
@@ -62,6 +64,9 @@ impl State {
 lazy_static! {
     /// Global application state
     static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
+
+    /// Global configuration
+    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
 }
 
 /// Event handling utilities
@@ -444,47 +449,83 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         pretty_env_logger::init();
     }
 
-    let application = Application::new(Some("org.eruption.eruption-gui"), Default::default())?;
+    let application = Application::new(
+        Some("org.eruption.eruption-gui"),
+        ApplicationFlags::FLAGS_NONE,
+    )?;
 
-    {
-        application.connect_activate(move |app| {
-            {
-                // initialize global state
-                let mut state = STATE.write();
+    application.add_main_option(
+        &"configuration",
+        glib::Char::new('c').unwrap(),
+        OptionFlags::NONE,
+        OptionArg::String,
+        &"The configuration file to use",
+        Some(&constants::DEFAULT_CONFIG_FILE),
+    );
 
-                state.active_slot = util::get_active_slot().ok();
-                state.active_profile = util::get_active_profile().ok();
-            }
+    application.connect_handle_local_options(|_application, opts| {
+        // process configuration file
+        let config_file = opts
+            .lookup_value("configuration", None)
+            .map(|v| v.get_str().unwrap().to_owned())
+            .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
 
-            // load the compiled resource bundle
-            let resources_bytes = include_bytes!("../resources/resources.gresource");
-            let resource_data = glib::Bytes::from(&resources_bytes[..]);
-            let res = gio::Resource::from_data(&resource_data).unwrap();
-            gio::resources_register(&res);
+        let config_file = if config_file.trim().is_empty() {
+            constants::DEFAULT_CONFIG_FILE.to_string()
+        } else {
+            config_file.to_string()
+        };
 
-            if let Err(e) = ui::main::initialize_main_window(app) {
-                log::error!("Could not start the Eruption GUI: {}", e);
+        let mut config = config::Config::default();
+        config
+            .merge(config::File::new(&config_file, config::FileFormat::Toml))
+            .unwrap_or_else(|e| {
+                log::error!("Could not parse configuration file: {}", e);
+                process::exit(4);
+            });
 
-                let message =
-                    "Could not start the Eruption GUI, is the daemon running?".to_string();
-                let secondary = format!("Reason:\n{}", e);
+        *CONFIG.lock() = Some(config.clone());
 
-                let message_dialog = gtk::MessageDialogBuilder::new()
-                    .destroy_with_parent(true)
-                    .decorated(true)
-                    .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
-                    .title("Error")
-                    .buttons(gtk::ButtonsType::Ok)
-                    .build();
+        // request default processing of command line arguments
+        -1
+    });
 
-                message_dialog.run();
+    application.connect_activate(move |app| {
+        {
+            // initialize global state
+            let mut state = STATE.write();
 
-                app.quit();
-            }
-        });
-    }
+            state.active_slot = util::get_active_slot().ok();
+            state.active_profile = util::get_active_profile().ok();
+        }
+
+        // load the compiled resource bundle
+        let resources_bytes = include_bytes!("../resources/resources.gresource");
+        let resource_data = glib::Bytes::from(&resources_bytes[..]);
+        let res = gio::Resource::from_data(&resource_data).unwrap();
+        gio::resources_register(&res);
+
+        if let Err(e) = ui::main::initialize_main_window(app) {
+            log::error!("Could not start the Eruption GUI: {}", e);
+
+            let message = "Could not start the Eruption GUI, is the daemon running?".to_string();
+            let secondary = format!("Reason:\n{}", e);
+
+            let message_dialog = gtk::MessageDialogBuilder::new()
+                .destroy_with_parent(true)
+                .decorated(true)
+                .message_type(gtk::MessageType::Error)
+                .text(&message)
+                .secondary_text(&secondary)
+                .title("Error")
+                .buttons(gtk::ButtonsType::Ok)
+                .build();
+
+            message_dialog.run();
+
+            app.quit();
+        }
+    });
 
     application.run(&args().collect::<Vec<_>>());
 

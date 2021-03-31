@@ -18,13 +18,28 @@
 #![allow(dead_code)]
 
 /// Default path of eruption master configuration file
+#[cfg(not(debug_assertions))]
 pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
 
 /// Default profile directory
+#[cfg(not(debug_assertions))]
 pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 
 /// Default script directory
+#[cfg(not(debug_assertions))]
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
+
+/// Default path of eruption master configuration file
+#[cfg(debug_assertions)]
+pub const DEFAULT_CONFIG_FILE: &str = "support/config/eruption.conf";
+
+/// Default profile directory
+#[cfg(debug_assertions)]
+pub const DEFAULT_PROFILE_DIR: &str = "support/profiles/";
+
+/// Default script directory
+#[cfg(debug_assertions)]
+pub const DEFAULT_SCRIPT_DIR: &str = "eruption/src/scripts/";
 
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";
@@ -39,7 +54,12 @@ pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
 /// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "rainbow-wave.profile";
+#[cfg(not(debug_assertions))]
+pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/rainbow-wave.profile";
+
+/// Default AFK profile
+#[cfg(debug_assertions)]
+pub const DEFAULT_AFK_PROFILE: &str = "support/profiles/rainbow-wave.profile";
 
 /// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;

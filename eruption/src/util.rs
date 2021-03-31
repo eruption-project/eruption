@@ -24,6 +24,9 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum UtilError {
+    #[error("File not found: {description}")]
+    FileNotFound { description: String },
+
     #[error("Write failed: {description}")]
     FileWriteError {
         #[source]
@@ -71,17 +74,13 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
 }
 
 pub fn get_script_dirs() -> Vec<PathBuf> {
-    // process configuration file
-    let config_file = constants::DEFAULT_CONFIG_FILE;
-
-    let mut config = config::Config::default();
-    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
-        log::error!("Could not parse configuration file: {}", e);
-    }
-
     let mut result = vec![];
 
+    let config = crate::CONFIG.lock();
+
     let script_dirs = config
+        .as_ref()
+        .unwrap()
         .get::<Vec<String>>("global.script_dirs")
         .unwrap_or_else(|_| vec![]);
 
@@ -98,6 +97,31 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
         let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
         result.push(path);
+    }
+
+    result
+}
+
+pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
+    let script_file = script_file.as_ref();
+
+    let mut result = Err(UtilError::FileNotFound {
+        description: format!(
+            "Could not find file in search path(s): {}",
+            &script_file.display()
+        ),
+    }
+    .into());
+
+    'DIR_LOOP: for dir in get_script_dirs().iter() {
+        let script_path = dir.join(&script_file);
+
+        if let Ok(metadata) = fs::metadata(&script_path) {
+            if metadata.is_file() {
+                result = Ok(script_path);
+                break 'DIR_LOOP;
+            }
+        }
     }
 
     result
