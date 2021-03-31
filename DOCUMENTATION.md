@@ -242,6 +242,7 @@ The following scripts are unfinished/still in development, and some of them have
 | Snake              | Effect     | `snake.lua`           | Approx. 25% done | Displays a snake that lives on your keyboard                                                       |
 | Linear Gradient    | Background | `linear-gradient.lua` | Approx. 95% done | Display a color gradient                                                                           |
 | Multi Gradient     | Background | `multigradient.lua`   | Approx. 65% done | Display a color gradient, supports multiple gradient stops                                         |
+| Ripple             | Effect     | `ripple.lua`          | Approx. 85% done | Display a rainbow colored ripple effect                                                            |
 | Shockwave          | Effect     | `shockwave.lua`       | Approx. 85% done | Like Impact, but shows propagating waves when a key has been pressed                               |
 | Sysmon             | Background | `sysmon.lua`          | Approx. 10% done | System monitor, keyboard reflects system state                                                     |
 | Temperature        | Background | `temperature.lua`     | Approx. 85% done | Temperature monitor. The keyboard reflects the CPU temperature, from 'green = cold' to 'red = hot' |
