@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+mod corsair_strafe;
 mod roccat_burst_pro;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
@@ -154,6 +155,22 @@ pub fn bind_device(
             Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(
                 hiddev, leddev,
             )))
+        }
+
+        // Corsair STRAFE Gaming Keyboard
+        (0x1b1c, 0x1b15) => {
+            // let leddev = hidapi
+            //     .device_list()
+            //     .find(|dev| {
+            //         dev.product_id() == product_id
+            //             && dev.vendor_id() == vendor_id
+            //             && dev.interface_number() == corsair_strafe::LED_INTERFACE
+            //     })
+            //     .expect("Could not bind LED sub-device")
+            //     .open_device(&hidapi)
+            //     .expect("Could not open LED sub-device");
+
+            Ok(Box::new(corsair_strafe::CorsairStrafe::bind(hiddev)))
         }
 
         // Mouse devices

@@ -24,6 +24,7 @@ use std::time::Duration;
 use std::{any::Any, sync::Arc, thread};
 use udev::Enumerator;
 
+mod corsair_strafe;
 mod generic_keyboard;
 mod generic_mouse;
 mod roccat_burst_pro;
@@ -45,7 +46,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 13]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 14]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -60,6 +61,10 @@ lazy_static! {
 
         KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &roccat_vulcan_pro_tkl::bind_hiddev),
 
+        // CORSAIR
+
+        // Corsair STRAFE Gaming Keyboard
+        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &corsair_strafe::bind_hiddev),
 
         // Supported mice
 
