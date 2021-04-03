@@ -17,6 +17,7 @@
 
 use crate::{dbus_client, util::RGBA};
 
+mod corsair_strafe;
 mod generic_keyboard;
 mod null_keyboard;
 mod roccat_vulcan_1xx;
@@ -48,6 +49,9 @@ pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
 
             // ROCCAT Vulcan TKL series
             (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
+
+            // Corsair STRAFE series
+            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new())),
 
             _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new())),
         },

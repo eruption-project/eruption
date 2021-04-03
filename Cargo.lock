@@ -643,6 +643,7 @@ dependencies = [
 name = "eruption-debug-tool"
 version = "0.0.11"
 dependencies = [
+ "bitvec",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -650,6 +651,7 @@ dependencies = [
  "eyre",
  "hexdump",
  "hidapi",
+ "icecream",
  "libc",
  "log",
  "nix",
@@ -1413,6 +1415,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "icecream"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cd15fce8630b4ad917a34af52a2f996285ca19d1c679ccf507ff3bd77f3563d"
+dependencies = [
+ "backtrace",
+ "lazy_static",
+]
+
+[[package]]
 name = "image"
 version = "0.23.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1814,9 +1826,9 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.25.3"
+version = "0.25.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cb5960baf61e6cc763d6a7ab1443381ae0091073861e26cd9d792d06d478a79"
+checksum = "c70c9e8c5f213c8e93fc8c112ade4edd3ee62062fb897776c23dcebac7932900"
 dependencies = [
  "approx 0.4.0",
  "generic-array",
@@ -1824,6 +1836,7 @@ dependencies = [
  "num-complex",
  "num-rational",
  "num-traits 0.2.14",
+ "serde 1.0.125",
  "simba",
  "typenum",
 ]

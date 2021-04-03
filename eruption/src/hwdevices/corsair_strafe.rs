@@ -19,7 +19,7 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
-use std::{any::Any, mem::size_of, time::Duration};
+use std::{any::Any, time::Duration};
 use std::{sync::Arc, thread};
 
 use crate::constants;
@@ -86,8 +86,8 @@ pub struct DeviceInfo {
 
 #[derive(Debug, PartialEq)]
 pub enum DialMode {
-    Volume,
-    Brightness,
+    // Volume,
+// Brightness,
 }
 
 #[derive(Clone)]
@@ -287,19 +287,19 @@ impl CorsairStrafe {
         }
     }
 
-    fn wait_for_ctrl_dev(&mut self) -> Result<()> {
-        trace!("Waiting for control device to respond...");
+    // fn wait_for_ctrl_dev(&mut self) -> Result<()> {
+    //     trace!("Waiting for control device to respond...");
 
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else {
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
+    //     } else if !self.is_opened {
+    //         Err(HwDeviceError::DeviceNotOpened {}.into())
+    //     } else {
+    //         thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
-            Ok(())
-        }
-    }
+    //         Ok(())
+    //     }
+    // }
 
     fn wait_for_led_dev(&mut self) -> Result<()> {
         trace!("Waiting for LED device to respond...");
@@ -485,7 +485,7 @@ impl DeviceTrait for CorsairStrafe {
         }
     }
 
-    fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
+    fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
@@ -510,7 +510,7 @@ impl DeviceTrait for CorsairStrafe {
         }
     }
 
-    fn read_data_raw(&self, size: usize) -> Result<Vec<u8>> {
+    fn read_data_raw(&self, _size: usize) -> Result<Vec<u8>> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
@@ -592,6 +592,7 @@ impl KeyboardDeviceTrait for CorsairStrafe {
         } else {
             // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
 
+            // TODO: Implement this
             let ctrl_dev = self.led_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
@@ -760,30 +761,33 @@ impl KeyboardDeviceTrait for CorsairStrafe {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        let mut buffer: [u8; 448] = [0; 448];
-                        buffer[0..5].copy_from_slice(&[0x07, 0x27, 0x00, 0x00, 0xd8]);
+                        let mut buffer: [u8; 60 * 4 * 10] = [0xff; 60 * 4 * 10];
 
                         for i in 0..NUM_KEYS {
-                            let color = led_map[i];
-                            let offset = ((i / 12) * 36) + (i % 12);
+                            // let color = (((led_map[i].r as f64 * 0.29)
+                            //     + (led_map[i].g as f64 * 0.59)
+                            //     + (led_map[i].b as f64 * 0.114))
+                            //     .round() as u8)
+                            //     .clamp(0, 255);
 
-                            buffer[offset + 6] = color.r;
-                            buffer[offset + 6 + 12] = color.g;
-                            buffer[offset + 6 + 24] = color.b;
+                            let color = led_map[i];
+                            let offset = i * 3 + 4;
+
+                            buffer[offset + 0] = 255 - (color.r >> 5);
+                            buffer[offset + 1] = 255 - (color.g >> 5);
+                            buffer[offset + 2] = 255 - (color.b >> 5);
                         }
 
-                        for (index, bytes) in buffer.chunks(64).take(5).enumerate() {
-                            let mut tmp: [u8; 65] = [0; 65];
+                        for (cntr, bytes) in buffer.chunks(60).take(3).enumerate() {
+                            let mut tmp: [u8; 64] = [0; 64];
 
-                            if index > 0 {
-                                tmp[1..65].copy_from_slice(&bytes);
-
-                                tmp[0] = 0x7f;
-                                tmp[1] = index as u8;
+                            if cntr < 2 {
+                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
                             } else {
-                                // first segment needs special treatment
-                                tmp[0..64].copy_from_slice(&bytes);
+                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
                             }
+
+                            tmp[4..64].copy_from_slice(&bytes);
 
                             hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
@@ -796,6 +800,21 @@ impl KeyboardDeviceTrait for CorsairStrafe {
 
                                 Err(_) => return Err(HwDeviceError::WriteError {}.into()),
                             }
+                        }
+
+                        // commit the LED map to the keyboard
+                        let tmp: [u8; 5] = [0x07, 0x27, 0x00, 0x00, 0xd8];
+
+                        hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+
+                        match led_dev.write(&tmp) {
+                            Ok(len) => {
+                                if len < 4 {
+                                    return Err(HwDeviceError::WriteError {}.into());
+                                }
+                            }
+
+                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
                         }
 
                         Ok(())
@@ -881,35 +900,35 @@ impl KeyboardDeviceTrait for CorsairStrafe {
     }
 }
 
-fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
-    match report {
-        0xfb => match code {
-            16 => KeyboardHidEventCode::KEY_F1,
-            24 => KeyboardHidEventCode::KEY_F2,
-            33 => KeyboardHidEventCode::KEY_F3,
-            32 => KeyboardHidEventCode::KEY_F4,
+// fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
+//     match report {
+//         0xfb => match code {
+//             16 => KeyboardHidEventCode::KEY_F1,
+//             24 => KeyboardHidEventCode::KEY_F2,
+//             33 => KeyboardHidEventCode::KEY_F3,
+//             32 => KeyboardHidEventCode::KEY_F4,
 
-            40 => KeyboardHidEventCode::KEY_F5,
-            48 => KeyboardHidEventCode::KEY_F6,
-            56 => KeyboardHidEventCode::KEY_F7,
-            57 => KeyboardHidEventCode::KEY_F8,
+//             40 => KeyboardHidEventCode::KEY_F5,
+//             48 => KeyboardHidEventCode::KEY_F6,
+//             56 => KeyboardHidEventCode::KEY_F7,
+//             57 => KeyboardHidEventCode::KEY_F8,
 
-            17 => KeyboardHidEventCode::KEY_ESC,
-            119 => KeyboardHidEventCode::KEY_FN,
+//             17 => KeyboardHidEventCode::KEY_ESC,
+//             119 => KeyboardHidEventCode::KEY_FN,
 
-            _ => KeyboardHidEventCode::Unknown(code),
-        },
+//             _ => KeyboardHidEventCode::Unknown(code),
+//         },
 
-        0x0a => match code {
-            57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
-            255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
+//         0x0a => match code {
+//             57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
+//             255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
 
-            _ => KeyboardHidEventCode::Unknown(code),
-        },
+//             _ => KeyboardHidEventCode::Unknown(code),
+//         },
 
-        _ => KeyboardHidEventCode::Unknown(code),
-    }
-}
+//         _ => KeyboardHidEventCode::Unknown(code),
+//     }
+// }
 
 /// Map evdev event codes to key indices, for ISO variant
 #[rustfmt::skip]

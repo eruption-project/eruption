@@ -348,149 +348,42 @@ impl DeviceTrait for CorsairStrafe {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        println!("write 1");
+                        let mut buffer: [u8; 448 * 8] = [0; 448 * 8];
+                        for i in 0..NUM_KEYS {
+                            // let color = (((led_map[i].r as f64 * 0.29)
+                            //     + (led_map[i].g as f64 * 0.59)
+                            //     + (led_map[i].b as f64 * 0.114))
+                            //     .round() as u8)
+                            //     .clamp(0, 255);
 
-                        let tmp = [
-                            0x07, 0x27, 0x00, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00,
-                        ];
+                            let color = led_map[i];
+                            let offset = i; //((i / 12) * 36) + (i % 12);
 
-                        match led_dev.write(&tmp) {
-                            Ok(len) => {
-                                if len < 64 {
-                                    println!("short write: {}", len);
+                            buffer[offset + 0] = 255 - (color.r >> 5);
+                            buffer[offset + 60] = 255 - (color.r >> 5);
+                            buffer[offset + 120] = 255 - (color.r >> 5);
 
-                                    return Err(HwDeviceError::WriteError {}.into());
-                                }
+                            // buffer[offset] = 255 - color.g;
+                            // buffer[offset + 60] = 255 - color.g;
+                            // buffer[offset + 120] = 255 - color.g;
+
+                            // buffer[offset] = 255 - color.b;
+                            // buffer[offset + 60] = 255 - color.b;
+                            // buffer[offset + 120] = 255 - color.b;
+                        }
+
+                        for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
+                            let mut tmp: [u8; 64] = [0; 64];
+
+                            if cntr < 3 {
+                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
+                            } else {
+                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
                             }
 
-                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        }
+                            tmp[4..64].copy_from_slice(&bytes);
 
-                        // println!("write 2");
-
-                        // let tmp = [
-                        //     0x7f, 0x01, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x11, 0x07, 0x77, 0x00, 0x00,
-                        //     0x70, 0x70, 0x07, 0x77, 0x00, 0x70, 0x66, 0x00, 0x07, 0x77, 0x00, 0x66,
-                        //     0x76, 0x00, 0x77, 0x77, 0x70, 0x56, 0x35, 0x00, 0x07, 0x77, 0x66, 0x55,
-                        //     0x74, 0x00, 0x07, 0x77, 0x55, 0x44, 0x74, 0x00, 0x00, 0x77, 0x54, 0x34,
-                        //     0x13, 0x00, 0x00, 0x77, 0x44, 0x33, 0x02, 0x07, 0x00, 0x77, 0x33, 0x22,
-                        //     0x02, 0x00, 0x00, 0x77,
-                        // ];
-
-                        // match led_dev.write(&tmp) {
-                        //     Ok(len) => {
-                        //         if len < 64 {
-                        //             return Err(HwDeviceError::WriteError {}.into());
-                        //         }
-                        //     }
-
-                        //     Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        // }
-
-                        // println!("write 3");
-
-                        // let tmp = [
-                        //     0x7f, 0x02, 0x3c, 0x00, 0x32, 0x12, 0x71, 0x00, 0x00, 0x77, 0x21, 0x11,
-                        //     0x00, 0x07, 0x03, 0x77, 0x00, 0x00, 0x00, 0x11, 0x07, 0x77, 0x00, 0x00,
-                        //     0x70, 0x70, 0x07, 0x77, 0x00, 0x70, 0x66, 0x00, 0x07, 0x77, 0x00, 0x66,
-                        //     0x76, 0x00, 0x77, 0x77, 0x70, 0x56, 0x35, 0x00, 0x07, 0x77, 0x66, 0x55,
-                        //     0x74, 0x00, 0x07, 0x77, 0x55, 0x44, 0x74, 0x00, 0x00, 0x77, 0x54, 0x34,
-                        //     0x13, 0x00, 0x00, 0x77,
-                        // ];
-
-                        // match led_dev.write(&tmp) {
-                        //     Ok(len) => {
-                        //         if len < 64 {
-                        //             return Err(HwDeviceError::WriteError {}.into());
-                        //         }
-                        //     }
-
-                        //     Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        // }
-
-                        // println!("write 4");
-
-                        // let tmp = [
-                        //     0x7f, 0x03, 0x3c, 0x00, 0x44, 0x33, 0x02, 0x07, 0x00, 0x77, 0x33, 0x22,
-                        //     0x02, 0x00, 0x00, 0x77, 0x32, 0x12, 0x71, 0x00, 0x00, 0x77, 0x21, 0x11,
-                        //     0x00, 0x07, 0x03, 0x77, 0x00, 0x00, 0x00, 0x11, 0x07, 0x77, 0x00, 0x00,
-                        //     0x70, 0x70, 0x07, 0x77, 0x00, 0x70, 0x66, 0x00, 0x07, 0x77, 0x00, 0x66,
-                        //     0x76, 0x00, 0x77, 0x77, 0x70, 0x56, 0x35, 0x00, 0x07, 0x77, 0x66, 0x55,
-                        //     0x74, 0x00, 0x07, 0x77,
-                        // ];
-
-                        // match led_dev.write(&tmp) {
-                        //     Ok(len) => {
-                        //         if len < 64 {
-                        //             return Err(HwDeviceError::WriteError {}.into());
-                        //         }
-                        //     }
-
-                        //     Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        // }
-
-                        // println!("write 5");
-
-                        // let tmp = [
-                        //     0x7f, 0x04, 0x24, 0x00, 0x55, 0x44, 0x74, 0x00, 0x00, 0x77, 0x54, 0x34,
-                        //     0x13, 0x00, 0x00, 0x77, 0x44, 0x33, 0x02, 0x07, 0x00, 0x77, 0x33, 0x22,
-                        //     0x02, 0x00, 0x00, 0x77, 0x32, 0x12, 0x71, 0x00, 0x00, 0x77, 0x21, 0x11,
-                        //     0x00, 0x07, 0x03, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        //     0x00, 0x00, 0x00, 0x00,
-                        // ];
-
-                        // match led_dev.write(&tmp) {
-                        //     Ok(len) => {
-                        //         if len < 64 {
-                        //             return Err(HwDeviceError::WriteError {}.into());
-                        //         }
-                        //     }
-
-                        //     Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        // }
-
-                        // for i in (1..=4).into_iter() {
-                        //     let tmp = [
-                        //         0x7f, i, 0x3c, 0x00, 0x06, 0x00, 0x66, 0x00, 0x07, 0x77, 0x00,
-                        //         0x63, 0x57, 0x70, 0x07, 0x77, 0x00, 0x56, 0x55, 0x00, 0x07, 0x77,
-                        //         0x66, 0x55, 0x75, 0x00, 0x77, 0x77, 0x66, 0x45, 0x24, 0x00, 0x07,
-                        //         0x77, 0x55, 0x34, 0x73, 0x00, 0x07, 0x77, 0x44, 0x33, 0x73, 0x00,
-                        //         0x00, 0x77, 0x43, 0x23, 0x02, 0x00, 0x00, 0x77, 0x33, 0x12, 0x01,
-                        //         0x07, 0x00, 0x77, 0x21, 0x11, 0x01, 0x07, 0x70, 0x77,
-                        //     ];
-
-                        //     match led_dev.write(&tmp) {
-                        //         Ok(len) => {
-                        //             if len < 65 {
-                        //                 return Err(HwDeviceError::WriteError {}.into());
-                        //             }
-                        //         }
-
-                        //         Err(_) => return Err(HwDeviceError::WriteError {}.into()),
-                        //     }
-                        // }
-
-                        let mut buffer: [u8; 448] = [0; 448];
-                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
-
-                        for i in 0..NUM_KEYS {
-                            let color = led_map[i];
-                            let offset = ((i / 12) * 36) + (i % 12);
-
-                            buffer[offset + 4] = color.r;
-                            buffer[offset + 4 + 12] = color.g;
-                            buffer[offset + 4 + 24] = color.b;
-                        }
-
-                        for bytes in buffer.chunks(64) {
-                            let mut tmp: [u8; 65] = [0; 65];
-                            tmp[1..65].copy_from_slice(&bytes);
+                            hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {
@@ -503,6 +396,21 @@ impl DeviceTrait for CorsairStrafe {
                             }
                         }
 
+                        // commit the LED map to the keyboard
+                        let tmp: [u8; 5] = [0x07, 0x27, 0x00, 0x00, 0xd8];
+
+                        hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+
+                        match led_dev.write(&tmp) {
+                            Ok(len) => {
+                                if len < 4 {
+                                    return Err(HwDeviceError::WriteError {}.into());
+                                }
+                            }
+
+                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                        }
+
                         Ok(())
                     }
                 }
@@ -513,25 +421,35 @@ impl DeviceTrait for CorsairStrafe {
     }
 
     fn send_test_pattern(&self) -> Result<()> {
-        self.send_led_map(
-            &[RGBA {
-                r: 255,
-                g: 0,
-                b: 0,
-                a: 255,
-            }; 144],
-        )?;
-
-        thread::sleep(Duration::from_millis(500));
-
+        // init to LEDs off
         self.send_led_map(
             &[RGBA {
                 r: 0,
                 g: 0,
-                b: 255,
+                b: 0,
                 a: 255,
-            }; 144],
+            }; NUM_KEYS],
         )?;
+
+        // test each LED
+
+        for i in (0..NUM_KEYS).into_iter() {
+            let mut led_map = [RGBA {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 255,
+            }; NUM_KEYS];
+
+            led_map[i].r = 255;
+            led_map[i].g = 0;
+            led_map[i].b = 0;
+            led_map[i].a = 255;
+
+            self.send_led_map(&led_map)?;
+
+            thread::sleep(Duration::from_millis(100));
+        }
 
         Ok(())
     }
