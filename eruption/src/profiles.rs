@@ -496,17 +496,13 @@ impl Default for Profile {
 }
 
 pub fn get_profile_dirs() -> Vec<PathBuf> {
-    // process configuration file
-    let config_file = constants::DEFAULT_CONFIG_FILE;
-
-    let mut config = config::Config::default();
-    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
-        log::error!("Could not parse configuration file: {}", e);
-    }
-
     let mut result = vec![];
 
+    let config = crate::CONFIG.lock();
+
     let profile_dirs = config
+        .as_ref()
+        .unwrap()
         .get::<Vec<String>>("global.profile_dirs")
         .unwrap_or_else(|_| vec![]);
 

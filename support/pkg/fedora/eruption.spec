@@ -274,6 +274,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/red-fx.profile
 %{_sharedstatedir}/%{ShortName}/profiles/red-wave.profile
+%{_sharedstatedir}/%{ShortName}/profiles/ripple-rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/snake.profile
 %{_sharedstatedir}/%{ShortName}/profiles/solid-wave.profile
 %{_sharedstatedir}/%{ShortName}/profiles/starcraft2.profile
@@ -388,6 +389,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/raindrops.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua
 %{_datarootdir}/%{ShortName}/scripts/shockwave.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/ripple.lua
+%{_datarootdir}/%{ShortName}/scripts/ripple.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/solid.lua
 %{_datarootdir}/%{ShortName}/scripts/solid.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua

@@ -20,6 +20,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
 
     $completions = @(switch ($command) {
         'eruptionctl' {
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')

@@ -298,38 +298,35 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
-// pub fn get_script_dirs() -> Vec<PathBuf> {
-//     // process configuration file
-//     let config_file = constants::DEFAULT_CONFIG_FILE;
+#[allow(dead_code)]
+pub fn get_script_dirs() -> Vec<PathBuf> {
+    let mut result = vec![];
 
-//     let mut config = config::Config::default();
-//     if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
-//         log::error!("Could not parse configuration file: {}", e);
-//     }
+    let config = crate::CONFIG.lock();
 
-//     let mut result = vec![];
+    let script_dirs = config
+        .as_ref()
+        .unwrap()
+        .get::<Vec<String>>("global.script_dirs")
+        .unwrap_or_else(|_| vec![]);
 
-//     let script_dirs = config
-//         .get::<Vec<String>>("global.script_dirs")
-//         .unwrap_or_else(|_| vec![]);
+    let mut script_dirs = script_dirs
+        .iter()
+        .map(|e| PathBuf::from(e))
+        .collect::<Vec<PathBuf>>();
 
-//     let mut script_dirs = script_dirs
-//         .iter()
-//         .map(|e| PathBuf::from(e))
-//         .collect::<Vec<PathBuf>>();
+    result.append(&mut script_dirs);
 
-//     result.append(&mut script_dirs);
+    // if we could not determine a valid set of paths, use a hard coded fallback instead
+    if result.is_empty() {
+        log::warn!("Using default fallback script directory");
 
-//     // if we could not determine a valid set of paths, use a hard coded fallback instead
-//     if result.is_empty() {
-//         log::warn!("Using default fallback script directory");
+        let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+        result.push(path);
+    }
 
-//         let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
-//         result.push(path);
-//     }
-
-//     result
-// }
+    result
+}
 
 // pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
 //     manifest::get_scripts(&path.as_ref())

@@ -817,12 +817,17 @@ fn switch_profile(
         let mut errors_present = false;
 
         // force hardcoded directory for failsafe scripts
+        #[cfg(not(debug_assertions))]
         let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
+
+        #[cfg(debug_assertions)]
+        let script_dir = PathBuf::from("eruption/src/scripts/");
 
         let profile = profiles::get_fail_safe_profile();
 
         // now spawn a new set of Lua VMs, with scripts from the failsafe profile
         for (thread_idx, script_file) in profile.active_scripts.iter().enumerate() {
+            // TODO: use path from config
             let script_path = script_dir.join(&script_file);
 
             let (lua_tx, lua_rx) = unbounded();
@@ -904,15 +909,6 @@ fn switch_profile(
 
         info!("Switching to profile: {}", &profile_file.display());
 
-        let script_dir = PathBuf::from(
-            CONFIG
-                .lock()
-                .as_ref()
-                .unwrap()
-                .get_str("global.script_dir")
-                .unwrap_or_else(|_| constants::DEFAULT_SCRIPT_DIR.to_string()),
-        );
-
         let profile = profiles::Profile::from(&profile_file);
 
         if let Ok(profile) = profile {
@@ -921,14 +917,20 @@ fn switch_profile(
             // verify script files first; better fail early if we can
             let script_files = profile.active_scripts.clone();
             for script_file in script_files.iter() {
-                let script_path = script_dir.join(&script_file);
+                let script_path = util::match_script_path(&script_file);
 
-                if !util::is_script_file_accessible(&script_path)
-                    || !util::is_manifest_file_accessible(&script_path)
-                {
+                let mut is_script_file_accessible = false;
+                let mut is_manifest_file_accessible = false;
+
+                if let Ok(script_path) = script_path {
+                    is_script_file_accessible = util::is_script_file_accessible(&script_path);
+                    is_manifest_file_accessible = util::is_manifest_file_accessible(&script_path);
+                }
+
+                if !is_script_file_accessible || !is_manifest_file_accessible {
                     error!(
                         "Script file or manifest inaccessible: {}",
-                        script_path.display()
+                        &script_file.display()
                     );
 
                     // errors_present = true;
@@ -978,7 +980,7 @@ fn switch_profile(
 
             // now spawn a new set of Lua VMs, with scripts from the new profile
             for (thread_idx, script_file) in script_files.iter().enumerate() {
-                let script_path = script_dir.join(&script_file);
+                let script_path = util::match_script_path(&script_file)?;
 
                 let (lua_tx, lua_rx) = unbounded();
                 if let Err(e) = spawn_lua_thread(
@@ -1992,12 +1994,7 @@ async fn run_main_loop(
                     .unwrap_or_else(|_| constants::DEFAULT_AFK_PROFILE.to_owned());
 
                 let active_profile = &*ACTIVE_PROFILE.lock();
-                let before_afk = active_profile
-                    .as_ref()
-                    .unwrap()
-                    .profile_file
-                    .file_name()
-                    .unwrap();
+                let before_afk = &active_profile.as_ref().unwrap().profile_file;
 
                 *ACTIVE_PROFILE_NAME_BEFORE_AFK.lock() =
                     Some(before_afk.to_string_lossy().to_string());

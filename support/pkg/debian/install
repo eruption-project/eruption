@@ -92,6 +92,7 @@ support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/rainbow-wave.profile var/lib/eruption/profiles
 support/profiles/red-fx.profile var/lib/eruption/profiles
 support/profiles/red-wave.profile var/lib/eruption/profiles
+support/profiles/ripple-rainbow.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/solid-wave.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
@@ -175,6 +176,8 @@ eruption/src/scripts/rainbow.lua usr/share/eruption/scripts
 eruption/src/scripts/rainbow.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/raindrops.lua usr/share/eruption/scripts
 eruption/src/scripts/raindrops.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/ripple.lua usr/share/eruption/scripts
+eruption/src/scripts/ripple.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/solid.lua usr/share/eruption/scripts
 eruption/src/scripts/solid.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/stripes.lua usr/share/eruption/scripts

@@ -15,16 +15,17 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::Clap;
+use clap::{lazy_static::lazy_static, Clap};
 use colored::*;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
 use manifest::GetAttr;
+use parking_lot::Mutex;
 use profiles::GetAttr as GetAttrProfile;
-use std::sync::Arc;
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
+use std::{process, sync::Arc};
 
 mod constants;
 mod dbus_client;
@@ -33,6 +34,11 @@ mod profiles;
 mod util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
@@ -51,6 +57,10 @@ pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
+
+    /// Sets the configuration file to use
+    #[clap(short = 'c', long)]
+    config: Option<String>,
 
     #[clap(subcommand)]
     command: Subcommands,
@@ -391,6 +401,22 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     // }
 
     let opts = Options::parse();
+
+    // process configuration file
+    let config_file = opts
+        .config
+        .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
+
+    let mut config = config::Config::default();
+    config
+        .merge(config::File::new(&config_file, config::FileFormat::Toml))
+        .unwrap_or_else(|e| {
+            log::error!("Could not parse configuration file: {}", e);
+            process::exit(4);
+        });
+
+    *CONFIG.lock() = Some(config.clone());
+
     match opts.command {
         // configuration related sub-commands
         Subcommands::Config { command } => match command {
@@ -782,8 +808,27 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         // convenience operations: switch profile or slot
         Subcommands::Switch { command } => match command {
             SwitchSubcommands::Profile { profile_name } => {
-                println!("Switching to profile: {}", profile_name.bold());
-                switch_profile(&profile_name).await?
+                let profile_path = PathBuf::from(&profile_name);
+
+                let profile_name = if profile_path.is_file() {
+                    Ok(profile_path)
+                } else {
+                    util::match_profile_path(&profile_name)
+                };
+
+                match profile_name {
+                    Ok(profile_name) => {
+                        println!(
+                            "Switching to profile: {}",
+                            profile_name.display().to_string().bold()
+                        );
+                        switch_profile(&profile_name.to_string_lossy()).await?;
+                    }
+
+                    Err(_e) => {
+                        eprintln!("No matches found");
+                    }
+                }
             }
 
             SwitchSubcommands::Slot { index } => {

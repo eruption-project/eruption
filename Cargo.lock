@@ -674,8 +674,6 @@ version = "0.0.8"
 dependencies = [
  "byteorder",
  "cairo-rs",
- "clap",
- "clap_derive",
  "color-eyre",
  "colored",
  "config",
@@ -687,7 +685,6 @@ dependencies = [
  "gio",
  "glib",
  "gtk",
- "icecream",
  "itertools 0.10.0",
  "lazy_static",
  "libc",
@@ -1413,16 +1410,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
 dependencies = [
  "quick-error",
-]
-
-[[package]]
-name = "icecream"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cd15fce8630b4ad917a34af52a2f996285ca19d1c679ccf507ff3bd77f3563d"
-dependencies = [
- "backtrace",
- "lazy_static",
 ]
 
 [[package]]

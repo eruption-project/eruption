@@ -89,13 +89,21 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts=" -v -h -V  --verbose --help --version  config status switch profiles names scripts param completions help"
+            opts=" -v -c -h -V  --verbose --config --help --version  config status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

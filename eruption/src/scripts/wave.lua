@@ -38,7 +38,7 @@ function on_tick(delta)
                 local r, g, b = color_to_rgb(color_wave)
 
                 local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
-                color_map[index] = rgba_to_color(r, g, b, clamp(0, 255, alpha * opacity))
+                color_map[index] = rgba_to_color(r, g, b, clamp(alpha * opacity, 0, 255))
             end
         end
     else
@@ -48,7 +48,7 @@ function on_tick(delta)
                 local r, g, b = color_to_rgb(color_wave)
 
                 local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = rgba_to_color(r, g, b, clamp(0, 255, alpha * opacity))
+                color_map[index] = rgba_to_color(r, g, b, clamp(alpha * opacity, 0, 255))
             end
         end
     end
