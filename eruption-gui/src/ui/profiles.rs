@@ -916,7 +916,10 @@ fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
 fn save_buffer_contents_to_file<P: AsRef<Path>>(
     path: &P,
     buffer: &sourceview::Buffer,
+    builder: &gtk::Builder,
 ) -> Result<()> {
+    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+
     let (start, end) = buffer.get_bounds();
     let data = buffer.get_text(&start, &end, true).map(|gs| gs.to_owned());
 
@@ -928,9 +931,11 @@ fn save_buffer_contents_to_file<P: AsRef<Path>>(
                 log::error!("{}", e);
 
                 let message = "Could not write file".to_string();
-                let secondary = format!("{}", e);
+                let secondary =
+                    format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
                 let message_dialog = gtk::MessageDialogBuilder::new()
+                    .parent(&main_window)
                     .destroy_with_parent(true)
                     .decorated(true)
                     .message_type(gtk::MessageType::Error)
@@ -941,6 +946,7 @@ fn save_buffer_contents_to_file<P: AsRef<Path>>(
                     .build();
 
                 message_dialog.run();
+                message_dialog.hide();
 
                 Err(ProfilesError::MethodCallError {
                     description: "Could not write file".to_string(),
@@ -1233,7 +1239,7 @@ fn register_actions<A: IsA<gtk::Application>>(
     // let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
 
     let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
-    save_current_buffer.connect_activate(move |_, _| {
+    save_current_buffer.connect_activate(clone!(@strong builder => move |_, _| {
         if let Some(view) = stack_widget.get_visible_child()
         // .map(|w| w.dynamic_cast::<sourceview::View>().unwrap())
         {
@@ -1246,20 +1252,20 @@ fn register_actions<A: IsA<gtk::Application>>(
                     .find(|v| v.1 .0 == index)
                     .map(|v| (v.0, &v.1 .1))
                 {
-                    let _result = save_buffer_contents_to_file(&path, &buffer);
+                    let _result = save_buffer_contents_to_file(&path, &buffer, &builder);
                 }
             });
         }
-    });
+    }));
 
     application.add_action(&save_current_buffer);
     application.set_accels_for_action("app.save-current-buffer", &["<Primary>S"]);
 
     let save_all_buffers = gio::SimpleAction::new("save-all-buffers", None);
-    save_all_buffers.connect_activate(move |_, _| {
+    save_all_buffers.connect_activate(clone!(@strong builder => move |_, _| {
         TEXT_BUFFERS.with(|b| {
             'SAVE_LOOP: for (k, (_, v)) in b.borrow().iter() {
-                let result = save_buffer_contents_to_file(&k, &v);
+                let result = save_buffer_contents_to_file(&k, &v, &builder);
 
                 // stop saving files if an error occurred, or auth has failed
                 if result.is_err() {
@@ -1267,7 +1273,7 @@ fn register_actions<A: IsA<gtk::Application>>(
                 }
             }
         });
-    });
+    }));
 
     application.add_action(&save_all_buffers);
     application.set_accels_for_action("app.save-all-buffers", &["<Primary><Shift>S"]);

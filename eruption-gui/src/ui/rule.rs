@@ -16,24 +16,148 @@
 */
 
 // use eyre;
-// use gtk::prelude::*;
+use glib::clone;
+use gtk::prelude::*;
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
 // #[derive(Debug, thiserror::Error)]
-// pub enum AboutError {
+// pub enum RuleError {
 //     #[error("Unknown error: {description}")]
 //     UnknownError { description: String },
 // }
 
-// Shows the rule dialog
-// pub fn show_rule_dialog<W: IsA<gtk::Window>>(parent: &W) {
-//     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
-//     let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
+#[derive(Debug, Clone)]
+pub struct Rule {
+    pub index: Option<usize>,
+    pub enabled: bool,
+    pub sensor: String,
+    pub selector: String,
+    pub action: String,
+    pub metadata: String,
+}
 
-//     rule_dialog.set_transient_for(Some(parent));
-//     rule_dialog.set_modal(true);
+impl Rule {
+    pub fn new(
+        index: Option<usize>,
+        enabled: bool,
+        sensor: String,
+        selector: String,
+        action: String,
+        metadata: String,
+    ) -> Self {
+        Self {
+            index,
+            enabled,
+            sensor,
+            selector,
+            action,
+            metadata,
+        }
+    }
+}
 
-//     rule_dialog.run();
-//     rule_dialog.hide();
-// }
+/// Shows the "new rule" dialog
+pub fn show_new_rule_dialog<W: IsA<gtk::Window>>(parent: &W) -> (gtk::ResponseType, Option<Rule>) {
+    let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
+
+    let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
+
+    let ok_button: gtk::Button = builder.get_object("ok_button").unwrap();
+    let cancel_button: gtk::Button = builder.get_object("cancel_button").unwrap();
+
+    let rule_enabled: gtk::CheckButton = builder.get_object("rule_enabled").unwrap();
+    let sensor: gtk::ComboBox = builder.get_object("sensor").unwrap();
+    let selector: gtk::Entry = builder.get_object("selector").unwrap();
+    let action: gtk::Entry = builder.get_object("action").unwrap();
+
+    ok_button.connect_clicked(clone!(@strong rule_dialog => move |_b| {
+        rule_dialog.response(gtk::ResponseType::Ok);
+    }));
+
+    cancel_button.connect_clicked(clone!(@strong rule_dialog => move |_b| {
+        rule_dialog.response(gtk::ResponseType::Cancel);
+    }));
+
+    rule_dialog.set_default_response(gtk::ResponseType::Cancel);
+    rule_dialog.set_transient_for(Some(parent));
+    rule_dialog.set_modal(true);
+
+    rule_dialog.connect_response(|dialog, _response| {
+        dialog.close();
+    });
+
+    rule_dialog.show_all();
+
+    rule_enabled.set_active(true);
+    sensor.set_active(Some(0));
+    selector.set_text("");
+    action.set_text("");
+
+    let response = rule_dialog.run();
+
+    let result = Some(Rule::new(
+        None,
+        rule_enabled.get_active(),
+        sensor.get_active_id().unwrap().to_string(),
+        selector.get_text().to_string(),
+        action.get_text().to_string(),
+        "".to_string(),
+    ));
+
+    (response, result)
+}
+
+/// Shows the "edit rule" dialog
+pub fn show_edit_rule_dialog<W: IsA<gtk::Window>>(
+    parent: &W,
+    rule: &Rule,
+) -> (gtk::ResponseType, Option<Rule>) {
+    let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
+
+    let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
+
+    let ok_button: gtk::Button = builder.get_object("ok_button").unwrap();
+    let cancel_button: gtk::Button = builder.get_object("cancel_button").unwrap();
+
+    let rule_enabled: gtk::CheckButton = builder.get_object("rule_enabled").unwrap();
+    let sensor: gtk::ComboBox = builder.get_object("sensor").unwrap();
+    let selector: gtk::Entry = builder.get_object("selector").unwrap();
+    let action: gtk::Entry = builder.get_object("action").unwrap();
+
+    ok_button.connect_clicked(clone!(@weak rule_dialog => move |_b| {
+        rule_dialog.response(gtk::ResponseType::Ok);
+    }));
+
+    cancel_button.connect_clicked(clone!(@weak rule_dialog => move |_b| {
+        rule_dialog.response(gtk::ResponseType::Cancel);
+    }));
+
+    rule_dialog.set_default_response(gtk::ResponseType::Cancel);
+    rule_dialog.set_transient_for(Some(parent));
+    rule_dialog.set_modal(true);
+
+    rule_dialog.connect_response(|dialog, _response| {
+        dialog.close();
+    });
+
+    rule_dialog.show_all();
+
+    rule_enabled.set_active(rule.enabled);
+    sensor.set_active_id(Some(&rule.sensor));
+    selector.set_text(&rule.selector);
+    action.set_text(&rule.action);
+
+    let response = rule_dialog.run();
+
+    let result = Some(Rule::new(
+        rule.index,
+        rule_enabled.get_active(),
+        sensor.get_active_id().unwrap().to_string(),
+        selector.get_text().to_string(),
+        action.get_text().to_string(),
+        "".to_string(),
+    ));
+
+    (response, result)
+}

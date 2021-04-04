@@ -55,7 +55,7 @@ impl DbusApi {
         let c = Connection::new_session()?;
         c.register_name(
             "org.eruption.process_monitor",
-            NameFlag::ReplaceExisting as u32,
+            NameFlag::ReplaceExisting as u32 | NameFlag::AllowReplacement as u32,
         )?;
 
         let c_clone = Arc::new(c);
@@ -69,156 +69,160 @@ impl DbusApi {
         let rules_changed_signal_clone = rules_changed_signal.clone();
 
         let tree = f.tree(()).add(
-            f.object_path("/rules", ()).introspectable().add(
-                f.interface("org.eruption.process_monitor.Rules", ())
-                    .add_m(
-                        f.method("EnumRules", (), move |m| {
-                            let rules_map = crate::RULES_MAP.read();
-                            let s = rules_map
-                                .iter()
-                                .map(|(selector, (metadata, action))| {
-                                    let (sensor_val, selector_val) = match selector {
-                                        Selector::ProcessExec { comm } => {
-                                            ("exec".to_string(), comm)
-                                        }
-
-                                        Selector::WindowFocused { mode, regex } => match mode {
-                                            WindowFocusedSelectorMode::WindowName => {
-                                                ("window-name".to_string(), regex)
+            f.object_path("/org/eruption/process_monitor/rules", ())
+                .introspectable()
+                .add(
+                    f.interface("org.eruption.process_monitor.Rules", ())
+                        .add_s(rules_changed_signal_clone)
+                        .add_m(
+                            f.method("EnumRules", (), move |m| {
+                                let rules_map = crate::RULES_MAP.read();
+                                let s = rules_map
+                                    .iter()
+                                    .map(|(selector, (metadata, action))| {
+                                        let (sensor_val, selector_val) = match selector {
+                                            Selector::ProcessExec { comm } => {
+                                                ("exec".to_string(), comm)
                                             }
-                                            WindowFocusedSelectorMode::WindowInstance => {
-                                                ("window-instance".to_string(), regex)
-                                            }
-                                            WindowFocusedSelectorMode::WindowClass => {
-                                                ("window-class".to_string(), regex)
-                                            }
-                                        },
-                                    };
 
-                                    let action_val = match action {
-                                        Action::SwitchToProfile { profile_name } => {
-                                            format!("{}", profile_name)
-                                        }
-                                        Action::SwitchToSlot { slot_index } => {
-                                            format!("{}", slot_index)
-                                        }
-                                    };
-
-                                    let mut metadata_val = String::new();
-                                    if metadata.enabled {
-                                        metadata_val.push_str("enabled");
-                                    } else {
-                                        metadata_val.push_str("disabled");
-                                    }
-
-                                    if metadata.internal {
-                                        metadata_val.push_str(",internal");
-                                    } else {
-                                        metadata_val.push_str(",user-defined");
-                                    }
-
-                                    (sensor_val, selector_val, action_val, metadata_val)
-                                })
-                                .collect::<Vec<_>>();
-                            Ok(vec![m.msg.method_return().append1(s)])
-                        })
-                        .outarg::<Vec<(String, String, String, String)>, _>("rules"),
-                    )
-                    .add_m(
-                        f.method("SetRules", (), move |m| {
-                            let mut rules_map = IndexMap::new();
-
-                            let rules: Vec<(String, String, String, String)> = m.msg.read1()?;
-
-                            for rule in rules {
-                                let sensor_val = rule.0;
-                                let selector_val = rule.1;
-                                let action_val = rule.2;
-                                let metadata_val = rule.3;
-
-                                fn parse_rule(
-                                    sensor_val: &str,
-                                    selector_val: &str,
-                                    action_val: &str,
-                                    metadata_val: &str,
-                                ) -> Result<(Selector, (RuleMetadata, Action))>
-                                {
-                                    let sensor;
-                                    let metadata;
-                                    let action;
-
-                                    match sensor_val {
-                                        "exec" => {
-                                            sensor = Selector::ProcessExec {
-                                                comm: selector_val.into(),
-                                            }
-                                        }
-
-                                        "window-name" => {
-                                            sensor = Selector::WindowFocused {
-                                                mode: WindowFocusedSelectorMode::WindowName,
-                                                regex: selector_val.into(),
-                                            }
-                                        }
-
-                                        "window-instance" => {
-                                            sensor = Selector::WindowFocused {
-                                                mode: WindowFocusedSelectorMode::WindowInstance,
-                                                regex: selector_val.into(),
-                                            }
-                                        }
-
-                                        "window-class" => {
-                                            sensor = Selector::WindowFocused {
-                                                mode: WindowFocusedSelectorMode::WindowClass,
-                                                regex: selector_val.into(),
-                                            }
-                                        }
-
-                                        _ => return Err(DbusApiError::InvalidArgument {}.into()),
-                                    }
-
-                                    let enabled = metadata_val.contains("enabled");
-                                    let internal = metadata_val.contains("internal");
-
-                                    metadata = RuleMetadata { enabled, internal };
-
-                                    if action_val.contains(".profile") {
-                                        action = Action::SwitchToProfile {
-                                            profile_name: action_val.to_string(),
+                                            Selector::WindowFocused { mode, regex } => match mode {
+                                                WindowFocusedSelectorMode::WindowName => {
+                                                    ("window-name".to_string(), regex)
+                                                }
+                                                WindowFocusedSelectorMode::WindowInstance => {
+                                                    ("window-instance".to_string(), regex)
+                                                }
+                                                WindowFocusedSelectorMode::WindowClass => {
+                                                    ("window-class".to_string(), regex)
+                                                }
+                                            },
                                         };
-                                    } else {
-                                        action = Action::SwitchToSlot {
-                                            slot_index: action_val.parse::<u64>()?,
+
+                                        let action_val = match action {
+                                            Action::SwitchToProfile { profile_name } => {
+                                                format!("{}", profile_name)
+                                            }
+                                            Action::SwitchToSlot { slot_index } => {
+                                                format!("{}", slot_index)
+                                            }
                                         };
+
+                                        let mut metadata_val = String::new();
+                                        if metadata.enabled {
+                                            metadata_val.push_str("enabled");
+                                        } else {
+                                            metadata_val.push_str("disabled");
+                                        }
+
+                                        if metadata.internal {
+                                            metadata_val.push_str(",internal");
+                                        } else {
+                                            metadata_val.push_str(",user-defined");
+                                        }
+
+                                        (sensor_val, selector_val, action_val, metadata_val)
+                                    })
+                                    .collect::<Vec<_>>();
+                                Ok(vec![m.msg.method_return().append1(s)])
+                            })
+                            .outarg::<Vec<(String, String, String, String)>, _>("rules"),
+                        )
+                        .add_m(
+                            f.method("SetRules", (), move |m| {
+                                let mut rules_map = IndexMap::new();
+
+                                let rules: Vec<(String, String, String, String)> = m.msg.read1()?;
+
+                                for rule in rules {
+                                    let sensor_val = rule.0;
+                                    let selector_val = rule.1;
+                                    let action_val = rule.2;
+                                    let metadata_val = rule.3;
+
+                                    fn parse_rule(
+                                        sensor_val: &str,
+                                        selector_val: &str,
+                                        action_val: &str,
+                                        metadata_val: &str,
+                                    ) -> Result<(Selector, (RuleMetadata, Action))>
+                                    {
+                                        let sensor;
+                                        let metadata;
+                                        let action;
+
+                                        match sensor_val {
+                                            "exec" => {
+                                                sensor = Selector::ProcessExec {
+                                                    comm: selector_val.into(),
+                                                }
+                                            }
+
+                                            "window-name" => {
+                                                sensor = Selector::WindowFocused {
+                                                    mode: WindowFocusedSelectorMode::WindowName,
+                                                    regex: selector_val.into(),
+                                                }
+                                            }
+
+                                            "window-instance" => {
+                                                sensor = Selector::WindowFocused {
+                                                    mode: WindowFocusedSelectorMode::WindowInstance,
+                                                    regex: selector_val.into(),
+                                                }
+                                            }
+
+                                            "window-class" => {
+                                                sensor = Selector::WindowFocused {
+                                                    mode: WindowFocusedSelectorMode::WindowClass,
+                                                    regex: selector_val.into(),
+                                                }
+                                            }
+
+                                            _ => {
+                                                return Err(DbusApiError::InvalidArgument {}.into())
+                                            }
+                                        }
+
+                                        let enabled = metadata_val.contains("enabled");
+                                        let internal = metadata_val.contains("internal");
+
+                                        metadata = RuleMetadata { enabled, internal };
+
+                                        if action_val.contains(".profile") {
+                                            action = Action::SwitchToProfile {
+                                                profile_name: action_val.to_string(),
+                                            };
+                                        } else {
+                                            action = Action::SwitchToSlot {
+                                                slot_index: action_val.parse::<u64>()?,
+                                            };
+                                        }
+
+                                        Ok((sensor, (metadata, action)))
                                     }
 
-                                    Ok((sensor, (metadata, action)))
+                                    let (selector, (metadata, action)) = parse_rule(
+                                        &sensor_val,
+                                        &selector_val,
+                                        &action_val,
+                                        &metadata_val,
+                                    )
+                                    .map_err(|_e| MethodErr::invalid_arg("rules"))?;
+
+                                    rules_map.insert(selector, (metadata, action));
                                 }
 
-                                let (selector, (metadata, action)) = parse_rule(
-                                    &sensor_val,
-                                    &selector_val,
-                                    &action_val,
-                                    &metadata_val,
-                                )
-                                .map_err(|_e| MethodErr::invalid_arg("rules"))?;
+                                *crate::RULES_MAP.write() = rules_map;
 
-                                rules_map.insert(selector, (metadata, action));
-                            }
+                                crate::save_rules_map().map_err(|_e| {
+                                    dbus::Error::new_failed("Could not save the rules map")
+                                })?;
 
-                            *crate::RULES_MAP.write() = rules_map;
-
-                            crate::save_rules_map().map_err(|_e| {
-                                dbus::Error::new_failed("Could not save the rules map")
-                            })?;
-
-                            Ok(vec![m.msg.method_return()])
-                        })
-                        .inarg::<Vec<(String, String, String, String)>, _>("rules"),
-                    )
-                    .add_s(rules_changed_signal_clone),
-            ),
+                                Ok(vec![m.msg.method_return()])
+                            })
+                            .inarg::<Vec<(String, String, String, String)>, _>("rules"),
+                        ),
+                ),
         );
 
         tree.set_registered(&*c_clone, true)
@@ -280,7 +284,7 @@ impl DbusApi {
             .as_ref()
             .unwrap()
             .send(self.rules_changed.emit(
-                &"/rules".into(),
+                &"/org/eruption/process_monitor/rules".into(),
                 &"org.eruption.process_monitor.Rules".into(),
                 &s,
             ))

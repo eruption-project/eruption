@@ -767,7 +767,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -886,9 +886,9 @@ dependencies = [
 
 [[package]]
 name = "evdev-sys"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c6aa4e801c7267f2f66c9efd5c4071ba8ca9d7d9de515bb09a14bbe6f639ed1"
+checksum = "99d7ece654a66ca1e972f4ca1c7b44ddd768ca1a9334214a099784c8ef69751f"
 dependencies = [
  "cc",
  "libc",
@@ -1658,9 +1658,9 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 
 [[package]]
 name = "lock_api"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd96ffd135b2fd7b973ac026d28085defbe8983df057ced3eb4f2130b0831312"
+checksum = "5a3c91c24eae6777794bb1997ad98bbb87daf92890acab859f7eaa4320333176"
 dependencies = [
  "scopeguard",
 ]
