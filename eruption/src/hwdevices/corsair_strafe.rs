@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use bitvec::{order::Lsb0, prelude::BitField, view::BitView};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
@@ -761,27 +762,31 @@ impl KeyboardDeviceTrait for CorsairStrafe {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        let mut buffer: [u8; 60 * 4 * 10] = [0xff; 60 * 4 * 10];
+                        // build and send data buffer chunks
+                        let mut buffer: [u8; NUM_KEYS * 3] = [0xff; NUM_KEYS * 3];
 
                         for i in 0..NUM_KEYS {
+                            let color = led_map[i];
+
                             // let color = (((led_map[i].r as f64 * 0.29)
                             //     + (led_map[i].g as f64 * 0.59)
                             //     + (led_map[i].b as f64 * 0.114))
                             //     .round() as u8)
                             //     .clamp(0, 255);
 
-                            let color = led_map[i];
-                            let offset = i * 3 + 4;
+                            let bitvec = buffer.view_bits_mut::<Lsb0>();
 
-                            buffer[offset + 0] = 255 - (color.r >> 5);
-                            buffer[offset + 1] = 255 - (color.g >> 5);
-                            buffer[offset + 2] = 255 - (color.b >> 5);
+                            let offset = (i * 3) + 1;
+
+                            bitvec[(offset + 0)..(offset + 3)].store(color.r.to_le() >> 5);
+                            bitvec[(offset + 3)..(offset + 6)].store(color.g.to_le() >> 5);
+                            bitvec[(offset + 6)..(offset + 9)].store(color.b.to_le() >> 5);
                         }
 
-                        for (cntr, bytes) in buffer.chunks(60).take(3).enumerate() {
+                        for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
                             let mut tmp: [u8; 64] = [0; 64];
 
-                            if cntr < 2 {
+                            if cntr < 3 {
                                 tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
                             } else {
                                 tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
@@ -803,13 +808,20 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                         }
 
                         // commit the LED map to the keyboard
-                        let tmp: [u8; 5] = [0x07, 0x27, 0x00, 0x00, 0xd8];
+                        let tmp: [u8; 64] = [
+                            0x07, 0x27, 0x00, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                        ];
 
                         hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                         match led_dev.write(&tmp) {
                             Ok(len) => {
-                                if len < 4 {
+                                if len < 64 {
                                     return Err(HwDeviceError::WriteError {}.into());
                                 }
                             }

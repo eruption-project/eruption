@@ -14,9 +14,9 @@
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 -- global config
-ENABLE_FUNCTION_KEYS = true
-ENABLE_MEDIA_KEYS 	 = true
-ENABLE_MACRO_KEYS 	 = true
+ENABLE_FUNCTION_KEYS = false
+ENABLE_MEDIA_KEYS 	 = false
+ENABLE_MACRO_KEYS 	 = false
 
 -- HID key codes
 FN_KEY = 119
@@ -26,7 +26,7 @@ EASY_SHIFT_KEY = 255
 -- character to key index mapping
 key_to_index = {}
 
-key_to_index['GAME_MODE'] = 104
+key_to_index['GAME_MODE'] = 0
 
 key_to_index['FN'] = 77
 key_to_index['CAPS_LOCK'] = 4
