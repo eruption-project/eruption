@@ -19,7 +19,7 @@
 use clap::{App, Arg};
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
 use dashmap::DashMap;
-use evdev_rs::{Device, GrabMode};
+use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use futures::future::join_all;
 use hotwatch::{
     blocking::{Flow, Hotwatch},
@@ -364,7 +364,7 @@ fn spawn_keyboard_input_thread(
         .spawn(move || -> Result<()> {
             let device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
-                    Ok(devfile) => match Device::new_from_fd(devfile) {
+                    Ok(devfile) => match Device::new_from_file(devfile) {
                         Ok(mut device) => {
                             info!("Now listening on keyboard: {}", filename);
 
@@ -472,7 +472,7 @@ fn spawn_mouse_input_thread(
         .spawn(move || -> Result<()> {
             let device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
-                    Ok(devfile) => match Device::new_from_fd(devfile) {
+                    Ok(devfile) => match Device::new_from_file(devfile) {
                         Ok(mut device) => {
                             info!("Now listening on mouse: {}", filename);
 
@@ -603,7 +603,7 @@ fn spawn_mouse_input_thread_secondary(
         .spawn(move || -> Result<()> {
             let device = match hwdevices::get_input_sub_dev_from_udev(usb_vid, usb_pid, 2) {
                 Ok(filename) => match File::open(filename.clone()) {
-                    Ok(devfile) => match Device::new_from_fd(devfile) {
+                    Ok(devfile) => match Device::new_from_file(devfile) {
                         Ok(mut device) => {
                             info!("Now listening on mouse sub-dev: {}", filename);
 
