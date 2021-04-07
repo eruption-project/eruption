@@ -445,21 +445,6 @@ impl DeviceTrait for CorsairStrafe {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // match self.get_device_info() {
-            //     Ok(device_info) => {
-            //         if device_info.firmware_version < 136 {
-            //             warn!(
-            //                 "Outdated firmware version: {}, should be: >= 136",
-            //                 device_info.firmware_version
-            //             );
-            //         }
-            //     }
-
-            //     Err(e) => {
-            //         error!("Could not get firmware version: {}", e);
-            //     }
-            // }
-
             self.send_led_report(0x01)
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
             self.wait_for_led_dev()
@@ -768,6 +753,7 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                         for i in 0..NUM_KEYS {
                             let color = led_map[i];
 
+                            // convert RGB color to monochromatic value
                             // let color = (((led_map[i].r as f64 * 0.29)
                             //     + (led_map[i].g as f64 * 0.59)
                             //     + (led_map[i].b as f64 * 0.114))

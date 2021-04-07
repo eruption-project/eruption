@@ -37,7 +37,7 @@
 | ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
 | ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
 | ROCCAT  | Vulcan Pro             | work-in-progress, untested | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
-| Corsair | Strafe Gaming Keyboard | work-in-progress           | No         | No             | No                             | No                                  | No                |
+| Corsair | Strafe Gaming Keyboard | 35%, work-in-progress      | No         | No             | No                             | No                                  | No                |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -119,8 +119,7 @@ Work-in-progress, as of `0.1.20`.
 
 ### Remarks and known Issues
 
-- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
-- Neighbor topology tables are currently not fully correct, this may lead to mis-rendering of some effects
+- Support is only preliminary, at best
 
 ## Other Devices
 

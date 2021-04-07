@@ -817,6 +817,7 @@ dependencies = [
 name = "eruption-util"
 version = "0.0.4"
 dependencies = [
+ "bitvec",
  "clap",
  "clap_generate",
  "color-eyre",

@@ -13,6 +13,7 @@ Table of new and noteworthy changes:
 | 0.1.20 | Add experimental support for `ROCCAT Kone Aimo Remastered` series mice                                                                                                   |
 | 0.1.20 | Add experimental support for `ROCCAT Vulcan Pro` series keyboards                                                                                                        |
 | 0.1.20 | Add experimental support for `ROCCAT Vulcan TKL` series keyboards                                                                                                        |
+| 0.1.20 | Add experimental support for `Corsair Strafe Gaming` (non-RGB) series keyboards                                                                                          |
 | 0.1.20 | Add support for device hot-plugging without manual intervention. The Eruption daemon will now restart and bind to all supported devices, when a new device is plugged in |
 | 0.1.20 | Allow changing script parameters during runtime via `eruptionctl` and via the Eruption GUI                                                                               |
 | 0.1.20 | The companion tool `eruptionctl` gained the ability to query the currently active profile and the currently active slot                                                  |
