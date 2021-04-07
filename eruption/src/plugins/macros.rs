@@ -16,8 +16,7 @@
 */
 
 use crossbeam::channel::{unbounded, Sender};
-use evdev_rs::enums::*;
-use evdev_rs::{Device, InputEvent, TimeVal, UInputDevice};
+use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
@@ -82,7 +81,7 @@ impl MacrosPlugin {
     }
 
     fn initialize_virtual_keyboard() -> Result<()> {
-        let dev = Device::new().unwrap();
+        let dev = UninitDevice::new().unwrap();
 
         // setup virtual keyboard device
         dev.set_name("Eruption Virtual Keyboard");
@@ -330,7 +329,7 @@ impl MacrosPlugin {
     }
 
     fn initialize_virtual_mouse() -> Result<()> {
-        let dev = Device::new().unwrap();
+        let dev = UninitDevice::new().unwrap();
 
         // setup a virtual mouse device
         dev.set_name("Eruption Virtual Mouse");
@@ -433,7 +432,6 @@ impl MacrosPlugin {
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
                     time: time.clone(),
-                    event_type: EventType::EV_KEY,
                     event_code: EventCode::EV_KEY(key.clone()),
                     value,
                 };
@@ -442,7 +440,6 @@ impl MacrosPlugin {
 
                 let event = InputEvent {
                     time: time.clone(),
-                    event_type: EventType::EV_SYN,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value,
                 };
@@ -471,7 +468,6 @@ impl MacrosPlugin {
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
                     time: time.clone(),
-                    event_type: EventType::EV_KEY,
                     event_code: EventCode::EV_KEY(button.clone()),
                     value,
                 };
@@ -480,7 +476,6 @@ impl MacrosPlugin {
 
                 let event = InputEvent {
                     time: time.clone(),
-                    event_type: EventType::EV_SYN,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value,
                 };
@@ -556,7 +551,6 @@ impl MacrosPlugin {
 
                 let event = InputEvent {
                     time,
-                    event_type: EventType::EV_SYN,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value: 0,
                 };

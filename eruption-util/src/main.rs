@@ -21,7 +21,7 @@ use crossbeam::{
     channel::{unbounded, Sender},
     select,
 };
-use evdev_rs::{Device, GrabMode};
+use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use hwdevices::{EvdevError, HwDevice, KeyboardHidEvent, RGBA};
 use lazy_static::lazy_static;
 use log::*;
@@ -228,7 +228,7 @@ fn spawn_keyboard_input_thread(
         .spawn(move || -> Result<()> {
             let device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
-                    Ok(devfile) => match Device::new_from_fd(devfile) {
+                    Ok(devfile) => match Device::new_from_file(devfile) {
                         Ok(mut device) => {
                             info!("Now listening on keyboard: {}", filename);
 
