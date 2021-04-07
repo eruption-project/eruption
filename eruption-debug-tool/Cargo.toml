@@ -32,7 +32,7 @@ color-eyre = "0.5.10"
 paste = "1.0.5"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
-udev = "0.6.1"
+udev = "0.6.2"
 bitvec = "=0.19.5"
 icecream = "*"
 

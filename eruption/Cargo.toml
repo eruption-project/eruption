@@ -36,7 +36,7 @@ clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
 config = "0.11.0"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
-udev = "0.6.1"
+udev = "0.6.2"
 evdev-rs = "0.5.0"
 hexdump = "0.1.1"
 bytevec = "0.2.0"

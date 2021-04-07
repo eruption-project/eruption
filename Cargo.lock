@@ -3229,9 +3229,9 @@ checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
 
 [[package]]
 name = "udev"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1b94a5ee0cc4ba2b24f0b355c5b6d4a89c44362abf0c4d9ef003ef07c27aafe"
+checksum = "3193363f52bb34c6708ac2ffedcb5f7e5874f0329ef68e1315f27d8d768eb568"
 dependencies = [
  "libc",
  "libudev-sys",
