@@ -487,7 +487,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 process::exit(4);
             });
 
-        *CONFIG.lock() = Some(config.clone());
+        *CONFIG.lock() = Some(config);
 
         // request default processing of command line arguments
         -1
@@ -524,8 +524,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 .buttons(gtk::ButtonsType::Ok)
                 .build();
 
-                message_dialog.run();
-                message_dialog.hide();
+            message_dialog.run();
+            message_dialog.hide();
 
             app.quit();
         }

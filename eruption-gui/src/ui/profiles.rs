@@ -751,7 +751,7 @@ fn create_config_editor(
             let widget = build_config_widget_input_string(
                 &name,
                 &description,
-                default.clone(),
+                default,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);

@@ -419,8 +419,7 @@ fn spawn_keyboard_input_thread(
                         // update our internal representation of the keyboard state
                         if let evdev_rs::enums::EventCode::EV_KEY(ref code) = k.1.event_code {
                             let is_pressed = k.1.value > 0;
-                            let index =
-                                keyboard_device.read().ev_key_to_key_index(code.clone()) as usize;
+                            let index = keyboard_device.read().ev_key_to_key_index(*code) as usize;
 
                             KEY_STATES.insert(index, is_pressed);
                         }
@@ -1747,7 +1746,7 @@ async fn process_keyboard_event(
 
     if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
         let is_pressed = raw_event.value > 0;
-        let index = keyboard_device.read().ev_key_to_key_index(code.clone());
+        let index = keyboard_device.read().ev_key_to_key_index(*code);
 
         trace!("Key index: {:#x}", index);
 

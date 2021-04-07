@@ -431,7 +431,7 @@ impl MacrosPlugin {
 
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
-                    time: time.clone(),
+                    time: *time,
                     event_code: EventCode::EV_KEY(key.clone()),
                     value,
                 };
@@ -439,7 +439,7 @@ impl MacrosPlugin {
                 device.write_event(&event).unwrap();
 
                 let event = InputEvent {
-                    time: time.clone(),
+                    time: *time,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value,
                 };
@@ -467,7 +467,7 @@ impl MacrosPlugin {
 
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
-                    time: time.clone(),
+                    time: *time,
                     event_code: EventCode::EV_KEY(button.clone()),
                     value,
                 };
@@ -475,7 +475,7 @@ impl MacrosPlugin {
                 device.write_event(&event).unwrap();
 
                 let event = InputEvent {
-                    time: time.clone(),
+                    time: *time,
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value,
                 };

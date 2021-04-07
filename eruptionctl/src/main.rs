@@ -415,7 +415,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             process::exit(4);
         });
 
-    *CONFIG.lock() = Some(config.clone());
+    *CONFIG.lock() = Some(config);
 
     match opts.command {
         // configuration related sub-commands

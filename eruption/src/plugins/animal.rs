@@ -1603,7 +1603,7 @@ mod ternimal {
             let mut arguments = HashMap::new();
 
             for arg in args {
-                let parts: Vec<&str> = arg.splitn(2, "=").collect();
+                let parts: Vec<&str> = arg.splitn(2, '=').collect();
                 if parts.len() < 2 {
                     return err!(
                         "Invalid argument '{}': Arguments must be of the form 'name=value'.",
@@ -1659,7 +1659,7 @@ mod ternimal {
                 Some(value_string) => {
                     let mut values = vec![];
 
-                    for part in value_string.split(",") {
+                    for part in value_string.split(',') {
                         values.push(match part.parse::<T>() {
                             Ok(value) => value,
                             Err(error) => {
@@ -1689,7 +1689,7 @@ mod ternimal {
         type Err = String;
 
         fn from_str(s: &str) -> Result<Range<T>, String> {
-            let parts: Vec<&str> = s.split(",").collect();
+            let parts: Vec<&str> = s.split(',').collect();
             let len = parts.len();
 
             if len == 1 || len == 2 {
@@ -1785,8 +1785,8 @@ mod ternimal {
 
             let mut last_position = NEG_INFINITY;
 
-            for step in s.split(",") {
-                let parts: Vec<&str> = step.split(":").collect();
+            for step in s.split(',') {
+                let parts: Vec<&str> = step.split(':').collect();
                 if parts.len() != 2 {
                     return err!(
                         "Invalid gradient step '{}': Steps must be of the form '0.0:#RRGGBB'.",

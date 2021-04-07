@@ -951,8 +951,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         warn!("Could not parse configuration file: {}", e);
     }
 
-    *CONFIG.lock() = Some(config.clone());
-
     // enable support for experimental features?
     let enable_experimental_features = config
         .get::<bool>("global.enable_experimental_features")
@@ -963,6 +961,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
         warn!("** EXPERIMENTAL FEATURES are ENABLED, this may expose serious bugs! **");
     }
+
+    *CONFIG.lock() = Some(config);
 
     // initialize plugins
     info!("Registering plugins...");

@@ -489,13 +489,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                             info!("Skipping key index: {}", &key_index);
                                                             key_index += 1;
                                                         } else {
-                                                            info!("Event code: 0x{:02x} has key index: {}", code.clone() as u8, &key_index);
+                                                            info!("Event code: 0x{:02x} has key index: {}", code as u8, &key_index);
 
-                                                            if ev_to_index[(code.clone() as u8) as usize] != 0xff {
+                                                            if ev_to_index[(code as u8) as usize] != 0xff {
                                                                 error!("Duplicate indices detected, please retry");
                                                             } else {
                                                                 // seems to be valid
-                                                                ev_to_index[(code.clone() as u8) as usize] = key_index as u8;
+                                                                ev_to_index[(code as u8) as usize] = key_index as u8;
                                                                 key_index += 1;
                                                             }
                                                         }
@@ -626,8 +626,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                             Some(ev) => {
                                                 info!("{:?}", ev);
 
-                                                if let evdev_rs::enums::EventCode::EV_KEY(ref code) = ev.event_code {
-                                                    let key_index = hwdev.lock().ev_key_to_key_index(code.clone()) as usize - 1;
+                                                if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
+                                                    let key_index = hwdev.lock().ev_key_to_key_index(code) as usize - 1;
 
                                                     // set highlighted LEDs
                                                     led_map[key_index] = RGBA {
@@ -794,7 +794,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                                 info!("Skipping key index: {}", &key_index);
                                                                 key_index += 1;
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code.clone()) - 1;
+                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
 
                                                                 info!("Recorded key with index {}", idx);
 
@@ -999,7 +999,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                                 info!("Skipping key index: {}", &key_index);
                                                                 key_index += 1;
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code.clone()) - 1;
+                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
 
                                                                 info!("Recorded key with index {}", idx);
 
@@ -1196,7 +1196,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                                 info!("Skipping key index: {}", &key_index);
                                                                 key_index += 1;
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code.clone()) - 1;
+                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
 
                                                                 info!("Recorded neighbor with index {} for key: {}", idx, i);
 

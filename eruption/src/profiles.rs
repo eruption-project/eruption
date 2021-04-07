@@ -528,7 +528,7 @@ pub fn get_profiles() -> Result<Vec<Profile>> {
     get_profiles_from(&get_profile_dirs())
 }
 
-pub fn get_profiles_from(profile_dirs: &Vec<PathBuf>) -> Result<Vec<Profile>> {
+pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     let mut result: Vec<Profile> = vec![];
     let mut errors_present = false;
 
@@ -565,7 +565,7 @@ pub fn get_profile_files() -> Result<Vec<PathBuf>> {
     get_profile_files_from(&get_profile_dirs())
 }
 
-pub fn get_profile_files_from(profile_dirs: &Vec<PathBuf>) -> Result<Vec<PathBuf>> {
+pub fn get_profile_files_from(profile_dirs: &[PathBuf]) -> Result<Vec<PathBuf>> {
     let mut result = vec![];
 
     for profile_path in profile_dirs {
