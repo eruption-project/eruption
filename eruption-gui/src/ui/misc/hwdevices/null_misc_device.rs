@@ -15,12 +15,25 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod about;
-pub mod keyboard;
-pub mod main;
-pub mod misc;
-pub mod mouse;
-pub mod process_monitor;
-pub mod profiles;
-pub mod rule;
-pub mod settings;
+use super::MiscDevice;
+
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct NullMiscDevice {}
+
+impl NullMiscDevice {
+    pub fn new() -> Self {
+        NullMiscDevice {}
+    }
+}
+
+impl MiscDevice for NullMiscDevice {
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("Unknown", "Unknown")
+    }
+
+    fn draw(&self, _da: &gtk::DrawingArea, _context: &cairo::Context) -> super::Result<()> {
+        Ok(())
+    }
+}

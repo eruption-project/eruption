@@ -34,7 +34,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 // }
 
 pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
-    match dbus_client::get_managed_devices()?.get(0) {
+    match dbus_client::get_managed_devices()?.0.get(0) {
         Some(device) => match device {
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {

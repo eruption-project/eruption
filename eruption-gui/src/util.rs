@@ -350,7 +350,8 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
 }
 
 pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
-    let (vid, pid) = dbus_client::get_managed_devices()?[0];
+    // TODO: Make this code more robust
+    let (vid, pid) = dbus_client::get_managed_devices()?.0[0];
 
     let model = format!("{:04x}:{:04x}", vid, pid);
     let host_name = preferences::get_host_name()?;

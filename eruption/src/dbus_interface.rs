@@ -274,9 +274,20 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
-                                        let mut s: Vec<(u16, u16)> = Vec::new();
+                                        let mut keyboards: Vec<(u16, u16)> = Vec::new();
+                                        let mut mice: Vec<(u16, u16)> = Vec::new();
+                                        let other: Vec<(u16, u16)> = Vec::new();
 
-                                        s.extend(crate::KEYBOARD_DEVICES.lock().iter().map(
+                                        keyboards.extend(
+                                            crate::KEYBOARD_DEVICES.lock().iter().map(|device| {
+                                                (
+                                                    device.read().get_usb_vid(),
+                                                    device.read().get_usb_pid(),
+                                                )
+                                            }),
+                                        );
+
+                                        mice.extend(crate::MOUSE_DEVICES.lock().iter().map(
                                             |device| {
                                                 (
                                                     device.read().get_usb_vid(),
@@ -285,21 +296,30 @@ impl DbusApi {
                                             },
                                         ));
 
-                                        s.extend(crate::MOUSE_DEVICES.lock().iter().map(
-                                            |device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            },
-                                        ));
+                                        // other.extend(crate::OTHER_DEVICES.lock().iter().map(
+                                        //     |device| {
+                                        //         (
+                                        //             device.read().get_usb_vid(),
+                                        //             device.read().get_usb_pid(),
+                                        //         )
+                                        //     },
+                                        // ));
 
-                                        Ok(vec![m.msg.method_return().append1(s)])
+                                        Ok(vec![m
+                                            .msg
+                                            .method_return()
+                                            .append1((keyboards, mice, other))])
                                     } else {
                                         Err(MethodErr::failed("Authentication failed"))
                                     }
                                 })
-                                .outarg::<Vec<(u16, u16)>, _>("values"),
+                                .outarg::<(
+                                    Vec<(u16, u16)>,
+                                    Vec<(u16, u16)>,
+                                    Vec<(u16, u16)>,
+                                ), _>(
+                                    "values"
+                                ),
                             ),
                     ),
             )

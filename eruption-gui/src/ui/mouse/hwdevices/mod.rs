@@ -31,7 +31,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 // }
 
 pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
-    match dbus_client::get_managed_devices()?.get(1) {
+    match dbus_client::get_managed_devices()?.1.get(0) {
         Some(device) => match device {
             // ROCCAT Kone Pure Ultra
             (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),

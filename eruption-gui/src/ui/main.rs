@@ -506,6 +506,14 @@ fn register_actions<A: IsA<gtk::Application>>(
     application.add_action(&switch_to_page5);
     application.set_accels_for_action("app.switch-to-page-5", &["<alt>5"]);
 
+    let switch_to_page6 = gio::SimpleAction::new("switch-to-page-6", None);
+    switch_to_page6.connect_activate(clone!(@strong main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page5");
+    }));
+
+    application.add_action(&switch_to_page6);
+    application.set_accels_for_action("app.switch-to-page-6", &["<alt>6"]);
+
     // switching between slots
     let switch_to_slot1 = gio::SimpleAction::new("switch-to-slot-1", None);
     switch_to_slot1.connect_activate(clone!(@strong builder => move |_, _| {
@@ -656,6 +664,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     ui::keyboard::initialize_keyboard_page(&builder)?;
     ui::mouse::initialize_mouse_page(&builder)?;
+    ui::misc::initialize_misc_page(&builder)?;
     ui::profiles::initialize_profiles_page(application, &builder)?;
     ui::process_monitor::initialize_process_monitor_page(application, &builder)?;
     ui::settings::initialize_settings_page(&builder)?;
