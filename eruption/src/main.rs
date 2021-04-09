@@ -726,10 +726,7 @@ fn spawn_lua_thread(
     keyboard_devices: Vec<KeyboardDevice>,
     mouse_devices: Vec<MouseDevice>,
 ) -> Result<()> {
-    info!(
-        "Loading Lua script: {}",
-        &script_path.file_name().unwrap().to_string_lossy()
-    );
+    info!("Loading Lua script: {}", &script_path.display());
 
     let result = util::is_file_accessible(&script_path);
     if let Err(result) = result {

@@ -778,7 +778,7 @@ fn apply_parameter(
 
     let mut found = false;
     for lua_tx in crate::LUA_TXS.iter() {
-        if lua_tx.script_file.file_name() == script_path.file_name() {
+        if lua_tx.script_file == script_path {
             found = true;
 
             lua_tx.send(script::Message::SetParameter {
