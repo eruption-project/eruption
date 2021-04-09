@@ -1595,9 +1595,9 @@ dependencies = [
 
 [[package]]
 name = "libpulse-binding"
-version = "2.23.0"
+version = "2.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2405f806801527dfb3d2b6d48a282cdebe9a1b41b0652e0d7b5bad81dbc700e"
+checksum = "db951f37898e19a6785208e3a290261e0f1a8e086716be596aaad684882ca8e3"
 dependencies = [
  "bitflags",
  "libc",
@@ -1695,9 +1695,9 @@ dependencies = [
 
 [[package]]
 name = "matrixmultiply"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1300bdbea33ec2836b01ff1f5a6eed8bad66d0c31f94d9b7993407a8b054c3a1"
+checksum = "5a8a15b776d9dfaecd44b03c5828c2199cddff5247215858aac14624f8d6b741"
 dependencies = [
  "rawpointer",
 ]
@@ -2936,9 +2936,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.68"
+version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ce15dd3ed8aa2f8eeac4716d6ef5ab58b6b9256db41d7e1a0224c2788e8fd87"
+checksum = "48fe99c6bd8b1cc636890bcc071842de909d902c81ac7dab53ba33c421ab8ffb"
 dependencies = [
  "proc-macro2",
  "quote",
