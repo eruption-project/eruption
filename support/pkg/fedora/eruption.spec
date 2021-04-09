@@ -152,6 +152,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-fx.profile %{buildroo
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/spectrum-analyzer-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -277,6 +278,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/ripple-rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/snake.profile
 %{_sharedstatedir}/%{ShortName}/profiles/solid-wave.profile
+%{_sharedstatedir}/%{ShortName}/profiles/solid.profile
 %{_sharedstatedir}/%{ShortName}/profiles/starcraft2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer.profile
 %{_sharedstatedir}/%{ShortName}/profiles/spectrum-analyzer-swirl.profile

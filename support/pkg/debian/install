@@ -95,6 +95,7 @@ support/profiles/red-wave.profile var/lib/eruption/profiles
 support/profiles/ripple-rainbow.profile var/lib/eruption/profiles
 support/profiles/snake.profile var/lib/eruption/profiles
 support/profiles/solid-wave.profile var/lib/eruption/profiles
+support/profiles/solid.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer.profile var/lib/eruption/profiles
 support/profiles/spectrum-analyzer-swirl.profile var/lib/eruption/profiles
 support/profiles/vu-meter.profile var/lib/eruption/profiles

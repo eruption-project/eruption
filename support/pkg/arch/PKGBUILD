@@ -311,6 +311,7 @@ package() {
     install -m 644 "support/profiles/ripple-rainbow.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/snake.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/solid-wave.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/solid.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/starcraft2.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/spectrum-analyzer.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/spectrum-analyzer-swirl.profile" "$pkgdir/var/lib/eruption/profiles/"
