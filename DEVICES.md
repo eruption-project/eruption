@@ -20,6 +20,7 @@
   - [Corsair Strafe Gaming Keyboard](#corsair-strafe-gaming-keyboard)
     - [Support status](#support-status-4)
     - [Remarks and known Issues](#remarks-and-known-issues-4)
+  - [Adalight/Custom serial LEDs](#adalightcustom-serial-leds)
   - [Other Devices](#other-devices)
 
 ## Known Issues and Remarks
@@ -120,6 +121,11 @@ Work-in-progress, as of `0.1.20`.
 ### Remarks and known Issues
 
 - Support is only preliminary, at best
+
+
+## Adalight/Custom serial LEDs
+
+Custom Firmware for Arduino devices can be found in `support/firmware/arduino/`
 
 ## Other Devices
 

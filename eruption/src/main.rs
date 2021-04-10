@@ -43,7 +43,7 @@ use tokio::join;
 mod util;
 
 mod hwdevices;
-use hwdevices::{KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent};
+use hwdevices::{KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent};
 
 mod constants;
 mod dbus_interface;
@@ -1841,6 +1841,7 @@ async fn process_keyboard_event(
 async fn run_main_loop(
     keyboard_devices: Vec<(KeyboardDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
     mouse_devices: Vec<(MouseDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
+    misc_devices: Vec<MiscDevice>,
     dbus_api_tx: &Sender<DbusApiEvent>,
     ctrl_c_rx: &Receiver<bool>,
     dbus_rx: &Receiver<dbus_interface::Message>,
@@ -2300,6 +2301,15 @@ async fn run_main_loop(
                             });
                     }
 
+                    for device in misc_devices.iter() {
+                        device
+                            .write()
+                            .send_led_map(&script::LED_MAP.read())
+                            .unwrap_or_else(|e| {
+                                error!("Could not send the LED map to the device: {}", e)
+                            });
+                    }
+
                     // update the current frame generation
                     saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
 
@@ -2537,6 +2547,37 @@ fn init_mouse_device(mouse_device: &MouseDevice, hidapi: &hidapi::HidApi) {
     );
 }
 
+/// open the misc device
+fn init_misc_device(misc_device: &MiscDevice, hidapi: &hidapi::HidApi) {
+    info!("Opening misc device...");
+
+    misc_device.write().open(&hidapi).unwrap_or_else(|e| {
+        error!("Error opening the misc device: {}", e);
+        error!(
+            "This could be a permission problem, or maybe the device is locked by another process?"
+        );
+    });
+
+    // send initialization handshake
+    info!("Initializing misc device...");
+    misc_device
+        .write()
+        .send_init_sequence()
+        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+
+    // set LEDs to a known good initial state
+    info!("Configuring misc device LEDs...");
+    misc_device
+        .write()
+        .set_led_init_pattern()
+        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+
+    info!(
+        "Firmware revision: {}",
+        misc_device.read().get_firmware_revision()
+    );
+}
+
 /// Main program entrypoint
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
@@ -2634,10 +2675,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             // enumerate devices
             info!("Enumerating connected devices...");
 
-            if let Ok(devices) = hwdevices::probe_hid_devices(&hidapi) {
+            if let Ok(devices) = hwdevices::probe_devices(&hidapi) {
                 // store device handles and associated sender/receiver pairs
                 let mut keyboard_devices = vec![];
                 let mut mouse_devices = vec![];
+                let mut misc_devices = vec![];
 
                 // initialize keyboard devices
                 for (index, device) in devices.0.iter().enumerate() {
@@ -2718,6 +2760,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
+                // initialize misc devices
+                for (_index, device) in devices.2.iter().enumerate() {
+                    init_misc_device(&device, &hidapi);
+
+                    misc_devices.push(device);
+                }
+
                 info!("Device enumeration completed");
 
                 if crate::KEYBOARD_DEVICES.lock().is_empty()
@@ -2761,6 +2810,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         .iter()
                         .map(|d| (d.0.clone(), d.1.clone()))
                         .collect::<Vec<_>>(),
+                    misc_devices.iter().map(|&e| e.clone()).collect::<Vec<_>>(),
                     &dbus_api_tx,
                     &ctrl_c_rx,
                     &dbus_rx,
@@ -2837,7 +2887,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 };
 
-                join!(shutdown_keyboards, shutdown_mice);
+                // set LEDs of all misc devices to a known final state, then close all associated devices
+                let shutdown_misc = async {
+                    for device in misc_devices.iter() {
+                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
+                            error!("Could not finalize LEDs configuration: {}", e)
+                        });
+
+                        device.write().close_all().unwrap_or_else(|e| {
+                            warn!("Could not close the device: {}", e);
+                        });
+                    }
+                };
+
+                join!(shutdown_keyboards, shutdown_mice, shutdown_misc);
             } else {
                 error!("Could not enumerate connected devices");
                 process::exit(2);

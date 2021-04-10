@@ -20,11 +20,12 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
-use std::time::Duration;
 use std::{any::Any, sync::Arc, thread};
+use std::{path::PathBuf, time::Duration};
 use udev::Enumerator;
 
 mod corsair_strafe;
+mod custom_serial_leds;
 mod generic_keyboard;
 mod generic_mouse;
 mod roccat_burst_pro;
@@ -40,6 +41,8 @@ mod roccat_vulcan_tkl;
 
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
 pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
+pub type MiscDevice = Arc<RwLock<Box<dyn MiscDeviceTrait + Sync + Send>>>;
+pub type MiscSerialDevice = Arc<RwLock<Box<dyn MiscDeviceTrait + Sync + Send>>>;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -66,6 +69,7 @@ lazy_static! {
         // Corsair STRAFE Gaming Keyboard
         KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &corsair_strafe::bind_hiddev),
 
+
         // Supported mice
 
         // ROCCAT
@@ -81,6 +85,15 @@ lazy_static! {
 
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev),
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev),
+
+
+        // Misc devices
+
+
+        // Misc Serial devices
+
+        // Eruption Custom Hardware
+        // MiscSerialDriver::register("Eruption", "Custom Serial LEDs", &custom_serial_leds::bind_serial),
     ]));
 }
 
@@ -132,6 +145,10 @@ pub trait DriverMetadata {
     fn as_any(&self) -> &(dyn Any);
 }
 
+pub trait SerialDriverMetadata: DriverMetadata {
+    fn get_serial_port(&self) -> Option<&str>;
+}
+
 pub struct KeyboardDriver<'a> {
     pub device_make: &'a str,
     pub device_name: &'a str,
@@ -170,20 +187,20 @@ impl<'a> DriverMetadata for KeyboardDriver<'a>
 where
     'a: 'static,
 {
-    fn get_usb_vid(&self) -> u16 {
-        self.usb_vid
-    }
-
-    fn get_usb_pid(&self) -> u16 {
-        self.usb_pid
-    }
-
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
     }
 
     fn as_any(&self) -> &(dyn Any) {
         self
+    }
+
+    fn get_usb_vid(&self) -> u16 {
+        self.usb_vid
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        self.usb_pid
     }
 }
 
@@ -225,6 +242,14 @@ impl<'a> DriverMetadata for MouseDriver<'a>
 where
     'a: 'static,
 {
+    fn get_device_class(&self) -> DeviceClass {
+        self.device_class
+    }
+
+    fn as_any(&self) -> &(dyn Any) {
+        self
+    }
+
     fn get_usb_vid(&self) -> u16 {
         self.usb_vid
     }
@@ -232,13 +257,122 @@ where
     fn get_usb_pid(&self) -> u16 {
         self.usb_pid
     }
+}
 
+pub struct MiscDriver<'a> {
+    pub device_make: &'a str,
+    pub device_name: &'a str,
+
+    pub device_class: DeviceClass,
+
+    pub usb_vid: u16,
+    pub usb_pid: u16,
+
+    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
+}
+
+impl<'a> MiscDriver<'a>
+where
+    'a: 'static,
+{
+    #[allow(dead_code)]
+    pub fn register(
+        device_make: &'a str,
+        device_name: &'a str,
+        usb_vid: u16,
+        usb_pid: u16,
+        bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
+    ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
+        Box::new(MiscDriver {
+            device_make,
+            device_name,
+            device_class: DeviceClass::Misc,
+            usb_vid,
+            usb_pid,
+            bind_fn,
+        })
+    }
+}
+
+impl<'a> DriverMetadata for MiscDriver<'a>
+where
+    'a: 'static,
+{
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
     }
 
     fn as_any(&self) -> &(dyn Any) {
         self
+    }
+
+    fn get_usb_vid(&self) -> u16 {
+        self.usb_vid
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        self.usb_pid
+    }
+}
+
+pub struct MiscSerialDriver<'a> {
+    pub device_make: &'a str,
+    pub device_name: &'a str,
+
+    pub device_class: DeviceClass,
+
+    pub serial_port: Option<&'a str>,
+
+    pub bind_fn: &'a (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
+}
+
+impl<'a> MiscSerialDriver<'a>
+where
+    'a: 'static,
+{
+    #[allow(dead_code)]
+    pub fn register(
+        device_make: &'a str,
+        device_name: &'a str,
+        bind_fn: &'a (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
+    ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
+        Box::new(MiscSerialDriver {
+            device_make,
+            device_name,
+            device_class: DeviceClass::Misc,
+            serial_port: None,
+            bind_fn,
+        })
+    }
+}
+
+impl<'a> DriverMetadata for MiscSerialDriver<'a>
+where
+    'a: 'static,
+{
+    fn get_device_class(&self) -> DeviceClass {
+        self.device_class
+    }
+
+    fn as_any(&self) -> &(dyn Any) {
+        self
+    }
+
+    fn get_usb_vid(&self) -> u16 {
+        0
+    }
+
+    fn get_usb_pid(&self) -> u16 {
+        0
+    }
+}
+
+impl<'a> SerialDriverMetadata for MiscSerialDriver<'a>
+where
+    'a: 'static,
+{
+    fn get_serial_port(&self) -> Option<&str> {
+        self.serial_port
     }
 }
 
@@ -247,6 +381,7 @@ pub enum DeviceClass {
     Unknown,
     Keyboard,
     Mouse,
+    Misc,
 }
 
 /// Represents an RGBA color value
@@ -383,6 +518,14 @@ impl DeviceInfo {
     }
 }
 
+/// Non 'Plug and Play' device, may be declared in .config file
+#[derive(Debug, Clone)]
+pub struct NonPnPDevice {
+    pub class: String,
+    pub name: String,
+    pub device_file: PathBuf,
+}
+
 /// Information about a generic device
 pub trait DeviceInfoTrait {
     /// Get device capabilities
@@ -428,6 +571,32 @@ pub trait DeviceTrait: DeviceInfoTrait {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
+
+// Generic device trait
+pub trait SerialDeviceTrait: DeviceInfoTrait {
+    /// Returns the file name of the Lua support script for the device
+    fn get_support_script_file(&self) -> String;
+
+    /// Opens the sub-devices, should be called after `bind()`ing a driver
+    fn open(&mut self, api: &hidapi::HidApi) -> Result<()>;
+
+    /// Close the device files
+    fn close_all(&mut self) -> Result<()>;
+
+    /// Send a device specific initialization sequence to set the device
+    /// to a known good state. Should be called after `open()`ing the device
+    fn send_init_sequence(&mut self) -> Result<()>;
+
+    /// Send raw data to the control device
+    fn write_data_raw(&self, buf: &[u8]) -> Result<()>;
+
+    /// Read raw data from the control device
+    fn read_data_raw(&self, size: usize) -> Result<Vec<u8>>;
+
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
 /// Devices like e.g. a supported keyboard
 pub trait KeyboardDeviceTrait: DeviceTrait {
     /// Set the state of a device status LED, like e.g. Num Lock, etc...
@@ -504,118 +673,380 @@ pub trait MouseDeviceTrait: DeviceTrait {
     fn has_secondary_device(&self) -> bool;
 }
 
-/// Enumerates all HID devices on the system and returns supported devices
-pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>)> {
+/// Misc Devices
+pub trait MiscDeviceTrait: DeviceTrait {
+    /// Send RGBA LED map to the device
+    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()>;
+
+    /// Send the LED init pattern to the device. This should be used to initialize
+    /// all LEDs and set them to a known good state
+    fn set_led_init_pattern(&mut self) -> Result<()>;
+
+    /// Send a LED finalization pattern to the device. This should normally be used,
+    /// to set the device to a known good state, on exit of the daemon
+    fn set_led_off_pattern(&mut self) -> Result<()>;
+}
+
+/// Misc Serial Devices
+pub trait MiscSerialDeviceTrait: SerialDeviceTrait {
+    /// Send RGBA LED map to the device
+    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()>;
+
+    /// Send the LED init pattern to the device. This should be used to initialize
+    /// all LEDs and set them to a known good state
+    fn set_led_init_pattern(&mut self) -> Result<()>;
+
+    /// Send a LED finalization pattern to the device. This should normally be used,
+    /// to set the device to a known good state, on exit of the daemon
+    fn set_led_off_pattern(&mut self) -> Result<()>;
+}
+
+/// Returns true if the USB device is blacklisted in the global configuration
+pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
+    let config = crate::CONFIG.lock();
+
+    if let Some(config) = config.as_ref() {
+        let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
+
+        for entry in devices.iter() {
+            let table = entry.clone().into_table()?;
+
+            if table["entry_type"].clone().into_str()? == "blacklist" {
+                let usb_vid = table["vendor_id"].clone().into_int()?;
+                let usb_pid = table["product_id"].clone().into_int()?;
+
+                if usb_vid == vid as i64 && usb_pid == pid as i64 {
+                    // specified vid/pid is blacklisted
+                    return Ok(true);
+                }
+            } else if table["entry_type"].clone().into_str()? == "device" {
+                /* skip device declarations */
+            } else {
+                error!("Invalid 'entry_type' specified in the configuration file");
+            }
+        }
+
+        // specified vid/pid not in blacklisted entries
+        Ok(false)
+    } else {
+        // no config available
+        Ok(false)
+    }
+}
+/// Returns a Vec of non plug and play devices declared in eruption.conf
+pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
+    let mut result = vec![];
+
+    let config = crate::CONFIG.lock();
+
+    if let Some(config) = config.as_ref() {
+        let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
+
+        for entry in devices.iter() {
+            let table = entry.clone().into_table()?;
+
+            if table["entry_type"].clone().into_str()? == "device" {
+                let class = table["device_class"].clone().into_str()?;
+                let name = table["device_name"].clone().into_str()?;
+                let device_file = PathBuf::from(&table["device_file"].clone().into_str()?);
+
+                let device = NonPnPDevice {
+                    class,
+                    name,
+                    device_file,
+                };
+
+                result.push(device);
+            } else if table["entry_type"].clone().into_str()? == "blacklist" {
+                /* skip blacklist entries */
+            } else {
+                error!("Invalid 'entry_type' specified in the configuration file");
+            }
+        }
+
+        Ok(result)
+    } else {
+        // no config available, result will be empty
+        Ok(result)
+    }
+}
+
+/// Enumerates all HID devices on the system (and static device declarations
+/// from the .conf file as well), and then returns a tuple of all the supported devices
+pub fn probe_devices(
+    api: &hidapi::HidApi,
+) -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
     let mut keyboard_devices = vec![];
     let mut mouse_devices = vec![];
+    let mut misc_devices = vec![];
+
+    // bind all declared non-pnp devices from configuration file
+    let declared_devices = get_non_pnp_devices()?;
+
+    for device in declared_devices {
+        if device.class == "serial" {
+            info!(
+                "Binding non-pnp serial LEDs device: {} ({})",
+                device.name,
+                device.device_file.display()
+            );
+
+            let serial_leds = custom_serial_leds::CustomSerialLeds::bind(device.device_file);
+
+            // non pnp devices are currently always 'misc' devices
+            misc_devices.push(Arc::new(RwLock::new(
+                Box::new(serial_leds) as Box<dyn MiscDeviceTrait + Sync + Send>
+            )));
+        } else {
+            error!("Unknown device class specified in the configuration file");
+        }
+    }
 
     let mut bound_devices = vec![];
 
     for device_info in api.device_list() {
-        if let Some(driver) = DRIVERS.lock().iter().find(|&d| {
-            d.get_usb_vid() == device_info.vendor_id()
-                && d.get_usb_pid() == device_info.product_id()
-        }) {
-            debug!(
-                "Found supported HID device: 0x{:x}:0x{:x} - {} {}",
-                device_info.vendor_id(),
-                device_info.product_id(),
-                device_info
-                    .manufacturer_string()
-                    .unwrap_or_else(|| "<unknown>")
-                    .to_string(),
-                device_info
-                    .product_string()
-                    .unwrap_or_else(|| "<unknown>")
-                    .to_string()
-            );
+        if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
+            if let Some(driver) = DRIVERS.lock().iter().find(|&d| {
+                d.get_usb_vid() == device_info.vendor_id()
+                    && d.get_usb_pid() == device_info.product_id()
+            }) {
+                debug!(
+                    "Found supported device: 0x{:x}:0x{:x} - {} {}",
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    device_info
+                        .manufacturer_string()
+                        .unwrap_or_else(|| "<unknown>")
+                        .to_string(),
+                    device_info
+                        .product_string()
+                        .unwrap_or_else(|| "<unknown>")
+                        .to_string()
+                );
 
-            let serial = device_info.serial_number().unwrap_or_else(|| "");
-            let path = device_info.path().to_string_lossy().to_string();
+                let serial = device_info.serial_number().unwrap_or_else(|| "");
+                let path = device_info.path().to_string_lossy().to_string();
 
-            if !bound_devices.contains(&(device_info.vendor_id(), device_info.product_id(), serial))
-            {
-                match driver.get_device_class() {
-                    DeviceClass::Keyboard => {
-                        info!(
-                            "Found supported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            path,
-                            device_info
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string(),
-                            device_info
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string()
-                        );
+                if !bound_devices.contains(&(
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    serial,
+                )) {
+                    match driver.get_device_class() {
+                        DeviceClass::Keyboard => {
+                            info!(
+                                "Found supported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string()
+                            );
 
-                        let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
+                            let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
 
-                        if let Ok(device) = (*driver.bind_fn)(
-                            &api,
-                            driver.get_usb_vid(),
-                            driver.get_usb_pid(),
-                            &serial,
-                        ) {
-                            keyboard_devices.push(device);
-                            bound_devices.push((
+                            if let Ok(device) = (*driver.bind_fn)(
+                                &api,
                                 driver.get_usb_vid(),
                                 driver.get_usb_pid(),
-                                serial,
-                            ));
-                        } else {
-                            error!("Failed to bind the device driver");
+                                &serial,
+                            ) {
+                                keyboard_devices.push(device);
+                                bound_devices.push((
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
                         }
-                    }
 
-                    DeviceClass::Mouse => {
-                        info!(
-                            "Found supported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            path,
-                            device_info
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string(),
-                            device_info
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string()
-                        );
+                        DeviceClass::Mouse => {
+                            info!(
+                                "Found supported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string()
+                            );
 
-                        let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
+                            let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
 
-                        if let Ok(device) = (*driver.bind_fn)(
-                            &api,
-                            driver.get_usb_vid(),
-                            driver.get_usb_pid(),
-                            &serial,
-                        ) {
-                            mouse_devices.push(device);
-                            bound_devices.push((
+                            if let Ok(device) = (*driver.bind_fn)(
+                                &api,
                                 driver.get_usb_vid(),
                                 driver.get_usb_pid(),
-                                serial,
-                            ));
-                        } else {
-                            error!("Failed to bind the device driver");
+                                &serial,
+                            ) {
+                                mouse_devices.push(device);
+                                bound_devices.push((
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
+                        }
+
+                        DeviceClass::Misc => {
+                            info!(
+                                "Found supported misc device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string()
+                            );
+
+                            // let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
+
+                            // if let Ok(device) = (*driver.bind_fn)(
+                            //     &api,
+                            //     driver.get_usb_vid(),
+                            //     driver.get_usb_pid(),
+                            //     &serial,
+                            // ) {
+                            //     misc_devices.push(device);
+                            //     bound_devices.push((
+                            //         driver.get_usb_vid(),
+                            //         driver.get_usb_pid(),
+                            //         serial,
+                            //     ));
+                            // } else {
+                            //     error!("Failed to bind the device driver");
+                            // }
+                        }
+
+                        DeviceClass::Unknown => {
+                            error!("Failed to bind the device driver, unsupported device class");
                         }
                     }
+                }
+            } else {
+                // found an unsupported device
 
-                    DeviceClass::Unknown => {
-                        error!("Failed to bind the device driver, unsupported device class");
+                debug!(
+                    "Found unsupported device: 0x{:x}:0x{:x} - {} {}",
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    device_info
+                        .manufacturer_string()
+                        .unwrap_or_else(|| "<unknown>")
+                        .to_string(),
+                    device_info
+                        .product_string()
+                        .unwrap_or_else(|| "<unknown>")
+                        .to_string()
+                );
+
+                let serial = device_info.serial_number().unwrap_or_else(|| "");
+                let path = device_info.path().to_string_lossy().to_string();
+
+                if !bound_devices.contains(&(
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    serial,
+                )) {
+                    match get_usb_device_class(device_info.vendor_id(), device_info.product_id()) {
+                        Ok(DeviceClass::Keyboard) => {
+                            info!(
+                                "Found unsupported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string()
+                            );
+
+                            if let Ok(device) = generic_keyboard::bind_hiddev(
+                                &api,
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                &serial,
+                            ) {
+                                keyboard_devices.push(device);
+                                bound_devices.push((
+                                    device_info.vendor_id(),
+                                    device_info.product_id(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
+                        }
+
+                        Ok(DeviceClass::Mouse) => {
+                            info!(
+                                "Found unsupported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or_else(|| "<unknown>")
+                                    .to_string()
+                            );
+
+                            if let Ok(device) = generic_mouse::bind_hiddev(
+                                &api,
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                &serial,
+                            ) {
+                                mouse_devices.push(device);
+                                bound_devices.push((
+                                    device_info.vendor_id(),
+                                    device_info.product_id(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
+                        }
+
+                        Ok(DeviceClass::Unknown) | Ok(DeviceClass::Misc) => { /* unknown device class, ignore the device */
+                        }
+
+                        Err(e) => {
+                            error!("Failed to query device class: {}", e);
+                        }
                     }
                 }
             }
         } else {
-            // found an unsupported device
-
-            debug!(
-                "Found unsupported HID device: 0x{:x}:0x{:x} - {} {}",
+            info!(
+                "Skipping blacklisted device: 0x{:x}:0x{:x} - {} {}",
                 device_info.vendor_id(),
                 device_info.product_id(),
                 device_info
@@ -627,90 +1058,10 @@ pub fn probe_hid_devices(api: &hidapi::HidApi) -> Result<(Vec<KeyboardDevice>, V
                     .unwrap_or_else(|| "<unknown>")
                     .to_string()
             );
-
-            let serial = device_info.serial_number().unwrap_or_else(|| "");
-            let path = device_info.path().to_string_lossy().to_string();
-
-            if !bound_devices.contains(&(device_info.vendor_id(), device_info.product_id(), serial))
-            {
-                match get_usb_device_class(device_info.vendor_id(), device_info.product_id()) {
-                    Ok(DeviceClass::Keyboard) => {
-                        info!(
-                            "Found unsupported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            path,
-                            device_info
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string(),
-                            device_info
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string()
-                        );
-
-                        if let Ok(device) = generic_keyboard::bind_hiddev(
-                            &api,
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            &serial,
-                        ) {
-                            keyboard_devices.push(device);
-                            bound_devices.push((
-                                device_info.vendor_id(),
-                                device_info.product_id(),
-                                serial,
-                            ));
-                        } else {
-                            error!("Failed to bind the device driver");
-                        }
-                    }
-
-                    Ok(DeviceClass::Mouse) => {
-                        info!(
-                            "Found unsupported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            path,
-                            device_info
-                                .manufacturer_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string(),
-                            device_info
-                                .product_string()
-                                .unwrap_or_else(|| "<unknown>")
-                                .to_string()
-                        );
-
-                        if let Ok(device) = generic_mouse::bind_hiddev(
-                            &api,
-                            device_info.vendor_id(),
-                            device_info.product_id(),
-                            &serial,
-                        ) {
-                            mouse_devices.push(device);
-                            bound_devices.push((
-                                device_info.vendor_id(),
-                                device_info.product_id(),
-                                serial,
-                            ));
-                        } else {
-                            error!("Failed to bind the device driver");
-                        }
-                    }
-
-                    Ok(DeviceClass::Unknown) => { /* unknown device class, ignore the device */ }
-
-                    Err(e) => {
-                        error!("Failed to query HID device class: {}", e);
-                    }
-                }
-            }
         }
     }
 
-    Ok((keyboard_devices, mouse_devices))
+    Ok((keyboard_devices, mouse_devices, misc_devices))
 }
 
 /// Get the path of the USB device from udev

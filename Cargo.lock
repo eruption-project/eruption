@@ -3,6 +3,27 @@
 version = 3
 
 [[package]]
+name = "CoreFoundation-sys"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0e9889e6db118d49d88d84728d0e964d973a5680befb5f85f55141beea5c20b"
+dependencies = [
+ "libc",
+ "mach 0.1.2",
+]
+
+[[package]]
+name = "IOKit-sys"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99696c398cbaf669d2368076bdb3d627fb0ce51a26899d7c61228c5c0af3bf4a"
+dependencies = [
+ "CoreFoundation-sys",
+ "libc",
+ "mach 0.1.2",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -462,7 +483,7 @@ version = "3.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c15b8ec3b5755a188c141c1f6a98e76de31b936209bf066b647979e2a84764a9"
 dependencies = [
- "nix",
+ "nix 0.20.0",
  "winapi 0.3.9",
 ]
 
@@ -601,6 +622,7 @@ dependencies = [
  "hidapi",
  "hotwatch",
  "hound",
+ "icecream",
  "interpolation",
  "itertools 0.10.0",
  "lazy_static",
@@ -611,7 +633,7 @@ dependencies = [
  "mlua",
  "mlua_derive",
  "nalgebra",
- "nix",
+ "nix 0.20.0",
  "nohash-hasher",
  "noise",
  "palette",
@@ -626,6 +648,7 @@ dependencies = [
  "rustfft",
  "serde 1.0.125",
  "serde_json",
+ "serialport",
  "simdnoise",
  "sysinfo",
  "systemstat",
@@ -648,18 +671,21 @@ dependencies = [
  "clap_generate",
  "color-eyre",
  "colored",
+ "crossbeam",
+ "ctrlc",
  "eyre",
  "hexdump",
  "hidapi",
  "icecream",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
  "serde 1.0.125",
  "serde_json",
+ "serialport",
  "thiserror",
  "tokio",
  "toml",
@@ -691,7 +717,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "palette",
  "pango",
  "pangocairo",
@@ -724,7 +750,7 @@ dependencies = [
  "libc",
  "lockfile",
  "log",
- "nix",
+ "nix 0.20.0",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -749,7 +775,7 @@ dependencies = [
  "image",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "num-traits 0.2.14",
  "parking_lot",
  "pretty_env_logger",
@@ -791,7 +817,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -831,7 +857,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -859,7 +885,7 @@ dependencies = [
  "eyre",
  "libc",
  "log",
- "nix",
+ "nix 0.20.0",
  "parking_lot",
  "paste 1.0.5",
  "serde 1.0.125",
@@ -1642,6 +1668,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libudev"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea626d3bdf40a1c5aee3bcd4f40826970cae8d80a8fec934c82a63840094dcfe"
+dependencies = [
+ "libc",
+ "libudev-sys",
+]
+
+[[package]]
 name = "libudev-sys"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1682,6 +1718,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
  "cfg-if 1.0.0",
+]
+
+[[package]]
+name = "mach"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fd13ee2dd61cc82833ba05ade5a30bb3d63f7ced605ef827063c63078302de9"
+dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "mach"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86dd2487cdfea56def77b88438a2c915fb45113c5319bfe7e14306ca4cd0b0e1"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -1851,6 +1905,19 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "nix"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd0eaf8df8bab402257e0a5c17a254e4cc1f72a93588a1ddfb5d356c801aa7cb"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if 0.1.10",
+ "libc",
+ "void",
 ]
 
 [[package]]
@@ -2305,7 +2372,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "059a34f111a9dee2ce1ac2826a68b24601c4298cfeb1a587c3cb493d5ab46f52"
 dependencies = [
  "libc",
- "nix",
+ "nix 0.20.0",
 ]
 
 [[package]]
@@ -2808,6 +2875,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "serialport"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22f37409d980045734250d679750bdf11bd875fec5bb5417dd21bb75d04d31a1"
+dependencies = [
+ "CoreFoundation-sys",
+ "IOKit-sys",
+ "bitflags",
+ "cfg-if 0.1.10",
+ "libudev",
+ "mach 0.2.3",
+ "nix 0.16.1",
+ "regex",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3285,6 +3369,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 
 [[package]]
+name = "void"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
+
+[[package]]
 name = "walkdir"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3398,7 +3488,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ffb080b3f2f616242a4eb8e7d325035312127901025b0052bc3154a282d0f19"
 dependencies = [
  "gethostname",
- "nix",
+ "nix 0.20.0",
  "winapi 0.3.9",
  "winapi-wsapoll",
 ]

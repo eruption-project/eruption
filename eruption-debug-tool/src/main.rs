@@ -15,12 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::Clap;
+use clap::{lazy_static::lazy_static, Clap};
 use colored::*;
+use crossbeam::channel::unbounded;
+use hwdevices::RGBA;
 use log::*;
-use std::time::Instant;
 use std::{env, thread};
 use std::{path::PathBuf, time::Duration};
+use std::{sync::atomic::AtomicBool, sync::atomic::Ordering, time::Instant};
 
 mod constants;
 mod hwdevices;
@@ -29,6 +31,11 @@ mod util;
 use util::{DeviceState, HexSlice};
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
+
+lazy_static! {
+    /// Global "quit" status flag
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
@@ -176,6 +183,17 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         pretty_env_logger::init();
     }
 
+    // register ctrl-c handler
+    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    ctrlc::set_handler(move || {
+        QUIT.store(true, Ordering::SeqCst);
+
+        ctrl_c_tx
+            .send(true)
+            .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+    })
+    .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
+
     let opts = Options::parse();
     match opts.command {
         Subcommands::List => {
@@ -198,7 +216,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         )
                     }
 
-                    println!("\nEnumeration completed");
+                    println!("\nEnumeration of HID devices completed");
+
+                    println!("\nSpecial devices\n");
+
+                    for device_index in 0..4 {
+                        let device_file = format!("/dev/ttyACM{}", device_index);
+
+                        println!(
+                            "Index: {}: Serial Port {} ({})",
+                            &format!("{}", 255 - device_index).bold(),
+                            device_index + 1,
+                            &device_file
+                        );
+                    }
                 }
 
                 Err(_) => {
@@ -479,40 +510,87 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::RunTests {
             device: device_index,
         } => {
-            // create the one and only hidapi instance
-            match hidapi::HidApi::new() {
-                Ok(hidapi) => {
-                    if let Some((index, device)) =
-                        hidapi.device_list().enumerate().nth(device_index)
-                    {
-                        println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
-                            device.vendor_id(),
-                            device.product_id(),
-                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                            device.product_string().unwrap_or("<unknown>").bold(),
-                            device.interface_number()
-                        );
-
-                        if let Ok(dev) = device.open_device(&hidapi) {
-                            let hwdev = hwdevices::bind_device(
-                                dev,
-                                &hidapi,
+            if device_index < 255 - 4 {
+                // create the one and only hidapi instance
+                match hidapi::HidApi::new() {
+                    Ok(hidapi) => {
+                        if let Some((index, device)) =
+                            hidapi.device_list().enumerate().nth(device_index)
+                        {
+                            println!(
+                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                format!("{:02}", index).bold(),
                                 device.vendor_id(),
                                 device.product_id(),
-                            )?;
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold(),
+                                device.interface_number()
+                            );
 
-                            hwdev.send_init_sequence()?;
-                            hwdev.send_test_pattern()?;
-                        } else {
-                            error!("Could not open the device, is the device in use?");
+                            if let Ok(dev) = device.open_device(&hidapi) {
+                                let hwdev = hwdevices::bind_device(
+                                    dev,
+                                    &hidapi,
+                                    device.vendor_id(),
+                                    device.product_id(),
+                                )?;
+
+                                hwdev.send_init_sequence()?;
+                                hwdev.send_test_pattern()?;
+                            } else {
+                                error!("Could not open the device, is the device in use?");
+                            }
                         }
                     }
-                }
 
-                Err(_) => {
-                    error!("Could not open HIDAPI");
+                    Err(_) => {
+                        error!("Could not open HIDAPI");
+                    }
+                }
+            } else {
+                // test serial LED devices
+                let device_file = format!("/dev/ttyACM{}", 255 - device_index);
+
+                println!(
+                    "Index: {}: Device file: {}",
+                    device_index,
+                    device_file.bold()
+                );
+
+                match hwdevices::CustomSerialLeds::bind(&device_file) {
+                    Ok(mut device) => {
+                        device.send_init_sequence()?;
+
+                        let mut cntr = 0;
+                        loop {
+                            if QUIT.load(Ordering::SeqCst) {
+                                break;
+                            }
+
+                            let led_map = [RGBA {
+                                r: cntr % 255,
+                                g: cntr % 255,
+                                b: cntr % 255,
+                                a: cntr % 255,
+                            }; 0x50];
+
+                            if let Err(e) = device.send_led_map(&led_map) {
+                                error!("{}", e);
+                            }
+
+                            if cntr >= 255 {
+                                cntr = 0;
+                            } else {
+                                cntr += 1;
+                            }
+                        }
+
+                        device.send_led_off_sequence()?;
+                    }
+
+                    Err(e) => {
+                        log::error!("Could not bind the device: {}", e);
+                    }
                 }
             }
         }

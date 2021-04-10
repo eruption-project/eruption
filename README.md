@@ -7,6 +7,7 @@
   - [Supported Devices](#supported-devices)
     - [Keyboard devices](#keyboard-devices)
     - [Mouse devices](#mouse-devices)
+    - [Misc devices](#misc-devices)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
   - [Installation](#installation)
@@ -45,6 +46,10 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Kone Aimo (experimental)
 - ROCCAT Kone Aimo Remastered (experimental)
 - ROCCAT Kova AIMO (experimental)
+
+### Misc devices
+
+- Adalight/Custom serial LEDs
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
