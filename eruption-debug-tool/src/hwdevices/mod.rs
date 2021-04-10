@@ -20,6 +20,7 @@ mod roccat_burst_pro;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
 mod roccat_kone_pure_ultra;
+mod roccat_kone_xtd;
 mod roccat_kova_aimo;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
@@ -190,6 +191,9 @@ pub fn bind_device(
         (0x1e7d, 0x2e2c) => Ok(Box::new(
             roccat_kone_aimo_remastered::RoccatKoneAimoRemastered::bind(hiddev),
         )),
+
+        // ROCCAT Kone XTD Mouse
+        (0x1e7d, 0x2e22) => Ok(Box::new(roccat_kone_xtd::RoccatKoneXtd::bind(hiddev))),
 
         // ROCCAT Kova AIMO
         (0x1e7d, 0x2cf1) | (0x1e7d, 0x2cf3) => {
