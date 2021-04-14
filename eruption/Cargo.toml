@@ -13,9 +13,9 @@ default = []
 
 [dependencies]
 crossbeam = "0.8.0"
-futures = "0.3.13"
+futures = "0.3.14"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-async-trait = "0.1.48"
+async-trait = "0.1.49"
 tracing = "0.1.25"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.17"
@@ -26,12 +26,12 @@ log = "0.4.14"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.24"
 eyre = "0.6.5"
-color-eyre = "0.5.10"
+color-eyre = "0.5.11"
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
 serde_json = "1.0.64"
-tokio = { version = "1.4.0", features = ["full", "rt-multi-thread"] }
-ctrlc = { version = "3.1.8", features = ["termination"] }
+tokio = { version = "1.5.0", features = ["full", "rt-multi-thread"] }
+ctrlc = { version = "3.1.9", features = ["termination"] }
 clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
 config = "0.11.0"
@@ -48,19 +48,19 @@ rand = "0.8.3"
 csscolorparser = "0.4.0"
 colorgrad = "0.4.0"
 palette = "0.5.0"
-nalgebra = "0.25.4"
+nalgebra = "0.26.1"
 noise = "0.7.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
 # lua-src = "540.0.0"
 mlua = { version = "0.5.3", features = ["luajit"] }
 mlua_derive = "0.5.0"
-sysinfo = "0.16.5"
+sysinfo = "0.17.0"
 systemstat = "0.1.7"
 procinfo = "0.4.2"
 rustfft = "5.0.1"
 hound = "3.4.0"
-libpulse-binding = { version = "2.23.0", default-features = false }
+libpulse-binding = { version = "2.23.1", default-features = false }
 libpulse-simple-binding = { version = "2.23.0", default-features = false }
 rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
@@ -71,11 +71,11 @@ bitvec = "=0.19.5"
 dashmap = "4.0.2"
 nohash-hasher = "0.2.0"
 serialport = "4.0.0"
-icecream = "*"
+icecream = "0.1.0"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
 thiserror = "1.0.24"
-tokio = { version = "1.4.0", features = ["test-util"] }
+tokio = { version = "1.5.0", features = ["test-util"] }
