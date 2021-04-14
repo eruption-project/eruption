@@ -578,7 +578,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 error!("{}", e);
                             }
 
-                            if cntr >= 255 {
+                            if cntr == 255 {
                                 cntr = 0;
                             } else {
                                 cntr += 1;

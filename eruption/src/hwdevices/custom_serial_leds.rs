@@ -175,7 +175,7 @@ impl MiscDeviceTrait for CustomSerialLeds {
                     cntr += 3;
                 }
 
-                port.write(&buffer)?;
+                port.write_all(&buffer)?;
 
                 Ok(())
             }
