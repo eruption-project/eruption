@@ -748,25 +748,34 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
                         // build and send data buffer chunks
-                        let mut buffer: [u8; NUM_KEYS * 3] = [0xff; NUM_KEYS * 3];
+                        let mut buffer: [u8; NUM_KEYS * 3] = [0x00; NUM_KEYS * 3];
+
+                        // convert RGB color to monochromatic value
+                        // let color = 255
+                        //     - (((led_map[i].r as f64 * 0.29)
+                        //         + (led_map[i].g as f64 * 0.59)
+                        //         + (led_map[i].b as f64 * 0.114))
+                        //         .round() as u8)
+                        //         .clamp(0, 255);
+
+                        let bitvec = buffer.view_bits_mut::<Lsb0>();
 
                         for i in 0..NUM_KEYS {
+                            let offset = i * 3;
                             let color = led_map[i];
+                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.r);
+                        }
 
-                            // convert RGB color to monochromatic value
-                            // let color = (((led_map[i].r as f64 * 0.29)
-                            //     + (led_map[i].g as f64 * 0.59)
-                            //     + (led_map[i].b as f64 * 0.114))
-                            //     .round() as u8)
-                            //     .clamp(0, 255);
+                        for i in 0..NUM_KEYS {
+                            let offset = i * 3 + (NUM_KEYS * 3);
+                            let color = led_map[i];
+                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.g);
+                        }
 
-                            let bitvec = buffer.view_bits_mut::<Lsb0>();
-
-                            let offset = (i * 3) + 1;
-
-                            bitvec[(offset + 0)..(offset + 3)].store(color.r.to_le() >> 5);
-                            bitvec[(offset + 3)..(offset + 6)].store(color.g.to_le() >> 5);
-                            bitvec[(offset + 6)..(offset + 9)].store(color.b.to_le() >> 5);
+                        for i in 0..NUM_KEYS {
+                            let offset = i * 3 + (NUM_KEYS * 6);
+                            let color = led_map[i];
+                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.b);
                         }
 
                         for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
