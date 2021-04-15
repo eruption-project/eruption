@@ -22,6 +22,7 @@ the respective file was loaded previously via a call to `require "..."`.
 * Persistence: Provides a persistence layer for the Lua scripts to store data
 * Profiles: Switch slots, switch profiles based on system state, ...
 * Macros: Inject programmable key stroke sequences
+* Animal: Simulation of organic movements (support library)
 
 ## Available Support Library Functions
 
