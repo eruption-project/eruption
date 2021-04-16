@@ -28,6 +28,9 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1b
 # ROCCAT Kone Aimo
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e27", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
+# ROCCAT Kone Aimo Remastered
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e2c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
+
 # ROCCAT Kone Pure Ultra
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2dd2", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
@@ -36,6 +39,7 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2d
 
 # ROCCAT Kova AIMO
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2cf1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2cf3", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
 # ROCCAT Nyth
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
