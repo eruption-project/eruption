@@ -33,6 +33,8 @@ require "macros/modifiers"
 
 -- initialize remapping tables
 REMAPPING_TABLE = {}				-- level 1 remapping table (No modifier keys applied)
+MACRO_TABLE = {}	 				-- level 1 macro table (No modifier keys applied)
+
 MOUSE_HID_REMAPPING_TABLE = {}		-- level 1 remapping table for mouse events (No modifier keys applied)
 
 ACTIVE_EASY_SHIFT_LAYER = 1			-- level 4 supports up to 6 sub-layers
@@ -462,6 +464,15 @@ function on_key_down(key_index)
 
 	simple_remapping(key_index, true)
 
+	-- complex remapping of keys
+	if MACRO_TABLE[key_index] ~= nil then
+		-- consume the original key press
+		consume_key()
+
+		-- call associated function
+		MACRO_TABLE[key_index](true)
+	end
+
 	if game_mode_enabled then
 		-- call complex macros on the Easy Shift+ layer (layer 4)
 		if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and
@@ -510,6 +521,15 @@ function on_key_up(key_index)
 	end
 
 	simple_remapping(key_index, false)
+
+	-- complex remapping of keys
+	if MACRO_TABLE[key_index] ~= nil then
+		-- consume the original key press
+		consume_key()
+
+		-- call associated function
+		MACRO_TABLE[key_index](false)
+	end
 end
 
 function on_mouse_button_down(button_index)
