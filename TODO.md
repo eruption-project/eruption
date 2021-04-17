@@ -16,3 +16,5 @@ _This is a non-exhaustive listing of planned features:_
 * Improve support for device hot-plugging: Don't always restart the daemon, but implement device bind/unbind code
 * GUI support: Improve GTK3+ based GUI
 * Improve the CLI tool `eruptionctl`
+* Add support for calling Lua macros on press of a key, without the need for Game Mode
+* Add support for mouse macros
