@@ -203,6 +203,19 @@ impl AudioPlugin {
             0
         }
     }
+
+    pub fn is_audio_muted() -> bool {
+        let start_backend = AUDIO_BACKEND.lock().is_none();
+        if start_backend {
+            try_start_audio_backend().unwrap_or_else(|e| error!("{}", e));
+        }
+
+        if let Some(backend) = &*AUDIO_BACKEND.lock() {
+            backend.is_audio_muted().unwrap_or(false)
+        } else {
+            false
+        }
+    }
 }
 
 #[async_trait::async_trait]
@@ -283,6 +296,10 @@ impl Plugin for AudioPlugin {
         let get_audio_raw_data =
             lua_ctx.create_function(move |_, ()| Ok(AudioPlugin::get_audio_raw_data()))?;
         globals.set("get_audio_raw_data", get_audio_raw_data)?;
+
+        let is_audio_muted =
+            lua_ctx.create_function(move |_, ()| Ok(AudioPlugin::is_audio_muted()))?;
+        globals.set("is_audio_muted", is_audio_muted)?;
 
         let get_audio_volume =
             lua_ctx.create_function(move |_, ()| Ok(AudioPlugin::get_audio_volume()))?;
@@ -378,6 +395,8 @@ mod backends {
         fn start_audio_grabber(&self) -> Result<()>;
 
         fn get_master_volume(&self) -> Result<isize>;
+
+        fn is_audio_muted(&self) -> Result<bool>;
     }
 
     /// An audio backend that does nothing
@@ -394,6 +413,10 @@ mod backends {
 
         fn get_master_volume(&self) -> Result<isize> {
             Ok(0)
+        }
+
+        fn is_audio_muted(&self) -> Result<bool> {
+            Ok(false)
         }
     }
 
@@ -605,6 +628,18 @@ mod backends {
                 .0;
 
             Ok(result as isize)
+        }
+
+        fn is_audio_muted(&self) -> Result<bool> {
+            let mut handler = SinkController::create();
+            let result = handler
+                .get_default_device()
+                .map_err(|_e| AudioPluginError::PulseError {
+                    description: "Could not query PulseAudio".to_owned(),
+                })?
+                .mute;
+
+            Ok(result)
         }
     }
 }

@@ -92,6 +92,8 @@ highlight_max_ttl = 255
 
 modifier_map = {} -- holds the state of modifier keys
 game_mode_enabled = load_bool_transient("global.game_mode_enabled", false) -- keyboard can be in "game mode" or in "normal mode";
+saved_audio_muted = load_bool_transient("global.audio_muted", false)
+
 
 -- utility functions --
 function consume_key()
@@ -232,6 +234,20 @@ function on_hid_event(event_type, arg1)
 			inject_key(113, true) -- KEY_MUTE (audio) (down)
 		else
 			inject_key(113, false) -- KEY_MUTE (audio) (up)
+		end
+
+		local audio_muted = is_audio_muted()
+		store_bool_transient("global.audio_muted", audio_muted)
+
+		if saved_audio_muted ~= audio_muted then
+			if audio_muted then
+				debug("Audio muted (mute button)")
+			else
+				debug("Audio unmuted (mute button)")
+			end
+
+			saved_audio_muted = audio_muted
+			effect_ttl = 1
 		end
 	elseif event_type == 4 then
 		-- Volume dial knob rotation
@@ -627,10 +643,27 @@ end
 function on_tick(delta)
 	ticks = ticks + delta
 
-	update_color_state()
-	update_overlay_state()
+	-- audio muted state changed?
+	if ticks % (target_fps * 1) == 0 then
+		local audio_muted = is_audio_muted()
+		store_bool_transient("global.audio_muted", audio_muted)
+
+		if saved_audio_muted ~= audio_muted then
+			if audio_muted then
+				debug("Audio muted")
+			else
+				debug("Audio unmuted")
+			end
+
+			saved_audio_muted = audio_muted
+			effect_ttl = 1
+		end
+	end
 
 	if effect_ttl <= 0 and highlight_ttl <= 0 and overlay_ttl <= 0 then return end
+
+	update_color_state()
+	update_overlay_state()
 
     -- show key highlight effect or the active overlay
 	if ticks % animation_delay == 0 then
