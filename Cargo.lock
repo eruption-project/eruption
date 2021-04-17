@@ -599,7 +599,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.20"
+version = "0.1.21"
 dependencies = [
  "async-trait",
  "bitvec",
@@ -664,7 +664,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "bitvec",
  "clap",
@@ -698,7 +698,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "byteorder",
  "cairo-rs",
@@ -740,7 +740,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "clap",
  "clap_generate",
@@ -765,7 +765,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-netfx"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "clap",
  "clap_generate",
@@ -793,7 +793,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -841,7 +841,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-util"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "bitvec",
  "clap",
@@ -873,7 +873,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "clap",
  "clap_generate",
