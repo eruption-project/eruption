@@ -7,8 +7,8 @@ post_install() {
     systemctl reload dbus.service
     udevadm control --reload-rules
 
-    systemctl try-restart eruption.service || udevadm trigger -s usb
-    systemctl --global try-restart eruption-process-monitor.service
+    systemctl enable --now eruption.service
+    systemctl --global enable --now eruption-process-monitor.service
 }
 
 post_upgrade() {
@@ -17,11 +17,12 @@ post_upgrade() {
     systemctl reload dbus.service
     udevadm control --reload-rules
 
-    # systemctl try-restart eruption.service || udevadm trigger -s usb
-    # systemctl --global try-restart eruption-process-monitor.service
+    systemctl try-restart eruption.service
+    systemctl --global try-restart eruption-process-monitor.service
 }
 
 pre_remove() {
+    systemctl --global stop eruption-process-monitor.service
     systemctl stop eruption.service
 }
 
