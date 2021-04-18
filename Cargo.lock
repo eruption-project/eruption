@@ -94,9 +94,9 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "async-trait"
-version = "0.1.49"
+version = "0.1.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "589652ce7ccb335d1e7ecb3be145425702b290dbcb7029bbeaae263fc1d87b48"
+checksum = "0b98e84bbb4cbcdd97da190ba0c58a1bb0de2c1fdf67d159e192ed766aeca722"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2299,18 +2299,18 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc174859768806e91ae575187ada95c91a29e96a98dc5d2cd9a1fed039501ba6"
+checksum = "c7509cc106041c40a4518d2af7a61530e1eed0e6285296a3d8c5472806ccc4a4"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a490329918e856ed1b083f244e3bfe2d8c4f336407e4ea9e1a9f479ff09049e5"
+checksum = "48c950132583b500556b1efd71d45b319029f2b71518d979fcc208e16b42426f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2747,9 +2747,9 @@ dependencies = [
 
 [[package]]
 name = "rustfft"
-version = "5.0.1"
+version = "5.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2af893d9cfb30d3d2f2ac4bd2a071232143558e06e791dc768179f0089f68f8"
+checksum = "f87c289af25ed4b3e258126559b6603e5a8f734f48defbbe0fd62abdb49089c3"
 dependencies = [
  "num-complex",
  "num-integer",
@@ -2864,9 +2864,9 @@ dependencies = [
 
 [[package]]
 name = "serialport"
-version = "4.0.0"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22f37409d980045734250d679750bdf11bd875fec5bb5417dd21bb75d04d31a1"
+checksum = "5d8cd7c0f22290ee2c01457009fa6fc1cae4153d5608a924e5dc423babc2c655"
 dependencies = [
  "CoreFoundation-sys",
  "IOKit-sys",
@@ -2911,9 +2911,9 @@ dependencies = [
 
 [[package]]
 name = "simdeez"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1893a4b8db694e23889b63229b6e1deb33846ee0552588bb6e45e53eff59667d"
+checksum = "4032959efda4ba5e9c0108c4c88bfa79b2f6eaf1f1e965290d6e8cd058f50887"
 dependencies = [
  "cfg-if 0.1.10",
  "paste 0.1.18",
@@ -3019,9 +3019,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.17.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec595b5d987c593c170ced49ae3aa4b3a6bea078b638866c38043155fd614812"
+checksum = "a42d53b0c95692ea084fe9fecbb5d428098b16addcd3da956b97841a28df8947"
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",
@@ -3387,9 +3387,9 @@ checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "weezl"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a32b378380f4e9869b22f0b5177c68a5519f03b3454fde0b291455ddbae266c"
+checksum = "d8b77fdfd5a253be4ab714e4ffa3c49caf146b4de743e97510c0656cf90f1e8e"
 
 [[package]]
 name = "winapi"
