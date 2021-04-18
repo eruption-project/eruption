@@ -2,7 +2,7 @@ post_install() {
     setcap cap_net_admin+ep /usr/bin/eruption-process-monitor
 
     systemctl daemon-reload
-    systemctl --global daemon-reload
+    # systemctl --global daemon-reload
 
     systemctl reload dbus.service
     udevadm control --reload-rules
@@ -18,7 +18,7 @@ post_upgrade() {
     setcap cap_net_admin+ep /usr/bin/eruption-process-monitor
 
     systemctl daemon-reload
-    systemctl --global daemon-reload
+    # systemctl --global daemon-reload
 
     systemctl reload dbus.service
     udevadm control --reload-rules
