@@ -249,7 +249,7 @@ function on_hid_event(event_type, arg1)
 			end
 
 			saved_audio_muted = audio_muted
-			effect_ttl = 1
+			effect_ttl = max_effect_ttl
 		end
 	elseif event_type == 4 then
 		-- Volume dial knob rotation
@@ -676,14 +676,14 @@ function on_tick(delta)
 			end
 
 			saved_audio_muted = audio_muted
-			effect_ttl = 1
+			effect_ttl = max_effect_ttl
 		end
 	end
 
-	if effect_ttl <= 0 and highlight_ttl <= 0 and overlay_ttl <= 0 then return end
-
-	update_color_state()
 	update_overlay_state()
+	update_color_state()
+
+	if effect_ttl <= 0 and highlight_ttl <= 0 and overlay_ttl <= 0 then return end
 
     -- show key highlight effect or the active overlay
 	if ticks % animation_delay == 0 then
