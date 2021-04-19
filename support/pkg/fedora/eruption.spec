@@ -229,7 +229,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_presetdir}/50-eruption-hotplug-helper.preset
 #%{_bindir}/eruption-gui
 #%{_datarootdir}/applications/eruption-gui.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
+#%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 #%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-netfx

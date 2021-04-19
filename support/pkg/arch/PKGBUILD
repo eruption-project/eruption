@@ -1,39 +1,34 @@
 # Maintainer: X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
-pkgname='eruption-git'
+pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
 pkgver='0.1.21'
-pkgrel='0'
+pkgrel='2'
 epoch=
 arch=('i686' 'x86_64')
 url='https://github.com/X3n0m0rph59/eruption'
 license=('GPL3+')
 groups=()
-depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket' 'gtksourceview3')
-makedepends=('git' 'rust' 'xorg-server-devel' 'libxrandr' 'gtk3')
+depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket')
+makedepends=('git' 'rust' 'xorg-server-devel' 'libxrandr')
 checkdepends=()
 optdepends=()
 provides=('eruption')
-conflicts=('eruption-roccat-vulcan' 'eruption-roccat-vulcan-git')
+conflicts=('eruption-git' 'eruption-roccat-vulcan' 'eruption-roccat-vulcan-git')
 replaces=('eruption-roccat-vulcan-git')
 backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/share/eruption/scripts/lib/macros/*)
 options=()
 install='eruption.install'
 changelog=
-source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git#commit=aaf27fe9c956fcf6ef72f000d8e131ca9b8ff148')
+source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git#commit=ed40c60134fdc15d2cee8e87e5c0a06e39b1b981')
 noextract=()
 sha512sums=('SKIP')
-
-pkgver() {
-  cd "$_pkgname"
-  git describe --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
-}
 
 build() {
     cd "$_pkgname"
 
-    CARGO_INCREMENTAL=0 cargo build --all --release
+    CARGO_INCREMENTAL=0 cargo build --release
 }
 
 package() {

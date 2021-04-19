@@ -48,7 +48,7 @@ Linux user-mode input and LED driver for keyboards, mice and other devices (git 
 %autosetup %{OrigName}-master
 
 %build
-cargo build --all --release --verbose
+cargo build --all --release --features full --verbose
 
 %install
 %{__mkdir_p} %{buildroot}%{_mandir}/man5
