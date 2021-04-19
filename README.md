@@ -1,4 +1,4 @@
-[![Continuous integration](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml/badge.svg)](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml)
+[![Continuous integration](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml/badge.svg)](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml) [![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 
 # Table of Contents
 
