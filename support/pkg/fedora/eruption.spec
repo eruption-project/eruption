@@ -72,6 +72,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/misc
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
 %{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
@@ -150,6 +151,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/preset-blue-red.profile %
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/rainbow-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-fx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/red-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/ripple-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/solid.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -311,6 +313,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_nyth.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/custom_serial_leds.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
