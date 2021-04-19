@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+
+%:
+	dh $@ --without autoreconf --without autotools-dev
+
+override_dh_auto_build:
+	export CARGO_HOME=".cargo"
+	export CARGO_TARGET_DIR="target/"
+	CARGO_INCREMENTAL=0 cargo build --all --release --verbose --frozen --offline
+
+override_dh_auto_clean:
+	$(RM) -r target/
+
+override_dh_clean:
+	# do nothing
+
+override_dh_update_autotools_config:
+	# do nothing
+
+override_dh_strip_nondeterminism:
+	# do nothing
