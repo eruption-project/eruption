@@ -3,7 +3,7 @@
 
 Name:    eruption-git
 Version: 0.1.20
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
@@ -72,6 +72,7 @@ cargo build --all --release --verbose
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/misc
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
 %{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
@@ -312,6 +313,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_nyth.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/custom_serial_leds.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
