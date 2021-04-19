@@ -1,5 +1,6 @@
 [workspace]
 members = ["eruption", "eruptionctl", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-process-monitor", "eruption-gui"]
+default-members = ["eruption", "eruptionctl", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-process-monitor"]
 
 [profile.dev]
 opt-level = 0
