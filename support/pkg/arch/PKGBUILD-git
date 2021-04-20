@@ -33,7 +33,7 @@ pkgver() {
 build() {
     cd "$_pkgname"
 
-    CARGO_INCREMENTAL=0 cargo build --all --release --features full
+    CARGO_INCREMENTAL=0 cargo build --all --release
 }
 
 package() {
