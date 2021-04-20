@@ -94,14 +94,14 @@ prior to sending the resulting final color map to the keyboard.
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
- $ paru -Syu aur/eruption-git
+ $ paru -Syu aur/eruption
 ```
 
 ### Fedora based
 
 ```sh
  $ sudo dnf copr enable x3n0m0rph59/eruption
- $ sudo dnf install eruption-git
+ $ sudo dnf install eruption
 ```
 
 ### Ubuntu or Pop!_OS
@@ -109,7 +109,7 @@ prior to sending the resulting final color map to the keyboard.
 ```sh
  $ sudo add-apt-repository ppa:x3n0m0rph59/eruption
  $ sudo apt update
- $ sudo apt install eruption-git
+ $ sudo apt install eruption
 ```
 
 To activate Eruption now, you may either hotplug a supported device, or manually start
