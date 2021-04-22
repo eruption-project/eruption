@@ -505,11 +505,12 @@ mod backends {
                             description: format!("Error during writing of playback buffer: {}", e),
                         })
                         .unwrap();
-                    pa.drain()
-                        .map_err(|e| AudioPluginError::PlaybackError {
-                            description: format!("Error during playback: {}", e),
-                        })
-                        .ok();
+
+                    // pa.drain()
+                    // .map_err(|e| AudioPluginError::PlaybackError {
+                    //     description: format!("Error during playback: {}", e),
+                    // })
+                    // .ok();
 
                     ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
                 })

@@ -51,6 +51,7 @@
 | ROCCAT | Kone Aimo            | 80%    | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo Remastered | 80%    | N.a.       | N.a.           |
 | ROCCAT | Kova AIMO            | 80%    | N.a.       | N.a.           |
+| ROCCAT | Kone XTD             | N.a    | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 

@@ -65,6 +65,10 @@ function on_mouse_wheel(direction)
 		c = color_mouse_wheel_flash
 	elseif direction == 2 then
 		c = color_mouse_wheel_flash
+	elseif direction == 3 then
+		c = color_mouse_wheel_flash
+	elseif direction == 4 then
+		c = color_mouse_wheel_flash
 	end
 
 	for i = 0, canvas_size do

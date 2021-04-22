@@ -1468,7 +1468,14 @@ async fn process_mouse_event(
             | evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES */ => {
                 // mouse scroll wheel event occurred
 
-                let direction = if raw_event.value > 0 { 1 } else { 2 };
+                let direction;
+                if *code == evdev_rs::enums::EV_REL::REL_WHEEL || *code == evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES {
+                    if raw_event.value > 0 { direction = 1 } else { direction = 2 };
+                } else if *code == evdev_rs::enums::EV_REL::REL_HWHEEL || *code == evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES {
+                    if raw_event.value < 0 { direction = 3 } else { direction = 4 };
+                } else {
+                    direction = 5;
+                }
 
                 *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
                     LUA_TXS.len() - failed_txs.len();
