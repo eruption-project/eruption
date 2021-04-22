@@ -599,7 +599,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.21"
+version = "0.1.22"
 dependencies = [
  "async-trait",
  "bitvec",
