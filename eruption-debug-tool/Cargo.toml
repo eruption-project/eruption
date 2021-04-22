@@ -1,6 +1,6 @@
 [package]
 name = "eruption-debug-tool"
-version = "0.0.12"
+version = "0.0.13"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A CLI utility to debug USB HID devices"

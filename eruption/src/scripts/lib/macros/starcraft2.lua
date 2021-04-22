@@ -203,8 +203,10 @@ EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("2")]	= macro_select_all_military  -
 -- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][2] = easyshift_mouse_macro_2  --
 -- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][3] = easyshift_mouse_macro_3  --
 
--- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up  	--
--- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down  	--
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up  	 --
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down  --
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][3] = easyshift_mouse_wheel_scroll_left  --
+-- EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][4] = easyshift_mouse_wheel_scroll_right --
 
 -- EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][1] = easyshift_mouse_dpi_changed  	--
 -- EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][2] = easyshift_mouse_dpi_changed  	--

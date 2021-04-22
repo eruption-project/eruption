@@ -34,10 +34,10 @@ pub type Result<T> = super::Result<T>;
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
 
 // canvas to LED index mapping
-pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-pub const LED_1: usize = constants::CANVAS_SIZE - 35;
-pub const LED_2: usize = constants::CANVAS_SIZE - 34;
-pub const LED_3: usize = constants::CANVAS_SIZE - 33;
+// pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+// pub const LED_1: usize = constants::CANVAS_SIZE - 35;
+// pub const LED_2: usize = constants::CANVAS_SIZE - 34;
+// pub const LED_3: usize = constants::CANVAS_SIZE - 33;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -157,7 +157,7 @@ impl RoccatKoneXtd {
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                                     Ok(())
                                 }
@@ -168,7 +168,7 @@ impl RoccatKoneXtd {
                             let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
                             match ctrl_dev.get_feature_report(&mut buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                                     Ok(())
                                 }
@@ -186,7 +186,7 @@ impl RoccatKoneXtd {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
                         }
@@ -205,7 +205,7 @@ impl RoccatKoneXtd {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -220,7 +220,7 @@ impl RoccatKoneXtd {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -235,7 +235,29 @@ impl RoccatKoneXtd {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                            Ok(())
+                        }
+
+                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+                }
+
+                0x07 => {
+                    let buf: [u8; 77] = [
+                        0x07, 0x4d, 0x00, 0x01, 0x00, 0x00, 0x02, 0x00, 0x00, 0x03, 0x00, 0x00,
+                        0x07, 0x00, 0x00, 0x08, 0x00, 0x00, 0x09, 0x00, 0x00, 0x0a, 0x00, 0x00,
+                        0x0d, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x15, 0x00, 0x00, 0x16, 0x00, 0x00,
+                        0x1a, 0x00, 0x00, 0x08, 0x00, 0x00, 0x07, 0x00, 0x00, 0x25, 0x00, 0x00,
+                        0x06, 0x00, 0x00, 0x06, 0x00, 0x00, 0x21, 0x00, 0x00, 0x22, 0x00, 0x00,
+                        0x26, 0x00, 0x00, 0x27, 0x00, 0x00, 0x11, 0x00, 0x00, 0x12, 0x00, 0x00,
+                        0x1b, 0x00, 0x00, 0xea, 0x01,
+                    ];
+
+                    match ctrl_dev.send_feature_report(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
                         }
@@ -347,7 +369,7 @@ impl DeviceTrait for RoccatKoneXtd {
     }
 
     fn get_support_script_file(&self) -> String {
-        "mice/roccat_kone_aimo".to_string()
+        "mice/roccat_kone_xtd".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
@@ -395,10 +417,10 @@ impl DeviceTrait for RoccatKoneXtd {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("Step 1: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 1: {}", e));
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x0e)
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
@@ -409,6 +431,11 @@ impl DeviceTrait for RoccatKoneXtd {
                 .unwrap_or_else(|e| error!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 3: {}", e));
+
+            self.send_ctrl_report(0x07)
+                .unwrap_or_else(|e| error!("Step 4: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 4: {}", e));
 
             self.is_initialized = true;
 
@@ -667,7 +694,7 @@ impl MouseDeviceTrait for RoccatKoneXtd {
         }
     }
 
-    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -677,29 +704,33 @@ impl MouseDeviceTrait for RoccatKoneXtd {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 8] = [
-                0x01,
-                0x00,
-                0x01,
-                led_map[LED_0].r,
-                led_map[LED_0].g,
-                led_map[LED_0].b,
-                0x00,
-                0x00,
-            ];
+            // let buf: [u8; 8] = [
+            //     0x01,
+            //     0x00,
+            //     0x01,
+            //     led_map[LED_0].r,
+            //     led_map[LED_0].g,
+            //     led_map[LED_0].b,
+            //     0x00,
+            //     0x00,
+            // ];
 
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    Ok(())
-                }
+            //         Ok(())
+            //     }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            // }
+
+            // do nothing
+
+            Ok(())
         }
     }
 

@@ -5,6 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.22 | __New Release__                                                                                                                                                              |
+| 0.1.22 | Add experimental support for `ROCCAT Kone XTD` series mice (input only, no LEDs currently since they don't support realtime effects)                                         |
 | 0.1.21 | __New Release__                                                                                                                                                              |
 | 0.1.21 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v15`!                                                          |
 | 0.1.21 | New package `eruption` available that currently ships without the GUI. Use the git snapshot package `eruption-git` if you want to stay on the bleeding edge                  |

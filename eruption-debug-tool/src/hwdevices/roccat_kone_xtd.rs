@@ -113,6 +113,28 @@ impl RoccatKoneXtd {
                     }
                 }
 
+                0x07 => {
+                    let buf: [u8; 77] = [
+                        0x07, 0x4d, 0x00, 0x01, 0x00, 0x00, 0x02, 0x00, 0x00, 0x03, 0x00, 0x00,
+                        0x07, 0x00, 0x00, 0x08, 0x00, 0x00, 0x09, 0x00, 0x00, 0x0a, 0x00, 0x00,
+                        0x0d, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x15, 0x00, 0x00, 0x16, 0x00, 0x00,
+                        0x1a, 0x00, 0x00, 0x08, 0x00, 0x00, 0x07, 0x00, 0x00, 0x25, 0x00, 0x00,
+                        0x06, 0x00, 0x00, 0x06, 0x00, 0x00, 0x21, 0x00, 0x00, 0x22, 0x00, 0x00,
+                        0x26, 0x00, 0x00, 0x27, 0x00, 0x00, 0x11, 0x00, 0x00, 0x12, 0x00, 0x00,
+                        0x1b, 0x00, 0x00, 0xea, 0x01,
+                    ];
+
+                    match ctrl_dev.send_feature_report(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+
+                            Ok(())
+                        }
+
+                        Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+                    }
+                }
+
                 _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
             }
         }
@@ -156,11 +178,11 @@ impl DeviceTrait for RoccatKoneXtd {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            println!("Step 1");
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            // println!("Step 1");
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
 
             println!("Step 2");
             self.send_ctrl_report(0x0e)
@@ -173,6 +195,12 @@ impl DeviceTrait for RoccatKoneXtd {
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+
+            println!("Step 4");
+            self.send_ctrl_report(0x07)
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
 
             Ok(())
         }
