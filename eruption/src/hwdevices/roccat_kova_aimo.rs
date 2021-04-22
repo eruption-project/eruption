@@ -155,7 +155,7 @@ impl RoccatKovaAimo {
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                                     Ok(())
                                 }
@@ -166,7 +166,7 @@ impl RoccatKovaAimo {
                             let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
                             match ctrl_dev.get_feature_report(&mut buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                                     Ok(())
                                 }
@@ -184,7 +184,7 @@ impl RoccatKovaAimo {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
                         }
@@ -198,7 +198,7 @@ impl RoccatKovaAimo {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
                         }
