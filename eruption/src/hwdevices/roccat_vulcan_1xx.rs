@@ -790,11 +790,11 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         },
 
                         // volume up/down adjustment is initiated by the following sequence
-                        [0x03, 0x00, 0x0b, 0x26, _] => {
+                        [0x03, 0x00, 0x0b, 0x26, _] | [0x02, 0xea, 0x00, 0x00, _] => {
                             *self.dial_mode.lock() = DialMode::Volume;
                             KeyboardHidEvent::Unknown
                         }
-                        [0x03, 0x00, 0x0b, 0x27, _] => {
+                        [0x03, 0x00, 0x0b, 0x27, _] | [0x02, 0xe9, 0x00, 0x00, _] => {
                             *self.dial_mode.lock() = DialMode::Volume;
                             KeyboardHidEvent::Unknown
                         }
@@ -822,8 +822,7 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                             result
                         }
 
-                        [0x03, 0x00, 0x0c, val, _] => KeyboardHidEvent::SetBrightness(val),
-
+                        // [0x03, 0x00, 0x0c, val, _] => KeyboardHidEvent::SetBrightness(val),
                         [0x02, 0xe2, 0x00, 0x00, _] => KeyboardHidEvent::MuteDown,
                         [0x02, 0x00, 0x00, 0x00, _] => KeyboardHidEvent::MuteUp,
 
