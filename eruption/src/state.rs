@@ -57,10 +57,10 @@ pub fn init_global_runtime_state() -> Result<()> {
     // initialize runtime state to sane defaults
     let mut profiles = crate::SLOT_PROFILES.lock();
     profiles.replace(vec![
-        PathBuf::from("profile1.profile"),
-        PathBuf::from("red-wave.profile"),
-        PathBuf::from("swirl-perlin.profile"),
-        PathBuf::from("spectrum-analyzer-swirl.profile"),
+        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("blue-fx-swirl-perlin.profile"),
+        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("red-wave.profile"),
+        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("swirl-perlin.profile"),
+        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("spectrum-analyzer-swirl.profile"),
     ]);
 
     let default_slot_names = vec![

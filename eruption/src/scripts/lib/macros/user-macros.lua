@@ -16,6 +16,30 @@
 -- This is the default macro definitions file, that gets used when
 -- no override has been specified. You may want to customize the code below
 
+function macro_insert_left_curly_bracket(down)
+	debug("UserMacros: macro_insert_left_curly_bracket")
+
+	if down then
+		inject_key(100, true)	-- AltGr down
+		inject_key(8, true)		-- 7/{ down
+	else
+		inject_key(8, false)	-- 7/{ up
+		inject_key(100, false)	-- AltGr up
+	end
+end
+
+function macro_insert_right_curly_bracket(down)
+	debug("UserMacros: macro_insert_right_curly_bracket")
+
+	if down then
+		inject_key(100, true)	-- AltGr down
+		inject_key(11, true)	-- 0/} down
+	else
+		inject_key(11, false)	-- 0/} up
+		inject_key(100, false)	-- AltGr up
+	end
+end
+
 function easyshift_macro_1()
 	info("UserMacros: Executing: 'easyshift_macro_1'")
 end
@@ -260,6 +284,12 @@ end
 
 -- find some examples below:
 -- REMAPPING_TABLE[35]			    =  44  -- Remap: 'z' => 'y'
+
+-- complex remapping of keys using macros
+
+-- remap the keys 'ü' and '+' to '{' and '}'
+-- MACRO_TABLE[68]	= macro_insert_left_curly_bracket   --
+-- MACRO_TABLE[74]	= macro_insert_right_curly_bracket  --
 
 -- change the tables below to perform a simple one-to-one mapping
 -- convention is: REMAPPING_TABLE[BUTTON_INDEX] = BUTTON_INDEX

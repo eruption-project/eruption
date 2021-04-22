@@ -27,6 +27,7 @@ EASY_SHIFT_KEY = 21
 key_to_index = {}
 
 key_to_index['GAME_MODE'] = 95
+key_to_index['MUTE'] = 93
 
 key_to_index['FN'] = 65
 key_to_index['CAPS_LOCK'] = 6
@@ -93,6 +94,18 @@ function device_specific_key_highlights()
 		color_map_highlight[key_to_index['DOWN']]  = COLOR_FUNCTION_KEY	-- brightness down
 		color_map_highlight[key_to_index['LEFT']]  = COLOR_FUNCTION_KEY	-- previous profile slot
 		color_map_highlight[key_to_index['RIGHT']] = COLOR_FUNCTION_KEY	-- next profile slot
+	end
+
+	-- mute button
+	local audio_muted = load_bool_transient("global.audio_muted", false)
+	if audio_muted then
+		color_map_highlight[key_to_index['MUTE']] = 0xffff0000
+		color_map_overlay[key_to_index['MUTE']] = 0xffff0000
+		color_map[key_to_index['MUTE']] = 0xffff0000
+	else
+		color_map_highlight[key_to_index['MUTE']] = 0x00000000
+		color_map_overlay[key_to_index['MUTE']] = 0x00000000
+		color_map[key_to_index['MUTE']] = 0x00000000
 	end
 end
 

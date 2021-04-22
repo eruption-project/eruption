@@ -4,6 +4,12 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.22 | __New Release__                                                                                                                                                              |
+| 0.1.21 | __New Release__                                                                                                                                                              |
+| 0.1.21 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v15`!                                                          |
+| 0.1.21 | New package `eruption` available that currently ships without the GUI. Use the git snapshot package `eruption-git` if you want to stay on the bleeding edge                  |
+| 0.1.21 | Added support for macros on the primary layer. This complements the simple remapping of keys, now we support 1:N remapping of keys too                                       |
+| 0.1.21 | Added support for an "Audio muted" indicator                                                                                                                                 |
 | 0.1.20 | __New Release__                                                                                                                                                              |
 | 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v14`!                                                          |
 | 0.1.20 | Update the Eruption GUI to the latest version `0.0.8` (this is a technology preview only; it is not production ready)                                                        |

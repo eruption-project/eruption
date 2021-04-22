@@ -1,7 +1,7 @@
 %global OrigName eruption
 %global ShortName eruption
 
-Name:    eruption
+Name:    eruption-git
 Version: 0.1.22
 Release: 0%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
@@ -22,19 +22,18 @@ BuildRequires: pulseaudio-libs-devel
 BuildRequires: luajit-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
-#BuildRequires: gtk3-devel
-#BuildRequires: gtksourceview3-devel
+BuildRequires: gtk3-devel
+BuildRequires: gtksourceview3-devel
 
 Requires: systemd
 Requires: dbus
 Requires: hidapi
 Requires: libevdev
 Requires: luajit
-#Requires: gtksourceview3
+Requires: gtksourceview3
 
 Recommends: lua-socket-compat
 
-Conflicts: eruption-git
 Conflicts: eruption-roccat-vulcan
 Conflicts: eruption-roccat-vulcan-git
 
@@ -42,14 +41,14 @@ Conflicts: eruption-roccat-vulcan-git
 %global debug_package %{nil}
 
 %description
-Linux user-mode input and LED driver for keyboards, mice and other devices
+Linux user-mode input and LED driver for keyboards, mice and other devices (git snapshot)
 
 %prep
 # %autosetup -n %{name}-%{version}
 %autosetup %{OrigName}-master
 
 %build
-cargo build --release --verbose
+cargo build --all --release --verbose
 
 %install
 %{__mkdir_p} %{buildroot}%{_mandir}/man5
@@ -81,7 +80,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}%{_datarootdir}/applications/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/64x64/apps/
-#%{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
+%{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
 %{__mkdir_p} %{buildroot}%{_datarootdir}/bash-completion/completions/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/fish/completions/
 %{__mkdir_p} %{buildroot}%{_datarootdir}/zsh/site-functions/
@@ -177,9 +176,9 @@ cp -ra %{_builddir}/%{name}-%{version}/eruption/src/scripts %{buildroot}%{_datar
 
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
-#cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
-#cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
-#cp -a %{_builddir}/%{name}-%{version}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
+cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{name}-%{version}/support/assets/eruption-gui/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
+cp -a %{_builddir}/%{name}-%{version}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
@@ -188,7 +187,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-util
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-hotplug-helper %{buildroot}%{_bindir}/eruption-hotplug-helper
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
-#install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
 %post
 %systemd_post %{ShortName}.service
@@ -227,10 +226,10 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_userpresetdir}/50-eruption-process-monitor.preset
 %{_unitdir}/eruption-hotplug-helper.service
 %{_presetdir}/50-eruption-hotplug-helper.preset
-#%{_bindir}/eruption-gui
-#%{_datarootdir}/applications/eruption-gui.desktop
-#%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
-#%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
+%{_bindir}/eruption-gui
+%{_datarootdir}/applications/eruption-gui.desktop
+%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
+%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-netfx
 %{_datarootdir}/bash-completion/completions/eruption-process-monitor

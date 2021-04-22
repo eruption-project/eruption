@@ -1,4 +1,4 @@
-[![Continuous integration](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml/badge.svg)](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml)
+[![Continuous integration](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml/badge.svg)](https://github.com/X3n0m0rph59/eruption/actions/workflows/rust.yml) [![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 
 # Table of Contents
 
@@ -7,6 +7,7 @@
   - [Supported Devices](#supported-devices)
     - [Keyboard devices](#keyboard-devices)
     - [Mouse devices](#mouse-devices)
+    - [Misc devices](#misc-devices)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
   - [Installation](#installation)
@@ -45,6 +46,10 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Kone Aimo (experimental)
 - ROCCAT Kone Aimo Remastered (experimental)
 - ROCCAT Kova AIMO (experimental)
+
+### Misc devices
+
+- Adalight/Custom serial LEDs
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
@@ -89,14 +94,14 @@ prior to sending the resulting final color map to the keyboard.
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```sh
- $ paru -Syu aur/eruption-git
+ $ paru -Syu aur/eruption
 ```
 
 ### Fedora based
 
 ```sh
  $ sudo dnf copr enable x3n0m0rph59/eruption
- $ sudo dnf install eruption-git
+ $ sudo dnf install eruption
 ```
 
 ### Ubuntu or Pop!_OS
@@ -104,7 +109,7 @@ prior to sending the resulting final color map to the keyboard.
 ```sh
  $ sudo add-apt-repository ppa:x3n0m0rph59/eruption
  $ sudo apt update
- $ sudo apt install eruption-git
+ $ sudo apt install eruption
 ```
 
 To activate Eruption now, you may either hotplug a supported device, or manually start

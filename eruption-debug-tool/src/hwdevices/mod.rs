@@ -16,6 +16,7 @@
 */
 
 mod corsair_strafe;
+mod custom_serial_leds;
 mod roccat_burst_pro;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
@@ -30,6 +31,8 @@ mod roccat_vulcan_tkl;
 
 use hidapi::{HidApi, HidDevice};
 use thiserror::Error;
+
+pub use custom_serial_leds::*;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
