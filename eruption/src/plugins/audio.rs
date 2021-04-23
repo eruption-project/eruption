@@ -238,7 +238,7 @@ impl Plugin for AudioPlugin {
                     {
                         let mut start_backend = false;
 
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_mut() {
                             backend
                                 .play_sfx(&SFX_KEY_DOWN.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
@@ -259,7 +259,7 @@ impl Plugin for AudioPlugin {
                     {
                         let mut start_backend = false;
 
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_mut() {
                             backend
                                 .play_sfx(&SFX_KEY_UP.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
@@ -371,9 +371,10 @@ mod backends {
     use super::ENABLE_SFX;
     use super::FFT_SIZE;
 
+    use crossbeam::channel::{unbounded, Receiver, Sender};
     use log::*;
-    use std::sync::Arc;
     use std::{sync::atomic::Ordering, thread};
+    use systemstat::Duration;
 
     use libpulse_binding as pulse;
     use libpulse_simple_binding as psimple;
@@ -391,7 +392,7 @@ mod backends {
     /// Audio backend trait, defines an interface to the player and
     /// grabber functionality
     pub trait AudioBackend {
-        fn play_sfx(&self, data: &'static [u8]) -> Result<()>;
+        fn play_sfx(&mut self, data: &'static [u8]) -> Result<()>;
         fn start_audio_grabber(&self) -> Result<()>;
 
         fn get_master_volume(&self) -> Result<isize>;
@@ -403,7 +404,7 @@ mod backends {
     pub struct NullBackend {}
 
     impl AudioBackend for NullBackend {
-        fn play_sfx(&self, _data: &'static [u8]) -> Result<()> {
+        fn play_sfx(&mut self, _data: &'static [u8]) -> Result<()> {
             Ok(())
         }
 
@@ -422,16 +423,67 @@ mod backends {
 
     /// PulseAudio backend
     pub struct PulseAudioBackend {
-        handle: Arc<psimple::Simple>,
+        tx: Option<Sender<Vec<u8>>>,
     }
 
     #[allow(unused)]
     impl PulseAudioBackend {
         pub fn new() -> Result<Self> {
-            let handle = Arc::new(Self::init_playback()?);
-            let result = PulseAudioBackend { handle };
+            let result = PulseAudioBackend { tx: None };
 
             Ok(result)
+        }
+
+        pub fn spawn_thread(rx: Receiver<Vec<u8>>) -> Result<()> {
+            let builder = thread::Builder::new().name("audio/playback".into());
+            builder
+                .spawn(move || -> Result<()> {
+                    let pa = PulseAudioBackend::init_playback()?;
+
+                    'PLAYBACK_LOOP: loop {
+                        if crate::QUIT.load(Ordering::SeqCst) {
+                            break 'PLAYBACK_LOOP Ok(());
+                        }
+
+                        match rx.recv_timeout(Duration::from_millis(2000)) {
+                            Ok(data) => {
+                                ACTIVE_SFX.fetch_add(1, Ordering::SeqCst);
+
+                                pa.write(&data)
+                                    .map_err(|e| AudioPluginError::PlaybackError {
+                                        description: format!(
+                                            "Error during writing of playback buffer: {}",
+                                            e
+                                        ),
+                                    })?;
+
+                                // pa.drain()
+                                //     .map_err(|e| AudioPluginError::PlaybackError {
+                                //         description: format!("Error during playback: {}", e),
+                                //     })
+                                //     .ok();
+
+                                ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
+                            }
+
+                            Err(e) if e.is_timeout() => {
+                                debug!("Audio playback thread terminated");
+
+                                break 'PLAYBACK_LOOP Ok(());
+                            }
+
+                            Err(e) => {
+                                error!("Audio playback error: {}", e);
+                            }
+                        }
+                    }
+                })
+                .unwrap_or_else(|e| {
+                    error!("Could not spawn a thread: {}", e);
+                    panic!()
+                });
+
+            Ok(())
         }
 
         pub fn init_playback() -> Result<psimple::Simple> {
@@ -488,36 +540,24 @@ mod backends {
     }
 
     impl AudioBackend for PulseAudioBackend {
-        fn play_sfx(&self, data: &'static [u8]) -> Result<()> {
+        fn play_sfx(&mut self, data: &'static [u8]) -> Result<()> {
             if !ENABLE_SFX.load(Ordering::SeqCst) {
                 return Ok(());
             }
 
-            let pa = self.handle.clone();
+            if let Some(tx) = self.tx.as_ref() {
+                if tx.send(data.to_vec()).is_err() {
+                    // tx seems to be invalid, maybe the playback thread terminated
+                    self.tx = None;
+                }
+            } else {
+                let (tx, rx) = unbounded();
 
-            let builder = thread::Builder::new().name("audio/playback".into());
-            builder
-                .spawn(move || {
-                    ACTIVE_SFX.fetch_add(1, Ordering::SeqCst);
+                self.tx.replace(tx.clone());
+                Self::spawn_thread(rx)?;
 
-                    pa.write(&data)
-                        .map_err(|e| AudioPluginError::PlaybackError {
-                            description: format!("Error during writing of playback buffer: {}", e),
-                        })
-                        .unwrap();
-
-                    // pa.drain()
-                    // .map_err(|e| AudioPluginError::PlaybackError {
-                    //     description: format!("Error during playback: {}", e),
-                    // })
-                    // .ok();
-
-                    ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
-                })
-                .unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
+                tx.send(data.to_vec())?;
+            }
 
             Ok(())
         }
@@ -632,15 +672,19 @@ mod backends {
         }
 
         fn is_audio_muted(&self) -> Result<bool> {
-            let mut handler = SinkController::create();
-            let result = handler
-                .get_default_device()
-                .map_err(|_e| AudioPluginError::PulseError {
-                    description: "Could not query PulseAudio".to_owned(),
-                })?
-                .mute;
+            // TODO: Fix this, deadlocks on resume from suspend
 
-            Ok(result)
+            // let mut handler = SinkController::create();
+            // let result = handler
+            //     .get_default_device()
+            //     .map_err(|_e| AudioPluginError::PulseError {
+            //         description: "Could not query PulseAudio".to_owned(),
+            //     })?
+            //     .mute;
+
+            // Ok(result)
+
+            Ok(false)
         }
     }
 }
