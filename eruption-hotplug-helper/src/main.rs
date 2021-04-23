@@ -20,6 +20,7 @@ use clap::Clap;
 use log::*;
 use std::{
     env, io,
+    path::Path,
     process::{Command, Stdio},
     thread,
     time::Duration,
@@ -115,112 +116,200 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     match opts.command {
         Subcommands::Hotplug => {
-            log::info!("A hotplug event has been triggered, notifying the Eruption daemon...");
-
             // place a lockfile, so we don't run into loops
             match lockfile::Lockfile::create("/run/lock/eruption-hotplug-helper.lock") {
                 Ok(lock_file) => {
-                    log::debug!("Checking whether the system is fully booted...");
+                    if Path::new("/run/lock/eruption-sleep.lock").exists() {
+                        log::info!("Waking up from system sleep...");
 
-                    let result = Command::new("/usr/bin/systemctl")
-                        .arg("is-system-running")
-                        .stdout(Stdio::null())
-                        .status();
+                        // sleep until udev has settled
+                        log::info!("Waiting for the devices to settle...");
 
-                    match result {
-                        Ok(status) if status.success() => {
-                            // sleep until udev has settled
-                            log::info!("Waiting for the devices to settle...");
+                        // udevadm settle may/will deadlock since eruption adds (virtual) devices to udev
+                        let status = Command::new("/usr/bin/udevadm")
+                            .arg("settle")
+                            .stdout(Stdio::null())
+                            .status();
 
-                            // udevadm settle may/will deadlock since eruption adds (virtual) devices to udev
-                            let status = Command::new("/usr/bin/udevadm")
-                                .arg("settle")
-                                .stdout(Stdio::null())
-                                .status();
+                        if let Err(e) = status {
+                            // udev-settle has failed, sleep a while and let the devices settle
 
-                            if let Err(e) = status {
-                                // udev-settle has failed, sleep a while and let the devices settle
+                            log::error!("udevadm settle has failed: {}", e);
 
-                                log::error!("udevadm settle has failed: {}", e);
+                            thread::sleep(Duration::from_millis(2500));
+                        } else {
+                            // sleep a while just to be safe
+                            thread::sleep(Duration::from_millis(500));
 
-                                thread::sleep(Duration::from_millis(2500));
-                            } else {
-                                // sleep a while just to be safe
-                                thread::sleep(Duration::from_millis(500));
+                            log::info!("Done, all devices have settled");
+                        }
 
-                                log::info!("Done, all devices have settled");
+                        log::info!("Now starting the eruption.service...");
+
+                        // TODO: Implement a D-Bus based notification interface,
+                        //       simply restart the eruption.service for now
+                        let status = Command::new("/usr/bin/systemctl")
+                            .arg("start")
+                            .arg("eruption.service")
+                            .stdout(Stdio::null())
+                            .status()?;
+
+                        if status.success() {
+                            // wait for the eruption.service to be fully operational...
+                            log::info!("Waiting for Eruption to be fully operational...");
+
+                            let mut retry_counter = 0;
+
+                            'WAIT_START_LOOP: loop {
+                                let result = Command::new("/usr/bin/systemctl")
+                                    .arg("is-active")
+                                    .arg("eruption.service")
+                                    .stdout(Stdio::null())
+                                    .status();
+
+                                match result {
+                                    Ok(status) => {
+                                        if status.success() {
+                                            log::info!(
+                                                "Eruption has been started successfully, exiting now"
+                                            );
+
+                                            break 'WAIT_START_LOOP;
+                                        } else {
+                                            thread::sleep(Duration::from_millis(1000));
+
+                                            if retry_counter >= 5 {
+                                                log::error!(
+                                                    "Timeout while starting eruption.service"
+                                                );
+
+                                                break 'WAIT_START_LOOP;
+                                            } else {
+                                                retry_counter += 1;
+                                            }
+                                        }
+                                    }
+
+                                    Err(e) => {
+                                        log::error!(
+                                            "Error while waiting for Eruption to start: {}",
+                                            e
+                                        );
+
+                                        break 'WAIT_START_LOOP;
+                                    }
+                                }
                             }
+                        } else {
+                            log::error!("Could not start Eruption, an error occurred");
+                        }
+                    } else {
+                        log::info!(
+                            "A hotplug event has been triggered, notifying the Eruption daemon..."
+                        );
 
-                            log::info!("Now restarting the eruption.service...");
+                        log::debug!("Checking whether the system is fully booted...");
 
-                            // TODO: Implement a D-Bus based notification interface,
-                            //       simply restart the eruption.service for now
-                            let status = Command::new("/usr/bin/systemctl")
-                                .arg("restart")
-                                .arg("eruption.service")
-                                .stdout(Stdio::null())
-                                .status()?;
+                        let result = Command::new("/usr/bin/systemctl")
+                            .arg("is-system-running")
+                            .stdout(Stdio::null())
+                            .status();
 
-                            if status.success() {
-                                // wait for the eruption.service to be fully operational...
-                                log::info!("Waiting for Eruption to be fully operational...");
+                        match result {
+                            Ok(status) if status.success() => {
+                                // sleep until udev has settled
+                                log::info!("Waiting for the devices to settle...");
 
-                                let mut retry_counter = 0;
+                                // udevadm settle may/will deadlock since eruption adds (virtual) devices to udev
+                                let status = Command::new("/usr/bin/udevadm")
+                                    .arg("settle")
+                                    .stdout(Stdio::null())
+                                    .status();
 
-                                'WAIT_LOOP: loop {
-                                    let result = Command::new("/usr/bin/systemctl")
-                                        .arg("is-active")
-                                        .arg("eruption.service")
-                                        .stdout(Stdio::null())
-                                        .status();
+                                if let Err(e) = status {
+                                    // udev-settle has failed, sleep a while and let the devices settle
 
-                                    match result {
-                                        Ok(status) => {
-                                            if status.success() {
-                                                log::info!(
+                                    log::error!("udevadm settle has failed: {}", e);
+
+                                    thread::sleep(Duration::from_millis(2500));
+                                } else {
+                                    // sleep a while just to be safe
+                                    thread::sleep(Duration::from_millis(500));
+
+                                    log::info!("Done, all devices have settled");
+                                }
+
+                                log::info!("Now restarting the eruption.service...");
+
+                                // TODO: Implement a D-Bus based notification interface,
+                                //       simply restart the eruption.service for now
+                                let status = Command::new("/usr/bin/systemctl")
+                                    .arg("restart")
+                                    .arg("eruption.service")
+                                    .stdout(Stdio::null())
+                                    .status()?;
+
+                                if status.success() {
+                                    // wait for the eruption.service to be fully operational...
+                                    log::info!("Waiting for Eruption to be fully operational...");
+
+                                    let mut retry_counter = 0;
+
+                                    'WAIT_RESTART_LOOP: loop {
+                                        let result = Command::new("/usr/bin/systemctl")
+                                            .arg("is-active")
+                                            .arg("eruption.service")
+                                            .stdout(Stdio::null())
+                                            .status();
+
+                                        match result {
+                                            Ok(status) => {
+                                                if status.success() {
+                                                    log::info!(
                                                     "Notification sent successfully, exiting now"
                                                 );
 
-                                                break 'WAIT_LOOP;
-                                            } else {
-                                                thread::sleep(Duration::from_millis(1000));
+                                                    break 'WAIT_RESTART_LOOP;
+                                                } else {
+                                                    thread::sleep(Duration::from_millis(1000));
 
-                                                if retry_counter >= 5 {
-                                                    log::error!(
+                                                    if retry_counter >= 5 {
+                                                        log::error!(
                                                         "Timeout while restarting eruption.service"
                                                     );
 
-                                                    break 'WAIT_LOOP;
-                                                } else {
-                                                    retry_counter += 1;
+                                                        break 'WAIT_RESTART_LOOP;
+                                                    } else {
+                                                        retry_counter += 1;
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                        Err(e) => {
-                                            log::error!(
-                                                "Error while waiting for Eruption to start: {}",
-                                                e
-                                            );
+                                            Err(e) => {
+                                                log::error!(
+                                                    "Error while waiting for Eruption to start: {}",
+                                                    e
+                                                );
 
-                                            break 'WAIT_LOOP;
+                                                break 'WAIT_RESTART_LOOP;
+                                            }
                                         }
                                     }
+                                } else {
+                                    log::error!("Could not notify Eruption, an error occurred");
                                 }
-                            } else {
-                                log::error!("Could not notify Eruption, an unknown error occurred");
                             }
-                        }
 
-                        Err(e) => {
-                            log::error!(
-                                "Could not determine whether the system is still booting: {}",
-                                e
-                            );
-                        }
+                            Err(e) => {
+                                log::error!(
+                                    "Could not determine whether the system is still booting: {}",
+                                    e
+                                );
+                            }
 
-                        _ => {
-                            log::info!("System is still booting, skipping restart of Eruption");
+                            _ => {
+                                log::info!("System is still booting, skipping restart of Eruption");
+                            }
                         }
                     }
 

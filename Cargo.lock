@@ -740,7 +740,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.0.2"
+version = "0.0.5"
 dependencies = [
  "clap",
  "clap_generate",
@@ -1847,9 +1847,9 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f2fc8e1085d53b72898c59ceee1980b5826b0c98ce99886b7518f0ead00e5cb"
+checksum = "dd448d3e7018f2ff38dd732a374045f5b037eb4ee477d9241d9bb8c209528c1c"
 dependencies = [
  "bstr",
  "cc",
@@ -2672,9 +2672,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.4.5"
+version = "1.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "957056ecddbeba1b26965114e191d2e8589ce74db242b6ea25fc4062427a5c19"
+checksum = "2a26af418b574bd56588335b3a3659a65725d4e636eb1016c2f9e3b38c7cc759"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -3019,9 +3019,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.17.1"
+version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a42d53b0c95692ea084fe9fecbb5d428098b16addcd3da956b97841a28df8947"
+checksum = "7f5e4b56d92c7c56cc8a06df0cc06860a8ec6102e9a8a5ee85dff90afbeadf3d"
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",
