@@ -3,7 +3,7 @@
 
 Name:    eruption-git
 Version: 0.1.22
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
