@@ -309,6 +309,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/corsair_strafe.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/generic_mouse.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_xtd.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_burst_pro.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo_remastered.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
