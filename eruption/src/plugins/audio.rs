@@ -554,9 +554,12 @@ mod backends {
                 let (tx, rx) = unbounded();
 
                 self.tx.replace(tx.clone());
-                Self::spawn_thread(rx)?;
+                Self::spawn_thread(rx)
+                    .unwrap_or_else(|e| error!("Could not spawn the audio playback thread: {}", e));
 
-                tx.send(data.to_vec())?;
+                tx.send(data.to_vec()).unwrap_or_else(|e| {
+                    error!("Could not send data to the playback thread: {}", e)
+                });
             }
 
             Ok(())
