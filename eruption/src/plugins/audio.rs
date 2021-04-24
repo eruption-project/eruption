@@ -505,11 +505,11 @@ mod backends {
                             description: format!("Error during writing of playback buffer: {}", e),
                         })
                         .unwrap();
-                    pa.drain()
-                        .map_err(|e| AudioPluginError::PlaybackError {
-                            description: format!("Error during playback: {}", e),
-                        })
-                        .ok();
+                    // pa.drain()
+                    //     .map_err(|e| AudioPluginError::PlaybackError {
+                    //         description: format!("Error during playback: {}", e),
+                    //     })
+                    //     .ok();
 
                     ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
                 })
@@ -618,6 +618,7 @@ mod backends {
 
         fn get_master_volume(&self) -> Result<isize> {
             let mut handler = SinkController::create();
+
             let result = handler
                 .get_default_device()
                 .map_err(|_e| AudioPluginError::PulseError {
@@ -631,17 +632,16 @@ mod backends {
         }
 
         fn is_audio_muted(&self) -> Result<bool> {
-            // let mut handler = SinkController::create();
-            // let result = handler
-            //     .get_default_device()
-            //     .map_err(|_e| AudioPluginError::PulseError {
-            //         description: "Could not query PulseAudio".to_owned(),
-            //     })?
-            //     .mute;
+            let mut handler = SinkController::create();
 
-            // Ok(result)
+            let result = handler
+                .get_default_device()
+                .map_err(|_e| AudioPluginError::PulseError {
+                    description: "Could not query PulseAudio".to_owned(),
+                })?
+                .mute;
 
-            Ok(false)
+            Ok(result)
         }
     }
 }
