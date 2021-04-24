@@ -36,7 +36,7 @@ hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 udev = "0.6.2"
 bitvec = "=0.19.5"
-serialport = "4.0.0"
+serialport = "4.0.1"
 icecream = "0.1.0"
 
 [dev-dependencies]

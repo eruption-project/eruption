@@ -1877,7 +1877,7 @@ checksum = "e420697df99b528ac4bac53d6b59936219c9f490933b79eab8e7b146152eb9ca"
 dependencies = [
  "approx 0.4.0",
  "matrixmultiply",
- "num-complex",
+ "num-complex 0.3.1",
  "num-rational",
  "num-traits 0.2.14",
  "simba",
@@ -1999,6 +1999,15 @@ name = "num-complex"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "747d632c0c558b87dbabbe6a82f3b4ae03720d0646ac5b7b4dae89394be5f2c5"
+dependencies = [
+ "num-traits 0.2.14",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26873667bbbb7c5182d4a37c1add32cdf09f841af72da53318fdb81543c15085"
 dependencies = [
  "num-traits 0.2.14",
 ]
@@ -2719,7 +2728,7 @@ checksum = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
 [[package]]
 name = "rust-pulsectl"
 version = "0.2.6"
-source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#9f0d1cfd785d78252ce0d5a993d15728e990f9b7"
+source = "git+https://github.com/X3n0m0rph59/pulsectl.git?branch=master#09c36e6c1f1245143b505c730459ada94f25f446"
 dependencies = [
  "libpulse-binding",
 ]
@@ -2747,11 +2756,11 @@ dependencies = [
 
 [[package]]
 name = "rustfft"
-version = "5.1.0"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f87c289af25ed4b3e258126559b6603e5a8f734f48defbbe0fd62abdb49089c3"
+checksum = "17a371ca78993da0d92a6ccd85f2e708530851e4e3783a1a3222083fe09b736b"
 dependencies = [
- "num-complex",
+ "num-complex 0.4.0",
  "num-integer",
  "num-traits 0.2.14",
  "primal-check",
@@ -2904,7 +2913,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5132a955559188f3d13c9ba831e77c802ddc8782783f050ed0c52f5988b95f4c"
 dependencies = [
  "approx 0.4.0",
- "num-complex",
+ "num-complex 0.3.1",
  "num-traits 0.2.14",
  "paste 1.0.5",
 ]
