@@ -17,8 +17,8 @@
 
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
-use gtk::WidgetExt;
-use palette::{Hsva, Shade, Srgba};
+use gtk::prelude::WidgetExt;
+use palette::{FromColor, Hsva, Shade, Srgba};
 
 use crate::ui::mouse::MouseError;
 
@@ -26,7 +26,7 @@ use super::{Mouse, Rectangle};
 
 const BORDER: (f64, f64) = (32.0, 32.0);
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatKonePureUltra {}
@@ -43,8 +43,8 @@ impl Mouse for RoccatKonePureUltra {
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let width = da.get_allocated_width() as f64;
-        let height = da.get_allocated_height() as f64;
+        let width = da.allocated_width() as f64;
+        let height = da.allocated_height() as f64;
 
         match crate::dbus_client::get_led_colors() {
             Ok(led_colors) => {
@@ -53,7 +53,7 @@ impl Mouse for RoccatKonePureUltra {
                 )
                 .unwrap();
 
-                let scale_factor = (height / pixbuf.get_height() as f64) * 0.85;
+                let scale_factor = (height / pixbuf.height() as f64) * 0.85;
 
                 for i in 144..(144 + 1) {
                     self.paint_cell(
@@ -63,13 +63,13 @@ impl Mouse for RoccatKonePureUltra {
                         width,
                         height,
                         scale_factor,
-                    );
+                    )?;
                 }
 
                 // paint the image
                 context.scale(scale_factor, scale_factor);
                 context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-                context.paint();
+                context.paint()?;
 
                 Ok(())
             }
@@ -86,7 +86,7 @@ impl Mouse for RoccatKonePureUltra {
         width: f64,
         height: f64,
         scale_factor: f64,
-    ) {
+    ) -> Result<()> {
         let cell_def = Rectangle {
             x: ((width / 2.0) + 120.0 + BORDER.0 * scale_factor) * scale_factor,
             y: ((height / 2.0) + BORDER.1 * scale_factor) + (162.0 * scale_factor),
@@ -108,8 +108,8 @@ impl Mouse for RoccatKonePureUltra {
         );
 
         // saturate and lighten color somewhat
-        let color = Hsva::from(color);
-        let color = Srgba::from(
+        let color = Hsva::from_color(color);
+        let color = Srgba::from_color(
             color
                 // .saturate(factor)
                 .lighten(factor),
@@ -118,6 +118,8 @@ impl Mouse for RoccatKonePureUltra {
 
         cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
         cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-        cr.fill();
+        cr.fill()?;
+
+        Ok(())
     }
 }

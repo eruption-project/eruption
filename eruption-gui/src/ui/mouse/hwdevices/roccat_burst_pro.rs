@@ -17,8 +17,8 @@
 
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
-use gtk::WidgetExt;
-use palette::{Hsva, Shade, Srgba};
+use gtk::prelude::WidgetExt;
+use palette::{FromColor, Hsva, Shade, Srgba};
 
 use crate::{constants, ui::mouse::MouseError};
 
@@ -26,7 +26,7 @@ use super::{Mouse, Rectangle};
 
 const BORDER: (f64, f64) = (32.0, 32.0);
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatBurstPro {}
@@ -43,8 +43,8 @@ impl Mouse for RoccatBurstPro {
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let width = da.get_allocated_width() as f64;
-        let height = da.get_allocated_height() as f64;
+        let width = da.allocated_width() as f64;
+        let height = da.allocated_height() as f64;
 
         match crate::dbus_client::get_led_colors() {
             Ok(led_colors) => {
@@ -52,7 +52,7 @@ impl Mouse for RoccatBurstPro {
                     Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-burst-pro.png")
                         .unwrap();
 
-                let scale_factor = (height / pixbuf.get_height() as f64) * 0.85;
+                let scale_factor = (height / pixbuf.height() as f64) * 0.85;
 
                 for i in [constants::CANVAS_SIZE - 36, constants::CANVAS_SIZE - 1].iter() {
                     self.paint_cell(
@@ -62,13 +62,13 @@ impl Mouse for RoccatBurstPro {
                         width,
                         height,
                         scale_factor,
-                    );
+                    )?;
                 }
 
                 // paint the image
                 context.scale(scale_factor, scale_factor);
                 context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-                context.paint();
+                context.paint()?;
 
                 Ok(())
             }
@@ -85,7 +85,7 @@ impl Mouse for RoccatBurstPro {
         width: f64,
         height: f64,
         scale_factor: f64,
-    ) {
+    ) -> Result<()> {
         // compute scaling factor
         let factor = ((100.0 - crate::STATE.read().current_brightness.unwrap_or_else(|| 0) as f64)
             / 100.0)
@@ -109,8 +109,8 @@ impl Mouse for RoccatBurstPro {
                 );
 
                 // saturate and lighten color somewhat
-                let color = Hsva::from(color);
-                let color = Srgba::from(
+                let color = Hsva::from_color(color);
+                let color = Srgba::from_color(
                     color
                         // .saturate(factor)
                         .lighten(factor),
@@ -119,7 +119,7 @@ impl Mouse for RoccatBurstPro {
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
                 cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-                cr.fill();
+                cr.fill()?;
             }
 
             35 => {
@@ -139,8 +139,8 @@ impl Mouse for RoccatBurstPro {
                 );
 
                 // saturate and lighten color somewhat
-                let color = Hsva::from(color);
-                let color = Srgba::from(
+                let color = Hsva::from_color(color);
+                let color = Srgba::from_color(
                     color
                         // .saturate(factor)
                         .lighten(factor),
@@ -149,10 +149,12 @@ impl Mouse for RoccatBurstPro {
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
                 cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-                cr.fill();
+                cr.fill()?;
             }
 
             _ => { /* do nothing  */ }
         }
+
+        Ok(())
     }
 }

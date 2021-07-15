@@ -22,16 +22,16 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Initialize page "Profiles"
 pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
-    let host_name: gtk::Entry = builder.get_object("host_name").unwrap();
-    let port_number: gtk::SpinButton = builder.get_object("port_number").unwrap();
+    let host_name: gtk::Entry = builder.object("host_name").unwrap();
+    let port_number: gtk::SpinButton = builder.object("port_number").unwrap();
 
     host_name.connect_changed(move |entry| {
-        preferences::set_host_name(&entry.get_text())
+        preferences::set_host_name(&entry.text())
             .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
     });
 
     port_number.connect_changed(move |entry| {
-        preferences::set_port_number(entry.get_value() as u16)
+        preferences::set_port_number(entry.value() as u16)
             .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
     });
 

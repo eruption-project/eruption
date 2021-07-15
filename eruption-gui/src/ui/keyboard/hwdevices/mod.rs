@@ -66,7 +66,14 @@ pub trait Keyboard {
     /// Draw an animated keyboard with live action colors
     fn draw_keyboard(&self, _da: &gtk::DrawingArea, context: &cairo::Context) -> Result<()>;
 
-    fn paint_key(&self, key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layout);
+    fn paint_key(
+        &self,
+        key: usize,
+        color: &RGBA,
+        cr: &cairo::Context,
+        layout: &pango::Layout,
+    ) -> Result<()>;
+
     fn get_key_defs(&self, layout: &str) -> &[KeyDef];
 }
 

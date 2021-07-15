@@ -354,7 +354,7 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
     let (vid, pid) = dbus_client::get_managed_devices()?.0[0];
 
     let model = format!("{:04x}:{:04x}", vid, pid);
-    let host_name = preferences::get_host_name()?;
+    let host_name = preferences::get_host_name().unwrap_or("localhost".to_string());
     let port_number = preferences::get_port_number()?;
 
     if enabled {

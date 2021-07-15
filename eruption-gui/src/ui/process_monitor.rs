@@ -15,9 +15,9 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use gio::ActionMapExt;
 use glib::{clone, StaticType};
 use gtk::prelude::*;
+use std::time::Duration;
 
 use crate::{dbus_client, ui::rule, util};
 
@@ -35,15 +35,15 @@ pub enum ProcessMonitorError {
 pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
     // let application = application.as_ref();
 
-    // let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+    // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let rules_box: gtk::Box = builder.get_object("rules_box").unwrap();
-    let rules_treeview: gtk::TreeView = builder.get_object("rules_treeview").unwrap();
+    let rules_box: gtk::Box = builder.object("rules_box").unwrap();
+    let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     if let Ok(rules) = dbus_client::enumerate_process_monitor_rules() {
         // rules list
         let rules_treestore = gtk::TreeStore::new(&[
-            glib::Type::Bool,
+            glib::Type::BOOL,
             glib::Type::U64,
             String::static_type(),
             String::static_type(),
@@ -62,14 +62,13 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
             rules_treestore.insert_with_values(
                 None,
                 None,
-                &[0, 1, 2, 3, 4, 5],
                 &[
-                    &enabled,
-                    &(index as u64),
-                    &sensor,
-                    &selector,
-                    &action,
-                    &metadata,
+                    (0, &enabled),
+                    (1, &(index as u64)),
+                    (2, &sensor),
+                    (3, &selector),
+                    (4, &action),
+                    (5, &metadata),
                 ],
             );
         }
@@ -78,7 +77,7 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
 
         // rules_treeview.connect_row_activated(
         //     clone!(@strong builder => move |_tv, _path, _column| {
-        //         // let index = tv.get_model().unwrap().get_value(&tv.get_model().unwrap().get_iter(&path).unwrap(), 0).get::<u64>().unwrap().unwrap();
+        //         // let index = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 0).get::<u64>().unwrap();
         //     }),
         // );
 
@@ -98,23 +97,23 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
 
 /// Updates the ruleset of the eruption-process-monitor daemon to match the current state of the GUI
 pub fn transmit_rules_to_process_monitor(builder: &gtk::Builder) -> Result<()> {
-    let rules_treeview: gtk::TreeView = builder.get_object("rules_treeview").unwrap();
+    let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     let mut rules: Vec<(String, String, String, String)> = Vec::new();
 
     // generate a Vec<_> from the ruleset
     rules_treeview
-        .get_model()
+        .model()
         .unwrap()
         .foreach(|model, _path, iter| {
-            let metadata = model.get_value(iter, 5).get::<String>().unwrap().unwrap();
+            let metadata = model.value(iter, 5).get::<String>().unwrap();
 
             if !metadata.contains("internal") {
-                let enabled = model.get_value(iter, 0).get::<bool>().unwrap().unwrap();
+                let enabled = model.value(iter, 0).get::<bool>().unwrap();
 
-                let sensor = model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                let selector = model.get_value(iter, 3).get::<String>().unwrap().unwrap();
-                let action = model.get_value(iter, 4).get::<String>().unwrap().unwrap();
+                let sensor = model.value(iter, 2).get::<String>().unwrap();
+                let selector = model.value(iter, 3).get::<String>().unwrap();
+                let action = model.value(iter, 4).get::<String>().unwrap();
 
                 let metadata = format!(
                     "{},user-defined",
@@ -123,10 +122,10 @@ pub fn transmit_rules_to_process_monitor(builder: &gtk::Builder) -> Result<()> {
 
                 rules.push((sensor, selector, action, metadata));
             } else {
-                let sensor = model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                let selector = model.get_value(iter, 3).get::<String>().unwrap().unwrap();
-                let action = model.get_value(iter, 4).get::<String>().unwrap().unwrap();
-                let metadata = model.get_value(iter, 5).get::<String>().unwrap().unwrap();
+                let sensor = model.value(iter, 2).get::<String>().unwrap();
+                let selector = model.value(iter, 3).get::<String>().unwrap();
+                let action = model.value(iter, 4).get::<String>().unwrap();
+                let metadata = model.value(iter, 5).get::<String>().unwrap();
 
                 rules.push((sensor, selector, action, metadata));
             }
@@ -152,17 +151,16 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
-    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+    let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let notification_box: gtk::Box = builder.get_object("notification_box").unwrap();
+    let notification_box: gtk::Box = builder.object("notification_box").unwrap();
 
-    let rules_box: gtk::Box = builder.get_object("rules_box").unwrap();
+    let rules_box: gtk::Box = builder.object("rules_box").unwrap();
 
-    let restart_process_monitor_button: gtk::Button = builder
-        .get_object("restart_process_monitor_button")
-        .unwrap();
+    let restart_process_monitor_button: gtk::Button =
+        builder.object("restart_process_monitor_button").unwrap();
 
-    let rules_treeview: gtk::TreeView = builder.get_object("rules_treeview").unwrap();
+    let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     // register actions
     let add_rule = gio::SimpleAction::new("add-rule", None);
@@ -171,7 +169,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
         if response == gtk::ResponseType::Ok {
             let rule = rule.unwrap();
 
-            let tree_model = rules_treeview.get_model().unwrap();
+            let tree_model = rules_treeview.model().unwrap();
 
             let mut counter = 1;
             tree_model.foreach(|_m, _p, _i| { counter += 1; true });
@@ -186,14 +184,13 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             rules_treestore.insert_with_values(
                 None,
                 None,
-                &[0, 1, 2, 3, 4, 5],
                 &[
-                    &rule.enabled,
-                    &(index as u64),
-                    &rule.sensor,
-                    &rule.selector,
-                    &rule.action,
-                    &metadata,
+                    (0, &rule.enabled),
+                    (1, &(index as u64)),
+                    (2, &rule.sensor),
+                    (3, &rule.selector),
+                    (4, &rule.action),
+                    (5, &metadata),
                 ],
             );
 
@@ -235,12 +232,12 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     remove_rule.connect_activate(clone!(@strong builder, @strong notification_box, @strong rules_box,
                                         @strong main_window, @strong rules_treeview => move |_, _| {
 
-        let selection = &rules_treeview.get_selection().get_selected_rows().0;
-        let rules_treestore: gtk::TreeStore = rules_treeview.get_model().unwrap().downcast::<gtk::TreeStore>().unwrap();
+        let selection = &rules_treeview.selection().selected_rows().0;
+        let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
 
         if !selection.is_empty() {
             for p in selection.iter() {
-                rules_treestore.remove(&rules_treestore.get_iter(&p).unwrap());
+                rules_treestore.remove(&rules_treestore.iter(&p).unwrap());
             }
 
             if let Err(e) = transmit_rules_to_process_monitor(&builder) {
@@ -296,20 +293,20 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     edit_rule.connect_activate(clone!(@strong builder, @strong notification_box, @strong rules_box,
                                         @strong main_window, @strong rules_treeview => move |_, _| {
 
-        let selection = &rules_treeview.get_selection().get_selected_rows();
+        let selection = &rules_treeview.selection().selected_rows();
         let p = &selection.0;
 
         if !p.is_empty() {
             let p = &p[0];
 
-            let rules_treestore: gtk::TreeStore = rules_treeview.get_model().unwrap().downcast::<gtk::TreeStore>().unwrap();
+            let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
 
-            let rule_enabled = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 0).get::<bool>().unwrap().unwrap();
-            let index = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 1).get::<u64>().unwrap().unwrap();
-            let sensor = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 2).get::<String>().unwrap().unwrap();
-            let selector = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 3).get::<String>().unwrap().unwrap();
-            let action = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 4).get::<String>().unwrap().unwrap();
-            let metadata = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 5).get::<String>().unwrap().unwrap();
+            let rule_enabled = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
+            let index = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 1).get::<u64>().unwrap();
+            let sensor = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 2).get::<String>().unwrap();
+            let selector = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 3).get::<String>().unwrap();
+            let action = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 4).get::<String>().unwrap();
+            let metadata = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 5).get::<String>().unwrap();
 
             let rule = rule::Rule::new(Some(index as usize), rule_enabled, sensor, selector, action, metadata);
 
@@ -317,7 +314,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             if response == gtk::ResponseType::Ok {
                 let rule = rule.unwrap();
 
-                let tree_model: gtk::TreeModel = rules_treeview.get_model().unwrap();
+                let tree_model: gtk::TreeModel = rules_treeview.model().unwrap();
                 let rules_treestore: gtk::TreeStore = tree_model.downcast::<gtk::TreeStore>().unwrap();
 
                 let index = rule.index.unwrap() as u64;
@@ -325,19 +322,18 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 rules_treestore.insert_with_values(
                     None,
                     None,
-                    &[0, 1, 2, 3, 4, 5],
                     &[
-                        &rule.enabled,
-                        &index,
-                        &rule.sensor,
-                        &rule.selector,
-                        &rule.action,
-                        &rule.metadata,
+                        (0, &rule.enabled),
+                        (1, &index),
+                        (2, &rule.sensor),
+                        (3, &rule.selector),
+                        (4, &rule.action),
+                        (5, &rule.metadata),
                     ],
                 );
 
                 // remove original item
-                rules_treestore.remove(&rules_treestore.get_iter(&p).unwrap());
+                rules_treestore.remove(&rules_treestore.iter(&p).unwrap());
 
                 if let Err(e) = transmit_rules_to_process_monitor(&builder) {
                     log::error!("{}", e);
@@ -375,9 +371,9 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     application.set_accels_for_action("app.edit-rule", &[]);
 
     // enable/disable tool-buttons
-    rules_treeview.get_selection().connect_changed(
+    rules_treeview.selection().connect_changed(
         clone!(@weak edit_rule, @weak remove_rule  => move |sel| {
-            if !sel.get_selected_rows().0.is_empty() {
+            if !sel.selected_rows().0.is_empty() {
                 edit_rule.set_enabled(true);
                 remove_rule.set_enabled(true);
             } else {
@@ -395,7 +391,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             util::restart_process_monitor_daemon().unwrap_or_else(|e| log::error!("{}", e));
 
             glib::timeout_add_local(
-                1000,
+                Duration::from_millis(1000),
                 clone!(@strong builder, @strong application => move || {
                     if let Err(e) = initialize_process_monitor_page(&application, &builder) {
                         log::error!("{}", e);
@@ -439,10 +435,10 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     let cell_renderer_text = gtk::CellRendererText::new();
 
     cell_renderer_toggle.connect_toggled(clone!(@strong builder, @strong rules_treeview => move |_cr, p| {
-            let rules_treestore: gtk::TreeStore = rules_treeview.get_model().unwrap().downcast::<gtk::TreeStore>().unwrap();
+            let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
 
-            let value = rules_treestore.get_value(&rules_treestore.get_iter(&p).unwrap(), 0).get::<bool>().unwrap().unwrap();
-            rules_treestore.set_value(&rules_treestore.get_iter(&p).unwrap(), 0, &(!value).to_value());
+            let value = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
+            rules_treestore.set_value(&rules_treestore.iter(&p).unwrap(), 0, &(!value).to_value());
 
             transmit_rules_to_process_monitor(&builder).unwrap_or_else(|e| log::error!("{}", e));
         }));
@@ -455,7 +451,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     metadata_column.pack_start(&cell_renderer_text, false);
 
     rules_treeview
-        .get_columns()
+        .columns()
         .iter()
         .for_each(clone!(@strong rules_treeview => move |c| {
             rules_treeview.remove_column(c);

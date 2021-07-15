@@ -17,36 +17,36 @@ clap_generate = "3.0.0-beta.2"
 ctrlc = { version = "3.1.9", features = ["termination"] }
 config = "0.11.0"
 colored = "2.0.0"
-dbus = "0.9.2"
+dbus = "0.9.3"
 dbus-tokio = "0.7.3"
 dbus-tree = "0.9.1"
 dyn-clone = "1.0.4"
 dyn-clonable = "0.9.0"
-indexmap = "1.6.2"
+indexmap = "1.7.0"
 log = "0.4.14"
-libc = "0.2.93"
-nix = "0.20.0"
+libc = "0.2.98"
+nix = "0.22.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-regex = "1.4.6"
-serde = { version = "1.0.125", features = ["derive"] }
+regex = "1.5.4"
+serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
 serde_yaml = "0.8.17"
-tokio = { version = "1.5.0", features = ["full"] }
-tracing = "0.1.25"
+tokio = { version = "1.8.1", features = ["full"] }
+tracing = "0.1.26"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.17"
-crossbeam = "0.8.0"
+tracing-subscriber = "0.2.19"
+crossbeam = "0.8.1"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
-thiserror = "1.0.24"
+thiserror = "1.0.26"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
 hotwatch = "0.4.5"
 hexdump = "0.1.1"
-itertools = "0.10.0"
-rayon = "1.5.0"
+itertools = "0.10.1"
+rayon = "1.5.1"
 lazy_static = "1.4.0"
 rust-crypto = "0.2.36"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
@@ -54,4 +54,4 @@ walkdir = "2.3.2"
 x11rb = "0.8.1"
 
 [dev-dependencies]
-tokio = { version = "1.5.0", features = ["test-util"] }
+tokio = { version = "1.8.1", features = ["test-util"] }

@@ -21,22 +21,34 @@ use crate::{
 };
 use crate::{dbus_client, profiles::FindConfig};
 use crate::{manifest::Manifest, util};
-use gio::ActionMapExt;
 use glib::clone;
 use glib::prelude::*;
 use gtk::ShadowType;
 use gtk::{prelude::*, Align, IconSize, Justification, Orientation, PositionType};
 use paste::paste;
+
+#[cfg(feature = "sourceview")]
 use sourceview::prelude::*;
+#[cfg(feature = "sourceview")]
 use sourceview::BufferBuilder;
+
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-thread_local! {
-    /// Holds the source code buffers and the respective paths in the file system
-    static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, sourceview::Buffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+cfg_if::cfg_if! {
+    if #[cfg(feature = "sourceview")] {
+        thread_local! {
+            /// Holds the source code buffers and the respective paths in the file system
+            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, sourceview::Buffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+        }
+    } else {
+        thread_local! {
+            /// Holds the source code buffers and the respective paths in the file system
+            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, gtk::TextBuffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+        }
+    }
 }
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -148,7 +160,7 @@ macro_rules! declare_config_widget_numeric {
                 row2.pack_start(&scale, false, true, 8);
 
                 scale.connect_value_changed(move |c| {
-                    let value = c.get_value() as i64;
+                    let value = c.value() as i64;
                     callback(value);
                 });
 
@@ -257,7 +269,7 @@ macro_rules! declare_config_widget_numeric {
                 row2.pack_start(&scale, false, true, 8);
 
                 scale.connect_value_changed(move |c| {
-                    let value = c.get_value() as $t;
+                    let value = c.value() as $t;
                     callback(value);
                 });
 
@@ -344,7 +356,7 @@ macro_rules! declare_config_widget_input {
                 row2.pack_start(&entry, false, true, 8);
 
                 entry.connect_changed(move |e| {
-                    let value = e.get_text();
+                    let value = e.text();
                     callback(value.to_string());
                 });
 
@@ -530,7 +542,7 @@ macro_rules! declare_config_widget_switch {
                 row2.pack_start(&switch, false, false, 8);
 
                 switch.connect_changed_active(move |s| {
-                    let value = s.get_state();
+                    let value = s.state();
                     callback(value);
                 });
 
@@ -813,7 +825,7 @@ fn create_config_editor(
 
 /// Populate the configuration tab with settings/GUI controls
 fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
-    let config_window: gtk::ScrolledWindow = builder.get_object("config_window").unwrap();
+    let config_window: gtk::ScrolledWindow = builder.object("config_window").unwrap();
 
     // first, clear all child widgets
     config_window.foreach(|widget| {
@@ -838,7 +850,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
         .halign(Align::Start)
         .build();
 
-    let context = label.get_style_context();
+    let context = label.style_context();
     context.add_class("heading");
 
     container.pack_start(&label, false, false, 8);
@@ -904,7 +916,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 
 /// Remove unused elements from the profiles stack, except the "Configuration" page
 fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
-    let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
+    let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
 
     stack_widget.foreach(|widget| {
         stack_widget.remove(widget);
@@ -913,218 +925,435 @@ fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
     TEXT_BUFFERS.with(|b| b.borrow_mut().clear());
 }
 
-fn save_buffer_contents_to_file<P: AsRef<Path>>(
-    path: &P,
-    buffer: &sourceview::Buffer,
-    builder: &gtk::Builder,
-) -> Result<()> {
-    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+cfg_if::cfg_if! {
+    if #[cfg(feature = "sourceview")] {
+        fn save_buffer_contents_to_file<P: AsRef<Path>>(
+            path: &P,
+            buffer: &sourceview::Buffer,
+            builder: &gtk::Builder,
+        ) -> Result<()> {
+            let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let (start, end) = buffer.get_bounds();
-    let data = buffer.get_text(&start, &end, true).map(|gs| gs.to_owned());
+            let buffer = buffer.dynamic_cast_ref::<gtk::TextBuffer>().unwrap();
+            let (start, end) = buffer.bounds();
+            let data = buffer.text(&start, &end, true).map(|v| v.to_string());
 
-    match data {
-        Some(data) => {
-            // log::debug!("{}", &data);
+            match data {
+                Some(data) => {
+                    // log::debug!("{}", &data);
 
-            if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
-                log::error!("{}", e);
+                    if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
+                        log::error!("{}", e);
 
-                let message = "Could not write file".to_string();
-                let secondary =
-                    format!("Error writing to file {}: {}", &path.as_ref().display(), e);
+                        let message = "Could not write file".to_string();
+                        let secondary =
+                            format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
-                let message_dialog = gtk::MessageDialogBuilder::new()
-                    .parent(&main_window)
-                    .destroy_with_parent(true)
-                    .decorated(true)
-                    .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
-                    .title("Error")
-                    .buttons(gtk::ButtonsType::Ok)
-                    .build();
+                        let message_dialog = gtk::MessageDialogBuilder::new()
+                            .parent(&main_window)
+                            .destroy_with_parent(true)
+                            .decorated(true)
+                            .message_type(gtk::MessageType::Error)
+                            .text(&message)
+                            .secondary_text(&secondary)
+                            .title("Error")
+                            .buttons(gtk::ButtonsType::Ok)
+                            .build();
 
-                message_dialog.run();
-                message_dialog.hide();
+                        message_dialog.run();
+                        message_dialog.hide();
 
-                Err(ProfilesError::MethodCallError {
-                    description: "Could not write file".to_string(),
+                        Err(ProfilesError::MethodCallError {
+                            description: "Could not write file".to_string(),
+                        }
+                        .into())
+                    } else {
+                        log::info!("Wrote file: {}", &path.as_ref().display());
+
+                        Ok(())
+                    }
                 }
-                .into())
-            } else {
-                log::info!("Wrote file: {}", &path.as_ref().display());
 
-                Ok(())
+                _ => {
+                    log::error!("Could not get buffer contents");
+
+                    Err(ProfilesError::UnknownError {
+                        description: "Could not get buffer contents".to_string(),
+                    }
+                    .into())
+                }
             }
         }
+    } else {
+        fn save_buffer_contents_to_file<P: AsRef<Path>>(
+            path: &P,
+            buffer: &gtk::TextBuffer,
+            builder: &gtk::Builder,
+        ) -> Result<()> {
+            let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+                // log::debug!("{}", &data);
 
-        _ => {
-            log::error!("Could not get buffer contents");
+            let (start, end) = buffer.bounds();
+            let data = buffer.text(&start, &end, true).map(|v| v.to_string());
 
-            Err(ProfilesError::UnknownError {
-                description: "Could not get buffer contents".to_string(),
+            match data {
+                Some(data) => {
+                    // log::debug!("{}", &data);
+
+                    if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
+                        log::error!("{}", e);
+
+                        let message = "Could not write file".to_string();
+                        let secondary =
+                            format!("Error writing to file {}: {}", &path.as_ref().display(), e);
+
+                        let message_dialog = gtk::MessageDialogBuilder::new()
+                            .parent(&main_window)
+                            .destroy_with_parent(true)
+                            .decorated(true)
+                            .message_type(gtk::MessageType::Error)
+                            .text(&message)
+                            .secondary_text(&secondary)
+                            .title("Error")
+                            .buttons(gtk::ButtonsType::Ok)
+                            .build();
+
+                        message_dialog.run();
+                        message_dialog.hide();
+
+                        Err(ProfilesError::MethodCallError {
+                            description: "Could not write file".to_string(),
+                        }
+                        .into())
+                    } else {
+                        log::info!("Wrote file: {}", &path.as_ref().display());
+
+                        Ok(())
+                    }
+                }
+
+                _ => {
+                    log::error!("Could not get buffer contents");
+
+                    Err(ProfilesError::UnknownError {
+                        description: "Could not get buffer contents".to_string(),
+                    }
+                    .into())
+                }
             }
-            .into())
         }
     }
 }
 
-/// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
-/// showing the respective files contents
-fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
-    let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
-    let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
+cfg_if::cfg_if! {
+    if #[cfg(feature = "sourceview")] {
+        /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
+        /// showing the respective files contents
+        fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
+            let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
+            let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
-    let context = stack_switcher.get_style_context();
-    context.add_class("small-font");
+            let context = stack_switcher.style_context();
+            context.add_class("small-font");
 
-    let language_manager = sourceview::LanguageManager::get_default().unwrap();
+            let language_manager = sourceview::LanguageManager::default().unwrap();
 
-    let toml = language_manager.get_language("toml").unwrap();
-    let lua = language_manager.get_language("lua").unwrap();
+            let toml = language_manager.language("toml").unwrap();
+            let lua = language_manager.language("lua").unwrap();
 
-    // load and show .profile file
-    let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
+            // load and show .profile file
+            let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
 
-    let mut buffer_index = 0;
-    let buffer = BufferBuilder::new()
-        .language(&toml)
-        .highlight_syntax(true)
-        .text(&source_code)
-        .build();
+            let mut buffer_index = 0;
+            let buffer = BufferBuilder::new()
+                .language(&toml)
+                .highlight_syntax(true)
+                .text(&source_code)
+                .build();
 
-    // add buffer to global text buffers map for later reference
-    TEXT_BUFFERS.with(|b| {
-        let mut text_buffers = b.borrow_mut();
-        text_buffers.insert(
-            PathBuf::from(&profile.as_ref()),
-            (buffer_index, buffer.clone()),
-        );
-    });
-
-    buffer_index += 1;
-
-    let sourceview = sourceview::View::new_with_buffer(&buffer);
-    sourceview.set_show_line_marks(true);
-    sourceview.set_show_line_numbers(true);
-
-    sourceview.set_editable(true);
-
-    let filename = profile
-        .as_ref()
-        .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .to_string();
-
-    let scrolled_window = gtk::ScrolledWindowBuilder::new()
-        .shadow_type(ShadowType::None)
-        .build();
-    scrolled_window.add(&sourceview);
-
-    scrolled_window.show_all();
-
-    stack_widget.add_titled(
-        &scrolled_window,
-        &profile.as_ref().to_string_lossy(),
-        &filename,
-    );
-
-    scrolled_window.show_all();
-
-    // add associated .lua files
-
-    for p in util::enumerate_profiles()? {
-        if p.profile_file == profile.as_ref() {
-            for f in p.active_scripts {
-                // TODO: use configuration values from eruption.conf
-                let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
-
-                let source_code = std::fs::read_to_string(&script_path.join(&f))?;
-
-                let buffer = BufferBuilder::new()
-                    .language(&lua)
-                    .highlight_syntax(true)
-                    .text(&source_code)
-                    .build();
-
-                // add buffer to global text buffers map for later reference
-                TEXT_BUFFERS.with(|b| {
-                    let mut text_buffers = b.borrow_mut();
-                    text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
-                });
-
-                buffer_index += 1;
-
-                // script file editor
-                let sourceview = sourceview::View::new_with_buffer(&buffer);
-                sourceview.set_show_line_marks(true);
-                sourceview.set_show_line_numbers(true);
-
-                sourceview.set_editable(true);
-
-                let path = f.file_name().unwrap().to_string_lossy().to_string();
-
-                let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
-                scrolled_window.add(&sourceview);
-
-                stack_widget.add_titled(
-                    &scrolled_window,
-                    &path,
-                    &f.file_name().unwrap().to_string_lossy(),
+            // add buffer to global text buffers map for later reference
+            TEXT_BUFFERS.with(|b| {
+                let mut text_buffers = b.borrow_mut();
+                text_buffers.insert(
+                    PathBuf::from(&profile.as_ref()),
+                    (buffer_index, buffer.clone()),
                 );
+            });
 
-                scrolled_window.show_all();
+            buffer_index += 1;
 
-                let manifest_file =
-                    format!("{}.manifest", f.into_os_string().into_string().unwrap());
-                let f = PathBuf::from(manifest_file);
+            let sourceview = sourceview::View::with_buffer(&buffer);
+            sourceview.set_show_line_marks(true);
+            sourceview.set_show_line_numbers(true);
 
-                let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+            let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
 
-                let manifest_data = std::fs::read_to_string(&script_path.join(&f))?;
+            sourceview.set_editable(true);
 
-                let buffer = BufferBuilder::new()
-                    .language(&toml)
-                    .highlight_syntax(true)
-                    .text(&manifest_data)
-                    .build();
+            let filename = profile
+                .as_ref()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
 
-                // add buffer to global text buffers map for later reference
-                TEXT_BUFFERS.with(|b| {
-                    let mut text_buffers = b.borrow_mut();
-                    text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
-                });
+            let scrolled_window = gtk::ScrolledWindowBuilder::new()
+                .shadow_type(ShadowType::None)
+                .build();
+            scrolled_window.add(&sourceview);
 
-                buffer_index += 1;
+            scrolled_window.show_all();
 
-                // manifest file editor
-                let sourceview = sourceview::View::new_with_buffer(&buffer);
-                sourceview.set_show_line_marks(true);
-                sourceview.set_show_line_numbers(true);
+            stack_widget.add_titled(
+                &scrolled_window,
+                &profile.as_ref().to_string_lossy(),
+                &filename,
+            );
 
-                sourceview.set_editable(true);
+            scrolled_window.show_all();
 
-                let path = f.file_name().unwrap().to_string_lossy().to_string();
+            // add associated .lua files
 
-                let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
-                scrolled_window.add(&sourceview);
+            for p in util::enumerate_profiles()? {
+                if p.profile_file == profile.as_ref() {
+                    for f in p.active_scripts {
+                        // TODO: use configuration values from eruption.conf
+                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
 
-                stack_widget.add_titled(
-                    &scrolled_window,
-                    &path,
-                    &f.file_name().unwrap().to_string_lossy(),
-                );
+                        let source_code = std::fs::read_to_string(&script_path.join(&f))?;
 
-                scrolled_window.show_all();
+                        let buffer = BufferBuilder::new()
+                            .language(&lua)
+                            .highlight_syntax(true)
+                            .text(&source_code)
+                            .build();
+
+                        // add buffer to global text buffers map for later reference
+                        TEXT_BUFFERS.with(|b| {
+                            let mut text_buffers = b.borrow_mut();
+                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                        });
+
+                        buffer_index += 1;
+
+                        // script file editor
+                        let sourceview = sourceview::View::with_buffer(&buffer);
+                        sourceview.set_show_line_marks(true);
+                        sourceview.set_show_line_numbers(true);
+
+                        let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
+
+                        sourceview.set_editable(true);
+
+                        let path = f.file_name().unwrap().to_string_lossy().to_string();
+
+                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        scrolled_window.add(&sourceview);
+
+                        stack_widget.add_titled(
+                            &scrolled_window,
+                            &path,
+                            &f.file_name().unwrap().to_string_lossy(),
+                        );
+
+                        scrolled_window.show_all();
+
+                        let manifest_file =
+                            format!("{}.manifest", f.into_os_string().into_string().unwrap());
+                        let f = PathBuf::from(manifest_file);
+
+                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+
+                        let manifest_data = std::fs::read_to_string(&script_path.join(&f))?;
+
+                        let buffer = BufferBuilder::new()
+                            .language(&toml)
+                            .highlight_syntax(true)
+                            .text(&manifest_data)
+                            .build();
+
+                        // add buffer to global text buffers map for later reference
+                        TEXT_BUFFERS.with(|b| {
+                            let mut text_buffers = b.borrow_mut();
+                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                        });
+
+                        buffer_index += 1;
+
+                        // manifest file editor
+                        let sourceview = sourceview::View::with_buffer(&buffer);
+                        sourceview.set_show_line_marks(true);
+                        sourceview.set_show_line_numbers(true);
+
+                        let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
+
+                        sourceview.set_editable(true);
+
+                        let path = f.file_name().unwrap().to_string_lossy().to_string();
+
+                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        scrolled_window.add(&sourceview);
+
+                        stack_widget.add_titled(
+                            &scrolled_window,
+                            &path,
+                            &f.file_name().unwrap().to_string_lossy(),
+                        );
+
+                        scrolled_window.show_all();
+                    }
+
+                    break;
+                }
             }
 
-            break;
+            Ok(())
+        }
+    } else {
+        /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
+        /// showing the respective files contents
+        fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
+            let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
+            let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
+
+            let context = stack_switcher.style_context();
+            context.add_class("small-font");
+
+            // load and show .profile file
+            let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
+
+            let buffer = gtk::TextBufferBuilder::new().text(&source_code).build();
+
+            let text_view = gtk::TextViewBuilder::new()
+                .buffer(&buffer)
+                .build();
+
+            let mut buffer_index = 0;
+            // add buffer to global text buffers map for later reference
+            TEXT_BUFFERS.with(|b| {
+                let mut text_buffers = b.borrow_mut();
+                text_buffers.insert(
+                    PathBuf::from(&profile.as_ref()),
+                    (buffer_index, buffer.clone()),
+                );
+            });
+
+            buffer_index += 1;
+
+            text_view.set_editable(true);
+
+            let filename = profile
+                .as_ref()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
+
+            let scrolled_window = gtk::ScrolledWindowBuilder::new()
+                .shadow_type(ShadowType::None)
+                .build();
+            scrolled_window.add(&text_view);
+
+            scrolled_window.show_all();
+
+            stack_widget.add_titled(
+                &scrolled_window,
+                &profile.as_ref().to_string_lossy(),
+                &filename,
+            );
+
+            scrolled_window.show_all();
+
+            // add associated .lua files
+
+            for p in util::enumerate_profiles()? {
+                if p.profile_file == profile.as_ref() {
+                    for f in p.active_scripts {
+                        // TODO: use configuration values from eruption.conf
+                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+
+                        let source_code = std::fs::read_to_string(&script_path.join(&f))?;
+
+                        let buffer = gtk::TextBufferBuilder::new()
+                            .text(&source_code)
+                            .build();
+
+                        // add buffer to global text buffers map for later reference
+                        TEXT_BUFFERS.with(|b| {
+                            let mut text_buffers = b.borrow_mut();
+                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                        });
+
+                        buffer_index += 1;
+
+                        // script file editor
+                        let text_view = gtk::TextViewBuilder::new()
+                            .buffer(&buffer)
+                            .build();
+
+                        text_view.set_editable(true);
+
+                        let path = f.file_name().unwrap().to_string_lossy().to_string();
+
+                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        scrolled_window.add(&text_view);
+
+                        stack_widget.add_titled(
+                            &scrolled_window,
+                            &path,
+                            &f.file_name().unwrap().to_string_lossy(),
+                        );
+
+                        scrolled_window.show_all();
+
+                        let manifest_file =
+                            format!("{}.manifest", f.into_os_string().into_string().unwrap());
+                        let f = PathBuf::from(manifest_file);
+
+                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+
+                        let manifest_data = std::fs::read_to_string(&script_path.join(&f))?;
+
+                        // add buffer to global text buffers map for later reference
+                        TEXT_BUFFERS.with(|b| {
+                            let mut text_buffers = b.borrow_mut();
+                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                        });
+
+                        buffer_index += 1;
+
+                        // manifest file editor
+                        let buffer = gtk::TextBufferBuilder::new()
+                            .text(&manifest_data)
+                            .build();
+
+                        let text_view = gtk::TextViewBuilder::new()
+                            .buffer(&buffer)
+                            .build();
+
+                        text_view.set_editable(true);
+
+                        let path = f.file_name().unwrap().to_string_lossy().to_string();
+
+                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        scrolled_window.add(&text_view);
+
+                        stack_widget.add_titled(
+                            &scrolled_window,
+                            &path,
+                            &f.file_name().unwrap().to_string_lossy(),
+                        );
+
+                        scrolled_window.show_all();
+                    }
+
+                    break;
+                }
+            }
+
+            Ok(())
         }
     }
-
-    Ok(())
 }
 
 /// Initialize page "Profiles"
@@ -1132,8 +1361,8 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     application: &A,
     builder: &gtk::Builder,
 ) -> Result<()> {
-    let profiles_treeview: gtk::TreeView = builder.get_object("profiles_treeview").unwrap();
-    // let sourceview: sourceview::View = builder.get_object("source_view").unwrap();
+    let profiles_treeview: gtk::TreeView = builder.object("profiles_treeview").unwrap();
+    // let sourceview: sourceview::View = builder.object("source_view").unwrap();
 
     // profiles list
     let profiles_treestore = gtk::TreeStore::new(&[
@@ -1168,8 +1397,7 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
         profiles_treestore.insert_with_values(
             None,
             None,
-            &[0, 1, 2, 3],
-            &[&(index as u64), &name, &filename, &path],
+            &[(0, &(index as u64)), (1, &name), (2, &filename), (3, &path)],
         );
     }
 
@@ -1212,7 +1440,7 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     profiles_treeview.set_model(Some(&profiles_treestore));
 
     profiles_treeview.connect_row_activated(clone!(@strong builder => move |tv, path, _column| {
-        let profile = tv.get_model().unwrap().get_value(&tv.get_model().unwrap().get_iter(&path).unwrap(), 3).get::<String>().unwrap().unwrap();
+        let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 3).get::<String>().unwrap();
 
         populate_visual_config_editor(&builder, &profile).unwrap();
 
@@ -1235,15 +1463,15 @@ fn register_actions<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
-    let stack_widget: gtk::Stack = builder.get_object("profile_stack").unwrap();
-    // let stack_switcher: gtk::StackSwitcher = builder.get_object("profile_stack_switcher").unwrap();
+    let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
+    // let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
     let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
     save_current_buffer.connect_activate(clone!(@strong builder => move |_, _| {
-        if let Some(view) = stack_widget.get_visible_child()
+        if let Some(view) = stack_widget.visible_child()
         // .map(|w| w.dynamic_cast::<sourceview::View>().unwrap())
         {
-            let index = stack_widget.get_child_position(&view) as usize;
+            let index = stack_widget.child_position(&view) as usize;
 
             TEXT_BUFFERS.with(|b| {
                 if let Some((path, buffer)) = b
@@ -1282,9 +1510,9 @@ fn register_actions<A: IsA<gtk::Application>>(
 }
 
 pub fn update_profile_state(builder: &gtk::Builder) -> Result<()> {
-    let profiles_treeview: gtk::TreeView = builder.get_object("profiles_treeview").unwrap();
+    let profiles_treeview: gtk::TreeView = builder.object("profiles_treeview").unwrap();
 
-    let model = profiles_treeview.get_model().unwrap();
+    let model = profiles_treeview.model().unwrap();
 
     let state = crate::STATE.read();
     let active_profile = state
@@ -1293,11 +1521,11 @@ pub fn update_profile_state(builder: &gtk::Builder) -> Result<()> {
         .unwrap_or_else(|| "".to_string());
 
     model.foreach(|model, path, iter| {
-        let item = model.get_value(iter, 3).get::<String>().unwrap().unwrap();
+        let item = model.value(iter, 3).get::<String>().unwrap();
         if item == active_profile {
             // found a match
-            profiles_treeview.get_selection().select_iter(&iter);
-            profiles_treeview.row_activated(&path, &profiles_treeview.get_column(1).unwrap());
+            profiles_treeview.selection().select_iter(&iter);
+            profiles_treeview.row_activated(&path, &profiles_treeview.column(1).unwrap());
 
             true
         } else {

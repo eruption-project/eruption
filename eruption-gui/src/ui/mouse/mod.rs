@@ -15,6 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::time::Duration;
+
 use crate::constants;
 use glib::clone;
 use gtk::prelude::*;
@@ -35,10 +37,10 @@ pub enum MouseError {
 pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     let mouse_device = hwdevices::get_mouse_device()?;
 
-    let notification_box_global: gtk::Box = builder.get_object("notification_box_global").unwrap();
+    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let mouse_name_label: gtk::Label = builder.get_object("mouse_device_name_label").unwrap();
-    let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area_mouse").unwrap();
+    let mouse_name_label: gtk::Label = builder.object("mouse_device_name_label").unwrap();
+    let drawing_area: gtk::DrawingArea = builder.object("drawing_area_mouse").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -60,7 +62,7 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
-        (1000 / constants::TARGET_FPS as u32) / 2,
+        Duration::from_millis((1000 / constants::TARGET_FPS) / 2),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)

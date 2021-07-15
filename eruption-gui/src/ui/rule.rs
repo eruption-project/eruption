@@ -61,15 +61,15 @@ impl Rule {
 pub fn show_new_rule_dialog<W: IsA<gtk::Window>>(parent: &W) -> (gtk::ResponseType, Option<Rule>) {
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
 
-    let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
+    let rule_dialog: gtk::Dialog = builder.object("rule_dialog").unwrap();
 
-    let ok_button: gtk::Button = builder.get_object("ok_button").unwrap();
-    let cancel_button: gtk::Button = builder.get_object("cancel_button").unwrap();
+    let ok_button: gtk::Button = builder.object("ok_button").unwrap();
+    let cancel_button: gtk::Button = builder.object("cancel_button").unwrap();
 
-    let rule_enabled: gtk::CheckButton = builder.get_object("rule_enabled").unwrap();
-    let sensor: gtk::ComboBox = builder.get_object("sensor").unwrap();
-    let selector: gtk::Entry = builder.get_object("selector").unwrap();
-    let action: gtk::Entry = builder.get_object("action").unwrap();
+    let rule_enabled: gtk::CheckButton = builder.object("rule_enabled").unwrap();
+    let sensor: gtk::ComboBox = builder.object("sensor").unwrap();
+    let selector: gtk::Entry = builder.object("selector").unwrap();
+    let action: gtk::Entry = builder.object("action").unwrap();
 
     ok_button.connect_clicked(clone!(@strong rule_dialog => move |_b| {
         rule_dialog.response(gtk::ResponseType::Ok);
@@ -98,10 +98,10 @@ pub fn show_new_rule_dialog<W: IsA<gtk::Window>>(parent: &W) -> (gtk::ResponseTy
 
     let result = Some(Rule::new(
         None,
-        rule_enabled.get_active(),
-        sensor.get_active_id().unwrap().to_string(),
-        selector.get_text().to_string(),
-        action.get_text().to_string(),
+        rule_enabled.is_active(),
+        sensor.active_id().unwrap().to_string(),
+        selector.text().to_string(),
+        action.text().to_string(),
         "".to_string(),
     ));
 
@@ -115,15 +115,15 @@ pub fn show_edit_rule_dialog<W: IsA<gtk::Window>>(
 ) -> (gtk::ResponseType, Option<Rule>) {
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/rule.glade");
 
-    let rule_dialog: gtk::Dialog = builder.get_object("rule_dialog").unwrap();
+    let rule_dialog: gtk::Dialog = builder.object("rule_dialog").unwrap();
 
-    let ok_button: gtk::Button = builder.get_object("ok_button").unwrap();
-    let cancel_button: gtk::Button = builder.get_object("cancel_button").unwrap();
+    let ok_button: gtk::Button = builder.object("ok_button").unwrap();
+    let cancel_button: gtk::Button = builder.object("cancel_button").unwrap();
 
-    let rule_enabled: gtk::CheckButton = builder.get_object("rule_enabled").unwrap();
-    let sensor: gtk::ComboBox = builder.get_object("sensor").unwrap();
-    let selector: gtk::Entry = builder.get_object("selector").unwrap();
-    let action: gtk::Entry = builder.get_object("action").unwrap();
+    let rule_enabled: gtk::CheckButton = builder.object("rule_enabled").unwrap();
+    let sensor: gtk::ComboBox = builder.object("sensor").unwrap();
+    let selector: gtk::Entry = builder.object("selector").unwrap();
+    let action: gtk::Entry = builder.object("action").unwrap();
 
     ok_button.connect_clicked(clone!(@weak rule_dialog => move |_b| {
         rule_dialog.response(gtk::ResponseType::Ok);
@@ -152,10 +152,10 @@ pub fn show_edit_rule_dialog<W: IsA<gtk::Window>>(
 
     let result = Some(Rule::new(
         rule.index,
-        rule_enabled.get_active(),
-        sensor.get_active_id().unwrap().to_string(),
-        selector.get_text().to_string(),
-        action.get_text().to_string(),
+        rule_enabled.is_active(),
+        sensor.active_id().unwrap().to_string(),
+        selector.text().to_string(),
+        action.text().to_string(),
         "".to_string(),
     ));
 

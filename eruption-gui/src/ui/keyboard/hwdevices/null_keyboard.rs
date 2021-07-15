@@ -19,7 +19,7 @@ use super::KeyDef;
 use super::Keyboard;
 use crate::util::RGBA;
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct NullKeyboard {}
@@ -44,7 +44,14 @@ impl Keyboard for NullKeyboard {
     }
 
     /// Paint a key on the keyboard widget
-    fn paint_key(&self, _key: usize, _color: &RGBA, _cr: &cairo::Context, _layout: &pango::Layout) {
+    fn paint_key(
+        &self,
+        _key: usize,
+        _color: &RGBA,
+        _cr: &cairo::Context,
+        _layout: &pango::Layout,
+    ) -> Result<()> {
+        Ok(())
     }
 
     /// Returns a slice of `KeyDef`s representing the currently selected keyboard layout

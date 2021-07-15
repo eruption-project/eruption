@@ -68,5 +68,5 @@ pub trait Mouse {
         width: f64,
         height: f64,
         scale_factor: f64,
-    );
+    ) -> Result<()>;
 }

@@ -30,7 +30,7 @@ use gtk::prelude::*;
 /// Shows the about dialog
 pub fn show_about_dialog<W: IsA<gtk::Window>>(parent: &W) {
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/about.glade");
-    let about_dialog: gtk::AboutDialog = builder.get_object("about_dialog").unwrap();
+    let about_dialog: gtk::AboutDialog = builder.object("about_dialog").unwrap();
 
     about_dialog.set_version(Some(env!("CARGO_PKG_VERSION")));
 

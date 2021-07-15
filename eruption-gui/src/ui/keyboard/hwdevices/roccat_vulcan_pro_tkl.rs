@@ -20,13 +20,13 @@ use super::{Caption, KeyDef};
 use crate::{ui::keyboard::KeyboardError, util::RGBA};
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
-use gtk::WidgetExt;
-use palette::{Hsva, Shade, Srgba};
+use gtk::prelude::WidgetExt;
+use palette::{FromColor, Hsva, Shade, Srgba};
 use std::cell::RefCell;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
@@ -52,28 +52,30 @@ impl Keyboard for RoccatVulcanProTKL {
             Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-pro-tkl.png")
                 .unwrap();
 
-        let width = da.get_allocated_width() as f64;
-        // let height = da.get_allocated_height() as f64;
+        let width = da.allocated_width() as f64;
+        // let height = da.allocated_height() as f64;
 
-        let scale_factor = (width / pixbuf.get_width() as f64) * 0.95;
+        let scale_factor = (width / pixbuf.width() as f64) * 0.95;
 
         // paint the image
         context.scale(scale_factor, scale_factor);
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
-        context.paint();
+        context.paint()?;
 
         match crate::dbus_client::get_led_colors() {
             Ok(led_colors) => {
                 let layout = pangocairo::create_layout(&context).unwrap();
-                FONT_DESC.with(|f| {
+                FONT_DESC.with(|f| -> Result<()> {
                     let desc = f.borrow();
                     layout.set_font_description(Some(&desc));
 
                     // paint all keys
                     for i in 0..96 {
-                        self.paint_key(i + 1, &led_colors[i], &context, &layout);
+                        self.paint_key(i + 1, &led_colors[i], &context, &layout)?;
                     }
-                });
+
+                    Ok(())
+                })?;
 
                 // paint all other elements
 
@@ -89,7 +91,7 @@ impl Keyboard for RoccatVulcanProTKL {
 
                 let black = (0.0, 0.0, 0.0, 1.0);
 
-                rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color);
+                rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
 
                 Ok(())
             }
@@ -99,7 +101,13 @@ impl Keyboard for RoccatVulcanProTKL {
     }
 
     /// Paint a key on the keyboard widget
-    fn paint_key(&self, key: usize, color: &RGBA, cr: &cairo::Context, layout: &pango::Layout) {
+    fn paint_key(
+        &self,
+        key: usize,
+        color: &RGBA,
+        cr: &cairo::Context,
+        layout: &pango::Layout,
+    ) -> Result<()> {
         let key_def = &self.get_key_defs("generic")[key];
 
         if !key_def.is_dummy {
@@ -116,8 +124,8 @@ impl Keyboard for RoccatVulcanProTKL {
             );
 
             // saturate and lighten color somewhat to use as the border color
-            let border_color = Hsva::from(source_color);
-            let border_color = Srgba::from(
+            let border_color = Hsva::from_color(source_color);
+            let border_color = Srgba::from_color(
                 border_color
                     // .saturate(0.75)
                     .lighten(0.4),
@@ -125,8 +133,8 @@ impl Keyboard for RoccatVulcanProTKL {
             .into_components();
 
             // saturate and darken color somewhat to use as the key color
-            let key_color = Hsva::from(source_color);
-            let key_color = Srgba::from(
+            let key_color = Hsva::from_color(source_color);
+            let key_color = Srgba::from_color(
                 key_color
                     // .saturate(0.75)
                     // .darken(0.15),
@@ -142,7 +150,7 @@ impl Keyboard for RoccatVulcanProTKL {
                 500.0,
                 &border_color,
                 &key_color,
-            );
+            )?;
 
             // draw caption
             cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
@@ -158,6 +166,8 @@ impl Keyboard for RoccatVulcanProTKL {
 
             pangocairo::show_layout(&cr, &layout);
         }
+
+        Ok(())
     }
 
     /// Returns a slice of `KeyDef`s representing the currently selected keyboard layout
@@ -180,7 +190,7 @@ fn rounded_rectangle(
     radius: f64,
     color: &(f64, f64, f64, f64),
     color2: &(f64, f64, f64, f64),
-) {
+) -> Result<()> {
     let aspect = 1.0; // aspect ratio
     let corner_radius = height / radius; // corner curvature radius
 
@@ -219,11 +229,13 @@ fn rounded_rectangle(
     cr.close_path();
 
     cr.set_source_rgba(color2.0, color2.1, color2.2, 1.0 - color2.3);
-    cr.fill_preserve();
+    cr.fill_preserve()?;
 
     cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
     cr.set_line_width(1.85);
-    cr.stroke();
+    cr.stroke()?;
+
+    Ok(())
 }
 
 // Key definitions for a generic keyboard with QWERTZ (de_DE) Layout

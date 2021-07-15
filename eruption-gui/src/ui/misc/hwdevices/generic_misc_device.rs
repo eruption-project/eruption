@@ -19,7 +19,7 @@ use super::MiscDevice;
 use crate::ui::misc::MiscError;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
-use gtk::WidgetExt;
+use gtk::prelude::WidgetExt;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
 
@@ -43,15 +43,15 @@ impl MiscDevice for GenericMiscDevice {
         let pixbuf =
             Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-misc.png").unwrap();
 
-        let width = da.get_allocated_width() as f64;
-        // let height = da.get_allocated_height() as f64;
+        let width = da.allocated_width() as f64;
+        // let height = da.allocated_height() as f64;
 
-        let scale_factor = (width / pixbuf.get_width() as f64) * 0.95;
+        let scale_factor = (width / pixbuf.width() as f64) * 0.95;
 
         // paint the image
         context.scale(scale_factor, scale_factor);
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
-        context.paint();
+        context.paint()?;
 
         match crate::dbus_client::get_led_colors() {
             Ok(_led_colors) => Ok(()),

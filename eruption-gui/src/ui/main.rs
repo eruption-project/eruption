@@ -20,12 +20,14 @@ use crate::events;
 use crate::ui;
 use crate::update_ui_state;
 use crate::util;
+use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
 use std::path::PathBuf;
+use std::time::Duration;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -46,12 +48,7 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
     let mut found = false;
 
     treestore.foreach(|model, _path, iter| {
-        let file = model
-            .get_value(&iter, 2)
-            .to_value()
-            .get::<String>()
-            .unwrap()
-            .unwrap();
+        let file = model.value(&iter, 2).to_value().get::<String>().unwrap();
         let path = PathBuf::from(&file);
 
         if slot_profile_path == path {
@@ -76,32 +73,32 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
 
 /// Initialize the slot bar on the bottom of the main window
 fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
-    let window: gtk::Window = builder.get_object("main_window").unwrap();
+    let window: gtk::Window = builder.object("main_window").unwrap();
 
-    let slot1_frame: gtk::Frame = builder.get_object("slot1_frame").unwrap();
-    let slot2_frame: gtk::Frame = builder.get_object("slot2_frame").unwrap();
-    let slot3_frame: gtk::Frame = builder.get_object("slot3_frame").unwrap();
-    let slot4_frame: gtk::Frame = builder.get_object("slot4_frame").unwrap();
+    let slot1_frame: gtk::Frame = builder.object("slot1_frame").unwrap();
+    let slot2_frame: gtk::Frame = builder.object("slot2_frame").unwrap();
+    let slot3_frame: gtk::Frame = builder.object("slot3_frame").unwrap();
+    let slot4_frame: gtk::Frame = builder.object("slot4_frame").unwrap();
 
-    let slot1_radio_button: gtk::RadioButton = builder.get_object("slot1_radio_button").unwrap();
-    let slot2_radio_button: gtk::RadioButton = builder.get_object("slot2_radio_button").unwrap();
-    let slot3_radio_button: gtk::RadioButton = builder.get_object("slot3_radio_button").unwrap();
-    let slot4_radio_button: gtk::RadioButton = builder.get_object("slot4_radio_button").unwrap();
+    let slot1_radio_button: gtk::RadioButton = builder.object("slot1_radio_button").unwrap();
+    let slot2_radio_button: gtk::RadioButton = builder.object("slot2_radio_button").unwrap();
+    let slot3_radio_button: gtk::RadioButton = builder.object("slot3_radio_button").unwrap();
+    let slot4_radio_button: gtk::RadioButton = builder.object("slot4_radio_button").unwrap();
 
-    let slot1_entry: gtk::Entry = builder.get_object("slot1_entry").unwrap();
-    let slot2_entry: gtk::Entry = builder.get_object("slot2_entry").unwrap();
-    let slot3_entry: gtk::Entry = builder.get_object("slot3_entry").unwrap();
-    let slot4_entry: gtk::Entry = builder.get_object("slot4_entry").unwrap();
+    let slot1_entry: gtk::Entry = builder.object("slot1_entry").unwrap();
+    let slot2_entry: gtk::Entry = builder.object("slot2_entry").unwrap();
+    let slot3_entry: gtk::Entry = builder.object("slot3_entry").unwrap();
+    let slot4_entry: gtk::Entry = builder.object("slot4_entry").unwrap();
 
-    let edit_slot1_button: gtk::Button = builder.get_object("edit_slot1_button").unwrap();
-    let edit_slot2_button: gtk::Button = builder.get_object("edit_slot2_button").unwrap();
-    let edit_slot3_button: gtk::Button = builder.get_object("edit_slot3_button").unwrap();
-    let edit_slot4_button: gtk::Button = builder.get_object("edit_slot4_button").unwrap();
+    let edit_slot1_button: gtk::Button = builder.object("edit_slot1_button").unwrap();
+    let edit_slot2_button: gtk::Button = builder.object("edit_slot2_button").unwrap();
+    let edit_slot3_button: gtk::Button = builder.object("edit_slot3_button").unwrap();
+    let edit_slot4_button: gtk::Button = builder.object("edit_slot4_button").unwrap();
 
-    let slot1_combo: gtk::ComboBox = builder.get_object("slot1_combo").unwrap();
-    let slot2_combo: gtk::ComboBox = builder.get_object("slot2_combo").unwrap();
-    let slot3_combo: gtk::ComboBox = builder.get_object("slot3_combo").unwrap();
-    let slot4_combo: gtk::ComboBox = builder.get_object("slot4_combo").unwrap();
+    let slot1_combo: gtk::ComboBox = builder.object("slot1_combo").unwrap();
+    let slot2_combo: gtk::ComboBox = builder.object("slot2_combo").unwrap();
+    let slot3_combo: gtk::ComboBox = builder.object("slot3_combo").unwrap();
+    let slot4_combo: gtk::ComboBox = builder.object("slot4_combo").unwrap();
 
     slot1_radio_button.set_action_name(Some("app.switch-to-slot-1"));
     slot2_radio_button.set_action_name(Some("app.switch-to-slot-2"));
@@ -133,28 +130,28 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     }));
 
     slot1_entry.connect_focus_out_event(|edit, _event| {
-        let slot_name = edit.get_text().to_string();
+        let slot_name = edit.text().to_string();
         util::set_slot_name(0, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot2_entry.connect_focus_out_event(|edit, _event| {
-        let slot_name = edit.get_text().to_string();
+        let slot_name = edit.text().to_string();
         util::set_slot_name(1, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot3_entry.connect_focus_out_event(|edit, _event| {
-        let slot_name = edit.get_text().to_string();
+        let slot_name = edit.text().to_string();
         util::set_slot_name(2, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot4_entry.connect_focus_out_event(|edit, _event| {
-        let slot_name = edit.get_text().to_string();
+        let slot_name = edit.text().to_string();
         util::set_slot_name(3, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
 
         gtk::Inhibit(false)
@@ -175,7 +172,7 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_owned()
             .to_string();
 
-        profiles_treestore.insert_with_values(None, None, &[0, 1, 2], &[&0, &name, &filename]);
+        profiles_treestore.insert_with_values(None, None, &[(0, &0), (1, &name), (2, &filename)]);
     }
 
     let cell_renderer_id = gtk::CellRendererText::new();
@@ -193,17 +190,16 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot1_combo.set_active(find_profile_index(0, &profiles_treestore).ok());
 
     slot1_combo.connect_changed(clone!(@weak profiles_treestore => move |cb| {
-        let id = cb.get_active().unwrap();
+        let id = cb.active().unwrap();
         let entry = cb
-            .get_model()
+            .model()
             .unwrap()
             .iter_nth_child(None, id as i32)
             .unwrap();
 
         let file = profiles_treestore
-            .get_value(&entry, 2)
+            .value(&entry, 2)
             .to_value().get::<String>()
-            .unwrap()
             .unwrap();
 
 
@@ -221,17 +217,16 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot2_combo.set_active(find_profile_index(1, &profiles_treestore).ok());
 
     slot2_combo.connect_changed(clone!(@weak profiles_treestore => move |cb| {
-        let id = cb.get_active().unwrap();
+        let id = cb.active().unwrap();
         let entry = cb
-            .get_model()
+            .model()
             .unwrap()
             .iter_nth_child(None, id as i32)
             .unwrap();
 
         let file = profiles_treestore
-            .get_value(&entry, 2)
+            .value(&entry, 2)
             .to_value().get::<String>()
-            .unwrap()
             .unwrap();
 
 
@@ -249,17 +244,16 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot3_combo.set_active(find_profile_index(2, &profiles_treestore).ok());
 
     slot3_combo.connect_changed(clone!(@weak profiles_treestore => move |cb| {
-        let id = cb.get_active().unwrap();
+        let id = cb.active().unwrap();
         let entry = cb
-            .get_model()
+            .model()
             .unwrap()
             .iter_nth_child(None, id as i32)
             .unwrap();
 
         let file = profiles_treestore
-            .get_value(&entry, 2)
+            .value(&entry, 2)
             .to_value().get::<String>()
-            .unwrap()
             .unwrap();
 
 
@@ -277,17 +271,16 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot4_combo.set_active(find_profile_index(3, &profiles_treestore).ok());
 
     slot4_combo.connect_changed(clone!(@weak profiles_treestore => move |cb| {
-        let id = cb.get_active().unwrap();
+        let id = cb.active().unwrap();
         let entry = cb
-            .get_model()
+            .model()
             .unwrap()
             .iter_nth_child(None, id as i32)
             .unwrap();
 
         let file = profiles_treestore
-            .get_value(&entry, 2)
+            .value(&entry, 2)
             .to_value().get::<String>()
-            .unwrap()
             .unwrap();
 
 
@@ -301,64 +294,64 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
         0 => {
             slot1_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.add_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         1 => {
             slot2_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.add_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         2 => {
             slot3_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.add_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         3 => {
             slot4_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.add_class("active");
         }
 
@@ -371,15 +364,15 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 }
 
 fn update_slot_indicator_state(builder: &gtk::Builder, active_slot: usize) {
-    let slot1_frame: gtk::Frame = builder.get_object("slot1_frame").unwrap();
-    let slot2_frame: gtk::Frame = builder.get_object("slot2_frame").unwrap();
-    let slot3_frame: gtk::Frame = builder.get_object("slot3_frame").unwrap();
-    let slot4_frame: gtk::Frame = builder.get_object("slot4_frame").unwrap();
+    let slot1_frame: gtk::Frame = builder.object("slot1_frame").unwrap();
+    let slot2_frame: gtk::Frame = builder.object("slot2_frame").unwrap();
+    let slot3_frame: gtk::Frame = builder.object("slot3_frame").unwrap();
+    let slot4_frame: gtk::Frame = builder.object("slot4_frame").unwrap();
 
-    // let slot1_radio_button: gtk::RadioButton = builder.get_object("slot1_radio_button").unwrap();
-    // let slot2_radio_button: gtk::RadioButton = builder.get_object("slot2_radio_button").unwrap();
-    // let slot3_radio_button: gtk::RadioButton = builder.get_object("slot3_radio_button").unwrap();
-    // let slot4_radio_button: gtk::RadioButton = builder.get_object("slot4_radio_button").unwrap();
+    // let slot1_radio_button: gtk::RadioButton = builder.object("slot1_radio_button").unwrap();
+    // let slot2_radio_button: gtk::RadioButton = builder.object("slot2_radio_button").unwrap();
+    // let slot3_radio_button: gtk::RadioButton = builder.object("slot3_radio_button").unwrap();
+    // let slot4_radio_button: gtk::RadioButton = builder.object("slot4_radio_button").unwrap();
 
     // events::ignore_next_ui_events(1);
     // let active_slot = STATE.read().active_slot.unwrap();
@@ -388,64 +381,64 @@ fn update_slot_indicator_state(builder: &gtk::Builder, active_slot: usize) {
         0 => {
             // slot1_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.add_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         1 => {
             // slot2_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.add_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         2 => {
             // slot3_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.add_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.remove_class("active");
         }
 
         3 => {
             // slot4_radio_button.set_active(true);
 
-            let context = slot1_frame.get_style_context();
+            let context = slot1_frame.style_context();
             context.remove_class("active");
 
-            let context = slot2_frame.get_style_context();
+            let context = slot2_frame.style_context();
             context.remove_class("active");
 
-            let context = slot3_frame.get_style_context();
+            let context = slot3_frame.style_context();
             context.remove_class("active");
 
-            let context = slot4_frame.get_style_context();
+            let context = slot4_frame.style_context();
             context.add_class("active");
         }
 
@@ -462,8 +455,8 @@ fn register_actions<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
-    // let stack_switcher: gtk::StackSwitcher = builder.get_object("stack_switcher").unwrap();
-    let main_stack: gtk::Stack = builder.get_object("main_stack").unwrap();
+    // let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
 
     // switching between stack pages
     let switch_to_page1 = gio::SimpleAction::new("switch-to-page-1", None);
@@ -577,6 +570,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // we need to instantiate the GtkSourceView here at least once to
     // register it wih the GTK/GLib type system, so that gtk::Builder
     // is able to load it later on
+
+    #[cfg(feature = "sourceview")]
     {
         let _temporary_sourceview = sourceview::View::new();
     }
@@ -584,21 +579,21 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // build UI
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/main.glade");
 
-    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+    let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     let restart_eruption_daemon_button: gtk::Button =
-        builder.get_object("restart_eruption_button").unwrap();
+        builder.object("restart_eruption_button").unwrap();
 
-    let header_bar: gtk::HeaderBar = builder.get_object("header_bar").unwrap();
-    let brightness_scale: gtk::Scale = builder.get_object("brightness_scale").unwrap();
-    let about_item: gtk::MenuItem = builder.get_object("about_item").unwrap();
-    let quit_item: gtk::MenuItem = builder.get_object("quit_item").unwrap();
-    let lock_button: gtk::LockButton = builder.get_object("lock_button").unwrap();
+    let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
+    let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
+    let about_item: gtk::MenuItem = builder.object("about_item").unwrap();
+    let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
+    let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
 
     // enable custom CSS support
-    let screen = main_window.get_screen().unwrap();
+    let screen = main_window.screen().unwrap();
     let style = gtk::CssProvider::new();
-    gtk::CssProviderExt::load_from_resource(&style, "/org/eruption/eruption-gui/styles/app.css");
+    gtk::CssProvider::load_from_resource(&style, "/org/eruption/eruption-gui/styles/app.css");
     gtk::StyleContext::add_provider_for_screen(&screen, &style, gtk::STYLE_PROVIDER_PRIORITY_USER);
 
     // configure main window
@@ -642,7 +637,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     brightness_scale.connect_value_changed(move |s| {
         if !events::shall_ignore_pending_ui_event() {
-            util::set_brightness(s.get_value() as i64).unwrap();
+            util::set_brightness(s.value() as i64).unwrap();
         }
     });
 
@@ -650,7 +645,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
 
         glib::timeout_add_local(
-            1000,
+            Duration::from_millis(1000),
             clone!(@strong builder => move || {
                 if let Err(e) = ui::keyboard::initialize_keyboard_page(&builder) {
                     log::error!("{}", e);

@@ -71,12 +71,12 @@ impl SensorsPlugin {
 
         let system = SYSTEM.lock();
 
-        let components = system.get_components();
+        let components = system.components();
         if components.len() > 1 {
             components
                 .iter()
-                .find(|c| c.get_label().contains("Package id 0"))
-                .and_then(|c| Some(c.get_temperature()))
+                .find(|c| c.label().contains("Package id 0"))
+                .and_then(|c| Some(c.temperature()))
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -89,12 +89,12 @@ impl SensorsPlugin {
 
         let system = SYSTEM.lock();
 
-        let components = system.get_components();
+        let components = system.components();
         if components.len() > 1 {
             components
                 .iter()
-                .find(|c| c.get_label().contains("Package id 0"))
-                .and_then(|c| Some(c.get_temperature()))
+                .find(|c| c.label().contains("Package id 0"))
+                .and_then(|c| Some(c.temperature()))
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -106,7 +106,7 @@ impl SensorsPlugin {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
         let system = SYSTEM.lock();
-        system.get_total_memory()
+        system.total_memory()
     }
 
     /// Get the amount of used memory
@@ -114,7 +114,7 @@ impl SensorsPlugin {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
         let system = SYSTEM.lock();
-        system.get_used_memory()
+        system.used_memory()
     }
 
     /// Get the total amount of swap space in kilobytes
@@ -122,7 +122,7 @@ impl SensorsPlugin {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
         let system = SYSTEM.lock();
-        system.get_total_swap()
+        system.total_swap()
     }
 
     /// Get the amount of used swap space in kilobytes
@@ -130,7 +130,7 @@ impl SensorsPlugin {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
         let system = SYSTEM.lock();
-        system.get_used_swap()
+        system.used_swap()
     }
 }
 

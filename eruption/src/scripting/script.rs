@@ -140,7 +140,7 @@ mod callbacks {
     use byteorder::{ByteOrder, LittleEndian};
     use log::*;
     use noise::{NoiseFn, Seedable};
-    use palette::ConvertFrom;
+    use palette::convert::FromColor;
     use palette::{Hsl, Srgb};
     use std::convert::TryFrom;
     use std::sync::atomic::Ordering;
@@ -389,7 +389,7 @@ mod callbacks {
             Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
                 .into_linear();
 
-        let (h, s, l) = Hsl::from(rgb).into_components();
+        let (h, s, l) = Hsl::from_color(rgb).into_components();
 
         (h.into(), s, l)
     }
@@ -406,7 +406,7 @@ mod callbacks {
 
     /// Convert HSL components to a 32 bits color value.
     pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
-        let rgb = Srgb::convert_from(Hsl::new(h, s, l)).into_linear();
+        let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
         let rgb = rgb.into_components();
         rgba_to_color(
             (rgb.0 * 255.0) as u8,
@@ -418,7 +418,7 @@ mod callbacks {
 
     /// Convert HSLA components to a 32 bits color value.
     pub(crate) fn hsla_to_color(h: f64, s: f64, l: f64, a: u8) -> u32 {
-        let rgb = Srgb::convert_from(Hsl::new(h, s, l)).into_linear();
+        let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
         let rgb = rgb.into_components();
         rgba_to_color(
             (rgb.0 * 255.0) as u8,
@@ -801,7 +801,8 @@ pub fn run_script(
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
         Ok(script) => {
-            let lua_ctx = unsafe { Lua::unsafe_new_with(mlua::StdLib::ALL) };
+            let lua_ctx =
+                unsafe { Lua::unsafe_new_with(mlua::StdLib::ALL, mlua::LuaOptions::default()) };
 
             let manifest = Manifest::from(&file);
             if let Err(error) = manifest {

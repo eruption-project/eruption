@@ -20,6 +20,7 @@ use crate::util;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
+use std::time::Duration;
 
 mod hwdevices;
 
@@ -37,16 +38,15 @@ pub enum KeyboardError {
 pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     let keyboard_device = hwdevices::get_keyboard_device()?;
 
-    let main_window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
+    let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let notification_box_global: gtk::Box = builder.get_object("notification_box_global").unwrap();
+    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let keyboard_name_label: gtk::Label = builder.get_object("keyboard_device_name_label").unwrap();
-    let drawing_area: gtk::DrawingArea = builder.get_object("drawing_area").unwrap();
+    let keyboard_name_label: gtk::Label = builder.object("keyboard_device_name_label").unwrap();
+    let drawing_area: gtk::DrawingArea = builder.object("drawing_area").unwrap();
 
-    let networkfx_ambient_switch: gtk::Switch =
-        builder.get_object("networkfx_ambient_switch").unwrap();
-    let soundfx_switch: gtk::Switch = builder.get_object("soundfx_switch").unwrap();
+    let networkfx_ambient_switch: gtk::Switch = builder.object("networkfx_ambient_switch").unwrap();
+    let soundfx_switch: gtk::Switch = builder.object("soundfx_switch").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -68,7 +68,7 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
-        (1000 / constants::TARGET_FPS as u32) / 2,
+        Duration::from_millis((1000 / constants::TARGET_FPS) / 2),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
             Continue(true)

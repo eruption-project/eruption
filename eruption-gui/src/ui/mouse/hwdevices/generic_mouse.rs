@@ -15,14 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use gtk::WidgetExt;
-use palette::{Hsva, Shade, Srgba};
+use gtk::prelude::WidgetExt;
+use palette::{FromColor, Hsva, Shade, Srgba};
 
 use crate::ui::mouse::MouseError;
 
 use super::{Mouse, Rectangle};
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct GenericMouse {}
@@ -39,8 +39,8 @@ impl Mouse for GenericMouse {
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let width = da.get_allocated_width() as f64;
-        let height = da.get_allocated_height() as f64;
+        let width = da.allocated_width() as f64;
+        let height = da.allocated_height() as f64;
 
         let scale_factor = 1.0;
 
@@ -49,7 +49,7 @@ impl Mouse for GenericMouse {
         // paint the schematic drawing
         // context.scale(scale_factor, scale_factor);
         // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
-        // context.paint();
+        // context.paint()?;
 
         match crate::dbus_client::get_led_colors() {
             Ok(led_colors) => {
@@ -62,7 +62,7 @@ impl Mouse for GenericMouse {
                         width,
                         height,
                         scale_factor,
-                    );
+                    )?;
                 }
 
                 Ok(())
@@ -80,7 +80,7 @@ impl Mouse for GenericMouse {
         width: f64,
         _height: f64,
         _scale_factor: f64,
-    ) {
+    ) -> Result<()> {
         let cell_def = Rectangle {
             x: (width / 2.0 - 100.0) + (cell_index % 6 * 45) as f64,
             y: (cell_index / 6 * 45) as f64,
@@ -102,8 +102,8 @@ impl Mouse for GenericMouse {
         );
 
         // saturate and lighten color somewhat
-        let color = Hsva::from(color);
-        let color = Srgba::from(
+        let color = Hsva::from_color(color);
+        let color = Srgba::from_color(
             color
                 // .saturate(factor)
                 .lighten(factor),
@@ -112,6 +112,8 @@ impl Mouse for GenericMouse {
 
         cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
         cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-        cr.fill();
+        cr.fill()?;
+
+        Ok(())
     }
 }

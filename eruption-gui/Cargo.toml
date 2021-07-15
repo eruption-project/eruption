@@ -9,55 +9,57 @@ homepage = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan"
 license = "GPLv3+"
 readme = "README.md"
 
+[features]
+default = [] #["sourceview"]
+sourceview = []
+
 [dependencies]
+cfg-if = "1.0.0"
 colored = "2.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.93"
-nix = "0.20.0"
-rayon = "1.5.0"
+libc = "0.2.98"
+nix = "0.22.0"
+rayon = "1.5.1"
 walkdir = "2.3.2"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.125", features = ["derive"] }
+serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
-tokio = { version = "1.5.0", features = ["full"] }
-tracing = "0.1.25"
+tokio = { version = "1.8.1", features = ["full"] }
+tracing = "0.1.26"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.17"
+tracing-subscriber = "0.2.19"
 config = "0.11.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
 byteorder = "1.4.3"
-itertools = "0.10.0"
+itertools = "0.10.1"
 lazy_static = "1.4.0"
-palette = "0.5.0"
-thiserror = "1.0.24"
+palette = "0.6.0"
+thiserror = "1.0.26"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
-dbus = "0.9.2"
+dbus = "0.9.3"
 dbus-tokio = "0.7.3"
-gdk-pixbuf = "0.9.0"
-glib = "0.10.3"
-pango = "0.9.1"
-pangocairo = "0.10.0"
-cairo-rs = "0.9.1"
+gdk-pixbuf = "0.14.0"
+glib = "0.14.2"
+pango = "0.14.0"
+pangocairo = "0.14.0"
+cairo-rs = "0.14.1"
+#sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
 
 [dependencies.gtk]
-version = "0.9.2"
-features = ["v3_22"]
-
-[dependencies.sourceview]
-version = "0.9.0"
+version = "0.14.0"
 features = ["v3_22"]
 
 [dependencies.gdk]
-version = "0.13.2"
+version = "0.14.0"
 features = ["v3_22"]
 
 [dependencies.gio]
-version = "0.9.1"
-features = ["v2_44"]
+version = "0.14.0"
+features = ["v2_50"]
 
 [dev-dependencies]
-tokio = { version = "1.5.0", features = ["test-util"] }
+tokio = { version = "1.8.1", features = ["test-util"] }

@@ -22,6 +22,7 @@ use gtk::prelude::*;
 use gtk::Application;
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
+use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -193,18 +194,18 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 STATE.write().active_slot = Some(slot_index);
 
                 let slot1_radio_button: gtk::RadioButton =
-                    builder.get_object("slot1_radio_button").unwrap();
+                    builder.object("slot1_radio_button").unwrap();
                 let slot2_radio_button: gtk::RadioButton =
-                    builder.get_object("slot2_radio_button").unwrap();
+                    builder.object("slot2_radio_button").unwrap();
                 let slot3_radio_button: gtk::RadioButton =
-                    builder.get_object("slot3_radio_button").unwrap();
+                    builder.object("slot3_radio_button").unwrap();
                 let slot4_radio_button: gtk::RadioButton =
-                    builder.get_object("slot4_radio_button").unwrap();
+                    builder.object("slot4_radio_button").unwrap();
 
-                let slot1_frame: gtk::Frame = builder.get_object("slot1_frame").unwrap();
-                let slot2_frame: gtk::Frame = builder.get_object("slot2_frame").unwrap();
-                let slot3_frame: gtk::Frame = builder.get_object("slot3_frame").unwrap();
-                let slot4_frame: gtk::Frame = builder.get_object("slot4_frame").unwrap();
+                let slot1_frame: gtk::Frame = builder.object("slot1_frame").unwrap();
+                let slot2_frame: gtk::Frame = builder.object("slot2_frame").unwrap();
+                let slot3_frame: gtk::Frame = builder.object("slot3_frame").unwrap();
+                let slot4_frame: gtk::Frame = builder.object("slot4_frame").unwrap();
 
                 events::ignore_next_ui_events(1);
                 events::ignore_next_dbus_events(1);
@@ -213,64 +214,64 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                     0 => {
                         slot1_radio_button.set_active(true);
 
-                        let context = slot1_frame.get_style_context();
+                        let context = slot1_frame.style_context();
                         context.add_class("active");
 
-                        let context = slot2_frame.get_style_context();
+                        let context = slot2_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot3_frame.get_style_context();
+                        let context = slot3_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot4_frame.get_style_context();
+                        let context = slot4_frame.style_context();
                         context.remove_class("active");
                     }
 
                     1 => {
                         slot2_radio_button.set_active(true);
 
-                        let context = slot1_frame.get_style_context();
+                        let context = slot1_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot2_frame.get_style_context();
+                        let context = slot2_frame.style_context();
                         context.add_class("active");
 
-                        let context = slot3_frame.get_style_context();
+                        let context = slot3_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot4_frame.get_style_context();
+                        let context = slot4_frame.style_context();
                         context.remove_class("active");
                     }
 
                     2 => {
                         slot3_radio_button.set_active(true);
 
-                        let context = slot1_frame.get_style_context();
+                        let context = slot1_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot2_frame.get_style_context();
+                        let context = slot2_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot3_frame.get_style_context();
+                        let context = slot3_frame.style_context();
                         context.add_class("active");
 
-                        let context = slot4_frame.get_style_context();
+                        let context = slot4_frame.style_context();
                         context.remove_class("active");
                     }
 
                     3 => {
                         slot4_radio_button.set_active(true);
 
-                        let context = slot1_frame.get_style_context();
+                        let context = slot1_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot2_frame.get_style_context();
+                        let context = slot2_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot3_frame.get_style_context();
+                        let context = slot3_frame.style_context();
                         context.remove_class("active");
 
-                        let context = slot4_frame.get_style_context();
+                        let context = slot4_frame.style_context();
                         context.add_class("active");
                     }
 
@@ -284,10 +285,10 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::SlotNamesChanged(ref names) => {
-                let slot1_entry: gtk::Entry = builder.get_object("slot1_entry").unwrap();
-                let slot2_entry: gtk::Entry = builder.get_object("slot2_entry").unwrap();
-                let slot3_entry: gtk::Entry = builder.get_object("slot3_entry").unwrap();
-                let slot4_entry: gtk::Entry = builder.get_object("slot4_entry").unwrap();
+                let slot1_entry: gtk::Entry = builder.object("slot1_entry").unwrap();
+                let slot2_entry: gtk::Entry = builder.object("slot2_entry").unwrap();
+                let slot3_entry: gtk::Entry = builder.object("slot3_entry").unwrap();
+                let slot4_entry: gtk::Entry = builder.object("slot4_entry").unwrap();
 
                 slot1_entry.set_text(names.get(0).unwrap_or(&"Profile Slot 1".to_string()));
                 slot2_entry.set_text(names.get(1).unwrap_or(&"Profile Slot 2".to_string()));
@@ -301,94 +302,78 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 match STATE.read().active_slot.unwrap() {
                     0 => {
                         // slot 1
-                        let combo_box: gtk::ComboBox = builder.get_object("slot1_combo").unwrap();
+                        let combo_box: gtk::ComboBox = builder.object("slot1_combo").unwrap();
 
-                        combo_box
-                            .get_model()
-                            .unwrap()
-                            .foreach(|model, _path, iter| {
-                                let file =
-                                    model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                        combo_box.model().unwrap().foreach(|model, _path, iter| {
+                            let file = model.value(iter, 2).get::<String>().unwrap();
+                            let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                            if *profile == file {
+                                // found a match
+                                combo_box.set_active_iter(Some(&iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                true
+                            } else {
+                                false
+                            }
+                        });
                     }
 
                     1 => {
                         // slot 2
-                        let combo_box: gtk::ComboBox = builder.get_object("slot2_combo").unwrap();
+                        let combo_box: gtk::ComboBox = builder.object("slot2_combo").unwrap();
 
-                        combo_box
-                            .get_model()
-                            .unwrap()
-                            .foreach(|model, _path, iter| {
-                                let file =
-                                    model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                        combo_box.model().unwrap().foreach(|model, _path, iter| {
+                            let file = model.value(iter, 2).get::<String>().unwrap();
+                            let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                            if *profile == file {
+                                // found a match
+                                combo_box.set_active_iter(Some(&iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                true
+                            } else {
+                                false
+                            }
+                        });
                     }
 
                     2 => {
                         // slot 3
-                        let combo_box: gtk::ComboBox = builder.get_object("slot3_combo").unwrap();
+                        let combo_box: gtk::ComboBox = builder.object("slot3_combo").unwrap();
 
-                        combo_box
-                            .get_model()
-                            .unwrap()
-                            .foreach(|model, _path, iter| {
-                                let file =
-                                    model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                        combo_box.model().unwrap().foreach(|model, _path, iter| {
+                            let file = model.value(iter, 2).get::<String>().unwrap();
+                            let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                            if *profile == file {
+                                // found a match
+                                combo_box.set_active_iter(Some(&iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                true
+                            } else {
+                                false
+                            }
+                        });
                     }
 
                     3 => {
                         // slot 4
-                        let combo_box: gtk::ComboBox = builder.get_object("slot4_combo").unwrap();
+                        let combo_box: gtk::ComboBox = builder.object("slot4_combo").unwrap();
 
-                        combo_box
-                            .get_model()
-                            .unwrap()
-                            .foreach(|model, _path, iter| {
-                                let file =
-                                    model.get_value(iter, 2).get::<String>().unwrap().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                        combo_box.model().unwrap().foreach(|model, _path, iter| {
+                            let file = model.value(iter, 2).get::<String>().unwrap();
+                            let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                            if *profile == file {
+                                // found a match
+                                combo_box.set_active_iter(Some(&iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                true
+                            } else {
+                                false
+                            }
+                        });
                     }
 
                     _ => log::error!("Internal error detected"),
@@ -403,7 +388,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             dbus_client::Message::BrightnessChanged(brightness) => {
                 STATE.write().current_brightness = Some(brightness);
 
-                let brightness_scale: gtk::Scale = builder.get_object("brightness_scale").unwrap();
+                let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
 
                 events::ignore_next_dbus_events(1);
                 events::ignore_next_ui_events(1);
@@ -415,7 +400,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::SoundFxChanged(enabled) => {
-                let switch_button: gtk::Switch = builder.get_object("soundfx_switch").unwrap();
+                let switch_button: gtk::Switch = builder.object("soundfx_switch").unwrap();
 
                 events::ignore_next_dbus_events(1);
                 events::ignore_next_ui_events(1);
@@ -455,11 +440,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let application = Application::new(
         Some("org.eruption.eruption-gui"),
         ApplicationFlags::FLAGS_NONE,
-    )?;
+    );
 
     application.add_main_option(
         &"configuration",
-        glib::Char::new('c').unwrap(),
+        glib::Char::try_from('c').unwrap(),
         OptionFlags::NONE,
         OptionArg::String,
         &"The configuration file to use",
@@ -470,7 +455,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         // process configuration file
         let config_file = opts
             .lookup_value("configuration", None)
-            .map(|v| v.get_str().unwrap().to_owned())
+            .map(|v| v.str().unwrap().to_owned())
             .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
 
         let config_file = if config_file.trim().is_empty() {
@@ -531,7 +516,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         }
     });
 
-    application.run(&args().collect::<Vec<_>>());
+    application.run_with_args(&args().collect::<Vec<_>>());
 
     Ok(())
 }

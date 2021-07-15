@@ -3,7 +3,7 @@
   <gresource prefix="/org/eruption/eruption-gui">
     <file compressed="true">ui/main.glade</file>
     <file compressed="true">ui/about.glade</file>
-    <file compressed="true">ui/rule.glade</file>
+  <file compressed="true">ui/rule.glade</file>
     <file>styles/app.css</file>
     <file>img/eruption-gui.png</file>
     <file>img/generic-keyboard.png</file>

@@ -8,29 +8,26 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 license = "GPLv3+"
 readme = "README.md"
 
-[features]
-default = []
-
 [dependencies]
-crossbeam = "0.8.0"
-futures = "0.3.14"
+crossbeam = "0.8.1"
+futures = "0.3.15"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 async-trait = "0.1.50"
-tracing = "0.1.25"
+tracing = "0.1.26"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.17"
-libc = "0.2.93"
-nix = "0.20.0"
+tracing-subscriber = "0.2.19"
+libc = "0.2.98"
+nix = "0.22.0"
 prctl = "1.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-thiserror = "1.0.24"
+thiserror = "1.0.26"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 toml = "0.5.8"
-serde = { version = "1.0.125", features = ["derive"] }
+serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
-tokio = { version = "1.5.0", features = ["full", "rt-multi-thread"] }
+tokio = { version = "1.8.1", features = ["full", "rt-multi-thread"] }
 ctrlc = { version = "3.1.9", features = ["termination"] }
 clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
@@ -41,30 +38,29 @@ evdev-rs = "0.5.0"
 hexdump = "0.1.1"
 bytevec = "0.2.0"
 byteorder = "1.4.3"
-itertools = "0.10.0"
-rayon = "1.5.0"
+itertools = "0.10.1"
+rayon = "1.5.1"
 lazy_static = "1.4.0"
-rand = "0.8.3"
-csscolorparser = "0.4.0"
+rand = "0.8.4"
+csscolorparser = "0.5.0"
 colorgrad = "0.4.0"
-palette = "0.5.0"
-nalgebra = "0.26.1"
+palette = "0.6.0"
+nalgebra = "0.28.0"
 noise = "0.7.0"
 simdnoise = "3.1.6"
 interpolation = "0.2.0"
-# lua-src = "540.0.0"
-mlua = { version = "0.5.4", features = ["luajit"] }
-mlua_derive = "0.5.0"
-sysinfo = "0.17.2"
-systemstat = "0.1.7"
+mlua = { version = "0.6.2", features = ["luajit"] }
+mlua_derive = "0.6.0"
+sysinfo = "0.19.1"
+systemstat = "0.1.8"
 procinfo = "0.4.2"
-rustfft = "6.0.0"
+rustfft = "6.0.1"
 hound = "3.4.0"
 libpulse-binding = { version = "2.23.1", default-features = false }
 libpulse-simple-binding = { version = "2.23.0", default-features = false }
 rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
-dbus = "0.9.2"
+dbus = "0.9.3"
 dbus-tree = "0.9.1"
 paste = "1.0.5"
 bitvec = "=0.19.5"
@@ -77,5 +73,5 @@ icecream = "0.1.0"
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
-thiserror = "1.0.24"
-tokio = { version = "1.5.0", features = ["test-util"] }
+thiserror = "1.0.26"
+tokio = { version = "1.8.1", features = ["test-util"] }

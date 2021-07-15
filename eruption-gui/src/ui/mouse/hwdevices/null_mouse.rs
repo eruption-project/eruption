@@ -17,7 +17,7 @@
 
 use super::Mouse;
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct NullMouse {}
@@ -45,6 +45,7 @@ impl Mouse for NullMouse {
         _width: f64,
         _height: f64,
         _scale_factor: f64,
-    ) {
+    ) -> Result<()> {
+        Ok(())
     }
 }
