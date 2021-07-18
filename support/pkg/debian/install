@@ -104,6 +104,10 @@ support/profiles/swirl-perlin.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-blue-red.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-rainbow.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-red-yellow.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-dim.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-blue-red-dim.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-rainbow-dim.profile var/lib/eruption/profiles
+support/profiles/swirl-perlin-red-yellow-dim.profile var/lib/eruption/profiles
 support/profiles/swirl-turbulence.profile var/lib/eruption/profiles
 support/profiles/swirl-voronoi.profile var/lib/eruption/profiles
 

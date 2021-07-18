@@ -1,16 +1,16 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713119'
-name = 'Color Swirls (Perlin): Rainbow'
-description = 'Color Swirl effect'
+id = '5dc62fa6-e966-45cb-a0da-e87d29713120'
+name = 'Color Swirls (Perlin): Rainbow (dimmed)'
+description = 'Color Swirl effect with high contrast'
 active_scripts = [
     'swirl-perlin.lua',
+    'batique.lua',
+    'dim-zone.lua',
     'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',
 #   'raindrops.lua',
 #   'sysmon.lua',
-    'batique.lua',
-#   'dim-zone.lua',
     'macros.lua',
 #   'stats.lua',
 ]
@@ -100,12 +100,11 @@ name = 'coord_scale'
 value = 0.5
 default = 0.5
 
-# dim a specific zone, e.g. if the mouse LEDs are too bright
 [[config."Dim Zone"]]
 type = 'int'
 name = 'zone_start'
-value = 144
-default = 144
+value = 0
+default = 0
 
 [[config."Dim Zone"]]
 type = 'int'
@@ -116,5 +115,5 @@ default = 180
 [[config."Dim Zone"]]
 type = 'float'
 name = 'opacity'
-value = 0.95
-default = 0.95
+value = 0.9
+default = 0.9

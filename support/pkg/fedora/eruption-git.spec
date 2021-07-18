@@ -163,6 +163,10 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin.profile %{bu
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-rainbow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-red-yellow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-voronoi.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -290,6 +294,10 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-red-yellow.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-dim.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red-dim.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-rainbow-dim.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-red-yellow-dim.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-turbulence.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-voronoi.profile
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile

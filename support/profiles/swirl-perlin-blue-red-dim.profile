@@ -1,16 +1,16 @@
-id = '5dc62fa6-e965-45cb-a0da-e87d29713119'
-name = 'Color Swirls (Perlin): Rainbow'
-description = 'Color Swirl effect'
+id = '5dc62fa6-e966-45cb-a0da-e87d29713118'
+name = 'Color Swirls (Perlin): Blue and Red (dimmed)'
+description = 'Color Swirl effect with high contrast'
 active_scripts = [
     'swirl-perlin.lua',
+    'batique.lua',
+    'dim-zone.lua',
     'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
 #   'water.lua',
 #   'raindrops.lua',
 #   'sysmon.lua',
-    'batique.lua',
-#   'dim-zone.lua',
     'macros.lua',
 #   'stats.lua',
 ]
@@ -18,26 +18,26 @@ active_scripts = [
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_divisor'
-value = 1.0
-default = 1.0
+value = 4.0
+default = 4.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'color_offset'
-value = 0.0
-default = 0.0
+value = -110.0
+default = -110.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'time_scale'
-value = 150.0
-default = 150.0
+value = 250.0
+default = 250.0
 
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'coord_scale'
-value = 14.0
-default = 14.0
+value = 15.0
+default = 15.0
 
 [[config.Shockwave]]
 type = 'color'
@@ -97,15 +97,26 @@ default = 180
 [[config.Batique]]
 type = 'float'
 name = 'coord_scale'
-value = 0.5
-default = 0.5
+value = 2.5
+default = 2.5
 
-# dim a specific zone, e.g. if the mouse LEDs are too bright
+[[config.Batique]]
+type = 'float'
+name = 'color_divisor'
+value = 4.0
+default = 4.0
+
+[[config.Batique]]
+type = 'float'
+name = 'color_offset'
+value = -110.0
+default = -110.0
+
 [[config."Dim Zone"]]
 type = 'int'
 name = 'zone_start'
-value = 144
-default = 144
+value = 0
+default = 0
 
 [[config."Dim Zone"]]
 type = 'int'
@@ -116,5 +127,5 @@ default = 180
 [[config."Dim Zone"]]
 type = 'float'
 name = 'opacity'
-value = 0.95
-default = 0.95
+value = 0.75
+default = 0.75
