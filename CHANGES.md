@@ -5,7 +5,12 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.22 | __New Release__                                                                                                                                                              |
+| 0.1.22 | Updated all dependencies to their latest revisions. Most notably: `mlua:6.2`, and many more                                                                                  |
+| 0.1.22 | Updated the Eruption GUI to the latest version `0.0.10` (this is a technology preview only; it is not production ready)                                                      |
+| 0.1.22 | Started porting the Eruption GUI to GTK4                                                                                                                                     |
 | 0.1.22 | Add experimental support for `ROCCAT Kone XTD` series mice (input only, no LEDs currently since they don't support realtime effects)                                         |
+| 0.1.22 | Allow dimming of zones on the canvas, using the newly added `dim-zone.lua` script                                                                                            |
+| 0.1.22 | Provide dimmed/high contrast versions of some profiles: `Color Swirls (Perlin) (dimmed)` and variants                                                                        |
 | 0.1.21 | __New Release__                                                                                                                                                              |
 | 0.1.21 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v15`!                                                          |
 | 0.1.21 | New package `eruption` available that currently ships without the GUI. Use the git snapshot package `eruption-git` if you want to stay on the bleeding edge                  |
