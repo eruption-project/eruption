@@ -879,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "clap",
  "clap_generate",

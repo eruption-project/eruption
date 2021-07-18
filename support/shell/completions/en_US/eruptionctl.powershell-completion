@@ -33,7 +33,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
             [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
             [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
-            [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related subcommands')
+            [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Prints this message or the help of the given subcommand(s)')

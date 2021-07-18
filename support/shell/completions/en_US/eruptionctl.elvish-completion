@@ -28,7 +28,7 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand switch 'Switch to a different profile or slot'
             cand profiles 'Profile related sub-commands'
             cand names 'Naming related commands such as renaming of profile slots'
-            cand scripts 'Script related subcommands'
+            cand scripts 'Script related sub-commands'
             cand param 'Get or set script parameters on the currently active profile'
             cand completions 'Generate shell completions'
             cand help 'Prints this message or the help of the given subcommand(s)'

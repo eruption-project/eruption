@@ -7,7 +7,7 @@ complete -c eruptionctl -n "__fish_use_subcommand" -f -a "status" -d 'Shows the 
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "switch" -d 'Switch to a different profile or slot'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "profiles" -d 'Profile related sub-commands'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "names" -d 'Naming related commands such as renaming of profile slots'
-complete -c eruptionctl -n "__fish_use_subcommand" -f -a "scripts" -d 'Script related subcommands'
+complete -c eruptionctl -n "__fish_use_subcommand" -f -a "scripts" -d 'Script related sub-commands'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "param" -d 'Get or set script parameters on the currently active profile'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
