@@ -241,6 +241,8 @@ package() {
     install -m 644 "eruption/src/scripts/wave.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/snake.lua" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/snake.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/dim-zone.lua" "$pkgdir/usr/share/eruption/scripts/"
+    install -m 644 "eruption/src/scripts/dim-zone.lua.manifest" "$pkgdir/usr/share/eruption/scripts/"
     install -m 644 "eruption/src/scripts/lib/debug.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/easing.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/queue.lua" "$pkgdir/usr/share/eruption/scripts/lib/"

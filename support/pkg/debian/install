@@ -209,6 +209,8 @@ eruption/src/scripts/macros.lua usr/share/eruption/scripts
 eruption/src/scripts/macros.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/stats.lua usr/share/eruption/scripts
 eruption/src/scripts/stats.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/dim-zone.lua usr/share/eruption/scripts
+eruption/src/scripts/dim-zone.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/lib/debug.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/easing.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/queue.lua usr/share/eruption/scripts/lib

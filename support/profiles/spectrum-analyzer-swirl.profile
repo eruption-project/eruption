@@ -7,6 +7,7 @@ active_scripts = [
     'halo.lua',
     'shockwave.lua',
 	'batique.lua',
+#   'dim-zone.lua',
  	'macros.lua',
 #	'stats.lua',
 ]
@@ -89,3 +90,22 @@ type = 'float'
 name = 'opacity'
 value = 0.025
 default = 0.025
+
+# dim a specific zone, e.g. if the mouse LEDs are too bright
+[[config."Dim Zone"]]
+type = 'int'
+name = 'zone_start'
+value = 144
+default = 144
+
+[[config."Dim Zone"]]
+type = 'int'
+name = 'zone_end'
+value = 180
+default = 180
+
+[[config."Dim Zone"]]
+type = 'float'
+name = 'opacity'
+value = 0.95
+default = 0.95

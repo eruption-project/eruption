@@ -423,6 +423,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/wave.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/snake.lua
 %{_datarootdir}/%{ShortName}/scripts/snake.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/dim-zone.lua
+%{_datarootdir}/%{ShortName}/scripts/dim-zone.lua.manifest
 %{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
 %{_datarootdir}/%{ShortName}/sfx/phaser1.wav
 %{_datarootdir}/%{ShortName}/sfx/phaser2.wav
