@@ -637,13 +637,13 @@ function update_overlay_state()
 		overlay_ttl = 0
 	elseif overlay_state == VOLUME_OVERLAY then
 		-- generate color map values
-		local percentage = get_audio_volume()
+		local percentage = clamp(get_audio_volume(), 0, 100)
 		local highlight_columns = (num_cols + 1) * percentage / 100
 
 		-- compute which keys to highlight
 		local upper_bound = 1
 		for i = 1, highlight_columns do
-			upper_bound = upper_bound + keys_per_col[i]
+			upper_bound = n(upper_bound) + n(keys_per_col[i])
 		end
 
 		-- fill background
