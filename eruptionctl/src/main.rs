@@ -99,7 +99,7 @@ pub enum Subcommands {
         command: NamesSubcommands,
     },
 
-    /// Script related subcommands
+    /// Script related sub-commands
     Scripts {
         #[clap(subcommand)]
         command: ScriptsSubcommands,
