@@ -7,6 +7,7 @@ description = "Eruption Linux user-mode input and LED driver for keyboards, mice
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 license = "GPLv3+"
 readme = "README.md"
+resolver = "2"
 
 [dependencies]
 crossbeam = "0.8.1"
@@ -51,7 +52,7 @@ simdnoise = "3.1.6"
 interpolation = "0.2.0"
 mlua = { version = "0.6.2", features = ["luajit"] }
 mlua_derive = "0.6.0"
-sysinfo = "0.19.1"
+sysinfo = "0.19.2"
 systemstat = "0.1.8"
 procinfo = "0.4.2"
 rustfft = "6.0.1"

@@ -8,6 +8,7 @@ repository = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan.git"
 homepage = "https://github.com/X3n0m0rph59/eruption-roccat-vulcan"
 license = "GPLv3+"
 readme = "README.md"
+resolver = "2"
 
 [features]
 default = [] #["sourceview"]

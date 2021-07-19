@@ -8,6 +8,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://github.com/X3n0m0rph59/eruption"
 license = "GPLv3+"
 readme = "README.md"
+resolver = "2"
 
 [dependencies]
 clap =  { version = "3.0.0-beta.2", features = ["derive"] }

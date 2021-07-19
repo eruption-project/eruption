@@ -8,6 +8,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://github.com/X3n0m0rph59/eruption"
 license = "GPLv3+"
 readme = "README.md"
+resolver = "2"
 
 [dependencies]
 crossbeam = "0.8.1"
