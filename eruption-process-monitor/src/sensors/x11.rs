@@ -204,6 +204,10 @@ fn parse_wm_class(property: &GetPropertyReply) -> (&str, &str) {
 }
 
 fn parse_pid(property: &GetPropertyReply) -> i32 {
-    let value = &property.value;
-    LittleEndian::read_u32(&value) as i32
+    if property.value_len < 4 {
+        0
+    } else {
+        let value = &property.value;
+        LittleEndian::read_u32(&value) as i32
+    }
 }
