@@ -222,6 +222,7 @@ eruption/src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/themes/default.lua usr/share/eruption/scripts/lib/themes
 eruption/src/scripts/lib/themes/gaming.lua usr/share/eruption/scripts/lib/themes
+eruption/src/scripts/lib/macros/examples.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/modifiers.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/user-macros.lua usr/share/eruption/scripts/lib/macros
 eruption/src/scripts/lib/macros/starcraft2.lua usr/share/eruption/scripts/lib/macros

@@ -250,6 +250,7 @@ package() {
     install -m 644 "eruption/src/scripts/lib/declarations.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/themes/default.lua" "$pkgdir/usr/share/eruption/scripts/lib/themes/"
     install -m 644 "eruption/src/scripts/lib/themes/gaming.lua" "$pkgdir/usr/share/eruption/scripts/lib/themes/"
+    install -m 644 "eruption/src/scripts/lib/macros/examples.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/modifiers.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/user-macros.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/starcraft2.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"

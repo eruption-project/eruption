@@ -329,6 +329,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/macros/examples.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stats.lua
