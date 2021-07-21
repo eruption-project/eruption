@@ -33,10 +33,7 @@ impl MousePlugin {
     }
 
     pub(crate) fn get_button_state(button_index: usize) -> bool {
-        crate::BUTTON_STATES
-            .get(&button_index)
-            .map(|v| *v)
-            .unwrap_or(false)
+        crate::BUTTON_STATES.read()[button_index]
     }
 }
 

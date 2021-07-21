@@ -493,16 +493,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dashmap"
-version = "4.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
-dependencies = [
- "cfg-if 1.0.0",
- "num_cpus",
-]
-
-[[package]]
 name = "dbus"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -618,7 +608,6 @@ dependencies = [
  "crossbeam",
  "csscolorparser 0.5.0",
  "ctrlc",
- "dashmap",
  "dbus",
  "dbus-tree",
  "evdev-rs",
@@ -640,7 +629,6 @@ dependencies = [
  "mlua_derive",
  "nalgebra",
  "nix 0.22.0",
- "nohash-hasher",
  "noise",
  "palette",
  "parking_lot",
@@ -1944,12 +1932,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nohash-hasher"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
-
-[[package]]
 name = "noise"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1979,11 +1961,12 @@ dependencies = [
 
 [[package]]
 name = "nom"
-version = "6.1.1"
+version = "6.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d521ee2250f619dd5e06515ba405858d249edc8fae9ddee2dba0695e57db01b"
+checksum = "e7413f999671bd4745a7b624bd370a569fb6bc574b23c83a3c5ed2e453f3d5e2"
 dependencies = [
  "bitvec",
+ "funty",
  "lexical-core",
  "memchr",
  "version_check",
@@ -3137,7 +3120,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "libc",
- "nom 6.1.1",
+ "nom 6.1.2",
  "time",
  "winapi 0.3.9",
 ]
@@ -3229,9 +3212,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.8.1"
+version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c8b05dc14c75ea83d63dd391100353789f5f24b8b3866542a5e85c8be8e985"
+checksum = "c2602b8af3767c285202012822834005f596c811042315fa7e9f5b12b2a43207"
 dependencies = [
  "autocfg",
  "bytes",

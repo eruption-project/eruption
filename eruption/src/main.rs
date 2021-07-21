@@ -18,7 +18,6 @@
 // use async_macros::join;
 use clap::{App, Arg};
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
-use dashmap::DashMap;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use futures::future::join_all;
 use hotwatch::{
@@ -27,8 +26,7 @@ use hotwatch::{
 };
 use lazy_static::lazy_static;
 use log::*;
-use nohash_hasher::BuildNoHashHasher;
-use parking_lot::{Condvar, Mutex};
+use parking_lot::{Condvar, Mutex, RwLock};
 use std::env;
 use std::fs::File;
 use std::path::{Path, PathBuf};
@@ -117,15 +115,12 @@ lazy_static! {
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
     /// Channels to the Lua VMs
-    static ref LUA_TXS: Arc<DashMap<usize, LuaTx, nohash_hasher::BuildNoHashHasher<usize>>> =
-        Arc::new(DashMap::with_hasher(BuildNoHashHasher::default()));
+    static ref LUA_TXS: Arc<Mutex<Vec<LuaTx>>> = Arc::new(Mutex::new(vec![]));
 
     /// Key states
-    pub static ref KEY_STATES: Arc<DashMap<usize, bool, nohash_hasher::BuildNoHashHasher<usize>>> =
-        Arc::new(DashMap::with_capacity_and_hasher(constants::MAX_KEYS, BuildNoHashHasher::default()));
+    pub static ref KEY_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_KEYS]));
 
-    pub static ref BUTTON_STATES: Arc<DashMap<usize, bool, nohash_hasher::BuildNoHashHasher<usize>>> =
-        Arc::new(DashMap::with_capacity_and_hasher(constants::MAX_MOUSE_BUTTONS, BuildNoHashHasher::default()));
+    pub static ref BUTTON_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_MOUSE_BUTTONS]));
 
     // cached value
     static ref GRAB_MOUSE: AtomicBool = {
@@ -421,7 +416,7 @@ fn spawn_keyboard_input_thread(
                             let is_pressed = k.1.value > 0;
                             let index = keyboard_device.read().ev_key_to_key_index(*code) as usize;
 
-                            KEY_STATES.insert(index, is_pressed);
+                            KEY_STATES.write()[index] = is_pressed;
                         }
 
                         kbd_tx.send(Some(k.1)).unwrap_or_else(|e| {
@@ -529,7 +524,7 @@ fn spawn_mouse_input_thread(
                             let index =
                                 mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
 
-                            BUTTON_STATES.insert(index, is_pressed);
+                            BUTTON_STATES.write()[index] = is_pressed;
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
                             k.1.clone().event_code
                         {
@@ -659,7 +654,7 @@ fn spawn_mouse_input_thread_secondary(
                             let is_pressed = k.1.value > 0;
                             let index = mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
 
-                            BUTTON_STATES.insert(index, is_pressed);
+                            BUTTON_STATES.write()[index] = is_pressed;
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
                             k.1.clone().event_code
                         {
@@ -772,7 +767,7 @@ fn spawn_lua_thread(
                 Ok(script::RunScriptResult::TerminatedWithErrors) => {
                     error!("Script execution failed");
 
-                    // LUA_TXS.get_mut(&thread_idx).unwrap().is_failed = true;
+                    // LUA_TXS.lock().get_mut(&thread_idx).unwrap().is_failed = true;
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -781,7 +776,7 @@ fn spawn_lua_thread(
                 Err(_e) => {
                     error!("Script execution failed due to an unknown error");
 
-                    // LUA_TXS.get_mut(&thread_idx).unwrap().is_failed = true;
+                    // LUA_TXS.lock().get_mut(&thread_idx).unwrap().is_failed = true;
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -846,7 +841,7 @@ fn switch_profile(
                 tx.is_failed = true
             }
 
-            LUA_TXS.insert(LUA_TXS.len(), tx);
+            LUA_TXS.lock().push(tx);
         }
 
         // finally assign the globally active profile
@@ -875,7 +870,9 @@ fn switch_profile(
         debug!("Preparing to enter failsafe mode...");
 
         // request termination of all Lua VMs
-        for lua_tx in LUA_TXS.iter() {
+        let mut lua_txs = LUA_TXS.lock();
+
+        for lua_tx in lua_txs.iter() {
             if !lua_tx.is_failed {
                 lua_tx
                     .send(script::Message::Unload)
@@ -886,7 +883,7 @@ fn switch_profile(
         }
 
         // be safe and clear any leftover channels
-        LUA_TXS.clear();
+        lua_txs.clear();
 
         switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
@@ -956,7 +953,9 @@ fn switch_profile(
             }
 
             // now request termination of all Lua VMs
-            for lua_tx in LUA_TXS.iter() {
+            let mut lua_txs = LUA_TXS.lock();
+
+            for lua_tx in lua_txs.iter() {
                 if !lua_tx.is_failed {
                     lua_tx
                         .send(script::Message::Unload)
@@ -967,7 +966,7 @@ fn switch_profile(
             }
 
             // be safe and clear any leftover channels
-            LUA_TXS.clear();
+            lua_txs.clear();
 
             // we passed the point of no return, from here on we can't just go back
             // but need to switch to failsafe mode when we encounter any critical errors
@@ -999,7 +998,7 @@ fn switch_profile(
                     tx.is_failed = true;
                 }
 
-                LUA_TXS.insert(LUA_TXS.len(), tx);
+                lua_txs.push(tx);
             }
 
             // it seems that at least one Lua VM failed during loading of the new profile,
@@ -1138,11 +1137,12 @@ async fn process_keyboard_hid_events(
                 events::notify_observers(events::Event::KeyboardHidEvent(result))
                     .unwrap_or_else(|e| error!("{}", e));
 
-                *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() = LUA_TXS.len() - failed_txs.len();
+                *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() =
+                    LUA_TXS.lock().len() - failed_txs.len();
 
-                for e in LUA_TXS.iter() {
-                    if !failed_txs.contains(&e.key()) {
-                        e.value()
+                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                    if !failed_txs.contains(&idx) {
+                        lua_tx
                             .send(script::Message::KeyboardHidEvent(result))
                             .unwrap_or_else(|e| {
                                 error!("Could not send a pending HID event to a Lua VM: {}", e)
@@ -1178,15 +1178,14 @@ async fn process_keyboard_hid_events(
                     KeyboardHidEvent::KeyDown { code } => {
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
-                            KEY_STATES.insert(index as usize, true);
+                            KEY_STATES.write()[index as usize] = true;
 
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
-                                LUA_TXS.len() - failed_txs.len();
+                                LUA_TXS.lock().len() - failed_txs.len();
 
-                            for e in LUA_TXS.iter() {
-                                if !failed_txs.contains(&e.key()) {
-                                    e.value()
-                                        .send(script::Message::KeyDown(index))
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx.send(script::Message::KeyDown(index))
                                         .unwrap_or_else(|e| {
                                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                         });
@@ -1227,13 +1226,14 @@ async fn process_keyboard_hid_events(
                     KeyboardHidEvent::KeyUp { code } => {
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
-                            KEY_STATES.insert(index as usize, false);
+                            KEY_STATES.write()[index as usize] = false;
 
-                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.len() - failed_txs.len();
+                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
+                                LUA_TXS.lock().len() - failed_txs.len();
 
-                            for e in LUA_TXS.iter() {
-                                if !failed_txs.contains(&e.key()) {
-                                    e.value().send(script::Message::KeyUp(index)).unwrap_or_else(
+                            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                                if !failed_txs.contains(&idx) {
+                                    lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
                                         |e| {
                                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                         },
@@ -1311,11 +1311,12 @@ async fn process_mouse_hid_events(
                 events::notify_observers(events::Event::MouseHidEvent(result))
                     .unwrap_or_else(|e| error!("{}", e));
 
-                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() = LUA_TXS.len() - failed_txs.len();
+                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() =
+                    LUA_TXS.lock().len() - failed_txs.len();
 
-                for e in LUA_TXS.iter() {
-                    if !failed_txs.contains(&e.key()) {
-                        e.value()
+                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                    if !failed_txs.contains(&idx) {
+                        lua_tx
                             .send(script::Message::MouseHidEvent(result))
                             .unwrap_or_else(|e| {
                                 error!("Could not send a pending HID event to a Lua VM: {}", e)
@@ -1414,11 +1415,11 @@ async fn process_mouse_event(
                     *mouse_move_event_last_dispatched = Instant::now();
 
                     *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
-                        LUA_TXS.len() - failed_txs.len();
+                        LUA_TXS.lock().len() - failed_txs.len();
 
-                        for e in LUA_TXS.iter() {
-                            if !failed_txs.contains(&e.key()) {
-                                e.value().send(script::Message::MouseMove(mouse_motion_buf.0,
+                        for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                            if !failed_txs.contains(&idx) {
+                                lua_tx.send(script::Message::MouseMove(mouse_motion_buf.0,
                                                                     mouse_motion_buf.1,
                                                                     mouse_motion_buf.2)).unwrap_or_else(
                         |e| {
@@ -1478,11 +1479,11 @@ async fn process_mouse_event(
                 }
 
                 *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
-                    LUA_TXS.len() - failed_txs.len();
+                    LUA_TXS.lock().len() - failed_txs.len();
 
-                    for e in LUA_TXS.iter() {
-                        if !failed_txs.contains(&e.key()) {
-                            e.value().send(script::Message::MouseWheelEvent(direction)).unwrap_or_else(
+                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                        if !failed_txs.contains(&idx) {
+                            lua_tx.send(script::Message::MouseWheelEvent(direction)).unwrap_or_else(
                         |e| {
                             error!("Could not send a pending mouse event to a Lua VM: {}", e)
                         },
@@ -1529,11 +1530,12 @@ async fn process_mouse_event(
         let index = mouse_device.read().ev_key_to_button_index(code).unwrap();
 
         if is_pressed {
-            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() = LUA_TXS.len() - failed_txs.len();
+            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
+                LUA_TXS.lock().len() - failed_txs.len();
 
-            for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) {
-                    e.value()
+            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                if !failed_txs.contains(&idx) {
+                    lua_tx
                         .send(script::Message::MouseButtonDown(index))
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending mouse event to a Lua VM: {}", e)
@@ -1565,11 +1567,11 @@ async fn process_mouse_event(
             events::notify_observers(events::Event::MouseButtonDown(index))
                 .unwrap_or_else(|e| error!("{}", e));
         } else {
-            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = LUA_TXS.len() - failed_txs.len();
+            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-            for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) {
-                    e.value()
+            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                if !failed_txs.contains(&idx) {
+                    lua_tx
                         .send(script::Message::MouseButtonUp(index))
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending mouse event to a Lua VM: {}", e)
@@ -1755,11 +1757,11 @@ async fn process_keyboard_event(
         trace!("Key index: {:#x}", index);
 
         if is_pressed {
-            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.len() - failed_txs.len();
+            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-            for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) && !e.is_failed {
-                    e.value()
+            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                if !failed_txs.contains(&idx) {
+                    lua_tx
                         .send(script::Message::KeyDown(index))
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
@@ -1793,11 +1795,11 @@ async fn process_keyboard_event(
             events::notify_observers(events::Event::KeyDown(index))
                 .unwrap_or_else(|e| error!("{}", e));
         } else {
-            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.len() - failed_txs.len();
+            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-            for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) && !e.is_failed {
-                    e.value()
+            for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                if !failed_txs.contains(&idx) {
+                    lua_tx
                         .send(script::Message::KeyUp(index))
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
@@ -2099,7 +2101,7 @@ async fn run_main_loop(
         join_all(futures).await;
 
         // now, process events from all available sources...
-        match sel.select_timeout(Duration::from_millis(1000 / constants::TARGET_FPS)) {
+        match sel.select_timeout(Duration::from_millis(1000 / constants::TARGET_FPS / 4)) {
             Ok(oper) => match oper.index() {
                 i if i == ctrl_c => {
                     // consume the event, so that we don't cause a panic
@@ -2209,13 +2211,14 @@ async fn run_main_loop(
             delay_time = Instant::now();
 
             // send timer tick events to the Lua VMs
-            for e in LUA_TXS.iter() {
-                if !failed_txs.contains(&e.key()) {
-                    e.value()
+            for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                // if this tx failed previously, then skip it completely
+                if !failed_txs.contains(&index) {
+                    lua_tx
                         .send(script::Message::Tick(delta))
-                        .unwrap_or_else(|err| {
-                            error!("Send error during timer tick event: {}", err);
-                            failed_txs.insert(*e.key());
+                        .unwrap_or_else(|e| {
+                            error!("Send error during timer tick event: {}", e);
+                            failed_txs.insert(index);
                         });
                 }
             }
@@ -2241,12 +2244,9 @@ async fn run_main_loop(
 
                 // instruct Lua VMs to realize their color maps,
                 // e.g. to blend their local color maps with the canvas
-                *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.len() - failed_txs.len();
+                *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-                for e in LUA_TXS.iter() {
-                    let index = *e.key();
-                    let lua_tx = e.value();
-
+                for (index, lua_tx) in LUA_TXS.lock().iter().enumerate() {
                     // if this tx failed previously, then skip it completely
                     if !failed_txs.contains(&index) {
                         // guarantee the right order of execution for the alpha blend
@@ -2586,7 +2586,7 @@ fn init_misc_device(misc_device: &MiscDevice, hidapi: &hidapi::HidApi) {
 }
 
 /// Main program entrypoint
-#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
+#[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 
@@ -2831,9 +2831,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 // we left the main loop, so send a final message to the running Lua VMs
                 info!("Shutting down all Lua VMs now...");
 
-                *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.len();
+                *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.lock().len();
 
-                for lua_tx in LUA_TXS.iter() {
+                for lua_tx in LUA_TXS.lock().iter() {
                     lua_tx
                         .send(script::Message::Quit(0))
                         .unwrap_or_else(|e| error!("Could not send quit message: {}", e));

@@ -392,7 +392,7 @@ pub async fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
-#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
+#[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 

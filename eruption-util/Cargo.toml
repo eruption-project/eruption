@@ -22,7 +22,7 @@ nix = "0.22.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
-tokio = { version = "1.8.1", features = ["full"] }
+tokio = { version = "1.8.2", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.19"
@@ -39,4 +39,4 @@ lazy_static = "1.4.0"
 bitvec = "=0.19.5"
 
 [dev-dependencies]
-tokio = { version = "1.8.1", features = ["test-util"] }
+tokio = { version = "1.8.2", features = ["test-util"] }

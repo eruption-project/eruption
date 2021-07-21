@@ -675,13 +675,13 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
                         KeyboardHidEvent::KeyDown { code } => {
                             // update our internal representation of the keyboard state
                             let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.insert(index, true);
+                            crate::KEY_STATES.write()[index] = true;
                         }
 
                         KeyboardHidEvent::KeyUp { code } => {
                             // update our internal representation of the keyboard state
                             let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.insert(index, false);
+                            crate::KEY_STATES.write()[index] = false;
                         }
 
                         _ => { /* ignore other events */ }

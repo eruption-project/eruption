@@ -28,7 +28,7 @@ color-eyre = "0.5.11"
 toml = "0.5.8"
 serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
-tokio = { version = "1.8.1", features = ["full", "rt-multi-thread"] }
+tokio = { version = "1.8.2", features = ["full", "rt-multi-thread"] }
 ctrlc = { version = "3.1.9", features = ["termination"] }
 clap = "3.0.0-beta.2"
 hotwatch = "0.4.5"
@@ -65,8 +65,6 @@ dbus = "0.9.3"
 dbus-tree = "0.9.1"
 paste = "1.0.5"
 bitvec = "=0.19.5"
-dashmap = "4.0.2"
-nohash-hasher = "0.2.0"
 serialport = "4.0.1"
 icecream = "0.1.0"
 
@@ -75,4 +73,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 thiserror = "1.0.26"
-tokio = { version = "1.8.1", features = ["test-util"] }
+tokio = { version = "1.8.2", features = ["test-util"] }
