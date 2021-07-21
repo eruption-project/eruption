@@ -24,7 +24,7 @@
 Overview:
 
 - Integrated Lua interpreter
-- AIMO LED Control via Lua scripts
+- LED Control via Lua scripts
 - Multiple Lua scripts may be executed in parallel, with their outputs combined
 - Allows for construction of complex "effect pipelines"
 - Event-based architecture

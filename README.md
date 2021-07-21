@@ -82,12 +82,12 @@ You can always re-enable the Eruption service with the command:
 Eruption is a Linux daemon written in Rust, consisting of a core, an integrated
 Lua interpreter and additional plugin components. Its intended usage is to
 execute Lua scripts that may react to certain events on the system like e.g.
-"Key pressed" and subsequently control the AIMO LEDs on the keyboard. Plugins
-may export additional functionality to the Lua scripting engine.
+"Key pressed" and subsequently control the connected LED devices.
+Plugins may export additional functionality to the Lua scripting engine.
 Multiple Lua scripts may be run in parallel. Each Lua scripts "submitted color
 map" will be combined with all other scripts "submitted color maps" using a
-compositor that does an alpha blending step on each color map,
-prior to sending the resulting final color map to the keyboard.
+compositor that performs an alpha blending step on each color map,
+prior to sending the resulting final color map to the connected LED devices.
 
 ## Installation
 
