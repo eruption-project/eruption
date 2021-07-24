@@ -30,7 +30,7 @@ key_state = {
 	shockwave_origin = 32,
 }
 
-max_effect_ttl = target_fps * 2
+max_effect_ttl = target_fps * 3
 effect_ttl = max_effect_ttl
 
 -- max ttl of a shockwave cell
