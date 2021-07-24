@@ -767,7 +767,7 @@ fn spawn_lua_thread(
                 Ok(script::RunScriptResult::TerminatedWithErrors) => {
                     error!("Script execution failed");
 
-                    // LUA_TXS.lock().get_mut(&thread_idx).unwrap().is_failed = true;
+                    LUA_TXS.lock().get_mut(thread_idx).unwrap().is_failed = true;
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -776,7 +776,7 @@ fn spawn_lua_thread(
                 Err(_e) => {
                     error!("Script execution failed due to an unknown error");
 
-                    // LUA_TXS.lock().get_mut(&thread_idx).unwrap().is_failed = true;
+                    LUA_TXS.lock().get_mut(thread_idx).unwrap().is_failed = true;
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -870,9 +870,8 @@ fn switch_profile(
         debug!("Preparing to enter failsafe mode...");
 
         // request termination of all Lua VMs
-        let mut lua_txs = LUA_TXS.lock();
 
-        for lua_tx in lua_txs.iter() {
+        for lua_tx in LUA_TXS.lock().iter() {
             if !lua_tx.is_failed {
                 lua_tx
                     .send(script::Message::Unload)
@@ -883,7 +882,7 @@ fn switch_profile(
         }
 
         // be safe and clear any leftover channels
-        lua_txs.clear();
+        LUA_TXS.lock().clear();
 
         switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
@@ -953,9 +952,8 @@ fn switch_profile(
             }
 
             // now request termination of all Lua VMs
-            let mut lua_txs = LUA_TXS.lock();
 
-            for lua_tx in lua_txs.iter() {
+            for lua_tx in LUA_TXS.lock().iter() {
                 if !lua_tx.is_failed {
                     lua_tx
                         .send(script::Message::Unload)
@@ -966,7 +964,7 @@ fn switch_profile(
             }
 
             // be safe and clear any leftover channels
-            lua_txs.clear();
+            LUA_TXS.lock().clear();
 
             // we passed the point of no return, from here on we can't just go back
             // but need to switch to failsafe mode when we encounter any critical errors
@@ -998,7 +996,7 @@ fn switch_profile(
                     tx.is_failed = true;
                 }
 
-                lua_txs.push(tx);
+                LUA_TXS.lock().push(tx);
             }
 
             // it seems that at least one Lua VM failed during loading of the new profile,
