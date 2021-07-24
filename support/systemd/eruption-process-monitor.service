@@ -1,13 +1,19 @@
 [Unit]
 Description=Process Monitoring and Introspection for Eruption
 Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
-Wants=default.target
+BindsTo=graphical-session.target
+Wants=graphical-session.target
+After=graphical-session.target
+StartLimitInterval=60
+StartLimitBurst=5
 
 [Service]
+Environment=RUST_BACKTRACE=full
 ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon
 PIDFile=/run/eruption-process-monitor.pid
 Type=exec
 Restart=always
+RestartSec=1
 #CapabilityBoundingSet=CAP_NET_ADMIN
 #AmbientCapabilities=CAP_NET_ADMIN
 #ProtectHome=yes

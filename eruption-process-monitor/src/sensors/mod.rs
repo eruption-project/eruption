@@ -17,15 +17,28 @@
 
 use std::sync::Arc;
 
+use async_trait::async_trait;
 use dyn_clonable::*;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
 
+#[cfg(feature = "mutter")]
+mod mutter;
+#[cfg(feature = "procmon")]
 mod process;
-mod x11;
+#[cfg(feature = "wayland")]
+mod wayland;
 
+#[cfg(feature = "x11")]
+mod x11;
+#[cfg(feature = "mutter")]
+pub use mutter::*;
+#[cfg(feature = "procmon")]
 pub use process::*;
+#[cfg(feature = "wayland")]
+pub use wayland::*;
+#[cfg(feature = "x11")]
 pub use x11::*;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -36,6 +49,7 @@ lazy_static! {
 }
 
 #[clonable]
+#[async_trait]
 pub trait Sensor: Clone {
     fn initialize(&mut self) -> Result<()>;
 
@@ -45,8 +59,32 @@ pub trait Sensor: Clone {
 
     fn get_usage_example(&self) -> String;
 
+    fn is_failed(&self) -> bool;
+    fn set_failed(&mut self, failed: bool);
+
     fn is_pollable(&self) -> bool;
-    fn poll(&mut self) -> Result<Box<dyn SensorData>>;
+    async fn poll(&mut self) -> Result<Box<dyn SensorData>>;
+
+    fn as_any(&self) -> &dyn std::any::Any;
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+}
+
+#[clonable]
+#[async_trait]
+pub trait WindowSensor: Clone {
+    fn initialize(&mut self) -> Result<()>;
+
+    fn get_id(&self) -> String;
+    fn get_name(&self) -> String;
+    fn get_description(&self) -> String;
+
+    fn get_usage_example(&self) -> String;
+
+    fn is_failed(&self) -> bool;
+    fn set_failed(&mut self, failed: bool);
+
+    fn is_pollable(&self) -> bool;
+    async fn poll(&mut self) -> Result<Box<dyn WindowSensorData>>;
 
     fn as_any(&self) -> &dyn std::any::Any;
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
@@ -54,6 +92,12 @@ pub trait Sensor: Clone {
 
 pub trait SensorData: std::fmt::Debug {
     fn as_any(&self) -> &dyn std::any::Any;
+}
+
+pub trait WindowSensorData: SensorData {
+    fn window_name(&self) -> Option<&str>;
+    fn window_instance(&self) -> Option<&str>;
+    fn window_class(&self) -> Option<&str>;
 }
 
 /// Register a sensor
@@ -70,8 +114,17 @@ where
 pub fn register_sensors() -> Result<()> {
     info!("Registering sensor plugins:");
 
+    #[cfg(feature = "procmon")]
     register_sensor(ProcessSensor::new());
+
+    #[cfg(feature = "x11")]
     register_sensor(X11Sensor::new());
+
+    #[cfg(feature = "mutter")]
+    register_sensor(MutterSensor::new());
+
+    #[cfg(feature = "wayland")]
+    register_sensor(WaylandSensor::new());
 
     // initialize all registered sensors
     for s in SENSORS.lock().iter_mut() {
@@ -82,6 +135,7 @@ pub fn register_sensors() -> Result<()> {
 }
 
 /// Find a sensor by its respective id
+#[allow(dead_code)]
 pub fn find_sensor_by_id(id: &str) -> Option<Box<dyn Sensor + Send + Sync + 'static>> {
     match SENSORS.lock().iter().find(|&e| e.get_id() == id) {
         Some(s) => Some(dyn_clone::clone_box(&(*s.as_ref()))),

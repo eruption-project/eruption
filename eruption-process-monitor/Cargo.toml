@@ -1,6 +1,6 @@
 [package]
 name = "eruption-process-monitor"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
@@ -9,6 +9,15 @@ homepage = "https://github.com/X3n0m0rph59/eruption"
 license = "GPLv3+"
 readme = "README.md"
 resolver = "2"
+
+[features]
+default = ["sensors-most"]
+sensors-most = ["procmon", "x11", "mutter"]
+sensors-all = ["procmon", "x11", "wayland", "mutter"]
+procmon = ["procmon-sys"]
+x11 = ["x11rb"]
+wayland = []
+mutter = []
 
 [dependencies]
 async-trait = "0.1.50"
@@ -50,9 +59,9 @@ itertools = "0.10.1"
 rayon = "1.5.1"
 lazy_static = "1.4.0"
 rust-crypto = "0.2.36"
-procmon-sys = { version = "0.0.2", path = "src/procmon-sys" }
 walkdir = "2.3.2"
-x11rb = "0.8.1"
+procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
+x11rb = { version = "0.8.1", optional = true, features = ["allow-unsafe-code"] }
 
 [dev-dependencies]
 tokio = { version = "1.8.2", features = ["test-util"] }

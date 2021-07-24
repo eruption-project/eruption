@@ -18,6 +18,7 @@
 use super::Sensor;
 use crate::procmon::{self, ProcMon};
 use crate::{util, SystemEvent};
+use async_trait::async_trait;
 use crossbeam::channel::Sender;
 use log::*;
 use std::{sync::atomic::Ordering, thread};
@@ -103,6 +104,7 @@ impl ProcessSensor {
     }
 }
 
+#[async_trait]
 impl Sensor for ProcessSensor {
     fn get_id(&self) -> String {
         "process".to_string()
@@ -135,7 +137,15 @@ rules add exec gnome-calc.* 2
         false
     }
 
-    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+    fn is_failed(&self) -> bool {
+        false
+    }
+
+    fn set_failed(&mut self, _failed: bool) {
+        // no op
+    }
+
+    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         Err(ProcessSensorError::NotSupported.into())
     }
 

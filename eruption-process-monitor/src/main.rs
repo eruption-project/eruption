@@ -16,6 +16,16 @@
 */
 
 use crate::dbus_client::Message;
+
+#[cfg(feature = "mutter")]
+use crate::sensors::MutterSensorData;
+
+#[cfg(feature = "wayland")]
+use crate::sensors::WaylandSensorData;
+
+#[cfg(feature = "x11")]
+use crate::sensors::X11SensorData;
+
 use clap::Clap;
 use clap::*;
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
@@ -31,6 +41,7 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
 use regex::Regex;
+use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
 use std::{env, fmt, fs, path::PathBuf, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
@@ -38,6 +49,8 @@ use std::{sync::atomic::Ordering, thread, time::Duration};
 mod constants;
 mod dbus_client;
 mod dbus_interface;
+
+#[cfg(feature = "procmon")]
 mod procmon;
 mod sensors;
 mod util;
@@ -63,6 +76,9 @@ lazy_static! {
     /// Signals that we initiated a profile change
     pub static ref PROFILE_CHANGING: AtomicBool = AtomicBool::new(false);
 
+    /// Global "polling works" for the X11 sensor flag
+    pub static ref X11_POLL_SUCCEEDED: AtomicBool = AtomicBool::new(false);
+
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
@@ -73,6 +89,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
+
+    #[error("Sensor error: {description}")]
+    SensorError { description: String },
 
     #[error("Could not register Linux process monitoring")]
     ProcMonError {},
@@ -184,6 +203,7 @@ impl fmt::Display for RuleMetadata {
     }
 }
 
+#[cfg(feature = "procmon")]
 #[derive(Debug, Clone)]
 pub enum SystemEvent {
     ProcessExec {
@@ -339,6 +359,7 @@ async fn process_action(action: &Action) -> Result<()> {
 }
 
 /// Process system related events
+#[cfg(feature = "procmon")]
 async fn process_system_event(event: &SystemEvent) -> Result<()> {
     match event {
         SystemEvent::ProcessExec {
@@ -478,51 +499,41 @@ async fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
     Ok(())
 }
 
-async fn process_window_event(event: Option<&sensors::X11SensorData>) -> Result<()> {
+#[allow(dead_code)]
+async fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
     trace!("Sensor data: {:#?}", event);
 
-    if let Some(event) = event {
-        for (selector, (metadata, action)) in RULES_MAP.read().iter() {
-            match selector {
-                Selector::WindowFocused { mode, regex } => {
-                    if metadata.enabled {
-                        let re = Regex::new(&regex)?;
+    for (selector, (metadata, action)) in RULES_MAP.read().iter() {
+        match selector {
+            Selector::WindowFocused { mode, regex } => {
+                if metadata.enabled {
+                    let re = Regex::new(&regex)?;
 
-                        match mode {
-                            WindowFocusedSelectorMode::WindowName => {
-                                if re.is_match(&event.window_name) {
-                                    process_action(&action).await?;
-                                    break;
-                                }
+                    match mode {
+                        WindowFocusedSelectorMode::WindowName => {
+                            if re.is_match(&event.window_name().unwrap_or_default()) {
+                                process_action(&action).await?;
+                                break;
                             }
+                        }
 
-                            WindowFocusedSelectorMode::WindowInstance => {
-                                if re.is_match(&event.window_instance) {
-                                    process_action(&action).await?;
-                                    break;
-                                }
+                        WindowFocusedSelectorMode::WindowInstance => {
+                            if re.is_match(&event.window_instance().unwrap_or_default()) {
+                                process_action(&action).await?;
+                                break;
                             }
-                            WindowFocusedSelectorMode::WindowClass => {
-                                if re.is_match(&event.window_class) {
-                                    process_action(&action).await?;
-                                    break;
-                                }
+                        }
+                        WindowFocusedSelectorMode::WindowClass => {
+                            if re.is_match(&event.window_class().unwrap_or_default()) {
+                                process_action(&action).await?;
+                                break;
                             }
                         }
                     }
                 }
-
-                _ => { /* not a window related selector */ }
             }
-        }
-    } else {
-        let selector = Selector::WindowFocused {
-            mode: WindowFocusedSelectorMode::WindowInstance,
-            regex: ".*".to_string(),
-        };
 
-        if let Some((_metadata, default_action)) = RULES_MAP.read().get(&selector) {
-            process_action(&default_action).await?;
+            _ => { /* not a window related selector */ }
         }
     }
 
@@ -741,7 +752,7 @@ mod thread_util {
 }
 
 pub async fn run_main_loop(
-    sysevents_rx: &Receiver<SystemEvent>,
+    #[cfg(feature = "procmon")] sysevents_rx: &Receiver<SystemEvent>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
     ctrl_c_rx: &Receiver<bool>,
@@ -754,6 +765,8 @@ pub async fn run_main_loop(
     let ctrl_c = sel.recv(ctrl_c_rx);
     let fsevents = sel.recv(fsevents_rx);
     let dbusevents = sel.recv(dbusevents_rx);
+
+    #[cfg(feature = "procmon")]
     let sysevents = sel.recv(sysevents_rx);
 
     'MAIN_LOOP: loop {
@@ -793,6 +806,7 @@ pub async fn run_main_loop(
                     }
                 }
 
+                #[cfg(feature = "procmon")]
                 i if i == sysevents => {
                     let event = &oper.recv(&sysevents_rx);
                     if let Ok(event) = event {
@@ -812,20 +826,48 @@ pub async fn run_main_loop(
 
         // poll all pollable sensors that do not notify us via messages
         for sensor in sensors::SENSORS.lock().iter_mut() {
-            if sensor.is_pollable() {
-                match sensor.poll() {
+            if sensor.is_pollable() && !sensor.is_failed() {
+                match sensor.poll().await {
+                    #[allow(unused_variables)]
                     Ok(data) => {
-                        if let Some(data) = data.as_any().downcast_ref::<sensors::X11SensorData>() {
-                            process_window_event(Some(&data)).await?;
-                        } else {
-                            warn!("Unknown sensor data: {:#?}", data);
+                        #[allow(unused_mut)]
+                        let mut handled = false;
+
+                        #[cfg(feature = "x11")]
+                        if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
+                            process_window_event(data).await?;
+
+                            X11_POLL_SUCCEEDED.store(true, Ordering::SeqCst);
+
+                            handled = true;
+                        }
+
+                        #[cfg(feature = "mutter")]
+                        if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
+                            process_window_event(data).await?;
+
+                            handled = true;
+                        }
+
+                        #[cfg(feature = "wayland")]
+                        if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
+                            process_window_event(data).await?;
+
+                            handled = true;
+                        }
+
+                        if !handled {
+                            return Err(MainError::SensorError {
+                                description: "Unhandled sensor data type".to_string(),
+                            }
+                            .into());
                         }
                     }
 
                     Err(e) => {
-                        debug!("Could not poll a sensor: {}", e);
+                        error!("Could not poll a sensor: {}", e);
 
-                        process_window_event(None).await?;
+                        // sensor.set_failed(true);
                     }
                 }
             }
@@ -995,7 +1037,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             register_filesystem_watcher(fsevents_tx, rules_file)?;
 
             // configure plugins
+            #[cfg(feature = "procmon")]
             let (sysevents_tx, sysevents_rx) = unbounded();
+
+            #[cfg(feature = "procmon")]
             if let Some(mut s) = sensors::find_sensor_by_id("process") {
                 let process_sensor = s
                     .as_any_mut()
@@ -1011,6 +1056,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
             // enter the main loop
             run_main_loop(
+                #[cfg(feature = "procmon")]
                 &sysevents_rx,
                 &fsevents_rx,
                 &dbusevents_rx,

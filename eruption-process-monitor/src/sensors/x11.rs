@@ -15,15 +15,29 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::ffi::CString;
+
 use crate::constants;
+use async_trait::async_trait;
 use byteorder::{ByteOrder, LittleEndian};
+use parking_lot::Mutex;
+use std::sync::Arc;
+use x11rb::connection::Connection;
 use x11rb::protocol::xproto::*;
 use x11rb::x11_utils::TryParse;
-use x11rb::{connection::Connection, rust_connection::RustConnection};
+use x11rb::xcb_ffi::XCBConnection;
 
 use super::Sensor;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum X11SensorError {
+    // #[error("Unknown error: {description}")]
+    // UnknownError { description: String },
+    #[error("Sensor error: {description}")]
+    SensorError { description: String },
+}
 
 #[derive(Debug, Clone)]
 pub struct X11SensorData {
@@ -39,9 +53,26 @@ impl super::SensorData for X11SensorData {
     }
 }
 
+impl super::WindowSensorData for X11SensorData {
+    fn window_name(&self) -> Option<&str> {
+        Some(&self.window_name)
+    }
+
+    fn window_instance(&self) -> Option<&str> {
+        Some(&self.window_instance)
+    }
+
+    fn window_class(&self) -> Option<&str> {
+        Some(&self.window_class)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct X11Sensor {
     pub display: String,
+    pub is_failed: bool,
+    pub conn: Option<Arc<Mutex<XCBConnection>>>,
+    pub screen: Option<usize>,
 }
 
 impl X11Sensor {
@@ -53,11 +84,26 @@ impl X11Sensor {
             .get_str("X11.display")
             .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string());
 
-        X11Sensor { display }
+        X11Sensor {
+            display,
+            is_failed: false,
+            conn: None,
+            screen: None,
+        }
     }
 }
 
+#[async_trait]
 impl Sensor for X11Sensor {
+    fn initialize(&mut self) -> Result<()> {
+        let (conn, screen) = XCBConnection::connect(Some(&CString::new(self.display.clone())?))?;
+
+        self.conn = Some(Arc::new(Mutex::new(conn)));
+        self.screen = Some(screen);
+
+        Ok(())
+    }
+
     fn get_id(&self) -> String {
         "x11".to_string()
     }
@@ -83,58 +129,87 @@ You may want to use the command line tool `xprop` to find the relevant informati
         .to_string()
     }
 
-    fn initialize(&mut self) -> Result<()> {
-        Ok(())
-    }
-
     fn is_pollable(&self) -> bool {
         true
     }
 
-    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
-        // set up our state
-        let (conn, screen) = RustConnection::connect(Some(self.display.as_str()))?;
-        let root = conn.setup().roots[screen].root;
+    fn is_failed(&self) -> bool {
+        self.is_failed
+    }
 
-        let net_active_window = conn.intern_atom(false, b"_NET_ACTIVE_WINDOW")?.reply()?;
-        let net_wm_name = conn.intern_atom(false, b"_NET_WM_NAME")?.reply()?;
-        let net_wm_pid = conn.intern_atom(false, b"_NET_WM_PID")?.reply()?;
-        let utf8_string = conn.intern_atom(false, b"UTF8_STRING")?.reply()?;
-        let cardinal = conn.intern_atom(false, b"CARDINAL")?.reply()?;
+    fn set_failed(&mut self, failed: bool) {
+        self.is_failed = failed;
+    }
 
-        let focus = find_active_window(&conn, root, net_active_window)?;
+    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+        if let Some(conn) = &self.conn {
+            let conn = conn.lock();
 
-        // collect the replies to the atoms
-        let (net_wm_name, net_wm_pid, utf8_string, cardinal) = (
-            net_wm_name.atom,
-            net_wm_pid.atom,
-            utf8_string.atom,
-            cardinal.atom,
-        );
-        let (wm_class, string) = (
-            conn.intern_atom(false, b"WM_CLASS")?.reply()?.atom,
-            conn.intern_atom(false, b"STRING")?.reply()?.atom,
-        );
+            let screen = self.screen.unwrap_or(0);
+            let root = conn.setup().roots[screen].root;
 
-        // get window properties
-        let name =
-            conn.get_property(false, focus, net_wm_name, utf8_string, 0, u32::max_value())?;
-        let class = conn.get_property(false, focus, wm_class, string, 0, u32::max_value())?;
-        let pid = conn.get_property(false, focus, net_wm_pid, cardinal, 0, u32::max_value())?;
-        let (name, class, pid) = (name.reply()?, class.reply()?, pid.reply()?);
+            let net_active_window = conn.intern_atom(false, b"_NET_ACTIVE_WINDOW")?.reply()?;
+            let net_wm_name = conn.intern_atom(false, b"_NET_WM_NAME")?.reply()?;
+            let net_wm_pid = conn.intern_atom(false, b"_NET_WM_PID")?.reply()?;
+            let utf8_string = conn.intern_atom(false, b"UTF8_STRING")?.reply()?;
+            let cardinal = conn.intern_atom(false, b"CARDINAL")?.reply()?;
 
-        let (instance, class) = parse_wm_class(&class);
+            let focus = find_active_window(&*conn, root, net_active_window)?;
 
-        let pid = parse_pid(&pid);
+            if focus == 0 {
+                // found the root window
 
-        let result = self::X11SensorData {
-            window_name: parse_string_property(&name).to_string(),
-            window_instance: instance.to_string(),
-            window_class: class.to_string(),
-            pid,
-        };
+                let result = self::X11SensorData {
+                    window_name: "".to_string(),
+                    window_instance: "".to_string(),
+                    window_class: "".to_string(),
+                    pid: 0,
+                };
 
-        Ok(Box::from(result))
+                Ok(Box::from(result))
+            } else {
+                // any other window
+
+                // collect the replies to the atoms
+                let (net_wm_name, net_wm_pid, utf8_string, cardinal) = (
+                    net_wm_name.atom,
+                    net_wm_pid.atom,
+                    utf8_string.atom,
+                    cardinal.atom,
+                );
+                let (wm_class, string) = (
+                    conn.intern_atom(false, b"WM_CLASS")?.reply()?.atom,
+                    conn.intern_atom(false, b"STRING")?.reply()?.atom,
+                );
+
+                // get window properties
+                let name =
+                    conn.get_property(false, focus, net_wm_name, utf8_string, 0, u32::max_value())?;
+                let class =
+                    conn.get_property(false, focus, wm_class, string, 0, u32::max_value())?;
+                let pid =
+                    conn.get_property(false, focus, net_wm_pid, cardinal, 0, u32::max_value())?;
+                let (name, class, pid) = (name.reply()?, class.reply()?, pid.reply()?);
+
+                let (instance, class) = parse_wm_class(&class);
+
+                let pid = parse_pid(&pid);
+
+                let result = self::X11SensorData {
+                    window_name: parse_string_property(&name).to_string(),
+                    window_instance: instance.to_string(),
+                    window_class: class.to_string(),
+                    pid,
+                };
+
+                Ok(Box::from(result))
+            }
+        } else {
+            Err(X11SensorError::SensorError {
+                description: "Could not connect to the X server".to_string(),
+            }
+            .into())
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
