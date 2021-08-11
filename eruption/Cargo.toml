@@ -52,7 +52,7 @@ simdnoise = "3.1.6"
 interpolation = "0.2.0"
 mlua = { version = "0.6.2", features = ["luajit"] }
 mlua_derive = "0.6.0"
-sysinfo = "0.20.0"
+sysinfo = "0.19.2"
 systemstat = "0.1.8"
 procinfo = "0.4.2"
 rustfft = "6.0.1"
