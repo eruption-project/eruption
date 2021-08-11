@@ -449,9 +449,85 @@ impl DeviceTrait for RoccatKoneAimo {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
+
+    fn as_device(&self) -> &dyn DeviceTrait {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
+        Some(self as &dyn MouseDeviceTrait)
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
+        Some(self as &mut dyn MouseDeviceTrait)
+    }
 }
 
 impl MouseDeviceTrait for RoccatKoneAimo {
+    fn get_dpi(&self) -> Result<i32> {
+        trace!("Querying device DPI config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_dpi(&mut self, _dpi: i32) -> Result<()> {
+        trace!("Setting device DPI config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_dcu_config(&self) -> Result<i32> {
+        trace!("Querying device DCU config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_dcu_config(&mut self, _dcu: i32) -> Result<()> {
+        trace!("Setting device DCU config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_angle_snapping(&self) -> Result<bool> {
+        trace!("Querying device angle-snapping config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_angle_snapping(&mut self, _angle_snapping: bool) -> Result<()> {
+        trace!("Setting device angle-snapping config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_debounce(&self) -> Result<bool> {
+        trace!("Querying device debounce config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_debounce(&mut self, _debounce: bool) -> Result<bool> {
+        trace!("Setting device debounce config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_local_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
     #[inline]
     fn get_next_event(&self) -> Result<MouseHidEvent> {
         self.get_next_event_timeout(-1)

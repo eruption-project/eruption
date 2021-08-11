@@ -46,6 +46,14 @@ pub enum DbusApiError {
 
     #[error("Could not find script file")]
     ScriptNotFound {},
+
+    #[error("Invalid device")]
+    InvalidDevice {},
+
+    #[error("Invalid parameter")]
+    InvalidParameter {},
+    // #[error("Operation not supported")]
+    // OpNotSupported {},
 }
 
 /// D-Bus API support
@@ -267,6 +275,124 @@ impl DbusApi {
                             //         Ok(vec![m.msg.method_return().append_all(s)])
                             //     }), // .outarg::<Vec<RGBA>, _>("values"),
                             // )
+                            .add_m(
+                                f.method("GetManagedDevices", (), move |m| {
+                                    if perms::has_monitor_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let mut keyboards: Vec<(u16, u16)> = Vec::new();
+                                        let mut mice: Vec<(u16, u16)> = Vec::new();
+                                        let other: Vec<(u16, u16)> = Vec::new();
+
+                                        keyboards.extend(
+                                            crate::KEYBOARD_DEVICES.lock().iter().map(|device| {
+                                                (
+                                                    device.read().get_usb_vid(),
+                                                    device.read().get_usb_pid(),
+                                                )
+                                            }),
+                                        );
+
+                                        mice.extend(crate::MOUSE_DEVICES.lock().iter().map(
+                                            |device| {
+                                                (
+                                                    device.read().get_usb_vid(),
+                                                    device.read().get_usb_pid(),
+                                                )
+                                            },
+                                        ));
+
+                                        // other.extend(crate::OTHER_DEVICES.lock().iter().map(
+                                        //     |device| {
+                                        //         (
+                                        //             device.read().get_usb_vid(),
+                                        //             device.read().get_usb_pid(),
+                                        //         )
+                                        //     },
+                                        // ));
+
+                                        Ok(vec![m
+                                            .msg
+                                            .method_return()
+                                            .append1((keyboards, mice, other))])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<(
+                                    Vec<(u16, u16)>,
+                                    Vec<(u16, u16)>,
+                                    Vec<(u16, u16)>,
+                                ), _>(
+                                    "values"
+                                ),
+                            ),
+                    ),
+            )
+            .add(
+                f.object_path("/org/eruption/devices", ())
+                    .introspectable()
+                    .add(
+                        f.interface("org.eruption.Device", ())
+                            .add_m(
+                                f.method("SetDeviceConfig", (), move |m| {
+                                    if perms::has_settings_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let (device, param, value): (u64, String, String) =
+                                            m.msg.read3()?;
+
+                                        debug!(
+                                            "Setting device [{}] config parameter '{}' to '{}'",
+                                            device, &param, &value
+                                        );
+
+                                        let _result = apply_device_specific_configuration(
+                                            device, &param, &value,
+                                        )
+                                        .map_err(|_e| MethodErr::invalid_arg(&param))?;
+
+                                        Ok(vec![m.msg.method_return().append1(true)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<u64, _>("device")
+                                .inarg::<String, _>("param")
+                                .inarg::<String, _>("value")
+                                .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("GetDeviceConfig", (), move |m| {
+                                    if perms::has_settings_permission(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let (device, param): (u64, String) = m.msg.read2()?;
+
+                                        debug!(
+                                            "Querying device [{}] config parameter '{}'",
+                                            device, &param
+                                        );
+
+                                        let result =
+                                            query_device_specific_configuration(device, &param)
+                                                .map_err(|_e| MethodErr::invalid_arg(&param))?;
+
+                                        Ok(vec![m.msg.method_return().append1(result)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<u64, _>("device")
+                                .inarg::<String, _>("param")
+                                .outarg::<String, _>("value"),
+                            )
                             .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
                                     if perms::has_monitor_permission(
@@ -794,6 +920,140 @@ fn apply_parameter(
         Ok(())
     } else {
         Err(DbusApiError::ScriptNotFound {}.into())
+    }
+}
+
+fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {
+    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
+        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+
+        match param {
+            "brightness" => {
+                let brightness = value.parse::<i32>()?;
+                device.write().set_local_brightness(brightness)?;
+
+                Ok(())
+            }
+
+            _ => Err(DbusApiError::InvalidParameter {}.into()),
+        }
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+    {
+        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
+        let device = &crate::MOUSE_DEVICES.lock()[index];
+
+        match param {
+            "dpi" => {
+                let dpi = value.parse::<i32>()?;
+                device.write().set_dpi(dpi)?;
+
+                Ok(())
+            }
+
+            "dcu" => {
+                let dcu_config = value.parse::<i32>()?;
+                device.write().set_dcu_config(dcu_config)?;
+
+                Ok(())
+            }
+
+            "angle-snapping" => {
+                let angle_snapping = value.parse::<bool>()?;
+                device.write().set_angle_snapping(angle_snapping)?;
+
+                Ok(())
+            }
+
+            "debounce" => {
+                let debounce = value.parse::<bool>()?;
+                device.write().set_debounce(debounce)?;
+
+                Ok(())
+            }
+
+            "brightness" => {
+                let brightness = value.parse::<i32>()?;
+                device.write().set_local_brightness(brightness)?;
+
+                Ok(())
+            }
+
+            _ => Err(DbusApiError::InvalidParameter {}.into()),
+        }
+    } else {
+        Err(DbusApiError::InvalidDevice {}.into())
+    }
+}
+
+fn query_device_specific_configuration(device: u64, param: &str) -> Result<String> {
+    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
+        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+
+        match param {
+            "info" => {
+                let device_info = device.read().get_device_info()?;
+                let info = format!("Firmware version: {}", device_info.firmware_version);
+
+                Ok(info)
+            }
+
+            "brightness" => {
+                let brightness = device.read().get_local_brightness()?;
+
+                Ok(format!("{}", brightness))
+            }
+
+            _ => Err(DbusApiError::InvalidParameter {}.into()),
+        }
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+    {
+        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
+        let device = &crate::MOUSE_DEVICES.lock()[index];
+
+        match param {
+            "info" => {
+                let device_info = device.read().get_device_info()?;
+                let info = format!("Firmware version: {}", device_info.firmware_version);
+
+                Ok(info)
+            }
+
+            "dpi" => {
+                let dpi = device.read().get_dpi()?;
+
+                Ok(format!("{}", dpi))
+            }
+
+            "dcu" => {
+                let dcu_config = device.read().get_dcu_config()?;
+
+                Ok(format!("{}", dcu_config))
+            }
+
+            "angle-snapping" => {
+                let angle_snapping = device.read().get_angle_snapping()?;
+
+                Ok(format!("{}", angle_snapping))
+            }
+
+            "debounce" => {
+                let debounce = device.read().get_debounce()?;
+
+                Ok(format!("{}", debounce))
+            }
+
+            "brightness" => {
+                let brightness = device.read().get_local_brightness()?;
+
+                Ok(format!("{}", brightness))
+            }
+
+            _ => Err(DbusApiError::InvalidParameter {}.into()),
+        }
+    } else {
+        Err(DbusApiError::InvalidDevice {}.into())
     }
 }
 

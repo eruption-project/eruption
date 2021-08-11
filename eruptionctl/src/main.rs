@@ -29,6 +29,7 @@ use std::{process, sync::Arc};
 
 mod constants;
 mod dbus_client;
+mod device;
 mod manifest;
 mod profiles;
 mod util;
@@ -73,6 +74,12 @@ pub enum Subcommands {
     Config {
         #[clap(subcommand)]
         command: ConfigSubcommands,
+    },
+
+    /// Get or set some device specific configuration parameters
+    Devices {
+        #[clap(subcommand)]
+        command: DevicesSubcommands,
     },
 
     /// Shows the currently active profile or slot
@@ -122,11 +129,46 @@ pub enum Subcommands {
 /// Sub-commands of the "config" command
 #[derive(Debug, Clap)]
 pub enum ConfigSubcommands {
-    /// Get or set the brightness of the LEDs
+    /// Get or set the global brightness of the LEDs
     Brightness { brightness: Option<i64> },
 
     /// Get or set the state of SoundFX
     Soundfx { enable: Option<bool> },
+}
+
+/// Sub-commands of the "devices" command
+#[derive(Debug, Clap)]
+pub enum DevicesSubcommands {
+    /// List connected devices and their indices (run this first)
+    #[clap(display_order = 0)]
+    List,
+
+    /// Get information about a specific device
+    Info { device: String },
+
+    /// Get or set the DPI parameter (applicable for some mice)
+    Dpi { device: String, dpi: Option<i32> },
+
+    /// Get or set the DCU parameter (applicable for some mice)
+    Distance { device: String, param: Option<i32> },
+
+    /// Get or set the angle-snapping parameter (applicable for some mice)
+    AngleSnapping {
+        device: String,
+        enable: Option<bool>,
+    },
+
+    /// Get or set the debounce parameter (applicable for some mice)
+    Debounce {
+        device: String,
+        enable: Option<bool>,
+    },
+
+    /// Get or set the device specific brightness of the LEDs
+    Brightness {
+        device: String,
+        brightness: Option<i64>,
+    },
 }
 
 /// Sub-commands of the "status" command
@@ -328,6 +370,45 @@ pub async fn get_profiles() -> Result<Vec<(String, String)>> {
     Ok(result)
 }
 
+/// Enumerate all available devices
+pub async fn get_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>)> {
+    let ((keyboards, mice, misc),): ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),) =
+        dbus_system_bus("/org/eruption/devices")
+            .await?
+            .method_call("org.eruption.Device", "GetManagedDevices", ())
+            .await?;
+
+    Ok((keyboards, mice, misc))
+}
+
+/// Get a device specific config param
+pub async fn get_device_config(device: u64, param: &str) -> Result<String> {
+    let (result,): (String,) = dbus_system_bus("/org/eruption/devices")
+        .await?
+        .method_call(
+            "org.eruption.Device",
+            "GetDeviceConfig",
+            (device, param.to_owned()),
+        )
+        .await?;
+
+    Ok(result)
+}
+
+/// Set a device specific config param
+pub async fn set_device_config(device: u64, param: &str, value: &str) -> Result<()> {
+    let (_result,): (bool,) = dbus_system_bus("/org/eruption/devices")
+        .await?
+        .method_call(
+            "org.eruption.Device",
+            "SetDeviceConfig",
+            (device, param.to_owned(), value.to_owned()),
+        )
+        .await?;
+
+    Ok(())
+}
+
 /// Enumerate all available scripts
 pub fn get_script_list() -> Result<Vec<(String, String)>> {
     let path = constants::DEFAULT_SCRIPT_DIR;
@@ -440,6 +521,187 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     println!(
                         "{}",
                         format!("SoundFX enabled: {}", format!("{}", result).bold())
+                    );
+                }
+            }
+        },
+
+        // device specific sub-commands
+        Subcommands::Devices { command } => match command {
+            DevicesSubcommands::List => {
+                let mut base_index = 0;
+
+                let (keyboards, mice, misc) = get_devices().await?;
+
+                println!(
+                    "{}",
+                    r#"
+ Use the `eruptionctl devices list` sub-command to find out the index of the device that
+ you want to operate on. All the other device-related commands require a device index.
+
+ Examples:
+
+ Set the brightness of the first connected keyboard to 80 percent:
+
+    $ eruptionctl devices brightness 0 80
+
+
+ Query the DPI configuration of the first connected mouse:
+
+    $ eruptionctl devices dpi 1
+"#
+                );
+
+                println!("{}", "\nDumping Eruption managed devices list\n".bold());
+
+                println!("Connected keyboard devices:");
+
+                if keyboards.is_empty() {
+                    println!("{}", "<No devices connected>\n".italic());
+                } else {
+                    for (index, dev) in keyboards.iter().enumerate() {
+                        println!(
+                            "Index: {}: ID: {}:{} {} {}",
+                            format!("{:02}", base_index + index).bold(),
+                            format!("{:04x}", dev.0),
+                            format!("{:04x}", dev.1),
+                            device::get_device_make(dev.0, dev.1)
+                                .unwrap_or("<unknown make>")
+                                .bold(),
+                            device::get_device_model(dev.0, dev.1)
+                                .unwrap_or("<unknown model>")
+                                .bold()
+                        );
+
+                        base_index += 1;
+                    }
+                }
+
+                println!("\n");
+                println!("Connected mouse devices:");
+
+                if mice.is_empty() {
+                    println!("{}", "<No devices connected>\n".italic());
+                } else {
+                    for (index, dev) in mice.iter().enumerate() {
+                        println!(
+                            "Index: {}: ID: {}:{} {} {}",
+                            format!("{:02}", base_index + index).bold(),
+                            format!("{:04x}", dev.0),
+                            format!("{:04x}", dev.1),
+                            device::get_device_make(dev.0, dev.1)
+                                .unwrap_or("<unknown make>")
+                                .bold(),
+                            device::get_device_model(dev.0, dev.1)
+                                .unwrap_or("<unknown model>")
+                                .bold()
+                        );
+
+                        base_index += 1;
+                    }
+                }
+
+                println!("\n");
+                println!("Connected miscellaneous devices:");
+
+                if misc.is_empty() {
+                    println!("{}", "<No devices connected>\n".italic());
+                } else {
+                    for (index, dev) in misc.iter().enumerate() {
+                        println!(
+                            "Index: {}: ID: {}:{} {} {}",
+                            format!("{:02}", base_index + index).bold(),
+                            format!("{:04x}", dev.0),
+                            format!("{:04x}", dev.1),
+                            device::get_device_make(dev.0, dev.1)
+                                .unwrap_or("<unknown make>")
+                                .bold(),
+                            device::get_device_model(dev.0, dev.1)
+                                .unwrap_or("<unknown model>")
+                                .bold()
+                        );
+
+                        base_index += 1;
+                    }
+                }
+            }
+
+            DevicesSubcommands::Info { device } => {
+                let device = device.parse::<u64>()?;
+
+                let result = get_device_config(device, "info").await?;
+                println!("{}", format!("{}", result.bold()));
+            }
+
+            DevicesSubcommands::Dpi { device, dpi } => {
+                let device = device.parse::<u64>()?;
+
+                if let Some(dpi) = dpi {
+                    let value = &format!("{}", dpi);
+
+                    set_device_config(device, "dpi", value).await?
+                } else {
+                    let result = get_device_config(device, "dpi").await?;
+
+                    println!("{}", format!("DPI config: {}", result.bold()));
+                }
+            }
+
+            DevicesSubcommands::Distance { device, param } => {
+                let device = device.parse::<u64>()?;
+
+                if let Some(param) = param {
+                    let value = &format!("{}", param);
+
+                    set_device_config(device, "dcu", value).await?
+                } else {
+                    let result = get_device_config(device, "dcu").await?;
+
+                    println!("{}", format!("DCU config: {}", result.bold()));
+                }
+            }
+
+            DevicesSubcommands::AngleSnapping { device, enable } => {
+                let device = device.parse::<u64>()?;
+
+                if let Some(enable) = enable {
+                    let value = &format!("{}", enable);
+
+                    set_device_config(device, "angle-snapping", value).await?
+                } else {
+                    let result = get_device_config(device, "angle-snapping").await?;
+
+                    println!("{}", format!("Angle-snapping: {}", result.bold()));
+                }
+            }
+
+            DevicesSubcommands::Debounce { device, enable } => {
+                let device = device.parse::<u64>()?;
+
+                if let Some(enable) = enable {
+                    let value = &format!("{}", enable);
+
+                    set_device_config(device, "debounce", value).await?
+                } else {
+                    let result = get_device_config(device, "debounce").await?;
+
+                    println!("{}", format!("Debounce: {}", result.bold()));
+                }
+            }
+
+            DevicesSubcommands::Brightness { device, brightness } => {
+                let device = device.parse::<u64>()?;
+
+                if let Some(brightness) = brightness {
+                    let value = &format!("{}", brightness);
+
+                    set_device_config(device, "brightness", value).await?
+                } else {
+                    let result = get_device_config(device, "brightness").await?;
+
+                    println!(
+                        "{}",
+                        format!("Device specific brightness: {}", result.bold())
                     );
                 }
             }

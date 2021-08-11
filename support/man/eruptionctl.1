@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 8 "Nov 2020" "0.0.2" "eruptionctl man page"
+.TH man 1 "July 2021" "0.0.9" "eruptionctl man page"
 .SH NAME
  eruptionctl - A CLI control utility for the Eruption Linux user-mode driver
 .SH SYNOPSIS
@@ -13,11 +13,16 @@
     -V, --version    Prints version information
 
  SUBCOMMANDS:
-    config      Configuration related sub-commands
-    help        Prints this message or the help of the given sub-command(s)
-    profiles    Profile related sub-commands
-    scripts     Script related sub-commands
-    switch      Switch to a different profile or slot
+    completions    Generate shell completions
+    config         Configuration related sub-commands
+    devices        Set or query device specific configuration parameters
+    help           Prints this message or the help of the given subcommand(s)
+    names          Naming related commands such as renaming of profile slots
+    param          Get or set script parameters on the currently active profile
+    profiles       Profile related sub-commands
+    scripts        Script related sub-commands
+    status         Shows the currently active profile or slot
+    switch         Switch to a different profile or slot
 
 .SH SEE ALSO
  eruption(8), eruption.conf(5), eruption-netfx(1)

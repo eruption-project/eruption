@@ -23,7 +23,8 @@ use serialport::SerialPort;
 use std::time::Duration;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MiscDeviceTrait, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MiscDeviceTrait,
+    MouseDeviceTrait, RGBA,
 };
 
 const BAUD_RATE: u32 = 460800;
@@ -143,6 +144,22 @@ impl DeviceTrait for CustomSerialLeds {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn as_device(&self) -> &dyn DeviceTrait {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
+        None
     }
 }
 

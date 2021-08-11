@@ -24,10 +24,7 @@ use std::{sync::Arc, thread};
 
 use crate::constants;
 
-use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
-    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, RGBA,
-};
+use super::{DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA};
 
 pub type Result<T> = super::Result<T>;
 
@@ -702,6 +699,22 @@ impl DeviceTrait for RoccatVulcan1xx {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
+
+    fn as_device(&self) -> &dyn DeviceTrait {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
+        None
+    }
 }
 
 impl KeyboardDeviceTrait for RoccatVulcan1xx {
@@ -730,6 +743,18 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
         }
 
         Ok(())
+    }
+
+    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_local_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 
     #[inline]

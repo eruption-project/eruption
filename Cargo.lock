@@ -867,7 +867,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "clap",
  "clap_generate",
@@ -877,6 +877,7 @@ dependencies = [
  "dbus",
  "dbus-tokio",
  "eyre",
+ "lazy_static",
  "libc",
  "log",
  "nix 0.22.0",

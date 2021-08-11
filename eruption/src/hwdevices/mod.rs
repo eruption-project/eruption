@@ -20,6 +20,7 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
+use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
 use udev::Enumerator;
@@ -76,7 +77,7 @@ lazy_static! {
         // ROCCAT
         MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev),
         MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &roccat_kone_aimo_remastered::bind_hiddev),
-        
+
         MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &roccat_kone_xtd::bind_hiddev),
 
         MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev),
@@ -107,6 +108,9 @@ pub enum HwDeviceError {
 
     #[error("An error occurred during device enumeration")]
     EnumerationError {},
+
+    #[error("Operation not supported")]
+    OpNotSupported {},
 
     #[error("Could not enumerate udev devices")]
     UdevError {},
@@ -541,6 +545,21 @@ pub trait DeviceInfoTrait {
     fn get_firmware_revision(&self) -> String;
 }
 
+#[allow(unused)]
+#[derive(Debug, Clone)]
+pub enum DeviceConfig {
+    NoOp,
+}
+
+#[allow(unused)]
+pub trait GenericConfiguration {
+    /// Get device specific configuration
+    fn get_device_config(&self, param: &DeviceConfig) -> Result<Box<dyn Any>>;
+
+    /// Set device specific configuration
+    fn set_device_config(&self, param: &DeviceConfig, value: &dyn Any) -> Result<()>;
+}
+
 /// Generic device trait
 pub trait DeviceTrait: DeviceInfoTrait {
     /// Returns the USB path/ID of the device
@@ -573,6 +592,12 @@ pub trait DeviceTrait: DeviceInfoTrait {
 
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+
+    fn as_device(&self) -> &dyn DeviceTrait;
+    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait;
+
+    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait>;
+    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait>;
 }
 
 // Generic device trait
@@ -604,6 +629,12 @@ pub trait SerialDeviceTrait: DeviceInfoTrait {
 pub trait KeyboardDeviceTrait: DeviceTrait {
     /// Set the state of a device status LED, like e.g. Num Lock, etc...
     fn set_status_led(&self, led_kind: LedKind, on: bool) -> Result<()>;
+
+    /// Set the device specific brightness
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()>;
+
+    /// Get the device specific brightness
+    fn get_local_brightness(&self) -> Result<i32>;
 
     /// Send RGBA LED map to the device
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()>;
@@ -649,6 +680,28 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
 
 /// Device like e.g. a supported mouse
 pub trait MouseDeviceTrait: DeviceTrait {
+    fn get_dpi(&self) -> Result<i32>;
+
+    fn set_dpi(&mut self, dpi: i32) -> Result<()>;
+
+    fn get_dcu_config(&self) -> Result<i32>;
+
+    fn set_dcu_config(&mut self, dcu: i32) -> Result<()>;
+
+    fn get_angle_snapping(&self) -> Result<bool>;
+
+    fn set_angle_snapping(&mut self, angle_snapping: bool) -> Result<()>;
+
+    fn get_debounce(&self) -> Result<bool>;
+
+    fn set_debounce(&mut self, debounce: bool) -> Result<bool>;
+
+    /// Set the device specific brightness
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()>;
+
+    /// Get the device specific brightness
+    fn get_local_brightness(&self) -> Result<i32>;
+
     /// Get the next HID event from the control device (blocking)
     fn get_next_event(&self) -> Result<MouseHidEvent>;
 
