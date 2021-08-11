@@ -24,6 +24,7 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand -V 'Prints version information'
             cand --version 'Prints version information'
             cand config 'Configuration related sub-commands'
+            cand devices 'Get or set some device specific configuration parameters'
             cand status 'Shows the currently active profile or slot'
             cand switch 'Switch to a different profile or slot'
             cand profiles 'Profile related sub-commands'
@@ -38,7 +39,7 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --help 'Prints help information'
             cand -V 'Prints version information'
             cand --version 'Prints version information'
-            cand brightness 'Get or set the brightness of the LEDs'
+            cand brightness 'Get or set the global brightness of the LEDs'
             cand soundfx 'Get or set the state of SoundFX'
         }
         &'eruptionctl;config;brightness'= {
@@ -48,6 +49,61 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Prints version information'
         }
         &'eruptionctl;config;soundfx'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+        }
+        &'eruptionctl;devices;list'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;info'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;dpi'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;distance'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;angle-snapping'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;debounce'= {
+            cand -h 'Prints help information'
+            cand --help 'Prints help information'
+            cand -V 'Prints version information'
+            cand --version 'Prints version information'
+        }
+        &'eruptionctl;devices;brightness'= {
             cand -h 'Prints help information'
             cand --help 'Prints help information'
             cand -V 'Prints version information'

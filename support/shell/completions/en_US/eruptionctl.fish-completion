@@ -3,6 +3,7 @@ complete -c eruptionctl -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose m
 complete -c eruptionctl -n "__fish_use_subcommand" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_use_subcommand" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "config" -d 'Configuration related sub-commands'
+complete -c eruptionctl -n "__fish_use_subcommand" -f -a "devices" -d 'Get or set some device specific configuration parameters'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "status" -d 'Shows the currently active profile or slot'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "switch" -d 'Switch to a different profile or slot'
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "profiles" -d 'Profile related sub-commands'
@@ -13,7 +14,7 @@ complete -c eruptionctl -n "__fish_use_subcommand" -f -a "completions" -d 'Gener
 complete -c eruptionctl -n "__fish_use_subcommand" -f -a "help" -d 'Prints this message or the help of the given subcommand(s)'
 complete -c eruptionctl -n "__fish_seen_subcommand_from config" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from config" -s V -l version -d 'Prints version information'
-complete -c eruptionctl -n "__fish_seen_subcommand_from config" -f -a "brightness" -d 'Get or set the brightness of the LEDs'
+complete -c eruptionctl -n "__fish_seen_subcommand_from config" -f -a "brightness" -d 'Get or set the global brightness of the LEDs'
 complete -c eruptionctl -n "__fish_seen_subcommand_from config" -f -a "soundfx" -d 'Get or set the state of SoundFX'
 complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -r
 complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -s h -l help -d 'Prints help information'
@@ -21,6 +22,40 @@ complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -s V -l vers
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -r
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from soundfx" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "list" -d 'List connected devices and their indices (run this first)'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "info" -d 'Get information about a specific device'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "dpi" -d 'Get or set the DPI parameter (applicable for some mice)'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "distance" -d 'Get or set the DCU parameter (applicable for some mice)'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "angle-snapping" -d 'Get or set the angle-snapping parameter (applicable for some mice)'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "debounce" -d 'Get or set the debounce parameter (applicable for some mice)'
+complete -c eruptionctl -n "__fish_seen_subcommand_from devices" -f -a "brightness" -d 'Get or set the device specific brightness of the LEDs'
+complete -c eruptionctl -n "__fish_seen_subcommand_from list" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from list" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from info" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from info" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from info" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from dpi" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from dpi" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from dpi" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from dpi" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from distance" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from distance" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from distance" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from distance" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from angle-snapping" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from angle-snapping" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from angle-snapping" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from angle-snapping" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from debounce" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from debounce" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from debounce" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from debounce" -s V -l version -d 'Prints version information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -r
+complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -s h -l help -d 'Prints help information'
+complete -c eruptionctl -n "__fish_seen_subcommand_from brightness" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from status" -s h -l help -d 'Prints help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from status" -s V -l version -d 'Prints version information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from status" -f -a "profile" -d 'Shows the currently active profile'

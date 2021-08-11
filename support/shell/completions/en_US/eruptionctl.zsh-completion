@@ -69,6 +69,92 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(devices)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_eruptionctl__devices_commands" \
+"*::: :->devices" \
+&& ret=0
+case $state in
+    (devices)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-devices-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(info)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+&& ret=0
+;;
+(dpi)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+'::dpi:' \
+&& ret=0
+;;
+(distance)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+'::param:' \
+&& ret=0
+;;
+(angle-snapping)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+'::enable:' \
+&& ret=0
+;;
+(debounce)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+'::enable:' \
+&& ret=0
+;;
+(brightness)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':device:' \
+'::brightness:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (status)
 _arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
@@ -364,6 +450,7 @@ esac
 _eruptionctl_commands() {
     local commands; commands=(
         "config:Configuration related sub-commands" \
+"devices:Get or set some device specific configuration parameters" \
 "status:Shows the currently active profile or slot" \
 "switch:Switch to a different profile or slot" \
 "profiles:Profile related sub-commands" \
@@ -374,6 +461,13 @@ _eruptionctl_commands() {
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'eruptionctl commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__angle-snapping_commands] )) ||
+_eruptionctl__devices__angle-snapping_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices angle-snapping commands' commands "$@"
 }
 (( $+functions[_eruptionctl__completions__bash_commands] )) ||
 _eruptionctl__completions__bash_commands() {
@@ -389,6 +483,13 @@ _eruptionctl__config__brightness_commands() {
     )
     _describe -t commands 'eruptionctl config brightness commands' commands "$@"
 }
+(( $+functions[_eruptionctl__devices__brightness_commands] )) ||
+_eruptionctl__devices__brightness_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices brightness commands' commands "$@"
+}
 (( $+functions[_eruptionctl__completions_commands] )) ||
 _eruptionctl__completions_commands() {
     local commands; commands=(
@@ -403,10 +504,44 @@ _eruptionctl__completions_commands() {
 (( $+functions[_eruptionctl__config_commands] )) ||
 _eruptionctl__config_commands() {
     local commands; commands=(
-        "brightness:Get or set the brightness of the LEDs" \
+        "brightness:Get or set the global brightness of the LEDs" \
 "soundfx:Get or set the state of SoundFX" \
     )
     _describe -t commands 'eruptionctl config commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__debounce_commands] )) ||
+_eruptionctl__devices__debounce_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices debounce commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices_commands] )) ||
+_eruptionctl__devices_commands() {
+    local commands; commands=(
+        "list:List connected devices and their indices (run this first)" \
+"info:Get information about a specific device" \
+"dpi:Get or set the DPI parameter (applicable for some mice)" \
+"distance:Get or set the DCU parameter (applicable for some mice)" \
+"angle-snapping:Get or set the angle-snapping parameter (applicable for some mice)" \
+"debounce:Get or set the debounce parameter (applicable for some mice)" \
+"brightness:Get or set the device specific brightness of the LEDs" \
+    )
+    _describe -t commands 'eruptionctl devices commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__distance_commands] )) ||
+_eruptionctl__devices__distance_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices distance commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__dpi_commands] )) ||
+_eruptionctl__devices__dpi_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices dpi commands' commands "$@"
 }
 (( $+functions[_eruptionctl__profiles__edit_commands] )) ||
 _eruptionctl__profiles__edit_commands() {
@@ -443,6 +578,13 @@ _eruptionctl__help_commands() {
     )
     _describe -t commands 'eruptionctl help commands' commands "$@"
 }
+(( $+functions[_eruptionctl__devices__info_commands] )) ||
+_eruptionctl__devices__info_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices info commands' commands "$@"
+}
 (( $+functions[_eruptionctl__profiles__info_commands] )) ||
 _eruptionctl__profiles__info_commands() {
     local commands; commands=(
@@ -456,6 +598,13 @@ _eruptionctl__scripts__info_commands() {
         
     )
     _describe -t commands 'eruptionctl scripts info commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__list_commands] )) ||
+_eruptionctl__devices__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'eruptionctl devices list commands' commands "$@"
 }
 (( $+functions[_eruptionctl__names__list_commands] )) ||
 _eruptionctl__names__list_commands() {
