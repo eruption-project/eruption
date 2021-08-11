@@ -24,8 +24,8 @@ nix = "0.22.0"
 rayon = "1.5.1"
 walkdir = "2.3.2"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.126", features = ["derive"] }
-serde_json = "1.0.64"
+serde = { version = "1.0.127", features = ["derive"] }
+serde_json = "1.0.66"
 tokio = { version = "1.9.0", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
@@ -42,7 +42,7 @@ eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
 dbus = "0.9.3"
-dbus-tokio = "0.7.3"
+dbus-tokio = "0.7.4"
 gdk-pixbuf = "0.14.0"
 glib = "0.14.2"
 pango = "0.14.0"
