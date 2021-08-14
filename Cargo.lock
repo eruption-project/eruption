@@ -64,9 +64,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.42"
+version = "1.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "595d3cfa7a60d4555cb5067b99f07142a08ea778de5cf993f7b75c7d8fabc486"
+checksum = "28ae2b3dec75a406790005a200b1bd89785afc02517a00ca99ecfe093ee9e6cf"
 
 [[package]]
 name = "approx"
@@ -488,7 +488,7 @@ version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "377c9b002a72a0b2c1a18c62e2f3864bdfea4a015e3683a96e24aa45dd6c02d1"
 dependencies = [
- "nix 0.22.0",
+ "nix 0.22.1",
  "winapi 0.3.9",
 ]
 
@@ -534,12 +534,6 @@ dependencies = [
  "adler32",
  "byteorder",
 ]
-
-[[package]]
-name = "doc-comment"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 
 [[package]]
 name = "dtoa"
@@ -628,7 +622,7 @@ dependencies = [
  "mlua",
  "mlua_derive",
  "nalgebra",
- "nix 0.22.0",
+ "nix 0.22.1",
  "noise",
  "palette",
  "parking_lot",
@@ -673,7 +667,7 @@ dependencies = [
  "icecream",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -712,7 +706,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "palette",
  "pango",
  "pangocairo",
@@ -744,7 +738,7 @@ dependencies = [
  "libc",
  "lockfile",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -769,7 +763,7 @@ dependencies = [
  "image",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "num-traits 0.2.14",
  "parking_lot",
  "pretty_env_logger",
@@ -811,7 +805,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -851,7 +845,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "parking_lot",
  "paste 1.0.5",
  "pretty_env_logger",
@@ -880,7 +874,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.22.0",
+ "nix 0.22.1",
  "parking_lot",
  "paste 1.0.5",
  "serde 1.0.127",
@@ -1909,21 +1903,22 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.20.0"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa9b4819da1bc61c0ea48b63b7bc8604064dd43013e7cc325df098d49cd7c18a"
+checksum = "df8e5e343312e7fbeb2a52139114e9e702991ef9c2aea6817ff2440b35647d56"
 dependencies = [
  "bitflags",
  "cc",
  "cfg-if 1.0.0",
  "libc",
+ "memoffset",
 ]
 
 [[package]]
 name = "nix"
-version = "0.22.0"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf1e25ee6b412c2a1e3fcb6a4499a5c1bfe7f43e014bdce9a6b6666e5aa2d187"
+checksum = "e7555d6c7164cc913be1ce7f95cbecdabda61eb2ccd89008524af306fb7f5031"
 dependencies = [
  "bitflags",
  "cc",
@@ -2417,7 +2412,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "059a34f111a9dee2ce1ac2826a68b24601c4298cfeb1a587c3cb493d5ab46f52"
 dependencies = [
  "libc",
- "nix 0.22.0",
+ "nix 0.22.1",
 ]
 
 [[package]]
@@ -3089,13 +3084,12 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.19.2"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e7de153d0438a648bb71e06e300e54fc641685e96af96d49b843f43172d341c"
+checksum = "0af066e6272f2175c1783cfc2ebf3e2d8dfe2c182b00677fdeccbf8291af83fb"
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",
- "doc-comment",
  "libc",
  "ntapi",
  "once_cell",
@@ -3223,9 +3217,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b7b349f11a7047e6d1276853e612d152f5e8a352c61917887cc2169e2366b4c"
+checksum = "01cf844b23c6131f624accf65ce0e4e9956a8bb329400ea5bcc26ae3a5c20b0b"
 dependencies = [
  "autocfg",
  "bytes",
@@ -3566,7 +3560,7 @@ checksum = "6ffb080b3f2f616242a4eb8e7d325035312127901025b0052bc3154a282d0f19"
 dependencies = [
  "gethostname",
  "libc",
- "nix 0.20.0",
+ "nix 0.20.1",
  "winapi 0.3.9",
  "winapi-wsapoll",
 ]

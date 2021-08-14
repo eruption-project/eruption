@@ -24,7 +24,7 @@ async-trait = "0.1.51"
 byteorder = "1.4.3"
 clap =  { version = "3.0.0-beta.2", features = ["derive"] }
 clap_generate = "3.0.0-beta.2"
-ctrlc = { version = "3.1.9", features = ["termination"] }
+ctrlc = { version = "3.2.0", features = ["termination"] }
 config = "0.11.0"
 colored = "2.0.0"
 dbus = "0.9.3"
@@ -34,7 +34,7 @@ dyn-clone = "1.0.4"
 dyn-clonable = "0.9.0"
 indexmap = "1.7.0"
 log = "0.4.14"
-libc = "0.2.98"
+libc = "0.2.99"
 nix = "0.22.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
@@ -42,7 +42,7 @@ regex = "1.5.4"
 serde = { version = "1.0.127", features = ["derive"] }
 serde_json = "1.0.66"
 serde_yaml = "0.8.17"
-tokio = { version = "1.9.0", features = ["full"] }
+tokio = { version = "1.10.0", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.19"
@@ -64,4 +64,4 @@ procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.8.1", optional = true, features = ["allow-unsafe-code"] }
 
 [dev-dependencies]
-tokio = { version = "1.9.0", features = ["test-util"] }
+tokio = { version = "1.10.0", features = ["test-util"] }

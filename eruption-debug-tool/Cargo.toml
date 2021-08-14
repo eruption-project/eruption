@@ -15,15 +15,15 @@ crossbeam = "0.8.1"
 clap =  { version = "3.0.0-beta.2", features = ["derive"] }
 clap_generate = "3.0.0-beta.2"
 colored = "2.0.0"
-ctrlc = { version = "3.1.9", features = ["termination"] }
+ctrlc = { version = "3.2.0", features = ["termination"] }
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.98"
+libc = "0.2.99"
 nix = "0.22.0"
 parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.127", features = ["derive"] }
 serde_json = "1.0.66"
-tokio = { version = "1.9.0", features = ["full"] }
+tokio = { version = "1.10.0", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.19"
@@ -36,9 +36,9 @@ paste = "1.0.5"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 udev = "0.6.2"
-bitvec = "=0.19.5"
+bitvec = "0.19.5"
 serialport = "4.0.1"
 icecream = "0.1.0"
 
 [dev-dependencies]
-tokio = { version = "1.9.0", features = ["test-util"] }
+tokio = { version = "1.10.0", features = ["test-util"] }
