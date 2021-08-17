@@ -44,16 +44,18 @@
 
 ### Mouse Devices
 
-| Vendor | Product              | Status | Macro Keys | Easy Shift Key |
-| ------ | -------------------- | ------ | ---------- | -------------- |
-| ROCCAT | Kone Pure Ultra      | 100%   | N.a.       | N.a.           |
-| ROCCAT | Burst Pro            | 100%   | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo            | 80%    | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo Remastered | 80%    | N.a.       | N.a.           |
-| ROCCAT | Kova AIMO            | 80%    | N.a.       | N.a.           |
-| ROCCAT | Kone XTD             | N.a    | N.a.       | N.a.           |
+| Vendor | Product              | Status | DPI | Debounce | DCU | Macro Keys | Easy Shift Key |
+| ------ | -------------------- | ------ | --- | -------- | --- | ---------- | -------------- |
+| ROCCAT | Kone Pure Ultra      | 100%   | No  | Yes      | No  | N.a.       | N.a.           |
+| ROCCAT | Burst Pro            | 100%   | No  | No       | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo            | 80%    | No  | No       | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo Remastered | 80%    | No  | No       | No  | N.a.       | N.a.           |
+| ROCCAT | Kova AIMO            | 80%    | No  | No       | No  | N.a.       | N.a.           |
+| ROCCAT | Kone XTD             | N.a    | No  | No       | No  | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
+
+> DPI: Pointer resolution, Debounce: Debouncing of switches, DCU: Distance Control Unit
 
 ## ROCCAT Vulcan 100/12x series keyboard
 

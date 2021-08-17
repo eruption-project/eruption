@@ -517,13 +517,73 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
     fn get_debounce(&self) -> Result<bool> {
         trace!("Querying device debounce config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf: [u8; 79] = [0x00 as u8; 79];
+            buf[0] = 0x11;
+
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            if buf[2] == 0x00 {
+                Ok(false)
+            } else {
+                Ok(true)
+            }
+        }
     }
 
-    fn set_debounce(&mut self, _debounce: bool) -> Result<bool> {
+    fn set_debounce(&mut self, debounce: bool) -> Result<()> {
         trace!("Setting device debounce config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf: [u8; 79] = [0x00 as u8; 79];
+            buf[0] = 0x11;
+
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            buf[2] = if debounce { 0x01 } else { 0x00 };
+
+            match ctrl_dev.send_feature_report(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            Ok(())
+        }
     }
 
     fn get_local_brightness(&self) -> Result<i32> {

@@ -694,7 +694,7 @@ pub trait MouseDeviceTrait: DeviceTrait {
 
     fn get_debounce(&self) -> Result<bool>;
 
-    fn set_debounce(&mut self, debounce: bool) -> Result<bool>;
+    fn set_debounce(&mut self, debounce: bool) -> Result<()>;
 
     /// Set the device specific brightness
     fn set_local_brightness(&mut self, brightness: i32) -> Result<()>;

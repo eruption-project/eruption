@@ -200,7 +200,7 @@ impl MouseDeviceTrait for GenericMouse {
         Err(HwDeviceError::OpNotSupported {}.into())
     }
 
-    fn set_debounce(&mut self, _debounce: bool) -> Result<bool> {
+    fn set_debounce(&mut self, _debounce: bool) -> Result<()> {
         trace!("Setting device debounce config");
 
         Err(HwDeviceError::OpNotSupported {}.into())

@@ -5,7 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.23 | __New Release__                                                                                                                                                              |
-| 0.1.23 | Added support for changing the device specific (local) brightness of all supported LED devices, in addition to the global brightness                                         |
+| 0.1.23 | Added support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
 | 0.1.23 | Added support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`                                                                     |
 | 0.1.22 | __New Release__                                                                                                                                                              |
 | 0.1.22 | Updated all dependencies to their latest revisions. Most notably: `mlua:6.2`, and many more                                                                                  |
