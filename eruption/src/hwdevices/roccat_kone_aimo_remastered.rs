@@ -302,7 +302,11 @@ impl DeviceInfoTrait for RoccatKoneAimoRemastered {
 
     fn get_firmware_revision(&self) -> String {
         if let Ok(device_info) = self.get_device_info() {
-            format!("{}", device_info.firmware_version)
+            format!(
+                "{}.{:02}",
+                device_info.firmware_version / 100,
+                device_info.firmware_version % 100
+            )
         } else {
             "<unknown>".to_string()
         }
