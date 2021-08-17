@@ -84,6 +84,9 @@ pub struct RoccatKovaAimo {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub button_states: Arc<Mutex<BitVec>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl RoccatKovaAimo {
@@ -101,6 +104,8 @@ impl RoccatKovaAimo {
             ctrl_hiddev: Arc::new(Mutex::new(None)),
 
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
+
+            brightness: 100,
         }
     }
 
@@ -502,16 +507,18 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         Err(HwDeviceError::OpNotSupported {}.into())
     }
 
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        self.brightness = brightness;
+
+        Ok(())
+    }
+
     fn get_local_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
-    }
-
-    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
-        trace!("Setting device specific brightness");
-
-        Err(HwDeviceError::OpNotSupported {}.into())
+        Ok(self.brightness)
     }
 
     #[inline]
@@ -724,12 +731,12 @@ impl MouseDeviceTrait for RoccatKovaAimo {
             let buf: [u8; 8] = [
                 0x0a,
                 0x08,
-                led_map[LED_0].r,
-                led_map[LED_0].g,
-                led_map[LED_0].b,
-                led_map[LED_1].r,
-                led_map[LED_1].g,
-                led_map[LED_1].b,
+                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

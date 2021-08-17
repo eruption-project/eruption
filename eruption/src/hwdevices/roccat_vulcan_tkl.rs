@@ -103,6 +103,9 @@ pub struct RoccatVulcanTKL {
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub dial_mode: Arc<Mutex<DialMode>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl RoccatVulcanTKL {
@@ -122,6 +125,8 @@ impl RoccatVulcanTKL {
             led_hiddev: Arc::new(Mutex::new(None)),
 
             dial_mode: Arc::new(Mutex::new(DialMode::Brightness)),
+
+            brightness: 100,
         }
     }
 
@@ -704,16 +709,18 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
         Ok(())
     }
 
-    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        self.brightness = brightness;
+
+        Ok(())
     }
 
     fn get_local_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        Ok(self.brightness)
     }
 
     #[inline]
@@ -907,9 +914,12 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            buffer[offset + 4] = color.r;
-                            buffer[offset + 4 + 12] = color.g;
-                            buffer[offset + 4 + 24] = color.b;
+                            buffer[offset + 4] =
+                                (color.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                            buffer[offset + 4 + 12] =
+                                (color.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                            buffer[offset + 4 + 24] =
+                                (color.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
                         }
 
                         for bytes in buffer.chunks(64) {

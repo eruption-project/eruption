@@ -104,6 +104,9 @@ pub struct CorsairStrafe {
     pub is_opened: bool,
     // pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl CorsairStrafe {
@@ -121,6 +124,8 @@ impl CorsairStrafe {
             is_opened: false,
             // ctrl_hiddev: Arc::new(Mutex::new(None)),
             led_hiddev: Arc::new(Mutex::new(None)),
+
+            brightness: 100,
         }
     }
 

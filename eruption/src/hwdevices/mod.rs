@@ -731,6 +731,12 @@ pub trait MouseDeviceTrait: DeviceTrait {
 
 /// Misc Devices
 pub trait MiscDeviceTrait: DeviceTrait {
+    /// Set the device specific brightness
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()>;
+
+    /// Get the device specific brightness
+    fn get_local_brightness(&self) -> Result<i32>;
+
     /// Send RGBA LED map to the device
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()>;
 

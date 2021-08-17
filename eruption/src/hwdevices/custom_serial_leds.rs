@@ -36,6 +36,9 @@ pub type Result<T> = super::Result<T>;
 pub struct CustomSerialLeds {
     device_file: PathBuf,
     port: Arc<Mutex<Option<Box<dyn SerialPort>>>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl CustomSerialLeds {
@@ -46,6 +49,8 @@ impl CustomSerialLeds {
         Self {
             device_file: serial_port,
             port: Arc::new(Mutex::new(None)),
+
+            brightness: 100,
         }
     }
 }
@@ -164,6 +169,20 @@ impl DeviceTrait for CustomSerialLeds {
 }
 
 impl MiscDeviceTrait for CustomSerialLeds {
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        self.brightness = brightness;
+
+        Ok(())
+    }
+
+    fn get_local_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Ok(self.brightness)
+    }
+
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
@@ -185,9 +204,12 @@ impl MiscDeviceTrait for CustomSerialLeds {
 
                 let mut cntr = 0;
                 for e in led_map[0..NUM_LEDS].iter() {
-                    buffer[HEADER_OFFSET + cntr + 0] = e.r;
-                    buffer[HEADER_OFFSET + cntr + 1] = e.g;
-                    buffer[HEADER_OFFSET + cntr + 2] = e.b;
+                    buffer[HEADER_OFFSET + cntr + 0] =
+                        (e.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                    buffer[HEADER_OFFSET + cntr + 1] =
+                        (e.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                    buffer[HEADER_OFFSET + cntr + 2] =
+                        (e.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
 
                     cntr += 3;
                 }

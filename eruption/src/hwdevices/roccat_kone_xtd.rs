@@ -86,6 +86,9 @@ pub struct RoccatKoneXtd {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub button_states: Arc<Mutex<BitVec>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl RoccatKoneXtd {
@@ -103,6 +106,8 @@ impl RoccatKoneXtd {
             ctrl_hiddev: Arc::new(Mutex::new(None)),
 
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
+
+            brightness: 100,
         }
     }
 

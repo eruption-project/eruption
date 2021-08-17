@@ -103,6 +103,9 @@ pub struct RoccatVulcanPro {
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub dial_mode: Arc<Mutex<DialMode>>,
+
+    // device specific configuration options
+    pub brightness: i32,
 }
 
 impl RoccatVulcanPro {
@@ -122,6 +125,8 @@ impl RoccatVulcanPro {
             led_hiddev: Arc::new(Mutex::new(None)),
 
             dial_mode: Arc::new(Mutex::new(DialMode::Brightness)),
+
+            brightness: 100,
         }
     }
 
@@ -543,7 +548,7 @@ impl DeviceTrait for RoccatVulcanPro {
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
-    
+
     fn as_device(&self) -> &dyn DeviceTrait {
         self
     }
@@ -589,16 +594,18 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
         Ok(())
     }
 
-    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
+    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        self.brightness = brightness;
+
+        Ok(())
     }
 
     fn get_local_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        Ok(self.brightness)
     }
 
     #[inline]
@@ -790,9 +797,12 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 
-                            buffer[offset] = color.r;
-                            buffer[offset + 12] = color.g;
-                            buffer[offset + 24] = color.b;
+                            buffer[offset] =
+                                (color.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                            buffer[offset + 12] =
+                                (color.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                            buffer[offset + 24] =
+                                (color.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
                         }
 
                         for (cntr, bytes) in buffer.chunks(60).take(6).enumerate() {
