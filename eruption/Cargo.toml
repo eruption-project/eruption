@@ -1,6 +1,6 @@
 [package]
 name = "eruption"
-version = "0.1.22"
+version = "0.1.23"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "Eruption Linux user-mode input and LED driver for keyboards, mice and other devices"
