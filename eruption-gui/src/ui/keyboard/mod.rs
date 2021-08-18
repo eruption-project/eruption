@@ -45,6 +45,8 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     let keyboard_name_label: gtk::Label = builder.object("keyboard_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.object("drawing_area").unwrap();
 
+    let device_brightness_scale: gtk::Scale = builder.object("keyboard_brightness_scale").unwrap();
+
     let networkfx_ambient_switch: gtk::Switch = builder.object("networkfx_ambient_switch").unwrap();
     let soundfx_switch: gtk::Switch = builder.object("soundfx_switch").unwrap();
 
@@ -55,6 +57,17 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
     // device name and status
     let make_and_model = keyboard_device.get_make_and_model();
     keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
+
+    let keyboard_device_handle = keyboard_device.get_device();
+
+    let device_brightness = util::get_device_brightness(keyboard_device_handle)?;
+    device_brightness_scale.set_value(device_brightness as f64);
+
+    device_brightness_scale.connect_value_changed(move |s| {
+        // if !events::shall_ignore_pending_ui_event() {
+        util::set_device_brightness(keyboard_device_handle, s.value() as i64).unwrap();
+        // }
+    });
 
     // drawing area / keyboard indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {

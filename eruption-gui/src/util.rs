@@ -268,6 +268,56 @@ pub fn set_brightness(brightness: i64) -> Result<()> {
     Ok(())
 }
 
+/// Get a device specific config param
+pub fn get_device_config(device: u64, param: &str) -> Result<String> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/devices",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let (result,): (String,) = proxy.method_call(
+        "org.eruption.Device",
+        "GetDeviceConfig",
+        (device, param.to_owned()),
+    )?;
+
+    Ok(result)
+}
+
+/// Set a device specific config param
+pub fn set_device_config(device: u64, param: &str, value: &str) -> Result<()> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/devices",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let (_result,): (bool,) = proxy.method_call(
+        "org.eruption.Device",
+        "SetDeviceConfig",
+        (device, param.to_owned(), value.to_owned()),
+    )?;
+
+    Ok(())
+}
+
+/// Get the current brightness value of device
+pub fn get_device_brightness(device: u64) -> Result<i64> {
+    let brightness = get_device_config(device, "brightness")?.parse::<i64>()?;
+
+    Ok(brightness)
+}
+
+/// Set the current brightness value of device
+pub fn set_device_brightness(device: u64, brightness: i64) -> Result<()> {
+    set_device_config(device, "brightness", &format!("{}", brightness))?;
+
+    Ok(())
+}
+
 /// Returns true when SoundFX is enabled
 pub fn get_sound_fx() -> Result<bool> {
     let conn = Connection::new_system()?;

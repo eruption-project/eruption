@@ -34,15 +34,21 @@ thread_local! {
 }
 
 #[derive(Debug)]
-pub struct RoccatVulcanProTKL {}
+pub struct RoccatVulcanProTKL {
+    pub device: u64,
+}
 
 impl RoccatVulcanProTKL {
-    pub fn new() -> Self {
-        RoccatVulcanProTKL {}
+    pub fn new(device: u64) -> Self {
+        RoccatVulcanProTKL { device }
     }
 }
 
 impl Keyboard for RoccatVulcanProTKL {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("ROCCAT", "Vulcan Pro TKL")
     }

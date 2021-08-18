@@ -34,15 +34,21 @@ thread_local! {
 }
 
 #[derive(Debug)]
-pub struct CorsairStrafe {}
+pub struct CorsairStrafe {
+    pub device: u64,
+}
 
 impl CorsairStrafe {
-    pub fn new() -> Self {
-        CorsairStrafe {}
+    pub fn new(device: u64) -> Self {
+        CorsairStrafe { device }
     }
 }
 
 impl Keyboard for CorsairStrafe {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Corsair", "STRAFE Gaming Keyboard")
     }

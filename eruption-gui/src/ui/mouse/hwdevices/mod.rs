@@ -34,12 +34,14 @@ pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
     match dbus_client::get_managed_devices()?.1.get(0) {
         Some(device) => match device {
             // ROCCAT Kone Pure Ultra
-            (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new())),
+            (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new(
+                1,
+            ))),
 
             // ROCCAT Burst Pro
-            (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new())),
+            (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new(1))),
 
-            _ => Ok(Box::new(generic_mouse::GenericMouse::new())),
+            _ => Ok(Box::new(generic_mouse::GenericMouse::new(1))),
         },
 
         None => Ok(Box::new(null_mouse::NullMouse::new())),
@@ -54,6 +56,8 @@ pub struct Rectangle {
 }
 
 pub trait Mouse {
+    fn get_device(&self) -> u64;
+
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     /// Draw an animated mouse with live action colors

@@ -38,22 +38,22 @@ pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
         Some(device) => match device {
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
-                Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
+                Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new(0)))
             }
 
             // ROCCAT Vulcan Pro series
-            (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new())),
+            (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new(0))),
 
             // ROCCAT Vulcan Pro TKL series
-            (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())),
+            (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new(0))),
 
             // ROCCAT Vulcan TKL series
-            (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
+            (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new(0))),
 
             // Corsair STRAFE series
-            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new())),
+            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(0))),
 
-            _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new())),
+            _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new(0))),
         },
 
         _ => Ok(Box::new(null_keyboard::NullKeyboard::new())),
@@ -61,6 +61,8 @@ pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
 }
 
 pub trait Keyboard {
+    fn get_device(&self) -> u64;
+
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     /// Draw an animated keyboard with live action colors

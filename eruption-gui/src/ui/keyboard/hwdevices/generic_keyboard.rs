@@ -34,15 +34,21 @@ thread_local! {
 }
 
 #[derive(Debug)]
-pub struct GenericKeyboard {}
+pub struct GenericKeyboard {
+    pub device: u64,
+}
 
 impl GenericKeyboard {
-    pub fn new() -> Self {
-        GenericKeyboard {}
+    pub fn new(device: u64) -> Self {
+        GenericKeyboard { device }
     }
 }
 
 impl Keyboard for GenericKeyboard {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Unknown", "Generic Keyboard")
     }

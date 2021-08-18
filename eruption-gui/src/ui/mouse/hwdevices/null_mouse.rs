@@ -29,6 +29,10 @@ impl NullMouse {
 }
 
 impl Mouse for NullMouse {
+    fn get_device(&self) -> u64 {
+        0
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Unknown", "Unknown")
     }

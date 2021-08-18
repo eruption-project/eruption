@@ -18,6 +18,8 @@
 use std::time::Duration;
 
 use crate::constants;
+use crate::util;
+
 use glib::clone;
 use gtk::prelude::*;
 
@@ -42,6 +44,8 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     let mouse_name_label: gtk::Label = builder.object("mouse_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = builder.object("drawing_area_mouse").unwrap();
 
+    let device_brightness_scale: gtk::Scale = builder.object("mouse_brightness_scale").unwrap();
+
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
     });
@@ -49,6 +53,17 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     // device name and status
     let make_and_model = mouse_device.get_make_and_model();
     mouse_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
+
+    let mouse_device_handle = mouse_device.get_device();
+
+    let device_brightness = util::get_device_brightness(mouse_device_handle)?;
+    device_brightness_scale.set_value(device_brightness as f64);
+
+    device_brightness_scale.connect_value_changed(move |s| {
+        // if !events::shall_ignore_pending_ui_event() {
+        util::set_device_brightness(mouse_device_handle, s.value() as i64).unwrap();
+        // }
+    });
 
     // drawing area / mouse indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {

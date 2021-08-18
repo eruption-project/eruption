@@ -29,15 +29,21 @@ const BORDER: (f64, f64) = (32.0, 32.0);
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
-pub struct RoccatBurstPro {}
+pub struct RoccatBurstPro {
+    pub device: u64,
+}
 
 impl RoccatBurstPro {
-    pub fn new() -> Self {
-        RoccatBurstPro {}
+    pub fn new(device: u64) -> Self {
+        RoccatBurstPro { device }
     }
 }
 
 impl Mouse for RoccatBurstPro {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("ROCCAT", "Burst Pro")
     }

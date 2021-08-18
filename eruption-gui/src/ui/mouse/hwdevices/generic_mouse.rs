@@ -25,15 +25,21 @@ use super::{Mouse, Rectangle};
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
-pub struct GenericMouse {}
+pub struct GenericMouse {
+    pub device: u64,
+}
 
 impl GenericMouse {
-    pub fn new() -> Self {
-        GenericMouse {}
+    pub fn new(device: u64) -> Self {
+        GenericMouse { device }
     }
 }
 
 impl Mouse for GenericMouse {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Unknown", "Generic Mouse")
     }
