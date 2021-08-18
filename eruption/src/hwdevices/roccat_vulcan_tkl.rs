@@ -549,8 +549,12 @@ impl DeviceTrait for RoccatVulcanTKL {
                 Ok(device_info) => {
                     if device_info.firmware_version < 115 {
                         warn!(
-                            "Outdated firmware version: {}, should be: >= 115",
-                            device_info.firmware_version
+                            "Outdated firmware version: {}, should be: >= 1.15",
+                            format!(
+                                "{}.{:02}",
+                                device_info.firmware_version / 100,
+                                device_info.firmware_version % 100
+                            )
                         );
                     }
                 }

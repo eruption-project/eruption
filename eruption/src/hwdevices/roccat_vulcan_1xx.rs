@@ -593,8 +593,12 @@ impl DeviceTrait for RoccatVulcan1xx {
                 Ok(device_info) => {
                     if device_info.firmware_version < 136 {
                         warn!(
-                            "Outdated firmware version: {}, should be: >= 136",
-                            device_info.firmware_version
+                            "Outdated firmware version: {}, should be: >= 1.36",
+                            format!(
+                                "{}.{:02}",
+                                device_info.firmware_version / 100,
+                                device_info.firmware_version % 100
+                            )
                         );
                     }
                 }

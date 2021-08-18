@@ -158,6 +158,18 @@ impl DeviceTrait for GenericMouse {
 }
 
 impl MouseDeviceTrait for GenericMouse {
+    fn get_profile(&self) -> Result<i32> {
+        trace!("Querying device profile config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_profile(&mut self, _profile: i32) -> Result<()> {
+        trace!("Setting device profile config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
     fn get_dpi(&self) -> Result<i32> {
         trace!("Querying device DPI config");
 
@@ -166,6 +178,18 @@ impl MouseDeviceTrait for GenericMouse {
 
     fn set_dpi(&mut self, _dpi: i32) -> Result<()> {
         trace!("Setting device DPI config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_rate(&self) -> Result<i32> {
+        trace!("Querying device poll rate config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_rate(&mut self, _rate: i32) -> Result<()> {
+        trace!("Setting device poll rate config");
 
         Err(HwDeviceError::OpNotSupported {}.into())
     }

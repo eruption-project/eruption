@@ -944,9 +944,23 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
         let device = &crate::MOUSE_DEVICES.lock()[index];
 
         match param {
+            "profile" => {
+                let profile = value.parse::<i32>()?;
+                device.write().set_profile(profile)?;
+
+                Ok(())
+            }
+
             "dpi" => {
                 let dpi = value.parse::<i32>()?;
                 device.write().set_dpi(dpi)?;
+
+                Ok(())
+            }
+
+            "rate" => {
+                let rate = value.parse::<i32>()?;
+                device.write().set_rate(rate)?;
 
                 Ok(())
             }
@@ -993,7 +1007,11 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
         match param {
             "info" => {
                 let device_info = device.read().get_device_info()?;
-                let info = format!("Firmware version: {}", device_info.firmware_version);
+                let info = format!(
+                    "Firmware revision: {}.{:02}",
+                    device_info.firmware_version / 100,
+                    device_info.firmware_version % 100
+                );
 
                 Ok(info)
             }
@@ -1015,15 +1033,31 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
         match param {
             "info" => {
                 let device_info = device.read().get_device_info()?;
-                let info = format!("Firmware version: {}", device_info.firmware_version);
+                let info = format!(
+                    "Firmware revision: {}.{:02}",
+                    device_info.firmware_version / 100,
+                    device_info.firmware_version % 100
+                );
 
                 Ok(info)
+            }
+
+            "profile" => {
+                let profile = device.read().get_profile()?;
+
+                Ok(format!("{}", profile))
             }
 
             "dpi" => {
                 let dpi = device.read().get_dpi()?;
 
                 Ok(format!("{}", dpi))
+            }
+
+            "rate" => {
+                let rate = device.read().get_rate()?;
+
+                Ok(format!("{}", rate))
             }
 
             "dcu" => {

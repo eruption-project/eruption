@@ -680,9 +680,17 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
 
 /// Device like e.g. a supported mouse
 pub trait MouseDeviceTrait: DeviceTrait {
+    fn get_profile(&self) -> Result<i32>;
+
+    fn set_profile(&mut self, profile: i32) -> Result<()>;
+
     fn get_dpi(&self) -> Result<i32>;
 
     fn set_dpi(&mut self, dpi: i32) -> Result<()>;
+
+    fn get_rate(&self) -> Result<i32>;
+
+    fn set_rate(&mut self, rate: i32) -> Result<()>;
 
     fn get_dcu_config(&self) -> Result<i32>;
 

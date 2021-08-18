@@ -374,10 +374,14 @@ impl DeviceTrait for RoccatBurstPro {
         } else {
             match self.get_device_info() {
                 Ok(device_info) => {
-                    if device_info.firmware_version < 106 {
+                    if device_info.firmware_version < 110 {
                         warn!(
-                            "Outdated firmware version: {}, should be: >= 106",
-                            device_info.firmware_version
+                            "Outdated firmware version: {}, should be: >= 1.10",
+                            format!(
+                                "{}.{:02}",
+                                device_info.firmware_version / 100,
+                                device_info.firmware_version % 100
+                            )
                         );
                     }
                 }
@@ -483,6 +487,74 @@ impl DeviceTrait for RoccatBurstPro {
 }
 
 impl MouseDeviceTrait for RoccatBurstPro {
+    fn get_profile(&self) -> Result<i32> {
+        trace!("Querying device profile config");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf: [u8; 64] = [0x00 as u8; 64];
+            buf[0] = 0x06;
+
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            Ok(buf[6] as i32)
+        }
+    }
+
+    fn set_profile(&mut self, profile: i32) -> Result<()> {
+        trace!("Setting device profile config");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf: [u8; 64] = [0x00 as u8; 64];
+            buf[0] = 0x06;
+
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            buf[6] = profile as u8;
+
+            match ctrl_dev.send_feature_report(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
+
+            Ok(())
+        }
+    }
+
     fn get_dpi(&self) -> Result<i32> {
         trace!("Querying device DPI config");
 
@@ -491,6 +563,18 @@ impl MouseDeviceTrait for RoccatBurstPro {
 
     fn set_dpi(&mut self, _dpi: i32) -> Result<()> {
         trace!("Setting device DPI config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn get_rate(&self) -> Result<i32> {
+        trace!("Querying device poll rate config");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_rate(&mut self, _rate: i32) -> Result<()> {
+        trace!("Setting device poll rate config");
 
         Err(HwDeviceError::OpNotSupported {}.into())
     }

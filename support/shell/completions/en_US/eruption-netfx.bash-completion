@@ -56,7 +56,7 @@ _eruption-netfx() {
 
     case "${cmd}" in
         eruption__netfx)
-            opts=" -v -h -V  --verbose --help --version  <model> <hostname> <port> ping command image animation ambient completions help"
+            opts=" -h -V -v  --help --version --verbose  <MODEL> <HOSTNAME> <PORT> ping command image animation ambient completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -72,7 +72,7 @@ _eruption-netfx() {
             ;;
         
         eruption__netfx__ambient)
-            opts=" -h -V  --help --version  <frame-delay> "
+            opts=" -h -V  --help --version  <FRAME_DELAY> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -87,7 +87,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__animation)
-            opts=" -h -V  --help --version  <directory-name> <frame-delay> "
+            opts=" -h -V  --help --version  <DIRECTORY_NAME> <FRAME_DELAY> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -102,7 +102,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__command)
-            opts=" -h -V  --help --version  <data> "
+            opts=" -h -V  --help --version  <DATA> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -132,7 +132,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__completions__bash)
-            opts=" -h -V  --help --version  "
+            opts="  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -147,7 +147,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__completions__elvish)
-            opts=" -h -V  --help --version  "
+            opts="  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -162,7 +162,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__completions__fish)
-            opts=" -h -V  --help --version  "
+            opts="  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -177,7 +177,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__completions__power__shell)
-            opts=" -h -V  --help --version  "
+            opts="  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -192,7 +192,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__completions__zsh)
-            opts=" -h -V  --help --version  "
+            opts="  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -222,7 +222,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__image)
-            opts=" -h -V  --help --version  <filename> "
+            opts=" -h -V  --help --version  <FILENAME> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

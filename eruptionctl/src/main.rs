@@ -144,30 +144,47 @@ pub enum DevicesSubcommands {
     List,
 
     /// Get information about a specific device
+    #[clap(display_order = 1)]
     Info { device: String },
 
-    /// Get or set the DPI parameter (applicable for some mice)
-    Dpi { device: String, dpi: Option<i32> },
-
-    /// Get or set the DCU parameter (applicable for some mice)
-    Distance { device: String, param: Option<i32> },
-
-    /// Get or set the angle-snapping parameter (applicable for some mice)
-    AngleSnapping {
+    /// Get or set the device specific brightness of the LEDs
+    // #[clap(display_order = 2)]
+    Brightness {
         device: String,
-        enable: Option<bool>,
+        brightness: Option<i64>,
     },
 
+    /// Get or set the current profile (applicable for some devices)
+    // #[clap(display_order = 3)]
+    Profile {
+        device: String,
+        profile: Option<i32>,
+    },
+
+    /// Get or set the DPI parameter (applicable for some mice)
+    // #[clap(display_order = 4)]
+    Dpi { device: String, dpi: Option<i32> },
+
+    /// Get or set the bus poll rate
+    // #[clap(display_order = 5)]
+    Rate { device: String, rate: Option<i32> },
+
     /// Get or set the debounce parameter (applicable for some mice)
+    // #[clap(display_order = 6)]
     Debounce {
         device: String,
         enable: Option<bool>,
     },
 
-    /// Get or set the device specific brightness of the LEDs
-    Brightness {
+    /// Get or set the DCU parameter (applicable for some mice)
+    // #[clap(display_order = 7)]
+    Distance { device: String, param: Option<i32> },
+
+    /// Get or set the angle-snapping parameter (applicable for some mice)
+    // #[clap(display_order = 8)]
+    AngleSnapping {
         device: String,
-        brightness: Option<i64>,
+        enable: Option<bool>,
     },
 }
 
@@ -473,6 +490,85 @@ pub async fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
+async fn print_device_header(device: u64) -> Result<()> {
+    let mut base_index = 0;
+
+    let (keyboards, mice, misc) = get_devices().await?;
+
+    print!("Selected device: ");
+
+    if !keyboards.is_empty() {
+        for (_index, dev) in keyboards.iter().enumerate() {
+            if base_index == device {
+                println!(
+                    // "{}: ID: {}:{} {} {}",
+                    // format!("{:02}", base_index).bold(),
+                    // format!("{:04x}", dev.0),
+                    // format!("{:04x}", dev.1),
+                    "{} {} ({})",
+                    device::get_device_make(dev.0, dev.1)
+                        .unwrap_or("<unknown make>")
+                        .bold(),
+                    device::get_device_model(dev.0, dev.1)
+                        .unwrap_or("<unknown model>")
+                        .bold(),
+                    device
+                );
+            }
+
+            base_index += 1;
+        }
+    }
+
+    if !mice.is_empty() {
+        for (_index, dev) in mice.iter().enumerate() {
+            if base_index == device {
+                println!(
+                    // "{}: ID: {}:{} {} {}",
+                    // format!("{:02}", base_index).bold(),
+                    // format!("{:04x}", dev.0),
+                    // format!("{:04x}", dev.1),
+                    "{} {} ({})",
+                    device::get_device_make(dev.0, dev.1)
+                        .unwrap_or("<unknown make>")
+                        .bold(),
+                    device::get_device_model(dev.0, dev.1)
+                        .unwrap_or("<unknown model>")
+                        .bold(),
+                    device
+                );
+            }
+
+            base_index += 1;
+        }
+    }
+
+    if !misc.is_empty() {
+        for (_index, dev) in misc.iter().enumerate() {
+            if base_index == device {
+                println!(
+                    // "{}: ID: {}:{} {} {}",
+                    // format!("{:02}", base_index).bold(),
+                    // format!("{:04x}", dev.0),
+                    // format!("{:04x}", dev.1),
+                    "{} {} ({})",
+                    device::get_device_make(dev.0, dev.1)
+                        .unwrap_or("<unknown make>")
+                        .bold(),
+                    device::get_device_model(dev.0, dev.1)
+                        .unwrap_or("<unknown model>")
+                        .bold(),
+                    device
+                );
+            }
+
+            base_index += 1;
+        }
+    }
+
+    Ok(())
+}
+
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
@@ -508,7 +604,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     let result = get_brightness().await?;
                     println!(
                         "{}",
-                        format!("Brightness: {}", format!("{}%", result).bold())
+                        format!("Global brightness: {}", format!("{}%", result).bold())
                     );
                 }
             }
@@ -559,10 +655,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 if keyboards.is_empty() {
                     println!("{}", "<No devices connected>\n".italic());
                 } else {
-                    for (index, dev) in keyboards.iter().enumerate() {
+                    for (_index, dev) in keyboards.iter().enumerate() {
                         println!(
                             "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index + index).bold(),
+                            format!("{:02}", base_index).bold(),
                             format!("{:04x}", dev.0),
                             format!("{:04x}", dev.1),
                             device::get_device_make(dev.0, dev.1)
@@ -583,10 +679,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 if mice.is_empty() {
                     println!("{}", "<No devices connected>\n".italic());
                 } else {
-                    for (index, dev) in mice.iter().enumerate() {
+                    for (_index, dev) in mice.iter().enumerate() {
                         println!(
                             "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index + index).bold(),
+                            format!("{:02}", base_index).bold(),
                             format!("{:04x}", dev.0),
                             format!("{:04x}", dev.1),
                             device::get_device_make(dev.0, dev.1)
@@ -607,10 +703,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 if misc.is_empty() {
                     println!("{}", "<No devices connected>\n".italic());
                 } else {
-                    for (index, dev) in misc.iter().enumerate() {
+                    for (_index, dev) in misc.iter().enumerate() {
                         println!(
                             "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index + index).bold(),
+                            format!("{:02}", base_index).bold(),
                             format!("{:04x}", dev.0),
                             format!("{:04x}", dev.1),
                             device::get_device_make(dev.0, dev.1)
@@ -629,12 +725,32 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Info { device } => {
                 let device = device.parse::<u64>()?;
 
+                print_device_header(device).await?;
+
                 let result = get_device_config(device, "info").await?;
                 println!("{}", format!("{}", result.bold()));
             }
 
+            DevicesSubcommands::Profile { device, profile } => {
+                let device = device.parse::<u64>()?;
+
+                print_device_header(device).await?;
+
+                if let Some(profile) = profile {
+                    let value = &format!("{}", profile);
+
+                    set_device_config(device, "profile", value).await?
+                } else {
+                    let result = get_device_config(device, "profile").await?;
+
+                    println!("{}", format!("Current profile: {}", result.bold()));
+                }
+            }
+
             DevicesSubcommands::Dpi { device, dpi } => {
                 let device = device.parse::<u64>()?;
+
+                print_device_header(device).await?;
 
                 if let Some(dpi) = dpi {
                     let value = &format!("{}", dpi);
@@ -647,8 +763,26 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             }
 
+            DevicesSubcommands::Rate { device, rate } => {
+                let device = device.parse::<u64>()?;
+
+                print_device_header(device).await?;
+
+                if let Some(rate) = rate {
+                    let value = &format!("{}", rate);
+
+                    set_device_config(device, "rate", value).await?
+                } else {
+                    let result = get_device_config(device, "rate").await?;
+
+                    println!("{}", format!("Poll rate: {}", result.bold()));
+                }
+            }
+
             DevicesSubcommands::Distance { device, param } => {
                 let device = device.parse::<u64>()?;
+
+                print_device_header(device).await?;
 
                 if let Some(param) = param {
                     let value = &format!("{}", param);
@@ -664,6 +798,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::AngleSnapping { device, enable } => {
                 let device = device.parse::<u64>()?;
 
+                print_device_header(device).await?;
+
                 if let Some(enable) = enable {
                     let value = &format!("{}", enable);
 
@@ -677,6 +813,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
             DevicesSubcommands::Debounce { device, enable } => {
                 let device = device.parse::<u64>()?;
+
+                print_device_header(device).await?;
 
                 if let Some(enable) = enable {
                     let value = &format!("{}", enable);
@@ -692,6 +830,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Brightness { device, brightness } => {
                 let device = device.parse::<u64>()?;
 
+                print_device_header(device).await?;
+
                 if let Some(brightness) = brightness {
                     let value = &format!("{}", brightness);
 
@@ -699,10 +839,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 } else {
                     let result = get_device_config(device, "brightness").await?;
 
-                    println!(
-                        "{}",
-                        format!("Device specific brightness: {}", result.bold())
-                    );
+                    println!("{}", format!("Device brightness: {}%", result.bold()));
                 }
             }
         },

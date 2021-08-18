@@ -32,6 +32,8 @@
 
 ### Keyboard Devices
 
+Hardware feature support matrix
+
 | Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys    | Media keys F9-F12 |
 | ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
 | ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
@@ -44,18 +46,23 @@
 
 ### Mouse Devices
 
-| Vendor | Product              | Status | DPI | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift Key |
-| ------ | -------------------- | ------ | --- | -------- | -------------- | --- | ---------- | -------------- |
-| ROCCAT | Kone Pure Ultra      | 100%   | No  | Yes      | Yes            | No  | N.a.       | N.a.           |
-| ROCCAT | Burst Pro            | 100%   | No  | No       | No             | No  | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo            | 80%    | No  | No       | No             | No  | N.a.       | N.a.           |
-| ROCCAT | Kone Aimo Remastered | 80%    | No  | No       | No             | No  | N.a.       | N.a.           |
-| ROCCAT | Kova AIMO            | 80%    | No  | No       | No             | No  | N.a.       | N.a.           |
-| ROCCAT | Kone XTD             | N.a    | No  | No       | No             | No  | N.a.       | N.a.           |
+Hardware feature support matrix
+
+| Vendor | Product              | Status | Profiles | DPI  | Poll Rate | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift Key |
+| ------ | -------------------- | ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
+| ROCCAT | Kone Pure Ultra      | 100%   | Yes      | Yes  | TODO      | Yes      | Yes            | No  | N.a.       | N.a.           |
+| ROCCAT | Burst Pro            | 100%   | Yes      | Yes¹ | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Aimo Remastered | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kova AIMO            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone XTD             | N.a    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
-> DPI: Pointer resolution, Debounce: Debouncing of switches, Angle snapping: stabilize pointer movement, DCU: Distance Control Unit settings
+> ¹ Only supported via the profile switching mechanism
+
+> Profiles: Switch between hardware profiles, DPI: Pointer resolution, Debounce: Debouncing of button switches,
+> Angle snapping: stabilize pointer movement, DCU: Distance Control Unit settings
 
 ## ROCCAT Vulcan 100/12x series keyboard
 

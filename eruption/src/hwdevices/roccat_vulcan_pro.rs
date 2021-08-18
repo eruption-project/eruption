@@ -454,21 +454,7 @@ impl DeviceTrait for RoccatVulcanPro {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // TODO: Implement this
-            // match self.get_device_info() {
-            //     Ok(device_info) => {
-            //         if device_info.firmware_version < 115 {
-            //             warn!(
-            //                 "Outdated firmware version: {}, should be: >= 115",
-            //                 device_info.firmware_version
-            //             );
-            //         }
-            //     }
-
-            //     Err(e) => {
-            //         error!("Could not get firmware version: {}", e);
-            //     }
-            // }
+            // TODO: Implement firmware version check
 
             self.send_ctrl_report(0x0d)
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
