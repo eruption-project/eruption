@@ -49,6 +49,7 @@ pango = "0.14.0"
 pangocairo = "0.14.0"
 cairo-rs = "0.14.1"
 #sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
+icecream = "0.1.0"
 
 [dependencies.gtk]
 version = "0.14.0"

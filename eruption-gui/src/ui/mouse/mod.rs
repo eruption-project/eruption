@@ -46,6 +46,14 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
 
     let device_brightness_scale: gtk::Scale = builder.object("mouse_brightness_scale").unwrap();
 
+    let mouse_firmware_label: gtk::Label = builder.object("mouse_firmware_label").unwrap();
+    let mouse_rate_label: gtk::Label = builder.object("mouse_rate_label").unwrap();
+    let mouse_dpi_label: gtk::Label = builder.object("mouse_dpi_label").unwrap();
+    let mouse_profile_label: gtk::Label = builder.object("mouse_profile_label").unwrap();
+
+    let debounce_switch: gtk::Switch = builder.object("debounce_switch").unwrap();
+    let angle_snapping_switch: gtk::Switch = builder.object("angle_snapping_switch").unwrap();
+
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
     });
@@ -56,13 +64,26 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
 
     let mouse_device_handle = mouse_device.get_device();
 
-    let device_brightness = util::get_device_brightness(mouse_device_handle)?;
-    device_brightness_scale.set_value(device_brightness as f64);
-
     device_brightness_scale.connect_value_changed(move |s| {
         // if !events::shall_ignore_pending_ui_event() {
         util::set_device_brightness(mouse_device_handle, s.value() as i64).unwrap();
         // }
+    });
+
+    debounce_switch.connect_state_set(move |_s, state| {
+        // if !events::shall_ignore_pending_ui_event() {
+        util::set_debounce(mouse_device_handle, state).unwrap();
+        // }
+
+        gtk::Inhibit(false)
+    });
+
+    angle_snapping_switch.connect_state_set(move |_s, state| {
+        // if !events::shall_ignore_pending_ui_event() {
+        util::set_angle_snapping(mouse_device_handle, state).unwrap();
+        // }
+
+        gtk::Inhibit(false)
     });
 
     // drawing area / mouse indicator
@@ -77,9 +98,45 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     glib::timeout_add_local(
+        Duration::from_millis(2000),
+        clone!(@strong mouse_firmware_label => move || {
+            if let Ok(device_brightness) = util::get_device_brightness(mouse_device_handle) {
+                device_brightness_scale.set_value(device_brightness as f64);
+            }
+
+            if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
+                mouse_firmware_label.set_label(&firmware);
+            }
+
+            if let Ok(poll_rate) = util::get_poll_rate(mouse_device_handle) {
+                mouse_rate_label.set_label(&format!("{}", poll_rate));
+            }
+
+            if let Ok(dpi) = util::get_dpi_slot(mouse_device_handle) {
+                mouse_dpi_label.set_label(&format!("{}", dpi));
+            }
+
+            if let Ok(hardware_profile) = util::get_hardware_profile(mouse_device_handle) {
+                mouse_profile_label.set_label(&format!("{}", hardware_profile));
+            }
+
+            if let Ok(debounce) = util::get_debounce(mouse_device_handle) {
+                debounce_switch.set_active(debounce);
+            }
+
+            if let Ok(angle_snapping) = util::get_angle_snapping(mouse_device_handle) {
+                angle_snapping_switch.set_active(angle_snapping);
+            }
+
+            Continue(true)
+        }),
+    );
+
+    glib::timeout_add_local(
         Duration::from_millis((1000 / constants::TARGET_FPS) / 2),
         clone!(@strong drawing_area => move || {
             drawing_area.queue_draw();
+
             Continue(true)
         }),
     );

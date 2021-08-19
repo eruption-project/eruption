@@ -318,6 +318,58 @@ pub fn set_device_brightness(device: u64, brightness: i64) -> Result<()> {
     Ok(())
 }
 
+pub fn get_firmware_revision(device: u64) -> Result<String> {
+    let result = get_device_config(device, "firmware")?;
+
+    Ok(result)
+}
+
+pub fn get_poll_rate(device: u64) -> Result<i32> {
+    let result = get_device_config(device, "rate")?.parse::<i32>()?;
+
+    Ok(result)
+}
+
+pub fn get_dpi_slot(device: u64) -> Result<i32> {
+    let result = get_device_config(device, "dpi")?.parse::<i32>()?;
+
+    Ok(result)
+}
+
+pub fn get_hardware_profile(device: u64) -> Result<i32> {
+    let result = get_device_config(device, "profile")?.parse::<i32>()?;
+
+    Ok(result)
+}
+
+pub fn set_debounce(device: u64, debounce: bool) -> Result<()> {
+    set_device_config(device, "debounce", if debounce { "true" } else { "false" })?;
+
+    Ok(())
+}
+
+pub fn get_debounce(device: u64) -> Result<bool> {
+    let result = get_device_config(device, "debounce")?.parse::<bool>()?;
+
+    Ok(result)
+}
+
+pub fn set_angle_snapping(device: u64, angle_snapping: bool) -> Result<()> {
+    set_device_config(
+        device,
+        "angle-snapping",
+        if angle_snapping { "true" } else { "false" },
+    )?;
+
+    Ok(())
+}
+
+pub fn get_angle_snapping(device: u64) -> Result<bool> {
+    let result = get_device_config(device, "angle-snapping")?.parse::<bool>()?;
+
+    Ok(result)
+}
+
 /// Returns true when SoundFX is enabled
 pub fn get_sound_fx() -> Result<bool> {
     let conn = Connection::new_system()?;
