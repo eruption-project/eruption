@@ -16,9 +16,9 @@ parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
 async-trait = "0.1.51"
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.19"
+tracing-subscriber = "0.2.20"
 libc = "0.2.99"
-nix = "0.22.0"
+nix = "0.22.1"
 prctl = "1.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
@@ -30,7 +30,7 @@ serde = { version = "1.0.127", features = ["derive"] }
 serde_json = "1.0.66"
 tokio = { version = "1.10.0", features = ["full", "rt-multi-thread"] }
 ctrlc = { version = "3.2.0", features = ["termination"] }
-clap = "3.0.0-beta.2"
+clap = "3.0.0-beta.4"
 hotwatch = "0.4.5"
 config = "0.11.0"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
