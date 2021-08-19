@@ -110,7 +110,7 @@ impl DbusApi {
             .property::<u64, _>("ActiveSlot", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     let result = crate::ACTIVE_SLOT.load(Ordering::SeqCst) as u64;
@@ -128,7 +128,7 @@ impl DbusApi {
             .property::<String, _>("ActiveProfile", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     let result = crate::ACTIVE_PROFILE.lock();
@@ -153,7 +153,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     i.append(audio::ENABLE_SFX.load(Ordering::SeqCst));
@@ -164,7 +164,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     audio::ENABLE_SFX.store(i.read::<bool>()?, Ordering::SeqCst);
@@ -183,7 +183,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     let result = crate::BRIGHTNESS.load(Ordering::SeqCst) as i64;
@@ -195,7 +195,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
                     .unwrap_or(false)
                 {
                     crate::BRIGHTNESS.store(i.read::<i64>()? as isize, Ordering::SeqCst);
@@ -220,7 +220,7 @@ impl DbusApi {
                                 f.property::<bool, _>("Running", ())
                                     .emits_changed(EmitsChangedSignal::True)
                                     .on_get(|i, m| {
-                                        if perms::has_monitor_permission(
+                                        if perms::has_monitor_permission_cached(
                                             &m.msg.sender().unwrap().to_string(),
                                         )
                                         .unwrap_or(false)
@@ -232,7 +232,7 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                        if perms::has_settings_permission(
+                                        if perms::has_settings_permission_cached(
                                             &m.msg.sender().unwrap().to_string(),
                                         )
                                         .unwrap_or(false)
@@ -250,7 +250,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetLedColors", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -277,7 +277,7 @@ impl DbusApi {
                             // )
                             .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -338,7 +338,7 @@ impl DbusApi {
                         f.interface("org.eruption.Device", ())
                             .add_m(
                                 f.method("SetDeviceConfig", (), move |m| {
-                                    if perms::has_settings_permission(
+                                    if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -368,16 +368,17 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetDeviceConfig", (), move |m| {
-                                    if perms::has_settings_permission(
+                                    if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
                                     {
                                         let (device, param): (u64, String) = m.msg.read2()?;
 
-                                        debug!(
+                                        trace!(
                                             "Querying device [{}] config parameter '{}'",
-                                            device, &param
+                                            device,
+                                            &param
                                         );
 
                                         let result =
@@ -395,7 +396,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -459,7 +460,7 @@ impl DbusApi {
                             .add_p(brightness_property_clone)
                             .add_m(
                                 f.method("WriteFile", (), move |m| {
-                                    if perms::has_manage_permission(
+                                    if perms::has_manage_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -486,7 +487,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("Ping", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -501,7 +502,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("PingPrivileged", (), move |m| {
-                                    if perms::has_manage_permission(
+                                    if perms::has_manage_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -525,7 +526,7 @@ impl DbusApi {
                             .add_p(active_slot_property_clone.clone())
                             .add_m(
                                 f.method("SwitchSlot", (), move |m| {
-                                    if perms::has_settings_permission(
+                                    if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -572,7 +573,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("GetSlotProfiles", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -598,7 +599,7 @@ impl DbusApi {
                                     .emits_changed(EmitsChangedSignal::True)
                                     .auto_emit_on_set(true)
                                     .on_get(|i, m| {
-                                        if perms::has_monitor_permission(
+                                        if perms::has_monitor_permission_cached(
                                             &m.msg.sender().unwrap().to_string(),
                                         )
                                         .unwrap_or(false)
@@ -612,7 +613,7 @@ impl DbusApi {
                                         }
                                     })
                                     .on_set(|i, m| {
-                                        if perms::has_settings_permission(
+                                        if perms::has_settings_permission_cached(
                                             &m.msg.sender().unwrap().to_string(),
                                         )
                                         .unwrap_or(false)
@@ -643,7 +644,7 @@ impl DbusApi {
                             .add_p(active_profile_property_clone.clone())
                             .add_m(
                                 f.method("SwitchProfile", (), move |m| {
-                                    if perms::has_settings_permission(
+                                    if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -688,7 +689,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("EnumProfiles", (), move |m| {
-                                    if perms::has_monitor_permission(
+                                    if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -718,7 +719,7 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("SetParameter", (), move |m| {
-                                    if perms::has_settings_permission(
+                                    if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
                                     )
                                     .unwrap_or(false)
@@ -1016,6 +1017,17 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
                 Ok(info)
             }
 
+            "firmware" => {
+                let device_info = device.read().get_device_info()?;
+                let info = format!(
+                    "{}.{:02}",
+                    device_info.firmware_version / 100,
+                    device_info.firmware_version % 100
+                );
+
+                Ok(info)
+            }
+
             "brightness" => {
                 let brightness = device.read().get_local_brightness()?;
 
@@ -1035,6 +1047,17 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
                 let device_info = device.read().get_device_info()?;
                 let info = format!(
                     "Firmware revision: {}.{:02}",
+                    device_info.firmware_version / 100,
+                    device_info.firmware_version % 100
+                );
+
+                Ok(info)
+            }
+
+            "firmware" => {
+                let device_info = device.read().get_device_info()?;
+                let info = format!(
+                    "{}.{:02}",
                     device_info.firmware_version / 100,
                     device_info.firmware_version % 100
                 );
@@ -1093,11 +1116,72 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
 
 mod perms {
     use dbus::{arg::RefArg, arg::Variant, blocking::Connection};
+    use lazy_static::lazy_static;
+    use parking_lot::RwLock;
+    use std::sync::Arc;
     use std::{collections::HashMap, time::Duration};
 
     use crate::constants;
 
     pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+    // cached permissions
+    lazy_static! {
+        static ref HAS_MONITOR_PERMISSION: Arc<RwLock<Option<bool>>> = Arc::new(RwLock::new(None));
+        static ref HAS_SETTINGS_PERMISSION: Arc<RwLock<Option<bool>>> = Arc::new(RwLock::new(None));
+        static ref HAS_MANAGE_PERMISSION: Arc<RwLock<Option<bool>>> = Arc::new(RwLock::new(None));
+    }
+
+    pub fn has_monitor_permission_cached(sender: &str) -> Result<bool> {
+        if HAS_MONITOR_PERMISSION.read().is_some() {
+            // cache is valid
+            Ok(HAS_MONITOR_PERMISSION.read().unwrap())
+        } else {
+            // cache is invalid, we need to call out to PolKit
+            let result = has_monitor_permission(&sender);
+
+            if let Ok(value) = result {
+                // call succeeded, update cached state
+                HAS_MONITOR_PERMISSION.write().replace(value);
+            }
+
+            result
+        }
+    }
+
+    pub fn has_settings_permission_cached(sender: &str) -> Result<bool> {
+        if HAS_SETTINGS_PERMISSION.read().is_some() {
+            // cache is valid
+            Ok(HAS_SETTINGS_PERMISSION.read().unwrap())
+        } else {
+            // cache is invalid, we need to call out to PolKit
+            let result = has_settings_permission(&sender);
+
+            if let Ok(value) = result {
+                // call succeeded, update cached state
+                HAS_SETTINGS_PERMISSION.write().replace(value);
+            }
+
+            result
+        }
+    }
+
+    pub fn has_manage_permission_cached(sender: &str) -> Result<bool> {
+        if HAS_MANAGE_PERMISSION.read().is_some() {
+            // cache is valid
+            Ok(HAS_MANAGE_PERMISSION.read().unwrap())
+        } else {
+            // cache is invalid, we need to call out to PolKit
+            let result = has_manage_permission(&sender);
+
+            if let Ok(value) = result {
+                // call succeeded, update cached state
+                HAS_MANAGE_PERMISSION.write().replace(value);
+            }
+
+            result
+        }
+    }
 
     pub fn has_monitor_permission(sender: &str) -> Result<bool> {
         use bus::OrgFreedesktopDBus;
