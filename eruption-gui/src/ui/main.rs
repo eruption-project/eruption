@@ -590,6 +590,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
     let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
 
+    let networkfx_ambient_switch: gtk::Switch = builder.object("networkfx_ambient_switch").unwrap();
+    let soundfx_switch: gtk::Switch = builder.object("soundfx_switch").unwrap();
+
     // enable custom CSS support
     let screen = main_window.screen().unwrap();
     let style = gtk::CssProvider::new();
@@ -656,6 +659,69 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             }),
         );
     }));
+
+    // special options
+    networkfx_ambient_switch.connect_state_set(
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+            if enabled {
+                crate::STATE.write().saved_profile = util::get_active_profile().ok();
+
+                util::toggle_netfx_ambient(true).unwrap_or_else(|e| {
+                    let message = "Could not toggle Network FX".to_string();
+                    let secondary = format!("{}", e);
+
+                    let message_dialog = gtk::MessageDialogBuilder::new()
+                        .parent(&main_window)
+                        .destroy_with_parent(true)
+                        .decorated(true)
+                        .message_type(gtk::MessageType::Error)
+                        .text(&message)
+                        .secondary_text(&secondary)
+                        .title("Error")
+                        .buttons(gtk::ButtonsType::Ok)
+                        .build();
+
+                    message_dialog.run();
+                    message_dialog.hide();
+                });
+            } else {
+                util::toggle_netfx_ambient(false).unwrap_or_else(|e| {
+                    let message = "Could not toggle Network FX".to_string();
+                    let secondary = format!("{}", e);
+
+                    let message_dialog = gtk::MessageDialogBuilder::new()
+                        .parent(&main_window)
+                        .destroy_with_parent(true)
+                        .decorated(true)
+                        .message_type(gtk::MessageType::Error)
+                        .text(&message)
+                        .secondary_text(&secondary)
+                        .title("Error")
+                        .buttons(gtk::ButtonsType::Ok)
+                        .build();
+
+                    message_dialog.run();
+                    message_dialog.hide();
+                });
+
+                if let Some(saved_profile) = &crate::STATE.read().saved_profile {
+                    let _result = util::switch_profile(&saved_profile);
+                }
+            }
+
+            gtk::Inhibit(false)
+        }),
+    );
+
+    soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
+
+    soundfx_switch.connect_state_set(
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+            util::set_sound_fx(enabled).unwrap();
+
+            gtk::Inhibit(false)
+        }),
+    );
 
     ui::keyboard::initialize_keyboard_page(&builder)?;
     ui::mouse::initialize_mouse_page(&builder)?;
