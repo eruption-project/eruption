@@ -20,8 +20,8 @@
 }
 
 .heading {
-    font-size: x-large;
-    /* font-style: italic; */
+    font-size: xx-large;
+    font-style: italic;
     font-weight: bold;
     margin-left: 8px;
 }
@@ -40,25 +40,14 @@
     font-size: larger;
 } */
 
-.slot_indicator>*,
-.slot_indicator>*:active,
-.slot_indicator>*:hover {
-    background-color: transparent;
-}
-
 .slot_indicator {
     border-radius: 8px;
-    border: 3px dotted gray;
-}
-
-.slot_indicator:hover {
-    background: linear-gradient(0deg, rgba(105, 105, 105, 0.70), rgba(105, 105, 105, 0.15));
-    border: 3px solid rgba(128, 128, 128, 0.5);
+    border: 4px dotted gray;
 }
 
 .slot_indicator.active {
-    background: linear-gradient(0deg, rgba(105, 105, 105, 0.80), rgba(105, 105, 105, 0.25));
-    border: 3px solid gray;
+    background: linear-gradient(0deg, rgba(105, 105, 105, 0.70), rgba(105, 105, 105, 0.15));
+    border: 4px solid rgba(128, 128, 128, 0.5);
 }
 
 .slot_indicator combobox {
