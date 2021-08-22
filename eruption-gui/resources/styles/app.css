@@ -21,7 +21,6 @@
 
 .heading {
     font-size: xx-large;
-    /* font-style: italic; */
     font-weight: bold;
     margin-left: 8px;
 }
@@ -34,11 +33,6 @@
 .small-font {
     font-size: small;
 }
-
-/* .notification {
-    font-style: italic;
-    font-size: larger;
-} */
 
 .slot_indicator {
     border-radius: 8px;
