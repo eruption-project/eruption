@@ -629,9 +629,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 let (keyboards, mice, misc) = get_devices().await?;
 
-                println!(
-                    "{}",
-                    r#"
+                if opts.verbose > 0 {
+                    println!(
+                        "{}",
+                        r#"
  Use the `eruptionctl devices list` sub-command to find out the index of the device that
  you want to operate on. All the other device-related commands require a device index.
 
@@ -642,18 +643,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     $ eruptionctl devices brightness 0 80
 
 
- Query the DPI configuration of the first connected mouse:
+ Query the DPI configuration of the first connected mouse (second device):
 
     $ eruptionctl devices dpi 1
+
 "#
-                );
+                    );
+                }
 
-                println!("{}", "\nDumping Eruption managed devices list\n".bold());
+                println!("{}", "Dumping Eruption managed devices list\n".bold());
 
-                println!("Connected keyboard devices:");
+                println!("Keyboard devices:");
 
                 if keyboards.is_empty() {
-                    println!("{}", "<No devices connected>\n".italic());
+                    println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in keyboards.iter().enumerate() {
                         println!(
@@ -673,11 +676,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
-                println!("\n");
-                println!("Connected mouse devices:");
+                println!("\nMouse devices:");
 
                 if mice.is_empty() {
-                    println!("{}", "<No devices connected>\n".italic());
+                    println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in mice.iter().enumerate() {
                         println!(
@@ -697,11 +699,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
-                println!("\n");
-                println!("Connected miscellaneous devices:");
+                println!("\nMiscellaneous devices:");
 
                 if misc.is_empty() {
-                    println!("{}", "<No devices connected>\n".italic());
+                    println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in misc.iter().enumerate() {
                         println!(
