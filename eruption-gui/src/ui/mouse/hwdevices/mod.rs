@@ -30,18 +30,25 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnsupportedDevice,
 // }
 
-pub fn get_mouse_device() -> Result<Box<dyn Mouse>> {
-    match dbus_client::get_managed_devices()?.1.get(0) {
+pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
+    let devices = dbus_client::get_managed_devices()?;
+
+    match devices
+        .1
+        .get(device_handle as usize - devices.0.len() as usize)
+    {
         Some(device) => match device {
             // ROCCAT Kone Pure Ultra
             (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new(
-                1,
+                device_handle,
             ))),
 
             // ROCCAT Burst Pro
-            (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new(1))),
+            (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new(
+                device_handle,
+            ))),
 
-            _ => Ok(Box::new(generic_mouse::GenericMouse::new(1))),
+            _ => Ok(Box::new(generic_mouse::GenericMouse::new(device_handle))),
         },
 
         None => Ok(Box::new(null_mouse::NullMouse::new())),

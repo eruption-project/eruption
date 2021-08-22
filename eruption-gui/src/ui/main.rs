@@ -16,6 +16,7 @@
 */
 
 use crate::dbus_client;
+use crate::device;
 use crate::events;
 use crate::ui;
 use crate::update_ui_state;
@@ -27,7 +28,6 @@ use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
 use std::path::PathBuf;
-use std::time::Duration;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -581,6 +581,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
+    let keyboard_devices_stack: gtk::Stack = builder.object("keyboard_devices_stack").unwrap();
+    let mouse_devices_stack: gtk::Stack = builder.object("mouse_devices_stack").unwrap();
+    let misc_devices_stack: gtk::Stack = builder.object("misc_devices_stack").unwrap();
+
     let restart_eruption_daemon_button: gtk::Button =
         builder.object("restart_eruption_button").unwrap();
 
@@ -646,18 +650,6 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     restart_eruption_daemon_button.connect_clicked(clone!(@strong builder => move |_| {
         util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
-
-        glib::timeout_add_local(
-            Duration::from_millis(1000),
-            clone!(@strong builder => move || {
-                if let Err(e) = ui::keyboard::initialize_keyboard_page(&builder) {
-                    log::error!("{}", e);
-                    Continue(true)
-                } else {
-                    Continue(false)
-                }
-            }),
-        );
     }));
 
     // special options
@@ -723,9 +715,104 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }),
     );
 
-    ui::keyboard::initialize_keyboard_page(&builder)?;
-    ui::mouse::initialize_mouse_page(&builder)?;
-    ui::misc::initialize_misc_page(&builder)?;
+    // instantiate
+    let devices = dbus_client::get_managed_devices()?;
+
+    let mut device_index = 0;
+
+    let mut any_keyboard_device = false;
+    let mut any_mouse_device = false;
+    let mut any_misc_device = false;
+
+    // instantiate stack pages for all keyboard devices
+    for (_device, (vid, pid)) in devices.0.iter().enumerate() {
+        let template = gtk::Builder::from_resource(
+            "/org/eruption/eruption-gui/ui/keyboard-device-template.ui",
+        );
+
+        let page =
+            ui::keyboard::initialize_keyboard_page(&builder, &template, device_index as u64)?;
+
+        let device_name = format!(
+            "{} {}",
+            device::get_device_make(*vid, *pid).unwrap_or("<unknown>"),
+            device::get_device_model(*vid, *pid).unwrap_or("<unknown>")
+        );
+
+        keyboard_devices_stack.add_titled(&page, &device_name, &device_name);
+
+        device_index += 1;
+
+        any_keyboard_device = true;
+    }
+
+    if !any_keyboard_device {
+        let no_device_template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-device-template.ui");
+
+        let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
+
+        keyboard_devices_stack.add_titled(&page, "None", "None");
+    }
+
+    // instantiate stack pages for all mouse devices
+    for (_device, (vid, pid)) in devices.1.iter().enumerate() {
+        let template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/mouse-device-template.ui");
+
+        let page = ui::mouse::initialize_mouse_page(&builder, &template, device_index as u64)?;
+
+        let device_name = format!(
+            "{} {}",
+            device::get_device_make(*vid, *pid).unwrap_or("<unknown>"),
+            device::get_device_model(*vid, *pid).unwrap_or("<unknown>")
+        );
+
+        mouse_devices_stack.add_titled(&page, &device_name, &device_name);
+
+        device_index += 1;
+
+        any_mouse_device = true;
+    }
+
+    if !any_mouse_device {
+        let no_device_template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-device-template.ui");
+
+        let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
+
+        mouse_devices_stack.add_titled(&page, "None", "None");
+    }
+
+    // instantiate stack pages for all miscellaneous devices
+    for (_device, (vid, pid)) in devices.2.iter().enumerate() {
+        let template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/misc-device-template.ui");
+
+        let page = ui::misc::initialize_misc_page(&builder, &template, device_index as u64)?;
+
+        let device_name = format!(
+            "{} {}",
+            device::get_device_make(*vid, *pid).unwrap_or("<unknown>"),
+            device::get_device_model(*vid, *pid).unwrap_or("<unknown>")
+        );
+
+        misc_devices_stack.add_titled(&page, &device_name, &device_name);
+
+        device_index += 1;
+
+        any_misc_device = true;
+    }
+
+    if !any_misc_device {
+        let no_device_template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-device-template.ui");
+
+        let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
+
+        misc_devices_stack.add_titled(&page, "None", "None");
+    }
+
     ui::profiles::initialize_profiles_page(application, &builder)?;
     ui::process_monitor::initialize_process_monitor_page(application, &builder)?;
     ui::settings::initialize_settings_page(&builder)?;

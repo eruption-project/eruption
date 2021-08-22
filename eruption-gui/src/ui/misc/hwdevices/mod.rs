@@ -28,10 +28,17 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnsupportedDevice,
 // }
 
-pub fn get_misc_devices() -> Result<Box<dyn MiscDevice>> {
-    match dbus_client::get_managed_devices()?.2.get(0) {
+pub fn get_misc_devices(device_handle: u64) -> Result<Box<dyn MiscDevice>> {
+    let devices = dbus_client::get_managed_devices()?;
+
+    match dbus_client::get_managed_devices()?
+        .2
+        .get(device_handle as usize - (devices.0.len() + devices.1.len()) as usize)
+    {
         Some(device) => match device {
-            _ => Ok(Box::new(generic_misc_device::GenericMiscDevice::new())),
+            _ => Ok(Box::new(generic_misc_device::GenericMiscDevice::new(
+                device_handle,
+            ))),
         },
 
         _ => Ok(Box::new(null_misc_device::NullMiscDevice::new())),

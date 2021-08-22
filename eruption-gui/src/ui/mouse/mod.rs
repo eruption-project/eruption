@@ -36,23 +36,29 @@ pub enum MouseError {
 }
 
 /// Initialize page "Mouse"
-pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
-    let mouse_device = hwdevices::get_mouse_device()?;
+pub fn initialize_mouse_page(
+    builder: &gtk::Builder,
+    template: &gtk::Builder,
+    device: u64,
+) -> Result<gtk::Widget> {
+    let mouse_device = hwdevices::get_mouse_device(device)?;
+
+    let mouse_device_page = template.object("mouse_device_template").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let mouse_name_label: gtk::Label = builder.object("mouse_device_name_label").unwrap();
-    let drawing_area: gtk::DrawingArea = builder.object("drawing_area_mouse").unwrap();
+    let mouse_name_label: gtk::Label = template.object("mouse_device_name_label").unwrap();
+    let drawing_area: gtk::DrawingArea = template.object("drawing_area_mouse").unwrap();
 
-    let device_brightness_scale: gtk::Scale = builder.object("mouse_brightness_scale").unwrap();
+    let device_brightness_scale: gtk::Scale = template.object("mouse_brightness_scale").unwrap();
 
-    let mouse_firmware_label: gtk::Label = builder.object("mouse_firmware_label").unwrap();
-    let mouse_rate_label: gtk::Label = builder.object("mouse_rate_label").unwrap();
-    let mouse_dpi_label: gtk::Label = builder.object("mouse_dpi_label").unwrap();
-    let mouse_profile_label: gtk::Label = builder.object("mouse_profile_label").unwrap();
+    let mouse_firmware_label: gtk::Label = template.object("mouse_firmware_label").unwrap();
+    let mouse_rate_label: gtk::Label = template.object("mouse_rate_label").unwrap();
+    let mouse_dpi_label: gtk::Label = template.object("mouse_dpi_label").unwrap();
+    let mouse_profile_label: gtk::Label = template.object("mouse_profile_label").unwrap();
 
-    let debounce_switch: gtk::Switch = builder.object("debounce_switch").unwrap();
-    let angle_snapping_switch: gtk::Switch = builder.object("angle_snapping_switch").unwrap();
+    let debounce_switch: gtk::Switch = template.object("debounce_switch").unwrap();
+    let angle_snapping_switch: gtk::Switch = template.object("angle_snapping_switch").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -141,5 +147,5 @@ pub fn initialize_mouse_page(builder: &gtk::Builder) -> Result<()> {
         }),
     );
 
-    Ok(())
+    Ok(mouse_device_page)
 }

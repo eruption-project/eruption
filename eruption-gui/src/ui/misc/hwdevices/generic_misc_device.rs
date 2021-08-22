@@ -26,11 +26,13 @@ const BORDER: (f64, f64) = (16.0, 16.0);
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
-pub struct GenericMiscDevice {}
+pub struct GenericMiscDevice {
+    pub device: u64,
+}
 
 impl GenericMiscDevice {
-    pub fn new() -> Self {
-        GenericMiscDevice {}
+    pub fn new(device: u64) -> Self {
+        GenericMiscDevice { device }
     }
 }
 

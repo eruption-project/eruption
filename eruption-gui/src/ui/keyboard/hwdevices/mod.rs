@@ -33,27 +33,40 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnsupportedDevice,
 // }
 
-pub fn get_keyboard_device() -> Result<Box<dyn Keyboard>> {
-    match dbus_client::get_managed_devices()?.0.get(0) {
+pub fn get_keyboard_device(device_handle: u64) -> Result<Box<dyn Keyboard>> {
+    // let devices = dbus_client::get_managed_devices()?;
+
+    match dbus_client::get_managed_devices()?
+        .0
+        .get(device_handle as usize)
+    {
         Some(device) => match device {
             // ROCCAT Vulcan 1xx series
-            (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
-                Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new(0)))
-            }
+            (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Ok(Box::new(
+                roccat_vulcan_1xx::RoccatVulcan1xx::new(device_handle),
+            )),
 
             // ROCCAT Vulcan Pro series
-            (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new(0))),
+            (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new(
+                device_handle,
+            ))),
 
             // ROCCAT Vulcan Pro TKL series
-            (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new(0))),
+            (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new(
+                device_handle,
+            ))),
 
             // ROCCAT Vulcan TKL series
-            (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new(0))),
+            (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new(
+                device_handle,
+            ))),
 
             // Corsair STRAFE series
-            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(0))),
+            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(device_handle))),
 
-            _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new(0))),
+            _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new(
+                device_handle,
+            ))),
         },
 
         _ => Ok(Box::new(null_keyboard::NullKeyboard::new())),

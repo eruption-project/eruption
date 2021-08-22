@@ -34,15 +34,21 @@ pub enum MiscError {
 }
 
 /// Initialize page "Misc devices"
-pub fn initialize_misc_page(builder: &gtk::Builder) -> Result<()> {
-    let misc_device = hwdevices::get_misc_devices()?;
+pub fn initialize_misc_page(
+    builder: &gtk::Builder,
+    template: &gtk::Builder,
+    device: u64,
+) -> Result<gtk::Widget> {
+    let misc_device = hwdevices::get_misc_devices(device)?;
+
+    let misc_device_page = template.object("misc_device_template").unwrap();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let misc_name_label: gtk::Label = builder.object("misc_device_name_label").unwrap();
-    let drawing_area: gtk::DrawingArea = builder.object("drawing_area_misc").unwrap();
+    let misc_name_label: gtk::Label = template.object("misc_device_name_label").unwrap();
+    let drawing_area: gtk::DrawingArea = template.object("drawing_area_misc").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -71,5 +77,5 @@ pub fn initialize_misc_page(builder: &gtk::Builder) -> Result<()> {
         }),
     );
 
-    Ok(())
+    Ok(misc_device_page)
 }

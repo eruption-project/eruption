@@ -35,15 +35,21 @@ pub enum KeyboardError {
 }
 
 /// Initialize page "Keyboard"
-pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
-    let keyboard_device = hwdevices::get_keyboard_device()?;
+pub fn initialize_keyboard_page(
+    builder: &gtk::Builder,
+    template: &gtk::Builder,
+    device: u64,
+) -> Result<gtk::Widget> {
+    let keyboard_device = hwdevices::get_keyboard_device(device)?;
+
+    let keyboard_device_page = template.object("keyboard_device_template").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let keyboard_name_label: gtk::Label = builder.object("keyboard_device_name_label").unwrap();
-    let drawing_area: gtk::DrawingArea = builder.object("drawing_area").unwrap();
+    let keyboard_name_label: gtk::Label = template.object("keyboard_device_name_label").unwrap();
+    let drawing_area: gtk::DrawingArea = template.object("drawing_area").unwrap();
 
-    let device_brightness_scale: gtk::Scale = builder.object("keyboard_brightness_scale").unwrap();
+    let device_brightness_scale: gtk::Scale = template.object("keyboard_brightness_scale").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -83,5 +89,5 @@ pub fn initialize_keyboard_page(builder: &gtk::Builder) -> Result<()> {
         }),
     );
 
-    Ok(())
+    Ok(keyboard_device_page)
 }

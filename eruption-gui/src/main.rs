@@ -30,6 +30,7 @@ use std::{env, process};
 
 mod constants;
 mod dbus_client;
+mod device;
 mod manifest;
 mod preferences;
 mod profiles;
