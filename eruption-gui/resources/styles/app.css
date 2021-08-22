@@ -21,7 +21,7 @@
 
 .heading {
     font-size: xx-large;
-    font-style: italic;
+    /* font-style: italic; */
     font-weight: bold;
     margin-left: 8px;
 }
