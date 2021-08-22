@@ -933,6 +933,8 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
                 let brightness = value.parse::<i32>()?;
                 device.write().set_local_brightness(brightness)?;
 
+                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
                 Ok(())
             }
 
@@ -990,6 +992,8 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
             "brightness" => {
                 let brightness = value.parse::<i32>()?;
                 device.write().set_local_brightness(brightness)?;
+
+                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
 
                 Ok(())
             }
