@@ -96,7 +96,7 @@ impl Mouse for RoccatKonePureUltra {
         let cell_def = Rectangle {
             x: ((width / 2.0) + 120.0 + BORDER.0 * scale_factor) * scale_factor,
             y: ((height / 2.0) + BORDER.1 * scale_factor) + (162.0 * scale_factor),
-            width: 125.0 * scale_factor,
+            width: 135.0 * scale_factor,
             height: 90.0 * scale_factor,
         };
 

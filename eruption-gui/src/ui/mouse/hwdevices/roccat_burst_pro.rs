@@ -132,8 +132,8 @@ impl Mouse for RoccatBurstPro {
                 let cell_def = Rectangle {
                     x: ((width / 2.0) + 50.0 + BORDER.0 * scale_factor) * scale_factor,
                     y: ((height / 2.0) + BORDER.1 * scale_factor) - (110.0 * scale_factor),
-                    width: 187.0 * scale_factor,
-                    height: 300.0 * scale_factor,
+                    width: 197.0 * scale_factor,
+                    height: 310.0 * scale_factor,
                 };
 
                 // post-process color
