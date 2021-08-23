@@ -104,7 +104,7 @@ pub fn initialize_mouse_page(
     });
 
     glib::timeout_add_local(
-        Duration::from_millis(2000),
+        Duration::from_millis(1000),
         clone!(@strong mouse_firmware_label => move || {
             if let Ok(device_brightness) = util::get_device_brightness(mouse_device_handle) {
                 device_brightness_scale.set_value(device_brightness as f64);
