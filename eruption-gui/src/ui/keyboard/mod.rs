@@ -53,6 +53,8 @@ pub fn initialize_keyboard_page(
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
+
+        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
     });
 
     // device name and status
@@ -74,16 +76,27 @@ pub fn initialize_keyboard_page(
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
         if let Err(_e) = keyboard_device.draw_keyboard(&da, &context) {
             notification_box_global.show();
+
+            // apparently we have lost the connection to the Eruption daemon
+            // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
         } else {
             notification_box_global.hide();
+
+            // if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+            //     // we re-established the connection to the Eruption daemon,
+            //     // update the GUI to show e.g. newly attached devices
+            //     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+            //     events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
+            // }
         }
 
         gtk::Inhibit(false)
     });
 
     glib::timeout_add_local(
-        Duration::from_millis((1000 / constants::TARGET_FPS) / 2),
-        clone!(@strong drawing_area => move || {
+        Duration::from_millis(1000 / constants::TARGET_FPS),
+        clone!(@weak drawing_area => @default-return Continue(true), move || {
             drawing_area.queue_draw();
             Continue(true)
         }),

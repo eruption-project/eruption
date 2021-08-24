@@ -76,12 +76,12 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
         rules_treeview.set_model(Some(&rules_treestore));
 
         // rules_treeview.connect_row_activated(
-        //     clone!(@strong builder => move |_tv, _path, _column| {
+        //     clone!(@weak builder => move |_tv, _path, _column| {
         //         // let index = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 0).get::<u64>().unwrap();
         //     }),
         // );
 
-        // rules_treeview.connect_button_press_event(clone!(@strong main_window => move |_, _e| {
+        // rules_treeview.connect_button_press_event(clone!(@weak main_window => @default-return Inhibit(false), move |_, _e| {
         //         ui::rule::show_rule_dialog(&main_window);
 
         //         Inhibit(false)
@@ -164,7 +164,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     // register actions
     let add_rule = gio::SimpleAction::new("add-rule", None);
-    add_rule.connect_activate(clone!(@strong main_window, @strong builder, @weak rules_treeview, @weak notification_box, @weak rules_box => move |_, _| {
+    add_rule.connect_activate(clone!(@weak main_window, @weak builder, @weak rules_treeview, @weak notification_box, @weak rules_box => move |_, _| {
         let (response, rule) = rule::show_new_rule_dialog(&main_window);
         if response == gtk::ResponseType::Ok {
             let rule = rule.unwrap();
@@ -229,8 +229,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     application.set_accels_for_action("app.add-rule", &["<primary><shift>n"]);
 
     let remove_rule = gio::SimpleAction::new("remove-rule", None);
-    remove_rule.connect_activate(clone!(@strong builder, @strong notification_box, @strong rules_box,
-                                        @strong main_window, @strong rules_treeview => move |_, _| {
+    remove_rule.connect_activate(clone!(@weak builder, @weak notification_box, @weak rules_box,
+                                        @weak main_window, @weak rules_treeview => move |_, _| {
 
         let selection = &rules_treeview.selection().selected_rows().0;
         let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
@@ -276,7 +276,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     let update_view = gio::SimpleAction::new("update-rules-view", None);
     update_view.connect_activate(
-        clone!(@strong builder, @weak notification_box => move |_, _| {
+        clone!(@weak builder, @weak notification_box => move |_, _| {
             // update the rules view or show an error notification
             update_rules_view(&builder).unwrap_or_else(move|_e| {
                 notification_box.show_now();
@@ -290,8 +290,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     application.set_accels_for_action("app.update-rules-view", &[]);
 
     let edit_rule = gio::SimpleAction::new("edit-rule", None);
-    edit_rule.connect_activate(clone!(@strong builder, @strong notification_box, @strong rules_box,
-                                        @strong main_window, @strong rules_treeview => move |_, _| {
+    edit_rule.connect_activate(clone!(@weak builder, @weak notification_box, @weak rules_box,
+                                        @weak main_window, @weak rules_treeview => move |_, _| {
 
         let selection = &rules_treeview.selection().selected_rows();
         let p = &selection.0;
@@ -387,12 +387,12 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     notification_box.hide();
 
     restart_process_monitor_button.connect_clicked(
-        clone!(@strong builder, @strong application => move |_| {
+        clone!(@weak builder, @weak application => move |_| {
             util::restart_process_monitor_daemon().unwrap_or_else(|e| log::error!("{}", e));
 
             glib::timeout_add_local(
                 Duration::from_millis(1000),
-                clone!(@strong builder, @strong application => move || {
+                clone!(@weak builder, @weak application => @default-return Continue(true), move || {
                     if let Err(e) = initialize_process_monitor_page(&application, &builder) {
                         log::error!("{}", e);
                         Continue(true)
@@ -434,7 +434,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     let cell_renderer_toggle = gtk::CellRendererToggle::new();
     let cell_renderer_text = gtk::CellRendererText::new();
 
-    cell_renderer_toggle.connect_toggled(clone!(@strong builder, @strong rules_treeview => move |_cr, p| {
+    cell_renderer_toggle.connect_toggled(clone!(@weak builder, @weak rules_treeview => move |_cr, p| {
             let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
 
             let value = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
@@ -453,7 +453,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     rules_treeview
         .columns()
         .iter()
-        .for_each(clone!(@strong rules_treeview => move |c| {
+        .for_each(clone!(@weak rules_treeview => move |c| {
             rules_treeview.remove_column(c);
         }));
 
@@ -473,7 +473,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     // update the rules view or show an error notification
     update_rules_view(&builder).unwrap_or_else(
-        clone!(@strong notification_box,@strong rules_box => move |_e| {
+        clone!(@weak notification_box,@weak rules_box => move |_e| {
             notification_box.show_now();
             rules_box.hide();
         }),

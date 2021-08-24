@@ -168,7 +168,7 @@ pub fn spawn_dbus_event_loop_system(
 
     rx.attach(
         None,
-        clone!(@strong builder, @strong callback => move |event| {
+        clone!(@strong builder, @strong callback => @default-return glib::Continue(true), move |event| {
             callback(&builder, &event).unwrap();
             // thread::yield_now();
 
@@ -223,7 +223,7 @@ pub fn spawn_dbus_event_loop_session(
 
     rx.attach(
         None,
-        clone!(@strong builder, @strong callback => move |event| {
+        clone!(@strong builder, @strong callback => @default-return glib::Continue(true), move |event| {
             callback(&builder, &event).unwrap();
             // thread::yield_now();
 

@@ -62,6 +62,8 @@ pub fn initialize_mouse_page(
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
+
+        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
     });
 
     // device name and status
@@ -96,26 +98,32 @@ pub fn initialize_mouse_page(
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
         if let Err(_e) = mouse_device.draw_mouse(&da, &context) {
             notification_box_global.show();
+
+            // apparently we have lost the connection to the Eruption daemon
+            // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
         } else {
             notification_box_global.hide();
+
+            // if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+            //     // we re-established the connection to the Eruption daemon,
+            //     // update the GUI to show e.g. newly attached devices
+            //     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+            //     events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
+            // }
         }
 
         gtk::Inhibit(false)
     });
 
+    // fast update path
     glib::timeout_add_local(
         Duration::from_millis(1000),
-        clone!(@strong mouse_firmware_label => move || {
+        clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
+                    @weak mouse_profile_label, @weak debounce_switch,
+                    @weak angle_snapping_switch => @default-return Continue(true), move || {
             if let Ok(device_brightness) = util::get_device_brightness(mouse_device_handle) {
                 device_brightness_scale.set_value(device_brightness as f64);
-            }
-
-            if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
-                mouse_firmware_label.set_label(&firmware);
-            }
-
-            if let Ok(poll_rate) = util::get_poll_rate(mouse_device_handle) {
-                mouse_rate_label.set_label(&format!("{}", poll_rate));
             }
 
             if let Ok(dpi) = util::get_dpi_slot(mouse_device_handle) {
@@ -138,9 +146,25 @@ pub fn initialize_mouse_page(
         }),
     );
 
+    // slow update path
     glib::timeout_add_local(
-        Duration::from_millis((1000 / constants::TARGET_FPS) / 2),
-        clone!(@strong drawing_area => move || {
+        Duration::from_millis(2500),
+        clone!(@weak mouse_firmware_label, @weak mouse_rate_label => @default-return Continue(true), move || {
+            if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
+                mouse_firmware_label.set_label(&firmware);
+            }
+
+            if let Ok(poll_rate) = util::get_poll_rate(mouse_device_handle) {
+                mouse_rate_label.set_label(&format!("{}", poll_rate));
+            }
+
+            Continue(true)
+        }),
+    );
+
+    glib::timeout_add_local(
+        Duration::from_millis(1000 / constants::TARGET_FPS),
+        clone!(@weak drawing_area => @default-return Continue(true), move || {
             drawing_area.queue_draw();
 
             Continue(true)

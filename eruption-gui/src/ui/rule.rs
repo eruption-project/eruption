@@ -71,11 +71,11 @@ pub fn show_new_rule_dialog<W: IsA<gtk::Window>>(parent: &W) -> (gtk::ResponseTy
     let selector: gtk::Entry = builder.object("selector").unwrap();
     let action: gtk::Entry = builder.object("action").unwrap();
 
-    ok_button.connect_clicked(clone!(@strong rule_dialog => move |_b| {
+    ok_button.connect_clicked(clone!(@weak rule_dialog => move |_b| {
         rule_dialog.response(gtk::ResponseType::Ok);
     }));
 
-    cancel_button.connect_clicked(clone!(@strong rule_dialog => move |_b| {
+    cancel_button.connect_clicked(clone!(@weak rule_dialog => move |_b| {
         rule_dialog.response(gtk::ResponseType::Cancel);
     }));
 

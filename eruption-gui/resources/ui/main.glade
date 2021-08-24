@@ -219,7 +219,6 @@ Author: X3n0m0rph59
             <property name="can-focus">False</property>
             <property name="hhomogeneous">False</property>
             <property name="vhomogeneous">False</property>
-            <property name="transition-type">crossfade</property>
             <property name="interpolate-size">True</property>
             <child>
               <object class="GtkBox">
@@ -230,7 +229,6 @@ Author: X3n0m0rph59
                   <object class="GtkStack" id="keyboard_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-type">crossfade</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>
@@ -271,7 +269,6 @@ Author: X3n0m0rph59
                   <object class="GtkStack" id="mouse_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-type">crossfade</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>
@@ -313,7 +310,6 @@ Author: X3n0m0rph59
                   <object class="GtkStack" id="misc_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-type">crossfade</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>

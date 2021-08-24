@@ -76,7 +76,7 @@ lazy_static! {
 /// Event handling utilities
 pub mod events {
     use lazy_static::lazy_static;
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
     lazy_static! {
         /// stores how many consecutive events shall be ignored
@@ -84,6 +84,12 @@ pub mod events {
 
         /// stores how many consecutive events shall be ignored
         static ref IGNORE_NEXT_DBUS_EVENTS: AtomicUsize = AtomicUsize::new(0);
+
+        /// signals wether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
+        pub static ref UPDATE_MAIN_WINDOW: AtomicBool = AtomicBool::new(false);
+
+        /// signals wether we have lost the connection to the Eruption daemon
+        pub static ref LOST_CONNECTION: AtomicBool = AtomicBool::new(false);
     }
 
     /// ignore next n events (do not act on them)

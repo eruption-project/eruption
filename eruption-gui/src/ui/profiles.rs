@@ -164,7 +164,7 @@ macro_rules! declare_config_widget_numeric {
                     callback(value);
                 });
 
-                reset_button.connect_clicked(clone!(@strong adjustment => move |_b| {
+                reset_button.connect_clicked(clone!(@weak adjustment => move |_b| {
                     adjustment.set_value(default as f64);
                 }));
 
@@ -273,7 +273,7 @@ macro_rules! declare_config_widget_numeric {
                     callback(value);
                 });
 
-                reset_button.connect_clicked(clone!(@strong adjustment => move |_b| {
+                reset_button.connect_clicked(clone!(@weak adjustment => move |_b| {
                     adjustment.set_value(default as f64);
                 }));
 
@@ -360,7 +360,7 @@ macro_rules! declare_config_widget_input {
                     callback(value.to_string());
                 });
 
-                reset_button.connect_clicked(clone!(@strong entry, @strong default => move |_b| {
+                reset_button.connect_clicked(clone!(@weak entry, @strong default => move |_b| {
                     entry.set_text(&default);
                 }));
 
@@ -546,7 +546,7 @@ macro_rules! declare_config_widget_switch {
                     callback(value);
                 });
 
-                reset_button.connect_clicked(clone!(@strong switch => move |_| {
+                reset_button.connect_clicked(clone!(@weak switch => move |_| {
                     switch.set_state(default);
                 }));
 
@@ -1439,7 +1439,7 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
 
     profiles_treeview.set_model(Some(&profiles_treestore));
 
-    profiles_treeview.connect_row_activated(clone!(@strong builder => move |tv, path, _column| {
+    profiles_treeview.connect_row_activated(clone!(@weak builder => move |tv, path, _column| {
         let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 3).get::<String>().unwrap();
 
         populate_visual_config_editor(&builder, &profile).unwrap();
@@ -1467,7 +1467,7 @@ fn register_actions<A: IsA<gtk::Application>>(
     // let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
     let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
-    save_current_buffer.connect_activate(clone!(@strong builder => move |_, _| {
+    save_current_buffer.connect_activate(clone!(@weak builder => move |_, _| {
         if let Some(view) = stack_widget.visible_child()
         // .map(|w| w.dynamic_cast::<sourceview::View>().unwrap())
         {
@@ -1490,7 +1490,7 @@ fn register_actions<A: IsA<gtk::Application>>(
     application.set_accels_for_action("app.save-current-buffer", &["<Primary>S"]);
 
     let save_all_buffers = gio::SimpleAction::new("save-all-buffers", None);
-    save_all_buffers.connect_activate(clone!(@strong builder => move |_, _| {
+    save_all_buffers.connect_activate(clone!(@weak builder => move |_, _| {
         TEXT_BUFFERS.with(|b| {
             'SAVE_LOOP: for (k, (_, v)) in b.borrow().iter() {
                 let result = save_buffer_contents_to_file(&k, &v, &builder);
