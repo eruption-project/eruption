@@ -789,11 +789,7 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                         },
 
                         // volume up/down adjustment is initiated by the following sequence
-                        [0x03, 0x00, 0x0b, 0x26, _] => {
-                            *self.dial_mode.lock() = DialMode::Volume;
-                            KeyboardHidEvent::Unknown
-                        }
-                        [0x03, 0x00, 0x0b, 0x27, _] => {
+                        [0x02, 0xe9, 0x00, 0x00, _] => {
                             *self.dial_mode.lock() = DialMode::Volume;
                             KeyboardHidEvent::Unknown
                         }
