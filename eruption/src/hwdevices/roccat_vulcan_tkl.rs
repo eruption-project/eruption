@@ -487,7 +487,7 @@ impl DeviceTrait for RoccatVulcanTKL {
     }
 
     fn get_support_script_file(&self) -> String {
-        "keyboards/roccat_vulcan_1xx".to_string()
+        "keyboards/roccat_vulcan_tkl".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
