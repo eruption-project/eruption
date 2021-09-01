@@ -19,14 +19,14 @@ cfg-if = "1.0.0"
 colored = "2.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.100"
+libc = "0.2.101"
 nix = "0.22.1"
 rayon = "1.5.1"
 walkdir = "2.3.2"
-parking_lot = { version = "0.11.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.129", features = ["derive"] }
-serde_json = "1.0.66"
-tokio = { version = "1.10.0", features = ["full"] }
+parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.67"
+tokio = { version = "1.11.0", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.20"
@@ -37,14 +37,14 @@ byteorder = "1.4.3"
 itertools = "0.10.1"
 lazy_static = "1.4.0"
 palette = "0.6.0"
-thiserror = "1.0.26"
+thiserror = "1.0.28"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
 dbus = "0.9.3"
 dbus-tokio = "0.7.4"
 gdk-pixbuf = "0.14.0"
-glib = "0.14.4"
+glib = "0.14.5"
 pango = "0.14.3"
 pangocairo = "0.14.0"
 cairo-rs = "0.14.3"
@@ -52,16 +52,16 @@ cairo-rs = "0.14.3"
 icecream = "0.1.0"
 
 [dependencies.gtk]
-version = "0.14.0"
+version = "0.14.1"
 features = ["v3_22"]
 
 [dependencies.gdk]
-version = "0.14.0"
+version = "0.14.2"
 features = ["v3_22"]
 
 [dependencies.gio]
-version = "0.14.3"
+version = "0.14.5"
 features = ["v2_50"]
 
 [dev-dependencies]
-tokio = { version = "1.10.0", features = ["test-util"] }
+tokio = { version = "1.11.0", features = ["test-util"] }
