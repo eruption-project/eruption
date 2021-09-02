@@ -1944,11 +1944,12 @@ dependencies = [
 
 [[package]]
 name = "nom"
-version = "6.1.1"
+version = "6.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d521ee2250f619dd5e06515ba405858d249edc8fae9ddee2dba0695e57db01b"
+checksum = "e7413f999671bd4745a7b624bd370a569fb6bc574b23c83a3c5ed2e453f3d5e2"
 dependencies = [
  "bitvec",
+ "funty",
  "lexical-core",
  "memchr",
  "version_check",
@@ -3105,7 +3106,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "libc",
- "nom 6.1.1",
+ "nom 6.1.2",
  "time",
  "winapi 0.3.9",
 ]
