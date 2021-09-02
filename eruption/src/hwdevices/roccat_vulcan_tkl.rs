@@ -794,6 +794,11 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                             KeyboardHidEvent::Unknown
                         }
 
+                        [0x02, 0xea, 0x00, 0x00, _] => {
+                            *self.dial_mode.lock() = DialMode::Volume;
+                            KeyboardHidEvent::Unknown
+                        }
+
                         [0x03, 0x00, 0xcc, code, _] => {
                             let result = if *self.dial_mode.lock() == DialMode::Volume {
                                 match code {
