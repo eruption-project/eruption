@@ -1,10 +1,10 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
-    - [For PipeWire enabled Distros](#for-pipewire-enabled-distros)
-      - [Configure routing](#configure-routing)
-    - [For PulseAudio enabled Distros](#for-pulseaudio-enabled-distros)
+	- [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
+		- [For PipeWire enabled Distros](#for-pipewire-enabled-distros)
+			- [Configure routing](#configure-routing)
+		- [For PulseAudio enabled Distros](#for-pulseaudio-enabled-distros)
 
 ## Support for Audio Playback and Capture
 
@@ -55,7 +55,9 @@ Now we need to set up routing. First we need to determine the sink that Eruption
 On this system, the name of the correct sink would be `alsa_output.pci-0000_00_1f.3.analog-stereo`.
 So let's route the sink to the `Eruption Audio Grabber`.
 
+> The `Eruption Audio Grabber` needs to be running for this to work. Please switch to a profile that uses the audio API of Eruption. 
 ```sh
+ $ eruptionctl switch profile spectrum-analyzer-swirl.profile
  $ pactl list source-outputs
 ```
 
