@@ -312,13 +312,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         if let Ok(dev) = device.open_device(&hidapi) {
                             println!("Initializing...");
 
-                            let mut buf: [u8; 8] = [0; 8];
-                            buf[0] = 0x04;
+                            // let mut buf: [u8; 8] = [0; 8];
+                            // buf[0] = 0x04;
 
-                            let bytes_read = dev.get_feature_report(&mut buf)?;
+                            // let bytes_read = dev.get_feature_report(&mut buf)?;
 
-                            println!("{} bytes", bytes_read);
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            // println!("{} bytes", bytes_read);
+                            // hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
 
                             // wait to settle
                             thread::sleep(Duration::from_millis(500));

@@ -31,6 +31,7 @@ mod generic_keyboard;
 mod generic_mouse;
 mod roccat_burst_pro;
 mod roccat_elo_71_air;
+mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
 mod roccat_kone_pure_ultra;
@@ -52,7 +53,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 16]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 18]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -84,6 +85,10 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev),
 
         MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev),
+
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &roccat_kain_2xx::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev),
+        // MouseDriver::register("ROCCAT", "Kain 202 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev),
 
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev),
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev),
