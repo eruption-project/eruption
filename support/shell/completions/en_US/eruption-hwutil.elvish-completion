@@ -1,0 +1,71 @@
+
+use builtin;
+use str;
+
+edit:completion:arg-completer[eruption-hwutil] = [@words]{
+    fn spaces [n]{
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand [text desc]{
+        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    command = 'eruption-hwutil'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        command = $command';'$word
+    }
+    completions = [
+        &'eruption-hwutil'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand completions 'Configuration related sub-commands Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-hwutil;completions'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+            cand bash 'bash'
+            cand elvish 'elvish'
+            cand fish 'fish'
+            cand power-shell 'power-shell'
+            cand zsh 'zsh'
+        }
+        &'eruption-hwutil;completions;bash'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruption-hwutil;completions;elvish'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruption-hwutil;completions;fish'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruption-hwutil;completions;power-shell'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruption-hwutil;completions;zsh'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruption-hwutil;help'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+        }
+    ]
+    $completions[$command]
+}

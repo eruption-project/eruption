@@ -32,6 +32,7 @@ do
     mkdir -p "support/shell/completions/$LANG/"
 
     # gen_completions "eruption"
+    gen_completions "eruption-hwutil"
     gen_completions "eruption-debug-tool"
     # gen_completions "eruption-gui"
     gen_completions "eruption-netfx"

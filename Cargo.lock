@@ -752,6 +752,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "eruption-hwutil"
+version = "0.0.1"
+dependencies = [
+ "clap",
+ "clap_generate",
+ "color-eyre",
+ "colored",
+ "config",
+ "dbus",
+ "dbus-tokio",
+ "eyre",
+ "lazy_static",
+ "libc",
+ "log",
+ "nix 0.22.1",
+ "parking_lot",
+ "paste 1.0.5",
+ "serde 1.0.130",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "toml",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "eruption-netfx"
 version = "0.0.5"
 dependencies = [
