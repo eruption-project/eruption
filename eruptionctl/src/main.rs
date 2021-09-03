@@ -1002,16 +1002,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         if profile.active_scripts.contains(&PathBuf::from(
                             script.script_file.file_name().unwrap_or_default(),
                         )) {
-                            let config = profile.config.as_ref().unwrap_or_else(|| &empty);
+                            let config = profile.config.as_ref().unwrap_or(&empty);
                             let config_params = config.get(&script.name);
 
                             if let Some(config_params) = config_params {
                                 for config in config_params.iter() {
                                     // read param value
                                     let value = if config.get_value() == config.get_default() {
-                                        format!("{}", &config.get_value()).normal()
+                                        (&config.get_value()).to_string().normal()
                                     } else {
-                                        format!("{}", &config.get_value()).bold()
+                                        (&config.get_value()).to_string().bold()
                                     };
 
                                     println!(
@@ -1117,7 +1117,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             if profile.active_scripts.contains(&PathBuf::from(
                                 script.script_file.file_name().unwrap_or_default(),
                             )) {
-                                let config = profile.config.as_ref().unwrap_or_else(|| &empty);
+                                let config = profile.config.as_ref().unwrap_or(&empty);
                                 if let Some(config) = config.get(&script.name) {
                                     for config in config.iter() {
                                         if config.get_name() == &parameter {
@@ -1132,7 +1132,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                                     &profile.profile_file.to_string_lossy(),
                                                     &script.script_file.to_string_lossy(),
                                                     &parameter,
-                                                    &value,
+                                                    value,
                                                 )?;
 
                                                 println!(

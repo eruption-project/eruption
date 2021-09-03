@@ -186,7 +186,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_1xx::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::bind(
@@ -204,7 +204,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_pro::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::bind(
@@ -222,7 +222,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_tkl::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::bind(
@@ -240,7 +240,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_pro_tkl::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(
@@ -311,20 +311,18 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                                     );
 
                                     return Ok(devnode.to_str().unwrap().to_string());
-                                } else {
-                                    if let Some(devname) =
-                                        device.properties().find(|e| e.name() == "DEVNAME")
-                                    {
-                                        debug!(
-                                            "Picking evdev device: {}",
-                                            devname.value().to_str().unwrap().to_string()
-                                        );
+                                } else if let Some(devname) =
+                                    device.properties().find(|e| e.name() == "DEVNAME")
+                                {
+                                    debug!(
+                                        "Picking evdev device: {}",
+                                        devname.value().to_str().unwrap().to_string()
+                                    );
 
-                                        return Ok(devname.value().to_str().unwrap().to_string());
-                                    } else {
-                                        // give up the search
-                                        trace!("Could not query device node path");
-                                    }
+                                    return Ok(devname.value().to_str().unwrap().to_string());
+                                } else {
+                                    // give up the search
+                                    trace!("Could not query device node path");
                                 }
                             }
                         }
@@ -414,15 +412,13 @@ pub fn get_input_sub_dev_from_udev(
                                 );
 
                                 return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                            } else if device.devnode().is_some() {
+                                debug!(
+                                    "Ignoring evdev sub-device: {}",
+                                    device.devnode().unwrap().to_str().unwrap().to_string()
+                                );
                             } else {
-                                if device.devnode().is_some() {
-                                    debug!(
-                                        "Ignoring evdev sub-device: {}",
-                                        device.devnode().unwrap().to_str().unwrap().to_string()
-                                    );
-                                } else {
-                                    debug!("Ignoring evdev sub-device");
-                                }
+                                debug!("Ignoring evdev sub-device");
                             }
                         }
 

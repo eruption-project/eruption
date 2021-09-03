@@ -52,7 +52,7 @@ pub fn bind_hiddev(
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.serial_number().unwrap_or("") == serial
             && device.interface_number() == SUB_DEVICE
     });
 
@@ -60,7 +60,7 @@ pub fn bind_hiddev(
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
         Ok(Arc::new(RwLock::new(Box::new(RoccatBurstPro::bind(
-            &ctrl_dev.unwrap(),
+            ctrl_dev.unwrap(),
         )))))
     }
 }
@@ -335,7 +335,7 @@ impl DeviceTrait for RoccatBurstPro {
         } else {
             trace!("Opening control device...");
 
-            match self.ctrl_hiddev_info.as_ref().unwrap().open_device(&api) {
+            match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
                 Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
@@ -423,9 +423,9 @@ impl DeviceTrait for RoccatBurstPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.write(&buf) {
+            match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -498,7 +498,7 @@ impl MouseDeviceTrait for RoccatBurstPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let mut buf: [u8; 64] = [0x00 as u8; 64];
+            let mut buf: [u8; 64] = [0x00_u8; 64];
             buf[0] = 0x06;
 
             match ctrl_dev.get_feature_report(&mut buf) {
@@ -526,7 +526,7 @@ impl MouseDeviceTrait for RoccatBurstPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let mut buf: [u8; 64] = [0x00 as u8; 64];
+            let mut buf: [u8; 64] = [0x00_u8; 64];
             buf[0] = 0x06;
 
             match ctrl_dev.get_feature_report(&mut buf) {

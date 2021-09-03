@@ -49,11 +49,7 @@ impl ProfilesPlugin {
     }
 
     pub(crate) fn get_current_profile() -> Option<String> {
-        if let Some(profile) = &*crate::ACTIVE_PROFILE.lock() {
-            Some((*profile.profile_file.to_string_lossy()).to_string())
-        } else {
-            None
-        }
+        (*crate::ACTIVE_PROFILE.lock()).as_ref().map(|profile| (*profile.profile_file.to_string_lossy()).to_string())
     }
 
     pub(crate) fn switch_to_profile(profile: String) {

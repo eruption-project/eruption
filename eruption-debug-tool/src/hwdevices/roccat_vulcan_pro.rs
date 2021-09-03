@@ -414,9 +414,9 @@ impl DeviceTrait for RoccatVulcanPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.write(&buf) {
+            match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -487,7 +487,7 @@ impl DeviceTrait for RoccatVulcanPro {
                                 tmp[0..4].copy_from_slice(&[0xa1, cntr as u8 + 1, 0x00, 0x00]);
                             }
 
-                            tmp[4..64].copy_from_slice(&bytes);
+                            tmp[4..64].copy_from_slice(bytes);
 
                             hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 

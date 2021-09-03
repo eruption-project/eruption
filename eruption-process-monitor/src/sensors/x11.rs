@@ -283,6 +283,6 @@ fn parse_pid(property: &GetPropertyReply) -> i32 {
         0
     } else {
         let value = &property.value;
-        LittleEndian::read_u32(&value) as i32
+        LittleEndian::read_u32(value) as i32
     }
 }

@@ -885,16 +885,14 @@ pub fn probe_devices(
                     device_info.vendor_id(),
                     device_info.product_id(),
                     device_info
-                        .manufacturer_string()
-                        .unwrap_or_else(|| "<unknown>")
+                        .manufacturer_string().unwrap_or("<unknown>")
                         .to_string(),
                     device_info
-                        .product_string()
-                        .unwrap_or_else(|| "<unknown>")
+                        .product_string().unwrap_or("<unknown>")
                         .to_string()
                 );
 
-                let serial = device_info.serial_number().unwrap_or_else(|| "");
+                let serial = device_info.serial_number().unwrap_or("");
                 let path = device_info.path().to_string_lossy().to_string();
 
                 if !bound_devices.contains(&(
@@ -910,22 +908,20 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .manufacturer_string().unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .product_string().unwrap_or("<unknown>")
                                     .to_string()
                             );
 
                             let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
 
                             if let Ok(device) = (*driver.bind_fn)(
-                                &api,
+                                api,
                                 driver.get_usb_vid(),
                                 driver.get_usb_pid(),
-                                &serial,
+                                serial,
                             ) {
                                 keyboard_devices.push(device);
                                 bound_devices.push((
@@ -945,22 +941,20 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .manufacturer_string().unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .product_string().unwrap_or("<unknown>")
                                     .to_string()
                             );
 
                             let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
 
                             if let Ok(device) = (*driver.bind_fn)(
-                                &api,
+                                api,
                                 driver.get_usb_vid(),
                                 driver.get_usb_pid(),
-                                &serial,
+                                serial,
                             ) {
                                 mouse_devices.push(device);
                                 bound_devices.push((
@@ -980,12 +974,10 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .manufacturer_string().unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .product_string().unwrap_or("<unknown>")
                                     .to_string()
                             );
 
@@ -1021,16 +1013,14 @@ pub fn probe_devices(
                     device_info.vendor_id(),
                     device_info.product_id(),
                     device_info
-                        .manufacturer_string()
-                        .unwrap_or_else(|| "<unknown>")
+                        .manufacturer_string().unwrap_or("<unknown>")
                         .to_string(),
                     device_info
-                        .product_string()
-                        .unwrap_or_else(|| "<unknown>")
+                        .product_string().unwrap_or("<unknown>")
                         .to_string()
                 );
 
-                let serial = device_info.serial_number().unwrap_or_else(|| "");
+                let serial = device_info.serial_number().unwrap_or("");
                 let path = device_info.path().to_string_lossy().to_string();
 
                 if !bound_devices.contains(&(
@@ -1046,20 +1036,18 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .manufacturer_string().unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .product_string().unwrap_or("<unknown>")
                                     .to_string()
                             );
 
                             if let Ok(device) = generic_keyboard::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
-                                &serial,
+                                serial,
                             ) {
                                 keyboard_devices.push(device);
                                 bound_devices.push((
@@ -1079,20 +1067,18 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .manufacturer_string().unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string()
-                                    .unwrap_or_else(|| "<unknown>")
+                                    .product_string().unwrap_or("<unknown>")
                                     .to_string()
                             );
 
                             if let Ok(device) = generic_mouse::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
-                                &serial,
+                                serial,
                             ) {
                                 mouse_devices.push(device);
                                 bound_devices.push((
@@ -1120,12 +1106,10 @@ pub fn probe_devices(
                 device_info.vendor_id(),
                 device_info.product_id(),
                 device_info
-                    .manufacturer_string()
-                    .unwrap_or_else(|| "<unknown>")
+                    .manufacturer_string().unwrap_or("<unknown>")
                     .to_string(),
                 device_info
-                    .product_string()
-                    .unwrap_or_else(|| "<unknown>")
+                    .product_string().unwrap_or("<unknown>")
                     .to_string()
             );
         }
@@ -1170,20 +1154,18 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                                     );
 
                                     return Ok(devnode.to_str().unwrap().to_string());
-                                } else {
-                                    if let Some(devname) =
-                                        device.properties().find(|e| e.name() == "DEVNAME")
-                                    {
-                                        debug!(
-                                            "Picking evdev device: {}",
-                                            devname.value().to_str().unwrap().to_string()
-                                        );
+                                } else if let Some(devname) =
+                                    device.properties().find(|e| e.name() == "DEVNAME")
+                                {
+                                    debug!(
+                                        "Picking evdev device: {}",
+                                        devname.value().to_str().unwrap().to_string()
+                                    );
 
-                                        return Ok(devname.value().to_str().unwrap().to_string());
-                                    } else {
-                                        // give up the search
-                                        trace!("Could not query device node path");
-                                    }
+                                    return Ok(devname.value().to_str().unwrap().to_string());
+                                } else {
+                                    // give up the search
+                                    trace!("Could not query device node path");
                                 }
                             }
                         }
@@ -1272,15 +1254,13 @@ pub fn get_input_sub_dev_from_udev(
                                 );
 
                                 return Ok(device.devnode().unwrap().to_str().unwrap().to_string());
+                            } else if device.devnode().is_some() {
+                                debug!(
+                                    "Ignoring evdev sub-device: {}",
+                                    device.devnode().unwrap().to_str().unwrap().to_string()
+                                );
                             } else {
-                                if device.devnode().is_some() {
-                                    debug!(
-                                        "Ignoring evdev sub-device: {}",
-                                        device.devnode().unwrap().to_str().unwrap().to_string()
-                                    );
-                                } else {
-                                    debug!("Ignoring evdev sub-device");
-                                }
+                                debug!("Ignoring evdev sub-device");
                             }
                         }
 

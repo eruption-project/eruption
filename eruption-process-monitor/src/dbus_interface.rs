@@ -100,7 +100,7 @@ impl DbusApi {
 
                                         let action_val = match action {
                                             Action::SwitchToProfile { profile_name } => {
-                                                format!("{}", profile_name)
+                                                profile_name.to_string()
                                             }
                                             Action::SwitchToSlot { slot_index } => {
                                                 format!("{}", slot_index)
@@ -256,7 +256,7 @@ impl DbusApi {
 
                 let action_val = match action {
                     Action::SwitchToProfile { profile_name } => {
-                        format!("{}", profile_name)
+                        profile_name.to_string()
                     }
                     Action::SwitchToSlot { slot_index } => {
                         format!("{}", slot_index)
@@ -384,7 +384,7 @@ mod perms {
         let result = 'AUTH_LOOP: loop {
             let mut map = HashMap::new();
             map.insert("pid", Variant(Box::new(pid) as Box<dyn RefArg>));
-            map.insert("start-time", Variant(Box::new(0 as u64) as Box<dyn RefArg>));
+            map.insert("start-time", Variant(Box::new(0_u64) as Box<dyn RefArg>));
             map.insert("uid", Variant(Box::new(uid) as Box<dyn RefArg>));
 
             let mut details = HashMap::new();
@@ -435,7 +435,7 @@ mod perms {
         let result = 'AUTH_LOOP: loop {
             let mut map = HashMap::new();
             map.insert("pid", Variant(Box::new(pid) as Box<dyn RefArg>));
-            map.insert("start-time", Variant(Box::new(0 as u64) as Box<dyn RefArg>));
+            map.insert("start-time", Variant(Box::new(0_u64) as Box<dyn RefArg>));
             map.insert("uid", Variant(Box::new(uid) as Box<dyn RefArg>));
 
             let mut details = HashMap::new();
@@ -486,7 +486,7 @@ mod perms {
         let result = 'AUTH_LOOP: loop {
             let mut map = HashMap::new();
             map.insert("pid", Variant(Box::new(pid) as Box<dyn RefArg>));
-            map.insert("start-time", Variant(Box::new(0 as u64) as Box<dyn RefArg>));
+            map.insert("start-time", Variant(Box::new(0_u64) as Box<dyn RefArg>));
             map.insert("uid", Variant(Box::new(uid) as Box<dyn RefArg>));
 
             let mut details = HashMap::new();
@@ -558,23 +558,19 @@ mod perms {
             for blocking::Proxy<'a, C>
         {
             fn hello(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "Hello", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "Hello", ()).map(|r: (String,)| r.0)
             }
 
             fn request_name(&self, arg0: &str, arg1: u32) -> Result<u32, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "RequestName", (arg0, arg1))
-                    .and_then(|r: (u32,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "RequestName", (arg0, arg1)).map(|r: (u32,)| r.0)
             }
 
             fn release_name(&self, arg0: &str) -> Result<u32, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "ReleaseName", (arg0,))
-                    .and_then(|r: (u32,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "ReleaseName", (arg0,)).map(|r: (u32,)| r.0)
             }
 
             fn start_service_by_name(&self, arg0: &str, arg1: u32) -> Result<u32, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "StartServiceByName", (arg0, arg1))
-                    .and_then(|r: (u32,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "StartServiceByName", (arg0, arg1)).map(|r: (u32,)| r.0)
             }
 
             fn update_activation_environment(
@@ -589,18 +585,15 @@ mod perms {
             }
 
             fn name_has_owner(&self, arg0: &str) -> Result<bool, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "NameHasOwner", (arg0,))
-                    .and_then(|r: (bool,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "NameHasOwner", (arg0,)).map(|r: (bool,)| r.0)
             }
 
             fn list_names(&self) -> Result<Vec<String>, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "ListNames", ())
-                    .and_then(|r: (Vec<String>,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "ListNames", ()).map(|r: (Vec<String>,)| r.0)
             }
 
             fn list_activatable_names(&self) -> Result<Vec<String>, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "ListActivatableNames", ())
-                    .and_then(|r: (Vec<String>,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "ListActivatableNames", ()).map(|r: (Vec<String>,)| r.0)
             }
 
             fn add_match(&self, arg0: &str) -> Result<(), dbus::Error> {
@@ -612,18 +605,15 @@ mod perms {
             }
 
             fn get_name_owner(&self, arg0: &str) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "GetNameOwner", (arg0,))
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "GetNameOwner", (arg0,)).map(|r: (String,)| r.0)
             }
 
             fn list_queued_owners(&self, arg0: &str) -> Result<Vec<String>, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "ListQueuedOwners", (arg0,))
-                    .and_then(|r: (Vec<String>,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "ListQueuedOwners", (arg0,)).map(|r: (Vec<String>,)| r.0)
             }
 
             fn get_connection_unix_user(&self, arg0: &str) -> Result<u32, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "GetConnectionUnixUser", (arg0,))
-                    .and_then(|r: (u32,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "GetConnectionUnixUser", (arg0,)).map(|r: (u32,)| r.0)
             }
 
             fn get_connection_unix_process_id(&self, arg0: &str) -> Result<u32, dbus::Error> {
@@ -631,13 +621,11 @@ mod perms {
                     "org.freedesktop.DBus",
                     "GetConnectionUnixProcessID",
                     (arg0,),
-                )
-                .and_then(|r: (u32,)| Ok(r.0))
+                ).map(|r: (u32,)| r.0)
             }
 
             fn get_adt_audit_session_data(&self, arg0: &str) -> Result<Vec<u8>, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "GetAdtAuditSessionData", (arg0,))
-                    .and_then(|r: (Vec<u8>,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "GetAdtAuditSessionData", (arg0,)).map(|r: (Vec<u8>,)| r.0)
             }
 
             fn get_connection_selinux_security_context(
@@ -648,8 +636,7 @@ mod perms {
                     "org.freedesktop.DBus",
                     "GetConnectionSELinuxSecurityContext",
                     (arg0,),
-                )
-                .and_then(|r: (Vec<u8>,)| Ok(r.0))
+                ).map(|r: (Vec<u8>,)| r.0)
             }
 
             fn reload_config(&self) -> Result<(), dbus::Error> {
@@ -657,8 +644,7 @@ mod perms {
             }
 
             fn get_id(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus", "GetId", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus", "GetId", ()).map(|r: (String,)| r.0)
             }
 
             fn get_connection_credentials(
@@ -668,20 +654,17 @@ mod perms {
                 ::std::collections::HashMap<String, arg::Variant<Box<dyn arg::RefArg + 'static>>>,
                 dbus::Error,
             > {
-                self.method_call("org.freedesktop.DBus", "GetConnectionCredentials", (arg0,))
-                    .and_then(
-                        |r: (
+                self.method_call("org.freedesktop.DBus", "GetConnectionCredentials", (arg0,)).map(|r: (
                             ::std::collections::HashMap<
                                 String,
                                 arg::Variant<Box<dyn arg::RefArg + 'static>>,
                             >,
-                        )| Ok(r.0),
-                    )
+                        )| r.0)
             }
 
             fn features(&self) -> Result<Vec<String>, dbus::Error> {
                 <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                    &self,
+                    self,
                     "org.freedesktop.DBus",
                     "Features",
                 )
@@ -689,7 +672,7 @@ mod perms {
 
             fn interfaces(&self) -> Result<Vec<String>, dbus::Error> {
                 <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                    &self,
+                    self,
                     "org.freedesktop.DBus",
                     "Interfaces",
                 )
@@ -778,8 +761,7 @@ mod perms {
             OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
         {
             fn introspect(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
             }
         }
 
@@ -792,8 +774,7 @@ mod perms {
             for blocking::Proxy<'a, C>
         {
             fn get_machine_id(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ()).map(|r: (String,)| r.0)
             }
 
             fn ping(&self) -> Result<(), dbus::Error> {
@@ -840,8 +821,7 @@ mod perms {
                     "org.freedesktop.DBus.Properties",
                     "Get",
                     (interface_name, property_name),
-                )
-                .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
+                ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
             }
 
             fn get_all(
@@ -855,15 +835,12 @@ mod perms {
                     "org.freedesktop.DBus.Properties",
                     "GetAll",
                     (interface_name,),
-                )
-                .and_then(
-                    |r: (
+                ).map(|r: (
                         ::std::collections::HashMap<
                             String,
                             arg::Variant<Box<dyn arg::RefArg + 'static>>,
                         >,
-                    )| Ok(r.0),
-                )
+                    )| r.0)
             }
 
             fn set(
@@ -919,8 +896,7 @@ mod perms {
             OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
         {
             fn introspect(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
             }
         }
 
@@ -937,8 +913,7 @@ mod perms {
             }
 
             fn get_machine_id(&self) -> Result<String, dbus::Error> {
-                self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ())
-                    .and_then(|r: (String,)| Ok(r.0))
+                self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ()).map(|r: (String,)| r.0)
             }
         }
 
@@ -1077,9 +1052,7 @@ mod perms {
                     "org.freedesktop.PolicyKit1.Authority",
                     "EnumerateActions",
                     (locale,),
-                )
-                .and_then(
-                    |r: (
+                ).map(|r: (
                         Vec<(
                             String,
                             String,
@@ -1092,8 +1065,7 @@ mod perms {
                             u32,
                             ::std::collections::HashMap<String, String>,
                         )>,
-                    )| Ok(r.0),
-                )
+                    )| r.0)
             }
 
             fn check_authorization(
@@ -1112,8 +1084,7 @@ mod perms {
                     "org.freedesktop.PolicyKit1.Authority",
                     "CheckAuthorization",
                     (subject, action_id, details, flags, cancellation_id),
-                )
-                .and_then(|r: ((bool, bool, ::std::collections::HashMap<String, String>),)| Ok(r.0))
+                ).map(|r: ((bool, bool, ::std::collections::HashMap<String, String>),)| r.0)
             }
 
             fn cancel_check_authorization(&self, cancellation_id: &str) -> Result<(), dbus::Error> {
@@ -1229,9 +1200,7 @@ mod perms {
                     "org.freedesktop.PolicyKit1.Authority",
                     "EnumerateTemporaryAuthorizations",
                     (subject,),
-                )
-                .and_then(
-                    |r: (
+                ).map(|r: (
                         Vec<(
                             String,
                             String,
@@ -1245,8 +1214,7 @@ mod perms {
                             u64,
                             u64,
                         )>,
-                    )| Ok(r.0),
-                )
+                    )| r.0)
             }
 
             fn revoke_temporary_authorizations(
@@ -1273,7 +1241,7 @@ mod perms {
 
             fn backend_name(&self) -> Result<String, dbus::Error> {
                 <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                    &self,
+                    self,
                     "org.freedesktop.PolicyKit1.Authority",
                     "BackendName",
                 )
@@ -1281,7 +1249,7 @@ mod perms {
 
             fn backend_version(&self) -> Result<String, dbus::Error> {
                 <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                    &self,
+                    self,
                     "org.freedesktop.PolicyKit1.Authority",
                     "BackendVersion",
                 )
@@ -1289,7 +1257,7 @@ mod perms {
 
             fn backend_features(&self) -> Result<u32, dbus::Error> {
                 <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                    &self,
+                    self,
                     "org.freedesktop.PolicyKit1.Authority",
                     "BackendFeatures",
                 )

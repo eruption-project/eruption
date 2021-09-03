@@ -75,10 +75,6 @@ pub fn get_device_model(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
 
 pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<&'static DeviceInfo> {
     DEVICE_INFO.iter().find(|e| {
-        if e.usb_vid == usb_vid && e.usb_pid == usb_pid {
-            true
-        } else {
-            false
-        }
+        e.usb_vid == usb_vid && e.usb_pid == usb_pid
     })
 }

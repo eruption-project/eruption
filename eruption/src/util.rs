@@ -86,7 +86,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     let mut script_dirs = script_dirs
         .iter()
-        .map(|e| PathBuf::from(e))
+        .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
     result.append(&mut script_dirs);

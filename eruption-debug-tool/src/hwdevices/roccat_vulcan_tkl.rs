@@ -407,9 +407,9 @@ impl DeviceTrait for RoccatVulcanTKL {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.write(&buf) {
+            match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -475,7 +475,7 @@ impl DeviceTrait for RoccatVulcanTKL {
 
                         for bytes in buffer.chunks(64) {
                             let mut tmp: [u8; 65] = [0; 65];
-                            tmp[1..65].copy_from_slice(&bytes);
+                            tmp[1..65].copy_from_slice(bytes);
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {

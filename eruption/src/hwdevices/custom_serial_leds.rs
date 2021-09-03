@@ -194,9 +194,9 @@ impl MiscDeviceTrait for CustomSerialLeds {
                     [0x00; HEADER_OFFSET + (NUM_LEDS * 3)];
 
                 buffer[0..HEADER_OFFSET].clone_from_slice(&[
-                    'A' as u8,
-                    'd' as u8,
-                    'a' as u8,
+                    b'A',
+                    b'd',
+                    b'a',
                     0x00,
                     NUM_LEDS as u8,
                     0x00 ^ NUM_LEDS as u8 ^ 0x55,

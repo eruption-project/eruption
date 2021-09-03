@@ -429,7 +429,7 @@ impl Profile {
 
         if let Ok(profile_files) = get_profile_files() {
             'PROFILE_LOOP: for profile_file in profile_files.iter() {
-                match Profile::from(&profile_file) {
+                match Profile::from(profile_file) {
                     Ok(profile) => {
                         if profile.id == uuid {
                             result = Ok(profile);
@@ -508,7 +508,7 @@ pub fn get_profile_dirs() -> Vec<PathBuf> {
 
     let mut profile_dirs = profile_dirs
         .iter()
-        .map(|e| PathBuf::from(e))
+        .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
     result.append(&mut profile_dirs);
@@ -532,13 +532,13 @@ pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     let mut result: Vec<Profile> = vec![];
     let mut errors_present = false;
 
-    let profile_files = get_profile_files_from(&profile_dirs).unwrap_or_else(|e| {
+    let profile_files = get_profile_files_from(profile_dirs).unwrap_or_else(|e| {
         log::warn!("Could not enumerate profiles: {}", &e);
         vec![]
     });
 
     for profile_file in profile_files.iter() {
-        match Profile::from(&profile_file) {
+        match Profile::from(profile_file) {
             Ok(profile) => {
                 result.push(profile);
             }
@@ -593,13 +593,13 @@ pub fn find_path_by_uuid(uuid: Uuid) -> Option<PathBuf> {
 }
 
 pub fn find_path_by_uuid_from(uuid: Uuid, profile_dirs: &Vec<PathBuf>) -> Option<PathBuf> {
-    let profile_files = get_profile_files_from(&profile_dirs).unwrap_or_else(|_| vec![]);
+    let profile_files = get_profile_files_from(profile_dirs).unwrap_or_else(|_| vec![]);
 
     let mut errors_present = false;
     let mut result = None;
 
     'PROFILE_LOOP: for profile_file in profile_files.iter() {
-        match Profile::from(&profile_file) {
+        match Profile::from(profile_file) {
             Ok(profile) => {
                 if profile.id == uuid {
                     result = Some(profile_file.to_path_buf());

@@ -432,7 +432,7 @@ impl MacrosPlugin {
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
                     time: *time,
-                    event_code: EventCode::EV_KEY(key.clone()),
+                    event_code: EventCode::EV_KEY(key),
                     value,
                 };
 
@@ -468,7 +468,7 @@ impl MacrosPlugin {
             if let Some(device) = device.as_ref() {
                 let event = InputEvent {
                     time: *time,
-                    event_code: EventCode::EV_KEY(button.clone()),
+                    event_code: EventCode::EV_KEY(button),
                     value,
                 };
 
@@ -545,7 +545,7 @@ impl MacrosPlugin {
             trace!("Injecting: {:?}", event);
 
             if let Some(device) = dev.borrow().as_ref() {
-                let time = event.time.clone();
+                let time = event.time;
 
                 device.write_event(&event).unwrap();
 

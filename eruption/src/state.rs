@@ -105,7 +105,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .as_mut()
         .unwrap()
         .merge(config::File::new(
-            &state_path.to_str().unwrap(),
+            state_path.to_str().unwrap(),
             config::FileFormat::Toml,
         ))
         .map_err(|e| StateError::StateLoadError {
@@ -206,7 +206,7 @@ fn perform_sanity_checks() {
         .unwrap()
         .get_int("active_slot")
         .unwrap();
-    if active_slot < 0 || active_slot > 3 {
+    if !(0..=3).contains(&active_slot) {
         warn!("Configuration value is outside of the valid range: active_slot");
     }
 }

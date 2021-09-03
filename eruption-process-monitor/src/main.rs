@@ -334,7 +334,7 @@ async fn process_action(action: &Action) -> Result<()> {
 
                 PROFILE_CHANGING.store(true, Ordering::SeqCst);
 
-                dbus_client::switch_profile(&profile_name).await?;
+                dbus_client::switch_profile(profile_name).await?;
             }
 
             CURRENT_STATE.write().1 = Some(profile_name.clone());
@@ -372,9 +372,9 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     match selector {
                         Selector::ProcessExec { comm: regex } => {
                             if metadata.enabled {
-                                let re = Regex::new(&regex)?;
+                                let re = Regex::new(regex)?;
 
-                                if re.is_match(&comm) {
+                                if re.is_match(comm) {
                                     debug!("Matching rule for: {}", comm);
 
                                     match action {
@@ -396,7 +396,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                                         }
                                     }
 
-                                    process_action(&action).await?;
+                                    process_action(action).await?;
                                     break;
                                 }
                             }
@@ -416,7 +416,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     Action::SwitchToProfile { profile_name } => {
                         debug!("Returning to profile: {}", profile_name);
 
-                        dbus_client::switch_profile(&profile_name).await?;
+                        dbus_client::switch_profile(profile_name).await?;
                     }
 
                     Action::SwitchToSlot { slot_index } => {
@@ -507,25 +507,25 @@ async fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
         match selector {
             Selector::WindowFocused { mode, regex } => {
                 if metadata.enabled {
-                    let re = Regex::new(&regex)?;
+                    let re = Regex::new(regex)?;
 
                     match mode {
                         WindowFocusedSelectorMode::WindowName => {
-                            if re.is_match(&event.window_name().unwrap_or_default()) {
-                                process_action(&action).await?;
+                            if re.is_match(event.window_name().unwrap_or_default()) {
+                                process_action(action).await?;
                                 break;
                             }
                         }
 
                         WindowFocusedSelectorMode::WindowInstance => {
-                            if re.is_match(&event.window_instance().unwrap_or_default()) {
-                                process_action(&action).await?;
+                            if re.is_match(event.window_instance().unwrap_or_default()) {
+                                process_action(action).await?;
                                 break;
                             }
                         }
                         WindowFocusedSelectorMode::WindowClass => {
-                            if re.is_match(&event.window_class().unwrap_or_default()) {
-                                process_action(&action).await?;
+                            if re.is_match(event.window_class().unwrap_or_default()) {
+                                process_action(action).await?;
                                 break;
                             }
                         }
@@ -778,14 +778,14 @@ pub async fn run_main_loop(
             Ok(oper) => match oper.index() {
                 i if i == ctrl_c => {
                     // consume the event, so that we don't cause a panic
-                    let _event = &oper.recv(&ctrl_c_rx);
+                    let _event = &oper.recv(ctrl_c_rx);
                     break 'MAIN_LOOP;
                 }
 
                 i if i == fsevents => {
-                    let event = &oper.recv(&fsevents_rx);
+                    let event = &oper.recv(fsevents_rx);
                     if let Ok(event) = event {
-                        process_fs_event(&event, &dbus_api_tx)
+                        process_fs_event(event, dbus_api_tx)
                             .await
                             .unwrap_or_else(|e| {
                                 error!("Could not process a filesystem event: {}", e)
@@ -796,9 +796,9 @@ pub async fn run_main_loop(
                 }
 
                 i if i == dbusevents => {
-                    let event = &oper.recv(&dbusevents_rx);
+                    let event = &oper.recv(dbusevents_rx);
                     if let Ok(event) = event {
-                        process_dbus_event(&event)
+                        process_dbus_event(event)
                             .await
                             .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e))
                     } else {
@@ -808,9 +808,9 @@ pub async fn run_main_loop(
 
                 #[cfg(feature = "procmon")]
                 i if i == sysevents => {
-                    let event = &oper.recv(&sysevents_rx);
+                    let event = &oper.recv(sysevents_rx);
                     if let Ok(event) = event {
-                        process_system_event(&event)
+                        process_system_event(event)
                             .await
                             .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
                     } else {

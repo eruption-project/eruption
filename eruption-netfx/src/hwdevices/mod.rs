@@ -45,8 +45,8 @@ pub trait Keyboard {
 pub fn get_keyboard_device(model: &Option<String>) -> Result<KeyboardDevice> {
     match model {
         Some(model) => {
-            if model.contains(":") {
-                let spl: Vec<_> = model.split(":").collect();
+            if model.contains(':') {
+                let spl: Vec<_> = model.split(':').collect();
 
                 let vid = u16::from_str_radix(spl[0], 16)
                     .map_err(|_op| HwDevicesError::InvalidHexFormat {})?;

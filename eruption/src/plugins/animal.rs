@@ -176,11 +176,11 @@ impl Animal {
         }
 
         // Calculate upper bound for value of thickness function
-        let mut max_thickness = coefficients[0].clone();
+        let mut max_thickness = coefficients[0];
         for i in 0..((coefficients.len() - 1) / 4) {
             max_thickness += coefficients[4 * i + 1].abs();
         }
-        if !(0.5 <= max_thickness && max_thickness <= 1000.0) {
+        if !(0.5..=1000.0).contains(&max_thickness) {
             return Err(AnimalError::InvalidThickness {}.into());
         }
 
@@ -471,7 +471,7 @@ impl Plugin for AnimalPlugin {
                     })
                     .map_err(|e: eyre::Error| {
                         LuaError::RuntimeError(
-                            format!("Could not instantiate the animal object: {}", e).into(),
+                            format!("Could not instantiate the animal object: {}", e),
                         )
                     })
             },
@@ -901,7 +901,7 @@ mod ternimal {
         }
 
         pub(super) fn thickness(&self, offset: f64) -> f64 {
-            assert!(0.0 <= offset && offset <= 1.0);
+            assert!((0.0..=1.0).contains(&offset));
 
             let mut thickness = self.coefficients[0];
             for i in 0..((self.coefficients.len() - 1) / 4) {
@@ -1078,7 +1078,7 @@ mod ternimal {
                 output.push_str("\x1B[m");
             }
             if !last_line {
-                output.push_str("\n");
+                output.push('\n');
             }
 
             reset_required = false;
@@ -1348,8 +1348,8 @@ mod ternimal {
         ) -> Arc {
             // Note that these assertions guarantee that the arc has positive length
             assert!(radius > 0.0);
-            assert!(0.0 <= start && start < TWO_PI);
-            assert!(0.0 <= end && end < TWO_PI);
+            assert!((0.0..TWO_PI).contains(&start));
+            assert!((0.0..TWO_PI).contains(&end));
             assert!((start - end).abs() > f64::EPSILON);
 
             let mut arc = Arc {
@@ -1371,7 +1371,7 @@ mod ternimal {
         /// Returns the point at the given normalized (between `0` and `1`)
         /// linear position on the arc.
         pub(super) fn point(&self, position: f64) -> Point {
-            assert!(0.0 <= position && position <= 1.0);
+            assert!((0.0..=1.0).contains(&position));
 
             let angle = self.start + (self.end_difference * position);
 
@@ -1495,9 +1495,9 @@ mod ternimal {
     impl Color {
         /// Creates a new `Color` object.
         pub(super) fn new(red: f64, green: f64, blue: f64) -> Color {
-            assert!(0.0 <= red && red <= 1.0);
-            assert!(0.0 <= green && green <= 1.0);
-            assert!(0.0 <= blue && blue <= 1.0);
+            assert!((0.0..=1.0).contains(&red));
+            assert!((0.0..=1.0).contains(&green));
+            assert!((0.0..=1.0).contains(&blue));
             Color { red, green, blue }
         }
 
@@ -1523,7 +1523,7 @@ mod ternimal {
         /// Returns the component-wise weighted linear interpolation between
         /// this color (`balance = 0`) and the given color (`balance = 1`).
         pub(super) fn interpolate(&self, color: &Color, balance: f64) -> Color {
-            assert!(0.0 <= balance && balance <= 1.0);
+            assert!((0.0..=1.0).contains(&balance));
 
             let inverse_balance = 1.0 - balance;
 
@@ -1560,7 +1560,7 @@ mod ternimal {
     impl Gradient {
         /// Returns the interpolated color at the given position in the gradient.
         pub(super) fn color(&self, position: f64) -> Color {
-            assert!(0.0 <= position && position <= 1.0);
+            assert!((0.0..=1.0).contains(&position));
 
             let steps = &self.0;
             assert!(!steps.is_empty());
@@ -1753,7 +1753,7 @@ mod ternimal {
         type Err = String;
 
         fn from_str(s: &str) -> Result<Color, String> {
-            if s.len() == 7 && s.starts_with("#") {
+            if s.len() == 7 && s.starts_with('#') {
                 let mut rgb = [0.0, 0.0, 0.0];
 
                 for i in 0..3 {
@@ -1803,7 +1803,7 @@ mod ternimal {
                         )
                     }
                 };
-                if !(0.0 <= position && position <= 1.0) {
+                if !(0.0..=1.0).contains(&position) {
                     return err!(
                         "Invalid gradient step position '{}': Positions must be between 0 and 1.",
                         position

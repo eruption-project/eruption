@@ -99,7 +99,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_1xx::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::bind(
@@ -117,7 +117,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_pro::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::bind(
@@ -135,7 +135,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_tkl::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::bind(
@@ -153,7 +153,7 @@ pub fn bind_device(
                         && dev.interface_number() == roccat_vulcan_pro_tkl::LED_INTERFACE
                 })
                 .expect("Could not bind LED sub-device")
-                .open_device(&hidapi)
+                .open_device(hidapi)
                 .expect("Could not open LED sub-device");
 
             Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(

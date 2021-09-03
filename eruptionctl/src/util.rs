@@ -34,7 +34,7 @@ pub enum UtilError {
 }
 
 pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
-    manifest::get_scripts(&path.as_ref())
+    manifest::get_scripts(path.as_ref())
 }
 
 pub fn get_profile_dirs() -> Vec<PathBuf> {
@@ -50,7 +50,7 @@ pub fn get_profile_dirs() -> Vec<PathBuf> {
 
     let mut profile_dirs = profile_dirs
         .iter()
-        .map(|e| PathBuf::from(e))
+        .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
     result.append(&mut profile_dirs);
@@ -79,7 +79,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     let mut script_dirs = script_dirs
         .iter()
-        .map(|e| PathBuf::from(e))
+        .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
     result.append(&mut script_dirs);

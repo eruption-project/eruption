@@ -884,7 +884,7 @@ fn switch_profile(
         // be safe and clear any leftover channels
         LUA_TXS.lock().clear();
 
-        switch_to_failsafe_profile(&dbus_api_tx, &keyboard_devices, &mouse_devices, notify)?;
+        switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
 
         debug!("Successfully entered failsafe mode");
@@ -901,7 +901,7 @@ fn switch_profile(
 
         info!("Switching to profile: {}", &profile_file.display());
 
-        let profile = profiles::Profile::from(&profile_file);
+        let profile = profiles::Profile::from(profile_file);
 
         if let Ok(profile) = profile {
             let mut errors_present = false;
@@ -933,9 +933,9 @@ fn switch_profile(
                     if crate::ACTIVE_PROFILE.lock().is_none() {
                         error!("An error occurred during switching of profiles, loading failsafe profile now");
                         switch_to_failsafe_profile(
-                            &dbus_api_tx,
-                            &keyboard_devices,
-                            &mouse_devices,
+                            dbus_api_tx,
+                            keyboard_devices,
+                            mouse_devices,
                             notify,
                         )?;
 
@@ -1006,9 +1006,9 @@ fn switch_profile(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
                 switch_to_failsafe_profile(
-                    &dbus_api_tx,
-                    &keyboard_devices,
-                    &mouse_devices,
+                    dbus_api_tx,
+                    keyboard_devices,
+                    mouse_devices,
                     notify,
                 )?;
 
@@ -1042,9 +1042,9 @@ fn switch_profile(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
                 switch_to_failsafe_profile(
-                    &dbus_api_tx,
-                    &keyboard_devices,
-                    &mouse_devices,
+                    dbus_api_tx,
+                    keyboard_devices,
+                    mouse_devices,
                     notify,
                 )?;
 
@@ -1103,10 +1103,10 @@ async fn process_dbus_event(
             info!("Loading profile: {}", profile_path.display());
 
             if let Err(e) = switch_profile(
-                Some(&profile_path),
-                &dbus_api_tx,
-                &keyboard_devices,
-                &mouse_devices,
+                Some(profile_path),
+                dbus_api_tx,
+                keyboard_devices,
+                mouse_devices,
                 true,
             ) {
                 error!("Could not switch profiles: {}", e);
@@ -1895,9 +1895,9 @@ async fn run_main_loop(
 
     let mut sel = Select::new();
 
-    let ctrl_c = sel.recv(&ctrl_c_rx);
-    let fs_events = sel.recv(&fsevents_rx);
-    let dbus_events = sel.recv(&dbus_rx);
+    let ctrl_c = sel.recv(ctrl_c_rx);
+    let fs_events = sel.recv(fsevents_rx);
+    let dbus_events = sel.recv(dbus_rx);
 
     let mut keyboard_events = vec![];
     for device in keyboard_devices.iter() {
@@ -1933,7 +1933,7 @@ async fn run_main_loop(
 
                 if let Err(e) = switch_profile(
                     None,
-                    &dbus_api_tx,
+                    dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
                     true,
@@ -1963,7 +1963,7 @@ async fn run_main_loop(
 
                 switch_profile(
                     Some(&profile_path),
-                    &dbus_api_tx,
+                    dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
                     true,
@@ -2032,8 +2032,8 @@ async fn run_main_loop(
                 let profile_path = Path::new(active_profile);
 
                 if let Err(e) = switch_profile(
-                    Some(&profile_path),
-                    &dbus_api_tx,
+                    Some(profile_path),
+                    dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
                     true,
@@ -2067,7 +2067,7 @@ async fn run_main_loop(
                 if let Some(profile) = &profile_clone {
                     if let Err(e) = switch_profile(
                         Some(&profile.profile_file),
-                        &dbus_api_tx,
+                        dbus_api_tx,
                         &keyboard_devices_c,
                         &mouse_devices_c,
                         false,
@@ -2103,14 +2103,14 @@ async fn run_main_loop(
             Ok(oper) => match oper.index() {
                 i if i == ctrl_c => {
                     // consume the event, so that we don't cause a panic
-                    let _event = &oper.recv(&ctrl_c_rx);
+                    let _event = &oper.recv(ctrl_c_rx);
                     break 'MAIN_LOOP;
                 }
 
                 i if i == fs_events => {
-                    let event = &oper.recv(&fsevents_rx);
+                    let event = &oper.recv(fsevents_rx);
                     if let Ok(event) = event {
-                        process_filesystem_event(&event, &dbus_api_tx)
+                        process_filesystem_event(event, dbus_api_tx)
                             .await
                             .unwrap_or_else(|e| {
                                 error!("Could not process a filesystem event: {}", e)
@@ -2124,11 +2124,11 @@ async fn run_main_loop(
                 }
 
                 i if i == dbus_events => {
-                    let event = &oper.recv(&dbus_rx);
+                    let event = &oper.recv(dbus_rx);
                     if let Ok(event) = event {
                         process_dbus_event(
-                            &event,
-                            &dbus_api_tx,
+                            event,
+                            dbus_api_tx,
                             &keyboard_devices_c,
                             &mouse_devices_c,
                         )
@@ -2150,7 +2150,7 @@ async fn run_main_loop(
                     if let Some(event) = keyboard_events.iter().find(|&&e| e.0 == i) {
                         let event = &oper.recv(&(event.1).1);
                         if let Ok(Some(event)) = event {
-                            process_keyboard_event(&event, &keyboard_devices[0].0, &failed_txs)
+                            process_keyboard_event(event, &keyboard_devices[0].0, &failed_txs)
                                 .await
                                 .unwrap_or_else(|e| {
                                     error!("Could not process a keyboard event: {}", e)
@@ -2165,7 +2165,7 @@ async fn run_main_loop(
                         let event = &oper.recv(&(event.1).1);
                         if let Ok(Some(event)) = event {
                             process_mouse_event(
-                                &event,
+                                event,
                                 &mouse_devices[0].0,
                                 &failed_txs,
                                 &mut mouse_move_event_last_dispatched,
@@ -2493,7 +2493,7 @@ mod thread_util {
 /// open the control and LED devices of the keyboard
 fn init_keyboard_device(keyboard_device: &KeyboardDevice, hidapi: &hidapi::HidApi) {
     info!("Opening keyboard device...");
-    keyboard_device.write().open(&hidapi).unwrap_or_else(|e| {
+    keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the keyboard device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -2525,7 +2525,7 @@ fn init_keyboard_device(keyboard_device: &KeyboardDevice, hidapi: &hidapi::HidAp
 fn init_mouse_device(mouse_device: &MouseDevice, hidapi: &hidapi::HidApi) {
     info!("Opening mouse device...");
 
-    mouse_device.write().open(&hidapi).unwrap_or_else(|e| {
+    mouse_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the mouse device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -2556,7 +2556,7 @@ fn init_mouse_device(mouse_device: &MouseDevice, hidapi: &hidapi::HidApi) {
 fn init_misc_device(misc_device: &MiscDevice, hidapi: &hidapi::HidApi) {
     info!("Opening misc device...");
 
-    misc_device.write().open(&hidapi).unwrap_or_else(|e| {
+    misc_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the misc device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -2636,7 +2636,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     let mut config = config::Config::default();
     config
-        .merge(config::File::new(&config_file, config::FileFormat::Toml))
+        .merge(config::File::new(config_file, config::FileFormat::Toml))
         .unwrap_or_else(|e| {
             error!("Could not parse configuration file: {}", e);
             process::exit(4);
@@ -2688,7 +2688,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize keyboard devices
                 for (index, device) in devices.0.iter().enumerate() {
-                    init_keyboard_device(&device, &hidapi);
+                    init_keyboard_device(device, &hidapi);
 
                     let usb_vid = device.read().get_usb_vid();
                     let usb_pid = device.read().get_usb_pid();
@@ -2717,7 +2717,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 for (index, device) in devices.1.iter().enumerate() {
                     // enable mouse input
                     if enable_mouse {
-                        init_mouse_device(&device, &hidapi);
+                        init_mouse_device(device, &hidapi);
 
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
@@ -2767,7 +2767,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize misc devices
                 for (_index, device) in devices.2.iter().enumerate() {
-                    init_misc_device(&device, &hidapi);
+                    init_misc_device(device, &hidapi);
 
                     misc_devices.push(device);
                 }

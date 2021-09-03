@@ -25,7 +25,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
-    let img = image::load_from_memory(&buffer)?;
+    let img = image::load_from_memory(buffer)?;
     let img = img.resize_exact(
         device.get_num_cols() as u32,
         device.get_num_rows() as u32,

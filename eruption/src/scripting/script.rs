@@ -430,7 +430,7 @@ mod callbacks {
 
     /// Convert a CSS color value to a 32 bits color value.
     pub(crate) fn parse_color(val: &str) -> Result<u32> {
-        match csscolorparser::parse(&val) {
+        match csscolorparser::parse(val) {
             Ok(color) => {
                 let (r, g, b, a) = color.rgba_u8();
 
@@ -1671,7 +1671,7 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     let plugins = plugin_manager.get_plugins();
 
     for plugin in plugins.iter() {
-        plugin.register_lua_funcs(&lua_ctx).unwrap();
+        plugin.register_lua_funcs(lua_ctx).unwrap();
     }
 
     Ok(())

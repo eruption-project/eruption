@@ -213,9 +213,9 @@ impl DeviceTrait for RoccatKoneXtd {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.write(&buf) {
+            match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| println!("  {}", s));
 
                     Ok(())
                 }

@@ -98,7 +98,7 @@ impl ParseConfig for Vec<ConfigParam> {
                 ConfigParam::Int { name, default, .. } => {
                     if name == param {
                         let value =
-                            i64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+                            i64::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
 
                         return Ok(profiles::ConfigParam::Int {
                             name: name.to_string(),
@@ -111,7 +111,7 @@ impl ParseConfig for Vec<ConfigParam> {
                 ConfigParam::Float { name, default, .. } => {
                     if name == param {
                         let value =
-                            f64::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+                            f64::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
 
                         return Ok(profiles::ConfigParam::Float {
                             name: name.to_string(),
@@ -124,7 +124,7 @@ impl ParseConfig for Vec<ConfigParam> {
                 ConfigParam::Bool { name, default, .. } => {
                     if name == param {
                         let value =
-                            bool::from_str(&val).map_err(|_e| ManifestError::ParseParamError {})?;
+                            bool::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
 
                         return Ok(profiles::ConfigParam::Bool {
                             name: name.to_string(),
@@ -280,7 +280,7 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
     let mut result: Vec<Manifest> = vec![];
 
     for (id, script_file) in script_files.iter().enumerate() {
-        match Manifest::new(id, &script_file) {
+        match Manifest::new(id, script_file) {
             Ok(manifest) => {
                 result.push(manifest);
             }
@@ -307,7 +307,7 @@ pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
         let tags_a = a.tags.as_ref().unwrap_or(&empty_vec);
         let tags_b = b.tags.as_ref().unwrap_or(&empty_vec);
 
-        let result = tags_a.cmp(&tags_b);
+        let result = tags_a.cmp(tags_b);
         if result == std::cmp::Ordering::Equal {
             a.name.cmp(&b.name)
         } else {

@@ -76,7 +76,7 @@ lazy_static! {
         Arc::new(Mutex::new(None));
 
     /// Do not spam the logs on error, limit the amount of error messages per time unit
-    static ref RATE_LIMIT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now().checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS)).unwrap_or_else(|| Instant::now())));
+    static ref RATE_LIMIT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now().checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS)).unwrap_or_else(Instant::now)));
 
     /// Holds audio data recorded by the audio grabber
     static ref AUDIO_GRABBER_BUFFER: Arc<RwLock<Vec<i16>>> = Arc::new(RwLock::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
@@ -157,11 +157,9 @@ impl AudioPlugin {
     pub fn get_audio_loudness() -> isize {
         AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
-                try_start_audio_grabber()
-                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-            }
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
         CURRENT_RMS.load(Ordering::SeqCst)
@@ -170,22 +168,18 @@ impl AudioPlugin {
     pub fn get_audio_spectrum() -> Vec<f32> {
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
-                try_start_audio_grabber()
-                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-            }
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
         AUDIO_SPECTRUM.read().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-            if RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
-                try_start_audio_grabber()
-                    .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-            }
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+            try_start_audio_grabber()
+                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
 
         AUDIO_GRABBER_BUFFER.read().to_vec()
@@ -240,7 +234,7 @@ impl Plugin for AudioPlugin {
 
                         if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
                             backend
-                                .play_sfx(&SFX_KEY_DOWN.as_ref().unwrap())
+                                .play_sfx(SFX_KEY_DOWN.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
                         } else {
                             start_backend = true;
@@ -261,7 +255,7 @@ impl Plugin for AudioPlugin {
 
                         if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
                             backend
-                                .play_sfx(&SFX_KEY_UP.as_ref().unwrap())
+                                .play_sfx(SFX_KEY_UP.as_ref().unwrap())
                                 .unwrap_or_else(|e| error!("{}", e));
                         } else {
                             start_backend = true;
@@ -500,7 +494,7 @@ mod backends {
                 .spawn(move || {
                     ACTIVE_SFX.fetch_add(1, Ordering::SeqCst);
 
-                    pa.write(&data)
+                    pa.write(data)
                         .map_err(|e| AudioPluginError::PlaybackError {
                             description: format!("Error during writing of playback buffer: {}", e),
                         })

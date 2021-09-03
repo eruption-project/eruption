@@ -49,14 +49,14 @@ pub fn bind_hiddev(
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.serial_number().unwrap_or("") == serial
             && device.interface_number() == CTRL_INTERFACE
     });
 
     let led_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or_else(|| "") == serial
+            && device.serial_number().unwrap_or("") == serial
             && device.interface_number() == LED_INTERFACE
     });
 
@@ -64,8 +64,8 @@ pub fn bind_hiddev(
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
         Ok(Arc::new(RwLock::new(Box::new(RoccatVulcanPro::bind(
-            &ctrl_dev.unwrap(),
-            &led_dev.unwrap(),
+            ctrl_dev.unwrap(),
+            led_dev.unwrap(),
         )))))
     }
 }
@@ -407,14 +407,14 @@ impl DeviceTrait for RoccatVulcanPro {
         } else {
             trace!("Opening control device...");
 
-            match self.ctrl_hiddev_info.as_ref().unwrap().open_device(&api) {
+            match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
                 Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
             trace!("Opening LED device...");
 
-            match self.led_hiddev_info.as_ref().unwrap().open_device(&api) {
+            match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
                 Ok(dev) => *self.led_hiddev.lock() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
@@ -493,9 +493,9 @@ impl DeviceTrait for RoccatVulcanPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.write(&buf) {
+            match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -804,7 +804,7 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
                                 tmp[0..4].copy_from_slice(&[0xa1, cntr as u8 + 1, 0x00, 0x00]);
                             }
 
-                            tmp[4..64].copy_from_slice(&bytes);
+                            tmp[4..64].copy_from_slice(bytes);
 
                             hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
