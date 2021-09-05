@@ -17,7 +17,7 @@
 
 use super::MiscDevice;
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct NullMiscDevice {}
@@ -29,11 +29,27 @@ impl NullMiscDevice {
 }
 
 impl MiscDevice for NullMiscDevice {
+    fn get_device(&self) -> u64 {
+        0
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Unknown", "Unknown")
     }
 
     fn draw(&self, _da: &gtk::DrawingArea, _context: &cairo::Context) -> super::Result<()> {
+        Ok(())
+    }
+
+    fn paint_cell(
+        &self,
+        _cell_index: usize,
+        _color: &crate::util::RGBA,
+        _cr: &cairo::Context,
+        _width: f64,
+        _height: f64,
+        _scale_factor: f64,
+    ) -> Result<()> {
         Ok(())
     }
 }

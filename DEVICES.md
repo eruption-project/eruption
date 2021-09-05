@@ -5,6 +5,7 @@
   - [Feature Matrix](#feature-matrix)
     - [Keyboard Devices](#keyboard-devices)
     - [Mouse Devices](#mouse-devices)
+    - [Miscellaneous Devices](#miscellaneous-devices)
   - [ROCCAT Vulcan 100/12x series keyboard](#roccat-vulcan-10012x-series-keyboard)
     - [Support status](#support-status)
     - [Remarks and known Issues](#remarks-and-known-issues)
@@ -63,6 +64,17 @@ Hardware feature support matrix
 
 > Profiles: Switch between hardware profiles, DPI: Pointer resolution, Debounce: Debouncing of button switches,
 > Angle snapping: stabilize pointer movement, DCU: Distance Control Unit settings
+
+### Miscellaneous Devices
+
+Hardware feature support matrix
+
+| Vendor                | Product            | Status | Device Type                 |
+| --------------------- | ------------------ | ------ | --------------------------- |
+| ROCCAT / Turtle Beach | Elo 7.1 Air        | 50%    | Headset (Wireless)          |
+| Adalight / Custom     | Custom serial LEDs | 95%    | LED Strip (variable length) |
+
+\* This feature is not supported/endorsed by the OEM and may be subject to change.
 
 ## ROCCAT Vulcan 100/12x series keyboard
 

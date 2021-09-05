@@ -274,6 +274,7 @@ package() {
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/mice/roccat_nyth.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice/"
+    install -m 644 "eruption/src/scripts/lib/hwdevices/misc/roccat_elo_71_air.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/misc/"
     install -m 644 "eruption/src/scripts/examples/simple.lua" "$pkgdir/usr/share/eruption/scripts/examples/"
 
     install -m 644 "support/sfx/typewriter1.wav" "$pkgdir/usr/share/eruption/sfx/"

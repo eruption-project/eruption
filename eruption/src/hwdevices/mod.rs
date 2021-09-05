@@ -30,6 +30,7 @@ mod custom_serial_leds;
 mod generic_keyboard;
 mod generic_mouse;
 mod roccat_burst_pro;
+mod roccat_elo_71_air;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
 mod roccat_kone_pure_ultra;
@@ -51,7 +52,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 15]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 16]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -91,7 +92,10 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev),
 
 
-        // Misc devices
+        // Supported miscellaneous devices
+
+        // ROCCAT/Turtle Beach
+        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev),
 
 
         // Misc Serial devices
@@ -885,10 +889,12 @@ pub fn probe_devices(
                     device_info.vendor_id(),
                     device_info.product_id(),
                     device_info
-                        .manufacturer_string().unwrap_or("<unknown>")
+                        .manufacturer_string()
+                        .unwrap_or("<unknown>")
                         .to_string(),
                     device_info
-                        .product_string().unwrap_or("<unknown>")
+                        .product_string()
+                        .unwrap_or("<unknown>")
                         .to_string()
                 );
 
@@ -908,10 +914,12 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string().unwrap_or("<unknown>")
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string().unwrap_or("<unknown>")
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string()
                             );
 
@@ -941,10 +949,12 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string().unwrap_or("<unknown>")
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string().unwrap_or("<unknown>")
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string()
                             );
 
@@ -974,30 +984,32 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string().unwrap_or("<unknown>")
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string().unwrap_or("<unknown>")
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string()
                             );
 
-                            // let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
+                            let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
 
-                            // if let Ok(device) = (*driver.bind_fn)(
-                            //     &api,
-                            //     driver.get_usb_vid(),
-                            //     driver.get_usb_pid(),
-                            //     &serial,
-                            // ) {
-                            //     misc_devices.push(device);
-                            //     bound_devices.push((
-                            //         driver.get_usb_vid(),
-                            //         driver.get_usb_pid(),
-                            //         serial,
-                            //     ));
-                            // } else {
-                            //     error!("Failed to bind the device driver");
-                            // }
+                            if let Ok(device) = (*driver.bind_fn)(
+                                api,
+                                driver.get_usb_vid(),
+                                driver.get_usb_pid(),
+                                serial,
+                            ) {
+                                misc_devices.push(device);
+                                bound_devices.push((
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
                         }
 
                         DeviceClass::Unknown => {
@@ -1013,10 +1025,12 @@ pub fn probe_devices(
                     device_info.vendor_id(),
                     device_info.product_id(),
                     device_info
-                        .manufacturer_string().unwrap_or("<unknown>")
+                        .manufacturer_string()
+                        .unwrap_or("<unknown>")
                         .to_string(),
                     device_info
-                        .product_string().unwrap_or("<unknown>")
+                        .product_string()
+                        .unwrap_or("<unknown>")
                         .to_string()
                 );
 
@@ -1036,10 +1050,12 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string().unwrap_or("<unknown>")
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string().unwrap_or("<unknown>")
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string()
                             );
 
@@ -1067,10 +1083,12 @@ pub fn probe_devices(
                                 device_info.product_id(),
                                 path,
                                 device_info
-                                    .manufacturer_string().unwrap_or("<unknown>")
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string(),
                                 device_info
-                                    .product_string().unwrap_or("<unknown>")
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
                                     .to_string()
                             );
 
@@ -1106,10 +1124,12 @@ pub fn probe_devices(
                 device_info.vendor_id(),
                 device_info.product_id(),
                 device_info
-                    .manufacturer_string().unwrap_or("<unknown>")
+                    .manufacturer_string()
+                    .unwrap_or("<unknown>")
                     .to_string(),
                 device_info
-                    .product_string().unwrap_or("<unknown>")
+                    .product_string()
+                    .unwrap_or("<unknown>")
                     .to_string()
             );
         }

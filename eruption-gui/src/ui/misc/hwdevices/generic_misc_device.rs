@@ -23,7 +23,7 @@ use gtk::prelude::WidgetExt;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct GenericMiscDevice {
@@ -37,6 +37,10 @@ impl GenericMiscDevice {
 }
 
 impl MiscDevice for GenericMiscDevice {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
         ("Unknown", "Generic Misc Device")
     }
@@ -60,5 +64,17 @@ impl MiscDevice for GenericMiscDevice {
 
             Err(_e) => Err(MiscError::CommunicationError {}.into()),
         }
+    }
+
+    fn paint_cell(
+        &self,
+        _cell_index: usize,
+        _color: &crate::util::RGBA,
+        _cr: &cairo::Context,
+        _width: f64,
+        _height: f64,
+        _scale_factor: f64,
+    ) -> Result<()> {
+        Ok(())
     }
 }

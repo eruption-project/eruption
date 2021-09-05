@@ -15,7 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use crate::constants;
+use crate::{constants, util};
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
@@ -45,6 +45,8 @@ pub fn initialize_misc_page(
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
+    let device_brightness_scale: gtk::Scale = template.object("misc_brightness_scale").unwrap();
+
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let misc_name_label: gtk::Label = template.object("misc_device_name_label").unwrap();
@@ -59,6 +61,14 @@ pub fn initialize_misc_page(
     // device name and status
     let make_and_model = misc_device.get_make_and_model();
     misc_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
+
+    let misc_device_handle = misc_device.get_device();
+
+    device_brightness_scale.connect_value_changed(move |s| {
+        // if !events::shall_ignore_pending_ui_event() {
+        util::set_device_brightness(misc_device_handle, s.value() as i64).unwrap();
+        // }
+    });
 
     // paint drawing area
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
@@ -81,6 +91,30 @@ pub fn initialize_misc_page(
 
         gtk::Inhibit(false)
     });
+
+    // fast update path
+    glib::timeout_add_local(
+        Duration::from_millis(1000),
+        clone!(@weak device_brightness_scale => @default-return Continue(true), move || {
+            if let Ok(device_brightness) = util::get_device_brightness(misc_device_handle) {
+                device_brightness_scale.set_value(device_brightness as f64);
+            }
+
+            Continue(true)
+        }),
+    );
+
+    // slow update path
+    // glib::timeout_add_local(
+    //     Duration::from_millis(2500),
+    //     clone!(@weak misc_firmware_label => @default-return Continue(true), move || {
+    //         if let Ok(firmware) = util::get_firmware_revision(misc_device_handle) {
+    //             misc_firmware_label.set_label(&firmware);
+    //         }
+
+    //         Continue(true)
+    //     }),
+    // );
 
     glib::timeout_add_local(
         Duration::from_millis(1000 / constants::TARGET_FPS),

@@ -18,6 +18,7 @@
 mod corsair_strafe;
 mod custom_serial_leds;
 mod roccat_burst_pro;
+mod roccat_elo_71_air;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
 mod roccat_kone_pure_ultra;
@@ -205,6 +206,11 @@ pub fn bind_device(
 
         // ROCCAT Nyth
         (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => Ok(Box::new(roccat_nyth::RoccatNyth::bind(hiddev))),
+
+        // Miscellaneous devices
+
+        // ROCCAT/Turtle Beach Elo 7.1 Air
+        (0x1e7d, 0x3a37) => Ok(Box::new(roccat_elo_71_air::RoccatElo71Air::bind(hiddev))),
 
         _ => Err(HwDeviceError::DeviceNotSupported.into()),
     }

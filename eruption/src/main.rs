@@ -65,6 +65,9 @@ lazy_static! {
     /// Managed mouse devices
     pub static ref MOUSE_DEVICES: Arc<Mutex<Vec<hwdevices::MouseDevice>>> = Arc::new(Mutex::new(Vec::new()));
 
+    /// Managed miscellaneous devices
+    pub static ref MISC_DEVICES: Arc<Mutex<Vec<hwdevices::MiscDevice>>> = Arc::new(Mutex::new(Vec::new()));
+
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
 
@@ -2807,12 +2810,14 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     init_misc_device(device, &hidapi);
 
                     misc_devices.push(device);
+                    crate::MISC_DEVICES.lock().push(device.clone());
                 }
 
                 info!("Device enumeration completed");
 
                 if crate::KEYBOARD_DEVICES.lock().is_empty()
                     && crate::MOUSE_DEVICES.lock().is_empty()
+                    && crate::MISC_DEVICES.lock().is_empty()
                 {
                     error!("No supported devices found, exiting now");
                     process::exit(5);

@@ -45,4 +45,10 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2c
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7d", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
+
+# Miscellaneous devices
+
+# ROCCAT/Turtle Beach Elo 7.1 Air
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3a37", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
+
 LABEL="eruption_end"
