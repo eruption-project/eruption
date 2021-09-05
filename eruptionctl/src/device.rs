@@ -15,6 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#![allow(dead_code)]
+
 use lazy_static::lazy_static;
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
@@ -74,7 +76,7 @@ pub fn get_device_model(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
 }
 
 pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<&'static DeviceInfo> {
-    DEVICE_INFO.iter().find(|e| {
-        e.usb_vid == usb_vid && e.usb_pid == usb_pid
-    })
+    DEVICE_INFO
+        .iter()
+        .find(|e| e.usb_vid == usb_vid && e.usb_pid == usb_pid)
 }
