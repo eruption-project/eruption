@@ -25,6 +25,7 @@ use std::{
     thread,
     time::Duration,
 };
+use syslog::Facility;
 
 mod constants;
 mod util;
@@ -35,6 +36,9 @@ mod util;
 pub enum MainError {
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
+
+    #[error("Could not parse syslog log-level")]
+    SyslogLevelError {},
 }
 
 /// Supported command line arguments
@@ -105,12 +109,46 @@ fn print_header() {
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
+    if unsafe { libc::isatty(0) != 0 } {
+        // initialize logging on console
+        if env::var("RUST_LOG").is_err() {
+            env::set_var("RUST_LOG_OVERRIDE", "info");
+            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
+        } else {
+            pretty_env_logger::init();
+        }
     } else {
-        pretty_env_logger::init();
+        // initialize logging to syslog
+        let mut errors_present = false;
+
+        let level_filter = match env::var("RUST_LOG")
+            .unwrap_or("info".to_string())
+            .to_lowercase()
+            .as_str()
+        {
+            "off" => log::LevelFilter::Off,
+            "error" => log::LevelFilter::Error,
+            "warn" => log::LevelFilter::Warn,
+            "info" => log::LevelFilter::Info,
+            "debug" => log::LevelFilter::Debug,
+            "trace" => log::LevelFilter::Trace,
+
+            _ => {
+                errors_present = true;
+                log::LevelFilter::Info
+            }
+        };
+
+        syslog::init(
+            Facility::LOG_DAEMON,
+            level_filter,
+            Some(env!("CARGO_PKG_NAME")),
+        )
+        .map_err(|_e| MainError::SyslogLevelError {})?;
+
+        if errors_present {
+            log::error!("Could not parse syslog log-level");
+        }
     }
 
     let opts = Options::parse();

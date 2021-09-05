@@ -45,6 +45,7 @@ use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
 use std::{env, fmt, fs, path::PathBuf, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
+use syslog::Facility;
 
 mod constants;
 mod dbus_client;
@@ -98,6 +99,9 @@ pub enum MainError {
 
     #[error("Could not switch profiles")]
     SwitchProfileError {},
+
+    #[error("Could not parse syslog log-level")]
+    SyslogLevelError {},
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -943,22 +947,48 @@ fn save_rules_map() -> Result<()> {
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     color_eyre::install()?;
 
-    // if unsafe { libc::isatty(0) != 0 } {
-    //     print_header();
-    // }
-
     let opts = Options::parse();
-
-    // enable logging if we are running as a daemon
     let daemon = matches!(opts.command, Subcommands::Daemon);
 
-    if unsafe { libc::isatty(0) == 0 } || daemon {
-        // initialize logging
+    if unsafe { libc::isatty(0) != 0 } && daemon {
+        // initialize logging on console
         if env::var("RUST_LOG").is_err() {
             env::set_var("RUST_LOG_OVERRIDE", "info");
             pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
         } else {
             pretty_env_logger::init();
+        }
+    } else {
+        // initialize logging to syslog
+        let mut errors_present = false;
+
+        let level_filter = match env::var("RUST_LOG")
+            .unwrap_or("info".to_string())
+            .to_lowercase()
+            .as_str()
+        {
+            "off" => log::LevelFilter::Off,
+            "error" => log::LevelFilter::Error,
+            "warn" => log::LevelFilter::Warn,
+            "info" => log::LevelFilter::Info,
+            "debug" => log::LevelFilter::Debug,
+            "trace" => log::LevelFilter::Trace,
+
+            _ => {
+                errors_present = true;
+                log::LevelFilter::Info
+            }
+        };
+
+        syslog::init(
+            Facility::LOG_USER,
+            level_filter,
+            Some(env!("CARGO_PKG_NAME")),
+        )
+        .map_err(|_e| MainError::SyslogLevelError {})?;
+
+        if errors_present {
+            log::error!("Could not parse syslog log-level");
         }
     }
 

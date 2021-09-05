@@ -36,6 +36,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashSet, thread};
+use syslog::Facility;
 use tokio::join;
 
 mod util;
@@ -185,6 +186,9 @@ pub enum MainError {
 
     #[error("Could not execute Lua script")]
     ScriptExecError {},
+
+    #[error("Could not parse syslog log-level")]
+    SyslogLevelError {},
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -1005,12 +1009,7 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(
-                    dbus_api_tx,
-                    keyboard_devices,
-                    mouse_devices,
-                    notify,
-                )?;
+                switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
 
                 Ok(false)
             } else {
@@ -1041,12 +1040,7 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(
-                    dbus_api_tx,
-                    keyboard_devices,
-                    mouse_devices,
-                    notify,
-                )?;
+                switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
 
                 Ok(false)
             } else {
@@ -2590,6 +2584,46 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } {
         print_header();
+
+        // initialize logging on console
+        if env::var("RUST_LOG").is_err() {
+            env::set_var("RUST_LOG_OVERRIDE", "info");
+            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
+        } else {
+            pretty_env_logger::init();
+        }
+    } else {
+        // initialize logging to syslog
+        let mut errors_present = false;
+
+        let level_filter = match env::var("RUST_LOG")
+            .unwrap_or("info".to_string())
+            .to_lowercase()
+            .as_str()
+        {
+            "off" => log::LevelFilter::Off,
+            "error" => log::LevelFilter::Error,
+            "warn" => log::LevelFilter::Warn,
+            "info" => log::LevelFilter::Info,
+            "debug" => log::LevelFilter::Debug,
+            "trace" => log::LevelFilter::Trace,
+
+            _ => {
+                errors_present = true;
+                log::LevelFilter::Info
+            }
+        };
+
+        syslog::init(
+            Facility::LOG_DAEMON,
+            level_filter,
+            Some(env!("CARGO_PKG_NAME")),
+        )
+        .map_err(|_e| MainError::SyslogLevelError {})?;
+
+        if errors_present {
+            log::error!("Could not parse syslog log-level");
+        }
     }
 
     // start the thread deadlock detector
@@ -2598,14 +2632,6 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     let matches = parse_commandline();
-
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    }
 
     info!(
         "Starting Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices: Version {} ({}) ({} build)",
