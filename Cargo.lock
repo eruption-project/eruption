@@ -357,11 +357,11 @@ dependencies = [
 
 [[package]]
 name = "colorgrad"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fe6e84910b5d61e01f64515e4bef312cb7523cac732b776874a6fc41a1b722d"
+checksum = "62c834d2dcb442c0fdf4775e72707db38c5a358a6da74f3041f93563d02ce306"
 dependencies = [
- "csscolorparser 0.4.0",
+ "csscolorparser",
 ]
 
 [[package]]
@@ -461,15 +461,6 @@ checksum = "d82cfc11ce7f2c3faef78d8a684447b40d503d9681acebed6cb728d45940c4db"
 dependencies = [
  "cfg-if 1.0.0",
  "lazy_static",
-]
-
-[[package]]
-name = "csscolorparser"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b47d7b15b26d6d53076f0096b9f07dc27b329eeee0c3daa9cb91cd7e4856e638"
-dependencies = [
- "phf 0.8.0",
 ]
 
 [[package]]
@@ -609,7 +600,7 @@ dependencies = [
  "colorgrad",
  "config",
  "crossbeam",
- "csscolorparser 0.5.0",
+ "csscolorparser",
  "ctrlc",
  "dbus",
  "dbus-tree",
@@ -1993,12 +1984,11 @@ dependencies = [
 
 [[package]]
 name = "nom"
-version = "6.1.2"
+version = "6.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7413f999671bd4745a7b624bd370a569fb6bc574b23c83a3c5ed2e453f3d5e2"
+checksum = "3d521ee2250f619dd5e06515ba405858d249edc8fae9ddee2dba0695e57db01b"
 dependencies = [
  "bitvec",
- "funty",
  "lexical-core",
  "memchr",
  "version_check",
@@ -3167,7 +3157,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "libc",
- "nom 6.1.2",
+ "nom 6.1.1",
  "time",
  "winapi 0.3.9",
 ]
