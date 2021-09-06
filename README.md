@@ -129,7 +129,7 @@ the daemon with the command:
  $ sudo target/release/eruption -c support/config/eruption.conf
 ```
 
-Please refer to [INSTALL.md](INSTALL.md) for further information.
+Please refer to [INSTALL.md](docs/INSTALL.md) for further information.
 
 ## After Setup
 
@@ -142,7 +142,7 @@ GNOME Shell extension, for easy switching of profiles on the fly.
 If you want Eruption to be able to play back sound effects, or use one of the
 audio visualizer Lua scripts, then you have to perform a few additional steps.
 
-Please refer to [SETUP_AUDIO.md](SETUP_AUDIO.md) for detailed instructions.
+Please refer to [SETUP_AUDIO.md](docs/SETUP_AUDIO.md) for detailed instructions.
 
 ## The `eruption-process-monitor` Daemon
 
@@ -192,11 +192,11 @@ This will remove the rule for the window named `Skype` from the ruleset.
 
 ## Further Reading
 
-Please see [DOCUMENTATION.md](./DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use and customize it properly.
+Please see [DOCUMENTATION.md](docs/DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use and customize it properly.
 
-For further information about the supported Lua functions and libraries, please refer to the developer documentation [LIBRARY.md](./LIBRARY.md).
+For further information about the supported Lua functions and libraries, please refer to the developer documentation [LIBRARY.md](docs/LIBRARY.md).
 
-For a detailed documentation on how to write your own macros, please refer to [MACROS.md](./MACROS.md)
+For a detailed documentation on how to write your own macros, please refer to [MACROS.md](docs/MACROS.md)
 
 ## Contributing
 
