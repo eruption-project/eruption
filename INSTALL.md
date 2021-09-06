@@ -109,19 +109,23 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo cp "support/man/eruption.conf.5" "/usr/share/man/man5/"
  sudo cp "support/man/process-monitor.conf.5" "/usr/share/man/man5/"
  sudo cp "support/man/eruptionctl.1" "/usr/share/man/man1/"
+ sudo cp "support/man/eruption-hwutil.8" "/usr/share/man/man8/"
  sudo cp "support/man/eruption-netfx.1" "/usr/share/man/man1/"
  sudo cp "support/man/eruption-process-monitor.1" "/usr/share/man/man1/"
 
+ sudo cp "support/shell/completions/en_US/eruption-hwutil.bash-completion" "/usr/share/bash-completion/completions/eruption-hwutil"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.bash-completion" "/usr/share/bash-completion/completions/eruption-debug-tool"
  sudo cp "support/shell/completions/en_US/eruption-netfx.bash-completion" "/usr/share/bash-completion/completions/eruption-netfx"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "/usr/share/bash-completion/completions/eruption-process-monitor"
  sudo cp "support/shell/completions/en_US/eruptionctl.bash-completion" "/usr/share/bash-completion/completions/eruptionctl"
 
+ sudo cp "support/shell/completions/en_US/eruption-hwutil.fish-completion" "/usr/share/fish/completions/eruption-hwutil.fish"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "/usr/share/fish/completions/eruption-debug-tool.fish"
  sudo cp "support/shell/completions/en_US/eruption-netfx.fish-completion" "/usr/share/fish/completions/eruption-netfx.fish"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "/usr/share/fish/completions/eruption-process-monitor.fish"
  sudo cp "support/shell/completions/en_US/eruptionctl.fish-completion" "/usr/share/fish/completions/eruptionctl.fish"
 
+ sudo cp "support/shell/completions/en_US/eruption-hwutil.zsh-completion" "/usr/share/zsh/site-functions/_eruption-hwutil"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "/usr/share/zsh/site-functions/_eruption-debug-tool"
  sudo cp "support/shell/completions/en_US/eruption-netfx.zsh-completion" "/usr/share/zsh/site-functions/_eruption-netfx"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "/usr/share/zsh/site-functions/_eruption-process-monitor"
@@ -149,7 +153,7 @@ sudo mkdir -p "/usr/share/eruption/sfx"
 #### 4. Copy over the binaries
 
 ```sh
- sudo cp target/release/eruption{,ctl,-netfx,-debug-tool,-hotplug-helper,-gui,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
+ sudo cp target/release/eruption{,ctl,-hwutil,-netfx,-debug-tool,-hotplug-helper,-gui,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
 ```
 
 ### Run Eruption
