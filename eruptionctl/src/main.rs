@@ -16,10 +16,12 @@
 */
 
 use clap::{lazy_static::lazy_static, Clap};
+use color_eyre::Help;
 use colored::*;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
+use eyre::Context;
 use manifest::GetAttr;
 use parking_lot::Mutex;
 use profiles::GetAttr as GetAttrProfile;
@@ -571,7 +573,18 @@ async fn print_device_header(device: u64) -> Result<()> {
 
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
-    color_eyre::install()?;
+    cfg_if::cfg_if! {
+        if #[cfg(debug_assertions)] {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .install()?;
+        } else {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .display_env_section(false)
+            .install()?;
+        }
+    }
 
     // if unsafe { libc::isatty(0) != 0 } {
     //     print_header();
@@ -599,9 +612,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Config { command } => match command {
             ConfigSubcommands::Brightness { brightness } => {
                 if let Some(brightness) = brightness {
-                    set_brightness(brightness).await?
+                    set_brightness(brightness)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                 } else {
-                    let result = get_brightness().await?;
+                    let result = get_brightness()
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                     println!(
                         "{}",
                         format!("Global brightness: {}", format!("{}%", result).bold())
@@ -611,9 +630,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
             ConfigSubcommands::Soundfx { enable } => {
                 if let Some(enable) = enable {
-                    set_sound_fx(enable).await?
+                    set_sound_fx(enable)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                 } else {
-                    let result = get_sound_fx().await?;
+                    let result = get_sound_fx()
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                     println!(
                         "{}",
                         format!("SoundFX enabled: {}", format!("{}", result).bold())
@@ -627,7 +652,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::List => {
                 let mut base_index = 0;
 
-                let (keyboards, mice, misc) = get_devices().await?;
+                let (keyboards, mice, misc) = get_devices()
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if opts.verbose > 0 {
                     println!(
@@ -726,21 +754,28 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Info { device } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 let result = get_device_config(device, "info").await?;
+
                 println!("{}", format!("{}", result.bold()));
             }
 
             DevicesSubcommands::Profile { device, profile } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(profile) = profile {
                     let value = &format!("{}", profile);
 
-                    set_device_config(device, "profile", value).await?
+                    set_device_config(device, "profile", value).await?;
                 } else {
                     let result = get_device_config(device, "profile").await?;
 
@@ -751,7 +786,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Dpi { device, dpi } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(dpi) = dpi {
                     let value = &format!("{}", dpi);
@@ -767,7 +805,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Rate { device, rate } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(rate) = rate {
                     let value = &format!("{}", rate);
@@ -783,7 +824,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Distance { device, param } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(param) = param {
                     let value = &format!("{}", param);
@@ -799,7 +843,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::AngleSnapping { device, enable } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(enable) = enable {
                     let value = &format!("{}", enable);
@@ -815,7 +862,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Debounce { device, enable } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(enable) = enable {
                     let value = &format!("{}", enable);
@@ -831,7 +881,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             DevicesSubcommands::Brightness { device, brightness } => {
                 let device = device.parse::<u64>()?;
 
-                print_device_header(device).await?;
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 if let Some(brightness) = brightness {
                     let value = &format!("{}", brightness);
@@ -861,7 +914,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
 
             ProfilesSubcommands::List => {
-                for p in get_profiles().await? {
+                for p in get_profiles()
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?
+                {
                     println!("{}: {}", p.0.bold(), p.1);
                 }
             }
@@ -892,7 +949,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         // naming related sub-commands
         Subcommands::Names { command } => match command {
             NamesSubcommands::List => {
-                let slot_names = get_slot_names().await?;
+                let slot_names = get_slot_names()
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
 
                 for (index, name) in slot_names.iter().enumerate() {
                     let s = format!("{}", index + 1);
@@ -902,7 +962,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
             NamesSubcommands::Set { slot_index, name } => {
                 if slot_index > 0 && slot_index <= constants::NUM_SLOTS {
-                    set_slot_name(slot_index - 1, name).await?;
+                    set_slot_name(slot_index - 1, name)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                 } else {
                     eprintln!("Slot index out of bounds");
                 }
@@ -910,7 +973,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
             NamesSubcommands::SetAll { names } => {
                 if names.len() == constants::NUM_SLOTS {
-                    set_slot_names(&names).await?;
+                    set_slot_names(&names)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
                 } else {
                     eprintln!("Elements do not match number of slots");
                 }
@@ -1195,12 +1261,19 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         // convenience operations: switch profile or slot
         Subcommands::Status { command } => match command {
             StatusSubcommands::Profile => {
-                let profile_name = get_active_profile().await?;
+                let profile_name = get_active_profile()
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
                 println!("Current profile: {}", profile_name.bold());
             }
 
             StatusSubcommands::Slot => {
-                let index = get_active_slot().await? + 1;
+                let index = get_active_slot()
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?
+                    + 1;
                 println!("Current slot: {}", format!("{}", index).bold());
             }
         },
@@ -1222,7 +1295,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             "Switching to profile: {}",
                             profile_name.display().to_string().bold()
                         );
-                        switch_profile(&profile_name.to_string_lossy()).await?;
+                        switch_profile(&profile_name.to_string_lossy())
+                            .await
+                            .wrap_err("Could not connect to the Eruption daemon")
+                            .suggestion("Please verify that the Eruption daemon is running")?;
                     }
 
                     Err(_e) => {
@@ -1234,7 +1310,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             SwitchSubcommands::Slot { index } => {
                 println!("Switching to slot: {}", format!("{}", index).bold());
                 let index = index - 1;
-                switch_slot(index).await?
+                switch_slot(index)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
             }
         },
 

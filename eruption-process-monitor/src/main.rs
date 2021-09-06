@@ -945,7 +945,18 @@ fn save_rules_map() -> Result<()> {
 
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
-    color_eyre::install()?;
+    cfg_if::cfg_if! {
+        if #[cfg(debug_assertions)] {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .install()?;
+        } else {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .display_env_section(false)
+            .install()?;
+        }
+    }
 
     let opts = Options::parse();
     let daemon = matches!(opts.command, Subcommands::Daemon);

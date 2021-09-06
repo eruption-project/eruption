@@ -603,6 +603,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "bytevec",
+ "cfg-if 1.0.0",
  "clap",
  "color-eyre",
  "colorgrad",
@@ -664,6 +665,7 @@ name = "eruption-debug-tool"
 version = "0.0.13"
 dependencies = [
  "bitvec",
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -740,6 +742,7 @@ dependencies = [
 name = "eruption-hotplug-helper"
 version = "0.0.6"
 dependencies = [
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -766,6 +769,7 @@ dependencies = [
 name = "eruption-hwutil"
 version = "0.0.1"
 dependencies = [
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -795,6 +799,7 @@ dependencies = [
 name = "eruption-netfx"
 version = "0.0.5"
 dependencies = [
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -825,6 +830,7 @@ version = "0.0.9"
 dependencies = [
  "async-trait",
  "byteorder",
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -873,6 +879,7 @@ name = "eruption-util"
 version = "0.0.5"
 dependencies = [
  "bitvec",
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
@@ -904,6 +911,7 @@ dependencies = [
 name = "eruptionctl"
 version = "0.0.11"
 dependencies = [
+ "cfg-if 1.0.0",
  "clap",
  "clap_generate",
  "color-eyre",
