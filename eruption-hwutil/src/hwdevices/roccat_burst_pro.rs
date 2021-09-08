@@ -22,16 +22,16 @@ use crate::constants;
 
 use super::{DeviceTrait, HwDeviceError, Result, RGBA};
 
-/// Device specific code for the ROCCAT Kova AIMO mouse
-pub struct RoccatKovaAimo {
+/// Device specific code for the ROCCAT Burst Pro mouse
+pub struct RoccatBurstPro {
     pub is_bound: bool,
     pub ctrl_hiddev: RefCell<Option<hidapi::HidDevice>>,
 }
 
-impl RoccatKovaAimo {
+impl RoccatBurstPro {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Kova AIMO");
+        println!("Bound driver: ROCCAT Burst Pro");
 
         Self {
             is_bound: true,
@@ -50,9 +50,9 @@ impl RoccatKovaAimo {
 
             match id {
                 0x04 => {
-                    for j in &[0x80, 0x90] {
+                    for j in 0..=1 {
                         for i in 0..=4 {
-                            let buf: [u8; 3] = [0x04, i, *j];
+                            let buf: [u8; 4] = [0x04, i, j, 0x00];
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
@@ -94,8 +94,10 @@ impl RoccatKovaAimo {
                     }
                 }
 
-                0x09 => {
-                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
+                0x0d => {
+                    let buf: [u8; 11] = [
+                        0x0d, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    ];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -144,18 +146,18 @@ impl RoccatKovaAimo {
     }
 }
 
-impl DeviceTrait for RoccatKovaAimo {
+impl DeviceTrait for RoccatBurstPro {
     fn send_init_sequence(&self) -> Result<()> {
         println!("Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            println!("Step 1");
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            // println!("Step 1");
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
 
             println!("Step 2");
             self.send_ctrl_report(0x0e)
@@ -164,7 +166,7 @@ impl DeviceTrait for RoccatKovaAimo {
                 .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
 
             println!("Step 3");
-            self.send_ctrl_report(0x09)
+            self.send_ctrl_report(0x0d)
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
@@ -214,6 +216,48 @@ impl DeviceTrait for RoccatKovaAimo {
         }
     }
 
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.send_feature_report(&buffer) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf = Vec::new();
+            buf.resize(size, 0);
+            buf[0] = id;
+
+            match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+
+                    Ok(buf)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
         println!("Setting LEDs from supplied map...");
 
@@ -223,15 +267,18 @@ impl DeviceTrait for RoccatKovaAimo {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 8] = [
-                0x0a,
-                0x08,
+            let buf: [u8; 11] = [
+                0x0d,
+                0x0b,
                 led_map[0].r,
                 led_map[0].g,
                 led_map[0].b,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
+                led_map[1].r,
+                led_map[1].g,
+                led_map[1].b,
+                0x00,
+                0x00,
+                0x00,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {
@@ -247,22 +294,42 @@ impl DeviceTrait for RoccatKovaAimo {
     }
 
     fn send_test_pattern(&self) -> Result<()> {
-        self.send_led_map(&[RGBA {
-            r: 255,
-            g: 0,
-            b: 0,
-            a: 255,
-        }])?;
+        self.send_led_map(&[
+            RGBA {
+                r: 255,
+                g: 0,
+                b: 0,
+                a: 255,
+            },
+            RGBA {
+                r: 0,
+                g: 0,
+                b: 255,
+                a: 255,
+            },
+        ])?;
 
         thread::sleep(Duration::from_millis(500));
 
-        self.send_led_map(&[RGBA {
-            r: 0,
-            g: 0,
-            b: 255,
-            a: 255,
-        }])?;
+        self.send_led_map(&[
+            RGBA {
+                r: 0,
+                g: 0,
+                b: 255,
+                a: 255,
+            },
+            RGBA {
+                r: 255,
+                g: 0,
+                b: 0,
+                a: 255,
+            },
+        ])?;
 
         Ok(())
+    }
+
+    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 }

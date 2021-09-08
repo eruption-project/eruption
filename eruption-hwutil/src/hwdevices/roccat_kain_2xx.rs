@@ -15,12 +15,15 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::collections::HashMap;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
 // use crate::constants;
 
-use super::{DeviceTrait, HwDeviceError, Result, RGBA};
+use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
+
+pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
 
 /// Device specific code for the ROCCAT Kain 2xx AIMO mouse
 pub struct RoccatKain2xx {
@@ -166,6 +169,62 @@ impl DeviceTrait for RoccatKain2xx {
         }
     }
 
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.send_feature_report(&buffer) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            loop {
+                thread::sleep(Duration::from_millis(75));
+
+                let mut buf = Vec::new();
+                buf.resize(size, 0);
+                buf[0] = id;
+
+                match ctrl_dev.read_timeout(buf.as_mut_slice(), 5000) {
+                    Ok(_result) => {
+                        if buf[0] == 0x01 {
+                            continue;
+                        } else {
+                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+
+                            if buf[0..2] == [0x07, 0x07] {
+                                break Ok(buf);
+                            }
+
+                            // if buf[0] == 0x07 {
+                            //     break Ok(buf);
+                            // }
+                        }
+                    }
+
+                    Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
+                }
+            }
+        }
+    }
+
     fn send_led_map(&self, _led_map: &[RGBA]) -> Result<()> {
         println!("Setting LEDs from supplied map...");
 
@@ -241,5 +300,34 @@ impl DeviceTrait for RoccatKain2xx {
         ])?;
 
         Ok(())
+    }
+
+    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            // TODO: Further investigate the meaning of the fields
+            let buf: [u8; 22] = [
+                0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            self.write_feature_report(&buf)?;
+
+            // query results
+            let buf = self.read_feature_report(0x07, 22)?;
+
+            let battery_level = (buf[4] as f64 / 256.0) * 100.0;
+            let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
+
+            let mut table = HashMap::new();
+
+            table.insert("battery-level".to_string(), format!("{}", battery_level));
+            table.insert("signal-strength".to_string(), format!("{}", snr));
+
+            let result = DeviceStatus(table);
+
+            Ok(result)
+        }
     }
 }

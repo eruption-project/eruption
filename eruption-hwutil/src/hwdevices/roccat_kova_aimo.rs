@@ -22,16 +22,16 @@ use crate::constants;
 
 use super::{DeviceTrait, HwDeviceError, Result, RGBA};
 
-/// Device specific code for the ROCCAT Kone Aimo mouse
-pub struct RoccatKoneAimo {
+/// Device specific code for the ROCCAT Kova AIMO mouse
+pub struct RoccatKovaAimo {
     pub is_bound: bool,
     pub ctrl_hiddev: RefCell<Option<hidapi::HidDevice>>,
 }
 
-impl RoccatKoneAimo {
+impl RoccatKovaAimo {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Kone Aimo");
+        println!("Bound driver: ROCCAT Kova AIMO");
 
         Self {
             is_bound: true,
@@ -94,13 +94,8 @@ impl RoccatKoneAimo {
                     }
                 }
 
-                0x0d => {
-                    let buf: [u8; 46] = [
-                        0x0d, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ];
+                0x09 => {
+                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -149,7 +144,7 @@ impl RoccatKoneAimo {
     }
 }
 
-impl DeviceTrait for RoccatKoneAimo {
+impl DeviceTrait for RoccatKovaAimo {
     fn send_init_sequence(&self) -> Result<()> {
         println!("Sending device init sequence...");
 
@@ -169,7 +164,7 @@ impl DeviceTrait for RoccatKoneAimo {
                 .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
 
             println!("Step 3");
-            self.send_ctrl_report(0x0d)
+            self.send_ctrl_report(0x09)
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
@@ -219,6 +214,48 @@ impl DeviceTrait for RoccatKoneAimo {
         }
     }
 
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.send_feature_report(&buffer) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf = Vec::new();
+            buf.resize(size, 0);
+            buf[0] = id;
+
+            match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+
+                    Ok(buf)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
         println!("Setting LEDs from supplied map...");
 
@@ -228,53 +265,15 @@ impl DeviceTrait for RoccatKoneAimo {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 46] = [
-                0x0d,
-                0x2e,
+            let buf: [u8; 8] = [
+                0x0a,
+                0x08,
                 led_map[0].r,
                 led_map[0].g,
                 led_map[0].b,
-                led_map[0].a,
                 led_map[0].r,
                 led_map[0].g,
                 led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
-                led_map[0].r,
-                led_map[0].g,
-                led_map[0].b,
-                led_map[0].a,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {
@@ -307,5 +306,9 @@ impl DeviceTrait for RoccatKoneAimo {
         }])?;
 
         Ok(())
+    }
+
+    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 }

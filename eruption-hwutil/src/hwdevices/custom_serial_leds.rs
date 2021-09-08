@@ -15,6 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#![allow(dead_code)]
+
 use log::trace;
 use parking_lot::Mutex;
 use serialport::SerialPort;

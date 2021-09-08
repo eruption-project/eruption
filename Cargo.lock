@@ -758,8 +758,9 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
+ "bitvec",
  "cfg-if 1.0.0",
  "clap",
  "clap_generate",
@@ -769,6 +770,9 @@ dependencies = [
  "dbus",
  "dbus-tokio",
  "eyre",
+ "hexdump",
+ "hidapi",
+ "icecream",
  "lazy_static",
  "libc",
  "log",
@@ -777,6 +781,7 @@ dependencies = [
  "paste 1.0.5",
  "serde 1.0.130",
  "serde_json",
+ "serialport",
  "thiserror",
  "tokio",
  "toml",

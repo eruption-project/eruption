@@ -31,10 +31,12 @@ mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
 
+pub use custom_serial_leds::*;
+
+use std::collections::HashMap;
+
 use hidapi::{HidApi, HidDevice};
 use thiserror::Error;
-
-pub use custom_serial_leds::*;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -60,6 +62,9 @@ enum HwDeviceError {
 
     #[error("The device is not supported")]
     DeviceNotSupported,
+
+    #[error("The operation is not supported")]
+    OpNotSupported,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -70,14 +75,22 @@ pub struct RGBA {
     pub a: u8,
 }
 
+#[derive(Debug)]
+pub struct DeviceStatus(HashMap<String, String>);
+
 pub trait DeviceTrait {
     fn send_init_sequence(&self) -> Result<()>;
 
     fn write_data_raw(&self, buf: &[u8]) -> Result<()>;
     fn read_data_raw(&self, size: usize) -> Result<Vec<u8>>;
 
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()>;
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>>;
+
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()>;
     fn send_test_pattern(&self) -> Result<()>;
+
+    fn device_status(&self) -> Result<DeviceStatus>;
 }
 
 pub fn bind_device(
@@ -191,7 +204,18 @@ pub fn bind_device(
 
         // ROCCAT Kain 2xx AIMO
         (0x1e7d, 0x2d60) | (0x1e7d, 0x2d5f) => {
-            Ok(Box::new(roccat_kain_2xx::RoccatKain2xx::bind(hiddev)))
+            let ctrldev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == roccat_kain_2xx::CTRL_INTERFACE
+                })
+                .expect("Could not bind control sub-device")
+                .open_device(hidapi)
+                .expect("Could not open control sub-device");
+
+            Ok(Box::new(roccat_kain_2xx::RoccatKain2xx::bind(ctrldev)))
         }
 
         // ROCCAT Kone Aimo

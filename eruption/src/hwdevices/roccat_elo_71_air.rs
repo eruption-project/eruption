@@ -345,15 +345,15 @@ impl RoccatElo71Air {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     if buf[1] == 0x00 {
-                        return Ok(QueryResult::Ok);
+                        Ok(QueryResult::Ok)
                     } else if buf == [0xe6, 0x06] {
-                        return Ok(QueryResult::ResetRequired);
+                        Ok(QueryResult::ResetRequired)
                     } else {
-                        return Ok(QueryResult::Invalid);
+                        Ok(QueryResult::Invalid)
                     }
                 }
 
-                Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
 
             // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));

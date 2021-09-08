@@ -247,6 +247,48 @@ impl DeviceTrait for RoccatKoneXtd {
         }
     }
 
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.send_feature_report(&buffer) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.borrow_mut();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            let mut buf = Vec::new();
+            buf.resize(size, 0);
+            buf[0] = id;
+
+            match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+
+                    Ok(buf)
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
         println!("Setting LEDs from supplied map...");
 
@@ -322,5 +364,9 @@ impl DeviceTrait for RoccatKoneXtd {
         }])?;
 
         Ok(())
+    }
+
+    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 }
