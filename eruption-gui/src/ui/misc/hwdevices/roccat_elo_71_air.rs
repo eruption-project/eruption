@@ -120,7 +120,7 @@ impl MiscDevice for RoccatElo71Air {
 
             1 => {
                 let cell_def = Rectangle {
-                    x: ((width + 1380.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
+                    x: ((width + 1375.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
                     y: ((height / 2.0) + BORDER.1 * scale_factor) - (5.0 * scale_factor),
                     width: 65.0 * scale_factor,
                     height: 80.0 * scale_factor,
