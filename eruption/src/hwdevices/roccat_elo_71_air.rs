@@ -82,6 +82,13 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum QueryResult {
+    Ok,
+    Invalid,
+    ResetRequired,
+}
+
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Elo 7.1 Air
 pub struct RoccatElo71Air {
@@ -184,18 +191,18 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     }
 
-                    thread::sleep(Duration::from_millis(80));
+                    // thread::sleep(Duration::from_millis(75));
 
-                    let mut buf: [u8; 64] = [0x00; 64];
-                    buf[0] = 0xa1;
+                    // let mut buf: [u8; 64] = [0x00; 64];
+                    // buf[0] = 0xa1;
 
-                    match ctrl_dev.read(&mut buf) {
-                        Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                        }
+                    // match ctrl_dev.read(&mut buf) {
+                    //     Ok(_result) => {
+                    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    //     }
 
-                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-                    }
+                    //     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    // }
 
                     Ok(())
                 }
@@ -218,7 +225,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(80));
+                    thread::sleep(Duration::from_millis(70));
 
                     let buf: [u8; 64] = [
                         0xff, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -237,7 +244,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(80));
+                    thread::sleep(Duration::from_millis(70));
 
                     let buf: [u8; 64] = [
                         0xff, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -256,7 +263,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(80));
+                    thread::sleep(Duration::from_millis(70));
 
                     let buf: [u8; 64] = [
                         0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -313,9 +320,43 @@ impl RoccatElo71Air {
             //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             // }
 
-            thread::sleep(Duration::from_millis(80));
+            thread::sleep(Duration::from_millis(70));
 
             Ok(())
+        }
+    }
+
+    fn query_ctrl_dev(&mut self) -> Result<QueryResult> {
+        trace!("Waiting for control device to respond...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let mut buf: [u8; 2] = [0; 2];
+            buf[0] = 0x00;
+
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.read_timeout(&mut buf, 10) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    if buf[1] == 0x00 {
+                        return Ok(QueryResult::Ok);
+                    } else if buf == [0xe6, 0x06] {
+                        return Ok(QueryResult::ResetRequired);
+                    } else {
+                        return Ok(QueryResult::Invalid);
+                    }
+                }
+
+                Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+            }
+
+            // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
         }
     }
 }
@@ -579,6 +620,15 @@ impl MiscDeviceTrait for RoccatElo71Air {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
+            match self.query_ctrl_dev() {
+                Ok(result) if result == QueryResult::ResetRequired => {
+                    log::warn!("Reinitializing device...");
+                    let _result = self.send_init_sequence();
+                }
+
+                _ => { /* do nothing */ }
+            }
+
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
