@@ -37,7 +37,7 @@ use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashSet, thread};
 use syslog::Facility;
-use tokio::join;
+use tokio::{join, task};
 
 mod util;
 
@@ -2283,34 +2283,48 @@ async fn run_main_loop(
 
                 // send the final (combined) color map to all of the devices
                 if !drop_frame {
-                    for device in keyboard_devices.iter() {
-                        device
-                            .0
-                            .write()
-                            .send_led_map(&script::LED_MAP.read())
-                            .unwrap_or_else(|e| {
-                                error!("Could not send the LED map to the device: {}", e)
-                            });
-                    }
+                    let keyboard_devices = keyboard_devices.clone();
 
-                    for device in mouse_devices.iter() {
-                        device
-                            .0
-                            .write()
-                            .send_led_map(&script::LED_MAP.read())
-                            .unwrap_or_else(|e| {
-                                error!("Could not send the LED map to the device: {}", e)
-                            });
-                    }
+                    let keyboard_future = task::spawn(async move {
+                        for device in keyboard_devices.iter() {
+                            device
+                                .0
+                                .write()
+                                .send_led_map(&script::LED_MAP.read())
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send the LED map to the device: {}", e)
+                                });
+                        }
+                    });
 
-                    for device in misc_devices.iter() {
-                        device
-                            .write()
-                            .send_led_map(&script::LED_MAP.read())
-                            .unwrap_or_else(|e| {
-                                error!("Could not send the LED map to the device: {}", e)
-                            });
-                    }
+                    let mouse_devices = mouse_devices.clone();
+
+                    let mouse_future = task::spawn(async move {
+                        for device in mouse_devices.iter() {
+                            device
+                                .0
+                                .write()
+                                .send_led_map(&script::LED_MAP.read())
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send the LED map to the device: {}", e)
+                                });
+                        }
+                    });
+
+                    let misc_devices = misc_devices.clone();
+
+                    let misc_future = task::spawn(async move {
+                        for device in misc_devices.iter() {
+                            device
+                                .write()
+                                .send_led_map(&script::LED_MAP.read())
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send the LED map to the device: {}", e)
+                                });
+                        }
+                    });
+
+                    let _result = tokio::join!(keyboard_future, mouse_future, misc_future);
 
                     // update the current frame generation
                     saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
