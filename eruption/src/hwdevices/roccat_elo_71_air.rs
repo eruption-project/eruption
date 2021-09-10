@@ -37,7 +37,6 @@ pub const LED_INTERFACE: i32 = 5; // LED USB sub device
 
 // canvas to LED index mapping
 pub const LED_0: usize = 0;
-// pub const LED_1: usize = constants::CANVAS_SIZE - 1;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -310,6 +309,8 @@ impl RoccatElo71Air {
 
                     if buf[1] == 0x00 {
                         Ok(())
+                    } else if buf == [0xe6, 0x06] {
+                        Ok(()) // but reset required
                     } else {
                         Err(HwDeviceError::InvalidResult {}.into())
                     }
@@ -614,7 +615,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
         } else {
             match self.query_ctrl_dev() {
                 Ok(result) if result == QueryResult::ResetRequired => {
-                    log::warn!("Reinitializing device...");
+                    log::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
                     let _result = self.send_init_sequence();
                 }
 
