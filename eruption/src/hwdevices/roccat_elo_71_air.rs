@@ -298,31 +298,25 @@ impl RoccatElo71Air {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // loop {
-            //     let mut buf: [u8; 4] = [0; 4];
-            //     buf[0] = 0x04;
+            let mut buf: [u8; 2] = [0; 2];
+            buf[0] = 0x00;
 
-            //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            //     match ctrl_dev.get_feature_report(&mut buf) {
-            //         Ok(_result) => {
-            //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            match ctrl_dev.read_timeout(&mut buf, 10) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-            //             if buf[1] == 0x01 {
-            //                 return Ok(());
-            //             }
-            //         }
+                    if buf[1] == 0x00 {
+                        Ok(())
+                    } else {
+                        Err(HwDeviceError::InvalidResult {}.into())
+                    }
+                }
 
-            //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-            //     }
-
-            //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-            // }
-
-            thread::sleep(Duration::from_millis(70));
-
-            Ok(())
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
         }
     }
 
@@ -355,8 +349,6 @@ impl RoccatElo71Air {
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
-
-            // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
         }
     }
 }
@@ -428,7 +420,7 @@ impl DeviceTrait for RoccatElo71Air {
     }
 
     fn get_support_script_file(&self) -> String {
-        "mice/roccat_elo_71_air".to_string()
+        "misc/roccat_elo_71_air".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
