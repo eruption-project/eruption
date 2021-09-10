@@ -42,7 +42,7 @@ pub struct RoccatVulcanTKL {
 impl RoccatVulcanTKL {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: hidapi::HidDevice, led_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Vulcan TKL");
+        crate::println_v!(0, "Bound driver: ROCCAT Vulcan TKL");
 
         Self {
             is_bound: true,
@@ -338,63 +338,63 @@ impl DeviceTrait for RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            println!("Step 1");
+            crate::println_v!(0, "Step 1");
             // self.query_ctrl_report(0x0f)
-            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
 
-            println!("Step 2");
+            crate::println_v!(0, "Step 2");
             self.send_ctrl_report(0x15)
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
 
-            println!("Step 3");
+            crate::println_v!(0, "Step 3");
             self.send_ctrl_report(0x05)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
 
-            println!("Step 4");
+            crate::println_v!(0, "Step 4");
             self.send_ctrl_report(0x0a)
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
 
-            println!("Step 5");
+            crate::println_v!(0, "Step 5");
             self.send_ctrl_report(0x0b)
-                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 5: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 5: {}", e));
 
-            println!("Step 6");
+            crate::println_v!(0, "Step 6");
             self.send_ctrl_report(0x06)
-                .unwrap_or_else(|e| eprintln!("Step 6: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 6: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 6: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 6: {}", e));
 
-            println!("Step 7");
+            crate::println_v!(0, "Step 7");
             self.send_ctrl_report(0x09)
-                .unwrap_or_else(|e| eprintln!("Step 7: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 7: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 7: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 7: {}", e));
 
-            println!("Step 8");
+            crate::println_v!(0, "Step 8");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| eprintln!("Step 8: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 8: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 8: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 8: {}", e));
 
-            println!("Step 9");
+            crate::println_v!(0, "Step 9");
             self.send_ctrl_report(0x07)
-                .unwrap_or_else(|e| eprintln!("Step 9: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 9: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 9: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 9: {}", e));
 
-            println!("Step 10");
+            crate::println_v!(0, "Step 10");
             self.send_ctrl_report(0x13)
-                .unwrap_or_else(|e| eprintln!("Step 10: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 10: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 10: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 10: {}", e));
 
             Ok(())
         }
@@ -450,7 +450,7 @@ impl DeviceTrait for RoccatVulcanTKL {
 
             match ctrl_dev.send_feature_report(&buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }
@@ -473,7 +473,7 @@ impl DeviceTrait for RoccatVulcanTKL {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }

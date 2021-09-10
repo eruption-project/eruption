@@ -20,6 +20,8 @@ use colored::*;
 use crossbeam::channel::unbounded;
 use hwdevices::RGBA;
 use log::*;
+use parking_lot::Mutex;
+use std::sync::Arc;
 use std::{env, thread};
 use std::{path::PathBuf, time::Duration};
 use std::{sync::atomic::AtomicBool, sync::atomic::Ordering, time::Instant};
@@ -33,6 +35,9 @@ use util::{DeviceState, HexSlice};
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
+    /// Global command line options
+    pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
+
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
@@ -44,7 +49,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -60,7 +65,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum Subcommands {
     /// List available devices, use this first to find out the index of the device to use
     List,
@@ -119,7 +124,7 @@ pub enum Subcommands {
 }
 
 /// Subcommands of the "completions" command
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum CompletionsSubcommands {
     Bash,
 
@@ -206,6 +211,8 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
+    *OPTIONS.lock() = Some(opts.clone());
+
     match opts.command {
         Subcommands::List => {
             println!();

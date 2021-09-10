@@ -17,9 +17,18 @@
 
 use clap::{lazy_static::lazy_static, Clap};
 use colored::*;
+use crossbeam::channel::unbounded;
 use log::error;
 use parking_lot::Mutex;
-use std::{process, sync::Arc};
+use std::{
+    env, process,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    thread,
+    time::Duration,
+};
 
 mod constants;
 mod device;
@@ -31,6 +40,12 @@ mod util;
 lazy_static! {
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+
+    /// Global command line options
+    pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
+
+    /// Global "quit" status flag
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -40,12 +55,13 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
     about = "A CLI control utility for hardware supported by the Eruption Linux user-mode driver",
 )]
+
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, parse(from_occurrences))]
@@ -60,7 +76,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum Subcommands {
     /// Devices related subcommands
     Devices {
@@ -82,7 +98,7 @@ pub enum Subcommands {
 }
 
 /// Subcommands of the "devices" command
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum DevicesSubcommands {
     /// List devices
     List,
@@ -92,7 +108,7 @@ pub enum DevicesSubcommands {
 }
 
 /// Subcommands of the "firmware-update" command
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum FirmwareUpdateSubcommands {
     /// Get some information about the currently installed firmware
     Info { device: u64 },
@@ -102,7 +118,7 @@ pub enum FirmwareUpdateSubcommands {
 }
 
 /// Subcommands of the "completions" command
-#[derive(Debug, Clap)]
+#[derive(Debug, Clone, Clap)]
 pub enum CompletionsSubcommands {
     Bash,
 
@@ -136,6 +152,19 @@ fn print_header() {
     );
 }
 
+#[allow(dead_code)]
+fn print_notice() {
+    println!(
+        r#"
+ Please stop the Eruption daemon prior to running this tool:
+ $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+
+ You can re-enable Eruption with this command afterwards:
+ $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
+ "#
+    );
+}
+
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
@@ -151,11 +180,32 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    // if unsafe { libc::isatty(0) != 0 } {
-    //     print_header();
-    // }
+    if unsafe { libc::isatty(0) != 0 } {
+        // print_header();
+        print_notice();
+    }
+
+    // initialize logging
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG_OVERRIDE", "info");
+        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
+    } else {
+        pretty_env_logger::init();
+    }
+
+    // register ctrl-c handler
+    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    ctrlc::set_handler(move || {
+        QUIT.store(true, Ordering::SeqCst);
+
+        ctrl_c_tx
+            .send(true)
+            .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+    })
+    .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
+    *OPTIONS.lock() = Some(opts.clone());
 
     // process configuration file
     let config_file = opts
@@ -247,9 +297,20 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 hwdev.send_init_sequence()?;
 
                                 println!("Polling device status...");
-                                let status = hwdev.device_status()?;
 
-                                println!("{:#?}", status);
+                                loop {
+                                    if QUIT.load(Ordering::SeqCst) {
+                                        break;
+                                    }
+
+                                    let status = hwdev.device_status()?;
+
+                                    println!();
+                                    println!("Battery Level:   {}", status["battery-level"]);
+                                    println!("Signal Strength: {}", status["signal-strength"]);
+
+                                    thread::sleep(Duration::from_millis(250));
+                                }
                             } else {
                                 error!("Could not open the device, is the device in use?");
                             }

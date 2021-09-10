@@ -34,7 +34,7 @@ pub struct RoccatKain2xx {
 impl RoccatKain2xx {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Kain 2xx AIMO");
+        crate::println_v!(0, "Bound driver: ROCCAT Kain 2xx AIMO");
 
         Self {
             is_bound: true,
@@ -43,7 +43,7 @@ impl RoccatKain2xx {
     }
 
     // fn send_ctrl_report(&self, id: u8) -> Result<()> {
-    //     println!("Sending control device feature report");
+    //     crate::println_v!(0, "Sending control device feature report");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound.into())
@@ -60,7 +60,7 @@ impl RoccatKain2xx {
 
     //         //         match ctrl_dev.send_feature_report(&buf) {
     //         //             Ok(_result) => {
-    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
     //         //                 Ok(())
     //         //             }
@@ -77,7 +77,7 @@ impl RoccatKain2xx {
     // }
 
     // fn wait_for_ctrl_dev(&self) -> Result<()> {
-    //     println!("Waiting for control device to respond...");
+    //     crate::println_v!(0, "Waiting for control device to respond...");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -91,7 +91,7 @@ impl RoccatKain2xx {
 
     //         //     match ctrl_dev.get_feature_report(&mut buf) {
     //         //         Ok(_result) => {
-    //         //             hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+    //         //             hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
     //         //             if buf[1] == 0x01 {
     //         //                 return Ok(());
@@ -113,16 +113,16 @@ impl RoccatKain2xx {
 
 impl DeviceTrait for RoccatKain2xx {
     fn send_init_sequence(&self) -> Result<()> {
-        println!("Sending device init sequence...");
+        crate::println_v!(0, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            // println!("Step 1");
+            // crate::println_v!(0, "Step 1");
             // self.send_ctrl_report(0x08)
-            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
             // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
 
             Ok(())
         }
@@ -137,7 +137,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(0, "  {}", s));
 
                     Ok(())
                 }
@@ -159,7 +159,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }
@@ -178,7 +178,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.send_feature_report(&buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }
@@ -207,15 +207,12 @@ impl DeviceTrait for RoccatKain2xx {
                         if buf[0] == 0x01 {
                             continue;
                         } else {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(1, "  {}", s));
 
-                            if buf[0..2] == [0x07, 0x07] {
+                            if buf[0..2] != [0x07, 0x14] && buf[0..2] != [0x07, 0x04] {
                                 break Ok(buf);
                             }
-
-                            // if buf[0] == 0x07 {
-                            //     break Ok(buf);
-                            // }
                         }
                     }
 
@@ -226,7 +223,7 @@ impl DeviceTrait for RoccatKain2xx {
     }
 
     fn send_led_map(&self, _led_map: &[RGBA]) -> Result<()> {
-        println!("Setting LEDs from supplied map...");
+        crate::println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -241,7 +238,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
                 }
 
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -256,7 +253,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
                 }
 
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -306,6 +303,8 @@ impl DeviceTrait for RoccatKain2xx {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
+            let mut table = HashMap::new();
+
             // TODO: Further investigate the meaning of the fields
             let buf: [u8; 22] = [
                 0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -317,13 +316,29 @@ impl DeviceTrait for RoccatKain2xx {
             // query results
             let buf = self.read_feature_report(0x07, 22)?;
 
-            let battery_level = (buf[4] as f64 / 256.0) * 100.0;
+            let battery_level = (buf[7] as f64 / 256.0) * 100.0;
             let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
 
-            let mut table = HashMap::new();
+            // icecream::ice!(buf);
 
             table.insert("battery-level".to_string(), format!("{}", battery_level));
             table.insert("signal-strength".to_string(), format!("{}", snr));
+
+            // TODO: Further investigate the meaning of the fields
+            let buf: [u8; 22] = [
+                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            self.write_feature_report(&buf)?;
+
+            let battery_level = (buf[9] as f64 / 256.0) * 100.0;
+            let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
+
+            // icecream::ice!(buf);
+
+            table.insert("battery-level2".to_string(), format!("{}", battery_level));
+            table.insert("signal-strength2".to_string(), format!("{}", snr));
 
             let result = DeviceStatus(table);
 

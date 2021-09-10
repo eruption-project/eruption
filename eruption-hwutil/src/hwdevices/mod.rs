@@ -40,6 +40,24 @@ use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[macro_export]
+macro_rules! println_v {
+    ($verbosity:expr, $l:literal $(,$params:expr),*) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($l, $($params),*)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! eprintln_v {
+    ($verbosity:expr, $l:literal $(,$params:expr),*) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($l, $($params),*)
+        }
+    };
+}
+
 #[derive(Error, Debug)]
 enum HwDeviceError {
     #[error("The device is not bound")]
@@ -77,6 +95,14 @@ pub struct RGBA {
 
 #[derive(Debug)]
 pub struct DeviceStatus(HashMap<String, String>);
+
+impl std::ops::Deref for DeviceStatus {
+    type Target = HashMap<String, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 pub trait DeviceTrait {
     fn send_init_sequence(&self) -> Result<()>;

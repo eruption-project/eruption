@@ -42,7 +42,7 @@ pub struct RoccatVulcanProTKL {
 impl RoccatVulcanProTKL {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: hidapi::HidDevice, led_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Vulcan Pro TKL");
+        crate::println_v!(0, "Bound driver: ROCCAT Vulcan Pro TKL");
 
         Self {
             is_bound: true,
@@ -345,35 +345,35 @@ impl DeviceTrait for RoccatVulcanProTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            println!("Step 1");
+            crate::println_v!(0, "Step 1");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
 
-            println!("Step 2 skipped");
-            // println!("Step 2");
+            crate::println_v!(0, "Step 2 skipped");
+            // crate::println_v!(0, "Step 2");
             // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
             // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
 
-            println!("Step 3");
+            crate::println_v!(0, "Step 3");
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
 
-            println!("Step 4");
+            crate::println_v!(0, "Step 4");
             self.send_ctrl_report(0x11)
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
 
             // init colors
-            println!("Step 5");
+            crate::println_v!(0, "Step 5");
             self.send_led_data(0xa1)
-                .unwrap_or_else(|e| eprintln!("Step 5: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 5: {}", e));
             thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
@@ -430,7 +430,7 @@ impl DeviceTrait for RoccatVulcanProTKL {
 
             match ctrl_dev.send_feature_report(&buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }
@@ -453,7 +453,7 @@ impl DeviceTrait for RoccatVulcanProTKL {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }

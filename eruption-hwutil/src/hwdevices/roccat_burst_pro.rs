@@ -31,7 +31,7 @@ pub struct RoccatBurstPro {
 impl RoccatBurstPro {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: ROCCAT Burst Pro");
+        crate::println_v!(0, "Bound driver: ROCCAT Burst Pro");
 
         Self {
             is_bound: true,
@@ -40,7 +40,7 @@ impl RoccatBurstPro {
     }
 
     fn send_ctrl_report(&self, id: u8) -> Result<()> {
-        println!("Sending control device feature report");
+        crate::println_v!(0, "Sending control device feature report");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound.into())
@@ -56,7 +56,8 @@ impl RoccatBurstPro {
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf)
+                                        .for_each(|s| crate::println_v!(0, "  {}", s));
 
                                     Ok(())
                                 }
@@ -67,7 +68,8 @@ impl RoccatBurstPro {
                             let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
                             match ctrl_dev.get_feature_report(&mut buf) {
                                 Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                    hexdump::hexdump_iter(&buf)
+                                        .for_each(|s| crate::println_v!(0, "  {}", s));
 
                                     Ok(())
                                 }
@@ -85,7 +87,8 @@ impl RoccatBurstPro {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(0, "  {}", s));
 
                             Ok(())
                         }
@@ -101,7 +104,8 @@ impl RoccatBurstPro {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(0, "  {}", s));
 
                             Ok(())
                         }
@@ -116,7 +120,7 @@ impl RoccatBurstPro {
     }
 
     fn wait_for_ctrl_dev(&self) -> Result<()> {
-        println!("Waiting for control device to respond...");
+        crate::println_v!(0, "Waiting for control device to respond...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -130,7 +134,7 @@ impl RoccatBurstPro {
 
                 match ctrl_dev.get_feature_report(&mut buf) {
                     Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                        hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                         if buf[1] == 0x01 {
                             return Ok(());
@@ -148,28 +152,28 @@ impl RoccatBurstPro {
 
 impl DeviceTrait for RoccatBurstPro {
     fn send_init_sequence(&self) -> Result<()> {
-        println!("Sending device init sequence...");
+        crate::println_v!(0, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            // println!("Step 1");
+            // crate::println_v!(0, "Step 1");
             // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
             // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
 
-            println!("Step 2");
+            crate::println_v!(0, "Step 2");
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
 
-            println!("Step 3");
+            crate::println_v!(0, "Step 3");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
 
             Ok(())
         }
@@ -184,7 +188,7 @@ impl DeviceTrait for RoccatBurstPro {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(0, "  {}", s));
 
                     Ok(())
                 }
@@ -206,7 +210,7 @@ impl DeviceTrait for RoccatBurstPro {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }
@@ -225,7 +229,7 @@ impl DeviceTrait for RoccatBurstPro {
 
             match ctrl_dev.send_feature_report(&buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }
@@ -248,7 +252,7 @@ impl DeviceTrait for RoccatBurstPro {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }
@@ -259,7 +263,7 @@ impl DeviceTrait for RoccatBurstPro {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        println!("Setting LEDs from supplied map...");
+        crate::println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -283,7 +287,7 @@ impl DeviceTrait for RoccatBurstPro {
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }

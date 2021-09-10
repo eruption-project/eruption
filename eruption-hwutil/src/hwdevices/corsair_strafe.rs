@@ -42,7 +42,7 @@ pub struct CorsairStrafe {
 impl CorsairStrafe {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        println!("Bound driver: Corsair STRAFE Gaming Keyboard");
+        crate::println_v!(0, "Bound driver: Corsair STRAFE Gaming Keyboard");
 
         Self {
             is_bound: true,
@@ -263,29 +263,29 @@ impl DeviceTrait for CorsairStrafe {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            println!("Step 1");
+            crate::println_v!(0, "Step 1");
             self.send_ctrl_report(0x01)
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
 
-            println!("Step 2");
+            crate::println_v!(0, "Step 2");
             self.send_ctrl_report(0x02)
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
 
-            println!("Step 3");
+            crate::println_v!(0, "Step 3");
             self.send_ctrl_report(0x03)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
 
-            println!("Step 4");
+            crate::println_v!(0, "Step 4");
             self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
 
             Ok(())
         }
@@ -341,7 +341,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.send_feature_report(&buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }
@@ -364,7 +364,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(buf)
                 }
