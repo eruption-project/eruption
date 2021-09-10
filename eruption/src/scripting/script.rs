@@ -266,6 +266,10 @@ mod callbacks {
             result.push(device.read().get_support_script_file());
         }
 
+        for device in crate::MISC_DEVICES.lock().iter() {
+            result.push(device.read().get_support_script_file());
+        }
+
         result
     }
 
@@ -710,7 +714,7 @@ mod callbacks {
 
     /// Get state of all LEDs
     pub(crate) fn get_color_map() -> Vec<u32> {
-        let global_led_map = LED_MAP.write();
+        let global_led_map = LED_MAP.read();
 
         let result = global_led_map
             .iter()
