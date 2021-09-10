@@ -27,6 +27,7 @@ use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::{env, process};
+use util::RGBA;
 
 mod constants;
 mod dbus_client;
@@ -47,7 +48,7 @@ pub enum MainError {
 
 /// Global application state
 #[derive(Default)]
-struct State {
+pub struct State {
     active_slot: Option<usize>,
     active_profile: Option<String>,
     saved_profile: Option<String>,
@@ -67,7 +68,10 @@ impl State {
 
 lazy_static! {
     /// Global application state
-    static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
+    pub static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
+
+    /// Current LED color map
+    pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
 
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
@@ -142,6 +146,18 @@ fn print_header() {
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 "#
     );
+}
+
+/// Update the global color map vector
+pub fn update_color_map() -> Result<()> {
+    let mut led_colors = dbus_client::get_led_colors()?;
+
+    let mut color_map = crate::COLOR_MAP.lock();
+
+    color_map.clear();
+    color_map.append(&mut led_colors);
+
+    Ok(())
 }
 
 /// Switch to slot `index`

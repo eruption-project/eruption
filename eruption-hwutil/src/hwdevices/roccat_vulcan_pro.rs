@@ -455,9 +455,9 @@ impl DeviceTrait for RoccatVulcanPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.send_feature_report(&buffer) {
+            match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(1, "  {}", s));
 
                     Ok(())
                 }

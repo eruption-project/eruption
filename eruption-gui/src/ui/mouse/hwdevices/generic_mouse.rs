@@ -15,10 +15,9 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
-
-use crate::ui::mouse::MouseError;
 
 use super::{Mouse, Rectangle};
 
@@ -27,11 +26,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug)]
 pub struct GenericMouse {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl GenericMouse {
     pub fn new(device: u64) -> Self {
-        GenericMouse { device }
+        GenericMouse {
+            device,
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-mouse.png")
+                .unwrap(),
+        }
     }
 }
 
@@ -50,32 +54,28 @@ impl Mouse for GenericMouse {
 
         let scale_factor = 1.0;
 
-        // let pixbuf = Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-mouse.png").unwrap();
+        // let pixbuf = &self.pixbuf;
 
         // paint the schematic drawing
         // context.scale(scale_factor, scale_factor);
         // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
         // context.paint()?;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(led_colors) => {
-                // paint all cells in the "mouse zone" of the canvas
-                for i in 144..(144 + 36) {
-                    self.paint_cell(
-                        i - 144,
-                        &led_colors[i],
-                        &context,
-                        width,
-                        height,
-                        scale_factor,
-                    )?;
-                }
+        let led_colors = crate::COLOR_MAP.lock();
 
-                Ok(())
-            }
-
-            Err(_e) => Err(MouseError::CommunicationError {}.into()),
+        // paint all cells in the "mouse zone" of the canvas
+        for i in 144..(144 + 36) {
+            self.paint_cell(
+                i - 144,
+                &led_colors[i],
+                &context,
+                width,
+                height,
+                scale_factor,
+            )?;
         }
+
+        Ok(())
     }
 
     fn paint_cell(

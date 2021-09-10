@@ -26,13 +26,13 @@ mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, thiserror::Error)]
-pub enum KeyboardError {
-    #[error("Communication with the Eruption daemon failed")]
-    CommunicationError,
-    // #[error("Invalid layout type specified")]
-    // InvalidLayout,
-}
+// #[derive(Debug, thiserror::Error)]
+// pub enum KeyboardError {
+//     #[error("Communication with the Eruption daemon failed")]
+//     CommunicationError,
+//     // #[error("Invalid layout type specified")]
+//     // InvalidLayout,
+// }
 
 /// Initialize page "Keyboard"
 pub fn initialize_keyboard_page(

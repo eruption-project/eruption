@@ -27,13 +27,13 @@ mod hwdevices;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, thiserror::Error)]
-pub enum MouseError {
-    #[error("Communication with the Eruption daemon failed")]
-    CommunicationError,
-    // #[error("Invalid layout type specified")]
-    // InvalidLayout,
-}
+// #[derive(Debug, thiserror::Error)]
+// pub enum MouseError {
+//     #[error("Communication with the Eruption daemon failed")]
+//     CommunicationError,
+//     // #[error("Invalid layout type specified")]
+//     // InvalidLayout,
+// }
 
 /// Initialize page "Mouse"
 pub fn initialize_mouse_page(
@@ -118,10 +118,11 @@ pub fn initialize_mouse_page(
 
     // fast update path
     glib::timeout_add_local(
-        Duration::from_millis(1000),
+        Duration::from_millis(2500),
         clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
                     @weak mouse_profile_label, @weak debounce_switch,
                     @weak angle_snapping_switch => @default-return Continue(true), move || {
+
             if let Ok(device_brightness) = util::get_device_brightness(mouse_device_handle) {
                 device_brightness_scale.set_value(device_brightness as f64);
             }
@@ -148,7 +149,7 @@ pub fn initialize_mouse_page(
 
     // slow update path
     glib::timeout_add_local(
-        Duration::from_millis(2500),
+        Duration::from_millis(4000),
         clone!(@weak mouse_firmware_label, @weak mouse_rate_label => @default-return Continue(true), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
                 mouse_firmware_label.set_label(&firmware);

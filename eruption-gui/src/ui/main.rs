@@ -766,6 +766,16 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }),
     );
 
+    // update the global LED color map vector
+    glib::timeout_add_local(
+        Duration::from_millis(1000 / crate::constants::TARGET_FPS),
+        clone!(@weak application => @default-return Continue(true), move || {
+            let _result = crate::update_color_map();
+
+            Continue(true)
+        }),
+    );
+
     Ok(())
 }
 

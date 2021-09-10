@@ -20,7 +20,7 @@ use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
 
-use crate::{constants, ui::mouse::MouseError};
+use crate::constants;
 
 use super::{Mouse, Rectangle};
 
@@ -31,11 +31,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug)]
 pub struct RoccatBurstPro {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl RoccatBurstPro {
     pub fn new(device: u64) -> Self {
-        RoccatBurstPro { device }
+        RoccatBurstPro {
+            device,
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-burst-pro.png")
+                .unwrap(),
+        }
     }
 }
 
@@ -52,35 +57,29 @@ impl Mouse for RoccatBurstPro {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(led_colors) => {
-                let pixbuf =
-                    Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-burst-pro.png")
-                        .unwrap();
+        let led_colors = crate::COLOR_MAP.lock();
 
-                let scale_factor = (height / pixbuf.height() as f64) * 0.85;
+        let pixbuf = &self.pixbuf;
 
-                for i in [constants::CANVAS_SIZE - 36, constants::CANVAS_SIZE - 1].iter() {
-                    self.paint_cell(
-                        i - 144,
-                        &led_colors[*i],
-                        &context,
-                        width,
-                        height,
-                        scale_factor,
-                    )?;
-                }
+        let scale_factor = (height / pixbuf.height() as f64) * 0.85;
 
-                // paint the image
-                context.scale(scale_factor, scale_factor);
-                context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-                context.paint()?;
-
-                Ok(())
-            }
-
-            Err(_e) => Err(MouseError::CommunicationError {}.into()),
+        for i in [constants::CANVAS_SIZE - 36, constants::CANVAS_SIZE - 1].iter() {
+            self.paint_cell(
+                i - 144,
+                &led_colors[*i],
+                &context,
+                width,
+                height,
+                scale_factor,
+            )?;
         }
+
+        // paint the image
+        context.scale(scale_factor, scale_factor);
+        context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
+        context.paint()?;
+
+        Ok(())
     }
 
     fn paint_cell(

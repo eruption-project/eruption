@@ -20,8 +20,6 @@ use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
 
-use crate::ui::mouse::MouseError;
-
 use super::{Mouse, Rectangle};
 
 const BORDER: (f64, f64) = (32.0, 32.0);
@@ -31,11 +29,18 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug)]
 pub struct RoccatKonePureUltra {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl RoccatKonePureUltra {
     pub fn new(device: u64) -> Self {
-        RoccatKonePureUltra { device }
+        RoccatKonePureUltra {
+            device,
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png",
+            )
+            .unwrap(),
+        }
     }
 }
 
@@ -52,36 +57,29 @@ impl Mouse for RoccatKonePureUltra {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(led_colors) => {
-                let pixbuf = Pixbuf::from_resource(
-                    "/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png",
-                )
-                .unwrap();
+        let led_colors = crate::COLOR_MAP.lock();
 
-                let scale_factor = (height / pixbuf.height() as f64) * 0.85;
+        let pixbuf = &self.pixbuf;
 
-                for i in 144..(144 + 1) {
-                    self.paint_cell(
-                        i - 144,
-                        &led_colors[i],
-                        &context,
-                        width,
-                        height,
-                        scale_factor,
-                    )?;
-                }
+        let scale_factor = (height / pixbuf.height() as f64) * 0.85;
 
-                // paint the image
-                context.scale(scale_factor, scale_factor);
-                context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-                context.paint()?;
-
-                Ok(())
-            }
-
-            Err(_e) => Err(MouseError::CommunicationError {}.into()),
+        for i in 144..(144 + 1) {
+            self.paint_cell(
+                i - 144,
+                &led_colors[i],
+                &context,
+                width,
+                height,
+                scale_factor,
+            )?;
         }
+
+        // paint the image
+        context.scale(scale_factor, scale_factor);
+        context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
+        context.paint()?;
+
+        Ok(())
     }
 
     fn paint_cell(

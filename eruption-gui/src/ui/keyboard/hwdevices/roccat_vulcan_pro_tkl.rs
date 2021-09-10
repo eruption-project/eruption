@@ -17,7 +17,7 @@
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
-use crate::{ui::keyboard::KeyboardError, util::RGBA};
+use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
@@ -36,11 +36,18 @@ thread_local! {
 #[derive(Debug)]
 pub struct RoccatVulcanProTKL {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl RoccatVulcanProTKL {
     pub fn new(device: u64) -> Self {
-        RoccatVulcanProTKL { device }
+        RoccatVulcanProTKL {
+            device,
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui/img/roccat-vulcan-pro-tkl.png",
+            )
+            .unwrap(),
+        }
     }
 }
 
@@ -54,9 +61,7 @@ impl Keyboard for RoccatVulcanProTKL {
     }
 
     fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let pixbuf =
-            Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-pro-tkl.png")
-                .unwrap();
+        let pixbuf = &self.pixbuf;
 
         let width = da.allocated_width() as f64;
         // let height = da.allocated_height() as f64;
@@ -68,42 +73,38 @@ impl Keyboard for RoccatVulcanProTKL {
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(led_colors) => {
-                let layout = pangocairo::create_layout(&context).unwrap();
-                FONT_DESC.with(|f| -> Result<()> {
-                    let desc = f.borrow();
-                    layout.set_font_description(Some(&desc));
+        let led_colors = crate::COLOR_MAP.lock();
 
-                    // paint all keys
-                    for i in 0..96 {
-                        self.paint_key(i + 1, &led_colors[i], &context, &layout)?;
-                    }
+        let layout = pangocairo::create_layout(&context).unwrap();
+        FONT_DESC.with(|f| -> Result<()> {
+            let desc = f.borrow();
+            layout.set_font_description(Some(&desc));
 
-                    Ok(())
-                })?;
-
-                // paint all other elements
-
-                // paint the mute button
-                const MUTE_BUTTON_INDEX: usize = 92;
-
-                let color = (
-                    (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
-                    (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
-                    (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
-                    (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
-                );
-
-                let black = (0.0, 0.0, 0.0, 1.0);
-
-                rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
-
-                Ok(())
+            // paint all keys
+            for i in 0..96 {
+                self.paint_key(i + 1, &led_colors[i], &context, &layout)?;
             }
 
-            Err(_e) => Err(KeyboardError::CommunicationError {}.into()),
-        }
+            Ok(())
+        })?;
+
+        // paint all other elements
+
+        // paint the mute button
+        const MUTE_BUTTON_INDEX: usize = 92;
+
+        let color = (
+            (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
+            (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
+        );
+
+        let black = (0.0, 0.0, 0.0, 1.0);
+
+        rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
+
+        Ok(())
     }
 
     /// Paint a key on the keyboard widget

@@ -25,13 +25,13 @@ mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug, thiserror::Error)]
-pub enum MiscError {
-    #[error("Communication with the Eruption daemon failed")]
-    CommunicationError,
-    // #[error("Invalid layout type specified")]
-    // InvalidLayout,
-}
+// #[derive(Debug, thiserror::Error)]
+// pub enum MiscError {
+//     #[error("Communication with the Eruption daemon failed")]
+//     CommunicationError,
+//     // #[error("Invalid layout type specified")]
+//     // InvalidLayout,
+// }
 
 /// Initialize page "Misc devices"
 pub fn initialize_misc_page(

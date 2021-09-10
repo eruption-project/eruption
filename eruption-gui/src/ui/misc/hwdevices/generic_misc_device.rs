@@ -16,7 +16,6 @@
 */
 
 use super::MiscDevice;
-use crate::ui::misc::MiscError;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
@@ -28,11 +27,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug)]
 pub struct GenericMiscDevice {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl GenericMiscDevice {
     pub fn new(device: u64) -> Self {
-        GenericMiscDevice { device }
+        GenericMiscDevice {
+            device,
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-misc.png")
+                .unwrap(),
+        }
     }
 }
 
@@ -46,8 +50,7 @@ impl MiscDevice for GenericMiscDevice {
     }
 
     fn draw(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let pixbuf =
-            Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-misc.png").unwrap();
+        let pixbuf = &self.pixbuf;
 
         let width = da.allocated_width() as f64;
         // let height = da.allocated_height() as f64;
@@ -59,11 +62,9 @@ impl MiscDevice for GenericMiscDevice {
         context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(_led_colors) => Ok(()),
+        // let led_colors = crate::COLOR_MAP.lock();
 
-            Err(_e) => Err(MiscError::CommunicationError {}.into()),
-        }
+        Ok(())
     }
 
     fn paint_cell(

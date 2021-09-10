@@ -16,7 +16,6 @@
 */
 
 use super::{MiscDevice, Rectangle};
-use crate::ui::misc::MiscError;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
@@ -29,11 +28,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug)]
 pub struct RoccatElo71Air {
     pub device: u64,
+    pub pixbuf: Pixbuf,
 }
 
 impl RoccatElo71Air {
     pub fn new(device: u64) -> Self {
-        RoccatElo71Air { device }
+        RoccatElo71Air {
+            device,
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-headset.png")
+                .unwrap(),
+        }
     }
 }
 
@@ -47,30 +51,25 @@ impl MiscDevice for RoccatElo71Air {
     }
 
     fn draw(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
-        let pixbuf =
-            Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-headset.png").unwrap();
+        let pixbuf = &self.pixbuf;
 
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        match crate::dbus_client::get_led_colors() {
-            Ok(led_colors) => {
-                let scale_factor = (height / pixbuf.height() as f64) * 0.975;
+        let led_colors = crate::COLOR_MAP.lock();
 
-                for i in [0, 1].iter() {
-                    self.paint_cell(*i, &led_colors[0], &context, width, height, scale_factor)?;
-                }
+        let scale_factor = (height / pixbuf.height() as f64) * 0.975;
 
-                // paint the image
-                context.scale(scale_factor, scale_factor);
-                context.set_source_pixbuf(&pixbuf, width / 4.0 + BORDER.0, BORDER.1);
-                context.paint()?;
-
-                Ok(())
-            }
-
-            Err(_e) => Err(MiscError::CommunicationError {}.into()),
+        for i in [0, 1].iter() {
+            self.paint_cell(*i, &led_colors[0], &context, width, height, scale_factor)?;
         }
+
+        // paint the image
+        context.scale(scale_factor, scale_factor);
+        context.set_source_pixbuf(&pixbuf, width / 4.0 + BORDER.0, BORDER.1);
+        context.paint()?;
+
+        Ok(())
     }
 
     fn paint_cell(
