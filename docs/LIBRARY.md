@@ -1,7 +1,5 @@
 # Eruption Support Library
 
-_This document is a work-in-progress draft_
-
 ## Overview
 
 Eruption provides a small, but hopefully useful library of functions that are
