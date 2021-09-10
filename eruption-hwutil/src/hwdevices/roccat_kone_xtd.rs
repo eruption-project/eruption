@@ -57,7 +57,7 @@ impl RoccatKoneXtd {
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
                                     hexdump::hexdump_iter(&buf)
-                                        .for_each(|s| crate::println_v!(0, "  {}", s));
+                                        .for_each(|s| crate::println_v!(2, "  {}", s));
 
                                     Ok(())
                                 }
@@ -69,7 +69,7 @@ impl RoccatKoneXtd {
                             match ctrl_dev.get_feature_report(&mut buf) {
                                 Ok(_result) => {
                                     hexdump::hexdump_iter(&buf)
-                                        .for_each(|s| crate::println_v!(0, "  {}", s));
+                                        .for_each(|s| crate::println_v!(2, "  {}", s));
 
                                     Ok(())
                                 }
@@ -88,7 +88,7 @@ impl RoccatKoneXtd {
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
                             hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(0, "  {}", s));
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -108,7 +108,7 @@ impl RoccatKoneXtd {
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
                             hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(0, "  {}", s));
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -131,7 +131,7 @@ impl RoccatKoneXtd {
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
                             hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(0, "  {}", s));
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -160,7 +160,7 @@ impl RoccatKoneXtd {
 
                 match ctrl_dev.get_feature_report(&mut buf) {
                     Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
+                        hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                         if buf[1] == 0x01 {
                             return Ok(());
@@ -183,29 +183,29 @@ impl DeviceTrait for RoccatKoneXtd {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            // crate::println_v!(0, "Step 1");
+            // crate::println_v!(1, "Step 1");
             // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
             // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
+            //     .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
 
-            crate::println_v!(0, "Step 2");
+            crate::println_v!(1, "Step 2");
             self.send_ctrl_report(0x0e)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
 
-            crate::println_v!(0, "Step 3");
+            crate::println_v!(1, "Step 3");
             self.send_ctrl_report(0x06)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
 
-            crate::println_v!(0, "Step 4");
+            crate::println_v!(1, "Step 4");
             self.send_ctrl_report(0x07)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 4: {}", e));
 
             Ok(())
         }
@@ -220,7 +220,7 @@ impl DeviceTrait for RoccatKoneXtd {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(0, "  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -242,7 +242,7 @@ impl DeviceTrait for RoccatKoneXtd {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -261,7 +261,7 @@ impl DeviceTrait for RoccatKoneXtd {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -284,7 +284,7 @@ impl DeviceTrait for RoccatKoneXtd {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -351,7 +351,7 @@ impl DeviceTrait for RoccatKoneXtd {
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
                     Ok(())
                 }
 

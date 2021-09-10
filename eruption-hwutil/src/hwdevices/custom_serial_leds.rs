@@ -17,7 +17,7 @@
 
 #![allow(dead_code)]
 
-use log::trace;
+// use log::trace;
 use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::{sync::Arc, time::Duration};
@@ -84,7 +84,7 @@ impl CustomSerialLeds {
     }
 
     pub fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
-        trace!("Setting LEDs from supplied map...");
+        crate::println_v!(0, "Setting LEDs from supplied map...");
 
         if let Some(ref mut port) = *self.serial_port.lock() {
             const HEADER_OFFSET: usize = 6;

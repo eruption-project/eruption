@@ -52,7 +52,7 @@ impl RoccatVulcan1xx {
     }
 
     pub(self) fn query_ctrl_report(&self, id: u8) -> Result<()> {
-        trace!("Querying control device feature report");
+        crate::println_v!(0, "Querying control device feature report");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -67,7 +67,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.get_feature_report(&mut buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -82,7 +83,7 @@ impl RoccatVulcan1xx {
     }
 
     fn send_ctrl_report(&self, id: u8) -> Result<()> {
-        trace!("Sending control device feature report");
+        crate::println_v!(0, "Sending control device feature report");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -96,7 +97,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -110,7 +112,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -133,7 +136,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -147,7 +151,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -168,7 +173,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -195,7 +201,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -214,7 +221,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -316,7 +324,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -334,7 +343,8 @@ impl RoccatVulcan1xx {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                            hexdump::hexdump_iter(&buf)
+                                .for_each(|s| crate::println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -349,7 +359,7 @@ impl RoccatVulcan1xx {
     }
 
     fn wait_for_ctrl_dev(&self) -> Result<()> {
-        trace!("Waiting for control device to respond...");
+        crate::println_v!(0, "Waiting for control device to respond...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -363,7 +373,7 @@ impl RoccatVulcan1xx {
 
                 match ctrl_dev.get_feature_report(&mut buf) {
                     Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                         if buf[1] == 0x01 {
                             return Ok(());
@@ -381,68 +391,68 @@ impl RoccatVulcan1xx {
 
 impl DeviceTrait for RoccatVulcan1xx {
     fn send_init_sequence(&self) -> Result<()> {
-        trace!("Sending device init sequence...");
+        crate::println_v!(0, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            crate::println_v!(0, "Step 1");
+            crate::println_v!(1, "Step 1");
             self.query_ctrl_report(0x0f)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 1: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
 
-            crate::println_v!(0, "Step 2");
+            crate::println_v!(1, "Step 2");
             self.send_ctrl_report(0x15)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 2: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
 
-            crate::println_v!(0, "Step 3");
+            crate::println_v!(1, "Step 3");
             self.send_ctrl_report(0x05)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 3: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
 
-            crate::println_v!(0, "Step 4");
+            crate::println_v!(1, "Step 4");
             self.send_ctrl_report(0x07)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 4: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 4: {}", e));
 
-            crate::println_v!(0, "Step 5");
+            crate::println_v!(1, "Step 5");
             self.send_ctrl_report(0x0a)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 5: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 5: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 5: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 5: {}", e));
 
-            crate::println_v!(0, "Step 6");
+            crate::println_v!(1, "Step 6");
             self.send_ctrl_report(0x0b)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 6: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 6: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 6: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 6: {}", e));
 
-            crate::println_v!(0, "Step 7");
+            crate::println_v!(1, "Step 7");
             self.send_ctrl_report(0x06)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 7: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 7: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 7: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 7: {}", e));
 
-            crate::println_v!(0, "Step 8");
+            crate::println_v!(1, "Step 8");
             self.send_ctrl_report(0x09)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 8: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 8: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 8: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 8: {}", e));
 
-            crate::println_v!(0, "Step 9");
+            crate::println_v!(1, "Step 9");
             self.send_ctrl_report(0x0d)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 9: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 9: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 9: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 9: {}", e));
 
-            crate::println_v!(0, "Step 10");
+            crate::println_v!(1, "Step 10");
             self.send_ctrl_report(0x13)
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 10: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 10: {}", e));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| crate::eprintln_v!(0, "Step 10: {}", e));
+                .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 10: {}", e));
 
             Ok(())
         }
@@ -457,7 +467,7 @@ impl DeviceTrait for RoccatVulcan1xx {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -479,7 +489,7 @@ impl DeviceTrait for RoccatVulcan1xx {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -498,7 +508,7 @@ impl DeviceTrait for RoccatVulcan1xx {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -521,7 +531,7 @@ impl DeviceTrait for RoccatVulcan1xx {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(1, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -532,7 +542,7 @@ impl DeviceTrait for RoccatVulcan1xx {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        trace!("Setting LEDs from supplied map...");
+        crate::println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
