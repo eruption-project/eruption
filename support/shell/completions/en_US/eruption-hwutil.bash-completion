@@ -22,14 +22,29 @@ _eruption-hwutil() {
             elvish)
                 cmd+="__elvish"
                 ;;
+            firmware-update)
+                cmd+="__firmware__update"
+                ;;
             fish)
                 cmd+="__fish"
+                ;;
+            flash)
+                cmd+="__flash"
                 ;;
             help)
                 cmd+="__help"
                 ;;
+            info)
+                cmd+="__info"
+                ;;
+            list)
+                cmd+="__list"
+                ;;
             power-shell)
                 cmd+="__power__shell"
+                ;;
+            status)
+                cmd+="__status"
                 ;;
             zsh)
                 cmd+="__zsh"
@@ -41,7 +56,7 @@ _eruption-hwutil() {
 
     case "${cmd}" in
         eruption__hwutil)
-            opts=" -h -V -v -c  --help --version --verbose --config  completions help"
+            opts=" -h -V -v -r -c  --help --version --verbose --repeat --config  list status firmware-update completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -154,8 +169,83 @@ _eruption-hwutil() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruption__hwutil__firmware__update)
+            opts=" -h -V  --help --version  info flash"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__firmware__update__flash)
+            opts="  --help --version  <DEVICE> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__firmware__update__info)
+            opts="  --help --version  <DEVICE> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__hwutil__help)
             opts=" -h -V  --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__list)
+            opts=" -h -V  --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__status)
+            opts=" -h -V  --help --version  <DEVICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -21,7 +21,8 @@ use crossbeam::channel::unbounded;
 use log::error;
 use parking_lot::Mutex;
 use std::{
-    env, process,
+    env,
+    process::{self},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -67,6 +68,10 @@ pub struct Options {
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
 
+    /// Repeat output until ctrl+c is pressed
+    #[clap(short, long)]
+    repeat: bool,
+
     /// Sets the configuration file to use
     #[clap(short = 'c', long)]
     config: Option<String>,
@@ -78,11 +83,11 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, Clone, Clap)]
 pub enum Subcommands {
-    /// Devices related subcommands
-    Devices {
-        #[clap(subcommand)]
-        command: DevicesSubcommands,
-    },
+    /// List available devices, use this first to find out the index of the device to use
+    List,
+
+    /// Query device specific status
+    Status { device: usize },
 
     /// Firmware update related subcommands
     FirmwareUpdate {
@@ -97,23 +102,13 @@ pub enum Subcommands {
     },
 }
 
-/// Subcommands of the "devices" command
-#[derive(Debug, Clone, Clap)]
-pub enum DevicesSubcommands {
-    /// List devices
-    List,
-
-    /// Query device specific status
-    Status { device: usize },
-}
-
 /// Subcommands of the "firmware-update" command
 #[derive(Debug, Clone, Clap)]
 pub enum FirmwareUpdateSubcommands {
     /// Get some information about the currently installed firmware
     Info { device: u64 },
 
-    /// Flash firmware
+    /// Flash firmware to device
     Flash { device: u64 },
 }
 
@@ -224,59 +219,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     match opts.command {
         // device specific sub-commands
-        Subcommands::Devices { command } => match command {
-            DevicesSubcommands::List => {
-                println!();
-                println!("Please find the device you want to address below and use its respective");
-                println!("index number (column 1) as the device index for the other sub-commands of this tool\n");
+        Subcommands::List => {
+            println!();
+            println!("Please find the device you want to address below and use its respective");
+            println!("index number (column 1) as the device index for the other sub-commands of this tool\n");
 
-                // create the one and only hidapi instance
-                match hidapi::HidApi::new() {
-                    Ok(hidapi) => {
-                        for (index, device) in hidapi.device_list().enumerate() {
-                            if device.interface_number() == 0 {
-                                println!(
-                                    "Index: {}: ID: {:x}:{:x} {}/{}",
-                                    format!("{:02}", index).bold(),
-                                    device.vendor_id(),
-                                    device.product_id(),
-                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                    device.product_string().unwrap_or("<unknown>").bold(),
-                                )
-                            }
-                        }
-
-                        println!("\nEnumeration of HID devices completed");
-
-                        // println!("\nSpecial devices\n");
-
-                        // for device_index in 0..4 {
-                        //     let device_file = format!("/dev/ttyACM{}", device_index);
-
-                        //     println!(
-                        //         "Index: {}: Serial Port {} ({})",
-                        //         &format!("{}", 255 - device_index).bold(),
-                        //         device_index + 1,
-                        //         &device_file
-                        //     );
-                        // }
-                    }
-
-                    Err(_) => {
-                        error!("Could not open HIDAPI");
-                    }
-                };
-            }
-
-            DevicesSubcommands::Status {
-                device: device_index,
-            } => {
-                // create the one and only hidapi instance
-                match hidapi::HidApi::new() {
-                    Ok(hidapi) => {
-                        if let Some((index, device)) =
-                            hidapi.device_list().enumerate().nth(device_index)
-                        {
+            // create the one and only hidapi instance
+            match hidapi::HidApi::new() {
+                Ok(hidapi) => {
+                    for (index, device) in hidapi.device_list().enumerate() {
+                        if device.interface_number() == 0 {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{}",
                                 format!("{:02}", index).bold(),
@@ -284,45 +236,86 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                            );
-
-                            if let Ok(dev) = device.open_device(&hidapi) {
-                                let hwdev = hwdevices::bind_device(
-                                    dev,
-                                    &hidapi,
-                                    device.vendor_id(),
-                                    device.product_id(),
-                                )?;
-
-                                hwdev.send_init_sequence()?;
-
-                                println!("Polling device status...");
-
-                                loop {
-                                    if QUIT.load(Ordering::SeqCst) {
-                                        break;
-                                    }
-
-                                    let status = hwdev.device_status()?;
-
-                                    println!();
-                                    println!("Battery Level:   {}", status["battery-level"]);
-                                    println!("Signal Strength: {}", status["signal-strength"]);
-
-                                    thread::sleep(Duration::from_millis(250));
-                                }
-                            } else {
-                                error!("Could not open the device, is the device in use?");
-                            }
+                            )
                         }
                     }
 
-                    Err(_) => {
-                        error!("Could not open HIDAPI");
+                    println!("\nEnumeration of HID devices completed");
+
+                    // println!("\nSpecial devices\n");
+
+                    // for device_index in 0..4 {
+                    //     let device_file = format!("/dev/ttyACM{}", device_index);
+
+                    //     println!(
+                    //         "Index: {}: Serial Port {} ({})",
+                    //         &format!("{}", 255 - device_index).bold(),
+                    //         device_index + 1,
+                    //         &device_file
+                    //     );
+                    // }
+                }
+
+                Err(_) => {
+                    error!("Could not open HIDAPI");
+                }
+            };
+        }
+
+        Subcommands::Status {
+            device: device_index,
+        } => {
+            // create the one and only hidapi instance
+            match hidapi::HidApi::new() {
+                Ok(hidapi) => {
+                    if let Some((index, device)) =
+                        hidapi.device_list().enumerate().nth(device_index)
+                    {
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{}",
+                            format!("{:02}", index).bold(),
+                            device.vendor_id(),
+                            device.product_id(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
+                        );
+
+                        if let Ok(dev) = device.open_device(&hidapi) {
+                            let hwdev = hwdevices::bind_device(
+                                dev,
+                                &hidapi,
+                                device.vendor_id(),
+                                device.product_id(),
+                            )?;
+
+                            hwdev.send_init_sequence()?;
+
+                            println!("Polling device status...");
+
+                            loop {
+                                let status = hwdev.device_status()?;
+
+                                println!();
+                                println!("Battery Level:   {}", status["battery-level"]);
+                                println!("Signal Strength: {}", status["signal-strength"]);
+
+                                if !opts.repeat || QUIT.load(Ordering::SeqCst) {
+                                    break;
+                                }
+
+                                thread::sleep(Duration::from_millis(250));
+                            }
+                        } else {
+                            error!("Could not open the device, is the device in use?");
+                        }
                     }
                 }
+
+                Err(_) => {
+                    error!("Could not open HIDAPI");
+                }
             }
-        },
+        }
 
         Subcommands::FirmwareUpdate { command: _ } => {}
 
