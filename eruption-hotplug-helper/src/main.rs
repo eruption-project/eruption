@@ -19,7 +19,7 @@ use clap::Clap;
 // use colored::*;
 use log::*;
 use std::{
-    env, io,
+    env,
     path::Path,
     process::{Command, Stdio},
     thread,
@@ -367,12 +367,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     lock_file.release()?;
                 }
 
-                Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {
+                Err(lockfile::Error::LockTaken) => {
                     log::warn!("We have been invoked while holding a global lock, exiting now");
                 }
 
-                Err(e) => {
+                Err(lockfile::Error::Io(e)) => {
                     log::error!("An error occurred while creating the lock file: {}", e);
+                }
+
+                Err(_) => {
+                    log::error!("An unknown error occurred while creating the lock file");
                 }
             }
         }

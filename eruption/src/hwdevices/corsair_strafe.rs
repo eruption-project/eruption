@@ -15,7 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use bitvec::{order::Lsb0, prelude::BitField, view::BitView};
+use bitvec::{field::BitField, order::Lsb0, view::BitView};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;

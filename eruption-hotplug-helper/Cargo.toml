@@ -1,6 +1,6 @@
 [package]
 name = "eruption-hotplug-helper"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A utility used to notify Eruption about device hotplug events"
@@ -14,24 +14,22 @@ resolver = "2"
 cfg-if = "1.0.0"
 clap =  { version = "3.0.0-beta.4", features = ["derive"] }
 clap_generate = "3.0.0-beta.4"
-colored = "2.0.0"
 log = "0.4.14"
 syslog = "5.0.0"
 pretty_env_logger = "0.4.0"
 libc = "0.2.101"
-nix = "0.22.1"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.67"
 tokio = { version = "1.11.0", features = ["full"] }
-tracing = "0.1.26"
-tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.20"
+#tracing = "0.1.26"
+#tracing-futures = "0.2.5"
+#tracing-subscriber = "0.2.20"
 thiserror = "1.0.29"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
-paste = "1.0.5"
-lockfile = "0.2.2"
+lockfile = "0.3.0"
 
 [dev-dependencies]
+#icecream = "0.1.0"
 tokio = { version = "1.11.0", features = ["test-util"] }

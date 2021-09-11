@@ -15,7 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use bitvec::{order::Lsb0, prelude::BitField, view::BitView};
+use bitvec::{field::BitField, order::Lsb0, view::BitView};
 use log::*;
 use parking_lot::Mutex;
 use std::time::Duration;

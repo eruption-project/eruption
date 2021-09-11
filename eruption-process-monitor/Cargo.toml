@@ -1,6 +1,6 @@
 [package]
 name = "eruption-process-monitor"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A daemon to monitor and introspect system processes and events"
@@ -27,7 +27,6 @@ clap =  { version = "3.0.0-beta.4", features = ["derive"] }
 clap_generate = "3.0.0-beta.4"
 ctrlc = { version = "3.2.0", features = ["termination"] }
 config = "0.11.0"
-colored = "2.0.0"
 dbus = "0.9.3"
 dbus-tokio = "0.7.4"
 dbus-tree = "0.9.1"
@@ -43,27 +42,21 @@ parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 regex = "1.5.4"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.67"
-serde_yaml = "0.8.20"
 tokio = { version = "1.11.0", features = ["full"] }
 tracing = "0.1.26"
 tracing-futures = "0.2.5"
 tracing-subscriber = "0.2.20"
 crossbeam = "0.8.1"
-uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
 thiserror = "1.0.29"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
-paste = "1.0.5"
 hotwatch = "0.4.5"
-hexdump = "0.1.1"
-itertools = "0.10.1"
-rayon = "1.5.1"
 lazy_static = "1.4.0"
-rust-crypto = "0.2.36"
 walkdir = "2.3.2"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.9.0", optional = true, features = ["allow-unsafe-code"] }
 
 [dev-dependencies]
+#icecream = "0.1.0"
 tokio = { version = "1.11.0", features = ["test-util"] }
