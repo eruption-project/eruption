@@ -513,7 +513,7 @@ fn spawn_mouse_input_thread(
             };
 
             loop {
-                // check if we shall terminate the input thread, before we poll the keyboard
+                // check if we shall terminate the input thread, before we poll the mouse device
                 if QUIT.load(Ordering::SeqCst) {
                     break Ok(());
                 }
@@ -644,7 +644,7 @@ fn spawn_mouse_input_thread_secondary(
             };
 
             loop {
-                // check if we shall terminate the input thread, before we poll the keyboard
+                // check if we shall terminate the input thread, before we poll the mouse device
                 if QUIT.load(Ordering::SeqCst) {
                     break Ok(());
                 }
@@ -698,6 +698,119 @@ fn spawn_mouse_input_thread_secondary(
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
                             error!("Fatal: Mouse sub-device went away: {}", e);
+
+                            QUIT.store(true, Ordering::SeqCst);
+
+                            return Err(EvdevError::EvdevEventError {}.into());
+                        } else {
+                            error!("Fatal: Could not peek evdev event: {}", e);
+
+                            QUIT.store(true, Ordering::SeqCst);
+
+                            return Err(EvdevError::EvdevEventError {}.into());
+                        }
+                    }
+                };
+            }
+        })
+        .unwrap_or_else(|e| {
+            error!("Could not spawn a thread: {}", e);
+            panic!()
+        });
+
+    Ok(())
+}
+
+/// Spawns the misc devices input thread and executes it's main loop
+fn spawn_misc_input_thread(
+    misc_tx: Sender<Option<evdev_rs::InputEvent>>,
+    _misc_device: MiscDevice,
+    device_index: usize,
+    usb_vid: u16,
+    usb_pid: u16,
+) -> plugins::Result<()> {
+    thread::Builder::new()
+        .name(format!("events/misc:{}", device_index))
+        .spawn(move || -> Result<()> {
+            let device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
+                Ok(filename) => match File::open(filename.clone()) {
+                    Ok(devfile) => match Device::new_from_file(devfile) {
+                        Ok(mut device) => {
+                            info!("Now listening on misc device input: {}", filename);
+
+                            info!(
+                                "Input device name: \"{}\"",
+                                device.name().unwrap_or("<n/a>")
+                            );
+
+                            info!(
+                                "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
+                                device.bustype(),
+                                device.vendor_id(),
+                                device.product_id()
+                            );
+
+                            // info!("Driver version: {:x}", device.driver_version());
+
+                            info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
+
+                            // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
+
+                            info!("Grabbing the misc device input exclusively");
+                            device
+                                .grab(GrabMode::Grab)
+                                .expect("Could not grab the misc device, terminating now.");
+
+                            device
+                        }
+
+                        Err(_e) => return Err(EvdevError::EvdevHandleError {}.into()),
+                    },
+
+                    Err(_e) => return Err(EvdevError::EvdevError {}.into()),
+                },
+
+                Err(_e) => return Err(EvdevError::UdevError {}.into()),
+            };
+
+            loop {
+                // check if we shall terminate the input thread, before we poll the device
+                if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                match device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
+                    Ok(k) => {
+                        trace!("Misc event: {:?}", k.1);
+
+                        // reset "to be dropped" flag
+                        // macros::DROP_CURRENT_MISC_INPUT.store(false, Ordering::SeqCst);
+
+                        // directly mirror pointer motion events to reduce input lag.
+                        // This currently prohibits further manipulation of pointer motion events
+                        macros::UINPUT_TX
+                            .lock()
+                            .as_ref()
+                            .unwrap()
+                            .send(macros::Message::MirrorKey(k.1.clone()))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending misc device input event: {}", e)
+                            });
+
+                        misc_tx.send(Some(k.1)).unwrap_or_else(|e| {
+                            error!(
+                                "Could not send a misc device input event to the main thread: {}",
+                                e
+                            )
+                        });
+
+                        // update AFK timer
+                        *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                    }
+
+                    Err(e) => {
+                        if e.raw_os_error().unwrap() == libc::ENODEV {
+                            error!("Fatal: Misc device went away: {}", e);
 
                             QUIT.store(true, Ordering::SeqCst);
 
@@ -1845,7 +1958,7 @@ async fn process_keyboard_event(
 async fn run_main_loop(
     keyboard_devices: Vec<(KeyboardDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
     mouse_devices: Vec<(MouseDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
-    misc_devices: Vec<MiscDevice>,
+    misc_devices: Vec<(MiscDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
     dbus_api_tx: &Sender<DbusApiEvent>,
     ctrl_c_rx: &Receiver<bool>,
     dbus_rx: &Receiver<dbus_interface::Message>,
@@ -2305,7 +2418,7 @@ async fn run_main_loop(
 
                     let misc_future = task::spawn(async move {
                         for device in misc_devices.iter() {
-                            device.write().send_led_map(&script::LED_MAP.read())?;
+                            device.0.write().send_led_map(&script::LED_MAP.read())?;
                         }
 
                         Ok::<(), eyre::Report>(())
@@ -2812,10 +2925,35 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
 
                 // initialize misc devices
-                for (_index, device) in devices.2.iter().enumerate() {
+                for (index, device) in devices.2.iter().enumerate() {
                     init_misc_device(device, &hidapi);
 
-                    misc_devices.push(device);
+                    if device.read().has_input_device() {
+                        let usb_vid = device.read().get_usb_vid();
+                        let usb_pid = device.read().get_usb_pid();
+
+                        // spawn a thread to handle keyboard input
+                        info!("Spawning misc device input thread...");
+
+                        let (misc_tx, misc_rx) = unbounded();
+                        spawn_misc_input_thread(
+                            misc_tx.clone(),
+                            device.clone(),
+                            index,
+                            usb_vid,
+                            usb_pid,
+                        )
+                        .unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
+
+                        misc_devices.push((device, misc_rx, misc_tx));
+                    } else {
+                        let (misc_tx, misc_rx) = unbounded();
+                        misc_devices.push((device, misc_rx, misc_tx));
+                    }
+
                     crate::MISC_DEVICES.lock().push(device.clone());
                 }
 
@@ -2863,7 +3001,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         .iter()
                         .map(|d| (d.0.clone(), d.1.clone()))
                         .collect::<Vec<_>>(),
-                    misc_devices.iter().map(|&e| e.clone()).collect::<Vec<_>>(),
+                    misc_devices
+                        .iter()
+                        .map(|d| (d.0.clone(), d.1.clone()))
+                        .collect::<Vec<_>>(),
                     &dbus_api_tx,
                     &ctrl_c_rx,
                     &dbus_rx,
@@ -2943,11 +3084,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 // set LEDs of all misc devices to a known final state, then close all associated devices
                 let shutdown_misc = async {
                     for device in misc_devices.iter() {
-                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
+                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
-                        device.write().close_all().unwrap_or_else(|e| {
+                        device.0.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
                     }

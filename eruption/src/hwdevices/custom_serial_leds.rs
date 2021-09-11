@@ -169,6 +169,10 @@ impl DeviceTrait for CustomSerialLeds {
 }
 
 impl MiscDeviceTrait for CustomSerialLeds {
+    fn has_input_device(&self) -> bool {
+        false
+    }
+
     fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 

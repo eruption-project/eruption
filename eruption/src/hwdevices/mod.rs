@@ -748,6 +748,9 @@ pub trait MouseDeviceTrait: DeviceTrait {
 
 /// Misc Devices
 pub trait MiscDeviceTrait: DeviceTrait {
+    /// Returns true when the device supports an input sub-device like e.g. a dial or volume wheel on a headset
+    fn has_input_device(&self) -> bool;
+
     /// Set the device specific brightness
     fn set_local_brightness(&mut self, brightness: i32) -> Result<()>;
 

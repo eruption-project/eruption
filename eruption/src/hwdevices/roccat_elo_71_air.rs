@@ -32,8 +32,10 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
-pub const LED_INTERFACE: i32 = 5; // LED USB sub device
+// pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
+// pub const LED_INTERFACE: i32 = 5; // LED USB sub device
+
+pub const LED_INTERFACE: i32 = 0; // LED USB sub device
 
 // canvas to LED index mapping
 pub const LED_0: usize = 0;
@@ -49,22 +51,24 @@ pub fn bind_hiddev(
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
             && device.serial_number().unwrap_or("") == serial
-            && device.interface_number() == CTRL_INTERFACE
+            && device.interface_number() == LED_INTERFACE // CTRL_INTERFACE
     });
 
-    let led_dev = hidapi.device_list().find(|&device| {
-        device.vendor_id() == usb_vid
-            && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
-            && device.interface_number() == LED_INTERFACE
-    });
+    // let led_dev = hidapi.device_list().find(|&device| {
+    //     device.vendor_id() == usb_vid
+    //         && device.product_id() == usb_pid
+    //         && device.serial_number().unwrap_or("") == serial
+    //         && device.interface_number() == LED_INTERFACE
+    // });
 
-    if ctrl_dev.is_none() || led_dev.is_none() {
+    if ctrl_dev.is_none()
+    /*|| led_dev.is_none()*/
+    {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
         Ok(Arc::new(RwLock::new(Box::new(RoccatElo71Air::bind(
             ctrl_dev.unwrap(),
-            led_dev.unwrap(),
+            // led_dev.unwrap(),
         )))))
     }
 }
@@ -95,11 +99,10 @@ pub struct RoccatElo71Air {
 
     pub is_bound: bool,
     pub ctrl_hiddev_info: Option<hidapi::DeviceInfo>,
-    pub led_hiddev_info: Option<hidapi::DeviceInfo>,
-
+    // pub led_hiddev_info: Option<hidapi::DeviceInfo>,
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
-    pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+    // pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     // device specific configuration options
     pub brightness: i32,
@@ -107,7 +110,7 @@ pub struct RoccatElo71Air {
 
 impl RoccatElo71Air {
     /// Binds the driver to the supplied HID device
-    pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
+    pub fn bind(ctrl_dev: &hidapi::DeviceInfo /*, led_dev: &hidapi::DeviceInfo */) -> Self {
         info!("Bound driver: ROCCAT/Turtle Beach Elo 7.1 Air");
 
         Self {
@@ -115,12 +118,10 @@ impl RoccatElo71Air {
 
             is_bound: true,
             ctrl_hiddev_info: Some(ctrl_dev.clone()),
-            led_hiddev_info: Some(led_dev.clone()),
-
+            // led_hiddev_info: Some(led_dev.clone()),
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
-            led_hiddev: Arc::new(Mutex::new(None)),
-
+            // led_hiddev: Arc::new(Mutex::new(None)),
             brightness: 100,
         }
     }
@@ -437,12 +438,12 @@ impl DeviceTrait for RoccatElo71Air {
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
-            trace!("Opening LED device...");
+            // trace!("Opening LED device...");
 
-            match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.led_hiddev.lock() = Some(dev),
-                Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
-            };
+            // match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
+            //     Ok(dev) => *self.led_hiddev.lock() = Some(dev),
+            //     Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
+            // };
 
             self.is_opened = true;
 
@@ -462,8 +463,8 @@ impl DeviceTrait for RoccatElo71Air {
             trace!("Closing control device...");
             *self.ctrl_hiddev.lock() = None;
 
-            trace!("Closing LED device...");
-            *self.led_hiddev.lock() = None;
+            // trace!("Closing LED device...");
+            // *self.led_hiddev.lock() = None;
 
             self.is_opened = false;
 
@@ -589,6 +590,10 @@ impl DeviceTrait for RoccatElo71Air {
 }
 
 impl MiscDeviceTrait for RoccatElo71Air {
+    fn has_input_device(&self) -> bool {
+        true
+    }
+
     fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
