@@ -470,9 +470,10 @@ impl Plugin for AnimalPlugin {
                         Ok(idx)
                     })
                     .map_err(|e: eyre::Error| {
-                        LuaError::RuntimeError(
-                            format!("Could not instantiate the animal object: {}", e),
-                        )
+                        LuaError::RuntimeError(format!(
+                            "Could not instantiate the animal object: {}",
+                            e
+                        ))
                     })
             },
         )?;

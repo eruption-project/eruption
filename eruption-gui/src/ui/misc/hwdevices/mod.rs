@@ -60,7 +60,7 @@ pub struct Rectangle {
 
 pub trait MiscDevice {
     fn get_device(&self) -> u64;
-    
+
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     fn draw(&self, _da: &gtk::DrawingArea, context: &cairo::Context) -> Result<()>;

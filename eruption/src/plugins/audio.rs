@@ -157,7 +157,9 @@ impl AudioPlugin {
     pub fn get_audio_loudness() -> isize {
         AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
+            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
+        {
             try_start_audio_grabber()
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
@@ -168,7 +170,9 @@ impl AudioPlugin {
     pub fn get_audio_spectrum() -> Vec<f32> {
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
+            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
+        {
             try_start_audio_grabber()
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }
@@ -177,7 +181,9 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128 {
+        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
+            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
+        {
             try_start_audio_grabber()
                 .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
         }

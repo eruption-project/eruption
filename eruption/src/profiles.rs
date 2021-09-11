@@ -640,7 +640,7 @@ mod tests {
     #[test]
     fn enum_profile_files() -> super::Result<()> {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        let files = super::get_profile_files_from(&vec![path.join("../support/tests/assets/")])?;
+        let files = super::get_profile_files_from(&[path.join("../support/tests/assets/")])?;
 
         assert!(
             files.contains(&path.join("../support/tests/assets/default.profile")),
@@ -654,7 +654,7 @@ mod tests {
     #[test]
     fn enum_profiles() -> super::Result<()> {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        let profiles = super::get_profiles_from(&vec![path.join("../support/tests/assets/")])?;
+        let profiles = super::get_profiles_from(&[path.join("../support/tests/assets/")])?;
 
         assert!(
             profiles
@@ -671,7 +671,7 @@ mod tests {
 
     #[test]
     fn find_profile_path_by_uuid() -> super::Result<()> {
-        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+        let uuid = Uuid::from_str("5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =
@@ -679,7 +679,7 @@ mod tests {
                 .unwrap();
 
         assert!(
-            profile_path == PathBuf::from(path.join("../support/tests/assets/default.profile")),
+            profile_path == path.join("../support/tests/assets/default.profile"),
             "Invalid path {:#?}",
             profile_path
         );
@@ -689,7 +689,7 @@ mod tests {
 
     #[test]
     fn load_profile_by_path() -> super::Result<()> {
-        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+        let uuid = Uuid::from_str("5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =
@@ -706,7 +706,7 @@ mod tests {
 
     #[test]
     fn test_profile_parameters() -> super::Result<()> {
-        let uuid = Uuid::from_str(&"5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
+        let uuid = Uuid::from_str("5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
 
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path =

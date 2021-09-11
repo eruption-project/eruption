@@ -75,7 +75,8 @@ impl SensorsPlugin {
         if components.len() > 1 {
             components
                 .iter()
-                .find(|c| c.label().contains("Package id 0")).map(|c| c.temperature())
+                .find(|c| c.label().contains("Package id 0"))
+                .map(|c| c.temperature())
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -92,7 +93,8 @@ impl SensorsPlugin {
         if components.len() > 1 {
             components
                 .iter()
-                .find(|c| c.label().contains("Package id 0")).map(|c| c.temperature())
+                .find(|c| c.label().contains("Package id 0"))
+                .map(|c| c.temperature())
                 .unwrap_or(0.0)
         } else {
             0.0

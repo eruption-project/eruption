@@ -37,12 +37,15 @@ thread_local! {
 pub struct RoccatVulcanTKL {
     pub device: u64,
     pub pixbuf: Pixbuf,
-
 }
 
 impl RoccatVulcanTKL {
     pub fn new(device: u64) -> Self {
-        RoccatVulcanTKL { device, pixbuf:Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-tkl.png").unwrap() }
+        RoccatVulcanTKL {
+            device,
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-vulcan-tkl.png")
+                .unwrap(),
+        }
     }
 }
 
@@ -57,7 +60,6 @@ impl Keyboard for RoccatVulcanTKL {
 
     fn draw_keyboard(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
         let pixbuf = &self.pixbuf;
-            
 
         let width = da.allocated_width() as f64;
         // let height = da.allocated_height() as f64;

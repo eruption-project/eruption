@@ -133,11 +133,13 @@ pub mod slot {
         for blocking::Proxy<'a, C>
     {
         fn get_slot_profiles(&self) -> Result<Vec<String>, dbus::Error> {
-            self.method_call("org.eruption.Slot", "GetSlotProfiles", ()).map(|r: (Vec<String>,)| r.0)
+            self.method_call("org.eruption.Slot", "GetSlotProfiles", ())
+                .map(|r: (Vec<String>,)| r.0)
         }
 
         fn switch_slot(&self, slot: u64) -> Result<bool, dbus::Error> {
-            self.method_call("org.eruption.Slot", "SwitchSlot", (slot,)).map(|r: (bool,)| r.0)
+            self.method_call("org.eruption.Slot", "SwitchSlot", (slot,))
+                .map(|r: (bool,)| r.0)
         }
 
         fn active_slot(&self) -> Result<u64, dbus::Error> {
@@ -198,7 +200,8 @@ pub mod slot {
         for blocking::Proxy<'a, C>
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -235,7 +238,8 @@ pub mod slot {
                 "org.freedesktop.DBus.Properties",
                 "Get",
                 (interface_name, property_name),
-            ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+            )
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(
@@ -249,12 +253,15 @@ pub mod slot {
                 "org.freedesktop.DBus.Properties",
                 "GetAll",
                 (interface_name,),
-            ).map(|r: (
+            )
+            .map(
+                |r: (
                     ::std::collections::HashMap<
                         String,
                         arg::Variant<Box<dyn arg::RefArg + 'static>>,
                     >,
-                )| r.0)
+                )| r.0,
+            )
         }
 
         fn set(
@@ -318,11 +325,13 @@ pub mod profile {
         for blocking::Proxy<'a, C>
     {
         fn enum_profiles(&self) -> Result<Vec<(String, String)>, dbus::Error> {
-            self.method_call("org.eruption.Profile", "EnumProfiles", ()).map(|r: (Vec<(String, String)>,)| r.0)
+            self.method_call("org.eruption.Profile", "EnumProfiles", ())
+                .map(|r: (Vec<(String, String)>,)| r.0)
         }
 
         fn switch_profile(&self, filename: &str) -> Result<bool, dbus::Error> {
-            self.method_call("org.eruption.Profile", "SwitchProfile", (filename,)).map(|r: (bool,)| r.0)
+            self.method_call("org.eruption.Profile", "SwitchProfile", (filename,))
+                .map(|r: (bool,)| r.0)
         }
 
         fn active_profile(&self) -> Result<String, dbus::Error> {
@@ -384,7 +393,8 @@ pub mod profile {
         for blocking::Proxy<'a, C>
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -421,7 +431,8 @@ pub mod profile {
                 "org.freedesktop.DBus.Properties",
                 "Get",
                 (interface_name, property_name),
-            ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+            )
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(
@@ -435,12 +446,15 @@ pub mod profile {
                 "org.freedesktop.DBus.Properties",
                 "GetAll",
                 (interface_name,),
-            ).map(|r: (
+            )
+            .map(
+                |r: (
                     ::std::collections::HashMap<
                         String,
                         arg::Variant<Box<dyn arg::RefArg + 'static>>,
                     >,
-                )| r.0)
+                )| r.0,
+            )
         }
 
         fn set(
@@ -506,7 +520,8 @@ pub mod config {
         for blocking::Proxy<'a, C>
     {
         fn write_file(&self, filename: &str, data: &str) -> Result<bool, dbus::Error> {
-            self.method_call("org.eruption.Config", "WriteFile", (filename, data)).map(|r: (bool,)| r.0)
+            self.method_call("org.eruption.Config", "WriteFile", (filename, data))
+                .map(|r: (bool,)| r.0)
         }
 
         fn brightness(&self) -> Result<i64, dbus::Error> {
@@ -552,7 +567,8 @@ pub mod config {
         for blocking::Proxy<'a, C>
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -589,7 +605,8 @@ pub mod config {
                 "org.freedesktop.DBus.Properties",
                 "Get",
                 (interface_name, property_name),
-            ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+            )
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(
@@ -603,12 +620,15 @@ pub mod config {
                 "org.freedesktop.DBus.Properties",
                 "GetAll",
                 (interface_name,),
-            ).map(|r: (
+            )
+            .map(
+                |r: (
                     ::std::collections::HashMap<
                         String,
                         arg::Variant<Box<dyn arg::RefArg + 'static>>,
                     >,
-                )| r.0)
+                )| r.0,
+            )
         }
 
         fn set(
@@ -676,13 +696,15 @@ pub mod status {
         for blocking::Proxy<'a, C>
     {
         fn get_led_colors(&self) -> Result<Vec<(u8, u8, u8, u8)>, dbus::Error> {
-            self.method_call("org.eruption.Status", "GetLedColors", ()).map(|r: (Vec<(u8, u8, u8, u8)>,)| r.0)
+            self.method_call("org.eruption.Status", "GetLedColors", ())
+                .map(|r: (Vec<(u8, u8, u8, u8)>,)| r.0)
         }
 
         fn get_managed_devices(
             &self,
         ) -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>), dbus::Error> {
-            self.method_call("org.eruption.Status", "GetManagedDevices", ()).map(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| r.0)
+            self.method_call("org.eruption.Status", "GetManagedDevices", ())
+                .map(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| r.0)
         }
 
         fn running(&self) -> Result<bool, dbus::Error> {
@@ -702,7 +724,8 @@ pub mod status {
         OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -739,7 +762,8 @@ pub mod status {
                 "org.freedesktop.DBus.Properties",
                 "Get",
                 (interface_name, property_name),
-            ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+            )
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(
@@ -753,12 +777,15 @@ pub mod status {
                 "org.freedesktop.DBus.Properties",
                 "GetAll",
                 (interface_name,),
-            ).map(|r: (
+            )
+            .map(
+                |r: (
                     ::std::collections::HashMap<
                         String,
                         arg::Variant<Box<dyn arg::RefArg + 'static>>,
                     >,
-                )| r.0)
+                )| r.0,
+            )
         }
 
         fn set(

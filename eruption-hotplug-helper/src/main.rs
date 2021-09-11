@@ -133,7 +133,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         let mut errors_present = false;
 
         let level_filter = match env::var("RUST_LOG")
-            .unwrap_or("info".to_string())
+            .unwrap_or_else(|_| "info".to_string())
             .to_lowercase()
             .as_str()
         {

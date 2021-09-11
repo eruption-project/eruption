@@ -308,10 +308,8 @@ impl RoccatElo71Air {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    if buf[1] == 0x00 {
+                    if buf[1] == 0x00 || buf[0..2] == [0xe6, 0x06] {
                         Ok(())
-                    } else if buf == [0xe6, 0x06] {
-                        Ok(()) // but reset required
                     } else {
                         Err(HwDeviceError::InvalidResult {}.into())
                     }
@@ -342,7 +340,7 @@ impl RoccatElo71Air {
 
                     if buf[1] == 0x00 {
                         Ok(QueryResult::Ok)
-                    } else if buf == [0xe6, 0x06] {
+                    } else if buf[0..2] == [0xe6, 0x06] {
                         Ok(QueryResult::ResetRequired)
                     } else {
                         Ok(QueryResult::Invalid)

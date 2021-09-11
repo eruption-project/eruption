@@ -18,7 +18,7 @@
 // use crate::constants;
 // use byteorder::{ByteOrder, LittleEndian};
 use async_trait::async_trait;
-use std::{sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 
 use super::Sensor;
 
