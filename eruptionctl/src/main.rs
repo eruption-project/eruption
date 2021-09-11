@@ -507,14 +507,13 @@ async fn print_device_header(device: u64) -> Result<()> {
                     // format!("{:02}", base_index).bold(),
                     // format!("{:04x}", dev.0),
                     // format!("{:04x}", dev.1),
-                    "{} {} ({})",
+                    "{} {}",
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
                     device::get_device_model(dev.0, dev.1)
                         .unwrap_or("<unknown model>")
                         .bold(),
-                    device
                 );
             }
 
@@ -530,14 +529,13 @@ async fn print_device_header(device: u64) -> Result<()> {
                     // format!("{:02}", base_index).bold(),
                     // format!("{:04x}", dev.0),
                     // format!("{:04x}", dev.1),
-                    "{} {} ({})",
+                    "{} {}",
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
                     device::get_device_model(dev.0, dev.1)
                         .unwrap_or("<unknown model>")
                         .bold(),
-                    device
                 );
             }
 
@@ -553,14 +551,13 @@ async fn print_device_header(device: u64) -> Result<()> {
                     // format!("{:02}", base_index).bold(),
                     // format!("{:04x}", dev.0),
                     // format!("{:04x}", dev.1),
-                    "{} {} ({})",
+                    "{} {}",
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
                     device::get_device_model(dev.0, dev.1)
                         .unwrap_or("<unknown model>")
                         .bold(),
-                    device
                 );
             }
 
