@@ -308,6 +308,7 @@ impl RoccatElo71Air {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
+                    #[allow(clippy::if_same_then_else)]
                     if buf[1] == 0x00 || buf[0..5] == [0xe6, 0x06, 0x03, 0x00, 0x04] {
                         Ok(())
                     } else if buf[0..4] == [0xa1, 0x84, 0x06, 0x02] {
