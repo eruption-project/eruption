@@ -932,7 +932,7 @@ fn switch_profile(
         let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
 
         #[cfg(debug_assertions)]
-        let script_dir = PathBuf::from("eruption/src/scripts/");
+        let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
 
         let profile = profiles::get_fail_safe_profile();
 

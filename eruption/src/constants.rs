@@ -35,11 +35,11 @@ pub const DEFAULT_CONFIG_FILE: &str = "support/config/eruption.conf";
 
 /// Default profile directory
 #[cfg(debug_assertions)]
-pub const DEFAULT_PROFILE_DIR: &str = "support/profiles/";
+pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 
 /// Default script directory
 #[cfg(debug_assertions)]
-pub const DEFAULT_SCRIPT_DIR: &str = "eruption/src/scripts/";
+pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";

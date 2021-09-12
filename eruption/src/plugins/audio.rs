@@ -329,7 +329,7 @@ mod util {
 
     pub fn load_sfx<P: AsRef<Path>>(path: P) -> Result<Vec<u8>> {
         #[cfg(debug_assertions)]
-        let prefix = PathBuf::from("support/sfx");
+        let prefix = PathBuf::from("/usr/share/eruption/sfx");
 
         #[cfg(not(debug_assertions))]
         let prefix = PathBuf::from("/usr/share/eruption/sfx");

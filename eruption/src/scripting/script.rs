@@ -1345,7 +1345,7 @@ fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
 
     #[cfg(debug_assertions)]
     lua_ctx
-        .load("package.path = package.path .. ';eruption/src/scripts/lib/?;eruption/src/scripts/lib/?.lua'")
+        .load("package.path = package.path .. ';/usr/share/eruption/scripts/lib/?;/usr/share/eruption/scripts/lib/?.lua'")
         .exec()
         .unwrap();
 
