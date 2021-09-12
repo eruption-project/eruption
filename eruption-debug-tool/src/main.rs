@@ -634,7 +634,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 let mut buf = Vec::new();
 
                 for s in data.iter() {
-                    buf.push(util::parse_hex_vec(&s)?);
+                    buf.push(util::parse_hex_vec(s)?);
                 }
 
                 for i in 0x00..=0xff {
@@ -655,7 +655,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
-                result.sort();
+                result.sort_unstable();
 
                 if result.is_empty() {
                     println!("No matches");

@@ -187,7 +187,7 @@ pub fn find_crc8_from_params(sum: u8, buf: &[u8], p: &[(u8, u8)]) -> Vec<(u8, u8
     let mut result = Vec::new();
 
     for (i, j) in p {
-        let crc8 = crc8(&buf, *i /*, *j*/);
+        let crc8 = crc8(buf, *i /*, *j*/);
 
         if crc8 == sum {
             result.push((*i, *j));
