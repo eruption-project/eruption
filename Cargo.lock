@@ -383,6 +383,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc8"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b31d2174830f395fd7e413c2f8a119252de36356982f805f495269331e97559e"
+
+[[package]]
 name = "crossbeam"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -579,6 +585,7 @@ dependencies = [
  "color-eyre",
  "colorgrad",
  "config",
+ "crc8",
  "crossbeam",
  "csscolorparser",
  "ctrlc",
@@ -634,11 +641,13 @@ dependencies = [
  "clap_generate",
  "color-eyre",
  "colored",
+ "crc8",
  "crossbeam",
  "ctrlc",
  "eyre",
  "hexdump",
  "hidapi",
+ "lazy_static",
  "libc",
  "log",
  "nix 0.22.1",

@@ -21,6 +21,8 @@ use std::{cell::RefCell, thread};
 
 // use crate::constants;
 
+use crate::util;
+
 use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
 
 pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
@@ -222,7 +224,7 @@ impl DeviceTrait for RoccatKain2xx {
         }
     }
 
-    fn send_led_map(&self, _led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
         crate::println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -231,10 +233,32 @@ impl DeviceTrait for RoccatKain2xx {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 22] = [
-                0x08, 0x09, 0x33, 0x00, 0xfd, 0x01, 0x46, 0xf5, 0xff, 0x00, 0x82, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            let mut buf: [u8; 22] = [
+                0x08,
+                0x09,
+                0x33,
+                0x00,
+                led_map[0].r,
+                led_map[0].g,
+                led_map[0].b,
+                led_map[1].r,
+                led_map[1].g,
+                led_map[1].b,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
             ];
+
+            buf[10] = util::crc8(&buf[4..10], 0x32 /*, 0x01 */);
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
@@ -244,20 +268,7 @@ impl DeviceTrait for RoccatKain2xx {
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
             }
 
-            thread::sleep(Duration::from_millis(500));
-
-            let buf: [u8; 22] = [
-                0x08, 0x09, 0x33, 0x00, 0xf5, 0x00, 0xff, 0x12, 0x00, 0xff, 0xd5, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
-
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
-                }
-
-                Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            thread::sleep(Duration::from_millis(70));
 
             Ok(())
         }
@@ -275,6 +286,23 @@ impl DeviceTrait for RoccatKain2xx {
                 r: 0,
                 g: 0,
                 b: 255,
+                a: 255,
+            },
+        ])?;
+
+        thread::sleep(Duration::from_millis(500));
+
+        self.send_led_map(&[
+            RGBA {
+                r: 0x59,
+                g: 0xa5,
+                b: 0xff,
+                a: 0xff,
+            },
+            RGBA {
+                r: 0,
+                g: 0,
+                b: 0,
                 a: 255,
             },
         ])?;

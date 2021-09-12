@@ -16,11 +16,18 @@
 */
 
 use colored::*;
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use std::{collections::HashMap, fmt, fs};
 use std::{num::ParseIntError, path::Path};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+lazy_static! {
+    static ref CRC8: Arc<Mutex<crc8::Crc8>> = Arc::new(Mutex::new(crc8::Crc8::create_msb(0x01)));
+}
 
 pub struct HexSlice<'a>(pub &'a [u8]);
 
@@ -168,4 +175,24 @@ pub fn parse_hex_vec(src: &str) -> Result<Vec<u8>> {
     }
 
     Ok(result)
+}
+
+pub fn crc8(data: &[u8], init: u8) -> u8 {
+    let sum = CRC8.lock().calc(data, data.len() as i32, init);
+
+    sum
+}
+
+pub fn find_crc8_from_params(sum: u8, buf: &[u8], p: &[(u8, u8)]) -> Vec<(u8, u8)> {
+    let mut result = Vec::new();
+
+    for (i, j) in p {
+        let crc8 = crc8(&buf, *i /*, *j*/);
+
+        if crc8 == sum {
+            result.push((*i, *j));
+        }
+    }
+
+    result
 }

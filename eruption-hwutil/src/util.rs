@@ -14,3 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// type Result<T> = std::result::Result<T, eyre::Error>;
+
+pub fn crc8(_data: &[u8], _init: u8) -> u8 {
+    0
+}

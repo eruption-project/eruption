@@ -64,6 +64,8 @@ dbus-tree = "0.9.1"
 paste = "1.0.5"
 bitvec = "0.22.3"
 serialport = "4.0.1"
+crc8 = "0.1.1"
+
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

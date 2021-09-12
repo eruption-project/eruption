@@ -22,6 +22,7 @@ use log::*;
 use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
 // use std::time::Duration;
+use lazy_static::lazy_static;
 use std::any::Any;
 use std::{mem::size_of, sync::Arc};
 
@@ -40,8 +41,12 @@ pub const LED_INTERFACE: i32 = 2; // LED USB sub device
 // pub const NUM_BUTTONS: usize = 9;
 
 // canvas to LED index mapping
-// pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-// pub const LED_1: usize = constants::CANVAS_SIZE - 1;
+pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+pub const LED_1: usize = constants::CANVAS_SIZE - 1;
+
+lazy_static! {
+    static ref CRC8: Arc<Mutex<crc8::Crc8>> = Arc::new(Mutex::new(crc8::Crc8::create_msb(0x01)));
+}
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -773,7 +778,7 @@ impl MouseDeviceTrait for RoccatKain2xx {
         }
     }
 
-    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -786,12 +791,32 @@ impl MouseDeviceTrait for RoccatKain2xx {
             let led_dev = self.led_hiddev.as_ref().lock();
             let led_dev = led_dev.as_ref().unwrap();
 
-            // TODO: Implement CRC8? and arbitrary RGB colors
-
-            let buf: [u8; 22] = [
-                0x08, 0x09, 0x33, 0x00, 0xfd, 0x01, 0x46, 0xf5, 0xff, 0x00, 0x82, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            let mut buf: [u8; 22] = [
+                0x08,
+                0x09,
+                0x33,
+                0x00,
+                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
             ];
+
+            buf[10] = CRC8.lock().calc(&buf[4..10], 6, 0x32);
 
             match led_dev.send_feature_report(&buf) {
                 Ok(_result) => {
@@ -800,21 +825,6 @@ impl MouseDeviceTrait for RoccatKain2xx {
 
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
             }
-
-            // thread::sleep(Duration::from_millis(70));
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x09, 0x33, 0x00, 0xf5, 0x00, 0xff, 0x12, 0x00, 0xff, 0xd5, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // match led_dev.send_feature_report(&buf) {
-            //     Ok(_result) => {
-            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-            //     }
-
-            //     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-            // }
 
             Ok(())
         }

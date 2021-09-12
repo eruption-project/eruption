@@ -116,10 +116,25 @@ pub enum Subcommands {
         device: usize,
     },
 
+    /// Some utilities
+    Utils {
+        #[clap(subcommand)]
+        command: UtilsSubcommands,
+    },
+
     /// Generate shell completions
     Completions {
         #[clap(subcommand)]
         command: CompletionsSubcommands,
+    },
+}
+
+/// Subcommands of the "completions" command
+#[derive(Debug, Clone, Clap)]
+pub enum UtilsSubcommands {
+    Crc8 {
+        /// Hex bytes e.g.: [0x09, 0x00, 0x1f]
+        data: Vec<String>,
     },
 }
 
@@ -612,6 +627,45 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 }
             }
         }
+
+        Subcommands::Utils { command } => match command {
+            UtilsSubcommands::Crc8 { data } => {
+                let mut result = Vec::new();
+                let mut buf = Vec::new();
+
+                for s in data.iter() {
+                    buf.push(util::parse_hex_vec(&s)?);
+                }
+
+                for i in 0x00..=0xff {
+                    for j in 0x00..=0xff {
+                        result.push((i, j));
+                    }
+                }
+
+                for b in buf.iter() {
+                    for i in 0x00..=0xff {
+                        // for j in 0x00..=0xff {
+                        let crc8 = util::crc8(&b[1..], i /*, j*/);
+
+                        if crc8 == b[0] {
+                            result = util::find_crc8_from_params(crc8, &b[1..], &result);
+                        }
+                        // }
+                    }
+                }
+
+                result.sort();
+
+                if result.is_empty() {
+                    println!("No matches");
+                } else {
+                    for e in result.iter() {
+                        println!("{}, {}", e.0, e.1);
+                    }
+                }
+            }
+        },
 
         Subcommands::Completions { command } => {
             use clap::IntoApp;
