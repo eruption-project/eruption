@@ -183,14 +183,21 @@ pub fn crc8(data: &[u8], init: u8) -> u8 {
     sum
 }
 
+pub fn crc8_slow_with_poly(data: &[u8], init: u8, poly: u8) -> u8 {
+    // TODO: avoid rebuilding of lookup table on each call
+    let sum = crc8::Crc8::create_msb(poly).calc(data, data.len() as i32, init);
+
+    sum
+}
+
 pub fn find_crc8_from_params(sum: u8, buf: &[u8], p: &[(u8, u8)]) -> Vec<(u8, u8)> {
     let mut result = Vec::new();
 
-    for (i, j) in p {
-        let crc8 = crc8(buf, *i /*, *j*/);
+    for (init, poly) in p {
+        let crc8 = crc8_slow_with_poly(buf, *init, *poly);
 
         if crc8 == sum {
-            result.push((*i, *j));
+            result.push((*init, *poly));
         }
     }
 

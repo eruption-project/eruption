@@ -1,10 +1,3 @@
-
- Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
-
- You can re-enable Eruption with this command afterwards:
- $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
- 
 _eruption-debug-tool() {
     local i cur prev opts cmds
     COMPREPLY=()
@@ -47,6 +40,9 @@ _eruption-debug-tool() {
             report)
                 cmd+="__report"
                 ;;
+            reverse-crc8)
+                cmd+="__reverse__crc8"
+                ;;
             run-tests)
                 cmd+="__run__tests"
                 ;;
@@ -55,6 +51,9 @@ _eruption-debug-tool() {
                 ;;
             trace)
                 cmd+="__trace"
+                ;;
+            utils)
+                cmd+="__utils"
                 ;;
             write)
                 cmd+="__write"
@@ -69,7 +68,7 @@ _eruption-debug-tool() {
 
     case "${cmd}" in
         eruption__debug__tool)
-            opts=" -h -V -v  --help --version --verbose  list report trace state-diff read write run-tests completions help"
+            opts=" -h -V -v  --help --version --verbose  list report trace state-diff read write run-tests utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -267,6 +266,36 @@ _eruption-debug-tool() {
         eruption__debug__tool__trace)
             opts=" -h -V  --help --version  <DEVICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__utils)
+            opts=" -h -V  --help --version  reverse-crc8"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__utils__reverse__crc8)
+            opts="  --help --version  <DATA>... "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

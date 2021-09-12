@@ -1,10 +1,3 @@
-
- Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
-
- You can re-enable Eruption with this command afterwards:
- $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
- 
 #compdef eruption-debug-tool
 
 autoload -U is-at-least
@@ -102,6 +95,32 @@ _arguments "${_arguments_options[@]}" \
 ':device -- The index of the device, can be found with the list sub-command:' \
 && ret=0
 ;;
+(utils)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+":: :_eruption-debug-tool__utils_commands" \
+"*::: :->utils" \
+&& ret=0
+case $state in
+    (utils)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-utils-command-$line[1]:"
+        case $line[1] in
+            (reverse-crc8)
+_arguments "${_arguments_options[@]}" \
+'--help[Print help information]' \
+'--version[Print version information]' \
+'*::data -- Hex byte vectors each starting with expected CRC8, no spaces allowed. \[0x32,0xff,0x00,0x00,0x00,0x00,0xff\] \[0x31,0x59,0xa5,0xff,0x00,0x00,0x00\] \[0x31,0x00,0x00,0xff,0xff,0x00,0x00\]:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (completions)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -174,6 +193,7 @@ _eruption-debug-tool_commands() {
 'read:Read a single USB HID feature report from device' \
 'write:Send a single USB HID feature report to device (dangerous)' \
 'run-tests:Send a device specific init sequence and try to set colors' \
+'utils:Special utility functions, like searching for CRC polynoms and parameters' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -230,6 +250,11 @@ _eruption-debug-tool__report_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-debug-tool report commands' commands "$@"
 }
+(( $+functions[_eruption-debug-tool__utils__reverse-crc8_commands] )) ||
+_eruption-debug-tool__utils__reverse-crc8_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool utils reverse-crc8 commands' commands "$@"
+}
 (( $+functions[_eruption-debug-tool__run-tests_commands] )) ||
 _eruption-debug-tool__run-tests_commands() {
     local commands; commands=()
@@ -244,6 +269,13 @@ _eruption-debug-tool__state-diff_commands() {
 _eruption-debug-tool__trace_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-debug-tool trace commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils_commands] )) ||
+_eruption-debug-tool__utils_commands() {
+    local commands; commands=(
+'reverse-crc8:Find CRC8 polynoms and init params by performing an exhaustive search' \
+    )
+    _describe -t commands 'eruption-debug-tool utils commands' commands "$@"
 }
 (( $+functions[_eruption-debug-tool__write_commands] )) ||
 _eruption-debug-tool__write_commands() {

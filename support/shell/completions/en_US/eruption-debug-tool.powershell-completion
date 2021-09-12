@@ -1,11 +1,4 @@
 
- Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
-
- You can re-enable Eruption with this command afterwards:
- $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
- 
-
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
@@ -40,6 +33,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('read', 'read', [CompletionResultType]::ParameterValue, 'Read a single USB HID feature report from device')
             [CompletionResult]::new('write', 'write', [CompletionResultType]::ParameterValue, 'Send a single USB HID feature report to device (dangerous)')
             [CompletionResult]::new('run-tests', 'run-tests', [CompletionResultType]::ParameterValue, 'Send a device specific init sequence and try to set colors')
+            [CompletionResult]::new('utils', 'utils', [CompletionResultType]::ParameterValue, 'Special utility functions, like searching for CRC polynoms and parameters')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -90,6 +84,19 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            break
+        }
+        'eruption-debug-tool;utils' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('reverse-crc8', 'reverse-crc8', [CompletionResultType]::ParameterValue, 'Find CRC8 polynoms and init params by performing an exhaustive search')
+            break
+        }
+        'eruption-debug-tool;utils;reverse-crc8' {
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             break
         }

@@ -116,7 +116,7 @@ pub enum Subcommands {
         device: usize,
     },
 
-    /// Some utilities
+    /// Special utility functions, like searching for CRC polynoms and parameters
     Utils {
         #[clap(subcommand)]
         command: UtilsSubcommands,
@@ -129,11 +129,13 @@ pub enum Subcommands {
     },
 }
 
-/// Subcommands of the "completions" command
+/// Subcommands of the "utils" command
 #[derive(Debug, Clone, Clap)]
 pub enum UtilsSubcommands {
-    Crc8 {
-        /// Hex bytes e.g.: [0x09, 0x00, 0x1f]
+    /// Find CRC8 polynoms and init params by performing an exhaustive search
+    ReverseCrc8 {
+        /// Hex byte vectors each starting with expected CRC8, no spaces allowed.
+        /// [0x32,0xff,0x00,0x00,0x00,0x00,0xff] [0x31,0x59,0xa5,0xff,0x00,0x00,0x00] [0x31,0x00,0x00,0xff,0xff,0x00,0x00]
         data: Vec<String>,
     },
 }
@@ -629,7 +631,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Utils { command } => match command {
-            UtilsSubcommands::Crc8 { data } => {
+            UtilsSubcommands::ReverseCrc8 { data } => {
                 let mut result = Vec::new();
                 let mut buf = Vec::new();
 
@@ -637,31 +639,62 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     buf.push(util::parse_hex_vec(s)?);
                 }
 
-                for i in 0x00..=0xff {
-                    for j in 0x00..=0xff {
-                        result.push((i, j));
+                println!("Performing exhaustive search...");
+
+                for init in 0x00..=0xff {
+                    for poly in 0x00..=0xff {
+                        result.push((init, poly));
                     }
                 }
 
                 for b in buf.iter() {
-                    for i in 0x00..=0xff {
-                        // for j in 0x00..=0xff {
-                        let crc8 = util::crc8(&b[1..], i /*, j*/);
+                    if opts.verbose > 0 {
+                        println!("{:?}", buf);
+                    }
 
-                        if crc8 == b[0] {
-                            result = util::find_crc8_from_params(crc8, &b[1..], &result);
+                    if QUIT.load(Ordering::SeqCst) {
+                        break;
+                    }
+
+                    for init in 0x00..0xff {
+                        for poly in 0x00..0xff {
+                            if opts.verbose > 0 {
+                                println!("Processing: init: 0x{:02x}, Poly: 0x{:02x}", init, poly);
+                            }
+
+                            let crc8 = util::crc8_slow_with_poly(&b[1..], init, poly);
+
+                            if crc8 == b[0] {
+                                if opts.verbose > 0 {
+                                    println!("Found a match!");
+                                }
+
+                                let params = util::find_crc8_from_params(crc8, &b[1..], &result);
+                                if !params.is_empty() {
+                                    result = params;
+                                }
+
+                                if opts.verbose > 1 {
+                                    println!("{:?}", result);
+                                }
+                            }
                         }
-                        // }
                     }
                 }
 
-                result.sort_unstable();
+                if !QUIT.load(Ordering::SeqCst) {
+                    println!("Search completed\n");
 
-                if result.is_empty() {
-                    println!("No matches");
-                } else {
-                    for e in result.iter() {
-                        println!("{}, {}", e.0, e.1);
+                    result.sort_unstable();
+
+                    if result.is_empty() {
+                        println!("No matches found");
+                    } else {
+                        println!("The following combinations were found:");
+
+                        for e in result.iter() {
+                            println!("Init: 0x{:02x}, Poly: 0x{:02x}", e.0, e.1);
+                        }
                     }
                 }
             }

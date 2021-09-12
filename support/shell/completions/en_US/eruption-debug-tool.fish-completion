@@ -1,10 +1,3 @@
-
- Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
-
- You can re-enable Eruption with this command afterwards:
- $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
- 
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s V -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
@@ -15,6 +8,7 @@ complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "state-diff" -d
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "read" -d 'Read a single USB HID feature report from device'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "write" -d 'Send a single USB HID feature report to device (dangerous)'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "run-tests" -d 'Send a device specific init sequence and try to set colors'
+complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "utils" -d 'Special utility functions, like searching for CRC polynoms and parameters'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from list" -s h -l help -d 'Print help information'
@@ -40,6 +34,12 @@ complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -s V -l v
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -d 'The index of the device, can be found with the list sub-command' -r
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s V -l version -d 'Print version information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils" -s h -l help -d 'Print help information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils" -s V -l version -d 'Print version information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils" -f -a "reverse-crc8" -d 'Find CRC8 polynoms and init params by performing an exhaustive search'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from reverse-crc8" -d 'Hex byte vectors each starting with expected CRC8, no spaces allowed. [0x32,0xff,0x00,0x00,0x00,0x00,0xff] [0x31,0x59,0xa5,0xff,0x00,0x00,0x00] [0x31,0x00,0x00,0xff,0xff,0x00,0x00]' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from reverse-crc8" -l help -d 'Print help information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from reverse-crc8" -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -f -a "bash"
