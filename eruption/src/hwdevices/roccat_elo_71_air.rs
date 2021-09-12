@@ -298,24 +298,32 @@ impl RoccatElo71Air {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let mut buf: [u8; 2] = [0; 2];
+            let mut buf: [u8; 24] = [0; 24];
             buf[0] = 0x00;
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.read_timeout(&mut buf, 10) {
+            match ctrl_dev.read_timeout(&mut buf, 20) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    if buf[1] == 0x00 || buf[0..2] == [0xe6, 0x06] {
+                    if buf[1] == 0x00 || buf[0..5] == [0xe6, 0x06, 0x03, 0x00, 0x04] {
                         Ok(())
+                    } else if buf[0..4] == [0xa1, 0x84, 0x06, 0x02] {
+                        Ok(()) // directly after device reset
                     } else {
+                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+
                         Err(HwDeviceError::InvalidResult {}.into())
                     }
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+                Err(_) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+
+                    Err(HwDeviceError::InvalidResult {}.into())
+                }
             }
         }
     }
@@ -328,19 +336,19 @@ impl RoccatElo71Air {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let mut buf: [u8; 2] = [0; 2];
+            let mut buf: [u8; 24] = [0; 24];
             buf[0] = 0x00;
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.read_timeout(&mut buf, 10) {
+            match ctrl_dev.read_timeout(&mut buf, 20) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     if buf[1] == 0x00 {
                         Ok(QueryResult::Ok)
-                    } else if buf[0..2] == [0xe6, 0x06] {
+                    } else if buf[0..5] == [0xe6, 0x06, 0x03, 0x00, 0x04] {
                         Ok(QueryResult::ResetRequired)
                     } else {
                         Ok(QueryResult::Invalid)
