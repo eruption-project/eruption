@@ -220,8 +220,6 @@ impl RoccatVulcanProTKL {
 
                                 Err(_) => Err(HwDeviceError::InvalidResult {}),
                             }?;
-
-                            // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
                         }
                     }
 
@@ -313,11 +311,9 @@ impl RoccatVulcanProTKL {
 
             //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
             //     }
-
-            //     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             // }
 
-            thread::sleep(Duration::from_millis(80));
+            thread::sleep(Duration::from_millis(70));
 
             Ok(())
         }

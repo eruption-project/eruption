@@ -20,7 +20,7 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
-use std::{any::Any, mem::size_of, sync::Arc, thread, time::Duration};
+use std::{any::Any, mem::size_of, sync::Arc};
 
 use crate::constants;
 
@@ -257,8 +257,6 @@ impl RoccatKoneAimo {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }

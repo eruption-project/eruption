@@ -198,13 +198,11 @@ impl DeviceTrait for RoccatKain2xx {
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             loop {
-                thread::sleep(Duration::from_millis(75));
-
                 let mut buf = Vec::new();
                 buf.resize(size, 0);
                 buf[0] = id;
 
-                match ctrl_dev.read_timeout(buf.as_mut_slice(), 5000) {
+                match ctrl_dev.read_timeout(buf.as_mut_slice(), 75) {
                     Ok(_result) => {
                         if buf[0] == 0x01 {
                             continue;
@@ -352,21 +350,21 @@ impl DeviceTrait for RoccatKain2xx {
             table.insert("battery-level".to_string(), format!("{}", battery_level));
             table.insert("signal-strength".to_string(), format!("{}", snr));
 
-            // TODO: Further investigate the meaning of the fields
-            let buf: [u8; 22] = [
-                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
+            // // TODO: Further investigate the meaning of the fields
+            // let buf: [u8; 22] = [
+            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
 
-            self.write_feature_report(&buf)?;
+            // self.write_feature_report(&buf)?;
 
-            let battery_level = (buf[9] as f64 / 256.0) * 100.0;
-            let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
+            // let battery_level = (buf[9] as f64 / 256.0) * 100.0;
+            // let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
 
-            // icecream::ice!(buf);
+            // // icecream::ice!(buf);
 
-            table.insert("battery-level2".to_string(), format!("{}", battery_level));
-            table.insert("signal-strength2".to_string(), format!("{}", snr));
+            // table.insert("battery-level2".to_string(), format!("{}", battery_level));
+            // table.insert("signal-strength2".to_string(), format!("{}", snr));
 
             let result = DeviceStatus(table);
 

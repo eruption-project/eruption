@@ -19,8 +19,8 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
-use std::{any::Any, mem::size_of, time::Duration};
-use std::{sync::Arc, thread};
+use std::{any::Any, mem::size_of};
+use std::{sync::Arc};
 
 use crate::constants;
 
@@ -457,8 +457,6 @@ impl RoccatVulcan1xx {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }

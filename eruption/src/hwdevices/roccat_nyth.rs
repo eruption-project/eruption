@@ -192,8 +192,6 @@ impl RoccatNyth {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }
@@ -718,7 +716,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+            thread::sleep(Duration::from_millis(70));
 
             Ok(())
         }
@@ -735,7 +733,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+            thread::sleep(Duration::from_millis(70));
 
             Ok(())
         }

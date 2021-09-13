@@ -21,8 +21,8 @@ use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
-use std::time::Duration;
-use std::{any::Any, thread};
+
+use std::{any::Any};
 use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
@@ -250,8 +250,6 @@ impl RoccatBurstPro {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }

@@ -205,8 +205,6 @@ impl RoccatKain2xx {
 
     //                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
     //             }
-
-    //             thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
     //         }
     //     }
     // }
