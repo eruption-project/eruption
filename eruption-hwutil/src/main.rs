@@ -296,8 +296,16 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 let status = hwdev.device_status()?;
 
                                 println!();
-                                println!("Battery Level:   {}", status["battery-level"]);
-                                println!("Signal Strength: {}", status["signal-strength"]);
+                                println!(
+                                    "Battery Level:   {} ({})",
+                                    status["battery-level-percent"].bold(),
+                                    status["battery-level-raw"]
+                                );
+                                println!(
+                                    "Signal Strength: {} ({})",
+                                    status["signal-strength-percent"].bold(),
+                                    status["signal-strength-raw"]
+                                );
 
                                 if !opts.repeat || QUIT.load(Ordering::SeqCst) {
                                     break;

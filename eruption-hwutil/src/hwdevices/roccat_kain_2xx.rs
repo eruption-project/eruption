@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
-// use crate::constants;
+use byteorder::{BigEndian, ByteOrder};
 
 use crate::util;
 
@@ -342,29 +342,25 @@ impl DeviceTrait for RoccatKain2xx {
             // query results
             let buf = self.read_feature_report(0x07, 22)?;
 
-            let battery_level = (buf[7] as f64 / 256.0) * 100.0;
-            let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
+            let battery_level = BigEndian::read_u16(&buf[5..7]);
+            let snr = BigEndian::read_u16(&buf[7..9]);
 
-            // icecream::ice!(buf);
+            table.insert(
+                "battery-level-raw".to_string(),
+                format!("{}", battery_level),
+            );
 
-            table.insert("battery-level".to_string(), format!("{}", battery_level));
-            table.insert("signal-strength".to_string(), format!("{}", snr));
+            table.insert("signal-strength-raw".to_string(), format!("{}", snr));
 
-            // // TODO: Further investigate the meaning of the fields
-            // let buf: [u8; 22] = [
-            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
+            table.insert(
+                "battery-level-percent".to_string(),
+                format!("{}%", (battery_level as f32 / 512.0 * 100.0).floor()),
+            );
 
-            // self.write_feature_report(&buf)?;
-
-            // let battery_level = (buf[9] as f64 / 256.0) * 100.0;
-            // let snr = 100.0 - ((buf[8] as f64) / 256.0) * 100.0;
-
-            // // icecream::ice!(buf);
-
-            // table.insert("battery-level2".to_string(), format!("{}", battery_level));
-            // table.insert("signal-strength2".to_string(), format!("{}", snr));
+            table.insert(
+                "signal-strength-percent".to_string(),
+                format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
+            );
 
             let result = DeviceStatus(table);
 
