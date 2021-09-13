@@ -110,6 +110,28 @@ pub enum Subcommands {
         data: String,
     },
 
+    /// Read data from device
+    ReadRaw {
+        /// The index of the device, can be found with the list sub-command
+        device: usize,
+
+        /// ID of the USB HID report
+        #[clap(parse(try_from_str = util::parse_report_id))]
+        report_id: u8,
+
+        /// Length in bytes to read
+        length: usize,
+    },
+
+    /// Send data to device (dangerous)
+    WriteRaw {
+        /// The index of the device, can be found with the list sub-command
+        device: usize,
+
+        /// Hex bytes e.g.: [0x09, 0x00, 0x1f]
+        data: String,
+    },
+
     /// Send a device specific init sequence and try to set colors
     RunTests {
         /// The index of the device, can be found with the list sub-command
@@ -404,7 +426,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                             println!("Reading data from device...");
 
-                            for report_id in 0..=255 {
+                            for report_id in 0x00..=0xff {
                                 let length = 128;
 
                                 let mut buf = vec![0; length];
@@ -530,6 +552,90 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             println!("[{}]", HexSlice::new(&buf));
 
                             dev.send_feature_report(&buf)?;
+                        } else {
+                            error!("Could not open the device, is the device in use?");
+                        }
+                    }
+                }
+
+                Err(_) => {
+                    error!("Could not open HIDAPI");
+                }
+            }
+        }
+
+        Subcommands::ReadRaw {
+            device: device_index,
+            report_id,
+            length,
+        } => {
+            // create the one and only hidapi instance
+            match hidapi::HidApi::new() {
+                Ok(hidapi) => {
+                    if let Some((index, device)) =
+                        hidapi.device_list().enumerate().nth(device_index)
+                    {
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            format!("{:02}", index).bold(),
+                            device.vendor_id(),
+                            device.product_id(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
+                            device.interface_number()
+                        );
+
+                        if let Ok(dev) = device.open_device(&hidapi) {
+                            println!("Reading data from device...");
+
+                            let mut buf = Vec::new();
+
+                            buf.resize(length + 1, 0x00);
+                            buf[0] = report_id;
+
+                            dev.read(&mut buf)?;
+
+                            println!("[{}]", HexSlice::new(&buf));
+                        } else {
+                            error!("Could not open the device, is the device in use?");
+                        }
+                    }
+                }
+
+                Err(_) => {
+                    error!("Could not open HIDAPI");
+                }
+            }
+        }
+
+        Subcommands::WriteRaw {
+            device: device_index,
+            data,
+        } => {
+            // create the one and only hidapi instance
+            match hidapi::HidApi::new() {
+                Ok(hidapi) => {
+                    if let Some((index, device)) =
+                        hidapi.device_list().enumerate().nth(device_index)
+                    {
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            format!("{:02}", index).bold(),
+                            device.vendor_id(),
+                            device.product_id(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
+                            device.interface_number()
+                        );
+
+                        if let Ok(dev) = device.open_device(&hidapi) {
+                            println!("Writing data to device...");
+
+                            let buf = util::parse_hex_vec(&data)?;
+
+                            println!("[{}]", HexSlice::new(&buf));
+
+                            dev.write(&buf)?;
                         } else {
                             error!("Could not open the device, is the device in use?");
                         }
