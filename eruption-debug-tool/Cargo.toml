@@ -35,6 +35,7 @@ color-eyre = "0.5.11"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 bitvec = "0.22.3"
+byteorder = "1.4.3"
 serialport = "4.0.1"
 crc8 = "0.1.1"
 
