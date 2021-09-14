@@ -15,17 +15,24 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use byteorder::{BigEndian, ByteOrder};
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
-use byteorder::{BigEndian, ByteOrder};
-
-use crate::util;
+#[allow(unused)]
+use crate::{constants, eprintln_v, println_v};
 
 use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
 
 pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
+
+lazy_static! {
+    static ref CRC8: Arc<Mutex<crc8::Crc8>> = Arc::new(Mutex::new(crc8::Crc8::create_msb(0x01)));
+}
 
 /// Device specific code for the ROCCAT Kain 2xx AIMO mouse
 pub struct RoccatKain2xx {
@@ -36,7 +43,7 @@ pub struct RoccatKain2xx {
 impl RoccatKain2xx {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        crate::println_v!(0, "Bound driver: ROCCAT Kain 2xx AIMO");
+        println_v!(1, "Bound driver: ROCCAT Kain 2xx AIMO");
 
         Self {
             is_bound: true,
@@ -45,7 +52,7 @@ impl RoccatKain2xx {
     }
 
     // fn send_ctrl_report(&self, id: u8) -> Result<()> {
-    //     crate::println_v!(0, "Sending control device feature report");
+    //     println_v!(0, "Sending control device feature report");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound.into())
@@ -62,7 +69,7 @@ impl RoccatKain2xx {
 
     //         //         match ctrl_dev.send_feature_report(&buf) {
     //         //             Ok(_result) => {
-    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
     //         //                 Ok(())
     //         //             }
@@ -79,7 +86,7 @@ impl RoccatKain2xx {
     // }
 
     // fn wait_for_ctrl_dev(&self) -> Result<()> {
-    //     crate::println_v!(0, "Waiting for control device to respond...");
+    //     println_v!(0, "Waiting for control device to respond...");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -93,7 +100,7 @@ impl RoccatKain2xx {
 
     //         //     match ctrl_dev.get_feature_report(&mut buf) {
     //         //         Ok(_result) => {
-    //         //             hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+    //         //             hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
     //         //             if buf[1] == 0x01 {
     //         //                 return Ok(());
@@ -115,12 +122,12 @@ impl RoccatKain2xx {
 
 impl DeviceTrait for RoccatKain2xx {
     fn send_init_sequence(&self) -> Result<()> {
-        crate::println_v!(0, "Sending device init sequence...");
+        println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            // crate::println_v!(1, "Step 1");
+            // println_v!(1, "Step 1");
             // self.send_ctrl_report(0x08)
             //     .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
             // self.wait_for_ctrl_dev()
@@ -139,7 +146,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -161,7 +168,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -180,7 +187,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -202,15 +209,14 @@ impl DeviceTrait for RoccatKain2xx {
                 buf.resize(size, 0);
                 buf[0] = id;
 
-                match ctrl_dev.read_timeout(buf.as_mut_slice(), 75) {
+                match ctrl_dev.read_timeout(buf.as_mut_slice(), 70) {
                     Ok(_result) => {
                         if buf[0] == 0x01 {
                             continue;
                         } else {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
-                            if buf[0..2] != [0x07, 0x14] && buf[0..2] != [0x07, 0x04] {
+                            if buf[0..2] != [0x07, 0x14] {
                                 break Ok(buf);
                             }
                         }
@@ -223,7 +229,7 @@ impl DeviceTrait for RoccatKain2xx {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        crate::println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -256,11 +262,11 @@ impl DeviceTrait for RoccatKain2xx {
                 0x00,
             ];
 
-            buf[10] = util::crc8(&buf[4..10], 0x32 /*, 0x01 */);
+            buf[10] = CRC8.lock().calc(&buf[4..10], 6, 0x32);
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                 }
 
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -326,11 +332,94 @@ impl DeviceTrait for RoccatKain2xx {
     }
 
     fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        let read_results = || -> Result<super::DeviceStatus> {
+            let mut table = HashMap::new();
+
+            for _ in 0..4 {
+                thread::sleep(Duration::from_millis(15));
+
+                // query results
+                let buf = self.read_feature_report(0x07, 22)?;
+
+                match buf[1] {
+                    0x04 => {
+                        // let battery_level = BigEndian::read_u16(&buf[4..6]);
+
+                        // table.insert(
+                        //     "battery-level-percent".to_string(),
+                        //     format!("{}%", (battery_level as f32 / 20000.0 * 100.0).floor()),
+                        // );
+
+                        // table.insert(
+                        //     "battery-level-raw".to_string(),
+                        //     format!("{}", battery_level),
+                        // );
+                    }
+
+                    0x06 => {
+                        /*      ^
+                        |07063481 010200b7 00000000 00000000| ..4............. 00000000
+                        |00000000 0000|                       ......           00000010
+                                                                                00000016
+                                        ^
+                        |07063401 00740848 00000000 00000000| ..4..t.H........ 00000000
+                        |00000000 0000|
+
+
+
+                        |07043401 41770000 00000000 00000000| ..4.Aw.......... 00000000
+                        |00000000 0000|                       ......           00000010
+                                                                               00000016
+                        |07063481 010200b7 00000000 00000000| ..4............. 00000000
+                        |00000000 0000|                       ......           00000010
+                                                                               00000016
+                        |07063401 00e00ade 00000000 00000000| ..4............. 00000000
+                        |00000000 0000|                       ......           00000010
+                                                                               00000016
+                        */
+
+                        if buf[0..4] == [0x07, 0x06, 0x34, 0x01] {
+                            let battery_level = BigEndian::read_u32(&buf[4..9]);
+
+                            table.insert(
+                                "battery-level-percent".to_string(),
+                                format!("{}%", (battery_level as f32 / 256.0 / 1000.0).floor()),
+                            );
+
+                            table.insert(
+                                "battery-level-raw".to_string(),
+                                format!("{}", battery_level),
+                            );
+                        }
+                    }
+
+                    0x07 => {
+                        let transceiver_enabled = !(buf[6] == 0x00);
+                        let snr = BigEndian::read_u16(&buf[7..9]);
+
+                        table.insert(
+                            "transceiver-enabled".to_string(),
+                            format!("{}", transceiver_enabled),
+                        );
+
+                        table.insert(
+                            "signal-strength-percent".to_string(),
+                            format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
+                        );
+
+                        table.insert("signal-strength-raw".to_string(), format!("{}", snr));
+                    }
+
+                    _ => { /* do nothing */ }
+                }
+            }
+
+            Ok(DeviceStatus(table))
+        };
+
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let mut table = HashMap::new();
-
             // TODO: Further investigate the meaning of the fields
             let buf: [u8; 22] = [
                 0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -339,32 +428,22 @@ impl DeviceTrait for RoccatKain2xx {
 
             self.write_feature_report(&buf)?;
 
-            // query results
-            let buf = self.read_feature_report(0x07, 22)?;
+            let result = read_results()?;
 
-            let battery_level = BigEndian::read_u16(&buf[5..7]);
-            let snr = BigEndian::read_u16(&buf[7..9]);
+            thread::sleep(Duration::from_millis(15));
 
-            table.insert(
-                "battery-level-raw".to_string(),
-                format!("{}", battery_level),
-            );
+            let buf: [u8; 22] = [
+                0x08, 0x04, 0x34, 0x01, 0x01, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
 
-            table.insert("signal-strength-raw".to_string(), format!("{}", snr));
+            self.write_feature_report(&buf)?;
 
-            table.insert(
-                "battery-level-percent".to_string(),
-                format!("{}%", (battery_level as f32 / 512.0 * 100.0).floor()),
-            );
+            let result2 = read_results()?;
 
-            table.insert(
-                "signal-strength-percent".to_string(),
-                format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
-            );
-
-            let result = DeviceStatus(table);
-
-            Ok(result)
+            Ok(DeviceStatus(
+                result.0.into_iter().chain(result2.0).collect(),
+            ))
         }
     }
 }

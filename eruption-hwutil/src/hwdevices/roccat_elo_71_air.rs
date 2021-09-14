@@ -18,7 +18,8 @@
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
-// use crate::constants;
+#[allow(unused)]
+use crate::{constants, eprintln_v, println_v};
 
 use super::{DeviceTrait, HwDeviceError, Result, RGBA};
 
@@ -31,7 +32,7 @@ pub struct RoccatElo71Air {
 impl RoccatElo71Air {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        crate::println_v!(0, "Bound driver: ROCCAT/Turtle Beach Elo 7.1 Air");
+        println_v!(1, "Bound driver: ROCCAT/Turtle Beach Elo 7.1 Air");
 
         Self {
             is_bound: true,
@@ -40,7 +41,7 @@ impl RoccatElo71Air {
     }
 
     fn send_ctrl_report(&self, id: u8) -> Result<()> {
-        crate::println_v!(0, "Sending initialization data to the device");
+        println_v!(0, "Sending initialization data to the device");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound.into())
@@ -61,8 +62,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -75,8 +75,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.read(&mut buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -97,8 +96,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -117,8 +115,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -137,8 +134,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -157,8 +153,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                         }
 
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -173,7 +168,7 @@ impl RoccatElo71Air {
     }
 
     fn wait_for_ctrl_dev(&self) -> Result<()> {
-        crate::println_v!(0, "Waiting for control device to respond...");
+        println_v!(0, "Waiting for control device to respond...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -186,7 +181,7 @@ impl RoccatElo71Air {
 
             //     match ctrl_dev.get_feature_report(&mut buf) {
             //         Ok(_result) => {
-            //             hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+            //             hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
             //             if buf[1] == 0x00 {
             //                 return Ok(());
@@ -208,18 +203,18 @@ impl RoccatElo71Air {
 
 impl DeviceTrait for RoccatElo71Air {
     fn send_init_sequence(&self) -> Result<()> {
-        crate::println_v!(0, "Sending device init sequence...");
+        println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            crate::println_v!(1, "Step 1");
+            println_v!(1, "Step 1");
             self.send_ctrl_report(0xa1)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
 
-            crate::println_v!(1, "Step 2");
+            println_v!(1, "Step 2");
             self.send_ctrl_report(0xff)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
@@ -238,7 +233,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -260,7 +255,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -279,7 +274,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -302,7 +297,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -313,7 +308,7 @@ impl DeviceTrait for RoccatElo71Air {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        crate::println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -390,7 +385,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.write(&buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                 }
 
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),

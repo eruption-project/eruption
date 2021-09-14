@@ -16,7 +16,3 @@
 */
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
-
-pub fn crc8(_data: &[u8], _init: u8) -> u8 {
-    0
-}

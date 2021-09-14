@@ -24,6 +24,9 @@ use std::{sync::Arc, time::Duration};
 
 use super::{HwDeviceError, RGBA};
 
+#[allow(unused)]
+use crate::{constants, eprintln_v, println_v};
+
 const BAUD_RATE: u32 = 460800;
 const NUM_LEDS: usize = 80;
 
@@ -84,7 +87,7 @@ impl CustomSerialLeds {
     }
 
     pub fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
-        crate::println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(0, "Setting LEDs from supplied map...");
 
         if let Some(ref mut port) = *self.serial_port.lock() {
             const HEADER_OFFSET: usize = 6;

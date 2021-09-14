@@ -38,6 +38,44 @@ mod util;
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[macro_export]
+macro_rules! println_v {
+    () => {
+        println!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($($params),*)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! eprintln_v {
+    () => {
+        eprintln!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($($params),*)
+        }
+    };
+}
+
 lazy_static! {
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
@@ -83,32 +121,42 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, Clone, Clap)]
 pub enum Subcommands {
-    /// List available devices, use this first to find out the index of the device to use
+    /// List available devices, use this first to find out the index of the device to address
+    #[clap(display_order = 0)]
     List,
 
-    /// Query device specific status
+    /// Query device specific status like e.g.: Signal Strength/Battery Level
+    #[clap(display_order = 1)]
     Status { device: usize },
 
-    /// Firmware update related subcommands
-    FirmwareUpdate {
+    /// Turn off all LEDs, but otherwise leave the device completely usable
+    #[clap(display_order = 2)]
+    Blackout { device: usize },
+
+    /// Firmware related subcommands (DANGEROUS, may brick the device)
+    #[clap(display_order = 3)]
+    Firmware {
         #[clap(subcommand)]
-        command: FirmwareUpdateSubcommands,
+        command: FirmwareSubcommands,
     },
 
     /// Generate shell completions
+    #[clap(display_order = 4)]
     Completions {
         #[clap(subcommand)]
         command: CompletionsSubcommands,
     },
 }
 
-/// Subcommands of the "firmware-update" command
+/// Subcommands of the "firmware" command
 #[derive(Debug, Clone, Clap)]
-pub enum FirmwareUpdateSubcommands {
+pub enum FirmwareSubcommands {
     /// Get some information about the currently installed firmware
+    #[clap(display_order = 0)]
     Info { device: u64 },
 
-    /// Flash firmware to device
+    /// Flash firmware to device (DANGEROUS, may brick the device)
+    #[clap(display_order = 1)]
     Flash { device: u64 },
 }
 
@@ -240,7 +288,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         }
                     }
 
-                    println!("\nEnumeration of HID devices completed");
+                    println_v!(1, "\nEnumeration of HID devices completed");
 
                     // println!("\nSpecial devices\n");
 
@@ -271,13 +319,15 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     if let Some((index, device)) =
                         hidapi.device_list().enumerate().nth(device_index)
                     {
+                        let term = console::Term::stdout();
+
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{}",
                             format!("{:02}", index).bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                            device.product_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold()
                         );
 
                         if let Ok(dev) = device.open_device(&hidapi) {
@@ -290,28 +340,63 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
                             hwdev.send_init_sequence()?;
 
-                            println!("Polling device status...");
+                            println_v!(1, "Polling device status...");
+
+                            // reserve a few lines of space for the output
+                            println!();
+                            println!();
+                            println!();
+                            println!();
 
                             loop {
                                 let status = hwdev.device_status()?;
 
+                                term.clear_last_lines(4)?;
+
                                 println!();
+
                                 println!(
-                                    "Battery Level:   {} ({})",
-                                    status["battery-level-percent"].bold(),
-                                    status["battery-level-raw"]
+                                    "Transceiver enabled: {:>}",
+                                    status
+                                        .get("transceiver-enabled")
+                                        .map(|e| e.to_string())
+                                        .unwrap_or_else(|| "---".to_string())
+                                        .bold()
                                 );
+
                                 println!(
-                                    "Signal Strength: {} ({})",
-                                    status["signal-strength-percent"].bold(),
-                                    status["signal-strength-raw"]
+                                    "Signal Strength:     {:>4} ({})",
+                                    status
+                                        .get("signal-strength-percent")
+                                        .map(|e| e.to_string())
+                                        .unwrap_or_else(|| "---".to_string())
+                                        .bold(),
+                                    status
+                                        .get("signal-strength-raw")
+                                        .map(|e| e.to_string())
+                                        .unwrap_or_else(|| "---".to_string())
+                                );
+
+                                println!(
+                                    "Battery Level:       {:>4} ({})",
+                                    status
+                                        .get("battery-level-percent")
+                                        .map(|e| e.to_string())
+                                        .unwrap_or_else(|| "---".to_string())
+                                        .bold(),
+                                    status
+                                        .get("battery-level-raw")
+                                        .map(|e| e.to_string())
+                                        .unwrap_or_else(|| "---".to_string())
                                 );
 
                                 if !opts.repeat || QUIT.load(Ordering::SeqCst) {
                                     break;
                                 }
 
-                                thread::sleep(Duration::from_millis(250));
+                                term.flush()?;
+
+                                thread::sleep(Duration::from_millis(1));
                             }
                         } else {
                             error!("Could not open the device, is the device in use?");
@@ -325,7 +410,57 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        Subcommands::FirmwareUpdate { command: _ } => {}
+        Subcommands::Blackout {
+            device: device_index,
+        } => {
+            // create the one and only hidapi instance
+            match hidapi::HidApi::new() {
+                Ok(hidapi) => {
+                    if let Some((index, device)) =
+                        hidapi.device_list().enumerate().nth(device_index)
+                    {
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{}",
+                            format!("{:02}", index).bold(),
+                            device.vendor_id(),
+                            device.product_id(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold()
+                        );
+
+                        if let Ok(dev) = device.open_device(&hidapi) {
+                            let hwdev = hwdevices::bind_device(
+                                dev,
+                                &hidapi,
+                                device.vendor_id(),
+                                device.product_id(),
+                            )?;
+
+                            hwdev.send_init_sequence()?;
+
+                            println_v!(1, "Polling device status...");
+
+                            hwdev.send_led_map(
+                                &[hwdevices::RGBA {
+                                    r: 0x00,
+                                    g: 0x00,
+                                    b: 0x00,
+                                    a: 0x00,
+                                }; constants::CANVAS_SIZE],
+                            )?;
+                        } else {
+                            error!("Could not open the device, is the device in use?");
+                        }
+                    }
+                }
+
+                Err(_) => {
+                    error!("Could not open HIDAPI");
+                }
+            }
+        }
+
+        Subcommands::Firmware { command: _ } => {}
 
         Subcommands::Completions { command } => {
             use clap::IntoApp;

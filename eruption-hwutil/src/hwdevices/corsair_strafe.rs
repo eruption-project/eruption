@@ -21,7 +21,8 @@ use parking_lot::Mutex;
 use std::time::Duration;
 use std::{sync::Arc, thread};
 
-use crate::constants;
+#[allow(unused)]
+use crate::{constants, eprintln_v, println_v};
 
 use super::{DeviceTrait, HwDeviceError, RGBA};
 
@@ -42,7 +43,7 @@ pub struct CorsairStrafe {
 impl CorsairStrafe {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: hidapi::HidDevice) -> Self {
-        crate::println_v!(0, "Bound driver: Corsair STRAFE Gaming Keyboard");
+        println_v!(1, "Bound driver: Corsair STRAFE Gaming Keyboard");
 
         Self {
             is_bound: true,
@@ -51,7 +52,7 @@ impl CorsairStrafe {
     }
 
     // pub(self) fn query_ctrl_report(&self, id: u8) -> Result<()> {
-    //     crate::println_v!(0, "Querying control device feature report");
+    //     println_v!(0, "Querying control device feature report");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -66,7 +67,7 @@ impl CorsairStrafe {
 
     //         //         match ctrl_dev.get_feature_report(&mut buf) {
     //         //             Ok(_result) => {
-    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+    //         //                 hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
     //         //                 Ok(())
     //         //             }
@@ -83,7 +84,7 @@ impl CorsairStrafe {
     // }
 
     // fn send_ctrl_report(&self, id: u8) -> Result<()> {
-    //     crate::println_v!(0, "Sending control device feature report");
+    //     println_v!(0, "Sending control device feature report");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -97,7 +98,7 @@ impl CorsairStrafe {
 
     //                 match ctrl_dev.send_feature_report(&buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
     //                         Ok(())
     //                     }
@@ -112,7 +113,7 @@ impl CorsairStrafe {
     // }
 
     // fn wait_for_ctrl_dev(&self) -> Result<()> {
-    //     crate::println_v!(0, "Waiting for control device to respond...");
+    //     println_v!(0, "Waiting for control device to respond...");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -127,7 +128,7 @@ impl CorsairStrafe {
 
     //         //     match ctrl_dev.get_feature_report(&mut buf) {
     //         //         Ok(_result) => {
-    //         //             hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+    //         //             hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
     //         //             if buf[1] == 0x01 {
     //         //                 return Ok(());
@@ -145,7 +146,7 @@ impl CorsairStrafe {
     // }
 
     fn send_ctrl_report(&self, id: u8) -> Result<()> {
-        crate::println_v!(0, "Sending control device feature report");
+        println_v!(0, "Sending control device feature report");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -166,8 +167,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -188,8 +188,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -210,8 +209,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -232,8 +230,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
-                            hexdump::hexdump_iter(&buf)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                             Ok(())
                         }
@@ -248,7 +245,7 @@ impl CorsairStrafe {
     }
 
     fn wait_for_ctrl_dev(&self) -> Result<()> {
-        crate::println_v!(0, "Waiting for control device to respond...");
+        println_v!(0, "Waiting for control device to respond...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -262,30 +259,30 @@ impl CorsairStrafe {
 
 impl DeviceTrait for CorsairStrafe {
     fn send_init_sequence(&self) -> Result<()> {
-        crate::println_v!(0, "Sending device init sequence...");
+        println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            crate::println_v!(1, "Step 1");
+            println_v!(1, "Step 1");
             self.send_ctrl_report(0x01)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 1: {}", e));
 
-            crate::println_v!(1, "Step 2");
+            println_v!(1, "Step 2");
             self.send_ctrl_report(0x02)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 2: {}", e));
 
-            crate::println_v!(1, "Step 3");
+            println_v!(1, "Step 3");
             self.send_ctrl_report(0x03)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 3: {}", e));
 
-            crate::println_v!(1, "Step 4");
+            println_v!(1, "Step 4");
             self.send_ctrl_report(0x04)
                 .unwrap_or_else(|e| crate::eprintln_v!(2, "Step 4: {}", e));
             self.wait_for_ctrl_dev()
@@ -304,7 +301,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.write(buf) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -326,7 +323,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -345,7 +342,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(())
                 }
@@ -368,7 +365,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| crate::println_v!(2, "  {}", s));
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
                     Ok(buf)
                 }
@@ -379,7 +376,7 @@ impl DeviceTrait for CorsairStrafe {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        crate::println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(0, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -437,8 +434,7 @@ impl DeviceTrait for CorsairStrafe {
 
                             tmp[4..64].copy_from_slice(bytes);
 
-                            hexdump::hexdump_iter(&tmp)
-                                .for_each(|s| crate::println_v!(2, "  {}", s));
+                            hexdump::hexdump_iter(&tmp).for_each(|s| println_v!(2, "  {}", s));
 
                             match led_dev.write(&tmp) {
                                 Ok(len) => {
@@ -461,7 +457,7 @@ impl DeviceTrait for CorsairStrafe {
                             0x00, 0x00, 0x00, 0x00,
                         ];
 
-                        hexdump::hexdump_iter(&tmp).for_each(|s| crate::println_v!(2, "  {}", s));
+                        hexdump::hexdump_iter(&tmp).for_each(|s| println_v!(2, "  {}", s));
 
                         match led_dev.write(&tmp) {
                             Ok(len) => {
