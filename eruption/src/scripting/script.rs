@@ -34,11 +34,14 @@ use std::sync::Arc;
 use std::vec::Vec;
 
 use crate::constants;
-use crate::hwdevices::{KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, RGBA};
+use crate::hwdevices::{
+    KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent, RGBA,
+};
 use crate::plugin_manager;
+use crate::profiles::Profile;
 use crate::scripting::manifest::{ConfigParam, Manifest};
 
-use crate::{ACTIVE_PROFILE, ACTIVE_SCRIPTS};
+use crate::ACTIVE_SCRIPTS;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -799,9 +802,11 @@ pub enum RunScriptResult {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     file: PathBuf,
+    profile: Option<Profile>,
     rx: &Receiver<Message>,
     keyboard_devices: &[KeyboardDevice],
     _mouse_devices: &[MouseDevice],
+    _misc_devices: &[MiscDevice],
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
         Ok(script) => {
@@ -833,7 +838,7 @@ pub fn run_script(
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
 
-            if register_script_config(&lua_ctx, &manifest.unwrap()).is_err() {
+            if register_script_config(&lua_ctx, &manifest.unwrap(), &profile).is_err() {
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
 
@@ -1343,17 +1348,22 @@ pub fn run_script(
 fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
-    #[cfg(debug_assertions)]
-    lua_ctx
-        .load("package.path = package.path .. ';/usr/share/eruption/scripts/lib/?;/usr/share/eruption/scripts/lib/?.lua'")
-        .exec()
-        .unwrap();
+    let config = crate::CONFIG.lock();
+    let script_dirs = config
+        .as_ref()
+        .unwrap()
+        .get::<Vec<String>>("global.script_dirs")
+        .unwrap_or_else(|_| vec![constants::DEFAULT_SCRIPT_DIR.to_string()]);
 
-    #[cfg(not(debug_assertions))]
-    lua_ctx
-        .load("package.path = package.path .. ';/usr/share/eruption/scripts/lib/?;/usr/share/eruption/scripts/lib/?.lua'")
-        .exec()
-        .unwrap();
+    let mut path_spec = String::from("package.path = package.path .. '");
+
+    for script_dir in script_dirs {
+        path_spec += &format!(";{0}/lib/?;{0}/lib/?.lua", &script_dir);
+    }
+
+    path_spec += "'";
+
+    lua_ctx.load(&path_spec).exec().unwrap();
 
     let mut config: HashMap<&str, &str> = HashMap::new();
     config.insert("daemon_name", "eruption");
@@ -1681,8 +1691,11 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     Ok(())
 }
 
-fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()> {
-    let profile = &*ACTIVE_PROFILE.lock();
+fn register_script_config(
+    lua_ctx: &Lua,
+    manifest: &Manifest,
+    profile: &Option<Profile>,
+) -> mlua::Result<()> {
     let script_name = &manifest.name;
 
     let globals = lua_ctx.globals();
@@ -1696,9 +1709,13 @@ fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()
                         if let Some(val) = profile.get_int_value(script_name, name) {
                             globals.raw_set::<&str, i64>(name, *val)?;
                         } else {
+                            debug!("Parameter is undefined, using defaults from script manifest");
+
                             globals.raw_set::<&str, i64>(name, *default)?;
                         }
                     } else {
+                        warn!("Active profile is undefined, using config parameters from script manifest");
+
                         globals.raw_set::<&str, i64>(name, *default)?;
                     }
                 }
@@ -1708,9 +1725,13 @@ fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()
                         if let Some(val) = profile.get_float_value(script_name, name) {
                             globals.raw_set::<&str, f64>(name, *val)?;
                         } else {
+                            debug!("Parameter is undefined, using defaults from script manifest");
+
                             globals.raw_set::<&str, f64>(name, *default)?;
                         }
                     } else {
+                        warn!("Active profile is undefined, using config parameters from script manifest");
+
                         globals.raw_set::<&str, f64>(name, *default)?;
                     }
                 }
@@ -1720,9 +1741,13 @@ fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()
                         if let Some(val) = profile.get_bool_value(script_name, name) {
                             globals.raw_set::<&str, bool>(name, *val)?;
                         } else {
+                            debug!("Parameter is undefined, using defaults from script manifest");
+
                             globals.raw_set::<&str, bool>(name, *default)?;
                         }
                     } else {
+                        warn!("Active profile is undefined, using config parameters from script manifest");
+
                         globals.raw_set::<&str, bool>(name, *default)?;
                     }
                 }
@@ -1732,9 +1757,13 @@ fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()
                         if let Some(val) = profile.get_string_value(script_name, name) {
                             globals.raw_set::<&str, &str>(name, &*val)?;
                         } else {
+                            debug!("Parameter is undefined, using defaults from script manifest");
+
                             globals.raw_set::<&str, &str>(name, &*default)?;
                         }
                     } else {
+                        warn!("Active profile is undefined, using config parameters from script manifest");
+
                         globals.raw_set::<&str, &str>(name, &*default)?;
                     }
                 }
@@ -1744,9 +1773,13 @@ fn register_script_config(lua_ctx: &Lua, manifest: &Manifest) -> mlua::Result<()
                         if let Some(val) = profile.get_color_value(script_name, name) {
                             globals.raw_set::<&str, u32>(name, *val)?;
                         } else {
+                            debug!("Parameter is undefined, using defaults from script manifest");
+
                             globals.raw_set::<&str, u32>(name, *default)?;
                         }
                     } else {
+                        warn!("Active profile is undefined, using config parameters from script manifest");
+
                         globals.raw_set::<&str, u32>(name, *default)?;
                     }
                 }

@@ -297,15 +297,34 @@ macro_rules! get_config_value {
                     if let Some(cfg) = config.get(script_name) {
                         match cfg.find_config_param(name) {
                             Some(param) => match param {
-                                $pval { value, .. } => Some(value),
-                                _ => None,
+                                $pval { value, .. } =>
+                                {
+                                    debug!("Using value from .profile file for config param '{}' (value: '{}') [5]",  name, value);
+
+                                    Some(value)
+                                }
+
+                                _ => {
+                                    debug!("Using default value for config param '{}' [4]", name);
+
+                                    None
+                                }
                             },
-                            None => None,
+
+                            None => {
+                                debug!("Using default value for config param '{}' [3]", name);
+
+                                None
+                            }
                         }
                     } else {
+                        debug!("Using default value for config param [2]");
+
                         None
                     }
                 } else {
+                    debug!("Using default value for config param [1]");
+
                     None
                 }
             }

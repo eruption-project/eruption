@@ -838,8 +838,10 @@ fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
     script_path: PathBuf,
+    profile: Option<Profile>,
     keyboard_devices: Vec<KeyboardDevice>,
     mouse_devices: Vec<MouseDevice>,
+    misc_devices: Vec<MiscDevice>,
 ) -> Result<()> {
     info!("Loading Lua script: {}", &script_path.display());
 
@@ -876,9 +878,11 @@ fn spawn_lua_thread(
         loop {
             let result = script::run_script(
                 script_path.clone(),
+                profile,
                 &lua_rx,
                 &keyboard_devices.clone(),
                 &mouse_devices.clone(),
+                &misc_devices.clone(),
             );
 
             match result {
@@ -908,7 +912,7 @@ fn spawn_lua_thread(
     Ok(())
 }
 
-/// Switches the currently active profile to the profile file `profile_path`
+/// Switches the currently active profile to the profile file `profile_file`
 /// Returns Ok(true) if the new profile has been activated or the old profile was kept,
 /// otherwise returns Ok(false) when we entered failsafe mode. If an error occurred during
 /// switching to failsafe mode, we return an Err() to signal a fatal error
@@ -917,21 +921,19 @@ fn switch_profile(
     dbus_api_tx: &Sender<DbusApiEvent>,
     keyboard_devices: &[KeyboardDevice],
     mouse_devices: &[MouseDevice],
+    misc_devices: &[MiscDevice],
     notify: bool,
 ) -> Result<bool> {
     fn switch_to_failsafe_profile(
         dbus_api_tx: &Sender<DbusApiEvent>,
         keyboard_devices: &[KeyboardDevice],
         mouse_devices: &[MouseDevice],
+        misc_devices: &[MiscDevice],
         notify: bool,
     ) -> Result<()> {
         let mut errors_present = false;
 
         // force hardcoded directory for failsafe scripts
-        #[cfg(not(debug_assertions))]
-        let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
-
-        #[cfg(debug_assertions)]
         let script_dir = PathBuf::from("/usr/share/eruption/scripts/");
 
         let profile = profiles::get_fail_safe_profile();
@@ -946,8 +948,10 @@ fn switch_profile(
                 thread_idx,
                 lua_rx,
                 script_path.clone(),
+                None,
                 keyboard_devices.to_owned(),
                 mouse_devices.to_owned(),
+                misc_devices.to_owned(),
             )
             .unwrap_or_else(|e| {
                 errors_present = true;
@@ -1004,7 +1008,13 @@ fn switch_profile(
         // be safe and clear any leftover channels
         LUA_TXS.lock().clear();
 
-        switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
+        switch_to_failsafe_profile(
+            dbus_api_tx,
+            keyboard_devices,
+            mouse_devices,
+            misc_devices,
+            notify,
+        )?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
 
         debug!("Successfully entered failsafe mode");
@@ -1056,6 +1066,7 @@ fn switch_profile(
                             dbus_api_tx,
                             keyboard_devices,
                             mouse_devices,
+                            misc_devices,
                             notify,
                         )?;
 
@@ -1100,8 +1111,10 @@ fn switch_profile(
                     thread_idx,
                     lua_rx,
                     script_path.clone(),
+                    Some(profile.clone()),
                     keyboard_devices.to_owned(),
                     mouse_devices.to_owned(),
+                    misc_devices.to_owned(),
                 ) {
                     errors_present = true;
 
@@ -1125,7 +1138,13 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
+                switch_to_failsafe_profile(
+                    dbus_api_tx,
+                    keyboard_devices,
+                    mouse_devices,
+                    misc_devices,
+                    notify,
+                )?;
 
                 Ok(false)
             } else {
@@ -1156,7 +1175,13 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(dbus_api_tx, keyboard_devices, mouse_devices, notify)?;
+                switch_to_failsafe_profile(
+                    dbus_api_tx,
+                    keyboard_devices,
+                    mouse_devices,
+                    misc_devices,
+                    notify,
+                )?;
 
                 Ok(false)
             } else {
@@ -1201,6 +1226,7 @@ async fn process_dbus_event(
     dbus_api_tx: &Sender<DbusApiEvent>,
     keyboard_devices: &[KeyboardDevice],
     mouse_devices: &[MouseDevice],
+    misc_devices: &[MiscDevice],
 ) -> Result<()> {
     match dbus_event {
         dbus_interface::Message::SwitchSlot(slot) => {
@@ -1217,6 +1243,7 @@ async fn process_dbus_event(
                 dbus_api_tx,
                 keyboard_devices,
                 mouse_devices,
+                misc_devices,
                 true,
             ) {
                 error!("Could not switch profiles: {}", e);
@@ -1972,10 +1999,16 @@ async fn run_main_loop(
         .iter()
         .map(|device| device.0.clone())
         .collect::<Vec<KeyboardDevice>>();
+
     let mouse_devices_c = mouse_devices
         .iter()
         .map(|device| device.0.clone())
         .collect::<Vec<MouseDevice>>();
+
+    let misc_devices_c = misc_devices
+        .iter()
+        .map(|device| device.0.clone())
+        .collect::<Vec<MiscDevice>>();
 
     // main loop iterations, monotonic counter
     let mut ticks = 0;
@@ -2046,6 +2079,7 @@ async fn run_main_loop(
                     dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
+                    &misc_devices_c,
                     true,
                 ) {
                     error!("Could not switch profiles: {}", e);
@@ -2076,6 +2110,7 @@ async fn run_main_loop(
                     dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
+                    &misc_devices_c,
                     true,
                 )?;
 
@@ -2146,6 +2181,7 @@ async fn run_main_loop(
                     dbus_api_tx,
                     &keyboard_devices_c,
                     &mouse_devices_c,
+                    &misc_devices_c,
                     true,
                 ) {
                     error!("Could not switch profiles: {}", e);
@@ -2180,6 +2216,7 @@ async fn run_main_loop(
                         dbus_api_tx,
                         &keyboard_devices_c,
                         &mouse_devices_c,
+                        &misc_devices_c,
                         false,
                     ) {
                         error!("Could not reload profile: {}", e);
@@ -2241,6 +2278,7 @@ async fn run_main_loop(
                             dbus_api_tx,
                             &keyboard_devices_c,
                             &mouse_devices_c,
+                            &misc_devices_c,
                         )
                         .await
                         .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
