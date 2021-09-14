@@ -177,15 +177,8 @@ pub fn parse_hex_vec(src: &str) -> Result<Vec<u8>> {
     Ok(result)
 }
 
-pub fn crc8(data: &[u8], init: u8) -> u8 {
-    let sum = CRC8.lock().calc(data, data.len() as i32, init);
-
-    sum
-}
-
 pub fn crc8_slow_with_poly(data: &[u8], init: u8, poly: u8) -> u8 {
     // TODO: avoid rebuilding of lookup table on each call
-    
 
     crc8::Crc8::create_msb(poly).calc(data, data.len() as i32, init)
 }

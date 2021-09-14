@@ -34,6 +34,44 @@ use util::{DeviceState, HexSlice};
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[macro_export]
+macro_rules! println_v {
+    () => {
+        println!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($($params),*)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! eprintln_v {
+    () => {
+        eprintln!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($($params),*)
+        }
+    };
+}
+
 lazy_static! {
     /// Global command line options
     pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
