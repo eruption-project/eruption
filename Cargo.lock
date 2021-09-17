@@ -197,9 +197,9 @@ checksum = "c4872d67bab6358e59559027aa3b9157c53d9358c51423c17554809a8858e0f8"
 
 [[package]]
 name = "cairo-rs"
-version = "0.14.3"
+version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f859ade407c19810ae920b4fafab92189ed312adad490d08fb16b5f49f1e2207"
+checksum = "9164355c892b026d6257e696dde5f3cb39beb3718297f0f161b562fe2ee3ab86"
 dependencies = [
  "bitflags",
  "cairo-sys-rs",
@@ -3252,9 +3252,9 @@ checksum = "8895849a949e7845e06bd6dc1aa51731a103c42707010a5b591c0038fb73385b"
 
 [[package]]
 name = "unicode-width"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9337591893a19b88d8d87f2cec1e73fad5cdfd10e5a6f349f498ad6ea2ffb1e3"
+checksum = "3ed742d4ea2bd1176e236172c8429aaf54486e7ac098db29ffe6529e0ce50973"
 
 [[package]]
 name = "unicode-xid"

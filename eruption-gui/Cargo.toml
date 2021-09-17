@@ -47,7 +47,7 @@ gdk-pixbuf = "0.14.0"
 glib = "0.14.5"
 pango = "0.14.3"
 pangocairo = "0.14.0"
-cairo-rs = "0.14.3"
+cairo-rs = "0.14.7"
 #sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
 icecream = "0.1.0"
 
