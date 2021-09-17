@@ -5,12 +5,14 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.23 | __New Release__                                                                                                                                                              |
+| 0.1.23 | Updated all dependencies to their latest revisions                                                                                                                           |
 | 0.1.23 | Updated the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready)                                                      |
 | 0.1.23 | Added support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
 | 0.1.23 | Added support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`,  `ROCCAT Burst Pro`                                                |
 | 0.1.23 | Added a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running            |
 | 0.1.23 | Improved formatting of syslog log output; the default log-level is now `WARN` for the provided daemons                                                                       |
 | 0.1.23 | Added experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
+| 0.1.23 | Added experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
 | 0.1.22 | __New Release__                                                                                                                                                              |
 | 0.1.22 | Updated all dependencies to their latest revisions. Most notably: `mlua:6.2`, and many more                                                                                  |
 | 0.1.22 | Updated the Eruption GUI to the latest version `0.0.10` (this is a technology preview only; it is not production ready)                                                      |
