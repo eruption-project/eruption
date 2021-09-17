@@ -343,12 +343,13 @@ impl DeviceTrait for RoccatKain2xx {
                             let battery_status = buf[5];
 
                             let battery_level = match battery_status {
-                                0x47 => "100%",
-                                0x40 => "80%",
-                                0x3f => "60%",
-                                0x3e => "40%",
-                                0x3d => "20%",
-                                0x3c => "0%",
+                                71 => "fully charged",
+                                65..=70 => "100%",
+                                64 => "80%",
+                                63 => "60%",
+                                62 => "40%",
+                                61 => "20%",
+                                60 => "0%",
                                 _ => "unknown",
                             };
 
