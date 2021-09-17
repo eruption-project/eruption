@@ -49,6 +49,10 @@ palette = "0.6.0"
 nalgebra = "0.29.0"
 noise = "0.7.0"
 simdnoise = "3.1.6"
+#lua-src = "543.1.0"
+#mlua = { version = "0.6.3", features = ["lua54", "vendored"] }
+#luajit-src = "210.2.0"
+#mlua = { version = "0.6.3", features = ["luajit", "vendored"] }
 mlua = { version = "0.6.3", features = ["luajit"] }
 sysinfo = "0.20.3"
 procinfo = "0.4.2"
