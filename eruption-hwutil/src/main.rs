@@ -356,7 +356,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 println!();
 
                                 println!(
-                                    "Transceiver enabled: {:>}",
+                                    "Transceiver enabled:  {:>}",
                                     status
                                         .get("transceiver-enabled")
                                         .map(|e| e.to_string())
@@ -365,7 +365,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 );
 
                                 println!(
-                                    "Signal Strength:     {:>4} ({})",
+                                    "Signal Strength:      {:>4} ({})",
                                     status
                                         .get("signal-strength-percent")
                                         .map(|e| e.to_string())
@@ -378,7 +378,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                 );
 
                                 println!(
-                                    "Battery Level:       {:>4} ({})",
+                                    "Battery Level:        {:>4} ({})",
                                     status
                                         .get("battery-level-percent")
                                         .map(|e| e.to_string())

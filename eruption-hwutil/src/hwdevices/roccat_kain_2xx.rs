@@ -209,16 +209,14 @@ impl DeviceTrait for RoccatKain2xx {
                 buf.resize(size, 0);
                 buf[0] = id;
 
-                match ctrl_dev.read_timeout(buf.as_mut_slice(), 70) {
+                match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
                     Ok(_result) => {
-                        if buf[0] == 0x01 {
+                        if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
                             continue;
                         } else {
                             hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
-                            if buf[0..2] != [0x07, 0x14] {
-                                break Ok(buf);
-                            }
+                            break Ok(buf);
                         }
                     }
 
@@ -335,83 +333,62 @@ impl DeviceTrait for RoccatKain2xx {
         let read_results = || -> Result<super::DeviceStatus> {
             let mut table = HashMap::new();
 
-            for _ in 0..4 {
-                thread::sleep(Duration::from_millis(15));
-
+            for _ in 0..=2 {
                 // query results
                 let buf = self.read_feature_report(0x07, 22)?;
 
                 match buf[1] {
                     0x04 => {
-                        // let battery_level = BigEndian::read_u16(&buf[4..6]);
+                        if buf[2] == 0x40 {
+                            let battery_status = buf[5];
 
-                        // table.insert(
-                        //     "battery-level-percent".to_string(),
-                        //     format!("{}%", (battery_level as f32 / 20000.0 * 100.0).floor()),
-                        // );
-
-                        // table.insert(
-                        //     "battery-level-raw".to_string(),
-                        //     format!("{}", battery_level),
-                        // );
-                    }
-
-                    0x06 => {
-                        /*      ^
-                        |07063481 010200b7 00000000 00000000| ..4............. 00000000
-                        |00000000 0000|                       ......           00000010
-                                                                                00000016
-                                        ^
-                        |07063401 00740848 00000000 00000000| ..4..t.H........ 00000000
-                        |00000000 0000|
-
-
-
-                        |07043401 41770000 00000000 00000000| ..4.Aw.......... 00000000
-                        |00000000 0000|                       ......           00000010
-                                                                               00000016
-                        |07063481 010200b7 00000000 00000000| ..4............. 00000000
-                        |00000000 0000|                       ......           00000010
-                                                                               00000016
-                        |07063401 00e00ade 00000000 00000000| ..4............. 00000000
-                        |00000000 0000|                       ......           00000010
-                                                                               00000016
-                        */
-
-                        if buf[0..4] == [0x07, 0x06, 0x34, 0x01] {
-                            let battery_level = BigEndian::read_u32(&buf[4..9]);
+                            let battery_level = match battery_status {
+                                0x47 => "100%",
+                                0x46 => "80%",
+                                0x45 => "60%",
+                                0x44 => "40%",
+                                0x43 => "20%",
+                                0x42 => "0%",
+                                _ => "unknown",
+                            };
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}%", (battery_level as f32 / 256.0 / 1000.0).floor()),
+                                format!("{}", battery_level),
                             );
 
                             table.insert(
                                 "battery-level-raw".to_string(),
-                                format!("{}", battery_level),
+                                format!("{}", battery_status),
                             );
                         }
                     }
 
                     0x07 => {
-                        let transceiver_enabled = !(buf[6] == 0x00);
-                        let snr = BigEndian::read_u16(&buf[7..9]);
+                        if buf[2] == 0x53 {
+                            let transceiver_enabled = !(buf[6] == 0x00);
+                            let snr = BigEndian::read_u16(&buf[7..9]);
 
-                        table.insert(
-                            "transceiver-enabled".to_string(),
-                            format!("{}", transceiver_enabled),
-                        );
+                            // radio
+                            table.insert(
+                                "transceiver-enabled".to_string(),
+                                format!("{}", transceiver_enabled),
+                            );
 
-                        table.insert(
-                            "signal-strength-percent".to_string(),
-                            format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
-                        );
+                            // signal strength
+                            table.insert(
+                                "signal-strength-percent".to_string(),
+                                format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
+                            );
 
-                        table.insert("signal-strength-raw".to_string(), format!("{}", snr));
+                            table.insert("signal-strength-raw".to_string(), format!("{}", snr));
+                        }
                     }
 
                     _ => { /* do nothing */ }
                 }
+
+                thread::sleep(Duration::from_millis(15));
             }
 
             Ok(DeviceStatus(table))
@@ -421,6 +398,7 @@ impl DeviceTrait for RoccatKain2xx {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
             // TODO: Further investigate the meaning of the fields
+
             let buf: [u8; 22] = [
                 0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -430,10 +408,8 @@ impl DeviceTrait for RoccatKain2xx {
 
             let result = read_results()?;
 
-            thread::sleep(Duration::from_millis(15));
-
             let buf: [u8; 22] = [
-                0x08, 0x04, 0x34, 0x01, 0x01, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             ];
 
@@ -441,8 +417,52 @@ impl DeviceTrait for RoccatKain2xx {
 
             let result2 = read_results()?;
 
+            // let buf: [u8; 22] = [
+            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result3 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x02, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result4 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x04, 0x33, 0x85, 0x04, 0xbe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result5 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x04, 0x34, 0x01, 0x00, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result6 = read_results()?;
+
             Ok(DeviceStatus(
-                result.0.into_iter().chain(result2.0).collect(),
+                result
+                    .0
+                    .into_iter()
+                    .chain(result2.0)
+                    // .chain(result3.0)
+                    // .chain(result4.0)
+                    // .chain(result5.0)
+                    // .chain(result6.0)
+                    .collect(),
             ))
         }
     }
