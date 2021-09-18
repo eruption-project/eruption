@@ -29,5 +29,6 @@ color-eyre = "0.5.11"
 lockfile = "0.3.0"
 
 [dev-dependencies]
-#icecream = "0.1.0"
+icecream = "0.1.0"
+pretty_assertions = "0.7.2"
 tokio = { version = "1.11.0", features = ["test-util"] }

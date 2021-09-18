@@ -40,5 +40,6 @@ serialport = "4.0.1"
 crc8 = "0.1.1"
 
 [dev-dependencies]
-#icecream = "0.1.0"
+icecream = "0.1.0"
+pretty_assertions = "0.7.2"
 tokio = { version = "1.11.0", features = ["test-util"] }
