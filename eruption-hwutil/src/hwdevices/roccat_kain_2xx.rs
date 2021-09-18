@@ -366,7 +366,7 @@ impl DeviceTrait for RoccatKain2xx {
 
                     0x07 => {
                         if buf[2] == 0x53 {
-                            let transceiver_enabled = !(buf[6] == 0x00);
+                            let transceiver_enabled = buf[6] != 0x00;
                             let signal = BigEndian::read_u16(&buf[7..9]);
 
                             // radio

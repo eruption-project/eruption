@@ -53,7 +53,7 @@ pub fn write_pid_file() -> Result<()> {
     flock(fd, FlockArg::LockExclusiveNonblock)?;
     ftruncate(fd, 0)?;
 
-    write(fd, &text.as_bytes())?;
+    write(fd, text.as_bytes())?;
 
     Ok(())
 }
