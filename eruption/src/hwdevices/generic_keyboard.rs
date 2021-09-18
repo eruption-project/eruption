@@ -19,8 +19,10 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::RwLock;
-use std::any::Any;
 use std::sync::Arc;
+use std::{any::Any, collections::HashMap};
+
+use crate::hwdevices::DeviceStatus;
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
@@ -136,6 +138,14 @@ impl DeviceTrait for GenericKeyboard {
         buf.resize(size, 0);
 
         Ok(buf)
+    }
+
+    fn device_status(&self) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn as_any(&self) -> &dyn Any {

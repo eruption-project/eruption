@@ -15,12 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{any::Any, path::PathBuf, sync::Arc};
+use std::{any::Any, collections::HashMap, path::PathBuf, sync::Arc};
 
 use log::*;
 use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::time::Duration;
+
+use crate::hwdevices::DeviceStatus;
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MiscDeviceTrait,
@@ -141,6 +143,14 @@ impl DeviceTrait for CustomSerialLeds {
         buf.resize(size, 0);
 
         Ok(buf)
+    }
+
+    fn device_status(&self) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn as_any(&self) -> &dyn Any {

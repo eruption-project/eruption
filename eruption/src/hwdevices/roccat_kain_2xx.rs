@@ -16,6 +16,7 @@
 */
 
 use bitvec::prelude::*;
+use byteorder::{BigEndian, ByteOrder};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
@@ -24,13 +25,16 @@ use parking_lot::{Mutex, RwLock};
 // use std::time::Duration;
 use lazy_static::lazy_static;
 use std::any::Any;
+use std::collections::HashMap;
+use std::thread;
+use std::time::Duration;
 use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
+    MouseDeviceTrait, MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -208,6 +212,54 @@ impl RoccatKain2xx {
     //         }
     //     }
     // }
+
+    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            match ctrl_dev.send_feature_report(buffer) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buffer).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
+                }
+
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
+        }
+    }
+
+    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+            loop {
+                let mut buf = Vec::new();
+                buf.resize(size, 0);
+                buf[0] = id;
+
+                match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
+                    Ok(_result) => {
+                        if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
+                            continue;
+                        } else {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                            break Ok(buf);
+                        }
+                    }
+
+                    Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
+                }
+            }
+        }
+    }
 }
 
 impl DeviceInfoTrait for RoccatKain2xx {
@@ -408,6 +460,144 @@ impl DeviceTrait for RoccatKain2xx {
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
+        }
+    }
+
+    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+        let read_results = || -> Result<super::DeviceStatus> {
+            let mut table = HashMap::new();
+
+            for _ in 0..=2 {
+                // query results
+                let buf = self.read_feature_report(0x07, 22)?;
+
+                match buf[1] {
+                    0x04 => {
+                        if buf[2] == 0x40 {
+                            let battery_status = buf[5];
+
+                            let battery_level = match battery_status {
+                                71 => "100",
+                                64 => "80",
+                                65 => "60",
+                                66 => "40",
+                                67 => "20",
+                                68 => "0",
+                                _ => "unknown",
+                            };
+
+                            table.insert(
+                                "battery-level-percent".to_string(),
+                                format!("{}%", battery_level),
+                            );
+
+                            table.insert(
+                                "battery-level-raw".to_string(),
+                                format!("{}", battery_status),
+                            );
+                        }
+                    }
+
+                    0x07 => {
+                        if buf[2] == 0x53 {
+                            let transceiver_enabled = buf[6] != 0x00;
+                            let signal = BigEndian::read_u16(&buf[7..9]);
+
+                            // radio
+                            table.insert(
+                                "transceiver-enabled".to_string(),
+                                format!("{}", transceiver_enabled),
+                            );
+
+                            // signal strength
+                            table.insert(
+                                "signal-strength-percent".to_string(),
+                                format!("{}%", (signal as f32 / 21400.0 * 100.0).floor()),
+                            );
+
+                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+                        }
+                    }
+
+                    _ => { /* do nothing */ }
+                }
+
+                thread::sleep(Duration::from_millis(15));
+            }
+
+            Ok(DeviceStatus(table))
+        };
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else {
+            // TODO: Further investigate the meaning of the fields
+
+            let buf: [u8; 22] = [
+                0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            self.write_feature_report(&buf)?;
+
+            let result = read_results()?;
+
+            let buf: [u8; 22] = [
+                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            self.write_feature_report(&buf)?;
+
+            let result2 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result3 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x02, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result4 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x04, 0x33, 0x85, 0x04, 0xbe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result5 = read_results()?;
+
+            // let buf: [u8; 22] = [
+            //     0x08, 0x04, 0x34, 0x01, 0x00, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
+
+            // self.write_feature_report(&buf)?;
+
+            // let result6 = read_results()?;
+
+            Ok(DeviceStatus(
+                result
+                    .0
+                    .into_iter()
+                    .chain(result2.0)
+                    // .chain(result3.0)
+                    // .chain(result4.0)
+                    // .chain(result5.0)
+                    // .chain(result6.0)
+                    .collect(),
+            ))
         }
     }
 

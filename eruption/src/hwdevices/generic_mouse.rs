@@ -15,12 +15,14 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{any::Any, sync::Arc};
+use std::{any::Any, collections::HashMap, sync::Arc};
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::RwLock;
+
+use crate::hwdevices::DeviceStatus;
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
@@ -130,6 +132,14 @@ impl DeviceTrait for GenericMouse {
         buf.resize(size, 0);
 
         Ok(buf)
+    }
+
+    fn device_status(&self) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn as_any(&self) -> &dyn Any {

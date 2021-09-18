@@ -19,6 +19,7 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
+use std::collections::HashMap;
 use std::time::Duration;
 use std::{any::Any, mem::size_of};
 use std::{sync::Arc, thread};
@@ -26,7 +27,7 @@ use std::{sync::Arc, thread};
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
+    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice,
     KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA,
 };
 
@@ -435,6 +436,14 @@ impl DeviceTrait for RoccatVulcanProTKL {
 
             Ok(())
         }
+    }
+
+    fn device_status(&self) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn send_init_sequence(&mut self) -> Result<()> {

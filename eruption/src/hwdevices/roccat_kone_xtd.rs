@@ -20,13 +20,13 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
-use std::{any::Any, mem::size_of, sync::Arc};
+use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
 
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, RGBA,
+    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
+    MouseDeviceTrait, MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -497,6 +497,14 @@ impl DeviceTrait for RoccatKoneXtd {
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
+    }
+
+    fn device_status(&self) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn as_any(&self) -> &dyn Any {

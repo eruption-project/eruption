@@ -20,6 +20,7 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
+use std::collections::HashMap;
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
@@ -534,6 +535,29 @@ impl DeviceInfo {
     }
 }
 
+/// Generic Device status information, like e.g.: 'signal strength' or 'battery level'
+#[derive(Debug, Clone)]
+pub struct DeviceStatus(HashMap<String, String>);
+
+impl std::ops::Deref for DeviceStatus {
+    type Target = HashMap<String, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Default for DeviceStatus {
+    fn default() -> Self {
+        let map = HashMap::new();
+
+        // fill in default values
+        // map.insert("connected".to_owned(), format!("{}", true));
+
+        Self(map)
+    }
+}
+
 /// Non 'Plug and Play' device, may be declared in .config file
 #[derive(Debug, Clone)]
 pub struct NonPnPDevice {
@@ -598,6 +622,9 @@ pub trait DeviceTrait: DeviceInfoTrait {
 
     /// Read raw data from the control device
     fn read_data_raw(&self, size: usize) -> Result<Vec<u8>>;
+
+    /// Get the device status
+    fn device_status(&self) -> Result<DeviceStatus>;
 
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
