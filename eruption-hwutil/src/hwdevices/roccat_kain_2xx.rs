@@ -343,19 +343,18 @@ impl DeviceTrait for RoccatKain2xx {
                             let battery_status = buf[5];
 
                             let battery_level = match battery_status {
-                                71 => "fully charged",
-                                65..=70 => "100%",
-                                64 => "80%",
-                                63 => "60%",
-                                62 => "40%",
-                                61 => "20%",
-                                60 => "0%",
+                                71 => "100",
+                                64 => "80",
+                                65 => "60",
+                                66 => "40",
+                                67 => "20",
+                                68 => "0",
                                 _ => "unknown",
                             };
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}", battery_level),
+                                format!("{}%", battery_level),
                             );
 
                             table.insert(
@@ -368,7 +367,7 @@ impl DeviceTrait for RoccatKain2xx {
                     0x07 => {
                         if buf[2] == 0x53 {
                             let transceiver_enabled = !(buf[6] == 0x00);
-                            let snr = BigEndian::read_u16(&buf[7..9]);
+                            let signal = BigEndian::read_u16(&buf[7..9]);
 
                             // radio
                             table.insert(
@@ -379,10 +378,10 @@ impl DeviceTrait for RoccatKain2xx {
                             // signal strength
                             table.insert(
                                 "signal-strength-percent".to_string(),
-                                format!("{}%", (snr as f32 / 20000.0 * 100.0).floor()),
+                                format!("{}%", (signal as f32 / 21400.0 * 100.0).floor()),
                             );
 
-                            table.insert("signal-strength-raw".to_string(), format!("{}", snr));
+                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
                         }
                     }
 
