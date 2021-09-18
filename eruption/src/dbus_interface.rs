@@ -394,6 +394,28 @@ impl DbusApi {
                                 .outarg::<String, _>("value"),
                             )
                             .add_m(
+                                f.method("GetDeviceStatus", (), move |m| {
+                                    if perms::has_monitor_permission_cached(
+                                        &m.msg.sender().unwrap().to_string(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let device: u64 = m.msg.read1()?;
+
+                                        trace!("Querying device [{}] status", device);
+
+                                        let result = query_device_specific_status(device)
+                                            .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+
+                                        Ok(vec![m.msg.method_return().append1(result)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<u64, _>("device")
+                                .outarg::<String, _>("status"),
+                            )
+                            .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
                                     if perms::has_monitor_permission_cached(
                                         &m.msg.sender().unwrap().to_string(),
@@ -921,6 +943,44 @@ fn apply_parameter(
     } else {
         Err(DbusApiError::ScriptNotFound {}.into())
     }
+}
+
+fn query_device_specific_status(device: u64) -> Result<String> {
+    let json = if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
+        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+
+        let status = device.read().device_status()?;
+        let result = serde_json::to_string_pretty(&*status)?;
+
+        result
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+    {
+        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
+        let device = &crate::MOUSE_DEVICES.lock()[index];
+
+        let status = device.read().device_status()?;
+        let result = serde_json::to_string_pretty(&*status)?;
+
+        result
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len()
+            + crate::MOUSE_DEVICES.lock().len()
+            + crate::MISC_DEVICES.lock().len())
+    {
+        let index = device as usize
+            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
+        let device = &crate::MISC_DEVICES.lock()[index];
+
+        let status = device.read().device_status()?;
+        let result = serde_json::to_string_pretty(&*status)?;
+
+        result
+    } else {
+        return Err(DbusApiError::InvalidDevice {}.into());
+    };
+
+    Ok(json)
 }
 
 fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {

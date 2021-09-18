@@ -22,12 +22,9 @@ use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
-// use std::time::Duration;
 use lazy_static::lazy_static;
 use std::any::Any;
 use std::collections::HashMap;
-use std::thread;
-use std::time::Duration;
 use std::{mem::size_of, sync::Arc};
 
 use crate::constants;
@@ -217,7 +214,8 @@ impl RoccatKain2xx {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // we have to use the led_hiddev here, this is intentional
+            let ctrl_dev = self.led_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.send_feature_report(buffer) {
@@ -236,7 +234,8 @@ impl RoccatKain2xx {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // we have to use the led_hiddev here, this is intentional
+            let ctrl_dev = self.led_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             loop {
@@ -463,7 +462,7 @@ impl DeviceTrait for RoccatKain2xx {
         }
     }
 
-    fn device_status(&self) -> super::Result<super::DeviceStatus> {
+    fn device_status(&self) -> Result<super::DeviceStatus> {
         let read_results = || -> Result<super::DeviceStatus> {
             let mut table = HashMap::new();
 
@@ -522,7 +521,7 @@ impl DeviceTrait for RoccatKain2xx {
                     _ => { /* do nothing */ }
                 }
 
-                thread::sleep(Duration::from_millis(15));
+                // thread::sleep(Duration::from_millis(15));
             }
 
             Ok(DeviceStatus(table))
@@ -530,6 +529,10 @@ impl DeviceTrait for RoccatKain2xx {
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Further investigate the meaning of the fields
 
@@ -541,6 +544,8 @@ impl DeviceTrait for RoccatKain2xx {
             self.write_feature_report(&buf)?;
 
             let result = read_results()?;
+
+            // thread::sleep(Duration::from_millis(15));
 
             let buf: [u8; 22] = [
                 0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

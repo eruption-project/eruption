@@ -18,6 +18,10 @@
 use clap::{lazy_static::lazy_static, Clap};
 use color_eyre::Help;
 use colored::*;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Cell, CellAlignment, ContentArrangement, Table};
+use crossbeam::channel::unbounded;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
@@ -25,6 +29,8 @@ use eyre::Context;
 use manifest::GetAttr;
 use parking_lot::Mutex;
 use profiles::GetAttr as GetAttrProfile;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread;
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
 use std::{process, sync::Arc};
@@ -41,6 +47,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 lazy_static! {
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+
+    /// Global "quit" status flag
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -60,6 +69,10 @@ pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
+
+    /// Repeat output until ctrl+c is pressed
+    #[clap(short, long)]
+    repeat: bool,
 
     /// Sets the configuration file to use
     #[clap(short = 'c', long)]
@@ -149,41 +162,45 @@ pub enum DevicesSubcommands {
     #[clap(display_order = 1)]
     Info { device: String },
 
+    /// Get status of a specific device
+    #[clap(display_order = 2)]
+    Status { device: String },
+
     /// Get or set the device specific brightness of the LEDs
-    // #[clap(display_order = 2)]
+    // #[clap(display_order = 3)]
     Brightness {
         device: String,
         brightness: Option<i64>,
     },
 
     /// Get or set the current profile (applicable for some devices)
-    // #[clap(display_order = 3)]
+    // #[clap(display_order = 4)]
     Profile {
         device: String,
         profile: Option<i32>,
     },
 
     /// Get or set the DPI parameter (applicable for some mice)
-    // #[clap(display_order = 4)]
+    // #[clap(display_order = 5)]
     Dpi { device: String, dpi: Option<i32> },
 
     /// Get or set the bus poll rate
-    // #[clap(display_order = 5)]
+    // #[clap(display_order = 6)]
     Rate { device: String, rate: Option<i32> },
 
     /// Get or set the debounce parameter (applicable for some mice)
-    // #[clap(display_order = 6)]
+    // #[clap(display_order = 7)]
     Debounce {
         device: String,
         enable: Option<bool>,
     },
 
     /// Get or set the DCU parameter (applicable for some mice)
-    // #[clap(display_order = 7)]
+    // #[clap(display_order = 8)]
     Distance { device: String, param: Option<i32> },
 
     /// Get or set the angle-snapping parameter (applicable for some mice)
-    // #[clap(display_order = 8)]
+    // #[clap(display_order = 9)]
     AngleSnapping {
         device: String,
         enable: Option<bool>,
@@ -400,6 +417,18 @@ pub async fn get_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16
     Ok((keyboards, mice, misc))
 }
 
+/// Get device specific status
+pub async fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
+    let (status,): (String,) = dbus_system_bus("/org/eruption/devices")
+        .await?
+        .method_call("org.eruption.Device", "GetDeviceStatus", (device as u64,))
+        .await?;
+
+    let result: HashMap<String, String> = serde_json::from_str(&status)?;
+
+    Ok(result)
+}
+
 /// Get a device specific config param
 pub async fn get_device_config(device: u64, param: &str) -> Result<String> {
     let (result,): (String,) = dbus_system_bus("/org/eruption/devices")
@@ -586,6 +615,17 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     // if unsafe { libc::isatty(0) != 0 } {
     //     print_header();
     // }
+
+    // register ctrl-c handler
+    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    ctrlc::set_handler(move || {
+        QUIT.store(true, Ordering::SeqCst);
+
+        ctrl_c_tx
+            .send(true)
+            .unwrap_or_else(|e| log::error!("Could not send on a channel: {}", e));
+    })
+    .unwrap_or_else(|e| log::error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
 
@@ -798,6 +838,58 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 let result = get_device_config(device, "info").await?;
 
                 println!("{}", format!("{}", result.bold()));
+            }
+
+            DevicesSubcommands::Status { device } => {
+                let device = device.parse::<u64>()?;
+
+                print_device_header(device)
+                    .await
+                    .wrap_err("Could not connect to the Eruption daemon")
+                    .suggestion("Please verify that the Eruption daemon is running")?;
+
+                let term = console::Term::stdout();
+
+                // stores how many lines we printed in the previous iteration
+                let mut prev = 0;
+
+                loop {
+                    let result = get_device_status(device).await?;
+
+                    let mut table = Table::new();
+                    table
+                        .load_preset(UTF8_FULL)
+                        .apply_modifier(UTF8_ROUND_CORNERS)
+                        .set_content_arrangement(ContentArrangement::Dynamic)
+                        .set_table_width(40)
+                        .set_header(vec!["Parameter", "Value"]);
+
+                    // counts the number of lines that we printed
+                    let mut cntr = 3;
+
+                    let mut v = result.iter().collect::<Vec<(&String, &String)>>();
+                    v.sort_by_key(|&v| v.0);
+
+                    v.iter().for_each(|(k, v)| {
+                        table.add_row(vec![
+                            Cell::new(k.to_owned()).set_alignment(CellAlignment::Left),
+                            Cell::new(v.to_owned()).set_alignment(CellAlignment::Right),
+                        ]);
+
+                        cntr += 2;
+                    });
+
+                    term.clear_last_lines(prev)?;
+                    prev = cntr;
+
+                    println!("{}", table);
+
+                    if !opts.repeat || QUIT.load(Ordering::SeqCst) {
+                        break;
+                    }
+
+                    thread::sleep(Duration::from_millis(250));
+                }
             }
 
             DevicesSubcommands::Profile { device, profile } => {

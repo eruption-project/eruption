@@ -192,7 +192,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     }
 
-                    // thread::sleep(Duration::from_millis(70));
+                    // thread::sleep(Duration::from_millis(20));
 
                     // let mut buf: [u8; 64] = [0x00; 64];
                     // buf[0] = 0xa1;
@@ -226,7 +226,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(70));
+                    thread::sleep(Duration::from_millis(20));
 
                     let buf: [u8; 64] = [
                         0xff, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -245,7 +245,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(70));
+                    thread::sleep(Duration::from_millis(20));
 
                     let buf: [u8; 64] = [
                         0xff, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -264,7 +264,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(70));
+                    thread::sleep(Duration::from_millis(20));
 
                     let buf: [u8; 64] = [
                         0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
