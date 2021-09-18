@@ -23,6 +23,8 @@ _eruptionctl() {
 '--version[Print version information]' \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-r[Repeat output until ctrl+c is pressed]' \
+'--repeat[Repeat output until ctrl+c is pressed]' \
 ":: :_eruptionctl_commands" \
 "*::: :->eruptionctl" \
 && ret=0
@@ -87,6 +89,13 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (info)
+_arguments "${_arguments_options[@]}" \
+'--help[Print help information]' \
+'--version[Print version information]' \
+':device:' \
+&& ret=0
+;;
+(status)
 _arguments "${_arguments_options[@]}" \
 '--help[Print help information]' \
 '--version[Print version information]' \
@@ -473,6 +482,7 @@ _eruptionctl__devices_commands() {
     local commands; commands=(
 'list:List connected devices and their indices (run this first)' \
 'info:Get information about a specific device' \
+'status:Get status of a specific device' \
 'brightness:Get or set the device specific brightness of the LEDs' \
 'profile:Get or set the current profile (applicable for some devices)' \
 'dpi:Get or set the DPI parameter (applicable for some mice)' \
@@ -634,6 +644,11 @@ _eruptionctl__switch__slot_commands() {
 _eruptionctl__config__soundfx_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl config soundfx commands' commands "$@"
+}
+(( $+functions[_eruptionctl__devices__status_commands] )) ||
+_eruptionctl__devices__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl devices status commands' commands "$@"
 }
 (( $+functions[_eruptionctl__status_commands] )) ||
 _eruptionctl__status_commands() {

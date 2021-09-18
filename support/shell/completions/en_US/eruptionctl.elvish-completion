@@ -26,6 +26,8 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Print version information'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -r 'Repeat output until ctrl+c is pressed'
+            cand --repeat 'Repeat output until ctrl+c is pressed'
             cand config 'Configuration related sub-commands'
             cand devices 'Get or set some device specific configuration parameters'
             cand status 'Shows the currently active profile or slot'
@@ -60,6 +62,7 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Print version information'
             cand list 'List connected devices and their indices (run this first)'
             cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
             cand brightness 'Get or set the device specific brightness of the LEDs'
             cand profile 'Get or set the current profile (applicable for some devices)'
             cand dpi 'Get or set the DPI parameter (applicable for some mice)'
@@ -73,6 +76,10 @@ edit:completion:arg-completer[eruptionctl] = [@words]{
             cand --version 'Print version information'
         }
         &'eruptionctl;devices;info'= {
+            cand --help 'Print help information'
+            cand --version 'Print version information'
+        }
+        &'eruptionctl;devices;status'= {
             cand --help 'Print help information'
             cand --version 'Print version information'
         }

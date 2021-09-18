@@ -51,20 +51,29 @@ _arguments "${_arguments_options[@]}" \
 ':device:' \
 && ret=0
 ;;
-(firmware-update)
+(blackout)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '-V[Print version information]' \
 '--version[Print version information]' \
-":: :_eruption-hwutil__firmware-update_commands" \
-"*::: :->firmware-update" \
+':device:' \
+&& ret=0
+;;
+(firmware)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+":: :_eruption-hwutil__firmware_commands" \
+"*::: :->firmware" \
 && ret=0
 case $state in
-    (firmware-update)
+    (firmware)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruption-hwutil-firmware-update-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:eruption-hwutil-firmware-command-$line[1]:"
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
@@ -149,9 +158,10 @@ esac
 (( $+functions[_eruption-hwutil_commands] )) ||
 _eruption-hwutil_commands() {
     local commands; commands=(
-'list:List available devices, use this first to find out the index of the device to use' \
-'status:Query device specific status' \
-'firmware-update:Firmware update related subcommands' \
+'list:List available devices, use this first to find out the index of the device to address' \
+'status:Query device specific status like e.g.: Signal Strength/Battery Level' \
+'blackout:Turn off all LEDs, but otherwise leave the device completely usable' \
+'firmware:Firmware related subcommands (DANGEROUS, may brick the device)' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -161,6 +171,11 @@ _eruption-hwutil_commands() {
 _eruption-hwutil__completions__bash_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil completions bash commands' commands "$@"
+}
+(( $+functions[_eruption-hwutil__blackout_commands] )) ||
+_eruption-hwutil__blackout_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-hwutil blackout commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__completions_commands] )) ||
 _eruption-hwutil__completions_commands() {
@@ -178,33 +193,33 @@ _eruption-hwutil__completions__elvish_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil completions elvish commands' commands "$@"
 }
-(( $+functions[_eruption-hwutil__firmware-update_commands] )) ||
-_eruption-hwutil__firmware-update_commands() {
+(( $+functions[_eruption-hwutil__firmware_commands] )) ||
+_eruption-hwutil__firmware_commands() {
     local commands; commands=(
 'info:Get some information about the currently installed firmware' \
-'flash:Flash firmware to device' \
+'flash:Flash firmware to device (DANGEROUS, may brick the device)' \
     )
-    _describe -t commands 'eruption-hwutil firmware-update commands' commands "$@"
+    _describe -t commands 'eruption-hwutil firmware commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__completions__fish_commands] )) ||
 _eruption-hwutil__completions__fish_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil completions fish commands' commands "$@"
 }
-(( $+functions[_eruption-hwutil__firmware-update__flash_commands] )) ||
-_eruption-hwutil__firmware-update__flash_commands() {
+(( $+functions[_eruption-hwutil__firmware__flash_commands] )) ||
+_eruption-hwutil__firmware__flash_commands() {
     local commands; commands=()
-    _describe -t commands 'eruption-hwutil firmware-update flash commands' commands "$@"
+    _describe -t commands 'eruption-hwutil firmware flash commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__help_commands] )) ||
 _eruption-hwutil__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil help commands' commands "$@"
 }
-(( $+functions[_eruption-hwutil__firmware-update__info_commands] )) ||
-_eruption-hwutil__firmware-update__info_commands() {
+(( $+functions[_eruption-hwutil__firmware__info_commands] )) ||
+_eruption-hwutil__firmware__info_commands() {
     local commands; commands=()
-    _describe -t commands 'eruption-hwutil firmware-update info commands' commands "$@"
+    _describe -t commands 'eruption-hwutil firmware info commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__list_commands] )) ||
 _eruption-hwutil__list_commands() {

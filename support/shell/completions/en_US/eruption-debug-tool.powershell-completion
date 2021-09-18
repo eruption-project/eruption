@@ -32,6 +32,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('state-diff', 'state-diff', [CompletionResultType]::ParameterValue, 'Read out the device state and show differences to previous state (May hang the device)')
             [CompletionResult]::new('read', 'read', [CompletionResultType]::ParameterValue, 'Read a single USB HID feature report from device')
             [CompletionResult]::new('write', 'write', [CompletionResultType]::ParameterValue, 'Send a single USB HID feature report to device (dangerous)')
+            [CompletionResult]::new('read-raw', 'read-raw', [CompletionResultType]::ParameterValue, 'Read data from device')
+            [CompletionResult]::new('write-raw', 'write-raw', [CompletionResultType]::ParameterValue, 'Send data to device (dangerous)')
             [CompletionResult]::new('run-tests', 'run-tests', [CompletionResultType]::ParameterValue, 'Send a device specific init sequence and try to set colors')
             [CompletionResult]::new('utils', 'utils', [CompletionResultType]::ParameterValue, 'Special utility functions, like searching for CRC polynoms and parameters')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
@@ -74,6 +76,20 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             break
         }
         'eruption-debug-tool;write' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            break
+        }
+        'eruption-debug-tool;read-raw' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            break
+        }
+        'eruption-debug-tool;write-raw' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')

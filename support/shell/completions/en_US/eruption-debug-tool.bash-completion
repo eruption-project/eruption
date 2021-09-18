@@ -37,6 +37,9 @@ _eruption-debug-tool() {
             read)
                 cmd+="__read"
                 ;;
+            read-raw)
+                cmd+="__read__raw"
+                ;;
             report)
                 cmd+="__report"
                 ;;
@@ -58,6 +61,9 @@ _eruption-debug-tool() {
             write)
                 cmd+="__write"
                 ;;
+            write-raw)
+                cmd+="__write__raw"
+                ;;
             zsh)
                 cmd+="__zsh"
                 ;;
@@ -68,7 +74,7 @@ _eruption-debug-tool() {
 
     case "${cmd}" in
         eruption__debug__tool)
-            opts=" -h -V -v  --help --version --verbose  list report trace state-diff read write run-tests utils completions help"
+            opts=" -h -V -v  --help --version --verbose  list report trace state-diff read write read-raw write-raw run-tests utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -218,6 +224,21 @@ _eruption-debug-tool() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruption__debug__tool__read__raw)
+            opts=" -h -V  --help --version  <DEVICE> <REPORT_ID> <LENGTH> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__debug__tool__report)
             opts=" -h -V  --help --version  <DEVICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -309,6 +330,21 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__write)
+            opts=" -h -V  --help --version  <DEVICE> <DATA> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__write__raw)
             opts=" -h -V  --help --version  <DEVICE> <DATA> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

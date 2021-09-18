@@ -16,14 +16,17 @@ _eruption-hwutil() {
             bash)
                 cmd+="__bash"
                 ;;
+            blackout)
+                cmd+="__blackout"
+                ;;
             completions)
                 cmd+="__completions"
                 ;;
             elvish)
                 cmd+="__elvish"
                 ;;
-            firmware-update)
-                cmd+="__firmware__update"
+            firmware)
+                cmd+="__firmware"
                 ;;
             fish)
                 cmd+="__fish"
@@ -56,7 +59,7 @@ _eruption-hwutil() {
 
     case "${cmd}" in
         eruption__hwutil)
-            opts=" -h -V -v -r -c  --help --version --verbose --repeat --config  list status firmware-update completions help"
+            opts=" -h -V -v -r -c  --help --version --verbose --repeat --config  list status blackout firmware completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -79,6 +82,21 @@ _eruption-hwutil() {
             return 0
             ;;
         
+        eruption__hwutil__blackout)
+            opts=" -h -V  --help --version  <DEVICE> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__hwutil__completions)
             opts=" -h -V  --help --version  bash elvish fish power-shell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -169,7 +187,7 @@ _eruption-hwutil() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruption__hwutil__firmware__update)
+        eruption__hwutil__firmware)
             opts=" -h -V  --help --version  info flash"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -184,7 +202,7 @@ _eruption-hwutil() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruption__hwutil__firmware__update__flash)
+        eruption__hwutil__firmware__flash)
             opts="  --help --version  <DEVICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -199,7 +217,7 @@ _eruption-hwutil() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruption__hwutil__firmware__update__info)
+        eruption__hwutil__firmware__info)
             opts="  --help --version  <DEVICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

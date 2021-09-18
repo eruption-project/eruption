@@ -30,6 +30,8 @@ edit:completion:arg-completer[eruption-debug-tool] = [@words]{
             cand state-diff 'Read out the device state and show differences to previous state (May hang the device)'
             cand read 'Read a single USB HID feature report from device'
             cand write 'Send a single USB HID feature report to device (dangerous)'
+            cand read-raw 'Read data from device'
+            cand write-raw 'Send data to device (dangerous)'
             cand run-tests 'Send a device specific init sequence and try to set colors'
             cand utils 'Special utility functions, like searching for CRC polynoms and parameters'
             cand completions 'Generate shell completions'
@@ -66,6 +68,18 @@ edit:completion:arg-completer[eruption-debug-tool] = [@words]{
             cand --version 'Print version information'
         }
         &'eruption-debug-tool;write'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+        }
+        &'eruption-debug-tool;read-raw'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+        }
+        &'eruption-debug-tool;write-raw'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
             cand -V 'Print version information'

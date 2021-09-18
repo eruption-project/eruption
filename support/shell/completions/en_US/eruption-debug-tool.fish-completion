@@ -7,6 +7,8 @@ complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "trace" -d 'Dum
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "state-diff" -d 'Read out the device state and show differences to previous state (May hang the device)'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "read" -d 'Read a single USB HID feature report from device'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "write" -d 'Send a single USB HID feature report to device (dangerous)'
+complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "read-raw" -d 'Read data from device'
+complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "write-raw" -d 'Send data to device (dangerous)'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "run-tests" -d 'Send a device specific init sequence and try to set colors'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "utils" -d 'Special utility functions, like searching for CRC polynoms and parameters'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
@@ -31,6 +33,15 @@ complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -d 'The i
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -d 'Hex bytes e.g.: [0x09, 0x00, 0x1f]' -r
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write" -s V -l version -d 'Print version information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read-raw" -d 'The index of the device, can be found with the list sub-command' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read-raw" -d 'ID of the USB HID report' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read-raw" -d 'Length in bytes to read' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read-raw" -s h -l help -d 'Print help information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from read-raw" -s V -l version -d 'Print version information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write-raw" -d 'The index of the device, can be found with the list sub-command' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write-raw" -d 'Hex bytes e.g.: [0x09, 0x00, 0x1f]' -r
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write-raw" -s h -l help -d 'Print help information'
+complete -c eruption-debug-tool -n "__fish_seen_subcommand_from write-raw" -s V -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -d 'The index of the device, can be found with the list sub-command' -r
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from run-tests" -s V -l version -d 'Print version information'

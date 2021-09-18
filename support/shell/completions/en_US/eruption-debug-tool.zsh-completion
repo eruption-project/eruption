@@ -86,6 +86,27 @@ _arguments "${_arguments_options[@]}" \
 ':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
 && ret=0
 ;;
+(read-raw)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':report-id -- ID of the USB HID report:' \
+':length -- Length in bytes to read:' \
+&& ret=0
+;;
+(write-raw)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
+&& ret=0
+;;
 (run-tests)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -192,6 +213,8 @@ _eruption-debug-tool_commands() {
 'state-diff:Read out the device state and show differences to previous state (May hang the device)' \
 'read:Read a single USB HID feature report from device' \
 'write:Send a single USB HID feature report to device (dangerous)' \
+'read-raw:Read data from device' \
+'write-raw:Send data to device (dangerous)' \
 'run-tests:Send a device specific init sequence and try to set colors' \
 'utils:Special utility functions, like searching for CRC polynoms and parameters' \
 'completions:Generate shell completions' \
@@ -245,6 +268,11 @@ _eruption-debug-tool__read_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-debug-tool read commands' commands "$@"
 }
+(( $+functions[_eruption-debug-tool__read-raw_commands] )) ||
+_eruption-debug-tool__read-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool read-raw commands' commands "$@"
+}
 (( $+functions[_eruption-debug-tool__report_commands] )) ||
 _eruption-debug-tool__report_commands() {
     local commands; commands=()
@@ -281,6 +309,11 @@ _eruption-debug-tool__utils_commands() {
 _eruption-debug-tool__write_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-debug-tool write commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__write-raw_commands] )) ||
+_eruption-debug-tool__write-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool write-raw commands' commands "$@"
 }
 (( $+functions[_eruption-debug-tool__completions__zsh_commands] )) ||
 _eruption-debug-tool__completions__zsh_commands() {
