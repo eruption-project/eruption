@@ -200,7 +200,7 @@ fn print_notice() {
     println!(
         r#"
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -225,7 +225,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } {
         // print_header();
-        print_notice();
+
+        if util::is_eruption_daemon_running() {
+            print_notice();
+        }
     }
 
     // initialize logging
@@ -277,14 +280,23 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
                         if device.interface_number() == 0 {
-                            println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{:02}", index).bold(),
-                                device.vendor_id(),
-                                device.product_id(),
-                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                device.product_string().unwrap_or("<unknown>").bold(),
-                            )
+                            if opts.verbose > 0 {
+                                println!(
+                                    "Index: {}: ID: {:x}:{:x} {}/{}",
+                                    format!("{:02}", index).bold(),
+                                    device.vendor_id(),
+                                    device.product_id(),
+                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                    device.product_string().unwrap_or("<unknown>").bold()
+                                );
+                            } else {
+                                println!(
+                                    "{}: {}/{}",
+                                    format!("{:02}", index).bold(),
+                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                    device.product_string().unwrap_or("<unknown>").bold()
+                                );
+                            }
                         }
                     }
 
@@ -321,14 +333,23 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     {
                         let term = console::Term::stdout();
 
-                        println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{}",
-                            format!("{:02}", index).bold(),
-                            device.vendor_id(),
-                            device.product_id(),
-                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                            device.product_string().unwrap_or("<unknown>").bold()
-                        );
+                        if opts.verbose > 0 {
+                            println!(
+                                "Index: {}: ID: {:x}:{:x} {}/{}",
+                                format!("{:02}", index).bold(),
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold()
+                            );
+                        } else {
+                            println!(
+                                "{}: {}/{}",
+                                format!("{:02}", index).bold(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold()
+                            );
+                        }
 
                         if let Ok(dev) = device.open_device(&hidapi) {
                             let hwdev = hwdevices::bind_device(
@@ -419,14 +440,23 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     if let Some((index, device)) =
                         hidapi.device_list().enumerate().nth(device_index)
                     {
-                        println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{}",
-                            format!("{:02}", index).bold(),
-                            device.vendor_id(),
-                            device.product_id(),
-                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                            device.product_string().unwrap_or("<unknown>").bold()
-                        );
+                        if opts.verbose > 1 {
+                            println!(
+                                "Index: {}: ID: {:x}:{:x} {}/{}",
+                                format!("{:02}", index).bold(),
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold()
+                            );
+                        } else if opts.verbose > 0 {
+                            println!(
+                                "{}: {}/{}",
+                                format!("{:02}", index).bold(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold()
+                            );
+                        }
 
                         if let Ok(dev) = device.open_device(&hidapi) {
                             let hwdev = hwdevices::bind_device(

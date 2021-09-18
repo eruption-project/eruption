@@ -18,6 +18,10 @@
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use nix::fcntl::{flock, open, FlockArg, OFlag};
+use nix::sys::stat::Mode;
+use nix::unistd::{ftruncate, getpid, write};
+
 use crate::constants;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -33,6 +37,25 @@ pub enum UtilError {
         source: io::Error,
         description: String,
     },
+}
+
+/// Write out the current process' PID to the .pid file at `/run/eruption/eruption.pid`
+pub fn write_pid_file() -> Result<()> {
+    let pid = getpid().as_raw();
+    let text = format!("{}", pid);
+
+    let fd = open(
+        &PathBuf::from(constants::PID_FILE),
+        OFlag::O_CREAT | OFlag::O_WRONLY,
+        Mode::from_bits(0o666).unwrap(),
+    )?;
+
+    flock(fd, FlockArg::LockExclusiveNonblock)?;
+    ftruncate(fd, 0)?;
+
+    write(fd, &text.as_bytes())?;
+
+    Ok(())
 }
 
 /// Returns the associated manifest path in `PathBuf` for the script `script_path`.

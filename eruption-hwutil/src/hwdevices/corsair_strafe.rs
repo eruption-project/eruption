@@ -84,7 +84,7 @@ impl CorsairStrafe {
     // }
 
     // fn send_ctrl_report(&self, id: u8) -> Result<()> {
-    //     println_v!(0, "Sending control device feature report");
+    //     println_v!(1, "Sending control device feature report");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -113,7 +113,7 @@ impl CorsairStrafe {
     // }
 
     // fn wait_for_ctrl_dev(&self) -> Result<()> {
-    //     println_v!(0, "Waiting for control device to respond...");
+    //     println_v!(1, "Waiting for control device to respond...");
 
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
@@ -146,7 +146,7 @@ impl CorsairStrafe {
     // }
 
     fn send_ctrl_report(&self, id: u8) -> Result<()> {
-        println_v!(0, "Sending control device feature report");
+        println_v!(1, "Sending control device feature report");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -245,7 +245,7 @@ impl CorsairStrafe {
     }
 
     fn wait_for_ctrl_dev(&self) -> Result<()> {
-        println_v!(0, "Waiting for control device to respond...");
+        println_v!(1, "Waiting for control device to respond...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -376,7 +376,7 @@ impl DeviceTrait for CorsairStrafe {
     }
 
     fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
-        println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(1, "Setting LEDs from supplied map...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())

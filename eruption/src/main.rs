@@ -2826,6 +2826,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
+    // write out our current PID
+    let _result = util::write_pid_file();
+
     // process configuration file
     let config_file = matches
         .value_of("config")

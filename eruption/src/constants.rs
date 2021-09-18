@@ -29,6 +29,9 @@ pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";
 
+/// Eruption daemon PID file
+pub const PID_FILE: &str = "/run/eruption/eruption.pid";
+
 /// Number of slots
 pub const NUM_SLOTS: usize = 4;
 

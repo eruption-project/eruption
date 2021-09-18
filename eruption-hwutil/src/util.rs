@@ -14,3 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+use std::fs;
+
+use crate::constants;
+
+pub fn is_eruption_daemon_running() -> bool {
+    let result = fs::read_to_string(&constants::PID_FILE);
+
+    // .map_err(|e| {
+    //     eprintln!(
+    //         "Could not determine whether the Eruption daemon is running: {}",
+    //         e
+    //     )
+    // });
+
+    result.is_ok()
+}

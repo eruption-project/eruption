@@ -8,7 +8,7 @@ A helper utility that can be used to debug USB HID devices
 $  sudo eruption-debug-tool list
 
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -42,7 +42,7 @@ Index: 252: Serial Port 4 (/dev/ttyACM3)
 $ sudo eruption-debug-tool state-diff 0
 
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -59,7 +59,7 @@ Done
 $  sudo eruption-debug-tool state-diff 0
 
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -82,7 +82,7 @@ Done
 $  sudo eruption-debug-tool run-tests 0
 
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -121,7 +121,7 @@ Setting LEDs from supplied map...
 $ eruption-debug-tool
 
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service

@@ -87,7 +87,7 @@ impl CustomSerialLeds {
     }
 
     pub fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
-        println_v!(0, "Setting LEDs from supplied map...");
+        println_v!(1, "Setting LEDs from supplied map...");
 
         if let Some(ref mut port) = *self.serial_port.lock() {
             const HEADER_OFFSET: usize = 6;

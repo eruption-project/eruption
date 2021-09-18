@@ -684,18 +684,31 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in keyboards.iter().enumerate() {
-                        println!(
-                            "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index).bold(),
-                            format!("{:04x}", dev.0),
-                            format!("{:04x}", dev.1),
-                            device::get_device_make(dev.0, dev.1)
-                                .unwrap_or("<unknown make>")
-                                .bold(),
-                            device::get_device_model(dev.0, dev.1)
-                                .unwrap_or("<unknown model>")
-                                .bold()
-                        );
+                        if opts.verbose > 0 {
+                            println!(
+                                "Index: {}: ID: {}:{} {} {}",
+                                format!("{:02}", base_index).bold(),
+                                format!("{:04x}", dev.0),
+                                format!("{:04x}", dev.1),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        } else {
+                            println!(
+                                "{}: {} {}",
+                                format!("{:02}", base_index).bold(),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        }
 
                         base_index += 1;
                     }
@@ -707,18 +720,31 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in mice.iter().enumerate() {
-                        println!(
-                            "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index).bold(),
-                            format!("{:04x}", dev.0),
-                            format!("{:04x}", dev.1),
-                            device::get_device_make(dev.0, dev.1)
-                                .unwrap_or("<unknown make>")
-                                .bold(),
-                            device::get_device_model(dev.0, dev.1)
-                                .unwrap_or("<unknown model>")
-                                .bold()
-                        );
+                        if opts.verbose > 0 {
+                            println!(
+                                "Index: {}: ID: {}:{} {} {}",
+                                format!("{:02}", base_index).bold(),
+                                format!("{:04x}", dev.0),
+                                format!("{:04x}", dev.1),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        } else {
+                            println!(
+                                "{}: {} {}",
+                                format!("{:02}", base_index).bold(),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        }
 
                         base_index += 1;
                     }
@@ -730,18 +756,31 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", "<No supported devices detected>\n".italic());
                 } else {
                     for (_index, dev) in misc.iter().enumerate() {
-                        println!(
-                            "Index: {}: ID: {}:{} {} {}",
-                            format!("{:02}", base_index).bold(),
-                            format!("{:04x}", dev.0),
-                            format!("{:04x}", dev.1),
-                            device::get_device_make(dev.0, dev.1)
-                                .unwrap_or("<unknown make>")
-                                .bold(),
-                            device::get_device_model(dev.0, dev.1)
-                                .unwrap_or("<unknown model>")
-                                .bold()
-                        );
+                        if opts.verbose > 0 {
+                            println!(
+                                "Index: {}: ID: {}:{} {} {}",
+                                format!("{:02}", base_index).bold(),
+                                format!("{:04x}", dev.0),
+                                format!("{:04x}", dev.1),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        } else {
+                            println!(
+                                "{}: {} {}",
+                                format!("{:02}", base_index).bold(),
+                                device::get_device_make(dev.0, dev.1)
+                                    .unwrap_or("<unknown make>")
+                                    .bold(),
+                                device::get_device_model(dev.0, dev.1)
+                                    .unwrap_or("<unknown model>")
+                                    .bold()
+                            );
+                        }
 
                         base_index += 1;
                     }

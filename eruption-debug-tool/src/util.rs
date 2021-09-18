@@ -23,6 +23,8 @@ use std::sync::Arc;
 use std::{collections::HashMap, fmt, fs};
 use std::{num::ParseIntError, path::Path};
 
+use crate::constants;
+
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
@@ -64,6 +66,19 @@ impl DeviceState {
             data: HashMap::new(),
         }
     }
+}
+
+pub fn is_eruption_daemon_running() -> bool {
+    let result = fs::read_to_string(&constants::PID_FILE);
+
+    // .map_err(|e| {
+    //     eprintln!(
+    //         "Could not determine whether the Eruption daemon is running: {}",
+    //         e
+    //     )
+    // });
+
+    result.is_ok()
 }
 
 pub fn load_data_from_file<P: AsRef<Path>>(path: &P) -> Result<Vec<DeviceState>> {

@@ -5,8 +5,10 @@ Wants=basic.target
 
 [Service]
 Environment=RUST_LOG=warn
+RuntimeDirectory=eruption
+PIDFile=/run/eruption/eruption.pid
 ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
-PIDFile=/run/eruption.pid
+ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
 Type=exec
 Restart=no
 CPUSchedulingPolicy=rr

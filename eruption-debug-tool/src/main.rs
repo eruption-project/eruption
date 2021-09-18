@@ -240,7 +240,7 @@ fn print_notice() {
     println!(
         r#"
  Please stop the Eruption daemon prior to running this tool:
- $ sudo systemctl mask eruption.service && sudo systemctl stop eruption.service
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
@@ -265,7 +265,10 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } {
         // print_header();
-        print_notice();
+
+        if util::is_eruption_daemon_running() {
+            print_notice();
+        }
     }
 
     // initialize logging
