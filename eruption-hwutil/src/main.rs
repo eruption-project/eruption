@@ -370,46 +370,53 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                             println!();
 
                             loop {
-                                let status = hwdev.device_status()?;
+                                match hwdev.device_status() {
+                                    Ok(status) => {
+                                        term.clear_last_lines(4)?;
 
-                                term.clear_last_lines(4)?;
+                                        println!();
 
-                                println!();
+                                        println!(
+                                            "Transceiver enabled:  {:>}",
+                                            status
+                                                .get("transceiver-enabled")
+                                                .map(|e| e.to_string())
+                                                .unwrap_or_else(|| " ---".to_string())
+                                                .bold()
+                                        );
 
-                                println!(
-                                    "Transceiver enabled:  {:>}",
-                                    status
-                                        .get("transceiver-enabled")
-                                        .map(|e| e.to_string())
-                                        .unwrap_or_else(|| " ---".to_string())
-                                        .bold()
-                                );
+                                        println!(
+                                            "Signal strength:      {:>4} ({})",
+                                            status
+                                                .get("signal-strength-percent")
+                                                .map(|e| e.to_string())
+                                                .unwrap_or_else(|| "---".to_string())
+                                                .bold(),
+                                            status
+                                                .get("signal-strength-raw")
+                                                .map(|e| e.to_string())
+                                                .unwrap_or_else(|| "---".to_string())
+                                        );
 
-                                println!(
-                                    "Signal strength:      {:>4} ({})",
-                                    status
-                                        .get("signal-strength-percent")
-                                        .map(|e| e.to_string())
-                                        .unwrap_or_else(|| "---".to_string())
-                                        .bold(),
-                                    status
-                                        .get("signal-strength-raw")
-                                        .map(|e| e.to_string())
-                                        .unwrap_or_else(|| "---".to_string())
-                                );
+                                        println!(
+                                            "Battery level:        {:>4} ({})",
+                                            status
+                                                .get("battery-level-percent")
+                                                .map(|e| e.to_string())
+                                                .unwrap_or_else(|| "---".to_string())
+                                                .bold(),
+                                            status
+                                                .get("battery-level-raw")
+                                                .map(|e| e.to_string())
+                                                .unwrap_or_else(|| "---".to_string())
+                                        );
+                                    }
 
-                                println!(
-                                    "Battery level:        {:>4} ({})",
-                                    status
-                                        .get("battery-level-percent")
-                                        .map(|e| e.to_string())
-                                        .unwrap_or_else(|| "---".to_string())
-                                        .bold(),
-                                    status
-                                        .get("battery-level-raw")
-                                        .map(|e| e.to_string())
-                                        .unwrap_or_else(|| "---".to_string())
-                                );
+                                    Err(_e) => {
+                                        // term.clear_last_lines(1)?;
+                                        // eprintln!("{}", e)
+                                    }
+                                }
 
                                 if !opts.repeat || QUIT.load(Ordering::SeqCst) {
                                     break;

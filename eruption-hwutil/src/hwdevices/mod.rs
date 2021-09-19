@@ -76,7 +76,7 @@ pub struct RGBA {
 }
 
 #[derive(Debug)]
-pub struct DeviceStatus(HashMap<String, String>);
+pub struct DeviceStatus(pub HashMap<String, String>);
 
 impl std::ops::Deref for DeviceStatus {
     type Target = HashMap<String, String>;
