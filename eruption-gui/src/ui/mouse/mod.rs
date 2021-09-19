@@ -57,6 +57,14 @@ pub fn initialize_mouse_page(
     let mouse_dpi_label: gtk::Label = template.object("mouse_dpi_label").unwrap();
     let mouse_profile_label: gtk::Label = template.object("mouse_profile_label").unwrap();
 
+    let mouse_signal_label: gtk::Label = template.object("mouse_signal_label").unwrap();
+    let signal_strength_progress: gtk::ProgressBar =
+        template.object("mouse_signal_strength").unwrap();
+
+    let mouse_battery_level_label: gtk::Label =
+        template.object("mouse_battery_level_label").unwrap();
+    let battery_level_progress: gtk::ProgressBar = template.object("mouse_battery_level").unwrap();
+
     let debounce_switch: gtk::Switch = template.object("debounce_switch").unwrap();
     let angle_snapping_switch: gtk::Switch = template.object("angle_snapping_switch").unwrap();
 
@@ -71,6 +79,9 @@ pub fn initialize_mouse_page(
     mouse_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
     let mouse_device_handle = mouse_device.get_device();
+
+    let device_brightness = util::get_device_brightness(mouse_device_handle)?;
+    device_brightness_scale.set_value(device_brightness as f64);
 
     device_brightness_scale.connect_value_changed(move |s| {
         // if !events::shall_ignore_pending_ui_event() {
@@ -116,6 +127,44 @@ pub fn initialize_mouse_page(
         gtk::Inhibit(false)
     });
 
+    // near realtime update path
+    glib::timeout_add_local(
+        Duration::from_millis(250),
+        clone!(@weak signal_strength_progress, @weak battery_level_progress,
+                    @weak mouse_signal_label, @weak mouse_battery_level_label =>
+                    @default-return Continue(true), move || {
+
+            // device status
+            if let Ok(device_status) = util::get_device_status(mouse_device_handle) {
+                if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
+                    let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
+
+                    signal_strength_progress.set_fraction(value as f64 / 100.0);
+
+                    mouse_signal_label.show();
+                    signal_strength_progress.show();
+                } else {
+                    mouse_signal_label.hide();
+                    signal_strength_progress.hide();
+                }
+
+                if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
+                    let value = battery_level_percent.parse::<i32>().unwrap_or(0);
+
+                    battery_level_progress.set_fraction(value as f64 / 100.0);
+
+                    mouse_battery_level_label.show();
+                    battery_level_progress.show();
+                } else {
+                    mouse_battery_level_label.hide();
+                    battery_level_progress.hide();
+                }
+            }
+
+            Continue(true)
+        }),
+    );
+
     // fast update path
     glib::timeout_add_local(
         Duration::from_millis(2500),
@@ -150,7 +199,7 @@ pub fn initialize_mouse_page(
     // slow update path
     glib::timeout_add_local(
         Duration::from_millis(4000),
-        clone!(@weak mouse_firmware_label, @weak mouse_rate_label => @default-return Continue(true), move || {
+        clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Continue(true), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
                 mouse_firmware_label.set_label(&firmware);
             }

@@ -61,6 +61,15 @@ pub fn initialize_keyboard_page(
     let make_and_model = keyboard_device.get_make_and_model();
     keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
+    let keyboard_signal_label: gtk::Label = template.object("keyboard_signal_label").unwrap();
+    let signal_strength_progress: gtk::ProgressBar =
+        template.object("keyboard_signal_strength").unwrap();
+
+    let keyboard_battery_level_label: gtk::Label =
+        template.object("keyboard_battery_level_label").unwrap();
+    let battery_level_progress: gtk::ProgressBar =
+        template.object("keyboard_battery_level").unwrap();
+
     let keyboard_device_handle = keyboard_device.get_device();
 
     let device_brightness = util::get_device_brightness(keyboard_device_handle)?;
@@ -93,6 +102,44 @@ pub fn initialize_keyboard_page(
 
         gtk::Inhibit(false)
     });
+
+    // near realtime update path
+    glib::timeout_add_local(
+        Duration::from_millis(250),
+        clone!(@weak signal_strength_progress, @weak battery_level_progress,
+                    @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
+                    @default-return Continue(true), move || {
+
+            // device status
+            if let Ok(device_status) = util::get_device_status(keyboard_device_handle) {
+                if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
+                    let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
+
+                    signal_strength_progress.set_fraction(value as f64 / 100.0);
+
+                    keyboard_signal_label.show();
+                    signal_strength_progress.show();
+                } else {
+                    keyboard_signal_label.hide();
+                    signal_strength_progress.hide();
+                }
+
+                if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
+                    let value = battery_level_percent.parse::<i32>().unwrap_or(0);
+
+                    battery_level_progress.set_fraction(value as f64 / 100.0);
+
+                    keyboard_battery_level_label.show();
+                    battery_level_progress.show();
+                } else {
+                    keyboard_battery_level_label.hide();
+                    battery_level_progress.hide();
+                }
+            }
+
+            Continue(true)
+        }),
+    );
 
     glib::timeout_add_local(
         Duration::from_millis(1000 / constants::TARGET_FPS),

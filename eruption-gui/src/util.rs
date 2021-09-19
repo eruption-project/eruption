@@ -24,6 +24,7 @@ use dbus::blocking::Connection;
 // use std::fs;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
+use std::collections::HashMap;
 use std::u8;
 use std::{convert::TryFrom, process::Command};
 use std::{
@@ -266,6 +267,23 @@ pub fn set_brightness(brightness: i64) -> Result<()> {
     proxy.set("org.eruption.Config", "Brightness", arg)?;
 
     Ok(())
+}
+
+/// Get the device specific status
+pub fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/devices",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let (status,): (String,) =
+        proxy.method_call("org.eruption.Device", "GetDeviceStatus", (device,))?;
+
+    let result: HashMap<String, String> = serde_json::from_str(&status)?;
+
+    Ok(result)
 }
 
 /// Get a device specific config param
