@@ -10,6 +10,7 @@ Table of new and noteworthy changes:
 | 0.1.23 | Added support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
 | 0.1.23 | Added support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`,  `ROCCAT Burst Pro`                                                |
 | 0.1.23 | Added a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running            |
+| 0.1.23 | Added a new `device status` subsystem that allows to poll status information like e.g. wireless signal strength or battery levels                                            |
 | 0.1.23 | Improved formatting of syslog log output; the default log-level is now `WARN` for the provided daemons                                                                       |
 | 0.1.23 | Added experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
 | 0.1.23 | Added experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
