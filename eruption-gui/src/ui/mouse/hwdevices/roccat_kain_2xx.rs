@@ -50,7 +50,7 @@ impl Mouse for RoccatKain2xx {
     }
 
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Kain 2xx AIMO")
+        ("ROCCAT", "Kain 200/202 AIMO")
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
