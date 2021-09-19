@@ -386,7 +386,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                         );
 
                                         println!(
-                                            "Signal strength:      {:>4} ({})",
+                                            "Signal strength:      {:>4}% ({})",
                                             status
                                                 .get("signal-strength-percent")
                                                 .map(|e| e.to_string())
@@ -399,7 +399,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                                         );
 
                                         println!(
-                                            "Battery level:        {:>4} ({})",
+                                            "Battery level:        {:>4}% ({})",
                                             status
                                                 .get("battery-level-percent")
                                                 .map(|e| e.to_string())

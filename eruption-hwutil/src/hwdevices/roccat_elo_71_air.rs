@@ -469,7 +469,7 @@ impl DeviceTrait for RoccatElo71Air {
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}%", battery_level),
+                                format!("{}", battery_level),
                             );
 
                             table.insert(

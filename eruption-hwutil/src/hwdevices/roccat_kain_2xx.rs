@@ -354,7 +354,7 @@ impl DeviceTrait for RoccatKain2xx {
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}%", battery_level),
+                                format!("{}", battery_level),
                             );
 
                             table.insert(
@@ -378,7 +378,7 @@ impl DeviceTrait for RoccatKain2xx {
                             // signal strength
                             table.insert(
                                 "signal-strength-percent".to_string(),
-                                format!("{}%", (signal as f32 / 21400.0 * 100.0).floor()),
+                                format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
                             );
 
                             table.insert("signal-strength-raw".to_string(), format!("{}", signal));
