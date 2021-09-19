@@ -59,8 +59,8 @@ lazy_static! {
 
         DeviceInfo { make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, },
 
-        DeviceInfo { make: "ROCCAT", model: "Kain 200 AIMO",        usb_vid: 0x1e7d, usb_pid: 0x2d5f, },
-        DeviceInfo { make: "ROCCAT", model: "Kain 200 AIMO",        usb_vid: 0x1e7d, usb_pid: 0x2d60, },
+        DeviceInfo { make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d5f, },
+        DeviceInfo { make: "ROCCAT", model: "Kain 200/202 AIMO",    usb_vid: 0x1e7d, usb_pid: 0x2d60, },
 
         DeviceInfo { make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf1, },
         DeviceInfo { make: "ROCCAT", model: "Kova AIMO",            usb_vid: 0x1e7d, usb_pid: 0x2cf3, },

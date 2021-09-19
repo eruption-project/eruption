@@ -879,6 +879,11 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
                         cntr += 2;
                     });
 
+                    // empty table requires special handling
+                    if cntr <= 3 {
+                        cntr = 4
+                    }
+
                     term.clear_last_lines(prev)?;
                     prev = cntr;
 
