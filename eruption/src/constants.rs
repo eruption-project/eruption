@@ -69,10 +69,11 @@ pub const MAX_EVENTS_PER_ITERATION: u64 = 32;
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
 
 /// Amount of time that has to pass before we retry sending a command to the LED control device
-pub const DEVICE_SETTLE_MILLIS: u64 = 50;
+pub const DEVICE_SETTLE_MILLIS: u64 = 25;
 
 /// Update sensors every n seconds
-pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS /* * 1 */;
+/// It is recommended to use a prime number value here
+pub const SENSOR_UPDATE_TICKS: u64 = 19; // TARGET_FPS /* * 1 */;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
@@ -83,6 +84,10 @@ pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
 /// Wait n seconds before sending the LED "off pattern" on shutdown
 pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
+
+/// Timer interval in milliseconds for the device config and status poll timer
+/// It is recommended to use a prime number value here
+pub const POLL_TIMER_INTERVAL_MILLIS: u64 = 499;
 
 // Max. supported number of keys on a keyboard
 pub const MAX_KEYS: usize = 144;

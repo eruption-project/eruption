@@ -17,7 +17,7 @@
 
 // use async_macros::join;
 use clap::{App, Arg};
-use crossbeam::channel::{unbounded, Receiver, Select, Sender};
+use crossbeam::channel::{self, unbounded, Receiver, Select, Sender};
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use futures::future::join_all;
 use hotwatch::{
@@ -27,7 +27,6 @@ use hotwatch::{
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Condvar, Mutex, RwLock};
-use std::env;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -35,6 +34,7 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
+use std::{collections::HashMap, env};
 use std::{collections::HashSet, thread};
 use syslog::Facility;
 use tokio::{join, task};
@@ -58,6 +58,8 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
+use crate::hwdevices::DeviceStatus;
+
 lazy_static! {
     /// Managed keyboard devices
     pub static ref KEYBOARD_DEVICES: Arc<Mutex<Vec<hwdevices::KeyboardDevice>>> = Arc::new(Mutex::new(Vec::new()));
@@ -67,6 +69,10 @@ lazy_static! {
 
     /// Managed miscellaneous devices
     pub static ref MISC_DEVICES: Arc<Mutex<Vec<hwdevices::MiscDevice>>> = Arc::new(Mutex::new(Vec::new()));
+
+    /// Holds device status information, like e.g: current signal strength or battery levels
+    pub static ref DEVICE_STATUS: Arc<Mutex<HashMap<u64, DeviceStatus>>> =
+        Arc::new(Mutex::new(HashMap::new()));
 
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
@@ -1254,6 +1260,46 @@ async fn process_dbus_event(
     Ok(())
 }
 
+/// Process a timer tick event
+async fn process_timer_event(
+    _event: &Instant,
+    keyboard_devices: &[KeyboardDevice],
+    mouse_devices: &[MouseDevice],
+    misc_devices: &[MiscDevice],
+) -> Result<()> {
+    let offset = 0;
+
+    for (index, dev) in keyboard_devices.iter().enumerate() {
+        let device_status = dev.read().device_status()?;
+
+        DEVICE_STATUS
+            .lock()
+            .insert((index + offset) as u64, device_status);
+    }
+
+    let offset = keyboard_devices.len();
+
+    for (index, dev) in mouse_devices.iter().enumerate() {
+        let device_status = dev.read().device_status()?;
+
+        DEVICE_STATUS
+            .lock()
+            .insert((index + offset) as u64, device_status);
+    }
+
+    let offset = keyboard_devices.len() + mouse_devices.len();
+
+    for (index, dev) in misc_devices.iter().enumerate() {
+        let device_status = dev.read().device_status()?;
+
+        DEVICE_STATUS
+            .lock()
+            .insert((index + offset) as u64, device_status);
+    }
+
+    Ok(())
+}
+
 /// Process HID events
 async fn process_keyboard_hid_events(
     keyboard_device: &KeyboardDevice,
@@ -2042,6 +2088,9 @@ async fn run_main_loop(
     let fs_events = sel.recv(fsevents_rx);
     let dbus_events = sel.recv(dbus_rx);
 
+    let timer = channel::tick(Duration::from_millis(constants::POLL_TIMER_INTERVAL_MILLIS));
+    let timer_events = sel.recv(&timer);
+
     let mut keyboard_events = vec![];
     for device in keyboard_devices.iter() {
         let index = sel.recv(&device.1);
@@ -2291,6 +2340,31 @@ async fn run_main_loop(
                         );
 
                         sel.remove(dbus_events);
+                    }
+                }
+
+                i if i == timer_events => {
+                    let event = &oper.recv(&timer);
+                    if let Ok(event) = event {
+                        if let Err(_e) = process_timer_event(
+                            &event,
+                            &keyboard_devices_c,
+                            &mouse_devices_c,
+                            &misc_devices_c,
+                        )
+                        .await
+                        {
+                            /* do nothing  */
+
+                            // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
+                            //     error!("Could not process a timer event: {}", e);
+                            // } else {
+                            //     trace!("Result is a NoOp");
+                            // }
+                        }
+                    } else {
+                        error!("Could not receive a timer event: {}", event.unwrap_err());
+                        sel.remove(timer_events);
                     }
                 }
 

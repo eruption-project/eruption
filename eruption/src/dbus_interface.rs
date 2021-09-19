@@ -945,43 +945,55 @@ fn apply_parameter(
     }
 }
 
+/// Query the device specific status from the global status store
 fn query_device_specific_status(device: u64) -> Result<String> {
-    let json = if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
-        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+    let device_status = crate::DEVICE_STATUS.as_ref().lock();
 
-        let status = device.read().device_status()?;
-        let result = serde_json::to_string_pretty(&*status)?;
-
-        result
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
-    {
-        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
-        let device = &crate::MOUSE_DEVICES.lock()[index];
-
-        let status = device.read().device_status()?;
-        let result = serde_json::to_string_pretty(&*status)?;
-
-        result
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len()
-            + crate::MOUSE_DEVICES.lock().len()
-            + crate::MISC_DEVICES.lock().len())
-    {
-        let index = device as usize
-            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
-        let device = &crate::MISC_DEVICES.lock()[index];
-
-        let status = device.read().device_status()?;
-        let result = serde_json::to_string_pretty(&*status)?;
-
-        result
-    } else {
-        return Err(DbusApiError::InvalidDevice {}.into());
-    };
-
-    Ok(json)
+    match device_status.get(&device) {
+        Some(status) => Ok(serde_json::to_string_pretty(&status.0)?),
+        None => Err(DbusApiError::InvalidDevice {}.into()),
+    }
 }
+
+/// Query the device driver for status information
+/// this will likely cause stuttering when not synchronized with the main loop
+// fn query_device_specific_status_no_cache(device: u64) -> Result<String> {
+//     let json = if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
+//         let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+
+//         let status = device.read().device_status()?;
+//         let result = serde_json::to_string_pretty(&*status)?;
+
+//         result
+//     } else if (device as usize)
+//         < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+//     {
+//         let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
+//         let device = &crate::MOUSE_DEVICES.lock()[index];
+
+//         let status = device.read().device_status()?;
+//         let result = serde_json::to_string_pretty(&*status)?;
+
+//         result
+//     } else if (device as usize)
+//         < (crate::KEYBOARD_DEVICES.lock().len()
+//             + crate::MOUSE_DEVICES.lock().len()
+//             + crate::MISC_DEVICES.lock().len())
+//     {
+//         let index = device as usize
+//             - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
+//         let device = &crate::MISC_DEVICES.lock()[index];
+
+//         let status = device.read().device_status()?;
+//         let result = serde_json::to_string_pretty(&*status)?;
+
+//         result
+//     } else {
+//         return Err(DbusApiError::InvalidDevice {}.into());
+//     };
+
+//     Ok(json)
+// }
 
 fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {
     if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {

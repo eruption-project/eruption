@@ -107,6 +107,9 @@ pub struct RoccatElo71Air {
 
     // device specific configuration options
     pub brightness: i32,
+
+    // device status
+    pub device_status: DeviceStatus,
 }
 
 impl RoccatElo71Air {
@@ -124,6 +127,8 @@ impl RoccatElo71Air {
             ctrl_hiddev: Arc::new(Mutex::new(None)),
             // led_hiddev: Arc::new(Mutex::new(None)),
             brightness: 100,
+
+            device_status: DeviceStatus(HashMap::new()),
         }
     }
 
@@ -192,7 +197,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     }
 
-                    // thread::sleep(Duration::from_millis(20));
+                    // thread::sleep(Duration::from_millis(10));
 
                     // let mut buf: [u8; 64] = [0x00; 64];
                     // buf[0] = 0xa1;
@@ -226,7 +231,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(20));
+                    thread::sleep(Duration::from_millis(10));
 
                     let buf: [u8; 64] = [
                         0xff, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -245,7 +250,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(20));
+                    thread::sleep(Duration::from_millis(10));
 
                     let buf: [u8; 64] = [
                         0xff, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -264,7 +269,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(20));
+                    thread::sleep(Duration::from_millis(10));
 
                     let buf: [u8; 64] = [
                         0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -338,15 +343,19 @@ impl RoccatElo71Air {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let mut buf: [u8; 24] = [0; 24];
+            let mut buf: [u8; 64] = [0; 64];
             buf[0] = 0x00;
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.read_timeout(&mut buf, 20) {
+            match ctrl_dev.read_timeout(&mut buf, 5) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    if let Ok(status) = self.parse_device_status(&buf) {
+                        self.device_status = status;
+                    }
 
                     if buf[1] == 0x00 {
                         Ok(QueryResult::Ok)
@@ -359,6 +368,41 @@ impl RoccatElo71Air {
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
+        }
+    }
+
+    fn parse_device_status(&self, buf: &[u8]) -> Result<DeviceStatus> {
+        let mut table = HashMap::new();
+
+        match buf[1] {
+            0x06 if buf[2] == 0x03 => {
+                let battery_status = buf[4];
+
+                let battery_level = match battery_status {
+                    0x04 => "100",
+                    0x03 => "75",
+                    0x02 => "50",
+                    0x01 => "25",
+                    0x00 => "0",
+                    _ => "unknown",
+                };
+
+                table.insert(
+                    "battery-level-percent".to_string(),
+                    format!("{}", battery_level),
+                );
+
+                table.insert(
+                    "battery-level-raw".to_string(),
+                    format!("{}", battery_status),
+                );
+
+                table.insert("transceiver-enabled".to_string(), format!("{}", true));
+
+                Ok(DeviceStatus(table))
+            }
+
+            _ => Err(HwDeviceError::NoOpResult {}.into()),
         }
     }
 }
@@ -573,11 +617,7 @@ impl DeviceTrait for RoccatElo71Air {
     }
 
     fn device_status(&self) -> Result<DeviceStatus> {
-        let mut table = HashMap::new();
-
-        table.insert("connected".to_owned(), format!("{}", true));
-
-        Ok(DeviceStatus(table))
+        Ok(self.device_status.clone())
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -637,6 +677,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
             match self.query_ctrl_dev() {
                 Ok(result) if result == QueryResult::ResetRequired => {
                     log::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
+
                     let _result = self.send_init_sequence();
                 }
 

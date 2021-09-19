@@ -143,6 +143,9 @@ pub enum HwDeviceError {
     #[error("Invalid result")]
     InvalidResult {},
 
+    #[error("No result")]
+    NoOpResult {},
+
     #[error("Write error")]
     WriteError {},
 
@@ -537,7 +540,7 @@ impl DeviceInfo {
 
 /// Generic Device status information, like e.g.: 'signal strength' or 'battery level'
 #[derive(Debug, Clone)]
-pub struct DeviceStatus(HashMap<String, String>);
+pub struct DeviceStatus(pub HashMap<String, String>);
 
 impl std::ops::Deref for DeviceStatus {
     type Target = HashMap<String, String>;
