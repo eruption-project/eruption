@@ -139,6 +139,9 @@ Please refer to [INSTALL.md](docs/INSTALL.md) for further information.
 [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
 GNOME Shell extension, for easy switching of profiles on the fly.
 
+![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
+![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-02.jpg)
+
 ### Support for Audio Playback and Capture
 
 If you want Eruption to be able to play back sound effects, or use one of the
