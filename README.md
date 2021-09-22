@@ -140,6 +140,7 @@ Please refer to [INSTALL.md](docs/INSTALL.md) for further information.
 GNOME Shell extension, for easy switching of profiles on the fly.
 
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
+
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-02.jpg)
 
 ### Support for Audio Playback and Capture
