@@ -6,6 +6,7 @@
     - [Macros Documentation](#macros-documentation)
     - [Network FX Protocol Specification](#network-fx-protocol-specification)
     - [Eruption Support Library Documentation](#eruption-support-library-documentation)
+    - [Installation from Source](#installation-from-source)
     - [Setup Audio](#setup-audio)
 
 ## Welcome to the Eruption documentation
@@ -35,6 +36,13 @@ Network FX Protocol specification
 Developer documentation
 
 [LIBRARY.md](LIBRARY.md)
+
+### Installation from Source
+
+HowTo setup Eruption
+
+[INSTALL.md](INSTALL.md)
+
 
 ### Setup Audio
 
