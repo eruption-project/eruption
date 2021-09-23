@@ -26,10 +26,10 @@ walkdir = "2.3.2"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
-tokio = { version = "1.11.0", features = ["full"] }
+tokio = { version = "1.12.0", features = ["full"] }
 tracing = "0.1.28"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.23"
+tracing-subscriber = "0.2.24"
 config = "0.11.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
@@ -42,7 +42,7 @@ eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
 dbus = "0.9.3"
-dbus-tokio = "0.7.4"
+dbus-tokio = "0.7.5"
 gdk-pixbuf = "0.14.0"
 glib = "0.14.5"
 pango = "0.14.3"
@@ -65,4 +65,4 @@ version = "0.14.6"
 features = ["v2_50"]
 
 [dev-dependencies]
-tokio = { version = "1.11.0", features = ["test-util"] }
+tokio = { version = "1.12.0", features = ["test-util"] }
