@@ -27,7 +27,7 @@ use hotwatch::{
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Condvar, Mutex, RwLock};
-use std::fs::File;
+use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
@@ -37,7 +37,7 @@ use std::u64;
 use std::{collections::HashMap, env};
 use std::{collections::HashSet, thread};
 use syslog::Facility;
-use tokio::{join, task};
+use tokio::join;
 
 mod util;
 
@@ -2347,7 +2347,7 @@ async fn run_main_loop(
                     let event = &oper.recv(&timer);
                     if let Ok(event) = event {
                         if let Err(_e) = process_timer_event(
-                            &event,
+                            event,
                             &keyboard_devices_c,
                             &mouse_devices_c,
                             &misc_devices_c,
@@ -2508,39 +2508,16 @@ async fn run_main_loop(
 
                 // send the final (combined) color map to all of the devices
                 if !drop_frame {
-                    let keyboard_devices = keyboard_devices.clone();
-                    let mouse_devices = mouse_devices.clone();
-                    let misc_devices = misc_devices.clone();
+                    for device in keyboard_devices.iter() {
+                        device.0.write().send_led_map(&script::LED_MAP.read())?;
+                    }
 
-                    let keyboard_future = task::spawn(async move {
-                        for device in keyboard_devices.iter() {
-                            device.0.write().send_led_map(&script::LED_MAP.read())?;
-                        }
+                    for device in mouse_devices.iter() {
+                        device.0.write().send_led_map(&script::LED_MAP.read())?;
+                    }
 
-                        Ok::<(), eyre::Report>(())
-                    });
-
-                    let mouse_future = task::spawn(async move {
-                        for device in mouse_devices.iter() {
-                            device.0.write().send_led_map(&script::LED_MAP.read())?;
-                        }
-
-                        Ok::<(), eyre::Report>(())
-                    });
-
-                    let misc_future = task::spawn(async move {
-                        for device in misc_devices.iter() {
-                            device.0.write().send_led_map(&script::LED_MAP.read())?;
-                        }
-
-                        Ok::<(), eyre::Report>(())
-                    });
-
-                    let result = tokio::join!(keyboard_future, mouse_future, misc_future);
-
-                    if result.0.is_err() || result.1.is_err() || result.2.is_err() {
-                        // we most likely lost connection to a device, terminate the main loop
-                        return Err(MainError::DeviceDisconnected {}.into());
+                    for device in misc_devices.iter() {
+                        device.0.write().send_led_map(&script::LED_MAP.read())?;
                     }
 
                     // update the current frame generation
@@ -2811,9 +2788,7 @@ fn init_misc_device(misc_device: &MiscDevice, hidapi: &hidapi::HidApi) {
     );
 }
 
-/// Main program entrypoint
-#[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> std::result::Result<(), eyre::Error> {
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -2900,6 +2875,9 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     })
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
+    // create a directory in /run in case it does not already exist
+    let _result = fs::create_dir(constants::RUN_ERUPTION_DIR);
+
     // write out our current PID
     let _result = util::write_pid_file();
 
@@ -2943,6 +2921,7 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             // initialize plugins
             info!("Registering plugins...");
             plugins::register_plugins()
+                .await
                 .unwrap_or_else(|_e| error!("Could not register one or more plugins"));
 
             // load plugin state from disk
@@ -3229,4 +3208,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     info!("Exiting now");
 
     Ok(())
+}
+
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        // .enable_all()
+        .build()?;
+
+    runtime.block_on(async move { async_main().await })
 }

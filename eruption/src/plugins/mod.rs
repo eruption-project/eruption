@@ -55,24 +55,44 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 // }
 
 /// Register all available plugins
-pub fn register_plugins() -> Result<()> {
+pub async fn register_plugins() -> Result<()> {
     trace!("Registering all available plugins...");
 
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
     // Base plugins
-    plugin_manager.register_plugin(Box::new(KeyboardPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(MousePlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(MacrosPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(IntrospectionPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(PersistencePlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(ProfilesPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(SystemPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(SensorsPlugin::new()))?;
-    plugin_manager.register_plugin(Box::new(AudioPlugin::new()))?;
+    plugin_manager
+        .register_plugin(Box::new(KeyboardPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(MousePlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(MacrosPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(IntrospectionPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(PersistencePlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(ProfilesPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(SystemPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(SensorsPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(AudioPlugin::new()))
+        .await?;
 
     // Additional plugins
-    plugin_manager.register_plugin(Box::new(AnimalPlugin::new()))?;
+    plugin_manager
+        .register_plugin(Box::new(AnimalPlugin::new()))
+        .await?;
 
     trace!("Done registering all available plugins");
 

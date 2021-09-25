@@ -1,6 +1,6 @@
 [package]
 name = "eruptionctl"
-version = "0.0.13"
+version = "0.0.14"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2018"
 description = "A CLI control utility for the Eruption Linux user-mode driver"
@@ -13,14 +13,14 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
-clap =  { version = "3.0.0-beta.4", features = ["derive"] }
-clap_generate = "3.0.0-beta.4"
-ctrlc = { version = "3.2.0", features = ["termination"] }
+clap =  { version = "3.0.0-beta.5", features = ["derive"] }
+clap_generate = "3.0.0-beta.5"
+ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
-console = "0.14.1"
+console = "0.15.0"
 log = "0.4.14"
-libc = "0.2.102"
+libc = "0.2.104"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
@@ -31,15 +31,15 @@ tokio = { version = "1.12.0", features = ["full"] }
 config = "0.11.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
-thiserror = "1.0.29"
+thiserror = "1.0.30"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 comfy-table = "4.1.1"
 paste = "1.0.5"
-dbus = "0.9.3"
+dbus = "0.9.5"
 dbus-tokio = "0.7.5"
 
 [dev-dependencies]
 icecream = "0.1.0"
-pretty_assertions = "0.7.2"
+pretty_assertions = "1.0.0"
 tokio = { version = "1.12.0", features = ["test-util"] }

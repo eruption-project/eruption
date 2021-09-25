@@ -19,7 +19,7 @@ use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use parking_lot::{Mutex, RwLock};
-use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Arc;
 use std::{
     any::Any,
@@ -29,40 +29,23 @@ use std::{
 use crate::events;
 use crate::plugins::{self, Plugin};
 
+pub mod protocol {
+    include!(concat!(env!("OUT_DIR"), "/audio_proxy.rs"));
+}
+
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AudioPluginError {
-    #[error("Pulse Audio error: {description}")]
-    PulseError { description: String },
-
-    #[error("File I/O error: {description}")]
-    IoError { description: String },
-
-    #[error("Playback error: {description}")]
-    PlaybackError { description: String },
-
     #[error("Audio grabber error: {description}")]
     GrabberError { description: String },
 }
 
-/// How many sound effects may be played back simultaneously
-pub const MAX_IN_FLIGHT_SFX: usize = 2;
-
 /// The allocated size of the audio grabber buffer
-pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 44100 * 2 / 16;
+pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 512;
 
 /// Number of FFT frequency buckets of the spectrum analyzer
 pub const FFT_SIZE: usize = 512;
-
-/// Thread termination request flag of the audio grabber thread
-pub static AUDIO_GRABBER_THREAD_SHALL_TERMINATE: AtomicBool = AtomicBool::new(false);
-
-// Used as a flag whether the 'audio/grabber' thread is running
-static AUDIO_GRABBER_THREAD_RUNNING: AtomicBool = AtomicBool::new(false);
-
-/// Number of currently playing sound effects
-pub static ACTIVE_SFX: AtomicUsize = AtomicUsize::new(0);
 
 /// Running average of the loudness of the signal in the audio grabber buffer
 static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
@@ -70,28 +53,21 @@ static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
 static ERROR_RATE_LIMIT_MILLIS: u64 = 10000;
 
 lazy_static! {
-    /// Pluggable audio backend. Currently supported backends are "Null" and PulseAudio
+    /// Pluggable audio backends. Currently supported backends are "Null" and "ProxyBackend"
     pub static ref AUDIO_BACKEND: Arc<Mutex<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
-        // Arc::new(Mutex::new(backends::PulseAudioBackend::new().expect("Could not instantiate the audio backend!")));
         Arc::new(Mutex::new(None));
 
     /// Do not spam the logs on error, limit the amount of error messages per time unit
     static ref RATE_LIMIT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now().checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS)).unwrap_or_else(Instant::now)));
 
     /// Holds audio data recorded by the audio grabber
-    static ref AUDIO_GRABBER_BUFFER: Arc<RwLock<Vec<i16>>> = Arc::new(RwLock::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE / 2]));
+    static ref AUDIO_GRABBER_BUFFER: Arc<RwLock<Vec<i16>>> = Arc::new(RwLock::new(vec![0; AUDIO_GRABBER_BUFFER_SIZE]));
 
     /// Spectrum analyzer state
     static ref AUDIO_SPECTRUM: Arc<RwLock<Vec<f32>>> = Arc::new(RwLock::new(vec![0.0; FFT_SIZE / 2]));
 
     /// Global "sound effects enabled" flag
     pub static ref ENABLE_SFX: AtomicBool = AtomicBool::new(false);
-
-    // Sound FX audio buffers
-    /// Key down SFX
-    pub static ref SFX_KEY_DOWN: Option<Vec<u8>> = util::load_sfx("key-down.wav").ok();
-    /// Key up SFX
-    pub static ref SFX_KEY_UP: Option<Vec<u8>> = util::load_sfx("key-up.wav").ok();
 }
 
 // Enable computation of RMS and Spectrum Analyzer data?
@@ -99,9 +75,6 @@ static AUDIO_GRABBER_PERFORM_RMS_COMPUTATION: AtomicBool = AtomicBool::new(false
 static AUDIO_GRABBER_PERFORM_FFT_COMPUTATION: AtomicBool = AtomicBool::new(false);
 
 pub fn reset_audio_backend() {
-    AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(true, Ordering::SeqCst);
-    // AUDIO_BACKEND.lock().take();
-
     AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(false, Ordering::SeqCst);
     AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(false, Ordering::SeqCst);
 
@@ -111,24 +84,19 @@ pub fn reset_audio_backend() {
 }
 
 fn try_start_audio_backend() -> Result<()> {
-    // AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
-    // AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
-
     AUDIO_BACKEND
         .lock()
-        .replace(Box::new(backends::PulseAudioBackend::new().map_err(
-            |e| {
-                *RATE_LIMIT_TIME.write() = Instant::now();
+        .replace(Box::new(backends::ProxyBackend::new().map_err(|e| {
+            *RATE_LIMIT_TIME.write() = Instant::now();
 
-                error!("Could not initialize the audio backend: {}", e);
-                e
-            },
-        )?));
+            error!("Could not initialize the audio backend: {}", e);
+            e
+        })?));
 
     Ok(())
 }
 
-fn try_start_audio_grabber() -> Result<()> {
+fn start_audio_proxy_thread() -> Result<()> {
     let start_backend = AUDIO_BACKEND.lock().is_none();
     if start_backend {
         try_start_audio_backend()?;
@@ -157,46 +125,20 @@ impl AudioPlugin {
     pub fn get_audio_loudness() -> isize {
         AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
-            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
-        {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-        }
-
         CURRENT_RMS.load(Ordering::SeqCst)
     }
 
     pub fn get_audio_spectrum() -> Vec<f32> {
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
-            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
-        {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-        }
-
         AUDIO_SPECTRUM.read().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
-        if !AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst)
-            && RATE_LIMIT_TIME.read().elapsed().as_millis() > ERROR_RATE_LIMIT_MILLIS as u128
-        {
-            try_start_audio_grabber()
-                .unwrap_or_else(|e| error!("Could not start the audio grabber: {}", e));
-        }
-
         AUDIO_GRABBER_BUFFER.read().to_vec()
     }
 
     pub fn get_audio_volume() -> isize {
-        let start_backend = AUDIO_BACKEND.lock().is_none();
-        if start_backend {
-            try_start_audio_backend().unwrap_or_else(|e| error!("{}", e));
-        }
-
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
             backend.get_master_volume().unwrap_or(0) * 100 / std::u16::MAX as isize
         } else {
@@ -205,13 +147,8 @@ impl AudioPlugin {
     }
 
     pub fn is_audio_muted() -> bool {
-        let start_backend = AUDIO_BACKEND.lock().is_none();
-        if start_backend {
-            try_start_audio_backend().unwrap_or_else(|e| error!("{}", e));
-        }
-
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
-            backend.is_audio_muted().unwrap_or(false)
+            backend.is_audio_muted().unwrap_or(true)
         } else {
             false
         }
@@ -228,47 +165,27 @@ impl Plugin for AudioPlugin {
         "Audio related functions".to_string()
     }
 
-    fn initialize(&mut self) -> plugins::Result<()> {
+    async fn initialize(&mut self) -> plugins::Result<()> {
+        start_audio_proxy_thread()?;
+
         events::register_observer(|event: &events::Event| {
             match event {
                 events::Event::KeyDown(_index) => {
-                    if ENABLE_SFX.load(Ordering::SeqCst)
-                        && SFX_KEY_DOWN.is_some()
-                        && ACTIVE_SFX.load(Ordering::SeqCst) <= MAX_IN_FLIGHT_SFX
-                    {
-                        let mut start_backend = false;
-
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
-                            backend
-                                .play_sfx(SFX_KEY_DOWN.as_ref().unwrap())
-                                .unwrap_or_else(|e| error!("{}", e));
-                        } else {
-                            start_backend = true;
-                        }
-
-                        if start_backend {
-                            try_start_audio_backend()?;
+                    if ENABLE_SFX.load(Ordering::SeqCst) {
+                        if let Some(_backend) = AUDIO_BACKEND.lock().as_ref() {
+                            // backend
+                            //     .play_sfx(SFX_KEY_DOWN.as_ref().unwrap())
+                            //     .unwrap_or_else(|e| error!("{}", e));
                         }
                     }
                 }
 
                 events::Event::KeyUp(_index) => {
-                    if ENABLE_SFX.load(Ordering::SeqCst)
-                        && SFX_KEY_UP.is_some()
-                        && ACTIVE_SFX.load(Ordering::SeqCst) <= MAX_IN_FLIGHT_SFX
-                    {
-                        let mut start_backend = false;
-
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
-                            backend
-                                .play_sfx(SFX_KEY_UP.as_ref().unwrap())
-                                .unwrap_or_else(|e| error!("{}", e));
-                        } else {
-                            start_backend = true;
-                        }
-
-                        if start_backend {
-                            try_start_audio_backend()?;
+                    if ENABLE_SFX.load(Ordering::SeqCst) {
+                        if let Some(_backend) = AUDIO_BACKEND.lock().as_ref() {
+                            // backend
+                            //     .play_sfx(SFX_KEY_UP.as_ref().unwrap())
+                            //     .unwrap_or_else(|e| error!("{}", e));
                         }
                     }
                 }
@@ -321,68 +238,50 @@ impl Plugin for AudioPlugin {
     }
 }
 
-mod util {
-    use super::AudioPluginError;
-    use super::Result;
-    use byteorder::{LittleEndian, WriteBytesExt};
-    use std::path::{Path, PathBuf};
-
-    pub fn load_sfx<P: AsRef<Path>>(path: P) -> Result<Vec<u8>> {
-        let prefix = PathBuf::from("/usr/share/eruption/sfx");
-
-        let mut reader = hound::WavReader::open(prefix.join(path)).map_err(|e| {
-            AudioPluginError::PlaybackError {
-                description: format!("Could not load waveform audio file: {}", e),
-            }
-        })?;
-
-        let buffer: Vec<i16> = reader
-            .samples::<i16>()
-            .map(|s| s.expect("Could not read sample data!"))
-            .collect();
-
-        let mut writer: Vec<u8> = vec![];
-        for s in buffer {
-            writer
-                .write_i16::<LittleEndian>(s)
-                .map_err(|e| AudioPluginError::IoError {
-                    description: format!("{}", e),
-                })?;
-        }
-
-        Ok(writer)
-    }
-}
-
 mod backends {
+    use crate::constants;
+    use crate::plugins::audio::protocol;
+
     use super::AudioPluginError;
     use super::Result;
-    use super::ACTIVE_SFX;
     use super::AUDIO_GRABBER_BUFFER;
     use super::AUDIO_GRABBER_BUFFER_SIZE;
-    use super::AUDIO_GRABBER_THREAD_RUNNING;
-    use super::AUDIO_GRABBER_THREAD_SHALL_TERMINATE;
     use super::AUDIO_SPECTRUM;
     use super::CURRENT_RMS;
-    use super::ENABLE_SFX;
     use super::FFT_SIZE;
 
+    use lazy_static::lazy_static;
     use log::*;
+    use nix::unistd::unlink;
+    use parking_lot::Mutex;
+    use prost::Message;
+    use std::fs;
+    use std::io::Read;
+    use std::io::Write;
+    use std::os::unix::net::UnixListener;
+    use std::os::unix::prelude::PermissionsExt;
+    use std::path::Path;
+    use std::sync::atomic::AtomicBool;
+    use std::sync::atomic::AtomicI32;
     use std::sync::Arc;
     use std::{sync::atomic::Ordering, thread};
-
-    use libpulse_binding as pulse;
-    use libpulse_simple_binding as psimple;
-    use psimple::Simple;
-    use pulse::sample;
-    use pulse::stream::Direction;
-    use pulsectl::controllers::DeviceControl;
-    use pulsectl::controllers::SinkController;
 
     use rustfft::num_complex::Complex;
     use rustfft::Fft;
     use rustfft::{algorithm::Radix4, FftDirection};
     use std::f32::consts::PI;
+
+    use protocol::response::Payload;
+
+    lazy_static! {
+        pub static ref LISTENER: Arc<Mutex<Option<UnixListener>>> = Arc::new(Mutex::new(None));
+
+        /// Audio device master volume
+        static ref MASTER_VOLUME: AtomicI32 = AtomicI32::new(0);
+
+        /// Audio device master volume
+        static ref AUDIO_MUTED: AtomicBool = AtomicBool::new(false);
+    }
 
     /// Audio backend trait, defines an interface to the player and
     /// grabber functionality
@@ -416,193 +315,271 @@ mod backends {
         }
     }
 
-    /// PulseAudio backend
-    pub struct PulseAudioBackend {
-        handle: Arc<psimple::Simple>,
-    }
+    /// An audio backend that uses the eruption-audio-proxy
+    pub struct ProxyBackend {}
 
-    #[allow(unused)]
-    impl PulseAudioBackend {
+    impl ProxyBackend {
         pub fn new() -> Result<Self> {
-            let handle = Arc::new(Self::init_playback()?);
-            let result = PulseAudioBackend { handle };
+            // unlink any leftover audio socket
+            let _result = unlink(constants::AUDIO_SOCKET_NAME)
+                .map_err(|e| debug!("Unlink of audio socket failed: {}", e));
 
-            Ok(result)
+            // bind and store audio socket
+            let listener = UnixListener::bind(Path::new(constants::AUDIO_SOCKET_NAME))?;
+
+            listener.set_nonblocking(false)?;
+
+            // widen permissions of audio socket, so that all users may connect to it
+            let mut perms = fs::metadata(constants::AUDIO_SOCKET_NAME)?.permissions();
+            perms.set_mode(0o666);
+            fs::set_permissions(constants::AUDIO_SOCKET_NAME, perms)?;
+
+            LISTENER.lock().replace(listener);
+
+            Ok(Self {})
         }
 
-        pub fn init_playback() -> Result<psimple::Simple> {
-            let spec = sample::Spec {
-                format: sample::Format::S16NE,
-                channels: 2,
-                rate: 44100,
-            };
+        fn run_io_loop() -> Result<()> {
+            let mut cntr = 0;
 
-            assert!(spec.is_valid());
+            'IO_LOOP: loop {
+                if crate::QUIT.load(Ordering::SeqCst) {
+                    break 'IO_LOOP;
+                }
 
-            let result = Simple::new(
-                None,
-                "eruption",
-                Direction::Playback,
-                None,
-                "Keyboard Effects",
-                &spec,
-                None,
-                None,
-            )
-            .map_err(|e| AudioPluginError::PulseError {
-                description: format!("Could not open Pulse Audio: {}", e),
-            })?;
+                if let Some(listener) = LISTENER.lock().as_ref() {
+                    listener.set_nonblocking(false)?;
 
-            Ok(result)
-        }
+                    match listener.accept() {
+                        Ok((mut stream, _addr)) => {
+                            info!("Audio proxy connected");
 
-        pub fn init_grabber() -> Result<psimple::Simple> {
-            let spec = sample::Spec {
-                format: sample::Format::S16NE,
-                channels: 2,
-                rate: 44100,
-            };
+                            stream.set_nonblocking(false)?;
 
-            assert!(spec.is_valid());
+                            'RECEIVE_LOOP: loop {
+                                let mut tmp = bytes::BytesMut::new();
+                                tmp.resize(constants::BUFFER_CAPACITY + 64, 0x00);
 
-            let result = Simple::new(
-                None,
-                "eruption",
-                Direction::Record,
-                None,
-                "Audio Grabber",
-                &spec,
-                None,
-                None,
-            )
-            .map_err(|e| AudioPluginError::PulseError {
-                description: format!("Could not open Pulse Audio: {}", e),
-            })?;
+                                match stream.read(&mut tmp) {
+                                    Ok(0) => {
+                                        info!("Audio proxy disconnected");
 
-            Ok(result)
-        }
-    }
+                                        break 'RECEIVE_LOOP;
+                                    }
 
-    impl AudioBackend for PulseAudioBackend {
-        fn play_sfx(&self, data: &'static [u8]) -> Result<()> {
-            if !ENABLE_SFX.load(Ordering::SeqCst) {
-                return Ok(());
+                                    Ok(n) => {
+                                        debug!("Read {} bytes from audio socket", n);
+
+                                        let result =
+                                            protocol::Response::decode_length_delimited(&mut tmp);
+                                        match result {
+                                            Ok(response) => match response.response_type() {
+                                                protocol::response::ResponseType::AudioData => {
+                                                    trace!("Received audio data");
+
+                                                    if let Some(Payload::Data(tmp)) = response.payload {
+                                                        let mut buffer =
+                                                            AUDIO_GRABBER_BUFFER.write();
+                                                        buffer.clear();
+
+                                                        buffer
+                                                            .reserve(AUDIO_GRABBER_BUFFER_SIZE / 2);
+                                                        buffer.extend(tmp.chunks_exact(2).map(
+                                                            |c| i16::from_ne_bytes([c[0], c[1]]),
+                                                        ));
+
+                                                        if buffer.len() < FFT_SIZE {
+                                                            buffer.resize(FFT_SIZE, 0x0000);
+                                                        }
+
+                                                        // compute root mean square (RMS) of the recorded samples
+                                                        if super::AUDIO_GRABBER_PERFORM_RMS_COMPUTATION
+                                                            .load(Ordering::Relaxed)
+                                                        {
+                                                            let sqr_sum = buffer
+                                                                .iter()
+                                                                .map(|s| *s as f32)
+                                                                .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
+
+                                                            let sqr_sum =
+                                                                (sqr_sum / buffer.len() as f32).sqrt();
+
+                                                            CURRENT_RMS.store(
+                                                                sqr_sum.round() as isize,
+                                                                Ordering::SeqCst,
+                                                            );
+                                                        }
+
+                                                        // compute spectrum analyzer
+                                                        if super::AUDIO_GRABBER_PERFORM_FFT_COMPUTATION
+                                                            .load(Ordering::Relaxed)
+                                                        {
+                                                            let mut data: Vec<Complex<f32>> = buffer
+                                                                .iter()
+                                                                .take(FFT_SIZE)
+                                                                .map(|e| Complex::from(*e as f32))
+                                                                .collect();
+
+                                                            let fft = Radix4::new(
+                                                                FFT_SIZE,
+                                                                FftDirection::Forward,
+                                                            );
+                                                            fft.process(&mut data);
+
+                                                            // apply post processing steps: normalization, window function and smoothing
+                                                            let one_over_fft_len_sqrt =
+                                                                1.0 / ((FFT_SIZE / 2) as f32).sqrt();
+
+                                                            let mut phase = 0.0;
+                                                            const DELTA: f32 =
+                                                                (2.0 * PI) / (FFT_SIZE / 2) as f32;
+
+                                                            let result: Vec<f32> = data[(FFT_SIZE / 2)..]
+                                                                .iter()
+                                                                // normalize
+                                                                .map(|e| {
+                                                                    ((e.re as f32) * one_over_fft_len_sqrt)
+                                                                        .abs()
+                                                                })
+                                                                // apply Hamming window
+                                                                .map(|e| {
+                                                                    phase += DELTA;
+                                                                    e * (0.54 - 0.46 * phase.cos())
+                                                                })
+                                                                .collect();
+
+                                                            for (i, e) in AUDIO_SPECTRUM
+                                                                .write()
+                                                                .iter_mut()
+                                                                .enumerate()
+                                                            {
+                                                                *e = (*e + result[i]) / 2.0;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        error!("Invalid payload received");
+                                                    };
+                                                }
+
+                                                protocol::response::ResponseType::AudioVolume => {
+                                                    if let Some(Payload::Volume(val)) = response.payload {
+                                                        MASTER_VOLUME.store(val, Ordering::SeqCst);
+                                                    } else {
+                                                        error!("Invalid payload received");
+                                                    };
+                                                }
+
+                                                protocol::response::ResponseType::AudioMutedState => {
+                                                    if let Some(Payload::Muted(val)) = response.payload {
+                                                        AUDIO_MUTED.store(val, Ordering::SeqCst);
+                                                    } else {
+                                                        error!("Invalid payload received");
+                                                    };
+                                                }
+
+                                                // _ => {
+                                                //     error!("Protocol error");
+                                                // }
+                                            },
+
+                                            Err(e) => {
+                                                error!("Protocol error: {}", e);
+
+                                                // break 'RECEIVE_LOOP;
+                                            }
+                                        }
+                                    }
+
+                                    Err(_e) => {
+                                        return Err(AudioPluginError::GrabberError {
+                                            description: "Lost connection to proxy".to_owned(),
+                                        }
+                                        .into());
+                                    }
+                                }
+
+                                if crate::QUIT.load(Ordering::SeqCst) {
+                                    break 'RECEIVE_LOOP;
+                                }
+
+                                // TODO: implement some kind of message queuing mechanism for
+                                // ProxyCommand::GetMasterVolume and ProxyCommand::IsAudioMuted
+                                if cntr % 150 == 0 {
+                                    let mut command = protocol::Command::default();
+                                    command.set_command_type(
+                                        protocol::command::CommandType::AudioVolume,
+                                    );
+
+                                    let mut buf = command.encode_length_delimited_to_vec();
+                                    buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+
+                                    match stream.write_all(&buf) {
+                                        Ok(_n) => {}
+
+                                        Err(_e) => {
+                                            return Err(AudioPluginError::GrabberError {
+                                                description: "Lost connection to proxy".to_owned(),
+                                            }
+                                            .into());
+                                        }
+                                    }
+
+                                    stream.flush()?;
+                                }
+
+                                if cntr % 200 == 0 {
+                                    let mut command = protocol::Command::default();
+                                    command.set_command_type(
+                                        protocol::command::CommandType::AudioMutedState,
+                                    );
+
+                                    let mut buf = command.encode_length_delimited_to_vec();
+                                    buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+
+                                    match stream.write_all(&buf) {
+                                        Ok(_n) => {}
+
+                                        Err(_e) => {
+                                            return Err(AudioPluginError::GrabberError {
+                                                description: "Lost connection to proxy".to_owned(),
+                                            }
+                                            .into());
+                                        }
+                                    }
+
+                                    stream.flush()?;
+                                }
+
+                                cntr += 1;
+                            }
+                        }
+
+                        Err(_e) => {
+                            return Err(AudioPluginError::GrabberError {
+                                description: "Lost connection to proxy".to_owned(),
+                            }
+                            .into());
+                        }
+                    }
+                }
             }
 
-            let pa = self.handle.clone();
+            Ok(())
+        }
+    }
 
-            let builder = thread::Builder::new().name("audio/playback".into());
-            builder
-                .spawn(move || {
-                    ACTIVE_SFX.fetch_add(1, Ordering::SeqCst);
-
-                    pa.write(data)
-                        .map_err(|e| AudioPluginError::PlaybackError {
-                            description: format!("Error during writing of playback buffer: {}", e),
-                        })
-                        .unwrap();
-                    // pa.drain()
-                    //     .map_err(|e| AudioPluginError::PlaybackError {
-                    //         description: format!("Error during playback: {}", e),
-                    //     })
-                    //     .ok();
-
-                    ACTIVE_SFX.fetch_sub(1, Ordering::SeqCst);
-                })
-                .unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
-
+    impl AudioBackend for ProxyBackend {
+        fn play_sfx(&self, _data: &'static [u8]) -> Result<()> {
             Ok(())
         }
 
         fn start_audio_grabber(&self) -> Result<()> {
-            if AUDIO_GRABBER_THREAD_RUNNING.load(Ordering::SeqCst) {
-                return Err(AudioPluginError::GrabberError {
-                    description: "Thread already running".into(),
-                }
-                .into());
-            }
-
-            AUDIO_GRABBER_THREAD_RUNNING.store(true, Ordering::SeqCst);
-
-            let builder = thread::Builder::new().name("audio/grabber".into());
+            let builder = thread::Builder::new().name("audio/proxy".into());
             builder
-                .spawn(move || -> Result<()> {
-                    let grabber = Self::init_grabber().unwrap();
-
-                    'RECORDER_LOOP: loop {
-                        let mut tmp: Vec<u8> = vec![0; AUDIO_GRABBER_BUFFER_SIZE];
-
-                        grabber
-                            .read(&mut tmp)
-                            .map_err(|e| AudioPluginError::GrabberError {
-                                description: format!("Error during recording: {}", e),
-                            })?;
-
-                        let mut buffer = AUDIO_GRABBER_BUFFER.write();
-                        buffer.clear();
-                        buffer.reserve(AUDIO_GRABBER_BUFFER_SIZE);
-                        buffer.extend(
-                            tmp.chunks_exact(2)
-                                .map(|c| i16::from_ne_bytes([c[0], c[1]])),
-                        );
-
-                        // compute root mean square (RMS) of the recorded samples
-                        if super::AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.load(Ordering::Relaxed) {
-                            let sqr_sum = buffer
-                                .iter()
-                                .map(|s| *s as f32)
-                                .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
-
-                            let sqr_sum = (sqr_sum / buffer.len() as f32).sqrt();
-
-                            CURRENT_RMS.store(sqr_sum.round() as isize, Ordering::SeqCst);
-                        }
-
-                        // compute spectrum analyzer
-                        if super::AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.load(Ordering::Relaxed) {
-                            let mut data: Vec<Complex<f32>> = buffer
-                                .iter()
-                                .take(FFT_SIZE)
-                                .map(|e| Complex::from(*e as f32))
-                                .collect();
-
-                            let fft = Radix4::new(FFT_SIZE, FftDirection::Forward);
-                            fft.process(&mut data);
-
-                            // apply post processing steps: normalization, window function and smoothing
-                            let one_over_fft_len_sqrt = 1.0 / ((FFT_SIZE / 2) as f32).sqrt();
-
-                            let mut phase = 0.0;
-                            const DELTA: f32 = (2.0 * PI) / (FFT_SIZE / 2) as f32;
-
-                            let result: Vec<f32> = data[(FFT_SIZE / 2)..]
-                                .iter()
-                                // normalize
-                                .map(|e| ((e.re as f32) * one_over_fft_len_sqrt).abs())
-                                // apply Hamming window
-                                .map(|e| {
-                                    phase += DELTA;
-                                    e * (0.54 - 0.46 * phase.cos())
-                                })
-                                .collect();
-
-                            for (i, e) in AUDIO_SPECTRUM.write().iter_mut().enumerate() {
-                                *e = (*e + result[i]) / 2.0;
-                            }
-                        }
-
-                        if AUDIO_GRABBER_THREAD_SHALL_TERMINATE.load(Ordering::SeqCst) {
-                            AUDIO_GRABBER_THREAD_SHALL_TERMINATE.store(false, Ordering::SeqCst);
-                            AUDIO_GRABBER_THREAD_RUNNING.store(false, Ordering::SeqCst);
-
-                            break 'RECORDER_LOOP;
-                        }
-                    }
-
-                    Ok(())
+                .spawn(move || {
+                    Self::run_io_loop().unwrap_or_else(|e| {
+                        error!("Error occurred in audio proxy thread: {}", e);
+                    });
                 })
                 .unwrap_or_else(|e| {
                     error!("Could not spawn a thread: {}", e);
@@ -613,31 +590,11 @@ mod backends {
         }
 
         fn get_master_volume(&self) -> Result<isize> {
-            let mut handler = SinkController::create();
-
-            let result = handler
-                .get_default_device()
-                .map_err(|_e| AudioPluginError::PulseError {
-                    description: "Could not query PulseAudio".to_owned(),
-                })?
-                .volume
-                .avg()
-                .0;
-
-            Ok(result as isize)
+            Ok(MASTER_VOLUME.load(Ordering::SeqCst) as isize)
         }
 
         fn is_audio_muted(&self) -> Result<bool> {
-            let mut handler = SinkController::create();
-
-            let result = handler
-                .get_default_device()
-                .map_err(|_e| AudioPluginError::PulseError {
-                    description: "Could not query PulseAudio".to_owned(),
-                })?
-                .mute;
-
-            Ok(result)
+            Ok(AUDIO_MUTED.load(Ordering::SeqCst))
         }
     }
 }

@@ -15,9 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::{lazy_static::lazy_static, Clap};
+use clap::{IntoApp, Parser};
+use clap_generate::Shell;
 use colored::*;
 use crossbeam::channel::unbounded;
+use lazy_static::lazy_static;
 use log::error;
 use parking_lot::Mutex;
 use std::{
@@ -94,7 +96,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clone, Clap)]
+#[derive(Debug, Clone, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -119,7 +121,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clone, Clap)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum Subcommands {
     /// List available devices, use this first to find out the index of the device to address
     #[clap(display_order = 0)]
@@ -141,15 +143,14 @@ pub enum Subcommands {
     },
 
     /// Generate shell completions
-    #[clap(display_order = 4)]
     Completions {
-        #[clap(subcommand)]
-        command: CompletionsSubcommands,
+        // #[clap(subcommand)]
+        shell: Shell,
     },
 }
 
 /// Subcommands of the "firmware" command
-#[derive(Debug, Clone, Clap)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum FirmwareSubcommands {
     /// Get some information about the currently installed firmware
     #[clap(display_order = 0)]
@@ -158,20 +159,6 @@ pub enum FirmwareSubcommands {
     /// Flash firmware to device (DANGEROUS, may brick the device)
     #[clap(display_order = 1)]
     Flash { device: u64 },
-}
-
-/// Subcommands of the "completions" command
-#[derive(Debug, Clone, Clap)]
-pub enum CompletionsSubcommands {
-    Bash,
-
-    Elvish,
-
-    Fish,
-
-    PowerShell,
-
-    Zsh,
 }
 
 /// Print license information
@@ -208,8 +195,7 @@ fn print_notice() {
     );
 }
 
-#[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> std::result::Result<(), eyre::Error> {
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -499,38 +485,26 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::Firmware { command: _ } => {}
 
-        Subcommands::Completions { command } => {
-            use clap::IntoApp;
-            use clap_generate::{generate, generators::*};
-
+        Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            match command {
-                CompletionsSubcommands::Bash => {
-                    generate::<Bash, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Elvish => {
-                    generate::<Elvish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Fish => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::PowerShell => {
-                    generate::<PowerShell, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Zsh => {
-                    generate::<Zsh, _>(&mut app, BIN_NAME, &mut fd);
-                }
-            }
+            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     };
 
     Ok(())
+}
+
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .thread_name("worker")
+        .enable_all()
+        // .worker_threads(4)
+        .build()?;
+
+    runtime.block_on(async move { async_main().await })
 }

@@ -94,9 +94,12 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo cp "eruption-gui/schemas/gschemas.compiled" "/usr/share/eruption-gui/schemas/"
  sudo cp "support/systemd/eruption-suspend.sh" "/usr/lib/systemd/system-sleep/eruption"
  sudo cp "support/config/eruption.conf" "/etc/eruption/"
+ sudo cp "support/config/audio-proxy.conf" "/etc/eruption/"
  sudo cp "support/config/process-monitor.conf" "/etc/eruption/"
  sudo cp "support/systemd/eruption.service" "/usr/lib/systemd/system/"
  sudo cp "support/systemd/eruption.preset" "/usr/lib/systemd/system-preset/50-eruption.preset"
+ sudo cp "support/systemd/eruption-audio-proxy.service" "/usr/lib/systemd/user/"
+ sudo cp "support/systemd/eruption-audio-proxy.preset" "/usr/lib/systemd/user-preset/50-eruption-audio-proxy.preset"
  sudo cp "support/systemd/eruption-process-monitor.service" "/usr/lib/systemd/user/"
  sudo cp "support/systemd/eruption-process-monitor.preset" "/usr/lib/systemd/user-preset/50-eruption-process-monitor.preset"
  sudo cp "support/systemd/eruption-hotplug-helper.service" "/usr/lib/systemd/system/"
@@ -111,23 +114,27 @@ sudo mkdir -p "/usr/share/eruption/sfx"
  sudo cp "support/man/eruptionctl.1" "/usr/share/man/man1/"
  sudo cp "support/man/eruption-hwutil.8" "/usr/share/man/man8/"
  sudo cp "support/man/eruption-netfx.1" "/usr/share/man/man1/"
+ sudo cp "support/man/eruption-audio-proxy.1" "/usr/share/man/man1/"
  sudo cp "support/man/eruption-process-monitor.1" "/usr/share/man/man1/"
 
  sudo cp "support/shell/completions/en_US/eruption-hwutil.bash-completion" "/usr/share/bash-completion/completions/eruption-hwutil"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.bash-completion" "/usr/share/bash-completion/completions/eruption-debug-tool"
  sudo cp "support/shell/completions/en_US/eruption-netfx.bash-completion" "/usr/share/bash-completion/completions/eruption-netfx"
+ sudo cp "support/shell/completions/en_US/eruption-audio-proxy.bash-completion" "/usr/share/bash-completion/completions/eruption-audio-proxy"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "/usr/share/bash-completion/completions/eruption-process-monitor"
  sudo cp "support/shell/completions/en_US/eruptionctl.bash-completion" "/usr/share/bash-completion/completions/eruptionctl"
 
  sudo cp "support/shell/completions/en_US/eruption-hwutil.fish-completion" "/usr/share/fish/completions/eruption-hwutil.fish"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "/usr/share/fish/completions/eruption-debug-tool.fish"
  sudo cp "support/shell/completions/en_US/eruption-netfx.fish-completion" "/usr/share/fish/completions/eruption-netfx.fish"
+ sudo cp "support/shell/completions/en_US/eruption-audio-proxy.fish-completion" "/usr/share/fish/completions/eruption-audio-proxy.fish"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "/usr/share/fish/completions/eruption-process-monitor.fish"
  sudo cp "support/shell/completions/en_US/eruptionctl.fish-completion" "/usr/share/fish/completions/eruptionctl.fish"
 
  sudo cp "support/shell/completions/en_US/eruption-hwutil.zsh-completion" "/usr/share/zsh/site-functions/_eruption-hwutil"
  sudo cp "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "/usr/share/zsh/site-functions/_eruption-debug-tool"
  sudo cp "support/shell/completions/en_US/eruption-netfx.zsh-completion" "/usr/share/zsh/site-functions/_eruption-netfx"
+ sudo cp "support/shell/completions/en_US/eruption-audio-proxy.zsh-completion" "/usr/share/zsh/site-functions/_eruption-audio-proxy"
  sudo cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "/usr/share/zsh/site-functions/_eruption-process-monitor"
  sudo cp "support/shell/completions/en_US/eruptionctl.zsh-completion" "/usr/share/zsh/site-functions/_eruptionctl"
 
@@ -153,7 +160,7 @@ sudo mkdir -p "/usr/share/eruption/sfx"
 #### 4. Copy over the binaries
 
 ```sh
- sudo cp target/release/eruption{,ctl,-hwutil,-netfx,-debug-tool,-hotplug-helper,-gui,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
+ sudo cp target/release/eruption{,ctl,-hwutil,-netfx,-debug-tool,-hotplug-helper,-gui,-audio-proxy,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
 ```
 
 ### Run Eruption
@@ -168,5 +175,6 @@ To activate Eruption now, you may either hotplug a supported device, or manually
 the daemon with the command:
 
 ```sh
+ $ systemctl --user enable --now eruption-audio-proxy.service
  $ sudo systemctl enable --now eruption.service
 ```

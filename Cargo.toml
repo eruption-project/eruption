@@ -1,6 +1,6 @@
 [workspace]
-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-process-monitor", "eruption-gui"]
-default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-process-monitor"]
+members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "eruption-gui"]
+default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor"]
 resolver = "2"
 
 [profile.dev]

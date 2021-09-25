@@ -144,7 +144,7 @@ impl Plugin for SensorsPlugin {
         "Query system sensor values".to_string()
     }
 
-    fn initialize(&mut self) -> plugins::Result<()> {
+    async fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

@@ -26,11 +26,17 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 /// Default script directory
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
+/// The `/run/eruption/` directory
+pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
+
 /// State directory
 pub const STATE_DIR: &str = "/var/lib/eruption/";
 
 /// Eruption daemon PID file
 pub const PID_FILE: &str = "/run/eruption/eruption.pid";
+
+/// Eruption daemon audio data UNIX domain socket
+pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 
 /// Number of slots
 pub const NUM_SLOTS: usize = 4;
@@ -58,6 +64,9 @@ pub const CANVAS_WIDTH: usize = 22 + 8;
 
 /// The height of the canvas
 pub const CANVAS_HEIGHT: usize = 6;
+
+/// The capacity of the buffer used for receiving audio samples
+pub const BUFFER_CAPACITY: usize = 512;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;

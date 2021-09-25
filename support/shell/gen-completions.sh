@@ -36,6 +36,7 @@ do
     gen_completions "eruption-debug-tool"
     # gen_completions "eruption-gui"
     gen_completions "eruption-netfx"
+    gen_completions "eruption-audio-proxy"
     gen_completions "eruption-process-monitor"
     gen_completions "eruptionctl"
 done

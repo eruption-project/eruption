@@ -91,20 +91,25 @@ cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%
 cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-audio-proxy.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-process-monitor.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-debug-tool
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-netfx
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-audio-proxy.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-audio-proxy
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-process-monitor
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruptionctl
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-debug-tool.fish
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-netfx.fish
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-audio-proxy.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-audio-proxy.fish
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-process-monitor.fish
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruptionctl.fish
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-debug-tool.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-netfx.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-netfx
+cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-audio-proxy.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-audio-proxy
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruption-process-monitor.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-process-monitor
 cp -a %{_builddir}/%{name}-%{version}/support/shell/completions/en_US/eruptionctl.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruptionctl
 cp -a %{_builddir}/%{name}-%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
+cp -a %{_builddir}/%{name}-%{version}/support/config/audio-proxy.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-%{version}/support/dbus/org.eruption.process_monitor.conf %{buildroot}%{_sysconfdir}/dbus-1/session.d/
@@ -112,6 +117,8 @@ cp -a %{_builddir}/%{name}-%{version}/support/udev/99-eruption.rules %{buildroot
 cp -a %{_builddir}/%{name}-%{version}/support/policykit/org.eruption.policy %{buildroot}%{_datarootdir}/polkit-1/actions/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-audio-proxy.preset %{buildroot}/%{_userpresetdir}/50-eruption-audio-proxy.preset
+cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-audio-proxy.service %{buildroot}/%{_userunitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.preset %{buildroot}/%{_userpresetdir}/50-eruption-process-monitor.preset
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-process-monitor.service %{buildroot}/%{_userunitdir}/
 cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-hotplug-helper.preset %{buildroot}/%{_presetdir}/50-eruption-hotplug-helper.preset
@@ -192,6 +199,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netf
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-hotplug-helper %{buildroot}%{_bindir}/eruption-hotplug-helper
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-audio-proxy %{buildroot}%{_bindir}/eruption-audio-proxy
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
@@ -210,10 +218,12 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %doc %{_mandir}/man8/eruption-hwutil.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
+%doc %{_mandir}/man1/eruption-audio-proxy.1.gz
 %doc %{_mandir}/man1/eruption-process-monitor.1.gz
 %doc %{_mandir}/man5/process-monitor.conf.5.gz
 %dir %{_datarootdir}/icons/hicolor/scalable/apps/
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
+%config(noreplace) %{_sysconfdir}/%{ShortName}/audio-proxy.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 %{_sysconfdir}/dbus-1/session.d/org.eruption.process_monitor.conf
@@ -227,9 +237,12 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_bindir}/eruption-util
 %{_bindir}/eruption-debug-tool
 %{_bindir}/eruption-hotplug-helper
+%{_bindir}/eruption-audio-proxy
 %caps(cap_net_admin=ep) %{_bindir}/eruption-process-monitor
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
+%{_userunitdir}/eruption-audio-proxy.service
+%{_userpresetdir}/50-eruption-audio-proxy.preset
 %{_userunitdir}/eruption-process-monitor.service
 %{_userpresetdir}/50-eruption-process-monitor.preset
 %{_unitdir}/eruption-hotplug-helper.service
@@ -241,16 +254,19 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-hwutil
 %{_datarootdir}/bash-completion/completions/eruption-netfx
+%{_datarootdir}/bash-completion/completions/eruption-audio-proxy
 %{_datarootdir}/bash-completion/completions/eruption-process-monitor
 %{_datarootdir}/bash-completion/completions/eruptionctl
 %{_datarootdir}/fish/completions/eruption-debug-tool.fish
 %{_datarootdir}/fish/completions/eruption-hwutil.fish
 %{_datarootdir}/fish/completions/eruption-netfx.fish
+%{_datarootdir}/fish/completions/eruption-audio-proxy.fish
 %{_datarootdir}/fish/completions/eruption-process-monitor.fish
 %{_datarootdir}/fish/completions/eruptionctl.fish
 %{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 %{_datarootdir}/zsh/site-functions/_eruption-hwutil
 %{_datarootdir}/zsh/site-functions/_eruption-netfx
+%{_datarootdir}/zsh/site-functions/_eruption-audio-proxy
 %{_datarootdir}/zsh/site-functions/_eruption-process-monitor
 %{_datarootdir}/zsh/site-functions/_eruptionctl
 %{_sharedstatedir}/%{ShortName}/profiles/animal-blobby.profile

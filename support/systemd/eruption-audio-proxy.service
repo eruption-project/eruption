@@ -1,0 +1,27 @@
+[Unit]
+Description=Audio proxy daemon for the Eruption Linux user-mode driver
+Documentation=man:eruption-audio-proxy(1) man:audio-proxy.conf(5) man:eruptionctl(1)
+BindsTo=graphical-session.target
+Wants=graphical-session.target
+After=graphical-session.target
+# StartLimitInterval=60
+# StartLimitBurst=5
+
+[Service]
+Environment=RUST_LOG=warn
+ExecStart=/usr/bin/eruption-audio-proxy -c /etc/eruption/audio-proxy.conf daemon
+# PIDFile=/run/eruption-audio-proxy.pid
+Type=exec
+Restart=always
+RestartSec=1
+#CapabilityBoundingSet=CAP_NET_ADMIN
+#AmbientCapabilities=CAP_NET_ADMIN
+#ProtectHome=yes
+#ProtectSystem=full
+#ProtectKernelTunables=yes
+#ProtectControlGroups=yes
+#PrivateDevices=no
+#PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

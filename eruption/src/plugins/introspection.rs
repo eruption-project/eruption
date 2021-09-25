@@ -46,7 +46,7 @@ impl Plugin for IntrospectionPlugin {
         "Provide runtime status of the Eruption daemon".to_string()
     }
 
-    fn initialize(&mut self) -> plugins::Result<()> {
+    async fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

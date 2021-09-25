@@ -354,7 +354,7 @@ impl DeviceTrait for RoccatKain2xx {
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}", battery_level),
+                                battery_level.to_string(),
                             );
 
                             table.insert(

@@ -15,7 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::{lazy_static::lazy_static, Clap};
+use clap::{IntoApp, Parser};
+use clap_generate::Shell;
 use color_eyre::Help;
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
@@ -26,6 +27,7 @@ use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
 use eyre::Context;
+use lazy_static::lazy_static;
 use manifest::GetAttr;
 use parking_lot::Mutex;
 use profiles::GetAttr as GetAttrProfile;
@@ -59,7 +61,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -83,7 +85,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum Subcommands {
     /// Configuration related sub-commands
     Config {
@@ -136,13 +138,13 @@ pub enum Subcommands {
 
     /// Generate shell completions
     Completions {
-        #[clap(subcommand)]
-        command: CompletionsSubcommands,
+        // #[clap(subcommand)]
+        shell: Shell,
     },
 }
 
 /// Sub-commands of the "config" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum ConfigSubcommands {
     /// Get or set the global brightness of the LEDs
     Brightness { brightness: Option<i64> },
@@ -152,7 +154,7 @@ pub enum ConfigSubcommands {
 }
 
 /// Sub-commands of the "devices" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum DevicesSubcommands {
     /// List connected devices and their indices (run this first)
     #[clap(display_order = 0)]
@@ -208,7 +210,7 @@ pub enum DevicesSubcommands {
 }
 
 /// Sub-commands of the "status" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum StatusSubcommands {
     /// Shows the currently active profile
     Profile,
@@ -218,7 +220,7 @@ pub enum StatusSubcommands {
 }
 
 /// Sub-commands of the "switch" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum SwitchSubcommands {
     /// Switch profiles
     Profile { profile_name: String },
@@ -228,7 +230,7 @@ pub enum SwitchSubcommands {
 }
 
 /// Sub-commands of the "profiles" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum ProfilesSubcommands {
     /// Show info about a profile
     Info { profile_name: String },
@@ -241,7 +243,7 @@ pub enum ProfilesSubcommands {
 }
 
 /// Subcommands of the "names" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum NamesSubcommands {
     /// List slot names
     List,
@@ -254,7 +256,7 @@ pub enum NamesSubcommands {
 }
 
 /// Subcommands of the "scripts" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum ScriptsSubcommands {
     /// Show info about a script
     Info { script_name: String },
@@ -264,20 +266,6 @@ pub enum ScriptsSubcommands {
 
     /// List available scripts
     List,
-}
-
-/// Subcommands of the "completions" command
-#[derive(Debug, Clap)]
-pub enum CompletionsSubcommands {
-    Bash,
-
-    Elvish,
-
-    Fish,
-
-    PowerShell,
-
-    Zsh,
 }
 
 /// Print license information
@@ -597,8 +585,7 @@ async fn print_device_header(device: u64) -> Result<()> {
     Ok(())
 }
 
-#[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> std::result::Result<(), eyre::Error> {
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -1450,38 +1437,24 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
         },
 
-        Subcommands::Completions { command } => {
-            use clap::IntoApp;
-            use clap_generate::{generate, generators::*};
-
+        Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            match command {
-                CompletionsSubcommands::Bash => {
-                    generate::<Bash, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Elvish => {
-                    generate::<Elvish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Fish => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::PowerShell => {
-                    generate::<PowerShell, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Zsh => {
-                    generate::<Zsh, _>(&mut app, BIN_NAME, &mut fd);
-                }
-            }
+            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     };
 
     Ok(())
+}
+
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+
+    runtime.block_on(async move { async_main().await })
 }

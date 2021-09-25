@@ -15,7 +15,8 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::Clap;
+use clap::{IntoApp, Parser};
+use clap_generate::Shell;
 // use colored::*;
 use log::*;
 use std::{
@@ -42,7 +43,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -58,30 +59,16 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum Subcommands {
     /// Trigger a hotplug event
     Hotplug,
 
     /// Generate shell completions
     Completions {
-        #[clap(subcommand)]
-        command: CompletionsSubcommands,
+        // #[clap(subcommand)]
+        shell: Shell,
     },
-}
-
-/// Subcommands of the "completions" command
-#[derive(Debug, Clap)]
-pub enum CompletionsSubcommands {
-    Bash,
-
-    Elvish,
-
-    Fish,
-
-    PowerShell,
-
-    Zsh,
 }
 
 /// Print license information
@@ -105,8 +92,7 @@ fn print_header() {
     );
 }
 
-#[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> std::result::Result<(), eyre::Error> {
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -381,38 +367,24 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        Subcommands::Completions { command } => {
-            use clap::IntoApp;
-            use clap_generate::{generate, generators::*};
-
+        Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            match command {
-                CompletionsSubcommands::Bash => {
-                    generate::<Bash, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Elvish => {
-                    generate::<Elvish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Fish => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::PowerShell => {
-                    generate::<PowerShell, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Zsh => {
-                    generate::<Zsh, _>(&mut app, BIN_NAME, &mut fd);
-                }
-            }
+            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     }
 
     Ok(())
+}
+
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+
+    runtime.block_on(async move { async_main().await })
 }

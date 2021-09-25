@@ -15,9 +15,9 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::process::Command;
+use std::{error::Error, process::Command};
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error + 'static>> {
     let output = Command::new("bash")
         .args(&["-c", "../support/pkg/git-version.sh"])
         .output()
@@ -26,4 +26,11 @@ fn main() {
     let result = String::from_utf8_lossy(&output.stdout);
 
     println!("cargo:rustc-env=ERUPTION_GIT_PKG_VERSION={}", &*result);
+
+    prost_build::compile_protos(
+        &["../support/protobuf/audio-proxy.proto"],
+        &["../support/protobuf/"],
+    )?;
+
+    Ok(())
 }

@@ -26,8 +26,8 @@ use crate::sensors::WaylandSensorData;
 #[cfg(feature = "x11")]
 use crate::sensors::X11SensorData;
 
-use clap::Clap;
-use clap::*;
+use clap::{IntoApp, Parser};
+use clap_generate::Shell;
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
@@ -222,7 +222,7 @@ pub enum SystemEvent {
 }
 
 /// Supported command line arguments
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -245,7 +245,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum Subcommands {
     /// Run in background and monitor running processes
     Daemon,
@@ -258,13 +258,13 @@ pub enum Subcommands {
 
     /// Generate shell completions
     Completions {
-        #[clap(subcommand)]
-        command: CompletionsSubcommands,
+        // #[clap(subcommand)]
+        shell: Shell,
     },
 }
 
 /// Sub-commands of the "rules" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum RulesSubcommands {
     /// List all available rules
     List,
@@ -283,7 +283,7 @@ pub enum RulesSubcommands {
 }
 
 /// Subcommands of the "completions" command
-#[derive(Debug, Clap)]
+#[derive(Debug, clap::Parser)]
 pub enum CompletionsSubcommands {
     Bash,
 
@@ -943,8 +943,7 @@ fn save_rules_map() -> Result<()> {
     Ok(())
 }
 
-#[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> std::result::Result<(), eyre::Error> {
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -1254,36 +1253,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
             }
         },
 
-        Subcommands::Completions { command } => {
-            use clap::IntoApp;
-            use clap_generate::{generate, generators::*};
-
+        Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            match command {
-                CompletionsSubcommands::Bash => {
-                    generate::<Bash, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Elvish => {
-                    generate::<Elvish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Fish => {
-                    generate::<Fish, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::PowerShell => {
-                    generate::<PowerShell, _>(&mut app, BIN_NAME, &mut fd);
-                }
-
-                CompletionsSubcommands::Zsh => {
-                    generate::<Zsh, _>(&mut app, BIN_NAME, &mut fd);
-                }
-            }
+            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     }
 
@@ -1293,4 +1269,13 @@ pub async fn main() -> std::result::Result<(), eyre::Error> {
     info!("Exiting now");
 
     Ok(())
+}
+
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+
+    runtime.block_on(async move { async_main().await })
 }

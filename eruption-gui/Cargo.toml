@@ -19,17 +19,17 @@ cfg-if = "1.0.0"
 colored = "2.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.102"
-nix = "0.22.1"
+libc = "0.2.104"
+nix = "0.23.0"
 rayon = "1.5.1"
 walkdir = "2.3.2"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
 tokio = { version = "1.12.0", features = ["full"] }
-tracing = "0.1.28"
+tracing = "0.1.29"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.2.24"
+tracing-subscriber = "0.2.25"
 config = "0.11.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
@@ -37,31 +37,31 @@ byteorder = "1.4.3"
 itertools = "0.10.1"
 lazy_static = "1.4.0"
 palette = "0.6.0"
-thiserror = "1.0.29"
+thiserror = "1.0.30"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 paste = "1.0.5"
-dbus = "0.9.3"
+dbus = "0.9.5"
 dbus-tokio = "0.7.5"
 gdk-pixbuf = "0.14.0"
-glib = "0.14.5"
-pango = "0.14.3"
+glib = "0.14.8"
+pango = "0.14.8"
 pangocairo = "0.14.0"
-cairo-rs = "0.14.7"
+cairo-rs = "0.14.9"
 #sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
 icecream = "0.1.0"
-pretty_assertions = "0.7.2"
+pretty_assertions = "1.0.0"
 
 [dependencies.gtk]
-version = "0.14.1"
+version = "0.14.3"
 features = ["v3_22"]
 
 [dependencies.gdk]
-version = "0.14.2"
+version = "0.14.3"
 features = ["v3_22"]
 
 [dependencies.gio]
-version = "0.14.6"
+version = "0.14.8"
 features = ["v2_50"]
 
 [dev-dependencies]

@@ -220,7 +220,7 @@ impl RoccatKain2xx {
 
             match ctrl_dev.send_feature_report(buffer) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buffer).for_each(|s| trace!("  {}", s));
+                    hexdump::hexdump_iter(buffer).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -487,7 +487,7 @@ impl DeviceTrait for RoccatKain2xx {
 
                             table.insert(
                                 "battery-level-percent".to_string(),
-                                format!("{}", battery_level),
+                                battery_level.to_string(),
                             );
 
                             table.insert(

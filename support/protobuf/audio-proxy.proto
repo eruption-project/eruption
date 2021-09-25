@@ -1,0 +1,31 @@
+syntax = "proto3";
+package audio_proxy;
+
+message Command {
+  enum CommandType {
+    AUDIO_MUTED_STATE = 0;
+    AUDIO_VOLUME = 1;
+  }
+
+  CommandType command_type = 1;
+}
+
+message Response {
+  enum ResponseType {
+    AUDIO_MUTED_STATE = 0;
+    AUDIO_VOLUME = 1;
+
+    AUDIO_DATA = 2;
+  }
+
+  ResponseType response_type = 1;
+
+  oneof Payload {
+    bool muted = 2;
+    int32 volume = 3;
+    bytes data = 4;
+  }
+}
+
+// Service definition
+service AudioProxy { rpc Proxy(Command) returns (Response); }

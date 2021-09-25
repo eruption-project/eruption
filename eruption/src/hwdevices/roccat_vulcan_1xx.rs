@@ -25,7 +25,10 @@ use std::{any::Any, mem::size_of};
 
 use crate::constants;
 
-use super::{DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA};
+use super::{
+    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice,
+    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA,
+};
 
 pub type Result<T> = super::Result<T>;
 
