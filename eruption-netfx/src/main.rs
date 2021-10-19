@@ -22,16 +22,16 @@ use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
 };
+use jwalk::WalkDir;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
-use std::{env, thread};
+use std::{cmp::Ordering, env, thread};
 use std::{path::PathBuf, sync::Arc};
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt};
 use tokio::io::{AsyncReadExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::time::Duration;
-use walkdir::WalkDir;
 
 mod constants;
 mod hwdevices;
@@ -326,8 +326,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             directory_name,
             frame_delay,
         } => {
-            let device = hwdevices::get_keyboard_device(&opts.model)?;
-
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -341,29 +339,51 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let mut buf_reader = BufReader::new(socket);
 
             // holds pre-processed command-sequences for each image
-            let mut processed_images = vec![];
+            let processed_images = Arc::new(Mutex::new(vec![]));
 
             if opts.verbose > 0 {
                 println!("{}", tr!("processing-image-files"));
             }
 
             // convert each image file to a command sequence beforehand
-            for filename in WalkDir::new(&directory_name)
+            let walkdir = WalkDir::new(&directory_name)
                 .follow_links(true)
-                .into_iter()
-                .filter_map(|e| e.ok())
-            {
-                if !filename.path().is_file() {
-                    continue;
+                .process_read_dir(|_depth, _path, _read_dir_state, children| {
+                    children.sort_by(|a, b| match (a, b) {
+                        (Ok(a), Ok(b)) => a.file_name.cmp(&b.file_name),
+                        (Ok(_), Err(_)) => Ordering::Less,
+                        (Err(_), Ok(_)) => Ordering::Greater,
+                        (Err(_), Err(_)) => Ordering::Equal,
+                    });
+                });
+
+            for entry in walkdir {
+                if let Ok(filename) = entry {
+                    if !filename.path().is_file() {
+                        continue;
+                    }
+
+                    if opts.verbose > 0 {
+                        println!("{}", &filename.path().to_string_lossy());
+                    }
+
+                    let model = opts.model.clone();
+                    let processed_images = processed_images.clone();
+
+                    rayon::spawn(move || {
+                        let device =
+                            hwdevices::get_keyboard_device(&model).expect(&tr!("invalid-model"));
+
+                        let _result = utils::process_image_file(&filename.path(), &device)
+                            .map_err(|e| {
+                                eprintln!("{}", tr!("image-error", message = e.to_string()))
+                            })
+                            .and_then(|commands| {
+                                processed_images.lock().push(commands);
+                                Ok(())
+                            });
+                    });
                 }
-
-                if opts.verbose > 0 {
-                    println!("{}", &filename.path().to_string_lossy());
-                }
-
-                let commands = utils::process_image_file(&filename.path(), &device)?;
-
-                processed_images.push(commands);
             }
 
             if opts.verbose > 0 {
@@ -371,7 +391,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             loop {
-                for commands in processed_images.iter() {
+                for commands in processed_images.lock().iter() {
                     // print and send the specified command
                     if opts.verbose > 1 {
                         println!("{}", tr!("sending-data"));

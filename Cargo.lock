@@ -968,6 +968,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "image",
+ "jwalk",
  "lazy_static",
  "libc",
  "log",
@@ -980,7 +981,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "unic-langid",
- "walkdir",
  "x11",
 ]
 
@@ -1878,6 +1878,16 @@ version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "229d53d58899083193af11e15917b5640cd40b29ff475a1fe4ef725deb02d0f2"
 dependencies = [
+ "rayon",
+]
+
+[[package]]
+name = "jwalk"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "172752e853a067cbce46427de8470ddf308af7fd8ceaf9b682ef31a5021b6bb9"
+dependencies = [
+ "crossbeam",
  "rayon",
 ]
 
