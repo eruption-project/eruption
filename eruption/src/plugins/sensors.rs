@@ -182,6 +182,8 @@ impl Plugin for SensorsPlugin {
         // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
+            log::debug!("Refreshing sensors...");
+
             Self::refresh();
         }
     }
