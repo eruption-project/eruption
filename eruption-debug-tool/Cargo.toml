@@ -1,3 +1,19 @@
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+
 [package]
 name = "eruption-debug-tool"
 version = "0.0.16"
@@ -38,6 +54,10 @@ bitvec = "0.22.3"
 byteorder = "1.4.3"
 serialport = "4.0.1"
 crc8 = "0.1.1"
+i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.0"
+rust-embed = "6.2.0"
+unic-langid = "0.9.0"
 
 [dev-dependencies]
 icecream = "0.1.0"

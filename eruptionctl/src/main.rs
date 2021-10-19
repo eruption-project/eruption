@@ -27,10 +27,15 @@ use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
 use eyre::Context;
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
 use lazy_static::lazy_static;
 use manifest::GetAttr;
 use parking_lot::Mutex;
 use profiles::GetAttr as GetAttrProfile;
+use rust_embed::RustEmbed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
@@ -45,6 +50,32 @@ mod profiles;
 mod util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"] // path to the compiled localization resources
+struct Localizations;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+}
+
+#[allow(unused)]
+macro_rules! tr {
+    ($message_id:literal) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id)
+    }};
+
+    ($message_id:literal, $($args:expr),*) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
+    }};
+}
 
 lazy_static! {
     /// Global configuration
@@ -608,11 +639,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
-        ctrl_c_tx
-            .send(true)
-            .unwrap_or_else(|e| log::error!("Could not send on a channel: {}", e));
+        ctrl_c_tx.send(true).unwrap_or_else(|e| {
+            log::error!(
+                "{}",
+                tr!("could-not-send-on-channel", message = e.to_string())
+            );
+        });
     })
-    .unwrap_or_else(|e| log::error!("Could not set CTRL-C handler: {}", e));
+    .unwrap_or_else(|e| {
+        log::error!(
+            "{}",
+            tr!("could-not-set-ctrl-c-handler", message = e.to_string())
+        )
+    });
 
     let opts = Options::parse();
 
@@ -625,7 +664,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     config
         .merge(config::File::new(&config_file, config::FileFormat::Toml))
         .unwrap_or_else(|e| {
-            log::error!("Could not parse configuration file: {}", e);
+            log::error!("{}", tr!("could-not-parse-config", message = e.to_string()));
             process::exit(4);
         });
 
@@ -703,9 +742,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     );
                 }
 
-                println!("{}", "Dumping Eruption managed devices list\n".bold());
+                println!("{}\n", tr!("dumping-devices").bold());
 
-                println!("Keyboard devices:");
+                println!("{}", tr!("keyboard-devices"));
 
                 if keyboards.is_empty() {
                     println!("{}", "<No supported devices detected>\n".italic());
@@ -741,7 +780,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
-                println!("\nMouse devices:");
+                println!("\n{}", tr!("mouse-devices"));
 
                 if mice.is_empty() {
                     println!("{}", "<No supported devices detected>\n".italic());
@@ -777,7 +816,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
 
-                println!("\nMiscellaneous devices:");
+                println!("\n{}", tr!("misc-devices"));
 
                 if misc.is_empty() {
                     println!("{}", "<No supported devices detected>\n".italic());
@@ -1452,6 +1491,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;

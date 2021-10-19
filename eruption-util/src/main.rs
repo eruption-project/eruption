@@ -24,9 +24,14 @@ use crossbeam::{
 };
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use hwdevices::{EvdevError, HwDevice, KeyboardHidEvent, RGBA};
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
+use rust_embed::RustEmbed;
 use std::{
     env,
     fs::File,
@@ -43,6 +48,32 @@ mod hwdevices;
 mod util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"] // path to the compiled localization resources
+struct Localizations;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+}
+
+#[allow(unused)]
+macro_rules! tr {
+    ($message_id:literal) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id)
+    }};
+
+    ($message_id:literal, $($args:expr),*) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
+    }};
+}
 
 lazy_static! {
     /// Global "quit" status flag
@@ -1616,6 +1647,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .thread_name("worker")
         .enable_all()

@@ -17,12 +17,20 @@
 
 use clap::{IntoApp, Parser};
 use clap_generate::Shell;
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
+use rust_embed::RustEmbed;
 // use colored::*;
 use log::*;
 use std::{
     env,
     path::Path,
     process::{Command, Stdio},
+    sync::Arc,
     thread,
     time::Duration,
 };
@@ -30,6 +38,32 @@ use syslog::Facility;
 
 mod constants;
 mod util;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"] // path to the compiled localization resources
+struct Localizations;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+}
+
+#[allow(unused)]
+macro_rules! tr {
+    ($message_id:literal) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id)
+    }};
+
+    ($message_id:literal, $($args:expr),*) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
+    }};
+}
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -382,6 +416,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;

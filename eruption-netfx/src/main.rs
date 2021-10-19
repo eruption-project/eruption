@@ -18,8 +18,15 @@
 use clap::{IntoApp, Parser};
 use clap_generate::Shell;
 use colored::Colorize;
-use std::path::PathBuf;
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
+use rust_embed::RustEmbed;
 use std::{env, thread};
+use std::{path::PathBuf, sync::Arc};
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt};
 use tokio::io::{AsyncReadExt, BufReader};
 use tokio::net::TcpStream;
@@ -30,6 +37,32 @@ mod constants;
 mod hwdevices;
 mod utils;
 mod xwrap;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"] // path to the compiled localization resources
+struct Localizations;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+}
+
+#[allow(unused)]
+macro_rules! tr {
+    ($message_id:literal) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id)
+    }};
+
+    ($message_id:literal, $($args:expr),*) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
+    }};
+}
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -146,7 +179,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
-                println!("Connecting to: {}", address);
+                println!("{}", tr!("connecting-to", host = address.to_string()));
             }
 
             let socket = TcpStream::connect(address).await?;
@@ -154,7 +187,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             // print and send the specified command
             if opts.verbose > 0 {
-                println!("Sending STATUS inquiry...");
+                println!("{}", tr!("sending-status-inquiry"));
             }
             buf_reader.write_all(&Vec::from("STATUS\n")).await?;
 
@@ -173,7 +206,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
-                println!("Connecting to: {}", address);
+                println!("{}", tr!("connecting-to", host = address.to_string()));
             }
 
             let socket = TcpStream::connect(address).await?;
@@ -235,7 +268,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
-                println!("Connecting to: {}", address);
+                println!("{}", tr!("connecting-to", host = address.to_string()));
             }
             let socket = TcpStream::connect(address).await?;
             let mut buf_reader = BufReader::new(socket);
@@ -252,7 +285,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     // print and send the specified command
                     if opts.verbose > 0 {
-                        println!("Sending data...");
+                        println!("{}", tr!("sending-data"));
                     }
                     if opts.verbose > 1 {
                         println!("{}", &commands);
@@ -274,7 +307,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // print and send the specified command
                 if opts.verbose > 0 {
-                    println!("Sending data...");
+                    println!("{}", tr!("sending-data"));
                 }
                 if opts.verbose > 1 {
                     println!("{}", &commands);
@@ -302,7 +335,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
-                println!("Connecting to: {}", address);
+                println!("{}", tr!("connecting-to", host = address.to_string()));
             }
             let socket = TcpStream::connect(address).await?;
             let mut buf_reader = BufReader::new(socket);
@@ -311,7 +344,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let mut processed_images = vec![];
 
             if opts.verbose > 0 {
-                println!("Pre-processing image files...");
+                println!("{}", tr!("processing-image-files"));
             }
 
             // convert each image file to a command sequence beforehand
@@ -334,14 +367,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             if opts.verbose > 0 {
-                println!("Entering loop...");
+                println!("{}", tr!("entering-loop"));
             }
 
             loop {
                 for commands in processed_images.iter() {
                     // print and send the specified command
                     if opts.verbose > 1 {
-                        println!("Sending data...");
+                        println!("{}", tr!("sending-data"));
                     }
                     if opts.verbose > 2 {
                         println!("{}", &commands);
@@ -377,7 +410,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 opts.port.unwrap_or(constants::DEFAULT_PORT)
             );
             if opts.verbose > 1 {
-                println!("Connecting to: {}", address);
+                println!("{}", tr!("connecting-to", host = address.to_string()));
             }
             let socket = TcpStream::connect(address).await?;
             let mut buf_reader = BufReader::new(socket);
@@ -400,7 +433,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // print and send the specified commands
                 if opts.verbose > 0 {
-                    println!("Sending data...");
+                    println!("{}", tr!("sending-data"));
                 }
                 if opts.verbose > 1 {
                     println!("{}", &commands);
@@ -436,6 +469,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;

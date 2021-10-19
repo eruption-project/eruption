@@ -8,6 +8,7 @@
     - [Eruption Support Library Documentation](#eruption-support-library-documentation)
     - [Installation from Source](#installation-from-source)
     - [Setup Audio](#setup-audio)
+    - [Privacy Considerations](#privacy-considerations)
 
 ## Welcome to the Eruption documentation
 
@@ -49,3 +50,9 @@ HowTo setup Eruption
 HowTo setup PipeWire or PulseAudio for Eruption
 
 [SETUP_AUDIO.md](SETUP_AUDIO.md)
+
+### Privacy Considerations
+
+Privacy considerations
+
+[PRIVACY.md](PRIVACY.md)

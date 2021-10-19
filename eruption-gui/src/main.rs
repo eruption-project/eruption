@@ -20,8 +20,13 @@ use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
 use gtk::prelude::*;
 use gtk::Application;
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
+use rust_embed::RustEmbed;
 use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
@@ -37,6 +42,32 @@ mod preferences;
 mod profiles;
 mod ui;
 mod util;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"] // path to the compiled localization resources
+struct Localizations;
+
+lazy_static! {
+    /// Global configuration
+    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+}
+
+#[allow(unused)]
+macro_rules! tr {
+    ($message_id:literal) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id)
+    }};
+
+    ($message_id:literal, $($args:expr),*) => {{
+        let loader = $crate::STATIC_LOADER.lock();
+        let loader = loader.as_ref().unwrap();
+
+        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
+    }};
+}
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -446,6 +477,13 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
