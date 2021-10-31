@@ -6,6 +6,8 @@ If you remove the comment sign and therefore enable the `stats.lua` script in a 
 
 ### Other privacy sensitive behavior:
 
+#### `eruption-process-monitor` Daemon
+
 The `eruption-process-monitor` daemon listens on a Linux Netlink socket and processes Linux kernel events related to process creation. Additionally it has multiple ways to query the properties of the currently active Window on X11 and Wayland. Introspection of process memory is currently not implemented. You can disable processing of Linux kernel process events and window notifications at any time by running the following command:
 
 ```shell
@@ -17,3 +19,13 @@ This will disable the automatic profile switching mechanism since the eruption-p
 The ambient effect transfers the contents of the screen encoded in the NetFX protocol. You can check whether the ambient effect may be running by searching for a running `eruption-netfx .* ambient` process.
 
 The sensors built into the `eruption-process-monitor` daemon can be configured via certain build flags
+
+#### `eruption-audio-proxy` Daemon
+
+The `eruption-audio-proxy` daemon records audio on the selected device of the PipeWire or PulseAudio server. You can disable processing of audio data at any time by running the following command:
+
+```shell
+$ systemctl --user disable --now eruption-audio-proxy.service
+```
+
+This will disable the support for audio visualizations, mute status indication and sound effects.
