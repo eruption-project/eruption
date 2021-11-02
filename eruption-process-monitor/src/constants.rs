@@ -35,7 +35,7 @@ pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
 pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
 /// Default X11 display used by the X11 sensor plugin
-pub const DEFAULT_X11_DISPLAY: &str = ":1";
+pub const DEFAULT_X11_DISPLAY: &str = ":0";
 
 /// The default profile to use
 pub const DEFAULT_PROFILE: &str = "default.profile";

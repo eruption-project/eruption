@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::env;
 use std::ffi::CString;
 
 use crate::constants;
@@ -82,7 +83,11 @@ impl X11Sensor {
             .as_ref()
             .unwrap()
             .get_str("X11.display")
-            .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string());
+            .unwrap_or_else(|_| {
+                env::var("DISPLAY")
+                    .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string())
+                    .to_string()
+            });
 
         X11Sensor {
             display,
