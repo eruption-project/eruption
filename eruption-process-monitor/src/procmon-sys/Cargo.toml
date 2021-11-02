@@ -1,5 +1,5 @@
 [package]
-edition = "2018"
+edition = "2021"
 name = "procmon-sys"
 version = "0.0.2"
 build = "build.rs"

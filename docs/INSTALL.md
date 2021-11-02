@@ -16,7 +16,7 @@
 
 # How to build and install Eruption from source
 
-To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.55.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
+To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.56.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most Linux based systems.
 

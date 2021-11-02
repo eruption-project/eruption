@@ -5,6 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.23 | __New Release__                                                                                                                                                              |
+| 0.1.23 | Switched to Rust 2021 edition, rustc >= `1.56.0` is now required to build Eruption                                                                                           |
 | 0.1.23 | Updated all dependencies to their latest revisions                                                                                                                           |
 | 0.1.23 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v18`!                                                 |
 | 0.1.23 | Added a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of PipeWire or PulseAudio                  |

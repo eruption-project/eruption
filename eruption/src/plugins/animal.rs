@@ -1733,8 +1733,6 @@ mod ternimal {
             /// Get RGB components of a 32 bits color value.
             #[allow(clippy::many_single_char_names)]
             pub(crate) fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
-                use std::convert::TryFrom;
-
                 let a = u8::try_from((c >> 24) & 0xff).unwrap();
                 let r = u8::try_from((c >> 16) & 0xff).unwrap();
                 let g = u8::try_from((c >> 8) & 0xff).unwrap();
