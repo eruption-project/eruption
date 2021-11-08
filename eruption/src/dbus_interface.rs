@@ -422,38 +422,53 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
-                                        let keyboards: Vec<(u16, u16)> = crate::KEYBOARD_DEVICES
-                                            .lock()
-                                            .iter()
-                                            .map(|device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            })
-                                            .collect();
+                                        let keyboards = {
+                                            let keyboards = crate::KEYBOARD_DEVICES.lock();
 
-                                        let mice: Vec<(u16, u16)> = crate::MOUSE_DEVICES
-                                            .lock()
-                                            .iter()
-                                            .map(|device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            })
-                                            .collect();
+                                            let keyboards: Vec<(u16, u16)> = keyboards
+                                                .iter()
+                                                .map(|device| {
+                                                    (
+                                                        device.read().get_usb_vid(),
+                                                        device.read().get_usb_pid(),
+                                                    )
+                                                })
+                                                .collect();
 
-                                        let misc: Vec<(u16, u16)> = crate::MISC_DEVICES
-                                            .lock()
-                                            .iter()
-                                            .map(|device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            })
-                                            .collect();
+                                            keyboards
+                                        };
+
+                                        let mice = {
+                                            let mice = crate::MOUSE_DEVICES.lock();
+
+                                            let mice: Vec<(u16, u16)> = mice
+                                                .iter()
+                                                .map(|device| {
+                                                    (
+                                                        device.read().get_usb_vid(),
+                                                        device.read().get_usb_pid(),
+                                                    )
+                                                })
+                                                .collect();
+
+                                            mice
+                                        };
+
+                                        let misc = {
+                                            let misc = crate::MISC_DEVICES.lock();
+
+                                            let misc: Vec<(u16, u16)> = misc
+                                                .iter()
+                                                .map(|device| {
+                                                    (
+                                                        device.read().get_usb_vid(),
+                                                        device.read().get_usb_pid(),
+                                                    )
+                                                })
+                                                .collect();
+
+                                            misc
+                                        };
 
                                         Ok(vec![m
                                             .msg
