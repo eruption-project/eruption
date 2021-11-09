@@ -76,16 +76,27 @@ pub enum MainError {
     SyslogLevelError {},
 }
 
+lazy_static! {
+    static ref ABOUT: String = tr!("about");
+    static ref VERBOSE_ABOUT: String = tr!("verbose-about");
+    static ref HOTPLUG_ABOUT: String = tr!("hotplug-about");
+    static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+}
+
 /// Supported command line arguments
 #[derive(Debug, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    about = "A utility used to notify Eruption about device hotplug events",
+    about = ABOUT.as_str()
 )]
 pub struct Options {
-    /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(
+        about(VERBOSE_ABOUT.as_str()),
+        short,
+        long,
+        parse(from_occurrences)
+    )]
     verbose: u8,
 
     #[clap(subcommand)]
@@ -95,10 +106,10 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    /// Trigger a hotplug event
+    #[clap(about(HOTPLUG_ABOUT.as_str()))]
     Hotplug,
 
-    /// Generate shell completions
+    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -108,22 +119,8 @@ pub enum Subcommands {
 /// Print license information
 #[allow(dead_code)]
 fn print_header() {
-    println!(
-        r#"
- Eruption is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- Eruption is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-"#
-    );
+    println!("{}", tr!("license-header"));
+    println!();
 }
 
 pub async fn async_main() -> std::result::Result<(), eyre::Error> {
@@ -147,6 +144,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
         } else {
             pretty_env_logger::init();
+        }
+
+        // print a license header, except if we are generating shell completions
+        if !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
+            && !env::args().any(|a| a.eq_ignore_ascii_case("hotplug"))
+        {
+            print_header();
         }
     } else {
         // initialize logging to syslog
