@@ -2,9 +2,6 @@
 
 - [Table of Contents](#table-of-contents)
 	- [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
-		- [For PipeWire enabled Distros](#for-pipewire-enabled-distros)
-			- [Configure routing](#configure-routing)
-		- [For PulseAudio enabled Distros](#for-pulseaudio-enabled-distros)
 
 ## Support for Audio Playback and Capture
 

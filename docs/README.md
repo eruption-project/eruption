@@ -49,7 +49,7 @@ HowTo setup Eruption
 
 HowTo setup PipeWire or PulseAudio for Eruption
 
-[SETUP_AUDIO.md](SETUP_AUDIO.md)
+[AUDIO.md](AUDIO.md)
 
 ### Privacy Considerations
 

@@ -145,10 +145,12 @@ GNOME Shell extension, for easy switching of profiles on the fly.
 
 ### Support for Audio Playback and Capture
 
-If you want Eruption to be able to play back sound effects, or use one of the
-audio visualizer Lua scripts, then you have to perform a few additional steps.
+Eruption currently has built-in support for the following audio APIs:
 
-Please refer to [SETUP_AUDIO.md](docs/SETUP_AUDIO.md) for detailed instructions.
+* PipeWire (via the PulseAudio interface of PipeWire)
+* PulseAudio
+
+Audio support is provided by `eruption-audio-proxy.service`.
 
 ## The `eruption-process-monitor` Daemon
 

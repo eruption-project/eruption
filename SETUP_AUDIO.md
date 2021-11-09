@@ -1,1 +1,1 @@
-This document has moved to [docs/SETUP_AUDIO.md](docs/SETUP_AUDIO.md)
+This document has moved to [docs/AUDIO.md](docs/AUDIO.md)
