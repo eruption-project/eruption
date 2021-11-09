@@ -697,8 +697,9 @@ mod tests {
             super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
                 .unwrap();
 
-        assert!(
-            profile_path == path.join("../support/tests/assets/default.profile"),
+        assert_eq!(
+            profile_path,
+            path.join("../support/tests/assets/default.profile"),
             "Invalid path {:#?}",
             profile_path
         );

@@ -1310,8 +1310,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             if scr.name == script {
                                 // set param value
                                 dbus_client::set_parameter(
-                                    &profile.profile_file.to_string_lossy(),
-                                    &scr.script_file.to_string_lossy(),
+                                    &*profile.profile_file.to_string_lossy(),
+                                    &*scr.script_file.to_string_lossy(),
                                     &parameter,
                                     &value,
                                 )?;
@@ -1354,8 +1354,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                                 // set param value
                                                 dbus_client::set_parameter(
-                                                    &profile.profile_file.to_string_lossy(),
-                                                    &script.script_file.to_string_lossy(),
+                                                    &*profile.profile_file.to_string_lossy(),
+                                                    &*script.script_file.to_string_lossy(),
                                                     &parameter,
                                                     value,
                                                 )?;
@@ -1454,7 +1454,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             "Switching to profile: {}",
                             profile_name.display().to_string().bold()
                         );
-                        switch_profile(&profile_name.to_string_lossy())
+                        switch_profile(&*profile_name.to_string_lossy())
                             .await
                             .wrap_err("Could not connect to the Eruption daemon")
                             .suggestion("Please verify that the Eruption daemon is running")?;

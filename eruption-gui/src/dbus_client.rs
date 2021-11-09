@@ -245,7 +245,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
         Duration::from_secs(35),
     );
 
-    if let Err(e) = proxy.write_file(&path.as_ref().to_string_lossy(), &data) {
+    if let Err(e) = proxy.write_file(&*path.as_ref().to_string_lossy(), &data) {
         log::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {

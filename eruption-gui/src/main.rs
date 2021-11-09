@@ -120,10 +120,10 @@ pub mod events {
         /// stores how many consecutive events shall be ignored
         static ref IGNORE_NEXT_DBUS_EVENTS: AtomicUsize = AtomicUsize::new(0);
 
-        /// signals wether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
+        /// signals whether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
         pub static ref UPDATE_MAIN_WINDOW: AtomicBool = AtomicBool::new(false);
 
-        /// signals wether we have lost the connection to the Eruption daemon
+        /// signals whether we have lost the connection to the Eruption daemon
         pub static ref LOST_CONNECTION: AtomicBool = AtomicBool::new(false);
     }
 
@@ -213,7 +213,7 @@ pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
         //     file_name.to_string_lossy()
         // );
 
-        util::switch_profile(&file_name.to_string_lossy())?;
+        util::switch_profile(&*file_name.to_string_lossy())?;
     }
 
     Ok(())
@@ -233,7 +233,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
         util::switch_slot(slot_index)?;
         STATE.write().active_slot = Some(slot_index);
 
-        util::switch_profile(&file_name.to_string_lossy())?;
+        util::switch_profile(&*file_name.to_string_lossy())?;
     }
 
     Ok(())
