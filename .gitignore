@@ -1,5 +1,6 @@
 .cargo/
 /.vscode
+/.idea
 /target
 **/*.rs.bk
 **/*~
