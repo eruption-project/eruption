@@ -72,7 +72,7 @@ pub const BUFFER_CAPACITY: usize = 512;
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 32;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 128;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
