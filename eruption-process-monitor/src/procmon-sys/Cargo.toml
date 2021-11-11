@@ -12,4 +12,4 @@ license = "GPLv3+"
 libc = "0.2.107"
 
 [build-dependencies]
-cc = "1.0.71"
+cc = "1.0.72"
