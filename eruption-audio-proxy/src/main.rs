@@ -15,6 +15,16 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::io::Cursor;
+use std::mem::MaybeUninit;
+use std::os::unix::io::AsRawFd;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+use std::time::{Duration, Instant};
+use std::{env, thread};
+
 use clap::{IntoApp, Parser};
 use clap_generate::Shell;
 use crossbeam::channel::{unbounded, Receiver};
@@ -23,25 +33,19 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use log::{debug, error, info, trace};
+use log::{debug, error, info, trace, warn};
+use nix::poll::{poll, PollFd, PollFlags};
 use parking_lot::Mutex;
 use prost::Message;
 use rust_embed::RustEmbed;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
-};
-use std::time::Duration;
-use std::{env, thread};
+use socket2::{Domain, SockAddr, Socket, Type};
 use syslog::Facility;
-use tokio::io::{self, AsyncWriteExt, Interest};
-use tokio::net::UnixStream;
+use tokio::io::{self};
+
+use protocol::Command;
+use protocol::CommandType;
 
 use crate::audio::AudioBackend;
-
-use protocol::command::CommandType;
-use protocol::response::ResponseType;
-use protocol::Command;
 
 mod audio;
 mod constants;
@@ -54,6 +58,11 @@ struct Localizations;
 lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+
+    pub static ref RECORDING: AtomicBool = AtomicBool::new(false);
+
+    /// A queue of packets that will be send to the Eruption daemon
+    pub static ref PACKET_TX_QUEUE: Arc<Mutex<Vec<Vec<u8>>>> = Arc::new(Mutex::new(Vec::new()));
 }
 
 #[allow(unused)]
@@ -83,6 +92,9 @@ lazy_static! {
     // /// Global command line options
     // pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
 
+    pub static ref AUDIO_BACKEND: Arc<Mutex<audio::PulseAudioBackend>> =  Arc::new(Mutex::new(audio::PulseAudioBackend::new()));
+
+
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
@@ -96,23 +108,33 @@ pub enum MainError {
     UnknownError { description: String },
 }
 
+lazy_static! {
+    static ref ABOUT: String = tr!("about");
+    static ref VERBOSE_ABOUT: String = tr!("verbose-about");
+    static ref CONFIG_ABOUT: String = tr!("config-about");
+    static ref DAEMON_ABOUT: String = tr!("daemon-about");
+    static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+}
+
 /// Supported command line arguments
 #[derive(Debug, clap::Parser)]
 #[clap(
-    version = env!("CARGO_PKG_VERSION"),
+    version = env ! ("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    about = "Audio proxy daemon for the Eruption Linux user-mode driver",
+    about = ABOUT.as_str(),
 )]
 pub struct Options {
-    /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(
+        about(VERBOSE_ABOUT.as_str()),
+        short,
+        long,
+        parse(from_occurrences)
+    )]
     verbose: u8,
 
-    /// Sets the configuration file to use
-    #[clap(short, long)]
+    #[clap(about(CONFIG_ABOUT.as_str()), short, long)]
     config: Option<String>,
 
-    // subcommands
     #[clap(subcommand)]
     command: Subcommands,
 }
@@ -120,10 +142,10 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    /// Run in background
+    #[clap(about(DAEMON_ABOUT.as_str()))]
     Daemon,
 
-    /// Generate shell completions
+    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -133,27 +155,14 @@ pub enum Subcommands {
 /// Print license information
 #[allow(dead_code)]
 fn print_header() {
-    println!(
-        r#"
- Eruption is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- Eruption is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-"#
-    );
+    println!("{}", tr!("license-header"));
+    println!();
 }
 
 pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
-    debug!("Opening audio device(s)");
-    let mut audio_backend = audio::PulseAudioBackend::new()?;
+    unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
+        &*(buf as *const [MaybeUninit<u8>] as *const [u8])
+    }
 
     debug!("Entering the main loop now...");
 
@@ -162,174 +171,242 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
             break 'MAIN_LOOP Ok(());
         }
 
-        debug!("Connecting to the Eruption audio socket...");
+        debug!("Connecting to the Eruption audio proxy socket...");
 
-        match UnixStream::connect(constants::AUDIO_SOCKET_NAME).await {
-            Ok(mut socket) => {
-                'IO_LOOP: loop {
+        let socket = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
+        let address = SockAddr::unix(&constants::AUDIO_SOCKET_NAME)?;
+
+        match socket.connect(&address) {
+            Ok(()) => {
+                info!("Connected to Eruption daemon");
+
+                // socket.set_nodelay(true)?;
+                socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+                socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+
+                let mut last_status_update = Instant::now();
+
+                'EVENT_LOOP: loop {
                     if QUIT.load(Ordering::SeqCst) {
                         break 'MAIN_LOOP Ok(());
                     }
 
-                    // record samples to the global buffer
-                    if let Err(e) = audio_backend.record_samples() {
-                        error!("An error occurred while recording audio: {}", e);
+                    // record samples to the global sample buffer
+                    if RECORDING.load(Ordering::SeqCst) {
+                        let mut audio_backend = AUDIO_BACKEND.lock();
+                        if let Err(e) = audio_backend.record_samples() {
+                            error!("An error occurred while recording audio: {}", e);
 
-                        // sleep a while then re-open audio devices
-                        thread::sleep(Duration::from_millis(constants::SLEEP_TIME_MILLIS));
+                            // sleep a while then re-open audio devices
+                            thread::sleep(Duration::from_millis(constants::SLEEP_TIME_TIMEOUT));
 
-                        debug!("Re-opening audio device(s)");
-                        audio_backend = audio::PulseAudioBackend::new()?;
-
-                        // break 'IO_LOOP;
+                            debug!("Re-opening audio device");
+                            audio_backend.open()?;
+                        }
                     }
 
-                    let ready = socket
-                        .ready(Interest::READABLE | Interest::WRITABLE)
-                        .await?;
+                    // wait for socket to be ready
+                    let mut poll_fds = [PollFd::new(
+                        socket.as_raw_fd(),
+                        PollFlags::POLLIN
+                            | PollFlags::POLLOUT
+                            | PollFlags::POLLHUP
+                            | PollFlags::POLLERR,
+                    )];
 
-                    if ready.is_readable() {
-                        let mut buf = bytes::BytesMut::new();
-                        buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+                    let result = poll(&mut poll_fds, constants::SLEEP_TIME_TIMEOUT as i32)?;
 
-                        match socket.try_read_buf(&mut buf) {
-                            Ok(0) => {
-                                if QUIT.load(Ordering::SeqCst) {
-                                    break 'MAIN_LOOP Ok(());
+                    if poll_fds[0].revents().unwrap().contains(PollFlags::POLLHUP)
+                        | poll_fds[0].revents().unwrap().contains(PollFlags::POLLERR)
+                    {
+                        warn!("Socket error: Eruption disconnected");
+
+                        break 'EVENT_LOOP;
+                    }
+
+                    if result > 0 {
+                        if poll_fds[0].revents().unwrap().contains(PollFlags::POLLIN) {
+                            trace!("Receiving a protocol packet...");
+
+                            // read data
+                            let mut tmp = [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
+                            match socket.recv(&mut tmp) {
+                                Ok(0) => {
+                                    info!("Eruption daemon disconnected");
+
+                                    break 'EVENT_LOOP;
                                 }
 
-                                trace!("Short read from audio socket");
+                                Ok(_n) => {
+                                    let buf = unsafe { assume_init(&tmp[..tmp.len()]) };
+                                    match Command::decode_length_delimited(&mut Cursor::new(buf)) {
+                                        Ok(message) => {
+                                            let mut response = protocol::Response::default();
 
-                                break 'IO_LOOP;
-                            }
+                                            match message.command_type() {
+                                                CommandType::StartRecording => {
+                                                    info!("Opening audio device");
 
-                            Ok(n) => {
-                                if QUIT.load(Ordering::SeqCst) {
-                                    break 'MAIN_LOOP Ok(());
-                                }
+                                                    let mut audio_backend = AUDIO_BACKEND.lock();
+                                                    audio_backend.open()?;
 
-                                trace!("Read {} bytes from audio socket", n);
-                            }
+                                                    RECORDING.store(true, Ordering::SeqCst);
 
-                            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                                if QUIT.load(Ordering::SeqCst) {
-                                    break 'MAIN_LOOP Ok(());
-                                }
+                                                    response.set_response_type(CommandType::Noop);
+                                                }
 
-                                // not an error, so continue
-                                continue 'IO_LOOP;
-                            }
+                                                CommandType::StopRecording => {
+                                                    info!("Closing audio device");
 
-                            Err(e) => {
-                                error!("An error occurred during socket read: {}", e);
+                                                    let mut audio_backend = AUDIO_BACKEND.lock();
+                                                    audio_backend.close()?;
 
-                                break 'IO_LOOP;
-                            }
-                        }
+                                                    RECORDING.store(false, Ordering::SeqCst);
 
-                        let message = Command::decode_length_delimited(&mut buf)?;
-                        let mut buf = match message.command_type() {
-                            CommandType::AudioMutedState => {
-                                let mut response = protocol::Response::default();
+                                                    response.set_response_type(CommandType::Noop);
+                                                }
 
-                                response.set_response_type(ResponseType::AudioMutedState);
-                                response.payload = Some(protocol::response::Payload::Muted(
-                                    audio_backend.is_audio_muted()?,
-                                ));
+                                                CommandType::AudioVolume => {
+                                                    trace!("Request for audio volume");
 
-                                message.encode_length_delimited_to_vec()
-                            }
+                                                    let audio_backend = AUDIO_BACKEND.lock();
+                                                    let volume =
+                                                        audio_backend.get_audio_volume()?;
 
-                            CommandType::AudioVolume => {
-                                let mut response = protocol::Response::default();
+                                                    response.set_response_type(
+                                                        CommandType::AudioVolume,
+                                                    );
+                                                    response.payload = Some(
+                                                        protocol::response::Payload::Volume(volume),
+                                                    );
+                                                }
 
-                                response.set_response_type(ResponseType::AudioVolume);
-                                response.payload = Some(protocol::response::Payload::Volume(
-                                    audio_backend.get_audio_volume()?,
-                                ));
+                                                CommandType::AudioMutedState => {
+                                                    trace!("Request for audio muted state");
 
-                                message.encode_length_delimited_to_vec()
-                            }
-                        };
+                                                    let audio_backend = AUDIO_BACKEND.lock();
+                                                    let muted = audio_backend.is_audio_muted()?;
 
-                        buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+                                                    response.set_response_type(
+                                                        CommandType::AudioMutedState,
+                                                    );
+                                                    response.payload = Some(
+                                                        protocol::response::Payload::Muted(muted),
+                                                    );
+                                                }
 
-                        if ready.is_writable() {
-                            match socket.try_write(&buf) {
-                                Ok(n) => {
-                                    if QUIT.load(Ordering::SeqCst) {
-                                        break 'MAIN_LOOP Ok(());
+                                                _ => {
+                                                    error!("Protocol error: Unknown command");
+                                                }
+                                            }
+
+                                            let mut buf = Vec::new();
+                                            response.encode_length_delimited(&mut buf)?;
+
+                                            // enqueue the response packet
+                                            PACKET_TX_QUEUE.lock().push(buf);
+                                        }
+
+                                        Err(e) => {
+                                            error!("Protocol error: {}", e);
+                                        }
                                     }
-
-                                    trace!("Wrote {} bytes to audio socket", n);
-
-                                    // if n < constants::BUFFER_CAPACITY {
-                                    //     error!("Short write");
-                                    // }
-                                }
-
-                                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                                    if QUIT.load(Ordering::SeqCst) {
-                                        break 'MAIN_LOOP Ok(());
-                                    }
-
-                                    // not an error, so continue
-                                    continue 'IO_LOOP;
                                 }
 
                                 Err(e) => {
-                                    error!("An error occurred during socket write: {}", e);
-
-                                    break 'IO_LOOP;
+                                    error!(
+                                        "Error occurred during receive from audio proxy socket: {}",
+                                        e
+                                    );
                                 }
                             }
                         }
 
-                        let _ = socket.flush();
+                        if poll_fds[0].revents().unwrap().contains(PollFlags::POLLOUT) {
+                            if RECORDING.load(Ordering::SeqCst) {
+                                let samples = audio::AUDIO_BUFFER.read().clone();
 
-                        // continue by reading another command, if available
-                        // continue;
-                    } else if ready.is_writable() {
-                        let samples = audio::AUDIO_BUFFER.read().clone();
+                                let mut response = protocol::Response::default();
 
-                        let mut response = protocol::Response::default();
+                                response.set_response_type(CommandType::AudioData);
+                                response.payload = Some(protocol::response::Payload::Data(samples));
 
-                        response.set_response_type(ResponseType::AudioData);
-                        response.payload = Some(protocol::response::Payload::Data(samples));
+                                let mut buf = Vec::new();
+                                response.encode_length_delimited(&mut buf)?;
 
-                        let mut buf = response.encode_length_delimited_to_vec();
-                        buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
-
-                        match socket.try_write(&buf) {
-                            Ok(n) => {
-                                if QUIT.load(Ordering::SeqCst) {
-                                    break 'MAIN_LOOP Ok(());
-                                }
-
-                                trace!("Wrote {} bytes to audio socket", n);
-
-                                // if n < constants::BUFFER_CAPACITY {
-                                //     error!("Short write");
-                                // }
+                                PACKET_TX_QUEUE.lock().push(buf);
                             }
 
-                            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                                if QUIT.load(Ordering::SeqCst) {
-                                    break 'MAIN_LOOP Ok(());
-                                }
+                            // send unsolicited audio state updates every n milliseconds
+                            if last_status_update.elapsed() >= Duration::from_millis(100) {
+                                let audio_backend = AUDIO_BACKEND.lock();
 
-                                // not an error, so continue
-                                continue 'IO_LOOP;
+                                // audio volume
+                                let volume = audio_backend.get_audio_volume()?;
+
+                                let mut response = protocol::Response::default();
+                                response.set_response_type(CommandType::AudioVolume);
+                                response.payload =
+                                    Some(protocol::response::Payload::Volume(volume));
+
+                                let mut buf = Vec::new();
+                                response.encode_length_delimited(&mut buf)?;
+
+                                PACKET_TX_QUEUE.lock().push(buf);
+
+                                // audio muted state
+                                let muted = audio_backend.is_audio_muted()?;
+
+                                let mut response = protocol::Response::default();
+
+                                response.set_response_type(CommandType::AudioMutedState);
+                                response.payload = Some(protocol::response::Payload::Muted(muted));
+
+                                let mut buf = Vec::new();
+                                response.encode_length_delimited(&mut buf)?;
+
+                                PACKET_TX_QUEUE.lock().push(buf);
+
+                                last_status_update = Instant::now();
                             }
 
-                            Err(e) => {
-                                error!("An error occurred during socket write: {}", e);
+                            // transmit the queue of packets to the Eruption daemon
+                            while let Some(buf) = PACKET_TX_QUEUE.lock().pop() {
+                                trace!("Sending a protocol packet...");
 
-                                break 'IO_LOOP;
+                                // send data
+                                match socket.send(&buf) {
+                                    Ok(n) => {
+                                        if QUIT.load(Ordering::SeqCst) {
+                                            break 'MAIN_LOOP Ok(());
+                                        }
+
+                                        trace!("Wrote {} bytes to audio proxy socket", n);
+                                    }
+
+                                    Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                                        if QUIT.load(Ordering::SeqCst) {
+                                            break 'MAIN_LOOP Ok(());
+                                        }
+
+                                        // not an error, so continue
+                                        continue 'EVENT_LOOP;
+                                    }
+
+                                    Err(e) => {
+                                        error!("An error occurred during socket write: {}", e);
+
+                                        break 'EVENT_LOOP;
+                                    }
+                                }
                             }
                         }
+                    }
 
-                        let _ = socket.flush();
+                    if RECORDING.load(Ordering::SeqCst) {
+                        thread::sleep(Duration::from_millis(1));
+                    } else {
+                        thread::sleep(Duration::from_millis(25));
                     }
                 }
             }
@@ -338,18 +415,20 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                 if e.kind() == io::ErrorKind::NotFound
                     || e.kind() == io::ErrorKind::ConnectionRefused =>
             {
-                debug!("Audio socket is currently not available, sleeping now...");
+                debug!("Audio proxy socket is currently not available, sleeping now...");
 
                 if QUIT.load(Ordering::SeqCst) {
                     break 'MAIN_LOOP Ok(());
                 }
 
-                thread::sleep(Duration::from_millis(constants::SLEEP_TIME_MILLIS));
+                thread::sleep(Duration::from_millis(
+                    constants::SLEEP_TIME_WHILE_DISCONNECTED,
+                ));
             }
 
             Err(e) => {
                 error!(
-                    "An unknown error occurred while connecting to audio socket: {}",
+                    "An unknown error occurred while connecting to audio proxy socket: {}",
                     e
                 );
 
@@ -357,7 +436,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     break 'MAIN_LOOP Ok(());
                 }
 
-                thread::sleep(Duration::from_millis(constants::SLEEP_TIME_MILLIS));
+                thread::sleep(Duration::from_millis(constants::SLEEP_TIME_TIMEOUT));
             }
         }
     }

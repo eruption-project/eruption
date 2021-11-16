@@ -1,24 +1,21 @@
 syntax = "proto3";
 package audio_proxy;
 
-message Command {
-  enum CommandType {
-    AUDIO_MUTED_STATE = 0;
-    AUDIO_VOLUME = 1;
-  }
+enum CommandType {
+  NOOP = 0;
+  START_RECORDING = 1;
+  STOP_RECORDING = 2;
+  AUDIO_MUTED_STATE = 3;
+  AUDIO_VOLUME = 4;
+  AUDIO_DATA = 5;
+}
 
+message Command {
   CommandType command_type = 1;
 }
 
 message Response {
-  enum ResponseType {
-    AUDIO_MUTED_STATE = 0;
-    AUDIO_VOLUME = 1;
-
-    AUDIO_DATA = 2;
-  }
-
-  ResponseType response_type = 1;
+  CommandType response_type = 1;
 
   oneof Payload {
     bool muted = 2;

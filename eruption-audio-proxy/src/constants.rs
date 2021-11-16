@@ -18,11 +18,17 @@
 /// Eruption daemon audio data UNIX domain socket
 pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 
-/// The capacity of the buffer used for sending audio samples
-pub const BUFFER_CAPACITY: usize = 512;
+/// The capacity of the sample buffer
+pub const AUDIO_BUFFER_SIZE: usize = 4096 - 16;
+
+/// The capacity of the buffer used for sending audio samples/commands over a socket
+pub const NET_BUFFER_CAPACITY: usize = 4096;
 
 // /// Timeout of D-Bus operations
 // pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
 
-/// Backoff sleep timer, in case an error occurred
-pub const SLEEP_TIME_MILLIS: u64 = 2000;
+/// Main loop sleep time/timeout for poll(2)
+pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
+
+/// Main loop sleep time, when we are disconnected from Eruption
+pub const SLEEP_TIME_WHILE_DISCONNECTED: u64 = 1000;

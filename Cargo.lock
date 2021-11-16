@@ -740,6 +740,7 @@ dependencies = [
  "serde_json",
  "serialport",
  "simdnoise",
+ "socket2",
  "sysinfo",
  "syslog",
  "thiserror",
@@ -752,7 +753,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "bincode",
  "bytes",
@@ -772,6 +773,7 @@ dependencies = [
  "libpulse-binding",
  "libpulse-simple-binding",
  "log",
+ "nix 0.23.0",
  "parking_lot",
  "pretty_assertions",
  "pretty_env_logger",
@@ -781,6 +783,7 @@ dependencies = [
  "rust-embed",
  "rust-pulsectl",
  "serde 1.0.130",
+ "socket2",
  "syslog",
  "thiserror",
  "tokio",
@@ -1628,8 +1631,8 @@ dependencies = [
 
 [[package]]
 name = "hidapi"
-version = "1.2.6"
-source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#7faa574497f0bd18eaabe609aa5c0b865171b6cd"
+version = "1.2.7"
+source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#3ec013a5a9d5def0d924455fee4e483026f8c1fe"
 dependencies = [
  "cc",
  "libc",
@@ -3343,9 +3346,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.69"
+version = "1.0.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e466864e431129c7e0d3476b92f20458e5879919a0596c6472738d9fa2d342f8"
+checksum = "e277c495ac6cd1a01a58d0a0c574568b4d1ddf14f59965c6a58b8d96400b54f3"
 dependencies = [
  "itoa",
  "ryu",
@@ -3470,6 +3473,16 @@ name = "smallvec"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
+
+[[package]]
+name = "socket2"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dc90fe6c7be1a323296982db1836d1ea9e47b6839496dde9a541bc496df3516"
+dependencies = [
+ "libc",
+ "winapi 0.3.9",
+]
 
 [[package]]
 name = "static_assertions"
@@ -3698,9 +3711,9 @@ checksum = "29738eedb4388d9ea620eeab9384884fc3f06f586a2eddb56bedc5885126c7c1"
 
 [[package]]
 name = "tokio"
-version = "1.13.0"
+version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "588b2d10a336da58d877567cd8fb8a14b463e2104910f8132cd054b4b96e29ee"
+checksum = "52963f91310c08d91cb7bff5786dfc8b79642ab839e188187e92105dbfb9d2c8"
 dependencies = [
  "autocfg",
  "bytes",

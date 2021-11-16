@@ -66,7 +66,7 @@ pub const CANVAS_WIDTH: usize = 22 + 8;
 pub const CANVAS_HEIGHT: usize = 6;
 
 /// The capacity of the buffer used for receiving audio samples
-pub const BUFFER_CAPACITY: usize = 512;
+pub const NET_BUFFER_CAPACITY: usize = 4096;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
@@ -98,8 +98,11 @@ pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
 /// It is recommended to use a prime number value here
 pub const POLL_TIMER_INTERVAL_MILLIS: u64 = 499;
 
-// Max. supported number of keys on a keyboard
+/// Audio proxy loop sleep time/timeout for poll(2)
+pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
+
+/// Max. supported number of keys on a keyboard
 pub const MAX_KEYS: usize = 144;
 
-// Max. supported number of mouse buttons
+/// Max. supported number of mouse buttons
 pub const MAX_MOUSE_BUTTONS: usize = 32;

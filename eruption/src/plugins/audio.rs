@@ -42,10 +42,10 @@ pub enum AudioPluginError {
 }
 
 /// The allocated size of the audio grabber buffer
-pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 512;
+pub const AUDIO_GRABBER_BUFFER_SIZE: usize = 4096 - 16;
 
 /// Number of FFT frequency buckets of the spectrum analyzer
-pub const FFT_SIZE: usize = 512;
+pub const FFT_SIZE: usize = 1024;
 
 /// Running average of the loudness of the signal in the audio grabber buffer
 static CURRENT_RMS: AtomicIsize = AtomicIsize::new(0);
@@ -70,11 +70,17 @@ lazy_static! {
     pub static ref ENABLE_SFX: AtomicBool = AtomicBool::new(false);
 }
 
+// Record audio?
+pub static AUDIO_GRABBER_RECORD_AUDIO: AtomicBool = AtomicBool::new(false);
+static AUDIO_GRABBER_RECORDING: AtomicBool = AtomicBool::new(false);
+
 // Enable computation of RMS and Spectrum Analyzer data?
 static AUDIO_GRABBER_PERFORM_RMS_COMPUTATION: AtomicBool = AtomicBool::new(false);
 static AUDIO_GRABBER_PERFORM_FFT_COMPUTATION: AtomicBool = AtomicBool::new(false);
 
 pub fn reset_audio_backend() {
+    AUDIO_GRABBER_RECORD_AUDIO.store(false, Ordering::SeqCst);
+
     AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(false, Ordering::SeqCst);
     AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(false, Ordering::SeqCst);
 
@@ -123,24 +129,27 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_loudness() -> isize {
+        AUDIO_GRABBER_RECORD_AUDIO.store(true, Ordering::SeqCst);
         AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(true, Ordering::Relaxed);
 
         CURRENT_RMS.load(Ordering::SeqCst)
     }
 
     pub fn get_audio_spectrum() -> Vec<f32> {
+        AUDIO_GRABBER_RECORD_AUDIO.store(true, Ordering::SeqCst);
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
         AUDIO_SPECTRUM.read().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
+        AUDIO_GRABBER_RECORD_AUDIO.store(true, Ordering::SeqCst);
         AUDIO_GRABBER_BUFFER.read().to_vec()
     }
 
     pub fn get_audio_volume() -> isize {
         if let Some(backend) = &*AUDIO_BACKEND.lock() {
-            backend.get_master_volume().unwrap_or(0) * 100 / std::u16::MAX as isize
+            backend.get_master_volume().unwrap_or(0) * 100 / u16::MAX as isize
         } else {
             0
         }
@@ -240,7 +249,7 @@ impl Plugin for AudioPlugin {
 
 mod backends {
     use crate::constants;
-    use crate::plugins::audio::protocol;
+    use crate::plugins::audio::{protocol, AUDIO_GRABBER_RECORDING, AUDIO_GRABBER_RECORD_AUDIO};
 
     use super::AudioPluginError;
     use super::Result;
@@ -256,25 +265,27 @@ mod backends {
     use parking_lot::Mutex;
     use prost::Message;
     use std::fs;
-    use std::io::Read;
-    use std::io::Write;
-    use std::os::unix::net::UnixListener;
+    use std::io::Cursor;
     use std::os::unix::prelude::PermissionsExt;
-    use std::path::Path;
     use std::sync::atomic::AtomicBool;
     use std::sync::atomic::AtomicI32;
     use std::sync::Arc;
     use std::{sync::atomic::Ordering, thread};
 
+    use nix::poll::{poll, PollFd, PollFlags};
     use rustfft::num_complex::Complex;
     use rustfft::Fft;
     use rustfft::{algorithm::Radix4, FftDirection};
+    use socket2::{Domain, SockAddr, Socket, Type};
     use std::f32::consts::PI;
+    use std::mem::MaybeUninit;
+    use std::os::unix::io::AsRawFd;
+    use std::time::Duration;
 
     use protocol::response::Payload;
 
     lazy_static! {
-        pub static ref LISTENER: Arc<Mutex<Option<UnixListener>>> = Arc::new(Mutex::new(None));
+        pub static ref LISTENER: Arc<Mutex<Option<Socket>>> = Arc::new(Mutex::new(None));
 
         /// Audio device master volume
         static ref MASTER_VOLUME: AtomicI32 = AtomicI32::new(0);
@@ -287,7 +298,9 @@ mod backends {
     /// grabber functionality
     pub trait AudioBackend {
         fn play_sfx(&self, data: &'static [u8]) -> Result<()>;
+
         fn start_audio_grabber(&self) -> Result<()>;
+        fn stop_audio_grabber(&self) -> Result<()>;
 
         fn get_master_volume(&self) -> Result<isize>;
 
@@ -303,6 +316,10 @@ mod backends {
         }
 
         fn start_audio_grabber(&self) -> Result<()> {
+            Ok(())
+        }
+
+        fn stop_audio_grabber(&self) -> Result<()> {
             Ok(())
         }
 
@@ -324,10 +341,10 @@ mod backends {
             let _result = unlink(constants::AUDIO_SOCKET_NAME)
                 .map_err(|e| debug!("Unlink of audio socket failed: {}", e));
 
-            // bind and store audio socket
-            let listener = UnixListener::bind(Path::new(constants::AUDIO_SOCKET_NAME))?;
-
-            listener.set_nonblocking(false)?;
+            // create, bind and store audio socket
+            let listener = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
+            let address = SockAddr::unix(&constants::AUDIO_SOCKET_NAME)?;
+            listener.bind(&address)?;
 
             // widen permissions of audio socket, so that all users may connect to it
             let mut perms = fs::metadata(constants::AUDIO_SOCKET_NAME)?.permissions();
@@ -340,7 +357,9 @@ mod backends {
         }
 
         fn run_io_loop() -> Result<()> {
-            let mut cntr = 0;
+            unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
+                &*(buf as *const [MaybeUninit<u8>] as *const [u8])
+            }
 
             'IO_LOOP: loop {
                 if crate::QUIT.load(Ordering::SeqCst) {
@@ -348,209 +367,282 @@ mod backends {
                 }
 
                 if let Some(listener) = LISTENER.lock().as_ref() {
-                    listener.set_nonblocking(false)?;
+                    listener.listen(1)?;
 
                     match listener.accept() {
-                        Ok((mut stream, _addr)) => {
+                        Ok((socket, _sockaddr)) => {
                             info!("Audio proxy connected");
 
-                            stream.set_nonblocking(false)?;
+                            // socket.set_nodelay(true)?;
+                            socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+                            socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
-                            'RECEIVE_LOOP: loop {
-                                let mut tmp = bytes::BytesMut::new();
-                                tmp.resize(constants::BUFFER_CAPACITY + 64, 0x00);
-
-                                match stream.read(&mut tmp) {
-                                    Ok(0) => {
-                                        info!("Audio proxy disconnected");
-
-                                        break 'RECEIVE_LOOP;
-                                    }
-
-                                    Ok(n) => {
-                                        debug!("Read {} bytes from audio socket", n);
-
-                                        let result =
-                                            protocol::Response::decode_length_delimited(&mut tmp);
-                                        match result {
-                                            Ok(response) => match response.response_type() {
-                                                protocol::response::ResponseType::AudioData => {
-                                                    trace!("Received audio data");
-
-                                                    if let Some(Payload::Data(tmp)) = response.payload {
-                                                        let mut buffer =
-                                                            AUDIO_GRABBER_BUFFER.write();
-                                                        buffer.clear();
-
-                                                        buffer
-                                                            .reserve(AUDIO_GRABBER_BUFFER_SIZE / 2);
-                                                        buffer.extend(tmp.chunks_exact(2).map(
-                                                            |c| i16::from_ne_bytes([c[0], c[1]]),
-                                                        ));
-
-                                                        if buffer.len() < FFT_SIZE {
-                                                            buffer.resize(FFT_SIZE, 0x0000);
-                                                        }
-
-                                                        // compute root mean square (RMS) of the recorded samples
-                                                        if super::AUDIO_GRABBER_PERFORM_RMS_COMPUTATION
-                                                            .load(Ordering::Relaxed)
-                                                        {
-                                                            let sqr_sum = buffer
-                                                                .iter()
-                                                                .map(|s| *s as f32)
-                                                                .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
-
-                                                            let sqr_sum =
-                                                                (sqr_sum / buffer.len() as f32).sqrt();
-
-                                                            CURRENT_RMS.store(
-                                                                sqr_sum.round() as isize,
-                                                                Ordering::SeqCst,
-                                                            );
-                                                        }
-
-                                                        // compute spectrum analyzer
-                                                        if super::AUDIO_GRABBER_PERFORM_FFT_COMPUTATION
-                                                            .load(Ordering::Relaxed)
-                                                        {
-                                                            let mut data: Vec<Complex<f32>> = buffer
-                                                                .iter()
-                                                                .take(FFT_SIZE)
-                                                                .map(|e| Complex::from(*e as f32))
-                                                                .collect();
-
-                                                            let fft = Radix4::new(
-                                                                FFT_SIZE,
-                                                                FftDirection::Forward,
-                                                            );
-                                                            fft.process(&mut data);
-
-                                                            // apply post processing steps: normalization, window function and smoothing
-                                                            let one_over_fft_len_sqrt =
-                                                                1.0 / ((FFT_SIZE / 2) as f32).sqrt();
-
-                                                            let mut phase = 0.0;
-                                                            const DELTA: f32 =
-                                                                (2.0 * PI) / (FFT_SIZE / 2) as f32;
-
-                                                            let result: Vec<f32> = data[(FFT_SIZE / 2)..]
-                                                                .iter()
-                                                                // normalize
-                                                                .map(|e| {
-                                                                    ((e.re as f32) * one_over_fft_len_sqrt)
-                                                                        .abs()
-                                                                })
-                                                                // apply Hamming window
-                                                                .map(|e| {
-                                                                    phase += DELTA;
-                                                                    e * (0.54 - 0.46 * phase.cos())
-                                                                })
-                                                                .collect();
-
-                                                            for (i, e) in AUDIO_SPECTRUM
-                                                                .write()
-                                                                .iter_mut()
-                                                                .enumerate()
-                                                            {
-                                                                *e = (*e + result[i]) / 2.0;
-                                                            }
-                                                        }
-                                                    } else {
-                                                        error!("Invalid payload received");
-                                                    };
-                                                }
-
-                                                protocol::response::ResponseType::AudioVolume => {
-                                                    if let Some(Payload::Volume(val)) = response.payload {
-                                                        MASTER_VOLUME.store(val, Ordering::SeqCst);
-                                                    } else {
-                                                        error!("Invalid payload received");
-                                                    };
-                                                }
-
-                                                protocol::response::ResponseType::AudioMutedState => {
-                                                    if let Some(Payload::Muted(val)) = response.payload {
-                                                        AUDIO_MUTED.store(val, Ordering::SeqCst);
-                                                    } else {
-                                                        error!("Invalid payload received");
-                                                    };
-                                                }
-
-                                                // _ => {
-                                                //     error!("Protocol error");
-                                                // }
-                                            },
-
-                                            Err(e) => {
-                                                error!("Protocol error: {}", e);
-
-                                                // break 'RECEIVE_LOOP;
-                                            }
-                                        }
-                                    }
-
-                                    Err(_e) => {
-                                        return Err(AudioPluginError::GrabberError {
-                                            description: "Lost connection to proxy".to_owned(),
-                                        }
-                                        .into());
-                                    }
-                                }
-
+                            // connection successful, enter event loop now
+                            'EVENT_LOOP: loop {
                                 if crate::QUIT.load(Ordering::SeqCst) {
-                                    break 'RECEIVE_LOOP;
+                                    break 'EVENT_LOOP;
                                 }
 
-                                // TODO: implement some kind of message queuing mechanism for
-                                // ProxyCommand::GetMasterVolume and ProxyCommand::IsAudioMuted
-                                if cntr % 150 == 0 {
-                                    let mut command = protocol::Command::default();
-                                    command.set_command_type(
-                                        protocol::command::CommandType::AudioVolume,
-                                    );
+                                // wait for socket to be ready
+                                let mut poll_fds = [PollFd::new(
+                                    socket.as_raw_fd(),
+                                    PollFlags::POLLIN
+                                        | PollFlags::POLLOUT
+                                        | PollFlags::POLLHUP
+                                        | PollFlags::POLLERR,
+                                )];
 
-                                    let mut buf = command.encode_length_delimited_to_vec();
-                                    buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+                                let result =
+                                    poll(&mut poll_fds, constants::SLEEP_TIME_TIMEOUT as i32)?;
 
-                                    match stream.write_all(&buf) {
-                                        Ok(_n) => {}
+                                if poll_fds[0].revents().unwrap().contains(PollFlags::POLLHUP)
+                                    | poll_fds[0].revents().unwrap().contains(PollFlags::POLLERR)
+                                {
+                                    warn!("Socket error: Audio proxy disconnected");
 
-                                        Err(_e) => {
-                                            return Err(AudioPluginError::GrabberError {
-                                                description: "Lost connection to proxy".to_owned(),
+                                    break 'EVENT_LOOP;
+                                }
+
+                                if result > 0 {
+                                    if poll_fds[0].revents().unwrap().contains(PollFlags::POLLIN) {
+                                        // read data
+                                        let mut tmp =
+                                            [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
+                                        match socket.recv(&mut tmp) {
+                                            Ok(0) => {
+                                                info!("Audio proxy disconnected");
+
+                                                break 'EVENT_LOOP;
                                             }
-                                            .into());
+
+                                            Ok(n) => {
+                                                trace!("Read {} bytes from audio socket", n);
+
+                                                let tmp = unsafe { assume_init(&tmp[..tmp.len()]) };
+
+                                                if tmp.len() != constants::NET_BUFFER_CAPACITY {
+                                                    error!("Buffer length differs from BUFFER_CAPACITY! Length: {}", tmp.len());
+                                                }
+
+                                                let result =
+                                                    protocol::Response::decode_length_delimited(
+                                                        &mut Cursor::new(&tmp),
+                                                    );
+                                                match result {
+                                                    Ok(response) => match response.response_type() {
+                                                        protocol::CommandType::AudioData => {
+                                                            trace!("Received audio data");
+
+                                                            if let Some(Payload::Data(tmp)) =
+                                                                response.payload
+                                                            {
+                                                                let mut buffer =
+                                                                    AUDIO_GRABBER_BUFFER.write();
+                                                                buffer.clear();
+
+                                                                buffer.reserve(
+                                                                    AUDIO_GRABBER_BUFFER_SIZE / 2,
+                                                                );
+                                                                buffer.extend(
+                                                                    tmp.chunks_exact(2).map(|c| {
+                                                                        i16::from_ne_bytes([
+                                                                            c[0], c[1],
+                                                                        ])
+                                                                    }),
+                                                                );
+
+                                                                if buffer.len() < FFT_SIZE {
+                                                                    buffer.resize(FFT_SIZE, 0x0000);
+                                                                }
+
+                                                                // compute root mean square (RMS) of the recorded samples
+                                                                if super::AUDIO_GRABBER_PERFORM_RMS_COMPUTATION
+                                                                    .load(Ordering::Relaxed)
+                                                                {
+                                                                    let sqr_sum = buffer
+                                                                        .iter()
+                                                                        .map(|s| *s as f32)
+                                                                        .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
+
+                                                                    let sqr_sum =
+                                                                        (sqr_sum / buffer.len() as f32).sqrt();
+
+                                                                    CURRENT_RMS.store(
+                                                                        sqr_sum.round() as isize,
+                                                                        Ordering::SeqCst,
+                                                                    );
+                                                                }
+
+                                                                // compute spectrum analyzer
+                                                                if super::AUDIO_GRABBER_PERFORM_FFT_COMPUTATION
+                                                                    .load(Ordering::Relaxed)
+                                                                {
+                                                                    let mut data: Vec<Complex<f32>> = buffer
+                                                                        .iter()
+                                                                        .take(FFT_SIZE)
+                                                                        .map(|e| Complex::from(*e as f32))
+                                                                        .collect();
+
+                                                                    let fft = Radix4::new(
+                                                                        FFT_SIZE,
+                                                                        FftDirection::Forward,
+                                                                    );
+                                                                    fft.process(&mut data);
+
+                                                                    // apply post processing steps: normalization, window function and smoothing
+                                                                    let one_over_fft_len_sqrt =
+                                                                        1.0 / ((FFT_SIZE / 2) as f32).sqrt();
+
+                                                                    let mut phase = 0.0;
+                                                                    const DELTA: f32 =
+                                                                        (2.0 * PI) / (FFT_SIZE / 2) as f32;
+
+                                                                    let result: Vec<f32> = data[(FFT_SIZE / 2)..]
+                                                                        .iter()
+                                                                        // normalize
+                                                                        .map(|e| {
+                                                                            ((e.re as f32) * one_over_fft_len_sqrt)
+                                                                                .abs()
+                                                                        })
+                                                                        // apply Hamming window
+                                                                        .map(|e| {
+                                                                            phase += DELTA;
+                                                                            e * (0.54 - 0.46 * phase.cos())
+                                                                        })
+                                                                        .collect();
+
+                                                                    for (i, e) in AUDIO_SPECTRUM
+                                                                        .write()
+                                                                        .iter_mut()
+                                                                        .enumerate()
+                                                                    {
+                                                                        *e = (*e + result[i]) / 2.0;
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                error!("Invalid payload received");
+                                                            };
+                                                        }
+
+                                                        protocol::CommandType::AudioVolume => {
+                                                            if let Some(Payload::Volume(val)) =
+                                                                response.payload
+                                                            {
+                                                                trace!("Master volume: {}", val);
+
+                                                                MASTER_VOLUME
+                                                                    .store(val, Ordering::SeqCst);
+                                                            } else {
+                                                                error!("Invalid payload received");
+                                                            };
+                                                        }
+
+                                                        protocol::CommandType::AudioMutedState => {
+                                                            if let Some(Payload::Muted(val)) =
+                                                                response.payload
+                                                            {
+                                                                trace!("Audio muted: {}", val);
+
+                                                                AUDIO_MUTED
+                                                                    .store(val, Ordering::SeqCst);
+                                                            } else {
+                                                                error!("Invalid payload received");
+                                                            };
+                                                        }
+
+                                                        protocol::CommandType::Noop => {
+                                                            /* Do nothing */
+
+                                                            trace!("NOOP");
+                                                        }
+
+                                                        _ => { /* Do nothing */ }
+                                                    },
+
+                                                    Err(e) => {
+                                                        error!("Protocol error: {}", e);
+
+                                                        // break 'RECEIVE_LOOP;
+                                                    }
+                                                }
+                                            }
+
+                                            Err(_e) => {
+                                                return Err(AudioPluginError::GrabberError {
+                                                    description: "Lost connection to proxy"
+                                                        .to_owned(),
+                                                }
+                                                .into());
+                                            }
                                         }
                                     }
 
-                                    stream.flush()?;
-                                }
+                                    if poll_fds[0].revents().unwrap().contains(PollFlags::POLLOUT) {
+                                        if AUDIO_GRABBER_RECORD_AUDIO.load(Ordering::SeqCst)
+                                            && !AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst)
+                                        {
+                                            AUDIO_GRABBER_RECORDING.store(true, Ordering::SeqCst);
 
-                                if cntr % 200 == 0 {
-                                    let mut command = protocol::Command::default();
-                                    command.set_command_type(
-                                        protocol::command::CommandType::AudioMutedState,
-                                    );
+                                            info!("Starting processing of audio samples");
 
-                                    let mut buf = command.encode_length_delimited_to_vec();
-                                    buf.resize(constants::BUFFER_CAPACITY + 64, 0x00);
+                                            let mut command = protocol::Command::default();
+                                            command.set_command_type(
+                                                protocol::CommandType::StartRecording,
+                                            );
 
-                                    match stream.write_all(&buf) {
-                                        Ok(_n) => {}
+                                            let mut buf = Vec::new();
+                                            command.encode_length_delimited(&mut buf)?;
 
-                                        Err(_e) => {
-                                            return Err(AudioPluginError::GrabberError {
-                                                description: "Lost connection to proxy".to_owned(),
+                                            // send data
+                                            match socket.send(&buf) {
+                                                Ok(_n) => {}
+
+                                                Err(_e) => {
+                                                    return Err(AudioPluginError::GrabberError {
+                                                        description: "Lost connection to proxy"
+                                                            .to_owned(),
+                                                    }
+                                                    .into());
+                                                }
                                             }
-                                            .into());
+                                        }
+
+                                        if !AUDIO_GRABBER_RECORD_AUDIO.load(Ordering::SeqCst)
+                                            && AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst)
+                                        {
+                                            AUDIO_GRABBER_RECORDING.store(false, Ordering::SeqCst);
+
+                                            info!("Stopping processing of audio samples");
+
+                                            let mut command = protocol::Command::default();
+                                            command.set_command_type(
+                                                protocol::CommandType::StopRecording,
+                                            );
+
+                                            let mut buf = Vec::new();
+                                            command.encode_length_delimited(&mut buf)?;
+
+                                            // send data
+                                            match socket.send(&buf) {
+                                                Ok(_n) => {}
+
+                                                Err(_e) => {
+                                                    return Err(AudioPluginError::GrabberError {
+                                                        description: "Lost connection to proxy"
+                                                            .to_owned(),
+                                                    }
+                                                    .into());
+                                                }
+                                            }
                                         }
                                     }
-
-                                    stream.flush()?;
                                 }
 
-                                cntr += 1;
+                                if AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst) {
+                                    thread::sleep(Duration::from_millis(1));
+                                } else {
+                                    thread::sleep(Duration::from_millis(25));
+                                }
                             }
                         }
 
@@ -576,9 +668,13 @@ mod backends {
         fn start_audio_grabber(&self) -> Result<()> {
             let builder = thread::Builder::new().name("audio/proxy".into());
             builder
-                .spawn(move || {
+                .spawn(move || loop {
+                    if crate::QUIT.load(Ordering::SeqCst) {
+                        break;
+                    }
+
                     Self::run_io_loop().unwrap_or_else(|e| {
-                        error!("Error occurred in audio proxy thread: {}", e);
+                        error!("Audio proxy error: {}", e);
                     });
                 })
                 .unwrap_or_else(|e| {
@@ -586,6 +682,10 @@ mod backends {
                     panic!()
                 });
 
+            Ok(())
+        }
+
+        fn stop_audio_grabber(&self) -> Result<()> {
             Ok(())
         }
 
