@@ -281,36 +281,50 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
+                                        if crate::QUIT.load(Ordering::SeqCst) {
+                                            return Err(MethodErr::failed(
+                                                "Eruption is shutting down",
+                                            ));
+                                        }
+
                                         let mut keyboards: Vec<(u16, u16)> = Vec::new();
                                         let mut mice: Vec<(u16, u16)> = Vec::new();
                                         let mut misc: Vec<(u16, u16)> = Vec::new();
 
-                                        keyboards.extend(
-                                            crate::KEYBOARD_DEVICES.lock().iter().map(|device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            }),
-                                        );
+                                        {
+                                            keyboards.extend(
+                                                crate::KEYBOARD_DEVICES.lock().iter().map(
+                                                    |device| {
+                                                        (
+                                                            device.read().get_usb_vid(),
+                                                            device.read().get_usb_pid(),
+                                                        )
+                                                    },
+                                                ),
+                                            );
+                                        }
 
-                                        mice.extend(crate::MOUSE_DEVICES.lock().iter().map(
-                                            |device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            },
-                                        ));
+                                        {
+                                            mice.extend(crate::MOUSE_DEVICES.lock().iter().map(
+                                                |device| {
+                                                    (
+                                                        device.read().get_usb_vid(),
+                                                        device.read().get_usb_pid(),
+                                                    )
+                                                },
+                                            ));
+                                        }
 
-                                        misc.extend(crate::MISC_DEVICES.lock().iter().map(
-                                            |device| {
-                                                (
-                                                    device.read().get_usb_vid(),
-                                                    device.read().get_usb_pid(),
-                                                )
-                                            },
-                                        ));
+                                        {
+                                            misc.extend(crate::MISC_DEVICES.lock().iter().map(
+                                                |device| {
+                                                    (
+                                                        device.read().get_usb_vid(),
+                                                        device.read().get_usb_pid(),
+                                                    )
+                                                },
+                                            ));
+                                        }
 
                                         Ok(vec![m
                                             .msg
@@ -422,6 +436,12 @@ impl DbusApi {
                                     )
                                     .unwrap_or(false)
                                     {
+                                        if crate::QUIT.load(Ordering::SeqCst) {
+                                            return Err(MethodErr::failed(
+                                                "Eruption is shutting down",
+                                            ));
+                                        }
+
                                         let keyboards = {
                                             let keyboards = crate::KEYBOARD_DEVICES.lock();
 
