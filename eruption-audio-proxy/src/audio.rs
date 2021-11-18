@@ -32,8 +32,8 @@ lazy_static! {
 
 #[derive(Debug, thiserror::Error)]
 pub enum AudioError {
-    #[error("Pulse Audio error: {description}")]
-    PulseError { description: String },
+    #[error("Connection error: {description}")]
+    ConnectionError { description: String },
 
     // #[error("File I/O error: {description}")]
     // IoError { description: String },
@@ -42,6 +42,9 @@ pub enum AudioError {
     // PlaybackError { description: String },
     #[error("Audio grabber error: {description}")]
     GrabberError { description: String },
+
+    #[error("Audio player error: {description}")]
+    PlayerError { description: String },
 }
 
 mod backends {
@@ -51,10 +54,15 @@ mod backends {
     use libpulse_simple_binding::Simple;
     use parking_lot::Mutex;
     use pulsectl::controllers::{DeviceControl, SinkController};
+    use std::cell::RefCell;
 
     use crate::audio::AudioError;
 
     use super::Result;
+
+    thread_local! {
+        pub static SINK_CONTROLLER: RefCell<SinkController> = RefCell::new(SinkController::create());
+    }
 
     pub trait AudioBackend {
         fn device_name(&self) -> Result<String>;
@@ -71,14 +79,16 @@ mod backends {
     }
 
     pub struct PulseAudioBackend {
-        pub handle: Arc<Mutex<Option<Simple>>>,
+        pub recorder_handle: Arc<Mutex<Option<Simple>>>,
+        pub player_handle: Arc<Mutex<Option<Simple>>>,
         pub is_open: bool,
     }
 
     impl PulseAudioBackend {
         pub fn new() -> Self {
             Self {
-                handle: Arc::new(Mutex::new(None)),
+                recorder_handle: Arc::new(Mutex::new(None)),
+                player_handle: Arc::new(Mutex::new(None)),
                 is_open: false,
             }
         }
@@ -86,7 +96,7 @@ mod backends {
 
     impl AudioBackend for PulseAudioBackend {
         fn device_name(&self) -> Result<String> {
-            Ok("PulseAudio Device".to_string())
+            Ok("PulseAudio/PipeWire Device".to_string())
         }
 
         fn open(&mut self) -> Result<()> {
@@ -102,17 +112,34 @@ mod backends {
                 None,
                 "Eruption",
                 Direction::Record,
-                None,
+                Some("analog-stereo.monitor"),
                 "Audio Grabber",
                 &spec,
                 None,
                 None,
             )
-            .map_err(|e| AudioError::PulseError {
-                description: format!("Could not open PulseAudio: {}", e),
+            .map_err(|e| AudioError::ConnectionError {
+                description: format!("Could not open PulseAudio/PipeWire recording device: {}", e),
             })?;
 
-            *self.handle.lock() = Some(result);
+            *self.recorder_handle.lock() = Some(result);
+
+            let result = Simple::new(
+                None,
+                "Eruption",
+                Direction::Playback,
+                None,
+                "Audio Playback",
+                &spec,
+                None,
+                None,
+            )
+            .map_err(|e| AudioError::ConnectionError {
+                description: format!("Could not open PulseAudio/PipeWire playback device: {}", e),
+            })?;
+
+            *self.player_handle.lock() = Some(result);
+
             self.is_open = true;
 
             Ok(())
@@ -120,7 +147,8 @@ mod backends {
 
         fn close(&mut self) -> Result<()> {
             if self.is_open {
-                *self.handle.lock() = None;
+                *self.recorder_handle.lock() = None;
+                *self.player_handle.lock() = None;
                 self.is_open = false;
             }
 
@@ -128,45 +156,61 @@ mod backends {
         }
 
         fn get_audio_volume(&self) -> Result<i32> {
-            let mut handler = SinkController::create();
+            SINK_CONTROLLER.with(|handler| {
+                let mut handler = handler.borrow_mut();
 
-            let result = handler
-                .get_default_device()
-                .map_err(|_e| AudioError::PulseError {
-                    description: "Could not query PulseAudio".to_owned(),
-                })?
-                .volume
-                .avg()
-                .0;
+                let result = handler
+                    .get_default_device()
+                    .map_err(|_e| AudioError::ConnectionError {
+                        description: "Could not query PulseAudio/PipeWire".to_owned(),
+                    })?
+                    .volume
+                    .avg()
+                    .0;
 
-            Ok(result as i32)
+                Ok(result as i32)
+            })
         }
 
         fn set_audio_volume(&mut self, _vol: i32) -> Result<()> {
-            Ok(())
+            todo!()
         }
 
         fn is_audio_muted(&self) -> Result<bool> {
-            let mut handler = SinkController::create();
+            SINK_CONTROLLER.with(|handler| {
+                let mut handler = handler.borrow_mut();
 
-            let result = handler
-                .get_default_device()
-                .map_err(|_e| AudioError::PulseError {
-                    description: "Could not query PulseAudio".to_owned(),
-                })?
-                .mute;
+                let result = handler
+                    .get_default_device()
+                    .map_err(|_e| AudioError::ConnectionError {
+                        description: "Could not query PulseAudio/PipeWire".to_owned(),
+                    })?
+                    .mute;
 
-            Ok(result)
+                Ok(result)
+            })
         }
 
-        fn play_samples(&self, _data: &'static [u8]) -> Result<()> {
-            todo!()
+        fn play_samples(&self, data: &'static [u8]) -> Result<()> {
+            let player = self.player_handle.lock();
+            if let Some(player) = player.as_ref() {
+                player.write(&data).map_err(|e| AudioError::PlayerError {
+                    description: format!("Error during playback: {}", e),
+                })?;
+
+                Ok(())
+            } else {
+                Err(AudioError::PlayerError {
+                    description: "Audio subsystem is not available".to_string(),
+                }
+                .into())
+            }
         }
 
         fn record_samples(&self) -> Result<()> {
             let mut buf = super::AUDIO_BUFFER.write();
 
-            let grabber = self.handle.lock();
+            let grabber = self.recorder_handle.lock();
             if let Some(grabber) = grabber.as_ref() {
                 grabber
                     .read(&mut buf)

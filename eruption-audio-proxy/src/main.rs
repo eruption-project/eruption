@@ -18,6 +18,7 @@
 use std::io::Cursor;
 use std::mem::MaybeUninit;
 use std::os::unix::io::AsRawFd;
+use std::sync::atomic::AtomicI32;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -59,7 +60,14 @@ lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
 
+    /// Are we recording audio samples?
     pub static ref RECORDING: AtomicBool = AtomicBool::new(false);
+
+    /// Audio device master volume
+    pub static ref MASTER_VOLUME: AtomicI32 = AtomicI32::new(0);
+
+    /// Audio device master volume
+    pub static ref AUDIO_MUTED: AtomicBool = AtomicBool::new(false);
 
     /// A queue of packets that will be send to the Eruption daemon
     pub static ref PACKET_TX_QUEUE: Arc<Mutex<Vec<Vec<u8>>>> = Arc::new(Mutex::new(Vec::new()));
@@ -180,11 +188,12 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
             Ok(()) => {
                 info!("Connected to Eruption daemon");
 
-                // socket.set_nodelay(true)?;
+                // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
                 socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
                 socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
                 let mut last_status_update = Instant::now();
+                let mut last_device_update = Instant::now();
 
                 'EVENT_LOOP: loop {
                     if QUIT.load(Ordering::SeqCst) {
@@ -338,11 +347,9 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                             }
 
                             // send unsolicited audio state updates every n milliseconds
-                            if last_status_update.elapsed() >= Duration::from_millis(100) {
-                                let audio_backend = AUDIO_BACKEND.lock();
-
+                            if last_status_update.elapsed() >= Duration::from_millis(50) {
                                 // audio volume
-                                let volume = audio_backend.get_audio_volume()?;
+                                let volume = MASTER_VOLUME.load(Ordering::SeqCst);
 
                                 let mut response = protocol::Response::default();
                                 response.set_response_type(CommandType::AudioVolume);
@@ -355,7 +362,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 PACKET_TX_QUEUE.lock().push(buf);
 
                                 // audio muted state
-                                let muted = audio_backend.is_audio_muted()?;
+                                let muted = AUDIO_MUTED.load(Ordering::SeqCst);
 
                                 let mut response = protocol::Response::default();
 
@@ -401,6 +408,19 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 }
                             }
                         }
+                    }
+
+                    // poll PipeWire/PulseAudio every n milliseconds for device status updates
+                    if last_device_update.elapsed() >= Duration::from_millis(100) {
+                        let audio_backend = AUDIO_BACKEND.lock();
+
+                        let volume = audio_backend.get_audio_volume()?;
+                        let muted = audio_backend.is_audio_muted()?;
+
+                        MASTER_VOLUME.store(volume, Ordering::SeqCst);
+                        AUDIO_MUTED.store(muted, Ordering::SeqCst);
+
+                        last_device_update = Instant::now();
                     }
 
                     if RECORDING.load(Ordering::SeqCst) {

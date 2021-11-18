@@ -753,7 +753,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "bincode",
  "bytes",
@@ -876,7 +876,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "cfg-if 1.0.0",
  "clap",

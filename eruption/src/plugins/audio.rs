@@ -373,9 +373,34 @@ mod backends {
                         Ok((socket, _sockaddr)) => {
                             info!("Audio proxy connected");
 
-                            // socket.set_nodelay(true)?;
+                            // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
                             socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
                             socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+
+                            // if the newly connected proxy has been restarted while we were already
+                            // processing audio samples, we have to notify it now to resume
+                            // recording of audio samples
+                            if AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst) {
+                                info!("Resuming processing of audio samples");
+
+                                let mut command = protocol::Command::default();
+                                command.set_command_type(protocol::CommandType::StartRecording);
+
+                                let mut buf = Vec::new();
+                                command.encode_length_delimited(&mut buf)?;
+
+                                // send data
+                                match socket.send(&buf) {
+                                    Ok(_n) => {}
+
+                                    Err(_e) => {
+                                        return Err(AudioPluginError::GrabberError {
+                                            description: "Lost connection to proxy".to_owned(),
+                                        }
+                                        .into());
+                                    }
+                                }
+                            }
 
                             // connection successful, enter event loop now
                             'EVENT_LOOP: loop {
@@ -562,7 +587,7 @@ mod backends {
                                                     Err(e) => {
                                                         error!("Protocol error: {}", e);
 
-                                                        // break 'RECEIVE_LOOP;
+                                                        // break 'EVENT_LOOP;
                                                     }
                                                 }
                                             }

@@ -16,7 +16,7 @@
 
 [package]
 name = "eruption-audio-proxy"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "Audio proxy daemon for the Eruption Linux user-mode driver"

@@ -1,12 +1,13 @@
 ## eruption-audio-proxy - Audio proxy daemon for the Eruption Linux user-mode driver
 
-A daemon that delivers an audio stream to the `Eruption` daemon where it can be processed, e.g. for consumption by 
-audio visualizer plugins. Additionally the `eruption-audio-proxy` can play back sound effects, triggered by `Eruption`.
+A daemon that reports the state of audio devices like the master volume and the muted state, and delivers an
+audio stream to the `Eruption` daemon where it can be processed. E.g.: for consumption by audio visualizer plugins.
+Additionally the `eruption-audio-proxy` can play back sound effects, triggered by `Eruption`.
 
 ### eruption-audio-proxy
 
 ```shell
-eruption-audio-proxy 0.0.4
+eruption-audio-proxy 0.0.5
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
