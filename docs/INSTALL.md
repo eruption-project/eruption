@@ -16,9 +16,12 @@
 
 # How to build and install Eruption from source
 
-To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.56.0`). You probably may want to use [https://rustup.rs/](https://rustup.rs/).
+To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build
+dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.56.0`).
+You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
-The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most Linux based systems.
+The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most
+Linux based systems.
 
 ### Install build dependencies
 
@@ -171,10 +174,13 @@ Notify systemd of the changes with:
  sudo systemctl daemon-reload
 ```
 
-To activate Eruption now, you may either hotplug a supported device, or manually start
-the daemon with the command:
+To activate Eruption now, you may either hotplug a supported device, or manually start the daemons with the following
+commands:
 
 ```sh
  $ systemctl --user enable --now eruption-audio-proxy.service
  $ sudo systemctl enable --now eruption.service
 ```
+
+Finally, if you want to use one of the audio visualizer profiles, then please select an audio device monitor e.g.
+using `pavucontrol`.

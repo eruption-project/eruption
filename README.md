@@ -17,6 +17,7 @@
     - [From Source](#from-source)
   - [After Setup](#after-setup)
     - [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
+  - [The `eruption-audio-proxy` Daemon](#the-eruption-audio-proxy-daemon)
   - [The `eruption-process-monitor` Daemon](#the-eruption-process-monitor-daemon)
     - [Examples](#examples)
     - [Removing a rule](#removing-a-rule)
@@ -152,9 +153,28 @@ Eruption currently has built-in support for the following audio APIs:
 
 Audio support is provided by `eruption-audio-proxy.service`.
 
+## The `eruption-audio-proxy` Daemon
+
+As of Eruption `0.1.23` it is no longer necessary to grant the `root` user full access to the `PipeWire` or `PulseAudio`
+session instance. Therefore, it is no longer required to edit configuration files. Just enable the `eruption-audio-proxy`
+session daemon, and assign a device monitor to listen on e.g. by using `pavucontrol`.
+
+```shell
+$ systemctl --user enable --now eruption-audio-proxy.service
+```
+> NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd!
+
+Use `pavucontrol` to assign a monitor of an audio device 
+
+![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
+> NOTE: You have to select a profile that makes use auf the audio grabber first, or otherwise the
+> `eruption-audio-proxy` won't open an audio device and therefore will not be listed!  
+
 ## The `eruption-process-monitor` Daemon
 
-As of Eruption `0.1.19`, automatic switching of profiles and slots is now supported via the `eruption-process-monitor` daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine. It currently supports executing actions on process execution, as well as on X11 "window focus changed" events.
+As of Eruption `0.1.19`, automatic switching of profiles and slots is now supported via the `eruption-process-monitor`
+daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine.
+It currently supports executing actions on process execution, as well as on Wayland or X11 "window focus changed" events.
 
 ### Examples
 
