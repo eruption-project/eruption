@@ -193,11 +193,27 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                 socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
                 let mut last_status_update = Instant::now();
-                let mut last_device_update = Instant::now();
+                let mut last_device_update =
+                    Instant::now() - Duration::from_millis(constants::DEVICE_POLL_INTERVAL + 1);
 
                 'EVENT_LOOP: loop {
                     if QUIT.load(Ordering::SeqCst) {
                         break 'MAIN_LOOP Ok(());
+                    }
+
+                    // poll PipeWire/PulseAudio every n milliseconds for device status updates
+                    if last_device_update.elapsed()
+                        >= Duration::from_millis(constants::DEVICE_POLL_INTERVAL)
+                    {
+                        let audio_backend = AUDIO_BACKEND.lock();
+
+                        let volume = audio_backend.get_audio_volume()?;
+                        let muted = audio_backend.is_audio_muted()?;
+
+                        MASTER_VOLUME.store(volume, Ordering::SeqCst);
+                        AUDIO_MUTED.store(muted, Ordering::SeqCst);
+
+                        last_device_update = Instant::now();
                     }
 
                     // record samples to the global sample buffer
@@ -408,19 +424,6 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 }
                             }
                         }
-                    }
-
-                    // poll PipeWire/PulseAudio every n milliseconds for device status updates
-                    if last_device_update.elapsed() >= Duration::from_millis(100) {
-                        let audio_backend = AUDIO_BACKEND.lock();
-
-                        let volume = audio_backend.get_audio_volume()?;
-                        let muted = audio_backend.is_audio_muted()?;
-
-                        MASTER_VOLUME.store(volume, Ordering::SeqCst);
-                        AUDIO_MUTED.store(muted, Ordering::SeqCst);
-
-                        last_device_update = Instant::now();
                     }
 
                     if RECORDING.load(Ordering::SeqCst) {

@@ -27,6 +27,10 @@ pub const NET_BUFFER_CAPACITY: usize = 4096;
 // /// Timeout of D-Bus operations
 // pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
 
+/// Time in milliseconds that has to pass before we query PipeWire/PulseAudio for
+/// the master volume and audio muted state of the device again
+pub const DEVICE_POLL_INTERVAL: u64 = 100;
+
 /// Main loop sleep time/timeout for poll(2)
 pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
 
