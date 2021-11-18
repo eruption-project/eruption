@@ -199,7 +199,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         log::info!("Waiting for the devices to settle...");
 
                         // udevadm settle may/will deadlock since eruption adds (virtual) devices to udev
-                        let status = Command::new("/usr/bin/udevadm")
+                        let status = Command::new("/bin/udevadm")
                             .arg("settle")
                             .stdout(Stdio::null())
                             .status();
@@ -209,10 +209,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             log::error!("udevadm settle has failed: {}", e);
 
-                            thread::sleep(Duration::from_millis(2500));
+                            thread::sleep(Duration::from_millis(3500));
                         } else {
                             // sleep a while just to be safe
-                            thread::sleep(Duration::from_millis(500));
+                            thread::sleep(Duration::from_millis(1500));
 
                             log::info!("Done, all devices have settled");
                         }
@@ -221,7 +221,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                         // TODO: Implement a D-Bus based notification interface,
                         //       simply restart the eruption.service for now
-                        let status = Command::new("/usr/bin/systemctl")
+                        let status = Command::new("/bin/systemctl")
                             .arg("start")
                             .arg("eruption.service")
                             .stdout(Stdio::null())
@@ -234,7 +234,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             let mut retry_counter = 0;
 
                             'WAIT_START_LOOP: loop {
-                                let result = Command::new("/usr/bin/systemctl")
+                                let result = Command::new("/bin/systemctl")
                                     .arg("is-active")
                                     .arg("eruption.service")
                                     .stdout(Stdio::null())
@@ -249,7 +249,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                             break 'WAIT_START_LOOP;
                                         } else {
-                                            thread::sleep(Duration::from_millis(1000));
+                                            thread::sleep(Duration::from_millis(2000));
 
                                             if retry_counter >= 5 {
                                                 log::error!(
@@ -283,7 +283,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                         log::debug!("Checking whether the system is fully booted...");
 
-                        let result = Command::new("/usr/bin/systemctl")
+                        let result = Command::new("/bin/systemctl")
                             .arg("is-system-running")
                             .stdout(Stdio::null())
                             .status();
@@ -294,7 +294,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 log::info!("Waiting for the devices to settle...");
 
                                 // udevadm settle may/will deadlock since eruption adds (virtual) devices to udev
-                                let status = Command::new("/usr/bin/udevadm")
+                                let status = Command::new("/bin/udevadm")
                                     .arg("settle")
                                     .stdout(Stdio::null())
                                     .status();
@@ -304,10 +304,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                     log::error!("udevadm settle has failed: {}", e);
 
-                                    thread::sleep(Duration::from_millis(2500));
+                                    thread::sleep(Duration::from_millis(3500));
                                 } else {
                                     // sleep a while just to be safe
-                                    thread::sleep(Duration::from_millis(500));
+                                    thread::sleep(Duration::from_millis(1500));
 
                                     log::info!("Done, all devices have settled");
                                 }
@@ -316,7 +316,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                 // TODO: Implement a D-Bus based notification interface,
                                 //       simply restart the eruption.service for now
-                                let status = Command::new("/usr/bin/systemctl")
+                                let status = Command::new("/bin/systemctl")
                                     .arg("restart")
                                     .arg("eruption.service")
                                     .stdout(Stdio::null())
@@ -329,7 +329,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     let mut retry_counter = 0;
 
                                     'WAIT_RESTART_LOOP: loop {
-                                        let result = Command::new("/usr/bin/systemctl")
+                                        let result = Command::new("/bin/systemctl")
                                             .arg("is-active")
                                             .arg("eruption.service")
                                             .stdout(Stdio::null())
@@ -344,7 +344,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                                     break 'WAIT_RESTART_LOOP;
                                                 } else {
-                                                    thread::sleep(Duration::from_millis(1000));
+                                                    thread::sleep(Duration::from_millis(2000));
 
                                                     if retry_counter >= 5 {
                                                         log::error!(

@@ -16,7 +16,7 @@
 
 [package]
 name = "eruption-hotplug-helper"
-version = "0.0.8"
+version = "0.0.9"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "A utility used to notify Eruption about device hotplug events"
