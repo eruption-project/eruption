@@ -9,6 +9,7 @@ RuntimeDirectory=eruption
 PIDFile=/run/eruption/eruption.pid
 ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
 ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
+TimeoutStopSec=10
 Type=exec
 Restart=no
 CPUSchedulingPolicy=rr
