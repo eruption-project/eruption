@@ -5,8 +5,8 @@
 - [Table of Contents](#table-of-contents)
   - [Eruption](#eruption)
   - [Supported Devices](#supported-devices)
-    - [Keyboard devices](#keyboard-devices)
-    - [Mouse devices](#mouse-devices)
+    - [Keyboard Devices](#keyboard-devices)
+    - [Mouse Devices](#mouse-devices)
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
@@ -32,7 +32,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ## Supported Devices
 
-### Keyboard devices
+### Keyboard Devices
 
 - ROCCAT Vulcan 100/12x series keyboard (fully supported)
 - ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
@@ -40,7 +40,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
-### Mouse devices
+### Mouse Devices
 
 - ROCCAT Kone Pure Ultra
 - ROCCAT Burst Pro (as of version `0.1.20`, experimental)
@@ -64,20 +64,20 @@ some, possibly serious bugs.
 If you ever need to forcefully disable the Eruption daemon you may do so by adding
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 
-```sh
+```shell
  systemd.mask=eruption.service
 ```
 
 Or with systemctl to mask the service:
 
-```sh
- $ sudo systemctl mask eruption.service
+```shell
+$ sudo systemctl mask eruption.service
 ```
 
 You can always re-enable the Eruption service with the command:
 
-```sh
- $ sudo systemctl unmask eruption.service
+```shell
+$ sudo systemctl unmask eruption.service
 ```
 
 ## Design Overview
@@ -96,40 +96,40 @@ prior to sending the resulting final color map to the connected LED devices.
 
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
-```sh
- $ paru -Syu aur/eruption
+```shell
+$ paru -Syu aur/eruption
 ```
 
 ### Fedora based
 
-```sh
- $ sudo dnf copr enable x3n0m0rph59/eruption
- $ sudo dnf install eruption
+```shell
+$ sudo dnf copr enable x3n0m0rph59/eruption
+$ sudo dnf install eruption
 ```
 
 ### Ubuntu or Pop!_OS
 
-```sh
- $ sudo add-apt-repository ppa:x3n0m0rph59/eruption
- $ sudo apt update
- $ sudo apt install eruption
+```shell
+$ sudo add-apt-repository ppa:x3n0m0rph59/eruption
+$ sudo apt update
+$ sudo apt install eruption
 ```
 
 To activate Eruption now, you may either hotplug a supported device, or manually start
 the daemon with the command:
 
-```sh
+```shell
  $ sudo systemctl enable --now eruption.service
 ```
 
 ### From Source
 
-```sh
- $ git clone https://github.com/X3n0m0rph59/eruption.git
- $ cd eruption
- $ cargo build --all --release
+```shell
+$ git clone https://github.com/X3n0m0rph59/eruption.git
+$ cd eruption
+$ cargo build --all --release
 
- $ sudo target/release/eruption -c support/config/eruption.conf
+$ sudo target/release/eruption -c support/config/eruption.conf
 ```
 
 Please refer to [INSTALL.md](docs/INSTALL.md) for further information.
@@ -157,18 +157,23 @@ Audio support is provided by `eruption-audio-proxy.service`.
 
 As of Eruption `0.1.23` it is no longer necessary to grant the `root` user full access to the `PipeWire` or `PulseAudio`
 session instance. Therefore, it is no longer required to edit configuration files. Just enable the `eruption-audio-proxy`
-session daemon, and assign a device monitor to listen on e.g. by using `pavucontrol`.
+session daemon, and assign a device monitor to listen on, e.g. by using `pavucontrol`.
 
 ```shell
 $ systemctl --user enable --now eruption-audio-proxy.service
 ```
-> NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd!
+> NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
-Use `pavucontrol` to assign a monitor of an audio device 
+Next, switch to a profile that utilizes the audio API of Eruption:
+```shell
+$ eruptionctl switch profile spectrum-analyzer-swirl.profile
+```
+
+Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber. 
 
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
-> NOTE: You have to select a profile that makes use auf the audio grabber first, or otherwise the
-> `eruption-audio-proxy` won't open an audio device and therefore will not be listed!  
+> NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
+> `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed
 
 ## The `eruption-process-monitor` Daemon
 
@@ -212,8 +217,8 @@ $ eruption-process-monitor rules list
 
 To remove a rule, please run the following command:
 
-```
- $ eruption-process-monitor rules remove 1
+```shell
+$ eruption-process-monitor rules remove 1
 ```
 
 This will remove the rule for the window named `Skype` from the ruleset.
