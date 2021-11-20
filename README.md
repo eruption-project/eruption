@@ -10,6 +10,8 @@
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
+    - [Introduction](#introduction)
+    - [Software Architecture](#software-architecture)
   - [Installation](#installation)
     - [Arch Linux and derivatives like ArcoLinux or Manjaro](#arch-linux-and-derivatives-like-arcolinux-or-manjaro)
     - [Fedora based](#fedora-based)
@@ -58,8 +60,7 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
-This project is still in an early stage of development, and thus may contain
-some, possibly serious bugs.
+This project is still in an early stage of development, and thus may contain some possibly serious bugs.
 
 If you ever need to forcefully disable the Eruption daemon you may do so by adding
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
@@ -82,17 +83,27 @@ $ sudo systemctl unmask eruption.service
 
 ## Design Overview
 
-Eruption is a Linux daemon written in Rust, consisting of a core, an integrated
-Lua interpreter and additional plugin components. Its intended usage is to
-execute Lua scripts that may react to certain events on the system like e.g.
-"Key pressed" and subsequently control the connected LED devices.
-Plugins may export additional functionality to the Lua scripting engine.
-Multiple Lua scripts may be run in parallel. Each Lua scripts "submitted color
-map" will be combined with all other scripts "submitted color maps" using a
-compositor that performs an alpha blending step on each color map,
-prior to sending the resulting final color map to the connected LED devices.
+### Introduction
+
+Eruption is a Linux daemon written in the Rust programming language. Eruption consists of a core daemon with an integrated
+Lua interpreter, and additional plugin components. Its intended usage is to execute Lua scripts that may react to certain
+events on the system like e.g. `Timer tick`, `Key pressed` or `Mouse moved` and subsequently control the connected LED
+devices and/or transform the user input via the integrated programmable macro feature.
+Eruption plugins may export additional functionality to the Lua scripting engine. Multiple Lua scripts may be run in
+parallel, each one in its own VM thread. A Lua script shall compute some kind of effect resulting in a 'color map'.
+Each Lua scripts 'submitted color map' will be combined with all other scripts 'submitted color maps' using a compositor
+that performs an alpha blending step on each 'color map' before it finally gets sent to the connected LED devices.
+
+### Software Architecture
+
+Eruption is split into multiple independent processes, `eruption` the core daemon that handles hardware access running 
+as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
+to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
+usage. Both of these session daemons run as the respective logged-in user.
 
 ## Installation
+
+> To install the latest git snapshot please use the package named `eruption-git` instead of the stable package `eruption`
 
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
@@ -132,13 +143,14 @@ $ cargo build --all --release
 $ sudo target/release/eruption -c support/config/eruption.conf
 ```
 
-Please refer to [INSTALL.md](docs/INSTALL.md) for further information.
+Please refer to [INSTALL.md](docs/INSTALL.md) for further information, e.g. the dependencies you need to install to be
+able to successfully build Eruption from source.
 
 ## After Setup
 
 > You may want to try the
 [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-GNOME Shell extension, for easy switching of profiles on the fly.
+GNOME Shell extension that enables easy switching of profiles on the fly.
 
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
 
@@ -157,7 +169,7 @@ Audio support is provided by `eruption-audio-proxy.service`.
 
 As of Eruption `0.1.23` it is no longer necessary to grant the `root` user full access to the `PipeWire` or `PulseAudio`
 session instance. Therefore, it is no longer required to edit configuration files. Just enable the `eruption-audio-proxy`
-session daemon, and assign a device monitor to listen on, e.g. by using `pavucontrol`.
+session daemon and assign a device monitor to listen on, e.g. by using `pavucontrol`.
 
 ```shell
 $ systemctl --user enable --now eruption-audio-proxy.service
@@ -225,9 +237,11 @@ This will remove the rule for the window named `Skype` from the ruleset.
 
 ## Further Reading
 
-Please see [DOCUMENTATION.md](docs/DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use and customize it properly.
+Please see [DOCUMENTATION.md](docs/DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use
+and customize it properly.
 
-For further information about the supported Lua functions and libraries, please refer to the developer documentation [LIBRARY.md](docs/LIBRARY.md).
+For further information about the supported Lua functions and libraries, please refer to the developer documentation
+[LIBRARY.md](docs/LIBRARY.md).
 
 For a detailed documentation on how to write your own macros, please refer to [MACROS.md](docs/MACROS.md)
 

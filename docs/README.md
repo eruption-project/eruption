@@ -3,6 +3,7 @@
 - [Table of Contents](#table-of-contents)
   - [Welcome to the Eruption documentation](#welcome-to-the-eruption-documentation)
     - [General Overview](#general-overview)
+    - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
     - [Network FX Protocol Specification](#network-fx-protocol-specification)
     - [Eruption Support Library Documentation](#eruption-support-library-documentation)
@@ -19,6 +20,12 @@ Here you find an overview of the documentation available for the Eruption projec
 General overview
 
 [DOCUMENTATION.md](DOCUMENTATION.md)
+
+### Systems Architecture
+
+Overview of the architecture of Eruption
+
+[ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### Macros Documentation
 
@@ -44,10 +51,9 @@ HowTo setup Eruption
 
 [INSTALL.md](INSTALL.md)
 
-
 ### Setup Audio
 
-HowTo setup PipeWire or PulseAudio for Eruption
+HowTo setup audio for Eruption
 
 [AUDIO.md](AUDIO.md)
 
