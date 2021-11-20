@@ -7,15 +7,16 @@ Table of new and noteworthy changes:
 | 0.1.23 | __New Release__                                                                                                                                                              |
 | 0.1.23 | Switched to Rust 2021 edition, rustc >= `1.56.0` is now required to build Eruption                                                                                           |
 | 0.1.23 | Updated all dependencies to their latest revisions                                                                                                                           |
+| 0.1.23 | Fixed a possible deadlock scenario on shutdown of the `eruption` daemon                                                                                                      |
 | 0.1.23 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v18`!                                                 |
-| 0.1.23 | Added a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of PipeWire or PulseAudio                  |
-| 0.1.23 | Added basic infrastructure for i18n an l10n, currently available languages: `en-US`: 100%; `de-DE`: 80%                                                                      |
-| 0.1.23 | Updated the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready)                                                      |
+| 0.1.23 | Added a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of `PipeWire` or `PulseAudio`              |
+| 0.1.23 | Added basic infrastructure for i18n an l10n, currently available languages: `en-US`: 100%; `de-DE`: approx. 60%                                                              |
+| 0.1.23 | Updated the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready yet)                                                  |
 | 0.1.23 | Added support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
 | 0.1.23 | Added support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`,  `ROCCAT Burst Pro`                                                |
 | 0.1.23 | Added a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running            |
 | 0.1.23 | Added a new `device status` subsystem that allows to poll status information like e.g. wireless signal strength or battery levels                                            |
-| 0.1.23 | Improved formatting of syslog log output; the default log-level is now `WARN` for the provided daemons                                                                       |
+| 0.1.23 | Improved formatting of syslog log output; the default log-level is now `WARN` for all of the provided daemons                                                                |
 | 0.1.23 | Added experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
 | 0.1.23 | Added experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
 | 0.1.22 | __New Release__                                                                                                                                                              |
