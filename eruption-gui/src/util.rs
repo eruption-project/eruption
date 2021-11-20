@@ -74,10 +74,10 @@ pub struct RGBA {
 /// Convert RGBA components to a 32 bits color value.
 pub fn gdk_rgba_to_color(color: &gdk::RGBA) -> u32 {
     LittleEndian::read_u32(&[
-        (color.blue * 255.0) as u8,
-        (color.green * 255.0) as u8,
-        (color.red * 255.0) as u8,
-        (color.alpha * 255.0) as u8,
+        (color.blue() * 255.0) as u8,
+        (color.green() * 255.0) as u8,
+        (color.red() * 255.0) as u8,
+        (color.alpha() * 255.0) as u8,
     ])
 }
 
@@ -89,12 +89,12 @@ pub fn color_to_gdk_rgba(c: u32) -> gdk::RGBA {
     let green = u8::try_from((c >> 8) & 0xff).unwrap();
     let blue = u8::try_from(c & 0xff).unwrap();
 
-    gdk::RGBA {
-        red: (red as f64 / 255.0),
-        green: (green as f64 / 255.0),
-        blue: (blue as f64 / 255.0),
-        alpha: (alpha as f64 / 255.0),
-    }
+    gdk::RGBA::new(
+        red as f64 / 255.0,
+        green as f64 / 255.0,
+        blue as f64 / 255.0,
+        alpha as f64 / 255.0,
+    )
 }
 
 /// Switch the currently active profile

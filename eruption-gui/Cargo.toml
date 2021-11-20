@@ -27,7 +27,7 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = [] #["sourceview"]
+default = ["sourceview"]
 sourceview = []
 
 [dependencies]
@@ -35,7 +35,7 @@ cfg-if = "1.0.0"
 colored = "2.0.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.107"
+libc = "0.2.108"
 nix = "0.23.0"
 rayon = "1.5.1"
 walkdir = "2.3.2"
@@ -43,9 +43,9 @@ parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.71"
 tokio = { version = "1.14.0", features = ["full"] }
-tracing = "0.1.29"
-tracing-futures = "0.2.5"
-tracing-subscriber = "0.3.2"
+#tracing = "0.1.29"
+#tracing-futures = "0.2.5"
+#tracing-subscriber = "0.3.2"
 config = "0.11.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 toml = "0.5.8"
@@ -59,30 +59,21 @@ color-eyre = "0.5.11"
 paste = "1.0.6"
 dbus = "0.9.5"
 dbus-tokio = "0.7.5"
-gdk-pixbuf = "0.14.0"
-glib = "0.14.8"
-pango = "0.14.8"
-pangocairo = "0.14.0"
-cairo-rs = "0.14.9"
-#sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
-icecream = "0.1.0"
-pretty_assertions = "1.0.0"
+cairo-rs = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+glib = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+gio = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+gdk = {git = "https://github.com/gtk-rs/gtk3-rs"}
+gtk = {git = "https://github.com/gtk-rs/gtk3-rs", features = ["v3_20"]}
+gdk-pixbuf = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+pango = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+pangocairo = {git = "https://github.com/gtk-rs/gtk-rs-core"}
+sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs.git", branch = "master" }
 i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.0"
 rust-embed = "6.2.0"
 unic-langid = "0.9.0"
-
-[dependencies.gtk]
-version = "0.14.3"
-features = ["v3_22"]
-
-[dependencies.gdk]
-version = "0.14.3"
-features = ["v3_22"]
-
-[dependencies.gio]
-version = "0.14.8"
-features = ["v2_50"]
+icecream = "0.1.0"
+pretty_assertions = "1.0.0"
 
 [dev-dependencies]
 tokio = { version = "1.14.0", features = ["test-util"] }

@@ -26,6 +26,7 @@ use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
 use gio::prelude::*;
 use glib::clone;
+use gtk::builders::MessageDialogBuilder;
 use gtk::prelude::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
@@ -575,7 +576,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     #[cfg(feature = "sourceview")]
     {
-        let _temporary_sourceview = sourceview::View::new();
+        let _temporary_sourceview = sourceview4::View::new();
     }
 
     // build UI
@@ -624,7 +625,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     )));
 
     // TODO: implement this
-    lock_button.set_permission::<gio::Permission>(None);
+    // lock_button.set_permission();
 
     lock_button.connect_clicked(|_btn| {
         let _result = dbus_client::ping_privileged();
@@ -664,7 +665,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                     let message = "Could not toggle Network FX".to_string();
                     let secondary = format!("{}", e);
 
-                    let message_dialog = gtk::MessageDialogBuilder::new()
+                    let message_dialog = MessageDialogBuilder::new()
                         .parent(&main_window)
                         .destroy_with_parent(true)
                         .decorated(true)
@@ -683,7 +684,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                     let message = "Could not toggle Network FX".to_string();
                     let secondary = format!("{}", e);
 
-                    let message_dialog = gtk::MessageDialogBuilder::new()
+                    let message_dialog = MessageDialogBuilder::new()
                         .parent(&main_window)
                         .destroy_with_parent(true)
                         .decorated(true)

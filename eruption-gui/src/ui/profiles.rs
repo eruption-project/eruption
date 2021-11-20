@@ -23,14 +23,23 @@ use crate::{dbus_client, profiles::FindConfig};
 use crate::{manifest::Manifest, util};
 use glib::clone;
 use glib::prelude::*;
-use gtk::ShadowType;
-use gtk::{prelude::*, Align, IconSize, Justification, Orientation, PositionType};
+use gtk::builders::{
+    AdjustmentBuilder, BoxBuilder, ButtonBuilder, ColorChooserWidgetBuilder, EntryBuilder,
+    ExpanderBuilder, FrameBuilder, LabelBuilder, MessageDialogBuilder, ScaleBuilder,
+    ScrolledWindowBuilder, SwitchBuilder, TreeViewColumnBuilder,
+};
+use gtk::{
+    prelude::*, Align, Application, Builder, ButtonsType, CellRendererText, IconSize, Image,
+    Justification, MessageType, Orientation, PositionType, ScrolledWindow, Stack, StackSwitcher,
+    TextBuffer, TextView, TreeStore, TreeView, TreeViewColumnSizing,
+};
+use gtk::{Frame, ShadowType};
 use paste::paste;
 
 #[cfg(feature = "sourceview")]
-use sourceview::prelude::*;
+use sourceview4::prelude::*;
 #[cfg(feature = "sourceview")]
-use sourceview::BufferBuilder;
+use sourceview4::BufferBuilder;
 
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
@@ -41,12 +50,12 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "sourceview")] {
         thread_local! {
             /// Holds the source code buffers and the respective paths in the file system
-            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, sourceview::Buffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, sourceview4::Buffer)>>> = Rc::new(RefCell::new(HashMap::new()));
         }
     } else {
         thread_local! {
             /// Holds the source code buffers and the respective paths in the file system
-            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, gtk::TextBuffer)>>> = Rc::new(RefCell::new(HashMap::new()));
+            static TEXT_BUFFERS: Rc<RefCell<HashMap<PathBuf, (usize, TextBuffer)>>> = Rc::new(RefCell::new(HashMap::new()));
         }
     }
 }
@@ -75,7 +84,7 @@ macro_rules! declare_config_widget_numeric {
                 value:i64,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = gtk::BoxBuilder::new()
+                let container = BoxBuilder::new()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -83,7 +92,7 @@ macro_rules! declare_config_widget_numeric {
                     .homogeneous(false)
                     .build();
 
-                let row1 = gtk::BoxBuilder::new()
+                let row1 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -93,7 +102,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = gtk::BoxBuilder::new()
+                let row2 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -103,7 +112,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -113,7 +122,7 @@ macro_rules! declare_config_widget_numeric {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -123,8 +132,8 @@ macro_rules! declare_config_widget_numeric {
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
-                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = gtk::ButtonBuilder::new()
+                let image = Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = ButtonBuilder::new()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -134,7 +143,7 @@ macro_rules! declare_config_widget_numeric {
 
                 // scale widget
                 // set constraints
-                let mut adjustment = gtk::AdjustmentBuilder::new();
+                let mut adjustment = AdjustmentBuilder::new();
 
                 adjustment = adjustment.value(value as f64);
                 adjustment = adjustment.step_increment(1.0);
@@ -149,7 +158,7 @@ macro_rules! declare_config_widget_numeric {
 
                 let adjustment = adjustment.build();
 
-                let scale = gtk::ScaleBuilder::new()
+                let scale = ScaleBuilder::new()
                     .halign(Align::Fill)
                     .hexpand(true)
                     .adjustment(&adjustment)
@@ -184,7 +193,7 @@ macro_rules! declare_config_widget_numeric {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = gtk::BoxBuilder::new()
+                let container = BoxBuilder::new()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -192,7 +201,7 @@ macro_rules! declare_config_widget_numeric {
                     .homogeneous(false)
                     .build();
 
-                let row1 = gtk::BoxBuilder::new()
+                let row1 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -202,7 +211,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = gtk::BoxBuilder::new()
+                let row2 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -212,7 +221,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -222,7 +231,7 @@ macro_rules! declare_config_widget_numeric {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -232,8 +241,8 @@ macro_rules! declare_config_widget_numeric {
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
-                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = gtk::ButtonBuilder::new()
+                let image = Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = ButtonBuilder::new()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -243,7 +252,7 @@ macro_rules! declare_config_widget_numeric {
 
                 // scale widget
                 // set constraints
-                let mut adjustment = gtk::AdjustmentBuilder::new();
+                let mut adjustment = AdjustmentBuilder::new();
 
                 adjustment = adjustment.value(value as f64);
                 adjustment = adjustment.step_increment(0.01);
@@ -258,7 +267,7 @@ macro_rules! declare_config_widget_numeric {
 
                 let adjustment = adjustment.build();
 
-                let scale = gtk::ScaleBuilder::new()
+                let scale = ScaleBuilder::new()
                     .halign(Align::Fill)
                     .hexpand(true)
                     .adjustment(&adjustment)
@@ -293,7 +302,7 @@ macro_rules! declare_config_widget_input {
                 value: String,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = gtk::BoxBuilder::new()
+                let container = BoxBuilder::new()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -301,7 +310,7 @@ macro_rules! declare_config_widget_input {
                     .homogeneous(false)
                     .build();
 
-                let row1 = gtk::BoxBuilder::new()
+                let row1 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -311,7 +320,7 @@ macro_rules! declare_config_widget_input {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = gtk::BoxBuilder::new()
+                let row2 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -321,7 +330,7 @@ macro_rules! declare_config_widget_input {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -331,7 +340,7 @@ macro_rules! declare_config_widget_input {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -341,8 +350,8 @@ macro_rules! declare_config_widget_input {
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
-                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = gtk::ButtonBuilder::new()
+                let image = Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = ButtonBuilder::new()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -351,7 +360,7 @@ macro_rules! declare_config_widget_input {
                 row2.pack_start(&reset_button, false, false, 8);
 
                 // entry widget
-                let entry = gtk::EntryBuilder::new().text(&value).build();
+                let entry = EntryBuilder::new().text(&value).build();
 
                 row2.pack_start(&entry, false, true, 8);
 
@@ -382,7 +391,7 @@ macro_rules! declare_config_widget_color {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = gtk::BoxBuilder::new()
+                let container = BoxBuilder::new()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -390,7 +399,7 @@ macro_rules! declare_config_widget_color {
                     .homogeneous(false)
                     .build();
 
-                let row1 = gtk::BoxBuilder::new()
+                let row1 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -400,7 +409,7 @@ macro_rules! declare_config_widget_color {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = gtk::BoxBuilder::new()
+                let row2 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -410,7 +419,7 @@ macro_rules! declare_config_widget_color {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -420,7 +429,7 @@ macro_rules! declare_config_widget_color {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -430,8 +439,8 @@ macro_rules! declare_config_widget_color {
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
-                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = gtk::ButtonBuilder::new()
+                let image = Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = ButtonBuilder::new()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -441,7 +450,7 @@ macro_rules! declare_config_widget_color {
 
                 // color chooser widget
                 let rgba = util::color_to_gdk_rgba(value);
-                let chooser = gtk::ColorChooserWidgetBuilder::new()
+                let chooser = ColorChooserWidgetBuilder::new()
                     .rgba(&rgba)
                     .use_alpha(true)
                     .show_editor(false)
@@ -475,7 +484,7 @@ macro_rules! declare_config_widget_switch {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = gtk::BoxBuilder::new()
+                let container = BoxBuilder::new()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -483,7 +492,7 @@ macro_rules! declare_config_widget_switch {
                     .homogeneous(false)
                     .build();
 
-                let row1 = gtk::BoxBuilder::new()
+                let row1 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -493,7 +502,7 @@ macro_rules! declare_config_widget_switch {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = gtk::BoxBuilder::new()
+                let row2 = BoxBuilder::new()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -503,7 +512,7 @@ macro_rules! declare_config_widget_switch {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -513,7 +522,7 @@ macro_rules! declare_config_widget_switch {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = gtk::LabelBuilder::new()
+                let label = LabelBuilder::new()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -523,8 +532,8 @@ macro_rules! declare_config_widget_switch {
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
-                let image = gtk::Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = gtk::ButtonBuilder::new()
+                let image = Image::from_icon_name(Some("reload"), IconSize::Button);
+                let reset_button = ButtonBuilder::new()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -533,7 +542,7 @@ macro_rules! declare_config_widget_switch {
                 row2.pack_start(&reset_button, false, false, 8);
 
                 // switch widget
-                let switch = gtk::SwitchBuilder::new()
+                let switch = SwitchBuilder::new()
                     .expand(false)
                     .valign(Align::Center)
                     .state(value)
@@ -568,7 +577,7 @@ fn create_config_editor(
     script: &Manifest,
     param: &manifest::ConfigParam,
     value: &Option<&profiles::ConfigParam>,
-) -> Result<gtk::Frame> {
+) -> Result<Frame> {
     fn parameter_changed<T>(profile: &Profile, script: &Manifest, name: &str, value: T)
     where
         T: std::fmt::Display,
@@ -590,7 +599,7 @@ fn create_config_editor(
         .unwrap();
     }
 
-    let outer = gtk::FrameBuilder::new()
+    let outer = FrameBuilder::new()
         .border_width(16)
         // .label(&format!("{}", param.get_name()))
         // .label_xalign(0.0085)
@@ -824,8 +833,8 @@ fn create_config_editor(
 }
 
 /// Populate the configuration tab with settings/GUI controls
-fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
-    let config_window: gtk::ScrolledWindow = builder.object("config_window").unwrap();
+fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) -> Result<()> {
+    let config_window: ScrolledWindow = builder.object("config_window").unwrap();
 
     // first, clear all child widgets
     config_window.foreach(|widget| {
@@ -833,7 +842,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
     });
 
     // then add config items
-    let container = gtk::BoxBuilder::new()
+    let container = BoxBuilder::new()
         .border_width(8)
         .orientation(Orientation::Vertical)
         .spacing(8)
@@ -844,9 +853,9 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 
     let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
 
-    let label = gtk::LabelBuilder::new()
+    let label = LabelBuilder::new()
         .label(&format!("{}", &profile.name,))
-        .justify(gtk::Justification::Fill)
+        .justify(Justification::Fill)
         .halign(Align::Start)
         .build();
 
@@ -858,17 +867,17 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
     for f in profile.active_scripts.iter() {
         let manifest = Manifest::from(&script_path.join(&f))?;
 
-        let expander = gtk::ExpanderBuilder::new()
+        let expander = ExpanderBuilder::new()
             .border_width(8)
             .label(&format!("{} ({})", &manifest.name, &f.display()))
             .build();
 
-        let expander_frame = gtk::FrameBuilder::new()
+        let expander_frame = FrameBuilder::new()
             .border_width(8)
             .shadow_type(ShadowType::None)
             .build();
 
-        let expander_container = gtk::BoxBuilder::new()
+        let expander_container = BoxBuilder::new()
             .orientation(Orientation::Vertical)
             .homogeneous(false)
             .build();
@@ -915,8 +924,8 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &gtk::Builder, profile
 }
 
 /// Remove unused elements from the profiles stack, except the "Configuration" page
-fn remove_elements_from_stack_widget(builder: &gtk::Builder) {
-    let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
+fn remove_elements_from_stack_widget(builder: &Builder) {
+    let stack_widget: Stack = builder.object("profile_stack").unwrap();
 
     stack_widget.foreach(|widget| {
         stack_widget.remove(widget);
@@ -929,12 +938,12 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "sourceview")] {
         fn save_buffer_contents_to_file<P: AsRef<Path>>(
             path: &P,
-            buffer: &sourceview::Buffer,
-            builder: &gtk::Builder,
+            buffer: &sourceview4::Buffer,
+            builder: &Builder,
         ) -> Result<()> {
             let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-            let buffer = buffer.dynamic_cast_ref::<gtk::TextBuffer>().unwrap();
+            let buffer = buffer.dynamic_cast_ref::<TextBuffer>().unwrap();
             let (start, end) = buffer.bounds();
             let data = buffer.text(&start, &end, true).map(|v| v.to_string());
 
@@ -949,15 +958,15 @@ cfg_if::cfg_if! {
                         let secondary =
                             format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
-                        let message_dialog = gtk::MessageDialogBuilder::new()
+                        let message_dialog = MessageDialogBuilder::new()
                             .parent(&main_window)
                             .destroy_with_parent(true)
                             .decorated(true)
-                            .message_type(gtk::MessageType::Error)
+                            .message_type(MessageType::Error)
                             .text(&message)
                             .secondary_text(&secondary)
                             .title("Error")
-                            .buttons(gtk::ButtonsType::Ok)
+                            .buttons(ButtonsType::Ok)
                             .build();
 
                         message_dialog.run();
@@ -987,10 +996,10 @@ cfg_if::cfg_if! {
     } else {
         fn save_buffer_contents_to_file<P: AsRef<Path>>(
             path: &P,
-            buffer: &gtk::TextBuffer,
-            builder: &gtk::Builder,
+            buffer: &TextBuffer,
+            builder: &Builder,
         ) -> Result<()> {
-            let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+            let main_window: ApplicationWindow = builder.object("main_window").unwrap();
                 // log::debug!("{}", &data);
 
             let (start, end) = buffer.bounds();
@@ -1007,15 +1016,15 @@ cfg_if::cfg_if! {
                         let secondary =
                             format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
-                        let message_dialog = gtk::MessageDialogBuilder::new()
+                        let message_dialog = MessageDialogBuilder::new()
                             .parent(&main_window)
                             .destroy_with_parent(true)
                             .decorated(true)
-                            .message_type(gtk::MessageType::Error)
+                            .message_type(MessageType::Error)
                             .text(&message)
                             .secondary_text(&secondary)
                             .title("Error")
-                            .buttons(gtk::ButtonsType::Ok)
+                            .buttons(ButtonsType::Ok)
                             .build();
 
                         message_dialog.run();
@@ -1049,14 +1058,14 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "sourceview")] {
         /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
         /// showing the respective files contents
-        fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
-            let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
-            let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
+        fn populate_stack_widget<P: AsRef<Path>>(builder: &Builder, profile: P) -> Result<()> {
+            let stack_widget: Stack = builder.object("profile_stack").unwrap();
+            let stack_switcher: StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
             let context = stack_switcher.style_context();
             context.add_class("small-font");
 
-            let language_manager = sourceview::LanguageManager::default().unwrap();
+            let language_manager = sourceview4::LanguageManager::default().unwrap();
 
             let toml = language_manager.language("toml").unwrap();
             let lua = language_manager.language("lua").unwrap();
@@ -1082,11 +1091,11 @@ cfg_if::cfg_if! {
 
             buffer_index += 1;
 
-            let sourceview = sourceview::View::with_buffer(&buffer);
+            let sourceview = sourceview4::View::with_buffer(&buffer);
             sourceview.set_show_line_marks(true);
             sourceview.set_show_line_numbers(true);
 
-            let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
+            let sourceview = sourceview.dynamic_cast::<TextView>().unwrap();
 
             sourceview.set_editable(true);
 
@@ -1097,7 +1106,7 @@ cfg_if::cfg_if! {
                 .to_string_lossy()
                 .to_string();
 
-            let scrolled_window = gtk::ScrolledWindowBuilder::new()
+            let scrolled_window = ScrolledWindowBuilder::new()
                 .shadow_type(ShadowType::None)
                 .build();
             scrolled_window.add(&sourceview);
@@ -1137,17 +1146,17 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // script file editor
-                        let sourceview = sourceview::View::with_buffer(&buffer);
+                        let sourceview = sourceview4::View::with_buffer(&buffer);
                         sourceview.set_show_line_marks(true);
                         sourceview.set_show_line_numbers(true);
 
-                        let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
+                        let sourceview = sourceview.dynamic_cast::<TextView>().unwrap();
 
                         sourceview.set_editable(true);
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindowBuilder::new().build();
                         scrolled_window.add(&sourceview);
 
                         stack_widget.add_titled(
@@ -1181,17 +1190,17 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // manifest file editor
-                        let sourceview = sourceview::View::with_buffer(&buffer);
+                        let sourceview = sourceview4::View::with_buffer(&buffer);
                         sourceview.set_show_line_marks(true);
                         sourceview.set_show_line_numbers(true);
 
-                        let sourceview = sourceview.dynamic_cast::<gtk::TextView>().unwrap();
+                        let sourceview = sourceview.dynamic_cast::<TextView>().unwrap();
 
                         sourceview.set_editable(true);
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindowBuilder::new().build();
                         scrolled_window.add(&sourceview);
 
                         stack_widget.add_titled(
@@ -1212,9 +1221,9 @@ cfg_if::cfg_if! {
     } else {
         /// Instantiate one page per .profile or .lua file, each page holds a GtkSourceView widget
         /// showing the respective files contents
-        fn populate_stack_widget<P: AsRef<Path>>(builder: &gtk::Builder, profile: P) -> Result<()> {
-            let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
-            let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
+        fn populate_stack_widget<P: AsRef<Path>>(builder: &Builder, profile: P) -> Result<()> {
+            let stack_widget: Stack = builder.object("profile_stack").unwrap();
+            let stack_switcher: StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
             let context = stack_switcher.style_context();
             context.add_class("small-font");
@@ -1222,9 +1231,9 @@ cfg_if::cfg_if! {
             // load and show .profile file
             let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
 
-            let buffer = gtk::TextBufferBuilder::new().text(&source_code).build();
+            let buffer = TextBufferBuilder::new().text(&source_code).build();
 
-            let text_view = gtk::TextViewBuilder::new()
+            let text_view = TextViewBuilder::new()
                 .buffer(&buffer)
                 .build();
 
@@ -1249,7 +1258,7 @@ cfg_if::cfg_if! {
                 .to_string_lossy()
                 .to_string();
 
-            let scrolled_window = gtk::ScrolledWindowBuilder::new()
+            let scrolled_window = ScrolledWindowBuilder::new()
                 .shadow_type(ShadowType::None)
                 .build();
             scrolled_window.add(&text_view);
@@ -1274,7 +1283,7 @@ cfg_if::cfg_if! {
 
                         let source_code = std::fs::read_to_string(&script_path.join(&f))?;
 
-                        let buffer = gtk::TextBufferBuilder::new()
+                        let buffer = TextBufferBuilder::new()
                             .text(&source_code)
                             .build();
 
@@ -1287,7 +1296,7 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // script file editor
-                        let text_view = gtk::TextViewBuilder::new()
+                        let text_view = TextViewBuilder::new()
                             .buffer(&buffer)
                             .build();
 
@@ -1295,7 +1304,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindowBuilder::new().build();
                         scrolled_window.add(&text_view);
 
                         stack_widget.add_titled(
@@ -1323,11 +1332,11 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // manifest file editor
-                        let buffer = gtk::TextBufferBuilder::new()
+                        let buffer = TextBufferBuilder::new()
                             .text(&manifest_data)
                             .build();
 
-                        let text_view = gtk::TextViewBuilder::new()
+                        let text_view = TextViewBuilder::new()
                             .buffer(&buffer)
                             .build();
 
@@ -1335,7 +1344,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = gtk::ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindowBuilder::new().build();
                         scrolled_window.add(&text_view);
 
                         stack_widget.add_titled(
@@ -1357,15 +1366,15 @@ cfg_if::cfg_if! {
 }
 
 /// Initialize page "Profiles"
-pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
+pub fn initialize_profiles_page<A: IsA<Application>>(
     application: &A,
-    builder: &gtk::Builder,
+    builder: &Builder,
 ) -> Result<()> {
-    let profiles_treeview: gtk::TreeView = builder.object("profiles_treeview").unwrap();
-    // let sourceview: sourceview::View = builder.object("source_view").unwrap();
+    let profiles_treeview: TreeView = builder.object("profiles_treeview").unwrap();
+    // let sourceview: sourceview4::View = builder.object("source_view").unwrap();
 
     // profiles list
-    let profiles_treestore = gtk::TreeStore::new(&[
+    let profiles_treestore = TreeStore::new(&[
         glib::Type::U64,
         String::static_type(),
         String::static_type(),
@@ -1401,27 +1410,27 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
         );
     }
 
-    let id_column = gtk::TreeViewColumnBuilder::new()
+    let id_column = TreeViewColumnBuilder::new()
         .title(&"ID")
-        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .sizing(TreeViewColumnSizing::Autosize)
         .visible(false)
         .build();
-    let name_column = gtk::TreeViewColumnBuilder::new()
+    let name_column = TreeViewColumnBuilder::new()
         .title(&"Name")
-        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .sizing(TreeViewColumnSizing::Autosize)
         .build();
-    let filename_column = gtk::TreeViewColumnBuilder::new()
+    let filename_column = TreeViewColumnBuilder::new()
         .title(&"Filename")
-        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .sizing(TreeViewColumnSizing::Autosize)
         .build();
-    let path_column = gtk::TreeViewColumnBuilder::new()
+    let path_column = TreeViewColumnBuilder::new()
         .visible(false)
         .title(&"Path")
         .build();
 
-    let cell_renderer_id = gtk::CellRendererText::new();
-    let cell_renderer_name = gtk::CellRendererText::new();
-    let cell_renderer_filename = gtk::CellRendererText::new();
+    let cell_renderer_id = CellRendererText::new();
+    let cell_renderer_name = CellRendererText::new();
+    let cell_renderer_filename = CellRendererText::new();
 
     id_column.pack_start(&cell_renderer_id, false);
     name_column.pack_start(&cell_renderer_name, true);
@@ -1457,19 +1466,16 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
 }
 
 /// Register global actions and keyboard accelerators
-fn register_actions<A: IsA<gtk::Application>>(
-    application: &A,
-    builder: &gtk::Builder,
-) -> Result<()> {
+fn register_actions<A: IsA<Application>>(application: &A, builder: &Builder) -> Result<()> {
     let application = application.as_ref();
 
-    let stack_widget: gtk::Stack = builder.object("profile_stack").unwrap();
-    // let stack_switcher: gtk::StackSwitcher = builder.object("profile_stack_switcher").unwrap();
+    let stack_widget: Stack = builder.object("profile_stack").unwrap();
+    // let stack_switcher: StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
     let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
     save_current_buffer.connect_activate(clone!(@weak builder => move |_, _| {
         if let Some(view) = stack_widget.visible_child()
-        // .map(|w| w.dynamic_cast::<sourceview::View>().unwrap())
+        // .map(|w| w.dynamic_cast::<sourceview4::View>().unwrap())
         {
             let index = stack_widget.child_position(&view) as usize;
 
@@ -1509,8 +1515,8 @@ fn register_actions<A: IsA<gtk::Application>>(
     Ok(())
 }
 
-pub fn update_profile_state(builder: &gtk::Builder) -> Result<()> {
-    let profiles_treeview: gtk::TreeView = builder.object("profiles_treeview").unwrap();
+pub fn update_profile_state(builder: &Builder) -> Result<()> {
+    let profiles_treeview: TreeView = builder.object("profiles_treeview").unwrap();
 
     let model = profiles_treeview.model().unwrap();
 
