@@ -28,22 +28,22 @@ Linux based systems.
 #### On Arch-based distros
 
 ```shell
-$ sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua51-socket gtksourceview3
-$ sudo pacman -Sy xorg-server-devel libxrandr gtk3
+sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua51-socket gtksourceview3
+sudo pacman -Sy xorg-server-devel libxrandr gtk3
 ```
 
 #### On Fedora-based distros
 
 ```shell
-$ sudo dnf install systemd dbus hidapi libevdev luajit gtksourceview3 lua-socket-compat
-$ sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
+sudo dnf install systemd dbus hidapi libevdev luajit gtksourceview3 lua-socket-compat
+sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
   pulseaudio-libs-devel luajit-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview3-devel
 ```
 
 #### On Debian-based distros
 
 ```shell
-$ sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev \
+sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev \
   libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev \
   libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-3.0-dev
 ```
@@ -51,10 +51,10 @@ $ sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdb
 ### Clone the project and build the release binaries
 
 ```shell
-$ git clone https://github.com/X3n0m0rph59/eruption.git
+git clone https://github.com/X3n0m0rph59/eruption.git
 
-$ cd eruption
-$ cargo build --all --release
+cd eruption
+cargo build --all --release
 ```
 
 ### Create the target directories and copy over all the required files
@@ -187,7 +187,7 @@ using `pavucontrol`.
 
 Switch to a profile that utilizes the audio API of Eruption:
 ```shell
-$ eruptionctl switch profile spectrum-analyzer-swirl.profile
+eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
 
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.

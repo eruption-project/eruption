@@ -20,10 +20,10 @@ that performs an alpha blending step on each 'color map' before it finally gets 
 
 ### Systems Architecture
 
-Eruption is split into multiple independent processes, `eruption` the core daemon that handles hardware access running
+Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running
 as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
 to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
-usage. Both of the session daemons run as the respective logged-in user.
+usage. Both of these session daemons run as the respective logged-in user.
 
 The different processes communicate using multiple different IPC mechanisms like `D-Bus` and network sockets
 (IP and UNIX domain sockets).

@@ -2,19 +2,19 @@
 
 ## Introduction
 
-If you want to implement custom macros for Eruption, you need to complete the following steps. Please replace every occurrence of
-`mygame` with a name of your choice.
+If you want to implement custom macros for Eruption, you need to complete the following steps. Please replace every
+occurrence of `mygame` with a name of your choice.
 
 * Create a new Lua macros file for example by copying an existing file, and using it as a starting point:
 
-  ```bash
-   $ sudo cp -v /usr/share/eruption/scripts/lib/macros/user-macros.lua /usr/share/eruption/scripts/lib/macros/mygame.lua
+  ```shell
+  sudo cp -v /usr/share/eruption/scripts/lib/macros/user-macros.lua /usr/share/eruption/scripts/lib/macros/mygame.lua
   ```
 
 * Edit the newly created file and perform customizations
 
-  ```bash
-   $ sudoedit /usr/share/eruption/scripts/lib/macros/mygame.lua
+  ```shell
+  sudoedit /usr/share/eruption/scripts/lib/macros/mygame.lua
   ```
 
 * To wire-up the newly created Lua file with an existing profile,
@@ -39,9 +39,11 @@ delivered to the system as-is.
 
 ## Examples
 
-The delay (in milliseconds) uses the **first** call to `inject_key_with_delay(...)` as a baseline, so you have to increase `millis` with each consecutive call.
+The delay (in milliseconds) uses the **first** call to `inject_key_with_delay(...)` as a baseline, so you have to
+increase `millis` with each consecutive call.
 
-In this example, the second 'l' will be sent to the system `200ms` after the first 'l', since the difference relative to the the baseline is `800ms-600ms == 200ms`.
+In this example, the second 'l' will be sent to the system `200ms` after the first 'l', since the difference relative
+to the the baseline is `800ms-600ms == 200ms`.
 
 ```lua
   inject_key_with_delay(38, true, 600)  	-- 'l' down

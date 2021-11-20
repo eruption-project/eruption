@@ -11,7 +11,7 @@
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
     - [Introduction](#introduction)
-    - [Software Architecture](#software-architecture)
+    - [Systems Architecture](#systems-architecture)
   - [Installation](#installation)
     - [Arch Linux and derivatives like ArcoLinux or Manjaro](#arch-linux-and-derivatives-like-arcolinux-or-manjaro)
     - [Fedora based](#fedora-based)
@@ -66,19 +66,19 @@ If you ever need to forcefully disable the Eruption daemon you may do so by addi
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
 
 ```shell
- systemd.mask=eruption.service
+systemd.mask=eruption.service
 ```
 
 Or with systemctl to mask the service:
 
 ```shell
-$ sudo systemctl mask eruption.service
+sudo systemctl mask eruption.service
 ```
 
 You can always re-enable the Eruption service with the command:
 
 ```shell
-$ sudo systemctl unmask eruption.service
+sudo systemctl unmask eruption.service
 ```
 
 ## Design Overview
@@ -94,9 +94,9 @@ parallel, each one in its own VM thread. A Lua script shall compute some kind of
 Each Lua scripts 'submitted color map' will be combined with all other scripts 'submitted color maps' using a compositor
 that performs an alpha blending step on each 'color map' before it finally gets sent to the connected LED devices.
 
-### Software Architecture
+### Systems Architecture
 
-Eruption is split into multiple independent processes, `eruption` the core daemon that handles hardware access running 
+Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running 
 as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
 to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
 usage. Both of these session daemons run as the respective logged-in user.
@@ -108,39 +108,39 @@ usage. Both of these session daemons run as the respective logged-in user.
 ### Arch Linux and derivatives like ArcoLinux or Manjaro
 
 ```shell
-$ paru -Syu aur/eruption
+paru -Syu aur/eruption
 ```
 
 ### Fedora based
 
 ```shell
-$ sudo dnf copr enable x3n0m0rph59/eruption
-$ sudo dnf install eruption
+sudo dnf copr enable x3n0m0rph59/eruption
+sudo dnf install eruption
 ```
 
 ### Ubuntu or Pop!_OS
 
 ```shell
-$ sudo add-apt-repository ppa:x3n0m0rph59/eruption
-$ sudo apt update
-$ sudo apt install eruption
+sudo add-apt-repository ppa:x3n0m0rph59/eruption
+sudo apt update
+sudo apt install eruption
 ```
 
 To activate Eruption now, you may either hotplug a supported device, or manually start
 the daemon with the command:
 
 ```shell
- $ sudo systemctl enable --now eruption.service
+sudo systemctl enable --now eruption.service
 ```
 
 ### From Source
 
 ```shell
-$ git clone https://github.com/X3n0m0rph59/eruption.git
-$ cd eruption
-$ cargo build --all --release
+git clone https://github.com/X3n0m0rph59/eruption.git
+cd eruption
+cargo build --all --release
 
-$ sudo target/release/eruption -c support/config/eruption.conf
+sudo target/release/eruption -c support/config/eruption.conf
 ```
 
 Please refer to [INSTALL.md](docs/INSTALL.md) for further information, e.g. the dependencies you need to install to be
@@ -150,7 +150,7 @@ able to successfully build Eruption from source.
 
 > You may want to try the
 [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-GNOME Shell extension that enables easy switching of profiles on the fly.
+GNOME Shell extension that enables easy switching of profiles on the fly
 
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
 
@@ -160,8 +160,8 @@ GNOME Shell extension that enables easy switching of profiles on the fly.
 
 Eruption currently has built-in support for the following audio APIs:
 
-* PipeWire (via the PulseAudio interface of PipeWire)
-* PulseAudio
+* `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
+* `PulseAudio`
 
 Audio support is provided by `eruption-audio-proxy.service`.
 
@@ -172,13 +172,13 @@ session instance. Therefore, it is no longer required to edit configuration file
 session daemon and assign a device monitor to listen on, e.g. by using `pavucontrol`.
 
 ```shell
-$ systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-audio-proxy.service
 ```
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
 ```shell
-$ eruptionctl switch profile spectrum-analyzer-swirl.profile
+eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
 
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber. 
@@ -218,8 +218,8 @@ To list all supported sensors and actions please run the command:
 
 ### Removing a rule
 
-```bash
-$ eruption-process-monitor rules list
+```shell
+eruption-process-monitor rules list
   0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile (enabled: false, internal: false)
   1: On window focused: Name: 'Skype' => Switch to profile: /var/lib/eruption/profiles/vu-meter.profile (enabled: false, internal: false)
   2: On window focused: Name: 'Left 4 Dead 2.*' => Switch to profile: /var/lib/eruption/profiles/gaming.profile (enabled: true, internal: false)
@@ -230,10 +230,9 @@ $ eruption-process-monitor rules list
 To remove a rule, please run the following command:
 
 ```shell
-$ eruption-process-monitor rules remove 1
+eruption-process-monitor rules remove 1
 ```
-
-This will remove the rule for the window named `Skype` from the ruleset.
+> This will remove the rule for the window named `Skype` from the ruleset.
 
 ## Further Reading
 

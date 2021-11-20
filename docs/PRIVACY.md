@@ -18,7 +18,7 @@ Wayland. Introspection of process memory is currently not implemented. You can d
 process events and window notifications at any time by running the following command:
 
 ```shell
-$ systemctl --user disable --now eruption-process-monitor.service
+systemctl --user disable --now eruption-process-monitor.service
 ```
 
 This will disable the automatic profile switching mechanism since the `eruption-process-monitor` daemon can't instruct
@@ -35,7 +35,7 @@ The `eruption-audio-proxy` daemon records audio on the selected device of the `P
 You can disable processing of audio data at any time by running the following command:
 
 ```shell
-$ systemctl --user disable --now eruption-audio-proxy.service
+systemctl --user disable --now eruption-audio-proxy.service
 ```
 
 This will disable the support for audio visualizations, mute status indication and sound effects.

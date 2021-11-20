@@ -8,8 +8,8 @@
 
 Eruption currently has built-in support for the following audio APIs:
 
-* PipeWire (via the PulseAudio interface of PipeWire)
-* PulseAudio
+* `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
+* `PulseAudio`
 
 Audio support is provided by `eruption-audio-proxy.service` session daemon.
 
@@ -20,13 +20,13 @@ session instance. Therefore, it is no longer required to edit configuration file
 session daemon, and assign a device monitor to listen on, e.g. by using `pavucontrol`.
 
 ```shell
-$ systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-audio-proxy.service
 ```
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
 ```shell
-$ eruptionctl switch profile spectrum-analyzer-swirl.profile
+eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
 
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
