@@ -15,11 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use crate::{dbus_client, profiles::FindConfig};
 use crate::{
-    constants, manifest,
+    manifest,
     profiles::{self, Profile},
 };
-use crate::{dbus_client, profiles::FindConfig};
 use crate::{manifest::Manifest, util};
 use glib::clone;
 use glib::prelude::*;
@@ -31,15 +31,22 @@ use gtk::builders::{
 use gtk::{
     prelude::*, Align, Application, Builder, ButtonsType, CellRendererText, IconSize, Image,
     Justification, MessageType, Orientation, PositionType, ScrolledWindow, Stack, StackSwitcher,
-    TextBuffer, TextView, TreeStore, TreeView, TreeViewColumnSizing,
+    TextBuffer, TreeStore, TreeView, TreeViewColumnSizing,
 };
 use gtk::{Frame, ShadowType};
 use paste::paste;
 
 #[cfg(feature = "sourceview")]
+use gtk::TextView;
+#[cfg(feature = "sourceview")]
 use sourceview4::prelude::*;
 #[cfg(feature = "sourceview")]
 use sourceview4::BufferBuilder;
+
+#[cfg(not(feature = "sourceview"))]
+use gtk::builders::{TextBufferBuilder, TextViewBuilder};
+#[cfg(not(feature = "sourceview"))]
+use gtk::ApplicationWindow;
 
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
@@ -851,8 +858,6 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
     let profile = Profile::from(profile.as_ref())?;
 
-    let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
-
     let label = LabelBuilder::new()
         .label(&format!("{}", &profile.name,))
         .justify(Justification::Fill)
@@ -864,8 +869,8 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
     container.pack_start(&label, false, false, 8);
 
-    for f in profile.active_scripts.iter() {
-        let manifest = Manifest::from(&script_path.join(&f))?;
+    for f in &profile.active_scripts {
+        let manifest = Manifest::from(&util::match_script_file(f)?)?;
 
         let expander = ExpanderBuilder::new()
             .border_width(8)
@@ -903,7 +908,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
                 let value = if let Some(ref values) = profile.config {
                     match values.get(name) {
-                        Some(e) => e.find_config_param(&name),
+                        Some(e) => e.find_config_param(name),
 
                         None => None,
                     }
@@ -911,7 +916,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
                     None
                 };
 
-                let child = create_config_editor(&profile, &manifest, &param, &value)?;
+                let child = create_config_editor(&profile, &manifest, param, &value)?;
                 expander_container.pack_start(&child, false, true, 0);
             }
         }
@@ -1125,11 +1130,10 @@ cfg_if::cfg_if! {
 
             for p in util::enumerate_profiles()? {
                 if p.profile_file == profile.as_ref() {
-                    for f in p.active_scripts {
-                        // TODO: use configuration values from eruption.conf
-                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+                    for f in &p.active_scripts {
+                        let abs_path = util::match_script_file(f)?;
 
-                        let source_code = std::fs::read_to_string(&script_path.join(&f))?;
+                        let source_code = std::fs::read_to_string(&abs_path)?;
 
                         let buffer = BufferBuilder::new()
                             .language(&lua)
@@ -1140,7 +1144,7 @@ cfg_if::cfg_if! {
                         // add buffer to global text buffers map for later reference
                         TEXT_BUFFERS.with(|b| {
                             let mut text_buffers = b.borrow_mut();
-                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                            text_buffers.insert(abs_path.clone(), (buffer_index, buffer.clone()));
                         });
 
                         buffer_index += 1;
@@ -1168,12 +1172,10 @@ cfg_if::cfg_if! {
                         scrolled_window.show_all();
 
                         let manifest_file =
-                            format!("{}.manifest", f.into_os_string().into_string().unwrap());
+                            format!("{}.manifest", abs_path.into_os_string().into_string().unwrap());
                         let f = PathBuf::from(manifest_file);
 
-                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
-
-                        let manifest_data = std::fs::read_to_string(&script_path.join(&f))?;
+                        let manifest_data = std::fs::read_to_string(&f)?;
 
                         let buffer = BufferBuilder::new()
                             .language(&toml)
@@ -1184,7 +1186,7 @@ cfg_if::cfg_if! {
                         // add buffer to global text buffers map for later reference
                         TEXT_BUFFERS.with(|b| {
                             let mut text_buffers = b.borrow_mut();
-                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                            text_buffers.insert(f.clone(), (buffer_index, buffer.clone()));
                         });
 
                         buffer_index += 1;
@@ -1278,10 +1280,9 @@ cfg_if::cfg_if! {
             for p in util::enumerate_profiles()? {
                 if p.profile_file == profile.as_ref() {
                     for f in p.active_scripts {
-                        // TODO: use configuration values from eruption.conf
-                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+                        let abs_path = util::match_script_file(&f)?;
 
-                        let source_code = std::fs::read_to_string(&script_path.join(&f))?;
+                        let source_code = std::fs::read_to_string(&abs_path)?;
 
                         let buffer = TextBufferBuilder::new()
                             .text(&source_code)
@@ -1290,7 +1291,7 @@ cfg_if::cfg_if! {
                         // add buffer to global text buffers map for later reference
                         TEXT_BUFFERS.with(|b| {
                             let mut text_buffers = b.borrow_mut();
-                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                            text_buffers.insert(abs_path.clone(), (buffer_index, buffer.clone()));
                         });
 
                         buffer_index += 1;
@@ -1316,17 +1317,15 @@ cfg_if::cfg_if! {
                         scrolled_window.show_all();
 
                         let manifest_file =
-                            format!("{}.manifest", f.into_os_string().into_string().unwrap());
+                            format!("{}.manifest", abs_path.into_os_string().into_string().unwrap());
                         let f = PathBuf::from(manifest_file);
 
-                        let script_path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
-
-                        let manifest_data = std::fs::read_to_string(&script_path.join(&f))?;
+                        let manifest_data = std::fs::read_to_string(&f)?;
 
                         // add buffer to global text buffers map for later reference
                         TEXT_BUFFERS.with(|b| {
                             let mut text_buffers = b.borrow_mut();
-                            text_buffers.insert(script_path.join(&f), (buffer_index, buffer.clone()));
+                            text_buffers.insert(f.clone(), (buffer_index, buffer.clone()));
                         });
 
                         buffer_index += 1;
@@ -1451,10 +1450,10 @@ pub fn initialize_profiles_page<A: IsA<Application>>(
     profiles_treeview.connect_row_activated(clone!(@weak builder => move |tv, path, _column| {
         let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 3).get::<String>().unwrap();
 
-        populate_visual_config_editor(&builder, &profile).unwrap();
+        let _result = populate_visual_config_editor(&builder, &profile).map_err(|e| { log::error!("{}", e) });
 
         remove_elements_from_stack_widget(&builder);
-        populate_stack_widget(&builder, &profile).unwrap();
+        let _result = populate_stack_widget(&builder, &profile).map_err(|e| { log::error!("{}", e) });
     }));
 
     profiles_treeview.show_all();

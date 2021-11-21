@@ -478,8 +478,7 @@ pub async fn set_device_config(device: u64, param: &str, value: &str) -> Result<
 
 /// Enumerate all available scripts
 pub fn get_script_list() -> Result<Vec<(String, String)>> {
-    let path = constants::DEFAULT_SCRIPT_DIR;
-    let scripts = util::enumerate_scripts(&path)?;
+    let scripts = util::enumerate_scripts()?;
 
     let result = scripts
         .iter()
@@ -1145,8 +1144,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         // script related sub-commands
         Subcommands::Scripts { command } => match command {
             ScriptsSubcommands::Edit { script_name } => {
-                let path = constants::DEFAULT_SCRIPT_DIR;
-                let scripts = util::enumerate_scripts(&path)?;
+                let scripts = util::enumerate_scripts()?;
 
                 if let Some(script) = scripts
                     .iter()
@@ -1165,8 +1163,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             ScriptsSubcommands::Info { script_name } => {
-                let path = constants::DEFAULT_SCRIPT_DIR;
-                let scripts = util::enumerate_scripts(&path)?;
+                let scripts = util::enumerate_scripts()?;
 
                 let empty = vec![];
 
@@ -1220,8 +1217,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     let empty = HashMap::new();
 
-                    let path = constants::DEFAULT_SCRIPT_DIR;
-                    let scripts = util::enumerate_scripts(&path)?;
+                    let scripts = util::enumerate_scripts()?;
 
                     for script in &scripts {
                         if profile.active_scripts.contains(&PathBuf::from(
@@ -1303,8 +1299,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             profile.name, profile.id, profile.description, profile.active_scripts,
                         );
 
-                        let path = constants::DEFAULT_SCRIPT_DIR;
-                        let scripts = util::enumerate_scripts(&path)?;
+                        let scripts = util::enumerate_scripts()?;
 
                         for scr in scripts {
                             if scr.name == script {
@@ -1335,8 +1330,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         let empty = HashMap::new();
 
-                        let path = constants::DEFAULT_SCRIPT_DIR;
-                        let scripts = util::enumerate_scripts(&path)?;
+                        let scripts = util::enumerate_scripts()?;
 
                         'OUTER_LOOP: for script in scripts {
                             if profile.active_scripts.contains(&PathBuf::from(
@@ -1396,8 +1390,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     // list parameters from the specified script
                     println!("Dumping all parameters from the specified script:\n");
 
-                    let path = constants::DEFAULT_SCRIPT_DIR;
-                    let scripts = util::enumerate_scripts(&path)?;
+                    let scripts = util::enumerate_scripts()?;
 
                     for scr in scripts {
                         if scr.name == script {

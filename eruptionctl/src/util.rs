@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::constants;
-use crate::manifest::{self, Manifest};
+use crate::manifest::{self, Manifest, ManifestError};
 use crate::profiles;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -31,10 +31,6 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum UtilError {
     #[error("File not found: {description}")]
     FileNotFound { description: String },
-}
-
-pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
-    manifest::get_scripts(path.as_ref())
 }
 
 pub fn get_profile_dirs() -> Vec<PathBuf> {
@@ -93,6 +89,23 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
     }
 
     result
+}
+
+pub fn enumerate_scripts() -> Result<Vec<Manifest>> {
+    manifest::get_scripts()
+}
+
+/// Returns the absolute path of a script file
+pub fn match_script_file(script: &Path) -> Result<PathBuf> {
+    let scripts = manifest::get_script_files()?;
+
+    for f in scripts {
+        if f.file_name().unwrap_or_default() == script {
+            return Ok(f);
+        }
+    }
+
+    Err(ManifestError::ScriptEnumerationError {}.into())
 }
 
 pub fn enumerate_profiles() -> Result<Vec<profiles::Profile>> {

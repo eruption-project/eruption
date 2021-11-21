@@ -16,12 +16,13 @@
 */
 
 // use crate::manifest;
-use crate::{constants, dbus_client, preferences, profiles};
+use crate::{constants, dbus_client, manifest, preferences, profiles};
 use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 // use manifest::Manifest;
 // use std::fs;
+use crate::manifest::ManifestError;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use std::collections::HashMap;
@@ -448,9 +449,18 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
     result
 }
 
-// pub fn enumerate_scripts<P: AsRef<Path>>(path: P) -> Result<Vec<Manifest>> {
-//     manifest::get_scripts(&path.as_ref())
-// }
+/// Returns the absolute path of a script file
+pub fn match_script_file(script: &Path) -> Result<PathBuf> {
+    let scripts = manifest::get_script_files()?;
+
+    for f in scripts {
+        if f.file_name().unwrap_or_default() == script {
+            return Ok(f);
+        }
+    }
+
+    Err(ManifestError::ScriptEnumerationError {}.into())
+}
 
 pub fn enumerate_profiles() -> Result<Vec<profiles::Profile>> {
     let mut result = profiles::get_profiles()?;

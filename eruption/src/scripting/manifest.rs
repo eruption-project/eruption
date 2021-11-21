@@ -19,12 +19,14 @@
 
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use crate::profiles;
 use crate::util;
+use crate::util::get_script_dirs;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -255,26 +257,37 @@ impl Manifest {
 
 /// Get a `Vec` of `PathBufs` of available script files in the directory `script_path`.
 #[allow(dead_code)]
-fn get_script_files(script_path: &Path) -> Result<Vec<PathBuf>> {
-    match fs::read_dir(script_path) {
-        Ok(paths) => Ok(paths
-            .map(|p| p.unwrap().path())
-            .filter(|p| {
-                if p.extension().is_some() {
-                    return p.extension().unwrap() == "lua";
-                }
-
-                false
-            })
-            .collect()),
-
-        Err(_e) => Err(ManifestError::ScriptEnumerationError {}.into()),
-    }
+pub fn get_script_files() -> Result<Vec<PathBuf>> {
+    get_script_files_from(&get_script_dirs())
 }
 
 #[allow(dead_code)]
-pub fn get_scripts(script_path: &Path) -> Result<Vec<Manifest>> {
-    let script_files = get_script_files(script_path).unwrap();
+pub fn get_script_files_from(script_dirs: &[PathBuf]) -> Result<Vec<PathBuf>> {
+    let mut result = vec![];
+
+    for script_path in script_dirs {
+        if let Ok(paths) = fs::read_dir(&script_path) {
+            let mut script_paths = paths
+                .map(|p| p.unwrap().path())
+                .filter(|p| {
+                    if p.extension().is_some() {
+                        return p.extension().unwrap_or_else(|| OsStr::new("")) == "lua";
+                    }
+
+                    false
+                })
+                .collect::<Vec<PathBuf>>();
+
+            result.append(&mut script_paths);
+        }
+    }
+
+    Ok(result)
+}
+
+#[allow(dead_code)]
+pub fn get_scripts() -> Result<Vec<Manifest>> {
+    let script_files = get_script_files().unwrap();
 
     let mut errors_present = false;
     let mut result: Vec<Manifest> = vec![];
