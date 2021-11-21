@@ -45,6 +45,12 @@ Developer documentation
 
 [LIBRARY.md](LIBRARY.md)
 
+### File Format Specification
+
+Developer documentation
+
+[PROFILES_SCRIPTS.md](PROFILES_SCRIPTS.md)
+
 ### Installation from Source
 
 HowTo setup Eruption
