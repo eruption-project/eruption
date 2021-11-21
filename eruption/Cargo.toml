@@ -94,7 +94,6 @@ icecream = "0.1.0"
 # sysinfo = "=0.14.2"
 
 [dev-dependencies]
-icecream = "0.1.0"
 pretty_assertions = "1.0.0"
 thiserror = "1.0.30"
 tokio = { version = "1.14.0", features = ["test-util"] }
