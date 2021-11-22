@@ -9,10 +9,10 @@
 
 _This is a non-exhaustive listing of planned features:_
 
-* Complete support for Wayland (The `NetworkFX Ambient Effect` feature is currently missing)
+* Implement an `Eruption SDK` that allows 3rd party applications to communicate with Eruption
+* Finish support for Wayland (The `NetworkFX Ambient Effect` feature is currently missing)
 * GUI support: Improve the GTK3+ based GUI
 * Improve the GNOME Shell Extension
 * Add a MATE Desktop Applet
 * Add a KDE Plasma widget
-* Improve support for device hotplug: Don't always restart the daemon, but implement device bind/unbind code
-* Possibly implement an `Eruption SDK` that allows 3rd party applications to communicate with Eruption
+* Improve support for device hotplug: Don't always restart the eruption daemon, but implement device bind/unbind code
