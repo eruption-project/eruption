@@ -1,3 +1,4 @@
+
 #compdef eruption-hwutil
 
 autoload -U is-at-least
@@ -15,8 +16,8 @@ _eruption-hwutil() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-c+[Sets the configuration file to use]' \
-'--config=[Sets the configuration file to use]' \
+'-c+[Sets the configuration file to use]:CONFIG: ' \
+'--config=[Sets the configuration file to use]:CONFIG: ' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '-V[Print version information]' \
@@ -38,16 +39,12 @@ _eruption-hwutil() {
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 && ret=0
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ':device:' \
 && ret=0
 ;;
@@ -55,8 +52,6 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ':device:' \
 && ret=0
 ;;
@@ -64,12 +59,11 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruption-hwutil__firmware_commands" \
 "*::: :->firmware" \
 && ret=0
-case $state in
+
+    case $state in
     (firmware)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -77,16 +71,25 @@ case $state in
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 && ret=0
 ;;
 (flash)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -97,57 +100,13 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
-":: :_eruption-hwutil__completions_commands" \
-"*::: :->completions" \
+':shell:' \
 && ret=0
-case $state in
-    (completions)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruption-hwutil-completions-command-$line[1]:"
-        case $line[1] in
-            (bash)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(elvish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(fish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(power-shell)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(zsh)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-        esac
-    ;;
-esac
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 && ret=0
 ;;
         esac
@@ -167,11 +126,6 @@ _eruption-hwutil_commands() {
     )
     _describe -t commands 'eruption-hwutil commands' commands "$@"
 }
-(( $+functions[_eruption-hwutil__completions__bash_commands] )) ||
-_eruption-hwutil__completions__bash_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-hwutil completions bash commands' commands "$@"
-}
 (( $+functions[_eruption-hwutil__blackout_commands] )) ||
 _eruption-hwutil__blackout_commands() {
     local commands; commands=()
@@ -179,37 +133,27 @@ _eruption-hwutil__blackout_commands() {
 }
 (( $+functions[_eruption-hwutil__completions_commands] )) ||
 _eruption-hwutil__completions_commands() {
-    local commands; commands=(
-'bash:' \
-'elvish:' \
-'fish:' \
-'power-shell:' \
-'zsh:' \
-    )
-    _describe -t commands 'eruption-hwutil completions commands' commands "$@"
-}
-(( $+functions[_eruption-hwutil__completions__elvish_commands] )) ||
-_eruption-hwutil__completions__elvish_commands() {
     local commands; commands=()
-    _describe -t commands 'eruption-hwutil completions elvish commands' commands "$@"
+    _describe -t commands 'eruption-hwutil completions commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__firmware_commands] )) ||
 _eruption-hwutil__firmware_commands() {
     local commands; commands=(
 'info:Get some information about the currently installed firmware' \
 'flash:Flash firmware to device (DANGEROUS, may brick the device)' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruption-hwutil firmware commands' commands "$@"
-}
-(( $+functions[_eruption-hwutil__completions__fish_commands] )) ||
-_eruption-hwutil__completions__fish_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-hwutil completions fish commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__firmware__flash_commands] )) ||
 _eruption-hwutil__firmware__flash_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil firmware flash commands' commands "$@"
+}
+(( $+functions[_eruption-hwutil__firmware__help_commands] )) ||
+_eruption-hwutil__firmware__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-hwutil firmware help commands' commands "$@"
 }
 (( $+functions[_eruption-hwutil__help_commands] )) ||
 _eruption-hwutil__help_commands() {
@@ -226,20 +170,10 @@ _eruption-hwutil__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil list commands' commands "$@"
 }
-(( $+functions[_eruption-hwutil__completions__power-shell_commands] )) ||
-_eruption-hwutil__completions__power-shell_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-hwutil completions power-shell commands' commands "$@"
-}
 (( $+functions[_eruption-hwutil__status_commands] )) ||
 _eruption-hwutil__status_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-hwutil status commands' commands "$@"
-}
-(( $+functions[_eruption-hwutil__completions__zsh_commands] )) ||
-_eruption-hwutil__completions__zsh_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-hwutil completions zsh commands' commands "$@"
 }
 
 _eruption-hwutil "$@"

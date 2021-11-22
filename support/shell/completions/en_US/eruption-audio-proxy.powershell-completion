@@ -20,74 +20,32 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-audio-proxy' -ScriptBl
 
     $completions = @(switch ($command) {
         'eruption-audio-proxy' {
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('ping', 'ping', [CompletionResultType]::ParameterValue, 'Ping the server')
             [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Run in background')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
-        'eruption-audio-proxy;ping' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            break
-        }
         'eruption-audio-proxy;daemon' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             break
         }
         'eruption-audio-proxy;completions' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('bash', 'bash', [CompletionResultType]::ParameterValue, 'bash')
-            [CompletionResult]::new('elvish', 'elvish', [CompletionResultType]::ParameterValue, 'elvish')
-            [CompletionResult]::new('fish', 'fish', [CompletionResultType]::ParameterValue, 'fish')
-            [CompletionResult]::new('power-shell', 'power-shell', [CompletionResultType]::ParameterValue, 'power-shell')
-            [CompletionResult]::new('zsh', 'zsh', [CompletionResultType]::ParameterValue, 'zsh')
-            break
-        }
-        'eruption-audio-proxy;completions;bash' {
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            break
-        }
-        'eruption-audio-proxy;completions;elvish' {
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            break
-        }
-        'eruption-audio-proxy;completions;fish' {
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            break
-        }
-        'eruption-audio-proxy;completions;power-shell' {
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            break
-        }
-        'eruption-audio-proxy;completions;zsh' {
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             break
         }
         'eruption-audio-proxy;help' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             break
         }
     })

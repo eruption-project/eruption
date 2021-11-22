@@ -9,36 +9,9 @@ complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "ambient" -d 'Make t
 complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
 complete -c eruption-netfx -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c eruption-netfx -n "__fish_seen_subcommand_from ping" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ping" -s V -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -r
 complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from command" -s V -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -r
 complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -s V -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -r
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -r
 complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -s V -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -r
 complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -s V -l version -d 'Print version information'
 complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -s V -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "bash"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "elvish"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "fish"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "power-shell"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -f -a "zsh"
-complete -c eruption-netfx -n "__fish_seen_subcommand_from bash" -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from bash" -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from elvish" -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from elvish" -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from fish" -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from fish" -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from power-shell" -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from power-shell" -l version -d 'Print version information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from zsh" -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from zsh" -l version -d 'Print version information'
 complete -c eruption-netfx -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from help" -s V -l version -d 'Print version information'

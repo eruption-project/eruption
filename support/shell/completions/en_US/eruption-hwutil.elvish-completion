@@ -2,21 +2,21 @@
 use builtin;
 use str;
 
-edit:completion:arg-completer[eruption-hwutil] = [@words]{
+set edit:completion:arg-completer[eruption-hwutil] = [@words]{
     fn spaces [n]{
         builtin:repeat $n ' ' | str:join ''
     }
     fn cand [text desc]{
-        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
     }
-    command = 'eruption-hwutil'
+    var command = 'eruption-hwutil'
     for word $words[1..-1] {
         if (str:has-prefix $word '-') {
             break
         }
-        command = $command';'$word
+        set command = $command';'$word
     }
-    completions = [
+    var completions = [
         &'eruption-hwutil'= {
             cand -c 'Sets the configuration file to use'
             cand --config 'Sets the configuration file to use'
@@ -38,73 +38,44 @@ edit:completion:arg-completer[eruption-hwutil] = [@words]{
         &'eruption-hwutil;list'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-hwutil;status'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-hwutil;blackout'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-hwutil;firmware'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
             cand info 'Get some information about the currently installed firmware'
             cand flash 'Flash firmware to device (DANGEROUS, may brick the device)'
+            cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-hwutil;firmware;info'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-hwutil;firmware;flash'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-hwutil;firmware;help'= {
+            cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-hwutil;completions'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
-            cand bash 'bash'
-            cand elvish 'elvish'
-            cand fish 'fish'
-            cand power-shell 'power-shell'
-            cand zsh 'zsh'
-        }
-        &'eruption-hwutil;completions;bash'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-hwutil;completions;elvish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-hwutil;completions;fish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-hwutil;completions;power-shell'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-hwutil;completions;zsh'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
         }
         &'eruption-hwutil;help'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
     ]
     $completions[$command]

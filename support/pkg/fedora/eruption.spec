@@ -87,6 +87,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}%{_datarootdir}/zsh/site-functions/
 
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
+cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-cmd.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption-hwutil.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{name}-%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-%{version}/support/man/process-monitor.conf.5 %{buildroot}/%{_mandir}/man5/
@@ -195,6 +196,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/systemd/eruption-suspend.sh %{buil
 
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption %{buildroot}%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
+install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-cmd %{buildroot}%{_bindir}/eruption-cmd
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-hwutil %{buildroot}%{_bindir}/eruption-hwutil
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
@@ -216,6 +218,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %files
 %doc %{_mandir}/man5/eruption.conf.5.gz
 %doc %{_mandir}/man8/eruption.8.gz
+%doc %{_mandir}/man8/eruption-cmd.8.gz
 %doc %{_mandir}/man8/eruption-hwutil.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
@@ -233,6 +236,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
+%{_bindir}/eruption-cmd
 %{_bindir}/eruption-hwutil
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-util
@@ -253,18 +257,21 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 #%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 #%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
+%{_datarootdir}/bash-completion/completions/eruption-cmd
 %{_datarootdir}/bash-completion/completions/eruption-hwutil
 %{_datarootdir}/bash-completion/completions/eruption-netfx
 %{_datarootdir}/bash-completion/completions/eruption-audio-proxy
 %{_datarootdir}/bash-completion/completions/eruption-process-monitor
 %{_datarootdir}/bash-completion/completions/eruptionctl
 %{_datarootdir}/fish/completions/eruption-debug-tool.fish
+%{_datarootdir}/fish/completions/eruption-cmd.fish
 %{_datarootdir}/fish/completions/eruption-hwutil.fish
 %{_datarootdir}/fish/completions/eruption-netfx.fish
 %{_datarootdir}/fish/completions/eruption-audio-proxy.fish
 %{_datarootdir}/fish/completions/eruption-process-monitor.fish
 %{_datarootdir}/fish/completions/eruptionctl.fish
 %{_datarootdir}/zsh/site-functions/_eruption-debug-tool
+%{_datarootdir}/zsh/site-functions/_eruption-cmd
 %{_datarootdir}/zsh/site-functions/_eruption-hwutil
 %{_datarootdir}/zsh/site-functions/_eruption-netfx
 %{_datarootdir}/zsh/site-functions/_eruption-audio-proxy

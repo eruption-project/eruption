@@ -19,7 +19,7 @@ function gen_completions {
     ./target/debug/"$1" "completions" "bash" > "support/shell/completions/$LANG/$1.bash-completion"
     ./target/debug/"$1" "completions" "elvish" > "support/shell/completions/$LANG/$1.elvish-completion"
     ./target/debug/"$1" "completions" "fish" > "support/shell/completions/$LANG/$1.fish-completion"
-    ./target/debug/"$1" "completions" "power-shell" > "support/shell/completions/$LANG/$1.powershell-completion"
+    ./target/debug/"$1" "completions" "powershell" > "support/shell/completions/$LANG/$1.powershell-completion"
     ./target/debug/"$1" "completions" "zsh" > "support/shell/completions/$LANG/$1.zsh-completion"
 }
 
@@ -32,6 +32,7 @@ do
     mkdir -p "support/shell/completions/$LANG/"
 
     # gen_completions "eruption"
+    gen_completions "eruption-cmd"
     gen_completions "eruption-hwutil"
     gen_completions "eruption-debug-tool"
     # gen_completions "eruption-gui"

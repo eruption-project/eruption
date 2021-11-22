@@ -24,6 +24,7 @@ pub mod mouse;
 pub mod persistence;
 pub mod plugin;
 pub mod profiles;
+pub mod sdk_support;
 pub mod sensors;
 pub mod system;
 
@@ -36,6 +37,7 @@ pub use mouse::MousePlugin;
 pub use persistence::PersistencePlugin;
 pub use plugin::Plugin;
 pub use profiles::ProfilesPlugin;
+pub use sdk_support::SdkSupportPlugin;
 pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
 
@@ -84,6 +86,9 @@ pub async fn register_plugins() -> Result<()> {
         .await?;
     plugin_manager
         .register_plugin(Box::new(SensorsPlugin::new()))
+        .await?;
+    plugin_manager
+        .register_plugin(Box::new(SdkSupportPlugin::new()))
         .await?;
     plugin_manager
         .register_plugin(Box::new(AudioPlugin::new()))

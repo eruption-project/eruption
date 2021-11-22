@@ -2,21 +2,21 @@
 use builtin;
 use str;
 
-edit:completion:arg-completer[eruption-debug-tool] = [@words]{
+set edit:completion:arg-completer[eruption-debug-tool] = [@words]{
     fn spaces [n]{
         builtin:repeat $n ' ' | str:join ''
     }
     fn cand [text desc]{
-        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
     }
-    command = 'eruption-debug-tool'
+    var command = 'eruption-debug-tool'
     for word $words[1..-1] {
         if (str:has-prefix $word '-') {
             break
         }
-        command = $command';'$word
+        set command = $command';'$word
     }
-    completions = [
+    var completions = [
         &'eruption-debug-tool'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
@@ -40,104 +40,62 @@ edit:completion:arg-completer[eruption-debug-tool] = [@words]{
         &'eruption-debug-tool;list'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;report'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;trace'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;state-diff'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;read'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;write'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;read-raw'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;write-raw'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;run-tests'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;utils'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
             cand reverse-crc8 'Find CRC8 polynoms and init params by performing an exhaustive search'
+            cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-debug-tool;utils;reverse-crc8'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-debug-tool;utils;help'= {
+            cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-debug-tool;completions'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
-            cand bash 'bash'
-            cand elvish 'elvish'
-            cand fish 'fish'
-            cand power-shell 'power-shell'
-            cand zsh 'zsh'
-        }
-        &'eruption-debug-tool;completions;bash'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-debug-tool;completions;elvish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-debug-tool;completions;fish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-debug-tool;completions;power-shell'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-debug-tool;completions;zsh'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
         }
         &'eruption-debug-tool;help'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
     ]
     $completions[$command]

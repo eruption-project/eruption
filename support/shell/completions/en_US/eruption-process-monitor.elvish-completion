@@ -2,21 +2,21 @@
 use builtin;
 use str;
 
-edit:completion:arg-completer[eruption-process-monitor] = [@words]{
+set edit:completion:arg-completer[eruption-process-monitor] = [@words]{
     fn spaces [n]{
         builtin:repeat $n ' ' | str:join ''
     }
     fn cand [text desc]{
-        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
     }
-    command = 'eruption-process-monitor'
+    var command = 'eruption-process-monitor'
     for word $words[1..-1] {
         if (str:has-prefix $word '-') {
             break
         }
-        command = $command';'$word
+        set command = $command';'$word
     }
-    completions = [
+    var completions = [
         &'eruption-process-monitor'= {
             cand -c 'Sets the configuration file to use'
             cand --config 'Sets the configuration file to use'
@@ -34,76 +34,54 @@ edit:completion:arg-completer[eruption-process-monitor] = [@words]{
         &'eruption-process-monitor;daemon'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-process-monitor;rules'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
             cand list 'List all available rules'
             cand enable 'Mark a rule as enabled'
             cand disable 'Mark a rule as disabled'
             cand add 'Add a new rule'
             cand remove 'Remove a rule by index'
+            cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-process-monitor;rules;list'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-process-monitor;rules;enable'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-process-monitor;rules;disable'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-process-monitor;rules;add'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-process-monitor;rules;remove'= {
-            cand --help 'Print help information'
             cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-process-monitor;rules;help'= {
+            cand --version 'Print version information'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
         }
         &'eruption-process-monitor;completions'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
-            cand bash 'bash'
-            cand elvish 'elvish'
-            cand fish 'fish'
-            cand power-shell 'power-shell'
-            cand zsh 'zsh'
-        }
-        &'eruption-process-monitor;completions;bash'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-process-monitor;completions;elvish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-process-monitor;completions;fish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-process-monitor;completions;power-shell'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-process-monitor;completions;zsh'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
         }
         &'eruption-process-monitor;help'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
     ]
     $completions[$command]

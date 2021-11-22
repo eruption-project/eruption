@@ -15,8 +15,8 @@ _eruptionctl() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-c+[Sets the configuration file to use]' \
-'--config=[Sets the configuration file to use]' \
+'-c+[Sets the configuration file to use]:CONFIG: ' \
+'--config=[Sets the configuration file to use]:CONFIG: ' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '-V[Print version information]' \
@@ -38,12 +38,11 @@ _eruptionctl() {
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__config_commands" \
 "*::: :->config" \
 && ret=0
-case $state in
+
+    case $state in
     (config)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -51,16 +50,25 @@ case $state in
         case $line[1] in
             (brightness)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 '::brightness:' \
 && ret=0
 ;;
 (soundfx)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 '::enable:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -71,12 +79,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__devices_commands" \
 "*::: :->devices" \
 && ret=0
-case $state in
+
+    case $state in
     (devices)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -84,78 +91,95 @@ case $state in
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
 (info)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 && ret=0
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 && ret=0
 ;;
 (brightness)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::brightness:' \
 && ret=0
 ;;
 (profile)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::profile:' \
 && ret=0
 ;;
 (dpi)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::dpi:' \
 && ret=0
 ;;
 (rate)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::rate:' \
 && ret=0
 ;;
 (debounce)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::enable:' \
 && ret=0
 ;;
 (distance)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::param:' \
 && ret=0
 ;;
 (angle-snapping)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':device:' \
 '::enable:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -166,12 +190,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__status_commands" \
 "*::: :->status" \
 && ret=0
-case $state in
+
+    case $state in
     (status)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -179,14 +202,23 @@ case $state in
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -197,12 +229,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__switch_commands" \
 "*::: :->switch" \
 && ret=0
-case $state in
+
+    case $state in
     (switch)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -210,16 +241,25 @@ case $state in
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':profile-name:' \
 && ret=0
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':index:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -230,12 +270,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__profiles_commands" \
 "*::: :->profiles" \
 && ret=0
-case $state in
+
+    case $state in
     (profiles)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -243,22 +282,32 @@ case $state in
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':profile-name:' \
 && ret=0
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':profile-name:' \
 && ret=0
 ;;
 (list)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -269,12 +318,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__names_commands" \
 "*::: :->names" \
 && ret=0
-case $state in
+
+    case $state in
     (names)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -282,23 +330,33 @@ case $state in
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
 (set)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':slot-index:' \
 ':name:' \
 && ret=0
 ;;
 (set-all)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 '*::names:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -309,12 +367,11 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ":: :_eruptionctl__scripts_commands" \
 "*::: :->scripts" \
 && ret=0
-case $state in
+
+    case $state in
     (scripts)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
@@ -322,22 +379,32 @@ case $state in
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':script-name:' \
 && ret=0
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 ':script-name:' \
 && ret=0
 ;;
 (list)
 _arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
 '--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'--version[Print version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
         esac
@@ -348,8 +415,6 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 '::script:' \
 '::parameter:' \
 '::value:' \
@@ -359,57 +424,13 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
-":: :_eruptionctl__completions_commands" \
-"*::: :->completions" \
+':shell:' \
 && ret=0
-case $state in
-    (completions)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-completions-command-$line[1]:"
-        case $line[1] in
-            (bash)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(elvish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(fish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(power-shell)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(zsh)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-        esac
-    ;;
-esac
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 && ret=0
 ;;
         esac
@@ -438,11 +459,6 @@ _eruptionctl__devices__angle-snapping_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl devices angle-snapping commands' commands "$@"
 }
-(( $+functions[_eruptionctl__completions__bash_commands] )) ||
-_eruptionctl__completions__bash_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruptionctl completions bash commands' commands "$@"
-}
 (( $+functions[_eruptionctl__config__brightness_commands] )) ||
 _eruptionctl__config__brightness_commands() {
     local commands; commands=()
@@ -455,13 +471,7 @@ _eruptionctl__devices__brightness_commands() {
 }
 (( $+functions[_eruptionctl__completions_commands] )) ||
 _eruptionctl__completions_commands() {
-    local commands; commands=(
-'bash:' \
-'elvish:' \
-'fish:' \
-'power-shell:' \
-'zsh:' \
-    )
+    local commands; commands=()
     _describe -t commands 'eruptionctl completions commands' commands "$@"
 }
 (( $+functions[_eruptionctl__config_commands] )) ||
@@ -469,6 +479,7 @@ _eruptionctl__config_commands() {
     local commands; commands=(
 'brightness:Get or set the global brightness of the LEDs' \
 'soundfx:Get or set the state of SoundFX' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl config commands' commands "$@"
 }
@@ -490,6 +501,7 @@ _eruptionctl__devices_commands() {
 'debounce:Get or set the debounce parameter (applicable for some mice)' \
 'distance:Get or set the DCU parameter (applicable for some mice)' \
 'angle-snapping:Get or set the angle-snapping parameter (applicable for some mice)' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl devices commands' commands "$@"
 }
@@ -513,20 +525,45 @@ _eruptionctl__scripts__edit_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts edit commands' commands "$@"
 }
-(( $+functions[_eruptionctl__completions__elvish_commands] )) ||
-_eruptionctl__completions__elvish_commands() {
+(( $+functions[_eruptionctl__config__help_commands] )) ||
+_eruptionctl__config__help_commands() {
     local commands; commands=()
-    _describe -t commands 'eruptionctl completions elvish commands' commands "$@"
+    _describe -t commands 'eruptionctl config help commands' commands "$@"
 }
-(( $+functions[_eruptionctl__completions__fish_commands] )) ||
-_eruptionctl__completions__fish_commands() {
+(( $+functions[_eruptionctl__devices__help_commands] )) ||
+_eruptionctl__devices__help_commands() {
     local commands; commands=()
-    _describe -t commands 'eruptionctl completions fish commands' commands "$@"
+    _describe -t commands 'eruptionctl devices help commands' commands "$@"
 }
 (( $+functions[_eruptionctl__help_commands] )) ||
 _eruptionctl__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__names__help_commands] )) ||
+_eruptionctl__names__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl names help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__profiles__help_commands] )) ||
+_eruptionctl__profiles__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl profiles help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__scripts__help_commands] )) ||
+_eruptionctl__scripts__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl scripts help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__status__help_commands] )) ||
+_eruptionctl__status__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl status help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__switch__help_commands] )) ||
+_eruptionctl__switch__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl switch help commands' commands "$@"
 }
 (( $+functions[_eruptionctl__devices__info_commands] )) ||
 _eruptionctl__devices__info_commands() {
@@ -569,6 +606,7 @@ _eruptionctl__names_commands() {
 'list:List slot names' \
 'set:Set the name of a single profile slot' \
 'set-all:Set all the profile slot names at once' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl names commands' commands "$@"
 }
@@ -576,11 +614,6 @@ _eruptionctl__names_commands() {
 _eruptionctl__param_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl param commands' commands "$@"
-}
-(( $+functions[_eruptionctl__completions__power-shell_commands] )) ||
-_eruptionctl__completions__power-shell_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruptionctl completions power-shell commands' commands "$@"
 }
 (( $+functions[_eruptionctl__devices__profile_commands] )) ||
 _eruptionctl__devices__profile_commands() {
@@ -603,6 +636,7 @@ _eruptionctl__profiles_commands() {
 'info:Show info about a profile' \
 'edit:Edit a profile' \
 'list:List available profiles' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl profiles commands' commands "$@"
 }
@@ -617,6 +651,7 @@ _eruptionctl__scripts_commands() {
 'info:Show info about a script' \
 'edit:Edit a script' \
 'list:List available scripts' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl scripts commands' commands "$@"
 }
@@ -655,6 +690,7 @@ _eruptionctl__status_commands() {
     local commands; commands=(
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl status commands' commands "$@"
 }
@@ -663,13 +699,9 @@ _eruptionctl__switch_commands() {
     local commands; commands=(
 'profile:Switch profiles' \
 'slot:Switch slots' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl switch commands' commands "$@"
-}
-(( $+functions[_eruptionctl__completions__zsh_commands] )) ||
-_eruptionctl__completions__zsh_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruptionctl completions zsh commands' commands "$@"
 }
 
 _eruptionctl "$@"

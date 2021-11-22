@@ -1,0 +1,27 @@
+syntax = "proto3";
+package sdk_support;
+
+enum RequestType {
+  NOOP = 0;
+  STATUS = 1;
+  SET_CANVAS = 2;
+}
+
+message Request {
+  RequestType request_type = 1;
+
+  oneof Payload {
+    bytes data = 2;
+  }
+}
+
+message Response {
+  RequestType response_type = 1;
+
+  oneof Payload {
+    bytes data = 2;
+  }
+}
+
+// Service definition
+service SdkSupport { rpc Sdk(Request) returns (Response); }

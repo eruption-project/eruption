@@ -37,16 +37,12 @@ _eruption-netfx() {
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 && ret=0
 ;;
 (command)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ':data:' \
 && ret=0
 ;;
@@ -54,8 +50,6 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ':filename:' \
 && ret=0
 ;;
@@ -63,8 +57,6 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 ':directory-name:' \
 '::frame-delay:' \
 && ret=0
@@ -73,8 +65,6 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 '::frame-delay:' \
 && ret=0
 ;;
@@ -82,57 +72,13 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
-":: :_eruption-netfx__completions_commands" \
-"*::: :->completions" \
+':shell:' \
 && ret=0
-case $state in
-    (completions)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruption-netfx-completions-command-$line[1]:"
-        case $line[1] in
-            (bash)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(elvish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(fish)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(power-shell)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-(zsh)
-_arguments "${_arguments_options[@]}" \
-'--help[Print help information]' \
-'--version[Print version information]' \
-&& ret=0
-;;
-        esac
-    ;;
-esac
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
 && ret=0
 ;;
         esac
@@ -163,11 +109,6 @@ _eruption-netfx__animation_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-netfx animation commands' commands "$@"
 }
-(( $+functions[_eruption-netfx__completions__bash_commands] )) ||
-_eruption-netfx__completions__bash_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-netfx completions bash commands' commands "$@"
-}
 (( $+functions[_eruption-netfx__command_commands] )) ||
 _eruption-netfx__command_commands() {
     local commands; commands=()
@@ -175,24 +116,8 @@ _eruption-netfx__command_commands() {
 }
 (( $+functions[_eruption-netfx__completions_commands] )) ||
 _eruption-netfx__completions_commands() {
-    local commands; commands=(
-'bash:' \
-'elvish:' \
-'fish:' \
-'power-shell:' \
-'zsh:' \
-    )
+    local commands; commands=()
     _describe -t commands 'eruption-netfx completions commands' commands "$@"
-}
-(( $+functions[_eruption-netfx__completions__elvish_commands] )) ||
-_eruption-netfx__completions__elvish_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-netfx completions elvish commands' commands "$@"
-}
-(( $+functions[_eruption-netfx__completions__fish_commands] )) ||
-_eruption-netfx__completions__fish_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-netfx completions fish commands' commands "$@"
 }
 (( $+functions[_eruption-netfx__help_commands] )) ||
 _eruption-netfx__help_commands() {
@@ -208,16 +133,6 @@ _eruption-netfx__image_commands() {
 _eruption-netfx__ping_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-netfx ping commands' commands "$@"
-}
-(( $+functions[_eruption-netfx__completions__power-shell_commands] )) ||
-_eruption-netfx__completions__power-shell_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-netfx completions power-shell commands' commands "$@"
-}
-(( $+functions[_eruption-netfx__completions__zsh_commands] )) ||
-_eruption-netfx__completions__zsh_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-netfx completions zsh commands' commands "$@"
 }
 
 _eruption-netfx "$@"

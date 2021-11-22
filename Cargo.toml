@@ -15,7 +15,7 @@
 
 
 [workspace]
-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "eruption-gui"]
+members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "eruption-gui", "eruption-cmd", "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption"]
 default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor"]
 resolver = "2"
 

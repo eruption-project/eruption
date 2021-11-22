@@ -2,21 +2,21 @@
 use builtin;
 use str;
 
-edit:completion:arg-completer[eruption-netfx] = [@words]{
+set edit:completion:arg-completer[eruption-netfx] = [@words]{
     fn spaces [n]{
         builtin:repeat $n ' ' | str:join ''
     }
     fn cand [text desc]{
-        edit:complex-candidate $text &display-suffix=' '(spaces (- 14 (wcswidth $text)))$desc
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
     }
-    command = 'eruption-netfx'
+    var command = 'eruption-netfx'
     for word $words[1..-1] {
         if (str:has-prefix $word '-') {
             break
         }
-        command = $command';'$word
+        set command = $command';'$word
     }
-    completions = [
+    var completions = [
         &'eruption-netfx'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
@@ -35,69 +35,30 @@ edit:completion:arg-completer[eruption-netfx] = [@words]{
         &'eruption-netfx;ping'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;command'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;image'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;animation'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;ambient'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;completions'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
-            cand bash 'bash'
-            cand elvish 'elvish'
-            cand fish 'fish'
-            cand power-shell 'power-shell'
-            cand zsh 'zsh'
-        }
-        &'eruption-netfx;completions;bash'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-netfx;completions;elvish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-netfx;completions;fish'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-netfx;completions;power-shell'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
-        }
-        &'eruption-netfx;completions;zsh'= {
-            cand --help 'Print help information'
-            cand --version 'Print version information'
         }
         &'eruption-netfx;help'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
         }
     ]
     $completions[$command]

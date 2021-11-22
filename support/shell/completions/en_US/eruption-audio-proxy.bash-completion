@@ -12,33 +12,14 @@ _eruption-audio-proxy() {
             eruption-audio-proxy)
                 cmd="eruption__audio__proxy"
                 ;;
-            
-            bash)
-                cmd+="__bash"
-                ;;
             completions)
                 cmd+="__completions"
                 ;;
             daemon)
                 cmd+="__daemon"
                 ;;
-            elvish)
-                cmd+="__elvish"
-                ;;
-            fish)
-                cmd+="__fish"
-                ;;
             help)
                 cmd+="__help"
-                ;;
-            ping)
-                cmd+="__ping"
-                ;;
-            power-shell)
-                cmd+="__power__shell"
-                ;;
-            zsh)
-                cmd+="__zsh"
                 ;;
             *)
                 ;;
@@ -47,13 +28,20 @@ _eruption-audio-proxy() {
 
     case "${cmd}" in
         eruption__audio__proxy)
-            opts=" -h -V -v  --help --version --verbose  <HOSTNAME> <PORT> ping daemon completions help"
+            opts="-h -V -v -c --help --version --verbose --config daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -61,90 +49,13 @@ _eruption-audio-proxy() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        
         eruption__audio__proxy__completions)
-            opts=" -h -V  --help --version  bash elvish fish power-shell zsh"
+            opts="-h --help <SHELL>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__completions__bash)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__completions__elvish)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__completions__fish)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__completions__power__shell)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__completions__zsh)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -153,13 +64,12 @@ _eruption-audio-proxy() {
             return 0
             ;;
         eruption__audio__proxy__daemon)
-            opts=" -h -V  --help --version  "
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -168,28 +78,12 @@ _eruption-audio-proxy() {
             return 0
             ;;
         eruption__audio__proxy__help)
-            opts=" -h -V  --help --version  "
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__audio__proxy__ping)
-            opts=" -h -V  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;

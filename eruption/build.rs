@@ -32,5 +32,10 @@ fn main() -> Result<(), Box<dyn Error + 'static>> {
         &["../support/protobuf/"],
     )?;
 
+    prost_build::compile_protos(
+        &["../support/protobuf/sdk-support.proto"],
+        &["../support/protobuf/"],
+    )?;
+
     Ok(())
 }

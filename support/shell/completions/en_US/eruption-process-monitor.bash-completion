@@ -12,12 +12,8 @@ _eruption-process-monitor() {
             eruption-process-monitor)
                 cmd="eruption__process__monitor"
                 ;;
-            
             add)
                 cmd+="__add"
-                ;;
-            bash)
-                cmd+="__bash"
                 ;;
             completions)
                 cmd+="__completions"
@@ -28,14 +24,8 @@ _eruption-process-monitor() {
             disable)
                 cmd+="__disable"
                 ;;
-            elvish)
-                cmd+="__elvish"
-                ;;
             enable)
                 cmd+="__enable"
-                ;;
-            fish)
-                cmd+="__fish"
                 ;;
             help)
                 cmd+="__help"
@@ -43,17 +33,11 @@ _eruption-process-monitor() {
             list)
                 cmd+="__list"
                 ;;
-            power-shell)
-                cmd+="__power__shell"
-                ;;
             remove)
                 cmd+="__remove"
                 ;;
             rules)
                 cmd+="__rules"
-                ;;
-            zsh)
-                cmd+="__zsh"
                 ;;
             *)
                 ;;
@@ -62,13 +46,12 @@ _eruption-process-monitor() {
 
     case "${cmd}" in
         eruption__process__monitor)
-            opts=" -h -V -v -c  --help --version --verbose --config  <HOSTNAME> <PORT> daemon rules completions help"
+            opts="-h -V -v -c --help --version --verbose --config <HOSTNAME> <PORT> daemon rules completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 --config)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -84,90 +67,13 @@ _eruption-process-monitor() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        
         eruption__process__monitor__completions)
-            opts=" -h -V  --help --version  bash elvish fish power-shell zsh"
+            opts="-h --help <SHELL>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__process__monitor__completions__bash)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__process__monitor__completions__elvish)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__process__monitor__completions__fish)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__process__monitor__completions__power__shell)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__process__monitor__completions__zsh)
-            opts="  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -176,13 +82,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__daemon)
-            opts=" -h -V  --help --version  "
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -191,13 +96,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__help)
-            opts=" -h -V  --help --version  "
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -206,13 +110,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules)
-            opts=" -h -V  --help --version  list enable disable add remove"
+            opts="-h --help list enable disable add remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -221,13 +124,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__add)
-            opts="  --help --version  <RULE>... "
+            opts="-h --version --help <RULE>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -236,13 +138,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__disable)
-            opts="  --help --version  <RULE_INDEX> "
+            opts="-h --version --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -251,13 +152,26 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__enable)
-            opts="  --help --version  <RULE_INDEX> "
+            opts="-h --version --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help)
+            opts="-h --version --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -266,13 +180,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__list)
-            opts="  --help --version  "
+            opts="-h --version --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;
@@ -281,13 +194,12 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__remove)
-            opts="  --help --version  <RULE_INDEX> "
+            opts="-h --version --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 *)
                     COMPREPLY=()
                     ;;

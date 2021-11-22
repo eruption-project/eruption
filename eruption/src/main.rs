@@ -63,7 +63,8 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-use crate::hwdevices::DeviceStatus;
+use crate::hwdevices::{DeviceStatus, RGBA};
+use crate::plugins::sdk_support;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
@@ -2524,6 +2525,29 @@ async fn run_main_loop(
                         }
                     } else {
                         drop_frame = true;
+                    }
+                }
+
+                {
+                    // finally, blend the LED map of the sdk support plugin
+                    let sdk_led_map = sdk_support::LED_MAP.read();
+                    let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
+                    for (idx, background) in script::LED_MAP.write().iter_mut().enumerate() {
+                        let bg = &background;
+                        let fg = sdk_led_map[idx];
+
+                        let brightness = brightness;
+
+                        #[rustfmt::skip]
+                        let color = RGBA {
+                            r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            a: fg.a as u8,
+                        };
+
+                        *background = color;
                     }
                 }
 
