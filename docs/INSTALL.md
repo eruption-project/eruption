@@ -44,7 +44,7 @@ sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-de
 
 ```shell
 sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev \
-  libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf4.0-dev \
+  libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev \
   libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4.0-dev
 ```
 
