@@ -35,8 +35,8 @@ pub type Result<T> = super::Result<T>;
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
 
 // canvas to LED index mapping
-pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-pub const LED_1: usize = constants::CANVAS_SIZE - 35;
+// pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+// pub const LED_1: usize = constants::CANVAS_SIZE - 35;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -748,7 +748,7 @@ impl MouseDeviceTrait for RoccatKova2016 {
         }
     }
 
-    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -758,7 +758,7 @@ impl MouseDeviceTrait for RoccatKova2016 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            /* let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // use the color of KP_ENTER for now
@@ -782,7 +782,9 @@ impl MouseDeviceTrait for RoccatKova2016 {
                 }
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            } */
+
+            Ok(())
         }
     }
 
