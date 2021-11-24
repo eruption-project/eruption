@@ -259,7 +259,7 @@ impl DeviceTrait for RoccatKova2016 {
         }
     }
 
-    fn send_led_map(&self, led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&self, _led_map: &[RGBA]) -> Result<()> {
         println_v!(1, "Setting LEDs from supplied map...");
 
         if !self.is_bound {

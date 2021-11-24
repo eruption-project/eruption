@@ -37,6 +37,7 @@ use std::{
 mod constants;
 mod util;
 
+#[allow(unused)]
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(RustEmbed)]
