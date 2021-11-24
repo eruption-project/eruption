@@ -26,50 +26,125 @@ EASY_SHIFT_KEY = 255
 -- character to key index mapping
 key_to_index = {}
 
-key_to_index['GAME_MODE'] = 104
-
-key_to_index['FN'] = 77
-key_to_index['CAPS_LOCK'] = 4
-key_to_index['LEFT_SHIFT'] = 5
-key_to_index['RIGHT_SHIFT'] = 83
-key_to_index['LEFT_CTRL'] = 6
-key_to_index['RIGHT_CTRL'] = 90
-key_to_index['LEFT_ALT'] = 17
-key_to_index['RIGHT_ALT'] = 71
-key_to_index['RIGHT_MENU'] = 84
-
-key_to_index['ESC'] = 1
-
+-- F Keys
 key_to_index['F1'] = 12
 key_to_index['F2'] = 18
 key_to_index['F3'] = 24
 key_to_index['F4'] = 29
-
 key_to_index['F5'] = 49
 key_to_index['F6'] = 54
 key_to_index['F7'] = 60
 key_to_index['F8'] = 66
-
 key_to_index['F9'] = 79
 key_to_index['F10'] = 85
 key_to_index['F11'] = 86
 key_to_index['F12'] = 87
 
+-- Special Keys
+key_to_index['ESC'] = 1
+key_to_index['PRINT'] = 100
+key_to_index['ROLL'] = 104
+key_to_index['GAME_MODE'] = 104
+key_to_index['PAUSE'] = 109
+key_to_index['BACKSPACE'] = 88
+key_to_index['TAB'] = 3
+key_to_index['RETURN'] = 89
+key_to_index['CAPS_LOCK'] = 4
+key_to_index['LEFT_SHIFT'] = 5
+key_to_index['RIGHT_SHIFT'] = 83
+key_to_index['LEFT_CTRL'] = 6
+key_to_index['MOD_LEFT'] = 11
+key_to_index['LEFT_ALT'] = 17
+key_to_index['SPACE'] = 38
+key_to_index['RIGHT_ALT'] = 71
+key_to_index['FN'] = 77
+key_to_index['RIGHT_MENU'] = 84
+key_to_index['RIGHT_CTRL'] = 90
 key_to_index['INSERT'] = 101
 key_to_index['POS1'] = 105
 key_to_index['PGUP'] = 110
+key_to_index['PGDWN'] = 111
 key_to_index['DEL'] = 102
 key_to_index['END'] = 106
-key_to_index['PGDWN'] = 111
 
+-- Num Pad
+key_to_index['NUM'] = 114
+key_to_index['NUM_DIV'] = 120
+key_to_index['NUM_MULT'] = 125
+key_to_index['NUM_MINUS'] = 130
+key_to_index['NUM_PLUS'] = 131
+key_to_index['NUM_RETURN'] = 132
+key_to_index['NUM_COMMA'] = 129
+key_to_index['NUM_0'] = 118
+key_to_index['NUM_1'] = 117
+key_to_index['NUM_2'] = 123
+key_to_index['NUM_3'] = 128
+key_to_index['NUM_4'] = 116
+key_to_index['NUM_5'] = 122
+key_to_index['NUM_6'] = 127
+key_to_index['NUM_7'] = 115
+key_to_index['NUM_8'] = 121
+key_to_index['NUM_9'] = 126
+
+-- Arrow Keys
+key_to_index['UP'] = 107
+key_to_index['DOWN'] = 108
+key_to_index['LEFT'] = 103
+key_to_index['RIGHT'] = 112
+
+-- Numbers
 key_to_index['1'] = 7
 key_to_index['2'] = 13
 key_to_index['3'] = 19
+key_to_index['4'] = 25
+key_to_index['5'] = 30
+key_to_index['6'] = 34
+key_to_index['7'] = 50
+key_to_index['8'] = 55
+key_to_index['9'] = 61
+key_to_index['0'] = 67
 
-key_to_index['W'] = 9
-key_to_index['A'] = 14
+-- Letters
+key_to_index['ß'] = 73
+key_to_index['Q'] = 8
+key_to_index['W'] = 14
+key_to_index['E'] = 20
+key_to_index['R'] = 26
+key_to_index['T'] = 31
+key_to_index['Z'] = 35
+key_to_index['U'] = 51
+key_to_index['I'] = 56
+key_to_index['O'] = 62
+key_to_index['P'] = 68
+key_to_index['Ü'] = 74
+key_to_index['A'] = 9
 key_to_index['S'] = 15
 key_to_index['D'] = 21
+key_to_index['F'] = 27
+key_to_index['G'] = 32
+key_to_index['H'] = 36
+key_to_index['J'] = 52
+key_to_index['K'] = 57
+key_to_index['L'] = 63
+key_to_index['Ö'] = 69
+key_to_index['Ä'] = 75
+key_to_index['Y'] = 16
+key_to_index['X'] = 22
+key_to_index['C'] = 28
+key_to_index['V'] = 33
+key_to_index['B'] = 37
+key_to_index['N'] = 53
+key_to_index['M'] = 58
+
+-- Others
+key_to_index['^'] = 2
+key_to_index['`'] = 80
+key_to_index['+'] = 81
+key_to_index['#'] = 97
+key_to_index['<'] = 10
+key_to_index[','] = 64
+key_to_index['.'] = 70
+key_to_index['-'] = 76
 
 -- support functions
 function device_specific_key_highlights()
