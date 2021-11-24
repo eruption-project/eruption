@@ -47,25 +47,26 @@ def main():
         blue = Color(0, 0, 255, 128)
         final = Color(0, 0, 0, 0)
 
-        canvas.fill_all(red)
+        canvas.fill(red)
         print("Submitting canvas...")
         connection.submit_canvas(canvas)
 
         time.sleep(1)
 
-        canvas.fill_all(green)
+        canvas.fill(green)
+
         print("Submitting canvas...")
         connection.submit_canvas(canvas)
 
         time.sleep(1)
 
-        canvas.fill_all(blue)
+        canvas.fill(blue)
         print("Submitting canvas...")
         connection.submit_canvas(canvas)
 
         time.sleep(1)
 
-        canvas.fill_all(final)
+        canvas.fill(final)
         print("Submitting canvas...")
         connection.submit_canvas(canvas)
 

@@ -26,7 +26,13 @@ class Canvas:
         self.size = CANVAS_SIZE
         self.data = [Color(0, 0, 0, 0)] * CANVAS_SIZE
 
-    def fill_all(self, color):
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, val):
+        self.data[key] = val
+
+    def fill(self, color):
         """Paint the canvas with the specified color"""
         for i in range(0, self.size):
             self.data[i] = color
