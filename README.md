@@ -50,6 +50,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Kone Aimo (experimental)
 - ROCCAT Kone Aimo Remastered (experimental)
 - ROCCAT Kova AIMO (experimental)
+- ROCCAT Kova 2016 (as of version `0.1.23`, experimental)
 
 ### Miscellaneous Devices
 

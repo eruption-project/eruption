@@ -57,6 +57,7 @@ Hardware feature support matrix
 | ROCCAT | Kone Aimo            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo Remastered | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kova AIMO            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kova 2016            | ??%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone XTD             | N.a    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.

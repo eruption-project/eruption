@@ -346,6 +346,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo_remastered.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_2016.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_nyth.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/roccat_elo_71_air.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/custom_serial_leds.lua
