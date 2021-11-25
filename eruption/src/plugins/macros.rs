@@ -545,12 +545,13 @@ impl MacrosPlugin {
             trace!("Injecting: {:?}", event);
 
             if let Some(device) = dev.borrow().as_ref() {
-                let time = event.time;
-
                 device.write_event(&event).unwrap();
 
                 let event = InputEvent {
-                    time,
+                    time: TimeVal {
+                        tv_sec: 0,
+                        tv_usec: 0,
+                    },
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value: 0,
                 };
@@ -607,7 +608,7 @@ impl MacrosPlugin {
 
                             let value = if down { 1 } else { 0 };
 
-                            let mut time: libc::timeval = libc::timeval {
+                            /* let mut time: libc::timeval = libc::timeval {
                                 tv_sec: 0,
                                 tv_usec: 0,
                             };
@@ -616,7 +617,12 @@ impl MacrosPlugin {
                                 libc::gettimeofday(&mut time, std::ptr::null_mut());
                             }
 
-                            let time = evdev_rs::TimeVal::from_raw(&time);
+                            let time = evdev_rs::TimeVal::from_raw(&time); */
+
+                            let time = evdev_rs::TimeVal {
+                                tv_sec: 0,
+                                tv_usec: 0,
+                            };
 
                             Self::inject_single_key(key, value, &time).unwrap();
                         }
@@ -629,7 +635,7 @@ impl MacrosPlugin {
 
                             let value = if down { 1 } else { 0 };
 
-                            let mut time: libc::timeval = libc::timeval {
+                            /* let mut time: libc::timeval = libc::timeval {
                                 tv_sec: 0,
                                 tv_usec: 0,
                             };
@@ -638,7 +644,12 @@ impl MacrosPlugin {
                                 libc::gettimeofday(&mut time, std::ptr::null_mut());
                             }
 
-                            let time = evdev_rs::TimeVal::from_raw(&time);
+                            let time = evdev_rs::TimeVal::from_raw(&time); */
+
+                            let time = evdev_rs::TimeVal {
+                                tv_sec: 0,
+                                tv_usec: 0,
+                            };
 
                             Self::inject_single_mouse_event(key, value, &time).unwrap();
                         }
