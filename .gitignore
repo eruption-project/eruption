@@ -5,6 +5,10 @@
 **/*.rs.bk
 **/*~
 **/*.glade~
+
 # python
 **/__pycache__/*
 venv/
+
+# c++
+*-build/

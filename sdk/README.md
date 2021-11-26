@@ -1,7 +1,7 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Welcome to the Eruption Softwrae Development Kit (SDK) documentation](#welcome-to-the-eruption-software-development-kit-sdk-documentation)
+  - [Welcome to the Eruption Software Development Kit (SDK) documentation](#welcome-to-the-eruption-software-development-kit-sdk-documentation)
     - [General Overview](#general-overview)
     - [Supported Programming Languages](#supported-programming-languages)
     
