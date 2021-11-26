@@ -5,36 +5,38 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.23 | __New Release__                                                                                                                                                              |
-| 0.1.23 | Switched to Rust 2021 edition, rustc >= `1.56.0` is now required to build Eruption                                                                                           |
-| 0.1.23 | Updated all dependencies to their latest revisions                                                                                                                           |
-| 0.1.23 | Fixed a possible deadlock scenario on shutdown of the `eruption` daemon                                                                                                      |
-| 0.1.23 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v18`!                                                 |
-| 0.1.23 | Added a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of `PipeWire` or `PulseAudio`              |
-| 0.1.23 | Added basic infrastructure for i18n an l10n, currently available languages: `en-US`: 100%; `de-DE`: approx. 60%                                                              |
-| 0.1.23 | Updated the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready yet)                                                  |
-| 0.1.23 | Added support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
-| 0.1.23 | Added support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`,  `ROCCAT Burst Pro`                                                |
-| 0.1.23 | Added a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running            |
-| 0.1.23 | Added a new `device status` subsystem that allows to poll status information like e.g. wireless signal strength or battery levels                                            |
-| 0.1.23 | Improved formatting of syslog log output; the default log-level is now `WARN` for all of the provided daemons                                                                |
-| 0.1.23 | Added experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
-| 0.1.23 | Added experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
+| 0.1.23 | Switch to Rust 2021 edition, rustc >= `1.56.1` is now required to build Eruption                                                                                           |
+| 0.1.23 | Update all dependencies to their latest revisions. Most notably: `mlua:v0.7.0`, using `luajit52` and many more                                                                                                                           |
+| 0.1.23 | Fix a possible deadlock scenario on shutdown of the `eruption` daemon                                                                                                      |
+| 0.1.23 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v18`!                                                 |
+| 0.1.23 | Add a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of `PipeWire` or `PulseAudio`              |
+| 0.1.23 | Add basic infrastructure for i18n an l10n, currently available languages: `en-US`: 100%; `de-DE`: approx. 60%                                                              |
+| 0.1.23 | Update the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready yet)                                                  |
+| 0.1.23 | Add support for changing the device specific (local) brightness of all connected devices, in addition to the global brightness                                             |
+| 0.1.23 | Add support for changing device specific parameters of the following devices: `ROCCAT Kone Pure Ultra`, `ROCCAT Burst Pro`                                                 |
+| 0.1.23 | Add a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running            |
+| 0.1.23 | Add a new `device status` subsystem that allows to poll status information like e.g. wireless signal strength or battery levels                                            |
+| 0.1.23 | Improve formatting of syslog log output; the default log-level is now `WARN` for all of the provided daemons                                                                |
+| 0.1.23 | Add experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
+| 0.1.23 | Add experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
+| 0.1.23 | Add a technology preview of the `Eruption SDK` (Software Development Kit), supporting the following programing languages: `Rust` via crate `eruption-rs`, \
+`Python 3` via the `eruption` Python module, `C/C++` via `liberuption.so`, and `Shell` via `eruption-cmd` |
 | 0.1.22 | __New Release__                                                                                                                                                              |
-| 0.1.22 | Updated all dependencies to their latest revisions. Most notably: `mlua:6.2`, and many more                                                                                  |
-| 0.1.22 | Updated the Eruption GUI to the latest version `0.0.10` (this is a technology preview only; it is not production ready)                                                      |
-| 0.1.22 | Started porting the Eruption GUI to GTK4                                                                                                                                     |
+| 0.1.22 | Update all dependencies to their latest revisions. Most notably: `mlua:v0.6.2`, and many more                                                                               |
+| 0.1.22 | Update the Eruption GUI to the latest version `0.0.10` (this is a technology preview only; it is not production ready)                                                      |
+| 0.1.22 | Start porting the Eruption GUI to GTK4                                                                                                                                     |
 | 0.1.22 | Add experimental support for `ROCCAT Kone XTD` series mice (input only, no LEDs currently since they don't support realtime effects)                                         |
 | 0.1.22 | Allow dimming of zones on the canvas, using the newly added `dim-zone.lua` script                                                                                            |
 | 0.1.22 | Provide dimmed/high contrast versions of some profiles: `Color Swirls (Perlin) (dimmed)` and variants                                                                        |
 | 0.1.22 | Add Support for the GNOME 4x `Mutter` window manager on Wayland to the `eruption-process-monitor`                                                                            |
 | 0.1.22 | Add per-device config infrastructure to the daemon proper and to `eruptionctl`                                                                                               |
 | 0.1.21 | __New Release__                                                                                                                                                              |
-| 0.1.21 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v15`!                                                          |
+| 0.1.21 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v15`!                                                          |
 | 0.1.21 | New package `eruption` available that currently ships without the GUI. Use the git snapshot package `eruption-git` if you want to stay on the bleeding edge                  |
-| 0.1.21 | Added support for macros on the primary layer. This complements the simple remapping of keys, now we support 1:N remapping of keys too                                       |
-| 0.1.21 | Added support for an "Audio muted" indicator                                                                                                                                 |
+| 0.1.21 | Add support for macros on the primary layer. This complements the simple remapping of keys, now we support 1:N remapping of keys too                                       |
+| 0.1.21 | Add support for an "Audio muted" indicator                                                                                                                                 |
 | 0.1.20 | __New Release__                                                                                                                                                              |
-| 0.1.20 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v14`!                                                          |
+| 0.1.20 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to `v14`!                                                          |
 | 0.1.20 | Update the Eruption GUI to the latest version `0.0.8` (this is a technology preview only; it is not production ready)                                                        |
 | 0.1.20 | Add support for multiple profile directories. NOTE: This will require a manual update to `/etc/eruption/eruption.conf`                                                       |
 | 0.1.20 | New effect plugin/Lua script/profiles for simulation of organic movements, based on the excellent `Ternimal` console application                                             |
@@ -50,7 +52,7 @@ Table of new and noteworthy changes:
 | 0.1.20 | Eruption now has a failsafe mode, that gets activated whenever an irrecoverable error is encountered                                                                         |
 | 0.1.20 | Multiple bugs and paper cuts have been fixed                                                                                                                                 |
 | 0.1.19 | __New Release__                                                                                                                                                              |
-| 0.1.19 | Released a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                                   |
+| 0.1.19 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update!                                                                   |
 | 0.1.19 | Add support for `ROCCAT Vulcan Pro TKL` series keyboards                                                                                                                     |
 | 0.1.19 | First beginnings of a GTK+ based GUI for Eruption                                                                                                                            |
 | 0.1.19 | Add support for USB HID based event handling for mouse devices. This should enable the extra buttons on supported devices                                                    |
