@@ -15,17 +15,22 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod canvas;
-pub mod color;
-pub mod connection;
-pub mod hardware;
-pub mod transport;
-pub mod util;
+#[derive(Debug, Default, Clone)]
+pub struct Hardware {}
 
-pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.1";
+impl Hardware {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+/*
+impl Default for Hardware {
+    fn default() -> Self {
+        Self {}
+    }
+}
+*/
 
 #[cfg(test)]
 mod tests {

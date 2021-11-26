@@ -15,7 +15,7 @@
 
 
 [package]
-name = "eruption-rs"
+name = "simple"
 version = "0.0.1"
 edition = "2021"
 
@@ -26,15 +26,10 @@ log = "0.4.14"
 thiserror = "1.0.30"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
-libc = "0.2.108"
-nix = "0.23.0"
-futures = "0.3.17"
-parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
-crossbeam = "0.8.1"
-prost = "0.9.0"
-prost-types = "0.9.0"
-socket2 = { version = "0.4.2", features = ["all"] }
-
-
-[build-dependencies]
-prost-build = "0.9.0"
+clap = "3.0.0-beta.5"
+lazy_static = "1.4.0"
+i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
+rust-embed = "6.2.0"
+unic-langid = "0.9.0"
+icecream = "0.1.0"
+eruption-rs = { path = "../../../lib/rust/eruption-rs" }

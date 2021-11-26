@@ -15,17 +15,11 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod canvas;
-pub mod color;
-pub mod connection;
-pub mod hardware;
-pub mod transport;
-pub mod util;
+use std::mem::MaybeUninit;
 
-pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.1";
-
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
+    &*(buf as *const [MaybeUninit<u8>] as *const [u8])
+}
 
 #[cfg(test)]
 mod tests {

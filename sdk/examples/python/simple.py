@@ -20,7 +20,7 @@ import time
 
 from eruption import SDK_VERSION, Connection, Canvas, Color
 
-EXAMPLE_NAME = "Simple Example #1"
+EXAMPLE_NAME = "Simple Python Example #1"
 
 def main():
     """Main program entrypoint"""

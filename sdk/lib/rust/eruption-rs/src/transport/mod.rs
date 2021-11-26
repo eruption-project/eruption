@@ -15,23 +15,21 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod canvas;
-pub mod color;
-pub mod connection;
-pub mod hardware;
-pub mod transport;
-pub mod util;
+use crate::canvas::Canvas;
+use crate::Result;
 
-pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.1";
+mod local;
+pub use local::*;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+pub trait Transport {
+    fn connect(&mut self) -> Result<()>;
+    fn disconnect(&mut self) -> Result<()>;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
+    fn get_server_status(&self) -> Result<ServerStatus>;
+    fn submit_canvas(&self, canvas: &Canvas) -> Result<()>;
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ServerStatus {
+    pub server: String,
 }

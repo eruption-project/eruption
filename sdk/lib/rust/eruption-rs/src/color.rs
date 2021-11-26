@@ -15,17 +15,52 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod canvas;
-pub mod color;
-pub mod connection;
-pub mod hardware;
-pub mod transport;
-pub mod util;
+/// Implements a RGBA color value
+#[derive(Debug, Default, Clone)]
+pub struct Color {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+}
 
-pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.1";
+impl Color {
+    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self { r, g, b, a }
+    }
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+    pub fn r(&self) -> u8 {
+        self.r
+    }
+
+    pub fn g(&self) -> u8 {
+        self.g
+    }
+
+    pub fn b(&self) -> u8 {
+        self.b
+    }
+
+    pub fn a(&self) -> u8 {
+        self.a
+    }
+
+    pub fn set_r(&mut self, val: u8) {
+        self.r = val
+    }
+
+    pub fn set_g(&mut self, val: u8) {
+        self.g = val
+    }
+
+    pub fn set_b(&mut self, val: u8) {
+        self.b = val
+    }
+
+    pub fn set_a(&mut self, val: u8) {
+        self.a = val
+    }
+}
 
 #[cfg(test)]
 mod tests {

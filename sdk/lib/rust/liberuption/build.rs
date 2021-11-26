@@ -15,7 +15,6 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use cbindgen::Language;
 use std::env;
 use std::error::Error;
 

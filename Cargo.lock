@@ -1082,6 +1082,22 @@ dependencies = [
 [[package]]
 name = "eruption-rs"
 version = "0.0.1"
+dependencies = [
+ "cfg-if 1.0.0",
+ "color-eyre",
+ "crossbeam",
+ "eyre",
+ "futures",
+ "libc",
+ "log",
+ "nix 0.23.0",
+ "parking_lot",
+ "prost",
+ "prost-build",
+ "prost-types",
+ "socket2",
+ "thiserror",
+]
 
 [[package]]
 name = "eruption-util"
@@ -1988,6 +2004,16 @@ name = "liberuption"
 version = "0.0.1"
 dependencies = [
  "cbindgen",
+ "cfg-if 1.0.0",
+ "color-eyre",
+ "eruption-rs",
+ "eyre",
+ "icecream",
+ "lazy_static",
+ "log",
+ "pretty_assertions",
+ "prost-build",
+ "thiserror",
 ]
 
 [[package]]
@@ -3494,6 +3520,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9f69a3fa031fc2906ffe27aecc55bdd2c9cb95327c4695ea814a083145fa462"
 dependencies = [
  "simdeez",
+]
+
+[[package]]
+name = "simple"
+version = "0.0.1"
+dependencies = [
+ "cfg-if 1.0.0",
+ "clap 3.0.0-beta.5",
+ "color-eyre",
+ "eruption-rs",
+ "eyre",
+ "i18n-embed",
+ "icecream",
+ "lazy_static",
+ "log",
+ "rust-embed",
+ "thiserror",
+ "unic-langid",
 ]
 
 [[package]]

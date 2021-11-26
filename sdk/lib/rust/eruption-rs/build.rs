@@ -15,23 +15,13 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod canvas;
-pub mod color;
-pub mod connection;
-pub mod hardware;
-pub mod transport;
-pub mod util;
+use std::error::Error;
 
-pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.1";
+fn main() -> Result<(), Box<dyn Error + 'static>> {
+    prost_build::compile_protos(
+        &["../../../../support/protobuf/sdk-support.proto"],
+        &["../../../../support/protobuf/"],
+    )?;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
+    Ok(())
 }
