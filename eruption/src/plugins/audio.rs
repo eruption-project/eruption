@@ -248,8 +248,8 @@ impl Plugin for AudioPlugin {
 }
 
 mod backends {
-    use crate::constants;
     use crate::plugins::audio::{protocol, AUDIO_GRABBER_RECORDING, AUDIO_GRABBER_RECORD_AUDIO};
+    use crate::{constants, script};
 
     use super::AudioPluginError;
     use super::Result;
@@ -555,8 +555,16 @@ mod backends {
                                                             {
                                                                 trace!("Master volume: {}", val);
 
+                                                                let tmp = MASTER_VOLUME
+                                                                    .load(Ordering::SeqCst);
+
                                                                 MASTER_VOLUME
                                                                     .store(val, Ordering::SeqCst);
+
+                                                                if tmp != val {
+                                                                    script::FRAME_GENERATION_COUNTER
+                                                                        .fetch_add(1, Ordering::SeqCst);
+                                                                }
                                                             } else {
                                                                 error!("Invalid payload received");
                                                             };
@@ -568,8 +576,16 @@ mod backends {
                                                             {
                                                                 trace!("Audio muted: {}", val);
 
+                                                                let tmp = AUDIO_MUTED
+                                                                    .load(Ordering::SeqCst);
+
                                                                 AUDIO_MUTED
                                                                     .store(val, Ordering::SeqCst);
+
+                                                                if tmp != val {
+                                                                    script::FRAME_GENERATION_COUNTER
+                                                                        .fetch_add(1, Ordering::SeqCst);
+                                                                }
                                                             } else {
                                                                 error!("Invalid payload received");
                                                             };
