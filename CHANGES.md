@@ -19,8 +19,7 @@ Table of new and noteworthy changes:
 | 0.1.23 | Improve formatting of syslog log output; the default log-level is now `WARN` for all of the provided daemons                                                                |
 | 0.1.23 | Add experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                             |
 | 0.1.23 | Add experimental support for `ROCCAT Kain 200/202` series wireless mice                                                                                                    |
-| 0.1.23 | Add a technology preview of the `Eruption SDK` (Software Development Kit), supporting the following programing languages: `Rust` via crate `eruption-rs`,
-`Python 3` via the `eruption` Python module, `C/C++` via `liberuption.so`, and `Shell` via `eruption-cmd` |
+| 0.1.23 | Add a technology preview of the `Eruption SDK` (Software Development Kit), supporting the following programing languages: `Rust` via crate `eruption-rs`, `Python 3` via the `eruption` Python module, `C/C++` via `liberuption.so`, and `Shell` via `eruption-cmd` |
 | 0.1.22 | __New Release__                                                                                                                                                              |
 | 0.1.22 | Update all dependencies to their latest revisions. Most notably: `mlua:v0.6.2`, and many more                                                                               |
 | 0.1.22 | Update the Eruption GUI to the latest version `0.0.10` (this is a technology preview only; it is not production ready)                                                      |
