@@ -60,4 +60,7 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e
 # ROCCAT/Turtle Beach Elo 7.1 Air
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3a37", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
+# ROCCAT Aimo Pad Wide
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="343b", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
+
 LABEL="eruption_end"
