@@ -39,7 +39,7 @@ pub type Result<T> = super::Result<T>;
 pub const LED_INTERFACE: i32 = 0; // LED USB sub device
 
 // canvas to LED index mapping
-pub const LED_0: usize = 1;
+pub const LED_0: usize = 0;
 pub const LED_1: usize = 5;
 
 /// Binds the driver to a device

@@ -74,7 +74,7 @@ lazy_static! {
 
         DeviceInfo { make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37, },
 
-        DeviceInfo { make: "ROCCAT", model: "Aimo Pad Wide", usb_vid: 0x1e7d, usb_pid: 0x343b, },
+        DeviceInfo { make: "ROCCAT", model: "Sense AIMO XXL", usb_vid: 0x1e7d, usb_pid: 0x343b, },
 
     ];
 }

@@ -47,7 +47,7 @@ impl MiscDevice for RoccatAimoPad {
     }
 
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Aimo Pad Wide")
+        ("ROCCAT", "Sense AIMO XXL")
     }
 
     fn draw(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
@@ -66,7 +66,7 @@ impl MiscDevice for RoccatAimoPad {
         let led_colors = crate::COLOR_MAP.lock();
 
         // paint all cells in the "mouse zone" of the canvas
-        for i in [1, 5] {
+        for i in [0, 5] {
             self.paint_cell(i, &led_colors[i], context, width, height, scale_factor)?;
         }
 
@@ -87,14 +87,7 @@ impl MiscDevice for RoccatAimoPad {
             * 0.15;
 
         match cell_index {
-            1 => {
-                let cell_def = Rectangle {
-                    x: ((width + 170.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
-                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (5.0 * scale_factor),
-                    width: 65.0 * scale_factor,
-                    height: 80.0 * scale_factor,
-                };
-
+            0 => {
                 // post-process color
                 let color = Srgba::new(
                     color.r as f64 / 255.0,
@@ -111,6 +104,24 @@ impl MiscDevice for RoccatAimoPad {
                         .lighten(factor),
                 )
                 .into_components();
+
+                let cell_def = Rectangle {
+                    x: ((width + 70.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
+                    y: ((height / 2.0) - 90.0 + BORDER.1 * scale_factor) - (5.0 * scale_factor),
+                    width: 25.0 * scale_factor,
+                    height: 180.0 * scale_factor,
+                };
+
+                cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
+                cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+                cr.fill()?;
+
+                let cell_def = Rectangle {
+                    x: ((width + 70.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
+                    y: (((height / 2.0) + BORDER.1 * scale_factor) + 90.0) - (5.0 * scale_factor),
+                    width: 308.0 * scale_factor,
+                    height: 20.0 * scale_factor,
+                };
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
                 cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
@@ -118,13 +129,6 @@ impl MiscDevice for RoccatAimoPad {
             }
 
             5 => {
-                let cell_def = Rectangle {
-                    x: ((width + 800.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
-                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (5.0 * scale_factor),
-                    width: 65.0 * scale_factor,
-                    height: 80.0 * scale_factor,
-                };
-
                 // post-process color
                 let color = Srgba::new(
                     color.r as f64 / 255.0,
@@ -141,6 +145,24 @@ impl MiscDevice for RoccatAimoPad {
                         .lighten(factor),
                 )
                 .into_components();
+
+                let cell_def = Rectangle {
+                    x: ((width + 1200.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
+                    y: ((height / 2.0) - 90.0 + BORDER.1 * scale_factor) - (5.0 * scale_factor),
+                    width: 25.0 * scale_factor,
+                    height: 180.0 * scale_factor,
+                };
+
+                cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
+                cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+                cr.fill()?;
+
+                let cell_def = Rectangle {
+                    x: ((width + 70.0 + BORDER.0 * scale_factor) / 4.0) * scale_factor,
+                    y: ((height / 2.0) - 110.0 + BORDER.1 * scale_factor) - (5.0 * scale_factor),
+                    width: 308.0 * scale_factor,
+                    height: 20.0 * scale_factor,
+                };
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
                 cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
