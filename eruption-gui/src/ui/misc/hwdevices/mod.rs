@@ -19,6 +19,7 @@ use crate::{dbus_client, util::RGBA};
 
 mod generic_misc_device;
 mod null_misc_device;
+mod roccat_aimo_pad;
 mod roccat_elo_71_air;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -41,6 +42,9 @@ pub fn get_misc_devices(device_handle: u64) -> Result<Box<dyn MiscDevice>> {
             (0x1e7d, 0x3a37) => Ok(Box::new(roccat_elo_71_air::RoccatElo71Air::new(
                 device_handle,
             ))),
+
+            // ROCCAT Aimo Pad Wide
+            (0x1e7d, 0x343b) => Ok(Box::new(roccat_aimo_pad::RoccatAimoPad::new(device_handle))),
 
             _ => Ok(Box::new(generic_misc_device::GenericMiscDevice::new(
                 device_handle,

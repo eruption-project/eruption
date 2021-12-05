@@ -30,6 +30,7 @@ mod corsair_strafe;
 mod custom_serial_leds;
 mod generic_keyboard;
 mod generic_mouse;
+mod roccat_aimo_pad;
 mod roccat_burst_pro;
 mod roccat_elo_71_air;
 mod roccat_kain_2xx;
@@ -55,7 +56,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 21]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 22]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -107,6 +108,8 @@ lazy_static! {
 
         // ROCCAT/Turtle Beach
         MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev),
+        
+        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &roccat_aimo_pad::bind_hiddev),
 
 
         // Misc Serial devices

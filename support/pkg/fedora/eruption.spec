@@ -357,6 +357,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_2016.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_nyth.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/roccat_elo_71_air.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/roccat_aimo_pad.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/misc/custom_serial_leds.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/default.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua

@@ -17,6 +17,7 @@
 
 mod corsair_strafe;
 mod custom_serial_leds;
+mod roccat_aimo_pad;
 mod roccat_burst_pro;
 mod roccat_elo_71_air;
 mod roccat_kain_2xx;
@@ -255,6 +256,9 @@ pub fn bind_device(
 
         // ROCCAT/Turtle Beach Elo 7.1 Air
         (0x1e7d, 0x3a37) => Ok(Box::new(roccat_elo_71_air::RoccatElo71Air::bind(hiddev))),
+
+        // ROCCAT Aimo Pad Wide
+        (0x1e7d, 0x343b) => Ok(Box::new(roccat_aimo_pad::RoccatAimoPad::bind(hiddev))),
 
         _ => Err(HwDeviceError::DeviceNotSupported.into()),
     }

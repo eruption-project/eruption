@@ -55,6 +55,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 ### Miscellaneous Devices
 
 - ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, experimental)
+- ROCCAT Sense AIMO XXL (95%, as of version `0.1.23`, experimental)
 - Adalight/Custom serial LEDs
 
 Please see [DEVICES.md](DEVICES.md) for further information
