@@ -16,6 +16,7 @@
 */
 
 use super::{MiscDevice, Rectangle};
+use crate::constants;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
@@ -61,7 +62,14 @@ impl MiscDevice for RoccatElo71Air {
         let scale_factor = (height / pixbuf.height() as f64) * 0.975;
 
         for i in [0, 1].iter() {
-            self.paint_cell(*i, &led_colors[0], &context, width, height, scale_factor)?;
+            self.paint_cell(
+                *i,
+                &led_colors[constants::CANVAS_SIZE - 1],
+                &context,
+                width,
+                height,
+                scale_factor,
+            )?;
         }
 
         // paint the image
