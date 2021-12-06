@@ -37,7 +37,7 @@ pub struct DeviceInfo {
 
 lazy_static! {
     #[rustfmt::skip]
-    pub static ref DEVICE_INFO: &'static [DeviceInfo; 22] = &[
+    pub static ref DEVICE_INFO: &'static [DeviceInfo; 23] = &[
         DeviceInfo { make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098, },
         DeviceInfo { make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a, },
 
@@ -56,6 +56,8 @@ lazy_static! {
         DeviceInfo { make: "ROCCAT", model: "Kone XTD Mouse",       usb_vid: 0x1e7d, usb_pid: 0x2e22, },
 
         DeviceInfo { make: "ROCCAT", model: "Kone Pure Ultra",      usb_vid: 0x1e7d, usb_pid: 0x2dd2, },
+
+        DeviceInfo { make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c8e, },
 
         DeviceInfo { make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, },
 

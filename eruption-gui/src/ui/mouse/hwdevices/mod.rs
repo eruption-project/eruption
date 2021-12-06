@@ -21,6 +21,7 @@ mod generic_mouse;
 mod null_mouse;
 mod roccat_burst_pro;
 mod roccat_kain_2xx;
+mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -41,6 +42,11 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
         Some(device) => match device {
             // ROCCAT Kone Pure Ultra
             (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new(
+                device_handle,
+            ))),
+
+            // ROCCAT Kone Pure Air
+            (0x1e7d, 0x2c8e) => Ok(Box::new(roccat_kone_pro_air::RoccatKoneProAir::new(
                 device_handle,
             ))),
 

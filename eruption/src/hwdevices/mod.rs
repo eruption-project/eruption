@@ -36,6 +36,7 @@ mod roccat_elo_71_air;
 mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
+mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
 mod roccat_kova_2016;
@@ -56,7 +57,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 22]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 23]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -86,6 +87,8 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &roccat_kone_xtd::bind_hiddev),
 
         MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev),
+
+        MouseDriver::register("ROCCAT", "Kone Pro Air",      0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev),
 
         MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev),
 
