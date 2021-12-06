@@ -74,7 +74,7 @@ Hardware feature support matrix
 | Vendor                | Product            | Status | Device Type                 |
 | --------------------- | ------------------ | ------ | --------------------------- |
 | ROCCAT / Turtle Beach | Elo 7.1 Air        | 50%    | Headset (Wireless)          |
-| ROCCAT                | Aimo Pad Wide      | 90%    | Misc device (Mousepad)      |
+| ROCCAT                | Sense AIMO XXL (Aimo Pad Wide) | 95%    | Misc device (Mousepad)      |
 | Adalight / Custom     | Custom serial LEDs | 95%    | LED Strip (variable length) |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
