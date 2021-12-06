@@ -16,12 +16,17 @@
 */
 
 use super::MiscDevice;
+use crate::constants;
 use crate::ui::misc::hwdevices::Rectangle;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
 
 const BORDER: (f64, f64) = (16.0, 16.0);
+
+// canvas to LED index mapping
+const LED_0: usize = constants::CANVAS_SIZE - 36;
+const LED_1: usize = constants::CANVAS_SIZE - 1;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -66,7 +71,7 @@ impl MiscDevice for RoccatAimoPad {
         let led_colors = crate::COLOR_MAP.lock();
 
         // paint all cells in the "mouse zone" of the canvas
-        for i in [0, 5] {
+        for i in [LED_0, LED_1] {
             self.paint_cell(i, &led_colors[i], context, width, height, scale_factor)?;
         }
 
@@ -87,7 +92,7 @@ impl MiscDevice for RoccatAimoPad {
             * 0.15;
 
         match cell_index {
-            0 => {
+            LED_0 => {
                 // post-process color
                 let color = Srgba::new(
                     color.r as f64 / 255.0,
@@ -128,7 +133,7 @@ impl MiscDevice for RoccatAimoPad {
                 cr.fill()?;
             }
 
-            5 => {
+            LED_1 => {
                 // post-process color
                 let color = Srgba::new(
                     color.r as f64 / 255.0,
