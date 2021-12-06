@@ -54,6 +54,7 @@ Hardware feature support matrix
 | ROCCAT | Kone Pure Ultra      | 100%   | Yes      | Yes  | TODO      | Yes      | Yes            | No  | N.a.       | N.a.           |
 | ROCCAT | Burst Pro            | 100%   | Yes      | Yes¹ | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kain 2xx AIMO        | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Pro Air         | ??%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo Remastered | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kova AIMO            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |

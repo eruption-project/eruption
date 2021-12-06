@@ -23,6 +23,7 @@ mod roccat_elo_71_air;
 mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
+mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
 mod roccat_kova_2016;
@@ -226,6 +227,24 @@ pub fn bind_device(
                 .expect("Could not open control sub-device");
 
             Ok(Box::new(roccat_kain_2xx::RoccatKain2xx::bind(ctrldev)))
+        }
+
+        // ROCCAT Kone Pro Air
+        (0x1e7d, 0x2c8e) => {
+            let ctrldev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == roccat_kone_pro_air::CTRL_INTERFACE
+                })
+                .expect("Could not bind control sub-device")
+                .open_device(hidapi)
+                .expect("Could not open control sub-device");
+
+            Ok(Box::new(roccat_kone_pro_air::RoccatKoneProAir::bind(
+                ctrldev,
+            )))
         }
 
         // ROCCAT Kone Aimo
