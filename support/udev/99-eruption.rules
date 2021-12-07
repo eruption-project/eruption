@@ -1,8 +1,15 @@
+# Eruption virtual devices
+
 ACTION=="change", GOTO="eruption_end"
 ACTION=="remove", GOTO="eruption_end"
 
 # check for presence of lock file
 TEST=="/run/lock/eruption-hotplug-helper.lock", GOTO="eruption_end"
+
+# Stable links to Eruption virtual devices
+
+ACTION=="add", ATTRS{name}=="Eruption Virtual Keyboard", SYMLINK+="input/by-id/eruption-virtual-keyboard"
+ACTION=="add", ATTRS{name}=="Eruption Virtual Mouse", SYMLINK+="input/by-id/eruption-virtual-mouse"
 
 # Keyboard devices
 
@@ -21,7 +28,6 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="31
 
 # Corsair STRAFE Gaming Keyboard
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1b15", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
-
 
 # Mouse devices
 
@@ -53,7 +59,6 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="0x
 # ROCCAT Nyth
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7d", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
-
 
 # Miscellaneous devices
 
