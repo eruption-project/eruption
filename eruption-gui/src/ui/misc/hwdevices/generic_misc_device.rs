@@ -59,7 +59,7 @@ impl MiscDevice for GenericMiscDevice {
 
         // paint the image
         context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
+        context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
         // let led_colors = crate::COLOR_MAP.lock();

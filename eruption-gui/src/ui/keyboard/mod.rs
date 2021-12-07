@@ -83,7 +83,7 @@ pub fn initialize_keyboard_page(
 
     // drawing area / keyboard indicator
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
-        if let Err(_e) = keyboard_device.draw_keyboard(&da, &context) {
+        if let Err(_e) = keyboard_device.draw_keyboard(da, context) {
             notification_box_global.show();
 
             // apparently we have lost the connection to the Eruption daemon

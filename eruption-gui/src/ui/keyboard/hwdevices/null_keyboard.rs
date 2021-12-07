@@ -60,7 +60,7 @@ impl Keyboard for NullKeyboard {
 
     /// Returns a slice of `KeyDef`s representing the currently selected keyboard layout
     fn get_key_defs(&self, _layout: &str) -> &[KeyDef] {
-        &KEY_DEFS
+        KEY_DEFS
     }
 }
 

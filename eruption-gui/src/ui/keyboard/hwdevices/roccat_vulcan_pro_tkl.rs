@@ -70,19 +70,19 @@ impl Keyboard for RoccatVulcanProTKL {
 
         // paint the image
         context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, BORDER.0, BORDER.1);
+        context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        let layout = pangocairo::create_layout(&context).unwrap();
+        let layout = pangocairo::create_layout(context).unwrap();
         FONT_DESC.with(|f| -> Result<()> {
             let desc = f.borrow();
             layout.set_font_description(Some(&desc));
 
             // paint all keys
             for i in 0..96 {
-                self.paint_key(i + 1, &led_colors[i], &context, &layout)?;
+                self.paint_key(i + 1, &led_colors[i], context, &layout)?;
             }
 
             Ok(())
@@ -102,7 +102,7 @@ impl Keyboard for RoccatVulcanProTKL {
 
         let black = (0.0, 0.0, 0.0, 1.0);
 
-        rounded_rectangle(&context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
+        rounded_rectangle(context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
 
         Ok(())
     }
@@ -149,7 +149,7 @@ impl Keyboard for RoccatVulcanProTKL {
             .into_components();
 
             rounded_rectangle(
-                &cr,
+                cr,
                 key_def.x + BORDER.0 + 2.0,
                 key_def.y + BORDER.1 + 2.0,
                 key_def.width + 1.0 - 2.0,
@@ -169,9 +169,9 @@ impl Keyboard for RoccatVulcanProTKL {
                     + 2.0,
             );
 
-            layout.set_text(&key_def.caption.text);
+            layout.set_text(key_def.caption.text);
 
-            pangocairo::show_layout(&cr, &layout);
+            pangocairo::show_layout(cr, layout);
         }
 
         Ok(())
@@ -180,10 +180,10 @@ impl Keyboard for RoccatVulcanProTKL {
     /// Returns a slice of `KeyDef`s representing the currently selected keyboard layout
     fn get_key_defs(&self, layout: &str) -> &[KeyDef] {
         match layout.to_lowercase().as_str() {
-            "generic" | "de_de" => &KEY_DEFS_GENERIC_QWERTZ,
-            "en_us" | "en_uk" => &KEY_DEFS_GENERIC_QWERTY,
+            "generic" | "de_de" => KEY_DEFS_GENERIC_QWERTZ,
+            "en_us" | "en_uk" => KEY_DEFS_GENERIC_QWERTY,
 
-            _ => &KEY_DEFS_GENERIC_QWERTZ,
+            _ => KEY_DEFS_GENERIC_QWERTZ,
         }
     }
 }

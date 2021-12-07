@@ -67,7 +67,7 @@ impl Mouse for RoccatKonePureUltra {
             self.paint_cell(
                 i - 144,
                 &led_colors[i],
-                &context,
+                context,
                 width,
                 height,
                 scale_factor,
@@ -76,7 +76,7 @@ impl Mouse for RoccatKonePureUltra {
 
         // paint the image
         context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(&pixbuf, width / 2.0 + BORDER.0, BORDER.1);
+        context.set_source_pixbuf(pixbuf, width / 2.0 + BORDER.0, BORDER.1);
         context.paint()?;
 
         Ok(())
@@ -99,9 +99,8 @@ impl Mouse for RoccatKonePureUltra {
         };
 
         // compute scaling factor
-        let factor = ((100.0 - crate::STATE.read().current_brightness.unwrap_or_else(|| 0) as f64)
-            / 100.0)
-            * 0.15;
+        let factor =
+            ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
         // post-process color
         let color = Srgba::new(
