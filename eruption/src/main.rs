@@ -18,6 +18,7 @@
 // use async_macros::join;
 use clap::{App, Arg};
 use crossbeam::channel::{self, unbounded, Receiver, Select, Sender};
+use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use futures::future::join_all;
 use hotwatch::{
@@ -564,7 +565,28 @@ fn spawn_mouse_input_thread(
                         macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
 
                         // update our internal representation of the device state
-                        if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
+                        if let evdev_rs::enums::EventCode::EV_SYN(code) = k.1.clone().event_code {
+                            if code == EV_SYN::SYN_DROPPED {
+                                warn!("Mouse:{} dropped some events, resyncing...", device_index);
+                                device.next_event(evdev_rs::ReadFlag::SYNC)?;
+                            } else {
+                                // directly mirror SYN events to reduce input lag
+                                if GRAB_MOUSE.load(Ordering::SeqCst) {
+                                    macros::UINPUT_TX
+                                        .read()
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(macros::Message::MirrorMouseEventImmediate(
+                                            k.1.clone(),
+                                        ))
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not send a pending mouse event: {}", e)
+                                        });
+                                }
+                            }
+                        } else if let evdev_rs::enums::EventCode::EV_KEY(code) =
+                            k.1.clone().event_code
+                        {
                             let is_pressed = k.1.value > 0;
                             let index =
                                 mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
@@ -582,7 +604,7 @@ fn spawn_mouse_input_thread(
                                 // This currently prohibits further manipulation of pointer motion events
                                 if GRAB_MOUSE.load(Ordering::SeqCst) {
                                     macros::UINPUT_TX
-                                        .lock()
+                                        .read()
                                         .as_ref()
                                         .unwrap()
                                         .send(macros::Message::MirrorMouseEventImmediate(
@@ -695,7 +717,26 @@ fn spawn_mouse_input_thread_secondary(
                         macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
 
                         // update our internal representation of the device state
-                        if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
+                        if let evdev_rs::enums::EventCode::EV_SYN(code) = k.1.clone().event_code {
+                            if code == EV_SYN::SYN_DROPPED {
+                                warn!("Mouse-sub:{} dropped some events, resyncing...", device_index);
+                                device.next_event(evdev_rs::ReadFlag::SYNC)?;
+                            } else {
+                                // directly mirror SYN events to reduce input lag
+                                if GRAB_MOUSE.load(Ordering::SeqCst) {
+                                    macros::UINPUT_TX
+                                        .read()
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(macros::Message::MirrorMouseEventImmediate(
+                                            k.1.clone(),
+                                        ))
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not send a pending mouse event: {}", e)
+                                        });
+                                }
+                            }
+                        } else if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
                             let is_pressed = k.1.value > 0;
                             let index = mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
 
@@ -712,7 +753,7 @@ fn spawn_mouse_input_thread_secondary(
                                 // This currently prohibits further manipulation of pointer motion events
                                 if GRAB_MOUSE.load(Ordering::SeqCst) {
                                     macros::UINPUT_TX
-                                        .lock()
+                                        .read()
                                         .as_ref()
                                         .unwrap()
                                         .send(macros::Message::MirrorMouseEventImmediate(
@@ -827,7 +868,7 @@ fn spawn_misc_input_thread(
                         // directly mirror pointer motion events to reduce input lag.
                         // This currently prohibits further manipulation of pointer motion events
                         macros::UINPUT_TX
-                            .lock()
+                            .read()
                             .as_ref()
                             .unwrap()
                             .send(macros::Message::MirrorKey(k.1.clone()))
@@ -1824,7 +1865,7 @@ async fn process_mouse_event(
         // they are mirrored to the virtual mouse directly after they are
         // received by the mouse plugin. This is done to reduce input lag
         macros::UINPUT_TX
-            .lock()
+            .read()
             .as_ref()
             .unwrap()
             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
@@ -2051,7 +2092,7 @@ async fn process_keyboard_event(
     // handler for Message::MirrorKey will drop the key if a Lua VM
     // called inject_key(..), so that the key won't be reported twice
     macros::UINPUT_TX
-        .lock()
+        .read()
         .as_ref()
         .unwrap()
         .send(macros::Message::MirrorKey(raw_event.clone()))
@@ -2529,7 +2570,7 @@ async fn run_main_loop(
                 }
 
                 {
-                    // finally, blend the LED map of the sdk support plugin
+                    // finally, blend the LED map of the SDK support plugin
                     let sdk_led_map = sdk_support::LED_MAP.read();
                     let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
@@ -2592,7 +2633,7 @@ async fn run_main_loop(
                 .as_ref()
                 .unwrap()
                 .get_int("global.afk_timeout_secs")
-                .unwrap_or_else(|_| constants::AFK_TIMEOUT_SECS as i64)
+                .unwrap_or(constants::AFK_TIMEOUT_SECS as i64)
                 as u64;
 
             if afk_timeout_secs > 0 {

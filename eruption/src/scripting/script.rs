@@ -299,7 +299,7 @@ mod callbacks {
         macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
 
         macros::UINPUT_TX
-            .lock()
+            .read()
             .as_ref()
             .unwrap()
             .send(macros::Message::InjectKey { key: ev_key, down })
@@ -314,7 +314,7 @@ mod callbacks {
         macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
         macros::UINPUT_TX
-            .lock()
+            .read()
             .as_ref()
             .unwrap()
             .send(macros::Message::InjectButtonEvent {
@@ -332,7 +332,7 @@ mod callbacks {
         macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
         macros::UINPUT_TX
-            .lock()
+            .read()
             .as_ref()
             .unwrap()
             .send(macros::Message::InjectMouseWheelEvent { direction })
@@ -352,7 +352,7 @@ mod callbacks {
                 thread::sleep(Duration::from_millis(millis));
 
                 macros::UINPUT_TX
-                    .lock()
+                    .read()
                     .as_ref()
                     .unwrap()
                     .send(macros::Message::InjectKey { key: ev_key, down })

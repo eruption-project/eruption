@@ -20,7 +20,7 @@ use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, Unini
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
@@ -53,7 +53,7 @@ pub enum MacrosPluginError {
 }
 
 lazy_static! {
-    pub static ref UINPUT_TX: Arc<Mutex<Option<Sender<Message>>>> = Arc::new(Mutex::new(None));
+    pub static ref UINPUT_TX: Arc<RwLock<Option<Sender<Message>>>> = Arc::new(RwLock::new(None));
     pub static ref DROP_CURRENT_KEY: AtomicBool = AtomicBool::new(false);
     pub static ref DROP_CURRENT_MOUSE_INPUT: AtomicBool = AtomicBool::new(false);
 }
@@ -74,6 +74,8 @@ impl MacrosPlugin {
     }
 
     fn initialize_thread_locals() -> Result<()> {
+        info!("Initializing Linux virtual input devices");
+
         Self::initialize_virtual_keyboard()?;
         Self::initialize_virtual_mouse()?;
 
@@ -424,7 +426,7 @@ impl MacrosPlugin {
 
     /// Inject a press or release of key `key` into to output of the virtual keyboard
     fn inject_single_key(key: EV_KEY, value: i32, time: &TimeVal) -> Result<()> {
-        //let mut do_initialize = false;
+        // let mut do_initialize = false;
 
         KEYBOARD_DEVICE.with(|dev| {
             let device = dev.borrow();
@@ -446,21 +448,21 @@ impl MacrosPlugin {
 
                 device.write_event(&event).unwrap();
             } else {
-                error!("Inconsistent thread local storage state detected");
-                //do_initialize = true;
+                error!("Device is not initialized");
+                // do_initialize = true;
             }
         });
 
-        //if do_initialize {
-        //Self::initialize_thread_locals().unwrap();
-        //}
+        // if do_initialize {
+        // Self::initialize_thread_locals().unwrap();
+        // }
 
         Ok(())
     }
 
     /// Inject a press or release of button `button` into to output of the virtual mouse
     fn inject_single_mouse_event(button: EV_KEY, value: i32, time: &TimeVal) -> Result<()> {
-        //let mut do_initialize = false;
+        // let mut do_initialize = false;
 
         MOUSE_DEVICE.with(|dev| {
             let device = dev.borrow();
@@ -482,21 +484,21 @@ impl MacrosPlugin {
 
                 device.write_event(&event).unwrap();
             } else {
-                error!("Inconsistent thread local storage state detected");
-                //do_initialize = true;
+                error!("Device is not initialized");
+                // do_initialize = true;
             }
         });
 
-        //if do_initialize {
-        //Self::initialize_thread_locals().unwrap();
-        //}
+        // if do_initialize {
+        // Self::initialize_thread_locals().unwrap();
+        // }
 
         Ok(())
     }
 
     /// Inject a pre-existing InputEvent into to output of the virtual keyboard device
     fn inject_key_event(event: evdev_rs::InputEvent) -> Result<()> {
-        let mut do_initialize = false;
+        // let mut do_initialize = false;
 
         KEYBOARD_DEVICE.with(|dev| {
             trace!("Injecting: {:?}", event);
@@ -504,20 +506,21 @@ impl MacrosPlugin {
             if let Some(device) = dev.borrow().as_ref() {
                 device.write_event(&event).unwrap();
             } else {
-                do_initialize = true;
+                error!("Device is not initialized");
+                // do_initialize = true;
             }
         });
 
-        if do_initialize {
-            Self::initialize_thread_locals().unwrap();
-        }
+        // if do_initialize {
+        //   Self::initialize_thread_locals().unwrap();
+        // }
 
         Ok(())
     }
 
     /// Inject a pre-existing InputEvent into to output of the virtual mouse device
     fn inject_mouse_event(event: evdev_rs::InputEvent) -> Result<()> {
-        let mut do_initialize = false;
+        // let mut do_initialize = false;
 
         MOUSE_DEVICE.with(|dev| {
             trace!("Injecting: {:?}", event);
@@ -525,13 +528,14 @@ impl MacrosPlugin {
             if let Some(device) = dev.borrow().as_ref() {
                 device.write_event(&event).unwrap();
             } else {
-                do_initialize = true;
+                error!("Device is not initialized");
+                // do_initialize = true;
             }
         });
 
-        if do_initialize {
-            Self::initialize_thread_locals().unwrap();
-        }
+        // if do_initialize {
+        //   Self::initialize_thread_locals().unwrap();
+        // }
 
         Ok(())
     }
@@ -539,32 +543,33 @@ impl MacrosPlugin {
     /// Inject a pre-existing InputEvent into to output of the virtual mouse device
     /// Will send a SYN_REPORT directly after sending `event`
     fn inject_mouse_event_immediate(event: evdev_rs::InputEvent) -> Result<()> {
-        let mut do_initialize = false;
+        // let mut do_initialize = false;
 
         MOUSE_DEVICE.with(|dev| {
-            trace!("Injecting: {:?}", event);
+            // trace!("Injecting: {:?}", event);
 
             if let Some(device) = dev.borrow().as_ref() {
                 device.write_event(&event).unwrap();
 
-                let event = InputEvent {
+                /* let event = InputEvent {
                     time: TimeVal {
-                        tv_sec: 0,
-                        tv_usec: 0,
+                        tv_sec: event.time.tv_sec,
+                        tv_usec: event.time.tv_usec,
                     },
                     event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                     value: 0,
                 };
 
-                device.write_event(&event).unwrap();
+                device.write_event(&event).unwrap(); */
             } else {
-                do_initialize = true;
+                error!("Device is not initialized");
+                //do_initialize = true;
             }
         });
 
-        if do_initialize {
-            Self::initialize_thread_locals().unwrap();
-        }
+        // if do_initialize {
+        //   Self::initialize_thread_locals().unwrap();
+        // }
 
         Ok(())
     }
@@ -574,15 +579,16 @@ impl MacrosPlugin {
 
         thread::Builder::new()
             .name("uinput".into())
-            .spawn(move || {
-                Self::initialize_thread_locals().unwrap();
+            .spawn(move || -> Result<()> {
+                Self::initialize_thread_locals()?;
 
                 loop {
-                    let message = uinput_rx.recv().unwrap();
+                    let message = uinput_rx.recv()?;
+
                     match message {
                         Message::MirrorKey(raw_event) => {
                             if !DROP_CURRENT_KEY.load(Ordering::SeqCst) {
-                                Self::inject_key_event(raw_event).unwrap();
+                                Self::inject_key_event(raw_event)?;
                             } else {
                                 debug!("Keyboard event has been dropped as requested");
                             }
@@ -590,68 +596,41 @@ impl MacrosPlugin {
 
                         Message::MirrorMouseEvent(raw_event) => {
                             if !DROP_CURRENT_MOUSE_INPUT.load(Ordering::SeqCst) {
-                                Self::inject_mouse_event(raw_event).unwrap();
+                                Self::inject_mouse_event(raw_event)?;
                             } else {
                                 debug!("Mouse event has been dropped as requested");
                             }
                         }
 
                         Message::MirrorMouseEventImmediate(raw_event) => {
-                            Self::inject_mouse_event_immediate(raw_event).unwrap();
+                            Self::inject_mouse_event_immediate(raw_event)?;
                         }
 
                         Message::InjectKey { key: ev_key, down } => {
-                            let key = evdev_rs::enums::int_to_ev_key(ev_key).unwrap_or_else(|| {
-                                error!("Invalid key index");
-                                panic!()
-                            });
+                            let key = evdev_rs::enums::int_to_ev_key(ev_key)
+                                .ok_or(MacrosPluginError::MappingError {})?;
 
                             let value = if down { 1 } else { 0 };
-
-                            /* let mut time: libc::timeval = libc::timeval {
-                                tv_sec: 0,
-                                tv_usec: 0,
-                            };
-
-                            unsafe {
-                                libc::gettimeofday(&mut time, std::ptr::null_mut());
-                            }
-
-                            let time = evdev_rs::TimeVal::from_raw(&time); */
 
                             let time = evdev_rs::TimeVal {
                                 tv_sec: 0,
                                 tv_usec: 0,
                             };
 
-                            Self::inject_single_key(key, value, &time).unwrap();
+                            Self::inject_single_key(key, value, &time)?;
                         }
 
                         Message::InjectButtonEvent { button, down } => {
-                            let key = Self::button_index_to_ev_key(button).unwrap_or_else(|e| {
-                                error!("Invalid button index: {}", e);
-                                panic!()
-                            });
+                            let key = Self::button_index_to_ev_key(button)?;
 
                             let value = if down { 1 } else { 0 };
-
-                            /* let mut time: libc::timeval = libc::timeval {
-                                tv_sec: 0,
-                                tv_usec: 0,
-                            };
-
-                            unsafe {
-                                libc::gettimeofday(&mut time, std::ptr::null_mut());
-                            }
-
-                            let time = evdev_rs::TimeVal::from_raw(&time); */
 
                             let time = evdev_rs::TimeVal {
                                 tv_sec: 0,
                                 tv_usec: 0,
                             };
 
-                            Self::inject_single_mouse_event(key, value, &time).unwrap();
+                            Self::inject_single_mouse_event(key, value, &time)?;
                         }
 
                         Message::InjectMouseWheelEvent { direction: _ } => {
@@ -661,7 +640,7 @@ impl MacrosPlugin {
                 }
             })?;
 
-        *UINPUT_TX.lock() = Some(uinput_tx);
+        *UINPUT_TX.write() = Some(uinput_tx);
 
         Ok(())
     }
