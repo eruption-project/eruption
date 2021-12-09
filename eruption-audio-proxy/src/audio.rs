@@ -112,7 +112,7 @@ mod backends {
                 None,
                 "Eruption",
                 Direction::Record,
-                Some("analog-stereo.monitor"),
+                Some("@DEFAULT_MONITOR@"),
                 "Audio Grabber",
                 &spec,
                 None,
