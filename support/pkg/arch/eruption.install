@@ -21,7 +21,7 @@ post_upgrade() {
 
     systemctl daemon-reload
     systemctl --global daemon-reload
-1
+
     systemctl try-restart eruption.service
     systemctl --global try-restart eruption-audio-proxy.service
     systemctl --global try-restart eruption-process-monitor.service
