@@ -241,6 +241,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 /usr/lib/systemd/system-sleep/eruption
 %{_bindir}/eruption
 %{_bindir}/eruptionctl
+%{_bindir}/eruption-cmd
 %{_bindir}/eruption-hwutil
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-util
