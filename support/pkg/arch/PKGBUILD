@@ -43,6 +43,7 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice"
+    mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/misc"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/examples"
 
     mkdir -p "$pkgdir/usr/share/applications"
