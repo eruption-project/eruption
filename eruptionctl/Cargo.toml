@@ -29,17 +29,17 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
-clap =  { version = "3.0.0-beta.5", features = ["derive"] }
-clap_generate = "3.0.0-beta.5"
+clap =  { version = "3.0.0-rc.4", features = ["derive"] }
+clap_generate = "3.0.0-rc.4"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
 console = "0.15.0"
 log = "0.4.14"
-libc = "0.2.108"
+libc = "0.2.112"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
-serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.72"
+serde = { version = "1.0.131", features = ["derive"] }
+serde_json = "1.0.73"
 tokio = { version = "1.14.0", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
@@ -54,9 +54,9 @@ comfy-table = "5.0.0"
 paste = "1.0.6"
 dbus = "0.9.5"
 dbus-tokio = "0.7.5"
-i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = "0.6.0"
-rust-embed = "6.2.0"
+i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.1"
+rust-embed = "6.3.0"
 unic-langid = "0.9.0"
 icecream = "0.1.0"
 

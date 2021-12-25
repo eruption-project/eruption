@@ -37,10 +37,10 @@ mutter = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.51"
+async-trait = "0.1.52"
 byteorder = "1.4.3"
-clap =  { version = "3.0.0-beta.5", features = ["derive"] }
-clap_generate = "3.0.0-beta.5"
+clap =  { version = "3.0.0-rc.4", features = ["derive"] }
+clap_generate = "3.0.0-rc.4"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 config = "0.11.0"
 dbus = "0.9.5"
@@ -51,13 +51,13 @@ dyn-clonable = "0.9.0"
 indexmap = "1.7.0"
 log = "0.4.14"
 syslog = "6.0.0"
-libc = "0.2.108"
+libc = "0.2.112"
 nix = "0.23.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 regex = "1.5.4"
-serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.72"
+serde = { version = "1.0.131", features = ["derive"] }
+serde_json = "1.0.73"
 tokio = { version = "1.14.0", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
@@ -72,9 +72,9 @@ lazy_static = "1.4.0"
 walkdir = "2.3.2"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.9.0", optional = true, features = ["allow-unsafe-code"] }
-i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = "0.6.0"
-rust-embed = "6.2.0"
+i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.1"
+rust-embed = "6.3.0"
 unic-langid = "0.9.0"
 icecream = "0.1.0"
 

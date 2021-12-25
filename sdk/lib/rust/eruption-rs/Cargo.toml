@@ -26,7 +26,7 @@ log = "0.4.14"
 thiserror = "1.0.30"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
-libc = "0.2.108"
+libc = "0.2.112"
 nix = "0.23.0"
 futures = "0.3.18"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
