@@ -5,10 +5,11 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                  |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.23 | __New Release__                                                                                                                                                              |
+| 0.1.23 | Implement *breaking changes* to the D-Bus API |
+| 0.1.23 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v23`!                                                 |
 | 0.1.23 | Switch to Rust 2021 edition, rustc >= `1.56.1` is now required to build Eruption                                                                                           |
 | 0.1.23 | Update all dependencies to their latest revisions. Most notably: `mlua:v0.7.0`, using `luajit52` and many more                                                                                                                           |
 | 0.1.23 | Fix a possible deadlock scenario on shutdown of the `eruption` daemon                                                                                                      |
-| 0.1.23 | Release a new version of the `Eruption Profile Switcher` GNOME Shell extension; please be sure to update to at least `v18`!                                                 |
 | 0.1.23 | Add a new user-session daemon: `eruption-audio-proxy` that should alleviate the need to manually change the configuration files of `PipeWire` or `PulseAudio`              |
 | 0.1.23 | Add basic infrastructure for i18n an l10n, currently available languages: `en-US`: 100%; `de-DE`: approx. 60%                                                              |
 | 0.1.23 | Update the Eruption GUI to the latest version `0.0.11` (this is a technology preview only; it is not production ready yet)                                                  |
