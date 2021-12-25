@@ -92,7 +92,7 @@ lazy_static! {
 )]
 pub struct Options {
     #[clap(
-        about(VERBOSE_ABOUT.as_str()),
+        help(VERBOSE_ABOUT.as_str()),
         short,
         long,
         parse(from_occurrences)
