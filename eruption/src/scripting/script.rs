@@ -1474,8 +1474,13 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     let round = lua_ctx.create_function(|_, f: f64| Ok(f.round()))?;
     globals.set("round", round)?;
 
-    let rand =
-        lua_ctx.create_function(|_, (l, h): (i64, i64)| Ok(rand::thread_rng().gen_range(l..h)))?;
+    let rand = lua_ctx.create_function(|_, (l, h): (i64, i64)| {
+        if h - l > 0 {
+            Ok(rand::thread_rng().gen_range(l..h))
+        } else {
+            Ok(0)
+        }
+    })?;
     globals.set("rand", rand)?;
 
     let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
