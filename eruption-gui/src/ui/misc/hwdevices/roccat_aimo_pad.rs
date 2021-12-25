@@ -18,7 +18,6 @@
 use super::MiscDevice;
 use crate::constants;
 use crate::ui::misc::hwdevices::Rectangle;
-use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
@@ -62,19 +61,19 @@ impl MiscDevice for RoccatAimoPad {
 
         let pixbuf = &self.pixbuf;
 
-        let scale_factor = (height / pixbuf.height() as f64) * 0.7;
+        let scale_factor = (height / pixbuf.height() as f64) * 0.9750;
 
         let led_colors = crate::COLOR_MAP.lock();
-
-        // paint the image
-        context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(pixbuf, width / 4.0 + BORDER.0, BORDER.1);
-        context.paint()?;
 
         // paint all cells of the canvas
         for i in [LED_0, LED_1] {
             self.paint_cell(i, &led_colors[i], context, width, height, scale_factor)?;
         }
+
+        // paint the image
+        context.scale(scale_factor, scale_factor);
+        /* context.set_source_pixbuf(pixbuf, width / 4.0 + BORDER.0, BORDER.1);
+        context.paint()?; */
 
         Ok(())
     }
@@ -84,9 +83,9 @@ impl MiscDevice for RoccatAimoPad {
         cell_index: usize,
         color: &crate::util::RGBA,
         cr: &cairo::Context,
-        width: f64,
-        height: f64,
-        scale_factor: f64,
+        _width: f64,
+        _height: f64,
+        _scale_factor: f64,
     ) -> Result<()> {
         let factor =
             ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
@@ -111,10 +110,10 @@ impl MiscDevice for RoccatAimoPad {
                 .into_components();
 
                 let cell_def = Rectangle {
-                    x: 120.0 + ((width / 4.0 + BORDER.0) * scale_factor),
-                    y: 80.0 + ((height / 4.0 + BORDER.1) * scale_factor),
+                    x: 40.0 + BORDER.0,
+                    y: 70.0 + BORDER.1,
                     width: 25.0,
-                    height: height - 120.0,
+                    height: 120.0,
                 };
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
@@ -122,9 +121,9 @@ impl MiscDevice for RoccatAimoPad {
                 cr.fill()?;
 
                 let cell_def = Rectangle {
-                    x: 120.0 + ((width / 4.0 + BORDER.0) * scale_factor),
-                    y: (height - 70.0) + ((height / 4.0 + BORDER.1) * scale_factor),
-                    width: width - 120.0,
+                    x: 40.0 + BORDER.0,
+                    y: 70.0 + BORDER.1,
+                    width: 120.0,
                     height: 25.0,
                 };
 
@@ -152,10 +151,10 @@ impl MiscDevice for RoccatAimoPad {
                 .into_components();
 
                 let cell_def = Rectangle {
-                    x: (width - 8.0) + ((width / 4.0 + BORDER.0) * scale_factor),
-                    y: 80.0 + ((height / 4.0 + BORDER.1) * scale_factor),
+                    x: 8.0 + BORDER.0,
+                    y: 10.0 + BORDER.1,
                     width: 25.0,
-                    height: height - 120.0,
+                    height: 120.0,
                 };
 
                 cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
@@ -163,9 +162,9 @@ impl MiscDevice for RoccatAimoPad {
                 cr.fill()?;
 
                 let cell_def = Rectangle {
-                    x: 120.0 + ((width / 4.0 + BORDER.0) * scale_factor),
-                    y: 80.0 + ((height / 4.0 + BORDER.1) * scale_factor),
-                    width: width - 120.0,
+                    x: 8.0 + BORDER.0,
+                    y: 10.0 + BORDER.1,
+                    width: 100.0,
                     height: 25.0,
                 };
 
