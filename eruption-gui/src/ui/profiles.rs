@@ -23,15 +23,16 @@ use crate::{
 use crate::{manifest::Manifest, util};
 use glib::clone;
 use glib::prelude::*;
-use gtk::builders::{
+use glib::IsA;
+use gtk::{
+    prelude::*, Align, Builder, ButtonsType, CellRendererText, IconSize, Image, Justification,
+    MessageType, Orientation, PositionType, ScrolledWindow, Stack, StackSwitcher, TextBuffer,
+    TreeStore, TreeView, TreeViewColumnSizing,
+};
+use gtk::{
     AdjustmentBuilder, BoxBuilder, ButtonBuilder, ColorChooserWidgetBuilder, EntryBuilder,
     ExpanderBuilder, FrameBuilder, LabelBuilder, MessageDialogBuilder, ScaleBuilder,
     ScrolledWindowBuilder, SwitchBuilder, TreeViewColumnBuilder,
-};
-use gtk::{
-    prelude::*, Align, Application, Builder, ButtonsType, CellRendererText, IconSize, Image,
-    Justification, MessageType, Orientation, PositionType, ScrolledWindow, Stack, StackSwitcher,
-    TextBuffer, TreeStore, TreeView, TreeViewColumnSizing,
 };
 use gtk::{Frame, ShadowType};
 use paste::paste;
@@ -44,9 +45,9 @@ use sourceview4::prelude::*;
 use sourceview4::BufferBuilder;
 
 #[cfg(not(feature = "sourceview"))]
-use gtk::builders::{TextBufferBuilder, TextViewBuilder};
-#[cfg(not(feature = "sourceview"))]
 use gtk::ApplicationWindow;
+#[cfg(not(feature = "sourceview"))]
+use gtk::{TextBufferBuilder, TextViewBuilder};
 
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
@@ -1365,7 +1366,7 @@ cfg_if::cfg_if! {
 }
 
 /// Initialize page "Profiles"
-pub fn initialize_profiles_page<A: IsA<Application>>(
+pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     application: &A,
     builder: &Builder,
 ) -> Result<()> {
@@ -1465,7 +1466,7 @@ pub fn initialize_profiles_page<A: IsA<Application>>(
 }
 
 /// Register global actions and keyboard accelerators
-fn register_actions<A: IsA<Application>>(application: &A, builder: &Builder) -> Result<()> {
+fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder) -> Result<()> {
     let application = application.as_ref();
 
     let stack_widget: Stack = builder.object("profile_stack").unwrap();

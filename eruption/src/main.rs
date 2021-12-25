@@ -328,7 +328,7 @@ fn parse_commandline() -> clap::ArgMatches {
                 .short('c')
                 .long("config")
                 .value_name("FILE")
-                .about("Sets the configuration file to use")
+                .help("Sets the configuration file to use")
                 .takes_value(true),
         )
         // .arg(
@@ -347,6 +347,7 @@ pub enum DbusApiEvent {
     ActiveProfileChanged,
     ActiveSlotChanged,
     BrightnessChanged,
+    DeviceStatusChanged,
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
@@ -369,13 +370,17 @@ fn spawn_dbus_api_thread(
                 // process events, destined for the dbus api
                 match dbus_api_rx.recv_timeout(Duration::from_millis(timeout)) {
                     Ok(result) => match result {
-                        DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed(),
+                        DbusApiEvent::ProfilesChanged => dbus.notify_profiles_changed()?,
 
-                        DbusApiEvent::ActiveProfileChanged => dbus.notify_active_profile_changed(),
+                        DbusApiEvent::ActiveProfileChanged => {
+                            dbus.notify_active_profile_changed()?
+                        }
 
-                        DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed(),
+                        DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed()?,
 
-                        DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed(),
+                        DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed()?,
+
+                        DbusApiEvent::DeviceStatusChanged => dbus.notify_device_status_changed()?,
                     },
 
                     Err(_e) => {
@@ -385,7 +390,7 @@ fn spawn_dbus_api_thread(
                             false
                         });
                     }
-                }
+                };
             }
         })?;
 
@@ -2417,6 +2422,8 @@ async fn run_main_loop(
                 }
 
                 i if i == timer_events => {
+                    let saved_status = crate::DEVICE_STATUS.as_ref().lock().clone();
+
                     let event = &oper.recv(&timer);
                     if let Ok(event) = event {
                         if let Err(_e) = process_timer_event(
@@ -2434,6 +2441,16 @@ async fn run_main_loop(
                             // } else {
                             //     trace!("Result is a NoOp");
                             // }
+                        }
+
+                        let current_status = crate::DEVICE_STATUS.lock().clone();
+
+                        if current_status != saved_status {
+                            dbus_api_tx
+                                .send(DbusApiEvent::DeviceStatusChanged)
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send a pending dbus API event: {}", e)
+                                });
                         }
                     } else {
                         error!("Could not receive a timer event: {}", event.unwrap_err());

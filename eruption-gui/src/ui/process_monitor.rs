@@ -16,8 +16,8 @@
 */
 
 use glib::{clone, StaticType};
-use gtk::builders::{MessageDialogBuilder, TreeViewColumnBuilder};
 use gtk::prelude::*;
+use gtk::{MessageDialogBuilder, TreeViewColumnBuilder};
 use std::time::Duration;
 
 use crate::{dbus_client, ui::rule, util};

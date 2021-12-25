@@ -16,8 +16,8 @@
 */
 
 use crate::{constants, util};
-use gio::prelude::*;
 use glib::clone;
+use glib::Continue;
 use gtk::prelude::*;
 use std::time::Duration;
 

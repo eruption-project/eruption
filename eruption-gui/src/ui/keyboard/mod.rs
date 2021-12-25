@@ -19,7 +19,7 @@ use crate::constants;
 use crate::util;
 use gio::prelude::*;
 use glib::clone;
-use gtk::prelude::*;
+use gtk::prelude::{BuilderExtManual, LabelExt, ProgressBarExt, RangeExt, WidgetExt};
 use std::time::Duration;
 
 mod hwdevices;

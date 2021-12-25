@@ -26,9 +26,9 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use crate::plugins::audio;
-use crate::profiles;
 use crate::script;
 use crate::{constants, plugins};
+use crate::{hwdevices, profiles};
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -56,6 +56,14 @@ pub enum DbusApiError {
     // OpNotSupported {},
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DeviceStatus {
+    pub index: u64,
+    pub usb_vid: u16,
+    pub usb_pid: u16,
+    pub status: hwdevices::DeviceStatus,
+}
+
 /// D-Bus API support
 pub struct DbusApi {
     connection: Option<Arc<Connection>>,
@@ -64,6 +72,7 @@ pub struct DbusApi {
     active_profile_changed: Arc<Signal<()>>,
     profiles_changed: Arc<Signal<()>>,
     brightness_changed: Arc<Signal<()>>,
+    device_status_changed: Arc<Signal<()>>,
 }
 
 #[allow(dead_code)]
@@ -82,7 +91,7 @@ impl DbusApi {
         let f = Factory::new_fn::<()>();
 
         let active_slot_changed_signal =
-            Arc::new(f.signal("ActiveSlotChanged", ()).sarg::<u64, _>("new slot"));
+            Arc::new(f.signal("ActiveSlotChanged", ()).sarg::<u64, _>("slot"));
         let active_slot_changed_signal_clone = active_slot_changed_signal.clone();
 
         // let slot_names_changed_signal = Arc::new(
@@ -93,7 +102,7 @@ impl DbusApi {
 
         let active_profile_changed_signal = Arc::new(
             f.signal("ActiveProfileChanged", ())
-                .sarg::<String, _>("new profile name"),
+                .sarg::<String, _>("profile_name"),
         );
         let active_profile_changed_signal_clone = active_profile_changed_signal.clone();
 
@@ -102,9 +111,15 @@ impl DbusApi {
 
         let brightness_changed_signal = Arc::new(
             f.signal("BrightnessChanged", ())
-                .sarg::<i64, _>("current brightness"),
+                .sarg::<i64, _>("brightness"),
         );
         let brightness_changed_signal_clone = brightness_changed_signal.clone();
+
+        let device_status_changed_signal = Arc::new(
+            f.signal("DeviceStatusChanged", ())
+                .sarg::<String, _>("status"),
+        );
+        let device_status_changed_signal_clone = device_status_changed_signal.clone();
 
         let active_slot_property = f
             .property::<u64, _>("ActiveSlot", ())
@@ -207,6 +222,45 @@ impl DbusApi {
             });
 
         let brightness_property_clone = Arc::new(brightness_property);
+
+        let device_status_property = f
+            .property::<String, _>("DeviceStatus", ())
+            .emits_changed(EmitsChangedSignal::True)
+            .access(Access::Read)
+            // .auto_emit_on_set(true)
+            .on_get(|i, m| {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
+
+                    let device_status = device_status
+                        .iter()
+                        .map(|(k, v)| {
+                            let (usb_vid, usb_pid) =
+                                get_device_specific_ids(*k).unwrap_or_default();
+
+                            DeviceStatus {
+                                index: *k,
+                                usb_vid,
+                                usb_pid,
+                                status: v.clone(),
+                            }
+                        })
+                        .collect::<Vec<DeviceStatus>>();
+
+                    let result = serde_json::to_string_pretty(&device_status)
+                        .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+
+                    i.append(result);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            });
+
+        let device_status_property_clone = Arc::new(device_status_property);
 
         let tree = f
             .tree(())
@@ -349,6 +403,7 @@ impl DbusApi {
                     .introspectable()
                     .add(
                         f.interface("org.eruption.Device", ())
+                            .add_s(device_status_changed_signal_clone)
                             .add_m(
                                 f.method("SetDeviceConfig", (), move |m| {
                                     if perms::has_settings_permission_cached(
@@ -505,7 +560,8 @@ impl DbusApi {
                                 ), _>(
                                     "values"
                                 ),
-                            ),
+                            )
+                            .add_p(device_status_property_clone),
                     ),
             )
             .add(
@@ -826,38 +882,76 @@ impl DbusApi {
             active_profile_changed: active_profile_changed_signal,
             profiles_changed: profiles_changed_signal,
             brightness_changed: brightness_changed_signal,
+            device_status_changed: device_status_changed_signal,
         })
     }
 
-    pub fn notify_brightness_changed(&self) {
+    pub fn notify_device_status_changed(&self) -> Result<()> {
+        let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
+
+        let device_status = device_status
+            .iter()
+            .map(|(k, v)| {
+                let (usb_vid, usb_pid) = get_device_specific_ids(*k).unwrap_or_default();
+
+                DeviceStatus {
+                    index: *k,
+                    usb_vid,
+                    usb_pid,
+                    status: v.clone(),
+                }
+            })
+            .collect::<Vec<DeviceStatus>>();
+
+        let result = serde_json::to_string_pretty(&device_status)
+            .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+
+        let _ = self
+            .connection
+            .as_ref()
+            .unwrap()
+            .send(self.device_status_changed.emit(
+                &"/org/eruption/devices".into(),
+                &"org.eruption.Device".into(),
+                &[result],
+            ));
+
+        Ok(())
+    }
+
+    pub fn notify_brightness_changed(&self) -> Result<()> {
         let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-        self.connection
+        let _ = self
+            .connection
             .as_ref()
             .unwrap()
             .send(self.brightness_changed.emit(
                 &"/org/eruption/config".into(),
                 &"org.eruption.Config".into(),
                 &[brightness as i64],
-            ))
-            .unwrap();
+            ));
+
+        Ok(())
     }
 
-    pub fn notify_active_slot_changed(&self) {
+    pub fn notify_active_slot_changed(&self) -> Result<()> {
         let active_slot = crate::ACTIVE_SLOT.load(Ordering::SeqCst);
 
-        self.connection
+        let _ = self
+            .connection
             .as_ref()
             .unwrap()
             .send(self.active_slot_changed.emit(
                 &"/org/eruption/slot".into(),
                 &"org.eruption.Slot".into(),
                 &[active_slot as u64],
-            ))
-            .unwrap();
+            ));
+
+        Ok(())
     }
 
-    pub fn notify_active_profile_changed(&self) {
+    pub fn notify_active_profile_changed(&self) -> Result<()> {
         let active_profile = crate::ACTIVE_PROFILE.lock();
 
         let active_profile = active_profile
@@ -867,26 +961,30 @@ impl DbusApi {
             .to_str()
             .unwrap();
 
-        self.connection
+        let _ = self
+            .connection
             .as_ref()
             .unwrap()
             .send(self.active_profile_changed.emit(
                 &"/org/eruption/profile".into(),
                 &"org.eruption.Profile".into(),
                 &[active_profile],
-            ))
-            .unwrap();
+            ));
+
+        Ok(())
     }
 
-    pub fn notify_profiles_changed(&self) {
-        self.connection
+    pub fn notify_profiles_changed(&self) -> Result<()> {
+        let _ = self
+            .connection
             .as_ref()
             .unwrap()
             .send(self.profiles_changed.msg(
                 &"/org/eruption/profile".into(),
                 &"org.eruption.Profile".into(),
-            ))
-            .unwrap();
+            ));
+
+        Ok(())
     }
 
     /// Returns true if an event is pending on the D-Bus connection
@@ -1282,6 +1380,42 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
 
             _ => Err(DbusApiError::InvalidParameter {}.into()),
         }
+    } else {
+        Err(DbusApiError::InvalidDevice {}.into())
+    }
+}
+
+fn get_device_specific_ids(device: u64) -> Result<(u16, u16)> {
+    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
+        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+
+        let usb_vid = device.read().get_usb_vid();
+        let usb_pid = device.read().get_usb_pid();
+
+        Ok((usb_vid, usb_pid))
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+    {
+        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
+        let device = &crate::MOUSE_DEVICES.lock()[index];
+
+        let usb_vid = device.read().get_usb_vid();
+        let usb_pid = device.read().get_usb_pid();
+
+        Ok((usb_vid, usb_pid))
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.lock().len()
+            + crate::MOUSE_DEVICES.lock().len()
+            + crate::MISC_DEVICES.lock().len())
+    {
+        let index = device as usize
+            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
+        let device = &crate::MISC_DEVICES.lock()[index];
+
+        let usb_vid = device.read().get_usb_vid();
+        let usb_pid = device.read().get_usb_pid();
+
+        Ok((usb_vid, usb_pid))
     } else {
         Err(DbusApiError::InvalidDevice {}.into())
     }

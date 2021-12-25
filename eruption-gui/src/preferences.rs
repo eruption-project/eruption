@@ -17,7 +17,8 @@
 
 use std::path::PathBuf;
 
-use gdk::prelude::SettingsExt;
+// use gdk::prelude::SettingsExt;
+use gio::prelude::SettingsExt;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

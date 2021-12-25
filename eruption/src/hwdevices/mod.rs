@@ -550,7 +550,7 @@ impl DeviceInfo {
 }
 
 /// Generic Device status information, like e.g.: 'signal strength' or 'battery level'
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DeviceStatus(pub HashMap<String, String>);
 
 impl std::ops::Deref for DeviceStatus {
