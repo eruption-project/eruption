@@ -43,6 +43,7 @@ mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
 mod roccat_kova_2016;
 mod roccat_kova_aimo;
+mod roccat_magma;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
@@ -59,7 +60,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 23]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 24]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -73,6 +74,8 @@ lazy_static! {
         KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
 
         KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &roccat_vulcan_pro_tkl::bind_hiddev),
+
+        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &roccat_magma::bind_hiddev),
 
         // CORSAIR
 

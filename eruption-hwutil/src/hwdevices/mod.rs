@@ -30,6 +30,7 @@ mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
 mod roccat_kova_2016;
 mod roccat_kova_aimo;
+mod roccat_magma;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
@@ -187,6 +188,22 @@ pub fn bind_device(
             Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(
                 hiddev, leddev,
             )))
+        }
+
+        // ROCCAT Magma
+        (0x1e7d, 0x3124) => {
+            let leddev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == roccat_magma::LED_INTERFACE
+                })
+                .expect("Could not bind LED sub-device")
+                .open_device(hidapi)
+                .expect("Could not open LED sub-device");
+
+            Ok(Box::new(roccat_magma::RoccatMagma::bind(hiddev, leddev)))
         }
 
         // Corsair STRAFE Gaming Keyboard

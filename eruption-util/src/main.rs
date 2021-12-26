@@ -991,14 +991,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
-                                let keys_per_row = hwdev.lock().get_num_cols() + 1;
+                                let keys_per_col = hwdev.lock().get_num_rows() + 1;
                                 let num_cols = hwdev.lock().get_num_cols();
                                 let num_rows = hwdev.lock().get_num_rows();
 
                                 // the table that will be filled
                                 let mut topology: Vec<u8> = vec![0xff; num_cols * num_rows];
 
-                                for i in 0..num_rows {
+                                for i in 0..num_cols {
                                     let mut led_map = [RGBA {
                                         r: 0,
                                         g: 0,
@@ -1017,13 +1017,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     // hwdev.lock().send_led_map(&led_map)?;
 
                                     println!(
-                                        "Please press all keys in row {}, press ESC to skip",
+                                        "Please press all keys in column {}, press ESC to skip",
                                         i
                                     );
 
                                     let mut key_index = 0;
                                     loop {
-                                        if key_index >= keys_per_row {
+                                        if key_index >= keys_per_col {
                                             break;
                                         }
 

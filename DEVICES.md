@@ -18,9 +18,12 @@
   - [ROCCAT Vulcan Pro series keyboard](#roccat-vulcan-pro-series-keyboard)
     - [Support status](#support-status-3)
     - [Remarks and known Issues](#remarks-and-known-issues-3)
-  - [Corsair Strafe Gaming Keyboard](#corsair-strafe-gaming-keyboard)
+  - [ROCCAT Magma](#roccat-magma)
     - [Support status](#support-status-4)
     - [Remarks and known Issues](#remarks-and-known-issues-4)
+  - [Corsair Strafe Gaming Keyboard](#corsair-strafe-gaming-keyboard)
+    - [Support status](#support-status-5)
+    - [Remarks and known Issues](#remarks-and-known-issues-5)
   - [Adalight/Custom serial LEDs](#adalightcustom-serial-leds)
   - [Other Devices](#other-devices)
 
@@ -36,11 +39,12 @@
 Hardware feature support matrix
 
 | Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys    | Media keys F9-F12 |
-| ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
+| ------- |------------------------| -------------------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
 | ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
 | ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
 | ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
 | ROCCAT  | Vulcan Pro             | work-in-progress, untested | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
+| ROCCAT  | Magma                  | work-in-progress, untested | Yes        | Yes            | Yes (*inofficial)              | Yes                                 | Yes               |
 | Corsair | Strafe Gaming Keyboard | 35%, work-in-progress      | No         | No             | No                             | No                                  | No                |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
@@ -134,6 +138,19 @@ Work-in-progress, completely untested. Probably not working, as of `0.1.20`
 
 - Mute button will stay lit even if audio is muted
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or execute macros (`M1-M6`).
+- Use the `FN` key to access special function keys (`F5`-`F8`)
+- Use the `FN` key to access media functions (`F9`-`F12`)
+- Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode` and then `CAPS LOCK`.
+
+## ROCCAT Magma
+
+### Support status
+
+Work-in-progress as of `0.1.23`
+
+### Remarks and known Issues
+
+- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
 - Use the `FN` key to access special function keys (`F5`-`F8`)
 - Use the `FN` key to access media functions (`F9`-`F12`)
 - Easy Shift+ may be activated by pressing `FN`+`Scroll Lock/GameMode` and then `CAPS LOCK`.

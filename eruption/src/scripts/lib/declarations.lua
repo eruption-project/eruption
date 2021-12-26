@@ -68,7 +68,10 @@ local function load_support_scripts()
 	for k, file in pairs(support_files) do
 		debug("Loading device specific Lua script: '" .. file .. ".lua'")
 
-		require("hwdevices/" .. file)
+        local status, l = pcall(require, "hwdevices/" .. file)
+        if not status then
+            error("Could not load device specific script: " .. file .. ".lua")
+        end
 	end
 end
 
