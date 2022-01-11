@@ -67,6 +67,11 @@ use scripting::script;
 use crate::hwdevices::{DeviceStatus, RGBA};
 use crate::plugins::sdk_support;
 
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
 struct Localizations;

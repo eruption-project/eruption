@@ -26,29 +26,30 @@ readme = "README.md"
 resolver = "2"
 
 [dependencies]
+mimalloc = { version = "*", default-features = false }
 cfg-if = "1.0.0"
 crossbeam = "0.8.1"
-futures = "0.3.18"
+futures = "0.3.19"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 async-trait = "0.1.52"
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
 libc = "0.2.112"
-nix = "0.23.0"
+nix = "0.23.1"
 log = "0.4.14"
-syslog = "6.0.0"
+syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.30"
 eyre = "0.6.5"
 color-eyre = "0.5.11"
 toml = "0.5.8"
-serde = { version = "1.0.131", features = ["derive"] }
-serde_json = "1.0.73"
-tokio = { version = "1.14.0", features = ["full", "rt-multi-thread"] }
+serde = { version = "1.0.133", features = ["derive"] }
+serde_json = "1.0.74"
+tokio = { version = "1.15.0", features = ["full", "rt-multi-thread"] }
 socket2 = { version = "0.4.2", features = ["all"] }
 ctrlc = { version = "3.2.1", features = ["termination"] }
-clap = "3.0.0-rc.4"
+clap = "3.0.6"
 hotwatch = "0.4.6"
 config = "0.11.0"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -63,23 +64,23 @@ rand = "0.8.4"
 csscolorparser = "0.5.0"
 colorgrad = "0.5.0"
 palette = "0.6.0"
-nalgebra = "0.29.0"
+nalgebra = "0.30.1"
 noise = "0.7.0"
 simdnoise = "3.1.6"
 #lua-src = "543.1.0"
 #mlua = { version = "0.7.0", features = ["lua54", "vendored"] }
 #luajit-src = "210.2.0"
 #mlua = { version = "0.7.0", features = ["luajit", "vendored"] }
-mlua = { version = "0.7.0", features = ["luajit52"] }
-sysinfo = "0.21.2"
+mlua = { version = "0.7.1", features = ["luajit52"] }
+sysinfo = "0.22.5"
 procinfo = "0.4.2"
-bincode = "2.0.0-alpha.1"
+bincode = "2.0.0-beta.0"
 rustfft = "6.0.1"
 uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 dbus = "0.9.5"
 dbus-tree = "0.9.2"
 paste = "1.0.6"
-bitvec = "1.0.0-rc1"
+bitvec = "1.0.0-rc2"
 serialport = "4.0.1"
 crc8 = "0.1.1"
 bytes = "1.1.0"
@@ -96,7 +97,7 @@ icecream = "0.1.0"
 [dev-dependencies]
 pretty_assertions = "1.0.0"
 thiserror = "1.0.30"
-tokio = { version = "1.14.0", features = ["test-util"] }
+tokio = { version = "1.15.0", features = ["test-util"] }
 
 [build-dependencies]
 prost-build = "0.9.0"
