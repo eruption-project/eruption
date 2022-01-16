@@ -29,8 +29,8 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
-clap =  { version = "3.0.6", features = ["derive"] }
-clap_generate = "3.0.1"
+clap =  { version = "3.0.7", features = ["derive"] }
+clap_complete = "3.0.4"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
@@ -39,7 +39,7 @@ log = "0.4.14"
 libc = "0.2.112"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.133", features = ["derive"] }
-serde_json = "1.0.74"
+serde_json = "1.0.75"
 tokio = { version = "1.15.0", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
@@ -49,7 +49,7 @@ uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 toml = "0.5.8"
 thiserror = "1.0.30"
 eyre = "0.6.5"
-color-eyre = "0.5.11"
+color-eyre = "0.6.0"
 comfy-table = "5.0.0"
 paste = "1.0.6"
 dbus = "0.9.5"

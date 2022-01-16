@@ -26,7 +26,7 @@ readme = "README.md"
 resolver = "2"
 
 [dependencies]
-mimalloc = { version = "*", default-features = false }
+mimalloc = { version = "0.1.27", default-features = false }
 cfg-if = "1.0.0"
 crossbeam = "0.8.1"
 futures = "0.3.19"
@@ -42,14 +42,14 @@ syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.30"
 eyre = "0.6.5"
-color-eyre = "0.5.11"
+color-eyre = "0.6.0"
 toml = "0.5.8"
 serde = { version = "1.0.133", features = ["derive"] }
-serde_json = "1.0.74"
+serde_json = "1.0.75"
 tokio = { version = "1.15.0", features = ["full", "rt-multi-thread"] }
 socket2 = { version = "0.4.2", features = ["all"] }
 ctrlc = { version = "3.2.1", features = ["termination"] }
-clap = "3.0.6"
+clap = "3.0.7"
 hotwatch = "0.4.6"
 config = "0.11.0"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -80,7 +80,7 @@ uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 dbus = "0.9.5"
 dbus-tree = "0.9.2"
 paste = "1.0.6"
-bitvec = "1.0.0-rc2"
+bitvec = "1.0.0"
 serialport = "4.0.1"
 crc8 = "0.1.1"
 bytes = "1.1.0"

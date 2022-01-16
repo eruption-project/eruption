@@ -16,7 +16,7 @@
 */
 
 use clap::{IntoApp, Parser};
-use clap_generate::Shell;
+use clap_complete::Shell;
 use crossbeam::channel::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -221,7 +221,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
+            clap_complete::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     };
 

@@ -27,7 +27,7 @@ use crate::sensors::WaylandSensorData;
 use crate::sensors::X11SensorData;
 
 use clap::{IntoApp, Parser};
-use clap_generate::Shell;
+use clap_complete::Shell;
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
@@ -1290,7 +1290,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let mut app = Options::into_app();
             let mut fd = std::io::stdout();
 
-            clap_generate::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
+            clap_complete::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
         }
     }
 

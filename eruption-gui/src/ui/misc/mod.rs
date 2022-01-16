@@ -18,6 +18,7 @@
 use crate::{constants, util};
 use glib::clone;
 use glib::Continue;
+use gtk::glib;
 use gtk::prelude::*;
 use std::time::Duration;
 
@@ -103,6 +104,7 @@ pub fn initialize_misc_page(
     });
 
     // near realtime update path
+    use std::result::Result;
     glib::timeout_add_local(
         Duration::from_millis(250),
         clone!(@weak signal_strength_progress, @weak battery_level_progress,

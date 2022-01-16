@@ -18,9 +18,9 @@
 use gio::{prelude::*, ApplicationFlags};
 use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
+use gtk::builders::MessageDialogBuilder;
 use gtk::prelude::*;
 use gtk::Application;
-use gtk::MessageDialogBuilder;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
