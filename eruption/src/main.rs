@@ -67,8 +67,10 @@ use scripting::script;
 use crate::hwdevices::{DeviceStatus, RGBA};
 use crate::plugins::sdk_support;
 
+#[cfg(feature = "mimalloc_allocator")]
 use mimalloc::MiMalloc;
 
+#[cfg(feature = "mimalloc_allocator")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 

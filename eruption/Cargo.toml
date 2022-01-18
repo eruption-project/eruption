@@ -25,6 +25,10 @@ license = "GPLv3+"
 readme = "README.md"
 resolver = "2"
 
+[features]
+default = [] #["mimalloc_allocator"]
+mimalloc_allocator = []
+
 [dependencies]
 mimalloc = { version = "0.1.27", default-features = false }
 cfg-if = "1.0.0"
