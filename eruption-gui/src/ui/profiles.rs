@@ -181,7 +181,6 @@ macro_rules! declare_config_widget_numeric {
                     callback(value);
                 });
 
-                use std::result::Result;
                 reset_button.connect_clicked(clone!(@weak adjustment => move |_b| {
                     adjustment.set_value(default as f64);
                 }));
@@ -291,7 +290,6 @@ macro_rules! declare_config_widget_numeric {
                     callback(value);
                 });
 
-                use std::result::Result;
                 reset_button.connect_clicked(clone!(@weak adjustment => move |_b| {
                     adjustment.set_value(default as f64);
                 }));
@@ -379,7 +377,6 @@ macro_rules! declare_config_widget_input {
                     callback(value.to_string());
                 });
 
-                use std::result::Result;
                 reset_button.connect_clicked(clone!(@weak entry, @strong default => move |_b| {
                     entry.set_text(&default);
                 }));
@@ -566,7 +563,6 @@ macro_rules! declare_config_widget_switch {
                     callback(value);
                 });
 
-                use std::result::Result;
                 reset_button.connect_clicked(clone!(@weak switch => move |_| {
                     switch.set_state(default);
                 }));
@@ -1452,7 +1448,6 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
 
     profiles_treeview.set_model(Some(&profiles_treestore));
 
-    use std::result::Result;
     profiles_treeview.connect_row_activated(clone!(@weak builder => move |tv, path, _column| {
         let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 3).get::<String>().unwrap();
 
@@ -1477,7 +1472,6 @@ fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder
     let stack_widget: Stack = builder.object("profile_stack").unwrap();
     // let stack_switcher: StackSwitcher = builder.object("profile_stack_switcher").unwrap();
 
-    use std::result::Result;
     let save_current_buffer = gio::SimpleAction::new("save-current-buffer", None);
     save_current_buffer.connect_activate(clone!(@weak builder => move |_, _| {
         if let Some(view) = stack_widget.visible_child()

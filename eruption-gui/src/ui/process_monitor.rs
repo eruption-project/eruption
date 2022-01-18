@@ -165,7 +165,6 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     // register actions
-    use std::result::Result;
     let add_rule = gio::SimpleAction::new("add-rule", None);
     add_rule.connect_activate(clone!(@weak main_window, @weak builder, @weak rules_treeview, @weak notification_box, @weak rules_box => move |_, _| {
         let (response, rule) = rule::show_new_rule_dialog(&main_window);

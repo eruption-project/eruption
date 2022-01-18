@@ -119,8 +119,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     slot3_entry.set_text(names.get(2).unwrap_or(&"Profile Slot 3".to_string()));
     slot4_entry.set_text(names.get(3).unwrap_or(&"Profile Slot 4".to_string()));
 
-    use std::result::Result;
-
     edit_slot1_button.connect_clicked(clone!(@weak window, @weak slot1_entry => move |_btn| {
             window.set_focus(Some(&slot1_entry));
     }));
@@ -466,8 +464,6 @@ fn register_actions<A: IsA<gtk::Application>>(
     // let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
     let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
 
-    use std::result::Result;
-
     // switching between stack pages
     let switch_to_page1 = gio::SimpleAction::new("switch-to-page-1", None);
     switch_to_page1.connect_activate(clone!(@weak main_stack => move |_, _| {
@@ -616,8 +612,6 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     main_window.set_position(gtk::WindowPosition::Center);
     main_window.set_title("Eruption GUI");
     main_window.set_icon_name(Some("/org/eruption/eruption-gui/img/eruption-gui.png"));
-
-    use std::result::Result;
 
     main_window.connect_delete_event(
         clone!(@weak application => @default-return Inhibit(false), move |_, _| {
