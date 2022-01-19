@@ -1676,21 +1676,29 @@ async fn process_mouse_event(
                     4
                 };
 
-                if *mouse_motion_buf != (0, 0, 0) &&
-                    mouse_move_event_last_dispatched.elapsed().as_millis() > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into() {
+                if *mouse_motion_buf != (0, 0, 0)
+                    && mouse_move_event_last_dispatched.elapsed().as_millis()
+                        > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into()
+                {
                     *mouse_move_event_last_dispatched = Instant::now();
 
                     *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
                         LUA_TXS.lock().len() - failed_txs.len();
 
-                        for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                            if !failed_txs.contains(&idx) {
-                                lua_tx.send(script::Message::MouseMove(mouse_motion_buf.0,
-                                                                    mouse_motion_buf.1,
-                                                                    mouse_motion_buf.2)).unwrap_or_else(
-                        |e| {
-                                error!("Could not send a pending mouse event to a Lua VM: {}", e);
-                            });
+                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                        if !failed_txs.contains(&idx) {
+                            lua_tx
+                                .send(script::Message::MouseMove(
+                                    mouse_motion_buf.0,
+                                    mouse_motion_buf.1,
+                                    mouse_motion_buf.2,
+                                ))
+                                .unwrap_or_else(|e| {
+                                    error!(
+                                        "Could not send a pending mouse event to a Lua VM: {}",
+                                        e
+                                    );
+                                });
 
                             // reset relative motion buffer, since it has been submitted
                             *mouse_motion_buf = (0, 0, 0);
@@ -1722,38 +1730,46 @@ async fn process_mouse_event(
                     }*/
                 }
 
-                events::notify_observers(events::Event::MouseMove(
-                    direction,
-                    raw_event.value,
-                ))
-                .unwrap_or_else(|e| error!("{}", e));
+                events::notify_observers(events::Event::MouseMove(direction, raw_event.value))
+                    .unwrap_or_else(|e| error!("{}", e));
             }
 
             evdev_rs::enums::EV_REL::REL_WHEEL
             | evdev_rs::enums::EV_REL::REL_HWHEEL
-            /* | evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
-            | evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES */ => {
+            | evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
+            | evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES => {
                 // mouse scroll wheel event occurred
 
                 let direction;
-                if *code == evdev_rs::enums::EV_REL::REL_WHEEL || *code == evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES {
-                    if raw_event.value > 0 { direction = 1 } else { direction = 2 };
-                } else if *code == evdev_rs::enums::EV_REL::REL_HWHEEL || *code == evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES {
-                    if raw_event.value < 0 { direction = 3 } else { direction = 4 };
+                if *code == evdev_rs::enums::EV_REL::REL_WHEEL
+                    || *code == evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
+                {
+                    if raw_event.value > 0 {
+                        direction = 1
+                    } else {
+                        direction = 2
+                    };
+                } else if *code == evdev_rs::enums::EV_REL::REL_HWHEEL
+                    || *code == evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES
+                {
+                    if raw_event.value < 0 {
+                        direction = 3
+                    } else {
+                        direction = 4
+                    };
                 } else {
                     direction = 5;
                 }
 
-                *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
-                    LUA_TXS.lock().len() - failed_txs.len();
+                *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
-                    for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
-                        if !failed_txs.contains(&idx) {
-                            lua_tx.send(script::Message::MouseWheelEvent(direction)).unwrap_or_else(
-                        |e| {
-                            error!("Could not send a pending mouse event to a Lua VM: {}", e)
-                        },
-                    );
+                for (idx, lua_tx) in LUA_TXS.lock().iter().enumerate() {
+                    if !failed_txs.contains(&idx) {
+                        lua_tx
+                            .send(script::Message::MouseWheelEvent(direction))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending mouse event to a Lua VM: {}", e)
+                            });
                     } else {
                         warn!("Not sending a message to a failed tx");
                     }
@@ -1766,14 +1782,11 @@ async fn process_mouse_event(
                         break;
                     }
 
-                    let mut pending =
-                        UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
 
                     UPCALL_COMPLETED_ON_MOUSE_EVENT.1.wait_for(
                         &mut pending,
-                        Duration::from_millis(
-                            constants::TIMEOUT_CONDITION_MILLIS,
-                        ),
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
                     );
 
                     if *pending == 0 {
@@ -1781,10 +1794,8 @@ async fn process_mouse_event(
                     }
                 }
 
-                events::notify_observers(events::Event::MouseWheelEvent(
-                    direction,
-                ))
-                .unwrap_or_else(|e| error!("{}", e));
+                events::notify_observers(events::Event::MouseWheelEvent(direction))
+                    .unwrap_or_else(|e| error!("{}", e));
             }
 
             _ => (), // ignore other events
@@ -2601,8 +2612,6 @@ async fn run_main_loop(
                     for (idx, background) in script::LED_MAP.write().iter_mut().enumerate() {
                         let bg = &background;
                         let fg = sdk_led_map[idx];
-
-                        let brightness = brightness;
 
                         #[rustfmt::skip]
                         let color = RGBA {
