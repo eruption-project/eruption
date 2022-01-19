@@ -315,9 +315,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.0.9"
+version = "3.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c506244a13c87262f84bf16369740d0b7c3850901b6a642aa41b031a710c473"
+checksum = "7a30c3bf9ff12dfe5dae53f0a96e0febcd18420d1c0e7fad77796d9d5c4b5375"
 dependencies = [
  "atty",
  "bitflags",
@@ -336,7 +336,7 @@ version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d044e9db8cd0f68191becdeb5246b7462e4cf0c069b19ae00d1bf3fa9889498d"
 dependencies = [
- "clap 3.0.9",
+ "clap 3.0.10",
 ]
 
 [[package]]
@@ -739,7 +739,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "color-eyre",
  "colorgrad",
  "config",
@@ -801,7 +801,7 @@ dependencies = [
  "bincode",
  "bytes",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "crossbeam",
@@ -838,7 +838,7 @@ name = "eruption-cmd"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -868,7 +868,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -953,7 +953,7 @@ name = "eruption-hotplug-helper"
 version = "0.0.9"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "eyre",
@@ -981,7 +981,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1018,7 +1018,7 @@ name = "eruption-netfx"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1050,7 +1050,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "config",
@@ -1114,7 +1114,7 @@ version = "0.0.6"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1146,7 +1146,7 @@ name = "eruptionctl"
 version = "0.0.15"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1534,7 +1534,7 @@ checksum = "418d37c8b1d42553c93648be529cb70f920d3baf8ef469b74b9638df426e0b4c"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
- "wasi 0.10.2+wasi-snapshot-preview1",
+ "wasi 0.10.3+wasi-snapshot-preview1",
 ]
 
 [[package]]
@@ -3599,7 +3599,7 @@ name = "simple"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.9",
+ "clap 3.0.10",
  "color-eyre",
  "eruption-rs",
  "eyre",
@@ -4073,9 +4073,9 @@ checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 
 [[package]]
 name = "wasi"
-version = "0.10.2+wasi-snapshot-preview1"
+version = "0.10.3+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
+checksum = "46a2e384a3f170b0c7543787a91411175b71afd56ba4d3a0ae5678d4e2243c0e"
 
 [[package]]
 name = "weezl"
