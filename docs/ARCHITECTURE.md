@@ -1,8 +1,11 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
+  - [Design Overview](#design-overview)
+    - [Introduction](#introduction)
+    - [Systems Architecture](#systems-architecture)
   -[Design Overview](#design-overview)
-    -[Introduction](#introduction) 
+    -[Introduction](#introduction)
     -[Systems Architecture](#systems-architecture)
 
 ## Design Overview

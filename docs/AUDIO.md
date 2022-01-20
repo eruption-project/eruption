@@ -1,8 +1,8 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-    - [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
-    - [The `eruption-audio-proxy` Daemon](#the-eruption-audio-proxy-daemon)
+  - [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
+  - [The `eruption-audio-proxy` Daemon](#the-eruption-audio-proxy-daemon)
 
 ## Support for Audio Playback and Capture
 
