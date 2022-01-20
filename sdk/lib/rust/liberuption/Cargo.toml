@@ -29,7 +29,7 @@ crate-type = ["cdylib"]
 cfg-if = "1.0.0"
 log = "0.4.14"
 thiserror = "1.0.30"
-eyre = "0.6.5"
+eyre = "0.6.6"
 color-eyre = "0.6.0"
 lazy_static = "1.4.0"
 #i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }

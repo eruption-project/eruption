@@ -36,7 +36,7 @@ cfg-if = "1.0.0"
 colored = "2.0.0"
 console = "0.15.0"
 log = "0.4.14"
-libc = "0.2.112"
+libc = "0.2.113"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = "1.0.75"
@@ -48,7 +48,7 @@ config = "0.11.0"
 uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 toml = "0.5.8"
 thiserror = "1.0.30"
-eyre = "0.6.5"
+eyre = "0.6.6"
 color-eyre = "0.6.0"
 comfy-table = "5.0.0"
 paste = "1.0.6"

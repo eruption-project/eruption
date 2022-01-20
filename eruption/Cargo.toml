@@ -30,7 +30,7 @@ default = [] #["mimalloc_allocator"]
 mimalloc_allocator = ["mimalloc"]
 
 [dependencies]
-mimalloc = { version = "0.1.27", optional = true, default-features = false}
+mimalloc = { version = "0.1.27", optional = true, default-features = false }
 cfg-if = "1.0.0"
 crossbeam = "0.8.1"
 futures = "0.3.19"
@@ -39,13 +39,13 @@ async-trait = "0.1.52"
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
-libc = "0.2.112"
+libc = "0.2.113"
 nix = "0.23.1"
 log = "0.4.14"
 syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.30"
-eyre = "0.6.5"
+eyre = "0.6.6"
 color-eyre = "0.6.0"
 toml = "0.5.8"
 serde = { version = "1.0.133", features = ["derive"] }
@@ -75,10 +75,10 @@ simdnoise = "3.1.6"
 #mlua = { version = "0.7.0", features = ["lua54", "vendored"] }
 #luajit-src = "210.2.0"
 #mlua = { version = "0.7.0", features = ["luajit", "vendored"] }
-mlua = { version = "0.7.2", features = ["luajit52"] }
+mlua = { version = "0.7.3", features = ["luajit52"] }
 sysinfo = "0.23.0"
 procinfo = "0.4.2"
-bincode = "2.0.0-beta.0"
+bincode = "2.0.0-beta.1"
 rustfft = "6.0.1"
 uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 dbus = "0.9.5"

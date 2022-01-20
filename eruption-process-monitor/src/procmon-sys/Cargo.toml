@@ -9,7 +9,7 @@ license = "GPLv3+"
 [lib]
 
 [dependencies]
-libc = "0.2.112"
+libc = "0.2.113"
 
 [build-dependencies]
 cc = "1.0.72"

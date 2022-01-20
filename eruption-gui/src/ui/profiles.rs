@@ -40,9 +40,9 @@ use paste::paste;
 #[cfg(feature = "sourceview")]
 use gtk::TextView;
 #[cfg(feature = "sourceview")]
-use sourceview4::prelude::*;
+use sourceview4::builders::BufferBuilder;
 #[cfg(feature = "sourceview")]
-use sourceview4::BufferBuilder;
+use sourceview4::prelude::*;
 
 #[cfg(not(feature = "sourceview"))]
 use gtk::builders::{TextBufferBuilder, TextViewBuilder};

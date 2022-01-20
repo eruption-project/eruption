@@ -36,7 +36,7 @@ colored = "2.0.0"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-libc = "0.2.112"
+libc = "0.2.113"
 nix = "0.23.1"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 serde = { version = "1.0.133", features = ["derive"] }
@@ -46,7 +46,7 @@ tokio = { version = "1.15.0", features = ["full"] }
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
 thiserror = "1.0.30"
-eyre = "0.6.5"
+eyre = "0.6.6"
 color-eyre = "0.6.0"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }

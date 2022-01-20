@@ -98,7 +98,7 @@ lazy_static! {
 
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev),
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev),
-        
+
         MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev),
         MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev),
         MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev),
@@ -111,7 +111,7 @@ lazy_static! {
 
         // ROCCAT/Turtle Beach
         MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev),
-        
+
         MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &roccat_aimo_pad::bind_hiddev),
 
 
