@@ -1460,12 +1460,20 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             SwitchSubcommands::Slot { index } => {
-                println!("Switching to slot: {}", format!("{}", index).bold());
-                let index = index - 1;
-                switch_slot(index)
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
+                if index < 1 || index > constants::NUM_SLOTS {
+                    eprintln!(
+                        "Slot index out of bounds. Valid range is: {}-{}",
+                        1,
+                        constants::NUM_SLOTS
+                    );
+                } else {
+                    println!("Switching to slot: {}", format!("{}", index).bold());
+                    let index = index - 1;
+                    switch_slot(index)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                }
             }
         },
 
