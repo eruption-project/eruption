@@ -14,4 +14,4 @@
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 
-msrv = "1.56.0"  # MSRV
+msrv = "1.56.1"  # MSRV
