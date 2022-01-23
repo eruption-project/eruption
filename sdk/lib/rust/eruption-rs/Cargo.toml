@@ -33,7 +33,7 @@ parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 crossbeam = "0.8.1"
 prost = "0.9.0"
 prost-types = "0.9.0"
-socket2 = { version = "0.4.2", features = ["all"] }
+socket2 = { version = "0.4.3", features = ["all"] }
 
 
 [build-dependencies]

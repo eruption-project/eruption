@@ -30,7 +30,7 @@ resolver = "2"
 cfg-if = "1.0.0"
 clap =  { version = "3.0.10", features = ["derive"] }
 clap_complete = "3.0.4"
-serde = { version = "1.0.133", features = ["derive"] }
+serde = { version = "1.0.135", features = ["derive"] }
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
 log = "0.4.14"
@@ -40,7 +40,7 @@ libc = "0.2.113"
 nix = "0.23.1"
 parking_lot = { version = "0.11.2", features = ["deadlock_detection"] }
 tokio = { version = "1.15.0", features = ["full"] }
-socket2 = { version = "0.4.2", features = ["all"] }
+socket2 = { version = "0.4.3", features = ["all"] }
 ctrlc = { version = "3.2.1", features = ["termination"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
