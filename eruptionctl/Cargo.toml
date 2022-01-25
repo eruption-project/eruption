@@ -29,8 +29,8 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
-clap =  { version = "3.0.10", features = ["derive"] }
-clap_complete = "3.0.4"
+clap =  { version = "3.0.12", features = ["derive"] }
+clap_complete = "3.0.5"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
