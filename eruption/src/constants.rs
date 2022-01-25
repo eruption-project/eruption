@@ -35,6 +35,15 @@ pub const STATE_DIR: &str = "/var/lib/eruption/";
 /// Eruption daemon PID file
 pub const PID_FILE: &str = "/run/eruption/eruption.pid";
 
+/// Name of the Systemd unit file of eruption
+pub const UNIT_NAME_ERUPTION: &str = "eruption.service";
+
+/// Name of the Systemd unit file of the eruption process monitor
+pub const UNIT_NAME_PROCESS_MONITOR: &str = "eruption-process-monitor.service";
+
+/// Name of the Systemd unit file of the eruption audio proxy
+pub const UNIT_NAME_AUDIO_PROXY: &str = "eruption-audio-proxy.service";
+
 /// Eruption daemon control UNIX domain socket (SDK support)
 pub const CONTROL_SOCKET_NAME: &str = "/run/eruption/control.sock";
 

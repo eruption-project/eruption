@@ -880,103 +880,273 @@ Author: X3n0m0rph59
                     <property name="can-focus">False</property>
                     <property name="border-width">8</property>
                     <child>
-                      <object class="GtkFrame">
+                      <object class="GtkBox">
                         <property name="width-request">100</property>
                         <property name="height-request">80</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label-xalign">0</property>
-                        <property name="shadow-type">none</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <!-- n-columns=3 n-rows=3 -->
-                          <object class="GtkGrid">
+                          <object class="GtkFrame">
+                            <property name="width-request">100</property>
+                            <property name="height-request">80</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="margin-start">8</property>
-                            <property name="margin-top">16</property>
-                            <property name="row-spacing">8</property>
-                            <property name="column-spacing">16</property>
-                            <property name="row-homogeneous">True</property>
-                            <property name="column-homogeneous">True</property>
+                            <property name="border-width">8</property>
+                            <property name="label-xalign">0</property>
+                            <property name="shadow-type">none</property>
                             <child>
-                              <object class="GtkAccelLabel">
+                              <!-- n-columns=2 n-rows=2 -->
+                              <object class="GtkGrid">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_Host Name</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">host_name</property>
+                                <property name="margin-start">8</property>
+                                <property name="margin-top">16</property>
+                                <property name="border-width">8</property>
+                                <property name="row-spacing">8</property>
+                                <property name="column-spacing">16</property>
+                                <property name="row-homogeneous">True</property>
+                                <property name="column-homogeneous">True</property>
+                                <child>
+                                  <object class="GtkAccelLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">_Host Name</property>
+                                    <property name="use-underline">True</property>
+                                    <property name="mnemonic-widget">host_name</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="host_name">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="text" translatable="yes">localhost</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkAccelLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">_Port Number</property>
+                                    <property name="use-underline">True</property>
+                                    <property name="mnemonic-widget">port_number</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="port_number">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="input-purpose">digits</property>
+                                    <property name="adjustment">adjustment_port</property>
+                                    <property name="numeric">True</property>
+                                    <property name="wrap">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">1</property>
+                                  </packing>
+                                </child>
                               </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">0</property>
-                              </packing>
                             </child>
-                            <child>
-                              <object class="GtkEntry" id="host_name">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="text" translatable="yes">localhost</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkAccelLabel">
+                            <child type="label">
+                              <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="halign">start</property>
-                                <property name="label" translatable="yes">_Port Number</property>
-                                <property name="use-underline">True</property>
-                                <property name="mnemonic-widget">port_number</property>
+                                <property name="label" translatable="yes">Eruption NetworkFX Settings</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
                               </object>
-                              <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkSpinButton" id="port_number">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="input-purpose">digits</property>
-                                <property name="adjustment">adjustment_port</property>
-                                <property name="numeric">True</property>
-                                <property name="wrap">True</property>
-                              </object>
-                              <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
                             </child>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
-                        <child type="label">
-                          <object class="GtkLabel">
+                        <child>
+                          <object class="GtkFrame">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Eruption NetworkFX Settings</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                            </attributes>
+                            <property name="halign">start</property>
+                            <property name="valign">end</property>
+                            <property name="border-width">8</property>
+                            <property name="label-xalign">0</property>
+                            <property name="shadow-type">none</property>
+                            <child>
+                              <!-- n-columns=3 n-rows=4 -->
+                              <object class="GtkGrid">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="border-width">8</property>
+                                <property name="column-spacing">16</property>
+                                <property name="row-homogeneous">True</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Eruption Daemon</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Eruption Process Monitor Daemon</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Eruption Audio Proxy Daemon</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSwitch" id="eruption_daemon_switch">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSwitch" id="process_monitor_daemon_switch">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSwitch" id="audio_proxy_daemon_switch">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-top">16</property>
+                                    <property name="margin-bottom">8</property>
+                                    <property name="label" translatable="yes">Session Daemons</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="eruption_daemon_status_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">&lt;unknown&gt;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="process_monitor_daemon_status_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">&lt;unknown&gt;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="audio_proxy_daemon_status_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">&lt;unknown&gt;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Eruption Subsystem Status</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
+                              </object>
+                            </child>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -1012,79 +1182,91 @@ Author: X3n0m0rph59
             <property name="can-focus">False</property>
             <property name="label-xalign">0</property>
             <child>
-              <object class="GtkFrame">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="valign">end</property>
-                <property name="border-width">8</property>
-                <property name="label-xalign">0</property>
-                <property name="shadow-type">none</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
-                  <object class="GtkGrid">
+                  <object class="GtkFrame">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="valign">end</property>
                     <property name="border-width">8</property>
-                    <property name="row-spacing">8</property>
-                    <property name="column-spacing">16</property>
-                    <property name="row-homogeneous">True</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">none</property>
                     <child>
-                      <object class="GtkAccelLabel">
+                      <!-- n-columns=2 n-rows=2 -->
+                      <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">_SoundFX Audio Effects</property>
-                        <property name="use-underline">True</property>
-                        <property name="mnemonic-widget">soundfx_switch</property>
+                        <property name="border-width">8</property>
+                        <property name="row-spacing">8</property>
+                        <property name="column-spacing">16</property>
+                        <property name="row-homogeneous">True</property>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_SoundFX Audio Effects</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">soundfx_switch</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="networkfx_ambient_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">networkfx_ambient_switch</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="soundfx_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
                       </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
                     </child>
-                    <child>
-                      <object class="GtkSwitch" id="networkfx_ambient_switch">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAccelLabel">
+                    <child type="label">
+                      <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
-                        <property name="use-underline">True</property>
-                        <property name="mnemonic-widget">networkfx_ambient_switch</property>
+                        <property name="label" translatable="yes">Special</property>
                       </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSwitch" id="soundfx_switch">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
                     </child>
                   </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Special</property>
-                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
               </object>
             </child>
