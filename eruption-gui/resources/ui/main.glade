@@ -993,9 +993,10 @@ Author: X3n0m0rph59
                               <object class="GtkGrid">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="margin-start">8</property>
                                 <property name="border-width">8</property>
+                                <property name="row-spacing">8</property>
                                 <property name="column-spacing">16</property>
-                                <property name="row-homogeneous">True</property>
                                 <child>
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
@@ -1132,7 +1133,7 @@ Author: X3n0m0rph59
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Eruption Subsystem Status</property>
+                                <property name="label" translatable="yes">Eruption Status</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
