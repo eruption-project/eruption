@@ -137,9 +137,9 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "backtrace"
-version = "0.3.63"
+version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "321629d8ba6513061f26707241fa9bc89524ff1cd7a915a97ef0c62c666ce1b6"
+checksum = "5e121dee8023ce33ab248d9ce1493df03c3b38a659b240096fcbd7048ff9c31f"
 dependencies = [
  "addr2line",
  "cc",
@@ -264,7 +264,7 @@ dependencies = [
  "log",
  "proc-macro2",
  "quote",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "syn",
  "tempfile",
@@ -315,9 +315,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.0.12"
+version = "3.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2afefa54b5c7dd40918dc1e09f213a171ab5937aadccab45e804780b238f9f43"
+checksum = "08799f92c961c7a1cf0cc398a9073da99e21ce388b46372c37f3191f2f3eed3e"
 dependencies = [
  "atty",
  "bitflags",
@@ -336,7 +336,7 @@ version = "3.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be4dabb7e2f006497e1da045feaa512acf0686f76b68d94925da2d9422dcb521"
 dependencies = [
- "clap 3.0.12",
+ "clap 3.0.13",
 ]
 
 [[package]]
@@ -426,7 +426,7 @@ dependencies = [
  "lazy_static",
  "nom 5.1.2",
  "rust-ini",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde-hjson",
  "serde_json",
  "toml",
@@ -556,7 +556,7 @@ dependencies = [
  "crossterm_winapi",
  "libc",
  "mio 0.7.14",
- "parking_lot",
+ "parking_lot 0.11.2",
  "signal-hook",
  "signal-hook-mio",
  "winapi 0.3.9",
@@ -739,7 +739,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "color-eyre",
  "colorgrad",
  "config",
@@ -767,7 +767,7 @@ dependencies = [
  "nix 0.23.1",
  "noise",
  "palette",
- "parking_lot",
+ "parking_lot 0.12.0",
  "paste 1.0.6",
  "pretty_assertions",
  "pretty_env_logger",
@@ -779,7 +779,7 @@ dependencies = [
  "rayon",
  "rust-embed",
  "rustfft",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "serialport",
  "simdnoise",
@@ -801,7 +801,7 @@ dependencies = [
  "bincode",
  "bytes",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "crossbeam",
@@ -817,7 +817,7 @@ dependencies = [
  "libpulse-simple-binding",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "prost",
@@ -825,7 +825,7 @@ dependencies = [
  "prost-types",
  "rust-embed",
  "rust-pulsectl",
- "serde 1.0.135",
+ "serde 1.0.136",
  "socket2",
  "syslog",
  "thiserror",
@@ -838,7 +838,7 @@ name = "eruption-cmd"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -852,7 +852,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rust-embed",
@@ -868,7 +868,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -885,11 +885,11 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rust-embed",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "serialport",
  "thiserror",
@@ -932,13 +932,13 @@ dependencies = [
  "palette",
  "pango",
  "pangocairo",
- "parking_lot",
+ "parking_lot 0.12.0",
  "paste 1.0.6",
  "pretty_assertions",
  "pretty_env_logger",
  "rayon",
  "rust-embed",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "sourceview4",
  "thiserror",
@@ -954,7 +954,7 @@ name = "eruption-hotplug-helper"
 version = "0.0.9"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "eyre",
@@ -965,7 +965,7 @@ dependencies = [
  "libc",
  "lockfile",
  "log",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rust-embed",
@@ -982,7 +982,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1001,11 +1001,11 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rust-embed",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "serialport",
  "thiserror",
@@ -1019,7 +1019,7 @@ name = "eruption-netfx"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1033,7 +1033,7 @@ dependencies = [
  "libc",
  "log",
  "num-traits 0.2.14",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rayon",
@@ -1051,7 +1051,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "config",
@@ -1072,13 +1072,13 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "procmon-sys",
  "regex",
  "rust-embed",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "syslog",
  "thiserror",
@@ -1101,7 +1101,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "prost",
  "prost-build",
  "prost-types",
@@ -1115,7 +1115,7 @@ version = "0.0.6"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1132,7 +1132,7 @@ dependencies = [
  "libc",
  "log",
  "nix 0.23.1",
- "parking_lot",
+ "parking_lot 0.12.0",
  "pretty_assertions",
  "pretty_env_logger",
  "rust-embed",
@@ -1147,7 +1147,7 @@ name = "eruptionctl"
 version = "0.0.15"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1165,11 +1165,11 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "parking_lot",
+ "parking_lot 0.12.0",
  "paste 1.0.6",
  "pretty_assertions",
  "rust-embed",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_json",
  "thiserror",
  "tokio",
@@ -1788,7 +1788,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b62affcd43abfb51f3cbd8736f9407908dc5b44fc558a9be07460bbfd104d983"
 dependencies = [
  "log",
- "serde 1.0.135",
+ "serde 1.0.136",
  "serde_derive",
  "thiserror",
  "toml",
@@ -1809,7 +1809,7 @@ dependencies = [
  "lazy_static",
  "locale_config",
  "log",
- "parking_lot",
+ "parking_lot 0.11.2",
  "rust-embed",
  "thiserror",
  "unic-langid",
@@ -2030,9 +2030,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.113"
+version = "0.2.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eef78b64d87775463c549fbd80e19249ef436ea3bf1de2a1eb7e717ec7fab1e9"
+checksum = "565dbd88872dbe4cc8a46e527f26483c1d1f7afa6b884a3bd6cd893d4f98da74"
 
 [[package]]
 name = "libdbus-sys"
@@ -2158,9 +2158,9 @@ dependencies = [
 
 [[package]]
 name = "lock_api"
-version = "0.4.5"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "712a4d093c9976e24e7dbca41db895dabcbac38eb5f4045393d17a95bdfb1109"
+checksum = "88943dd7ef4a2e5a4bfa2753aaab3013e34ce2533d1996fb18ef591e315e2b3b"
 dependencies = [
  "scopeguard",
 ]
@@ -2578,9 +2578,9 @@ dependencies = [
 
 [[package]]
 name = "num_threads"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71a1eb3a36534514077c1e079ada2fb170ef30c47d203aa6916138cf882ecd52"
+checksum = "97ba99ba6393e2c3734791401b66902d981cb03bf190af674ca69949b6d5fb15"
 dependencies = [
  "libc",
 ]
@@ -2743,7 +2743,17 @@ checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
 dependencies = [
  "instant",
  "lock_api",
- "parking_lot_core",
+ "parking_lot_core 0.8.5",
+]
+
+[[package]]
+name = "parking_lot"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87f5ec2493a61ac0506c0f4199f99070cbe83857b0337006a30f3e6719b8ef58"
+dependencies = [
+ "lock_api",
+ "parking_lot_core 0.9.0",
 ]
 
 [[package]]
@@ -2752,15 +2762,28 @@ version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d76e8e1493bcac0d2766c42737f34458f1c8c50c0d23bcb24ea953affb273216"
 dependencies = [
- "backtrace",
  "cfg-if 1.0.0",
  "instant",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2f4f894f3865f6c0e02810fc597300f34dc2510f66400da262d8ae10e75767d"
+dependencies = [
+ "backtrace",
+ "cfg-if 1.0.0",
  "libc",
  "petgraph 0.5.1",
  "redox_syscall",
  "smallvec",
  "thread-id",
- "winapi 0.3.9",
+ "windows-sys",
 ]
 
 [[package]]
@@ -3456,9 +3479,9 @@ checksum = "9dad3f759919b92c3068c696c15c3d17238234498bbdcc80f2c469606f948ac8"
 
 [[package]]
 name = "serde"
-version = "1.0.135"
+version = "1.0.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cf9235533494ea2ddcdb794665461814781c53f19d87b76e571a1c35acbad2b"
+checksum = "ce31e24b01e1e524df96f1c2fdd054405f8d7376249a5110886fb4b658484789"
 dependencies = [
  "serde_derive",
 ]
@@ -3477,9 +3500,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.135"
+version = "1.0.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dcde03d87d4c973c04be249e7d8f0b35db1c848c487bd43032808e59dd8328d"
+checksum = "08597e7152fcd306f41838ed3e37be9eaeed2b61c42e2117266a554fab4662f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3494,7 +3517,7 @@ checksum = "d23c1ba4cf0efd44be32017709280b32d1cea5c3f1275c3b6d9e8bc54f758085"
 dependencies = [
  "itoa",
  "ryu",
- "serde 1.0.135",
+ "serde 1.0.136",
 ]
 
 [[package]]
@@ -3568,9 +3591,9 @@ dependencies = [
 
 [[package]]
 name = "simba"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fa406d0a270fc91831a28f705ba803ad05b971486af492317f1607390245b99"
+checksum = "13a2609e876d4f77f6ab7ff5254fc39b4f1927ba8e6db3d18be7c32534d3725e"
 dependencies = [
  "approx",
  "num-complex",
@@ -3603,7 +3626,7 @@ name = "simple"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 3.0.12",
+ "clap 3.0.13",
  "color-eyre",
  "eruption-rs",
  "eyre",
@@ -3636,9 +3659,9 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 
 [[package]]
 name = "socket2"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f82496b90c36d70af5fcd482edaa2e0bd16fade569de1330405fecbbdac736b"
+checksum = "66d72b759436ae32898a2af0a14218dbf55efde3feeb170eb623637db85ee1e0"
 dependencies = [
  "libc",
  "winapi 0.3.9",
@@ -3882,9 +3905,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8d54b9298e05179c335de2b9645d061255bcd5155f843b3e328d2cfe0a5b413"
+checksum = "004cbc98f30fa233c61a38bc77e96a9106e65c88f2d3bef182ae952027e5753d"
 dependencies = [
  "itoa",
  "libc",
@@ -3899,9 +3922,9 @@ checksum = "29738eedb4388d9ea620eeab9384884fc3f06f586a2eddb56bedc5885126c7c1"
 
 [[package]]
 name = "tokio"
-version = "1.15.0"
+version = "1.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbbf1c778ec206785635ce8ad57fe52b3009ae9e0c9f574a728f3049d3e55838"
+checksum = "0c27a64b625de6d309e8c57716ba93021dccf1b3b5c97edd6d3dd2d2135afc0a"
 dependencies = [
  "bytes",
  "libc",
@@ -3909,7 +3932,7 @@ dependencies = [
  "mio 0.7.14",
  "num_cpus",
  "once_cell",
- "parking_lot",
+ "parking_lot 0.11.2",
  "pin-project-lite",
  "signal-hook-registry",
  "tokio-macros",
@@ -3933,7 +3956,7 @@ version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31142970826733df8241ef35dc040ef98c679ab14d7c3e54d827099b3acecaa"
 dependencies = [
- "serde 1.0.135",
+ "serde 1.0.136",
 ]
 
 [[package]]
@@ -3968,9 +3991,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77be66445c4eeebb934a7340f227bfe7b338173d3f8c00a60a5a58005c9faecf"
+checksum = "5312f325fe3588e277415f5a6cca1f4ccad0f248c4cd5a4bd33032d7286abc22"
 dependencies = [
  "sharded-slab",
  "thread_local",
@@ -4034,7 +4057,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a4a8eeaf0494862c1404c95ec2f4c33a2acff5076f64314b465e3ddae1b934d"
 dependencies = [
- "serde 1.0.135",
+ "serde 1.0.136",
  "tinystr",
 ]
 
@@ -4063,7 +4086,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb3ab47baa004111b323696c6eaa2752e7356f7f77cf6b6dc7a2087368ce1ca4"
 dependencies = [
  "getrandom 0.2.4",
- "serde 1.0.135",
+ "serde 1.0.136",
 ]
 
 [[package]]
@@ -4197,6 +4220,49 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "windows-sys"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ceb069ac8b2117d36924190469735767f0990833935ab430155e71a44bafe148"
+dependencies = [
+ "windows_aarch64_msvc",
+ "windows_i686_gnu",
+ "windows_i686_msvc",
+ "windows_x86_64_gnu",
+ "windows_x86_64_msvc",
+]
+
+[[package]]
+name = "windows_aarch64_msvc"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3d027175d00b01e0cbeb97d6ab6ebe03b12330a35786cbaca5252b1c4bf5d9b"
+
+[[package]]
+name = "windows_i686_gnu"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8793f59f7b8e8b01eda1a652b2697d87b93097198ae85f823b969ca5b89bba58"
+
+[[package]]
+name = "windows_i686_msvc"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8602f6c418b67024be2996c512f5f995de3ba417f4c75af68401ab8756796ae4"
+
+[[package]]
+name = "windows_x86_64_gnu"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3d615f419543e0bd7d2b3323af0d86ff19cbc4f816e6453f36a2c2ce889c354"
+
+[[package]]
+name = "windows_x86_64_msvc"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d95421d9ed3672c280884da53201a5c46b7b2765ca6faf34b0d71cf34a3561"
 
 [[package]]
 name = "ws2_32-sys"
