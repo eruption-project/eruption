@@ -8,10 +8,13 @@ enum CommandType {
   AUDIO_MUTED_STATE = 3;
   AUDIO_VOLUME = 4;
   AUDIO_DATA = 5;
+  PLAY_SFX = 6;
 }
 
 message Command {
   CommandType command_type = 1;
+
+  oneof Payload { uint32 id = 2; }
 }
 
 message Response {

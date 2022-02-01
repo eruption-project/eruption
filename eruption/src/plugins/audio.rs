@@ -181,20 +181,16 @@ impl Plugin for AudioPlugin {
             match event {
                 events::Event::KeyDown(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(_backend) = AUDIO_BACKEND.lock().as_ref() {
-                            // backend
-                            //     .play_sfx(SFX_KEY_DOWN.as_ref().unwrap())
-                            //     .unwrap_or_else(|e| error!("{}", e));
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                            backend.play_sfx(0)?;
                         }
                     }
                 }
 
                 events::Event::KeyUp(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(_backend) = AUDIO_BACKEND.lock().as_ref() {
-                            // backend
-                            //     .play_sfx(SFX_KEY_UP.as_ref().unwrap())
-                            //     .unwrap_or_else(|e| error!("{}", e));
+                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                            backend.play_sfx(1)?;
                         }
                     }
                 }
@@ -259,6 +255,7 @@ mod backends {
     use super::CURRENT_RMS;
     use super::FFT_SIZE;
 
+    use crossbeam::channel::{self, Receiver, Sender};
     use lazy_static::lazy_static;
     use log::*;
     use nix::unistd::unlink;
@@ -287,6 +284,9 @@ mod backends {
     lazy_static! {
         pub static ref LISTENER: Arc<Mutex<Option<Socket>>> = Arc::new(Mutex::new(None));
 
+        pub static ref SFX_TX: Arc<Mutex<Option<Sender<u32>>>> = Arc::new(Mutex::new(None));
+        pub static ref SFX_RX: Arc<Mutex<Option<Receiver<u32>>>> = Arc::new(Mutex::new(None));
+
         /// Audio device master volume
         static ref MASTER_VOLUME: AtomicI32 = AtomicI32::new(0);
 
@@ -297,7 +297,7 @@ mod backends {
     /// Audio backend trait, defines an interface to the player and
     /// grabber functionality
     pub trait AudioBackend {
-        fn play_sfx(&self, data: &'static [u8]) -> Result<()>;
+        fn play_sfx(&self, id: u32) -> Result<()>;
 
         fn start_audio_grabber(&self) -> Result<()>;
         fn stop_audio_grabber(&self) -> Result<()>;
@@ -311,7 +311,7 @@ mod backends {
     pub struct NullBackend {}
 
     impl AudioBackend for NullBackend {
-        fn play_sfx(&self, _data: &'static [u8]) -> Result<()> {
+        fn play_sfx(&self, _id: u32) -> Result<()> {
             Ok(())
         }
 
@@ -352,6 +352,11 @@ mod backends {
             fs::set_permissions(constants::AUDIO_SOCKET_NAME, perms)?;
 
             LISTENER.lock().replace(listener);
+
+            let (tx, rx): (Sender<u32>, Receiver<u32>) = channel::bounded(1);
+
+            *SFX_TX.lock() = Some(tx);
+            *SFX_RX.lock() = Some(rx);
 
             Ok(Self {})
         }
@@ -407,6 +412,23 @@ mod backends {
                                 if crate::QUIT.load(Ordering::SeqCst) {
                                     break 'EVENT_LOOP;
                                 }
+
+                                let pending_sfx_id = if let Some(ref rx) = *SFX_RX.lock() {
+                                    // do we have any requests to play a sound effect?
+                                    match rx.recv_timeout(Duration::from_millis(1)) {
+                                        Ok(idx) => {
+                                            trace!("Play back SFX with ID: {}", idx);
+                                            Some(idx)
+                                        }
+
+                                        Err(_e) => {
+                                            // nothing to do
+                                            None
+                                        }
+                                    }
+                                } else {
+                                    None
+                                };
 
                                 // wait for socket to be ready
                                 let mut poll_fds = [PollFd::new(
@@ -619,6 +641,37 @@ mod backends {
                                     }
 
                                     if poll_fds[0].revents().unwrap().contains(PollFlags::POLLOUT) {
+                                        // pending sound effect?
+                                        if let Some(sfx_id) = pending_sfx_id {
+                                            debug!(
+                                                "Notifying audio proxy to play SFX with ID: {}",
+                                                sfx_id
+                                            );
+
+                                            let mut command = protocol::Command::default();
+                                            command
+                                                .set_command_type(protocol::CommandType::PlaySfx);
+
+                                            command.payload =
+                                                Some(protocol::command::Payload::Id(sfx_id));
+
+                                            let mut buf = Vec::new();
+                                            command.encode_length_delimited(&mut buf)?;
+
+                                            // send data
+                                            match socket.send(&buf) {
+                                                Ok(_n) => {}
+
+                                                Err(_e) => {
+                                                    return Err(AudioPluginError::GrabberError {
+                                                        description: "Lost connection to proxy"
+                                                            .to_owned(),
+                                                    }
+                                                    .into());
+                                                }
+                                            }
+                                        }
+
                                         if AUDIO_GRABBER_RECORD_AUDIO.load(Ordering::SeqCst)
                                             && !AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst)
                                         {
@@ -702,7 +755,11 @@ mod backends {
     }
 
     impl AudioBackend for ProxyBackend {
-        fn play_sfx(&self, _data: &'static [u8]) -> Result<()> {
+        fn play_sfx(&self, id: u32) -> Result<()> {
+            if let Some(ref tx) = *SFX_TX.lock() {
+                tx.send_timeout(id, Duration::from_millis(100))?;
+            }
+
             Ok(())
         }
 

@@ -14,3 +14,24 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+use std::path::Path;
+
+use byteorder::{LittleEndian, WriteBytesExt};
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+pub fn load_audio_file<P: AsRef<Path>>(file: P) -> Result<Vec<u8>> {
+    let mut reader = hound::WavReader::open(file.as_ref())?;
+    let samples = reader
+        .samples::<i16>()
+        .map(|sample| sample.unwrap())
+        .collect::<Vec<i16>>();
+
+    let mut buffer: Vec<u8> = vec![];
+    for s in samples {
+        buffer.write_i16::<LittleEndian>(s)?;
+    }
+
+    Ok(buffer)
+}

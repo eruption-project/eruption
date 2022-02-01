@@ -15,6 +15,7 @@
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::collections::HashMap;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
 use std::os::unix::io::AsRawFd;
@@ -36,7 +37,7 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use log::{debug, error, info, trace, warn};
 use nix::poll::{poll, PollFd, PollFlags};
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use prost::Message;
 use rust_embed::RustEmbed;
 use socket2::{Domain, SockAddr, Socket, Type};
@@ -96,12 +97,17 @@ pub mod protocol {
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
+type SoundFxMap = HashMap<u32, Vec<u8>>;
+
 lazy_static! {
     // /// Global command line options
     // pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
 
     pub static ref AUDIO_BACKEND: Arc<Mutex<audio::PulseAudioBackend>> =  Arc::new(Mutex::new(audio::PulseAudioBackend::new()));
 
+    pub static ref SOUND_FX: Arc<RwLock<SoundFxMap>> = Arc::new(RwLock::new(SoundFxMap::new()));
+
+    pub static ref PENDING_SFX_ID: Arc<Mutex<Option<u32>>> = Arc::new(Mutex::new(None));
 
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
@@ -226,8 +232,24 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                             thread::sleep(Duration::from_millis(constants::SLEEP_TIME_TIMEOUT));
 
                             debug!("Re-opening audio device");
-                            audio_backend.open()?;
+                            audio_backend.open_recorder()?;
                         }
+                    }
+
+                    // play back pending sound effects
+                    let mut sfx_played = false;
+
+                    if let Some(sfx_id) = *PENDING_SFX_ID.lock() {
+                        let mut audio_backend = AUDIO_BACKEND.lock();
+
+                        audio_backend.open_playback()?;
+                        audio_backend.play_sfx(sfx_id)?;
+
+                        sfx_played = true;
+                    }
+
+                    if sfx_played {
+                        *PENDING_SFX_ID.lock() = None;
                     }
 
                     // wait for socket to be ready
@@ -273,7 +295,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                     info!("Opening audio device");
 
                                                     let mut audio_backend = AUDIO_BACKEND.lock();
-                                                    audio_backend.open()?;
+                                                    audio_backend.open_recorder()?;
 
                                                     RECORDING.store(true, Ordering::SeqCst);
 
@@ -284,7 +306,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                     info!("Closing audio device");
 
                                                     let mut audio_backend = AUDIO_BACKEND.lock();
-                                                    audio_backend.close()?;
+                                                    audio_backend.close_recorder()?;
 
                                                     RECORDING.store(false, Ordering::SeqCst);
 
@@ -318,6 +340,29 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                     response.payload = Some(
                                                         protocol::response::Payload::Muted(muted),
                                                     );
+                                                }
+
+                                                CommandType::PlaySfx => {
+                                                    match message.payload {
+                                                        Some(protocol::command::Payload::Id(
+                                                            id,
+                                                        )) => {
+                                                            debug!(
+                                                                "Request to play SFX with ID: {}",
+                                                                id
+                                                            );
+
+                                                            *PENDING_SFX_ID.lock() = Some(id);
+                                                        }
+
+                                                        _ => {
+                                                            error!(
+                                                                "Protocol error: Invalid payload"
+                                                            );
+                                                        }
+                                                    }
+
+                                                    response.set_response_type(CommandType::Noop);
                                                 }
 
                                                 _ => {
@@ -483,6 +528,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     //     print_header();
     // }
 
+    // start the thread deadlock detector
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+
     let opts = Options::parse();
     let daemon = matches!(opts.command, Subcommands::Daemon);
 
@@ -543,6 +593,28 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             })
             .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
+            // load sound effects
+            info!("Loading sound effects...");
+
+            let sample_data_key_down_fx =
+                util::load_audio_file("/usr/share/eruption/sfx/key-down.wav").unwrap_or_else(|e| {
+                    error!("Could not load waveform audio file: {}", e);
+                    Vec::new()
+                });
+
+            let sample_data_key_up_fx = util::load_audio_file("/usr/share/eruption/sfx/key-up.wav")
+                .unwrap_or_else(|e| {
+                    error!("Could not load waveform audio file: {}", e);
+                    Vec::new()
+                });
+
+            {
+                let mut sound_fx = SOUND_FX.write();
+
+                sound_fx.insert(0, sample_data_key_down_fx);
+                sound_fx.insert(1, sample_data_key_up_fx);
+            }
+
             info!("Startup completed");
 
             // enter the main loop
@@ -566,6 +638,39 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     };
 
     Ok(())
+}
+
+#[cfg(debug_assertions)]
+mod thread_util {
+    use crate::Result;
+    use log::*;
+    use parking_lot::deadlock;
+    use std::thread;
+    use std::time::Duration;
+
+    /// Creates a background thread which checks for deadlocks every 5 seconds
+    pub(crate) fn deadlock_detector() -> Result<()> {
+        thread::Builder::new()
+            .name("deadlockd".to_owned())
+            .spawn(move || loop {
+                thread::sleep(Duration::from_secs(5));
+                let deadlocks = deadlock::check_deadlock();
+                if !deadlocks.is_empty() {
+                    error!("{} deadlocks detected", deadlocks.len());
+
+                    for (i, threads) in deadlocks.iter().enumerate() {
+                        error!("Deadlock #{}", i);
+
+                        for t in threads {
+                            error!("Thread Id {:#?}", t.thread_id());
+                            error!("{:#?}", t.backtrace());
+                        }
+                    }
+                }
+            })?;
+
+        Ok(())
+    }
 }
 
 /// Main program entrypoint

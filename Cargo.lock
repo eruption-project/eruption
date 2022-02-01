@@ -796,9 +796,10 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "bincode",
+ "byteorder",
  "bytes",
  "cfg-if 1.0.0",
  "clap 3.0.13",
@@ -807,6 +808,7 @@ dependencies = [
  "crossbeam",
  "ctrlc",
  "eyre",
+ "hexdump",
  "hound",
  "i18n-embed",
  "i18n-embed-fl",

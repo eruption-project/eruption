@@ -37,9 +37,6 @@ pub enum AudioError {
 
     // #[error("File I/O error: {description}")]
     // IoError { description: String },
-
-    // #[error("Playback error: {description}")]
-    // PlaybackError { description: String },
     #[error("Audio grabber error: {description}")]
     GrabberError { description: String },
 
@@ -52,7 +49,7 @@ mod backends {
 
     use libpulse_binding::{sample, stream::Direction};
     use libpulse_simple_binding::Simple;
-    use parking_lot::Mutex;
+    use parking_lot::RwLock;
     use pulsectl::controllers::{DeviceControl, SinkController};
     use std::cell::RefCell;
 
@@ -67,29 +64,37 @@ mod backends {
     pub trait AudioBackend {
         fn device_name(&self) -> Result<String>;
 
-        fn open(&mut self) -> Result<()>;
+        fn open_recorder(&mut self) -> Result<()>;
+        fn open_playback(&mut self) -> Result<()>;
+
+        fn close_recorder(&mut self) -> Result<()>;
+        fn close_playback(&mut self) -> Result<()>;
         fn close(&mut self) -> Result<()>;
 
         fn get_audio_volume(&self) -> Result<i32>;
         fn set_audio_volume(&mut self, vol: i32) -> Result<()>;
         fn is_audio_muted(&self) -> Result<bool>;
 
-        fn play_samples(&self, data: &'static [u8]) -> Result<()>;
+        fn play_sfx(&self, id: u32) -> Result<()>;
+
+        fn play_samples(&self, data: &Vec<u8>) -> Result<()>;
         fn record_samples(&self) -> Result<()>;
     }
 
     pub struct PulseAudioBackend {
-        pub recorder_handle: Arc<Mutex<Option<Simple>>>,
-        pub player_handle: Arc<Mutex<Option<Simple>>>,
-        pub is_open: bool,
+        pub recorder_handle: Arc<RwLock<Option<Simple>>>,
+        pub player_handle: Arc<RwLock<Option<Simple>>>,
+        pub is_playback_open: bool,
+        pub is_recorder_open: bool,
     }
 
     impl PulseAudioBackend {
         pub fn new() -> Self {
             Self {
-                recorder_handle: Arc::new(Mutex::new(None)),
-                player_handle: Arc::new(Mutex::new(None)),
-                is_open: false,
+                recorder_handle: Arc::new(RwLock::new(None)),
+                player_handle: Arc::new(RwLock::new(None)),
+                is_playback_open: false,
+                is_recorder_open: false,
             }
         }
     }
@@ -99,57 +104,130 @@ mod backends {
             Ok("PulseAudio/PipeWire Device".to_string())
         }
 
-        fn open(&mut self) -> Result<()> {
-            let spec = sample::Spec {
-                format: sample::Format::S16NE,
-                channels: 2,
-                rate: 44100,
-            };
+        fn open_recorder(&mut self) -> Result<()> {
+            if !self.is_recorder_open {
+                let spec = sample::Spec {
+                    format: sample::Format::S16NE,
+                    channels: 2,
+                    rate: 44100,
+                };
 
-            assert!(spec.is_valid());
+                assert!(spec.is_valid());
 
-            let result = Simple::new(
-                None,
-                "Eruption",
-                Direction::Record,
-                Some("@DEFAULT_MONITOR@"),
-                "Audio Grabber",
-                &spec,
-                None,
-                None,
-            )
-            .map_err(|e| AudioError::ConnectionError {
-                description: format!("Could not open PulseAudio/PipeWire recording device: {}", e),
-            })?;
+                let result = Simple::new(
+                    None,
+                    "Eruption",
+                    Direction::Record,
+                    Some("@DEFAULT_MONITOR@"),
+                    "Audio Grabber",
+                    &spec,
+                    None,
+                    None,
+                )
+                .map_err(|e| AudioError::ConnectionError {
+                    description: format!(
+                        "Could not open PulseAudio/PipeWire recording device: {}",
+                        e
+                    ),
+                })?;
 
-            *self.recorder_handle.lock() = Some(result);
+                *self.recorder_handle.write() = Some(result);
 
-            let result = Simple::new(
-                None,
-                "Eruption",
-                Direction::Playback,
-                None,
-                "Audio Playback",
-                &spec,
-                None,
-                None,
-            )
-            .map_err(|e| AudioError::ConnectionError {
-                description: format!("Could not open PulseAudio/PipeWire playback device: {}", e),
-            })?;
+                let spec = sample::Spec {
+                    format: sample::Format::S16NE,
+                    channels: 2,
+                    rate: 44100,
+                };
 
-            *self.player_handle.lock() = Some(result);
+                assert!(spec.is_valid());
 
-            self.is_open = true;
+                let result = Simple::new(
+                    None,
+                    "Eruption",
+                    Direction::Playback,
+                    None,
+                    "Audio Playback",
+                    &spec,
+                    None,
+                    None,
+                )
+                .map_err(|e| AudioError::ConnectionError {
+                    description: format!(
+                        "Could not open PulseAudio/PipeWire playback device: {}",
+                        e
+                    ),
+                })?;
+
+                *self.player_handle.write() = Some(result);
+
+                self.is_recorder_open = true;
+            }
+
+            Ok(())
+        }
+
+        fn open_playback(&mut self) -> Result<()> {
+            if !self.is_playback_open {
+                let spec = sample::Spec {
+                    format: sample::Format::S16NE,
+                    channels: 2,
+                    rate: 44100,
+                };
+
+                assert!(spec.is_valid());
+
+                let result = Simple::new(
+                    None,
+                    "Eruption",
+                    Direction::Playback,
+                    None,
+                    "Audio Playback",
+                    &spec,
+                    None,
+                    None,
+                )
+                .map_err(|e| AudioError::ConnectionError {
+                    description: format!(
+                        "Could not open PulseAudio/PipeWire playback device: {}",
+                        e
+                    ),
+                })?;
+
+                *self.player_handle.write() = Some(result);
+
+                self.is_playback_open = true;
+            }
+
+            Ok(())
+        }
+
+        fn close_playback(&mut self) -> Result<()> {
+            if self.is_playback_open {
+                *self.player_handle.write() = None;
+
+                self.is_playback_open = false;
+            }
+
+            Ok(())
+        }
+
+        fn close_recorder(&mut self) -> Result<()> {
+            if self.is_recorder_open {
+                *self.recorder_handle.write() = None;
+
+                self.is_recorder_open = false;
+            }
 
             Ok(())
         }
 
         fn close(&mut self) -> Result<()> {
-            if self.is_open {
-                *self.recorder_handle.lock() = None;
-                *self.player_handle.lock() = None;
-                self.is_open = false;
+            if self.is_recorder_open || self.is_playback_open {
+                *self.recorder_handle.write() = None;
+                *self.player_handle.write() = None;
+
+                self.is_recorder_open = false;
+                self.is_playback_open = false;
             }
 
             Ok(())
@@ -191,10 +269,27 @@ mod backends {
             })
         }
 
-        fn play_samples(&self, data: &'static [u8]) -> Result<()> {
-            let player = self.player_handle.lock();
-            if let Some(player) = player.as_ref() {
+        fn play_sfx(&self, id: u32) -> Result<()> {
+            if let Some(player) = &*self.player_handle.read() {
+                let sfx_map = crate::SOUND_FX.read();
+                let data = &sfx_map[&id];
+
                 player.write(&data).map_err(|e| AudioError::PlayerError {
+                    description: format!("Error during playback: {}", e),
+                })?;
+
+                Ok(())
+            } else {
+                Err(AudioError::PlayerError {
+                    description: "Audio subsystem is not available".to_string(),
+                }
+                .into())
+            }
+        }
+
+        fn play_samples(&self, data: &Vec<u8>) -> Result<()> {
+            if let Some(player) = &*self.player_handle.read() {
+                player.write(data).map_err(|e| AudioError::PlayerError {
                     description: format!("Error during playback: {}", e),
                 })?;
 
@@ -210,8 +305,7 @@ mod backends {
         fn record_samples(&self) -> Result<()> {
             let mut buf = super::AUDIO_BUFFER.write();
 
-            let grabber = self.recorder_handle.lock();
-            if let Some(grabber) = grabber.as_ref() {
+            if let Some(grabber) = &*self.recorder_handle.read() {
                 grabber
                     .read(&mut buf)
                     .map_err(|e| AudioError::GrabberError {
