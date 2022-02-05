@@ -12,3 +12,5 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
