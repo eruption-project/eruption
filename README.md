@@ -26,11 +26,15 @@
   - [Further Reading](#further-reading)
   - [Contributing](#contributing)
 
+---
+
 ## Eruption
 
 A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
+
+---
 
 ## Supported Devices
 
@@ -84,6 +88,8 @@ You can always re-enable the Eruption service with the command:
 sudo systemctl unmask eruption.service
 ```
 
+---
+
 ## Design Overview
 
 ### Introduction
@@ -103,6 +109,8 @@ Eruption is split into multiple independent processes: `eruption`, the core daem
 as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
 to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
 usage. Both of these session daemons run as the respective logged-in user.
+
+---
 
 ## Installation
 
@@ -149,6 +157,8 @@ sudo target/release/eruption -c support/config/eruption.conf
 Please refer to [INSTALL.md](docs/INSTALL.md) for further information, e.g. the dependencies you need to install to be
 able to successfully build Eruption from source.
 
+---
+
 ## After Setup
 
 > You may want to try the
@@ -177,6 +187,7 @@ session daemon and assign a device monitor to listen on, e.g. by using `pavucont
 ```shell
 systemctl --user enable --now eruption-audio-proxy.service
 ```
+
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
@@ -192,7 +203,7 @@ Then use `pavucontrol` to assign a monitor of an audio device to the Eruption au
 
 ## The `eruption-process-monitor` Daemon
 
-As of Eruption `0.1.19`, automatic switching of profiles and slots is now supported via the `eruption-process-monitor`
+As of Eruption `0.1.19`, automatic switching of profiles and slots is supported via the `eruption-process-monitor`
 daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine.
 It currently supports executing actions on process execution, as well as on Wayland or X11 "window focus changed" events.
 
@@ -236,6 +247,8 @@ To remove a rule, please run the following command:
 eruption-process-monitor rules remove 1
 ```
 > This will remove the rule for the window named `Skype` from the ruleset.
+
+---
 
 ## Further Reading
 
