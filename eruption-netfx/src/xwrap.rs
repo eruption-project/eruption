@@ -10,7 +10,6 @@ use std::os::raw;
 use std::ptr;
 use std::slice;
 
-use image::Pixel;
 use image::Rgba;
 use image::RgbaImage;
 use x11::xlib;
@@ -225,7 +224,7 @@ impl Image {
                             as usize]
                     };
                 }
-                Rgba::from_channels(
+                Rgba([
                     subpixel!(red_offset),
                     subpixel!(green_offset),
                     subpixel!(blue_offset),
@@ -235,7 +234,7 @@ impl Image {
                     } else {
                         subpixel!(alpha_offset)
                     },
-                )
+                ])
             }))
         }
     }
