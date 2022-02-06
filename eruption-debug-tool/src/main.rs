@@ -252,6 +252,8 @@ fn print_header() {
 
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+ Copyright (c) 2019-2022, The Eruption Development Team
 "#
     );
 }
@@ -283,8 +285,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if unsafe { libc::isatty(0) != 0 } {
-        // print_header();
+    // print a license header, except if we are generating shell completions
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) {
+        print_header();
 
         if util::is_eruption_daemon_running() {
             print_notice();

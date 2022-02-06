@@ -38,3 +38,5 @@ license-header = Eruption ist freie Software. Sie können es unter den Bedingung
  Sie sollten ein Exemplar der GNU General Public License zusammen
  mit diesem Programm erhalten haben. Falls nicht,
  siehe <http://www.gnu.org/licenses/>.
+
+ Copyright (c) 2019-2022, The Eruption Development Team

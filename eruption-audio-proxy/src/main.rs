@@ -526,9 +526,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    // if unsafe { libc::isatty(0) != 0 } {
-    //     print_header();
-    // }
+    // print a license header, except if we are generating shell completions
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) {
+        print_header();
+    }
 
     // start the thread deadlock detector
     #[cfg(debug_assertions)]
