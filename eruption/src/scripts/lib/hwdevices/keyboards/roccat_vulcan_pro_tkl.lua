@@ -97,7 +97,7 @@ function device_specific_key_highlights()
 	end
 
 	-- mute button
-	local audio_muted = load_bool_transient("global.audio_muted", false)
+	local audio_muted = is_audio_muted()
 	if audio_muted then
 		color_map_highlight[key_to_index['MUTE']] = 0xffff0000
 		color_map_overlay[key_to_index['MUTE']] = 0xffff0000
