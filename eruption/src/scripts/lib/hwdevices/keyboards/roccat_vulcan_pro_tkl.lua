@@ -95,17 +95,33 @@ function device_specific_key_highlights()
 		color_map_highlight[key_to_index['LEFT']]  = COLOR_FUNCTION_KEY	-- previous profile slot
 		color_map_highlight[key_to_index['RIGHT']] = COLOR_FUNCTION_KEY	-- next profile slot
 	end
+end
 
+function device_specific_key_highlights_indicators()
 	-- mute button
 	local audio_muted = is_audio_muted()
+
 	if audio_muted then
-		color_map_highlight[key_to_index['MUTE']] = 0xffff0000
-		color_map_overlay[key_to_index['MUTE']] = 0xffff0000
-		color_map[key_to_index['MUTE']] = 0xffff0000
+		color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+		color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+		color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
 	else
-		color_map_highlight[key_to_index['MUTE']] = 0x00000000
-		color_map_overlay[key_to_index['MUTE']] = 0x00000000
-		color_map[key_to_index['MUTE']] = 0x00000000
+		color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+		color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+		color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+	end
+
+	-- FN overlay active
+	if MODIFIER_KEY == FN and modifier_map[MODIFIER_KEY] or overlay_state ~= NO_OVERLAY then
+		if audio_muted then
+			color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+			color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+			color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+		else
+			color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
+			color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
+			color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
+		end
 	end
 end
 

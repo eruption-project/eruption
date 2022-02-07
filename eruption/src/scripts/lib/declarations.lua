@@ -61,6 +61,10 @@ function device_specific_key_highlights()
 	-- empty stub
 end
 
+function device_specific_key_highlights_indicators()
+	-- empty stub
+end
+
 -- Load support scripts that contain hardware specific declarations
 local function load_support_scripts()
 	local support_files = get_support_script_files()

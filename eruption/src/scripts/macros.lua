@@ -94,7 +94,7 @@ highlight_max_ttl = 255
 
 modifier_map = {} -- holds the state of modifier keys
 game_mode_enabled = load_bool_transient("global.game_mode_enabled", false) -- keyboard can be in "game mode" or in "normal mode";
-saved_audio_muted = load_bool_transient("global.audio_muted", false)
+saved_audio_muted = is_audio_muted()
 
 
 -- utility functions --
@@ -722,6 +722,8 @@ function on_tick(delta)
 		end
 
 		effect_ttl = effect_ttl - 1
+
+		device_specific_key_highlights_indicators()
 
 		submit_color_map(color_map)
     end
