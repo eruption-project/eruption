@@ -35,7 +35,7 @@ mimalloc_allocator = ["mimalloc"]
 mimalloc = { version = "0.1.27", optional = true, default-features = false }
 cfg-if = "1.0.0"
 crossbeam = "0.8.1"
-futures = "0.3.19"
+futures = "0.3.21"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 async-trait = "0.1.52"
 #tracing = "0.1.26"
@@ -78,7 +78,7 @@ simdnoise = "3.1.6"
 #luajit-src = "210.2.0"
 #mlua = { version = "0.7.0", features = ["luajit", "vendored"] }
 mlua = { version = "0.7.3", features = ["luajit52"] }
-sysinfo = "0.23.0"
+sysinfo = "0.23.1"
 procinfo = "0.4.2"
 bincode = "2.0.0-beta.2"
 rustfft = "6.0.1"
