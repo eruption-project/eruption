@@ -28,8 +28,8 @@ fn test_eruption_process_monitor_version() {
         .output()
         .expect("Failed to execute the test");
 
-    assert_eq!(
-        String::from_utf8_lossy(&output.stdout),
-        format!("eruption-process-monitor {}\n", env!("CARGO_PKG_VERSION"))
-    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains(&format!(
+        "eruption-process-monitor {}\n",
+        env!("CARGO_PKG_VERSION")
+    )));
 }

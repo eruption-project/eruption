@@ -28,8 +28,6 @@ fn test_eruptionctl_version() {
         .output()
         .expect("Failed to execute the test");
 
-    assert_eq!(
-        String::from_utf8_lossy(&output.stdout),
-        format!("eruptionctl {}\n", env!("CARGO_PKG_VERSION"))
-    );
+    assert!(String::from_utf8_lossy(&output.stdout)
+        .contains(&format!("eruptionctl {}\n", env!("CARGO_PKG_VERSION"))));
 }

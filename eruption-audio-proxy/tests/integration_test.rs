@@ -28,8 +28,8 @@ fn test_eruption_netfx_version() {
         .output()
         .expect("Failed to execute the test");
 
-    assert_eq!(
-        String::from_utf8_lossy(&output.stdout),
-        format!("eruption-audio-proxy {}\n", env!("CARGO_PKG_VERSION"))
-    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains(&format!(
+        "eruption-audio-proxy {}\n",
+        env!("CARGO_PKG_VERSION")
+    )));
 }
