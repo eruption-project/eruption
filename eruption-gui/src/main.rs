@@ -503,7 +503,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     }
 
     // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) {
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
     }
 

@@ -2937,7 +2937,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } {
         // print a license header, except if we are generating shell completions
-        if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) {
+        if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
             print_header();
         }
 
