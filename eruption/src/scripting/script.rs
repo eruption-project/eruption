@@ -97,7 +97,7 @@ lazy_static! {
         a: 0x00,
     }; constants::CANVAS_SIZE]));
 
-    /// Frame generation counter, used to detect if we need to submit the LED_MAP to the keyboard
+    /// Frame generation counter, used to detect if we need to submit the LED_MAP to the hardware
     pub static ref FRAME_GENERATION_COUNTER: AtomicUsize = AtomicUsize::new(0);
 }
 
