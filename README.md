@@ -40,28 +40,29 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ### Keyboard Devices
 
-- ROCCAT Vulcan 100/12x series keyboard (fully supported)
-- ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, experimental)
+- ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
+- ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
 - ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
+- ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
 - Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
 ### Mouse Devices
 
-- ROCCAT Kone Pure Ultra
-- ROCCAT Burst Pro (as of version `0.1.20`, experimental)
-- ROCCAT Kain 2xx AIMO (as of version `0.1.23`, experimental)
+- ROCCAT Kone Pure Ultra (stable)
+- ROCCAT Burst Pro (as of version `0.1.20`, testing)
+- ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
 - ROCCAT Kone Pro Air (work-in-progress, as of version `0.1.23`, experimental)
 - ROCCAT Kone Aimo (experimental)
 - ROCCAT Kone Aimo Remastered (experimental)
-- ROCCAT Kova AIMO (experimental)
+- ROCCAT Kova AIMO (testing)
 - ROCCAT Kova 2016 (as of version `0.1.23`, experimental)
 
 ### Miscellaneous Devices
 
-- ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, experimental)
-- ROCCAT Sense AIMO XXL (95%, as of version `0.1.23`, experimental)
-- Adalight/Custom serial LEDs
+- ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, testing)
+- ROCCAT Sense AIMO XXL (as of version `0.1.23`, stable)
+- Adalight/Custom serial LEDs (testing)
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
