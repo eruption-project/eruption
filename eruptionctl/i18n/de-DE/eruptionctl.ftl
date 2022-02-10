@@ -19,6 +19,17 @@
 ## eruptionctl
 
 about = Ein CLI utility für den Eruption Linux Benutzermodus Treiber
+verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
+completions-about = Shell Definitionen für Autovervollständigung erzeugen
+
+config-about = Laufzeit Konfiguration des Eruption Daemons bearbeiten
+devices-about = Gerätespezifische Konfiguration bearbeiten
+status-about = Zeigt das aktuell aktive Profil oder den Slot
+switch-about = Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln
+profiles-about = Profil bezogene Unterbefehle
+names-about = Slot-Namen anzeigen oder ändern
+scripts-about = Script bezogene Unterbefehle
+param-about = Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten
 
 dumping-devices = Liste der durch Eruption kontrollierten Geräte
 keyboard-devices = Tastaturen:
@@ -26,5 +37,22 @@ mouse-devices = Mäuse:
 misc-devices = Sonstige Geräte:
 
 could-not-parse-config = Fehler beim Verarbeiten der Konfigurationsdatei: {$message}
-could-not-send-on-channel = Fehler beim Senden auf einem channel: {$message}
+could-not-send-on-channel = Fehler beim Senden auf einem Channel: {$message}
 could-not-set-ctrl-c-handler = Fehler beim Registrieren des CTRL-C handlers: {$message}
+
+license-header = Eruption ist freie Software. Sie können es unter den Bedingungen der
+ GNU General Public License, wie von der Free Software Foundation
+ veröffentlicht, weitergeben und/oder modifizieren, entweder gemäß
+ Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren Version.
+
+ Die Veröffentlichung von Eruption erfolgt in der Hoffnung,
+ daß es Ihnen von Nutzen sein wird, aber OHNE IRGENDEINE GARANTIE,
+ sogar ohne die implizite Garantie der MARKTREIFE oder der
+ VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK.
+ Details finden Sie in der GNU General Public License.
+
+ Sie sollten ein Exemplar der GNU General Public License zusammen
+ mit diesem Programm erhalten haben. Falls nicht,
+ siehe <http://www.gnu.org/licenses/>.
+
+ Copyright (c) 2019-2022, Das Eruption Entwicklerteam

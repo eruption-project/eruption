@@ -93,16 +93,30 @@ pub enum MainError {
     UnknownError { description: String },
 }
 
+lazy_static! {
+    static ref ABOUT: String = tr!("about");
+    static ref VERBOSE_ABOUT: String = tr!("verbose-about");
+    static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+    static ref CONFIG_ABOUT: String = tr!("config-about");
+    static ref DEVICES_ABOUT: String = tr!("devices-about");
+    static ref STATUS_ABOUT: String = tr!("status-about");
+    static ref SWITCH_ABOUT: String = tr!("switch-about");
+    static ref PROFILES_ABOUT: String = tr!("profiles-about");
+    static ref NAMES_ABOUT: String = tr!("names-about");
+    static ref SCRIPTS_ABOUT: String = tr!("scripts-about");
+    static ref PARAM_ABOUT: String = tr!("param-about");
+}
+
 /// Supported command line arguments
 #[derive(Debug, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    about = "A CLI control utility for the Eruption Linux user-mode driver",
+    about = ABOUT.as_str(),
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(help(VERBOSE_ABOUT.as_str()), short, long, parse(from_occurrences))]
     verbose: u8,
 
     /// Repeat output until ctrl+c is pressed
@@ -120,56 +134,56 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    /// Configuration related sub-commands
+    #[clap(about(CONFIG_ABOUT.as_str()))]
     Config {
         #[clap(subcommand)]
         command: ConfigSubcommands,
     },
 
-    /// Get or set some device specific configuration parameters
+    #[clap(about(DEVICES_ABOUT.as_str()))]
     Devices {
         #[clap(subcommand)]
         command: DevicesSubcommands,
     },
 
-    /// Shows the currently active profile or slot
+    #[clap(about(STATUS_ABOUT.as_str()))]
     Status {
         #[clap(subcommand)]
         command: StatusSubcommands,
     },
 
-    /// Switch to a different profile or slot
+    #[clap(about(SWITCH_ABOUT.as_str()))]
     Switch {
         #[clap(subcommand)]
         command: SwitchSubcommands,
     },
 
-    /// Profile related sub-commands
+    #[clap(about(PROFILES_ABOUT.as_str()))]
     Profiles {
         #[clap(subcommand)]
         command: ProfilesSubcommands,
     },
 
-    /// Naming related commands such as renaming of profile slots
+    #[clap(about(NAMES_ABOUT.as_str()))]
     Names {
         #[clap(subcommand)]
         command: NamesSubcommands,
     },
 
-    /// Script related sub-commands
+    #[clap(about(SCRIPTS_ABOUT.as_str()))]
     Scripts {
         #[clap(subcommand)]
         command: ScriptsSubcommands,
     },
 
-    /// Get or set script parameters on the currently active profile
+    #[clap(about(PARAM_ABOUT.as_str()))]
     Param {
         script: Option<String>,
         parameter: Option<String>,
         value: Option<String>,
     },
 
-    /// Generate shell completions
+    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -304,24 +318,8 @@ pub enum ScriptsSubcommands {
 /// Print license information
 #[allow(dead_code)]
 fn print_header() {
-    println!(
-        r#"
- Eruption is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- Eruption is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-
- Copyright (c) 2019-2022, The Eruption Development Team
-"#
-    );
+    println!("{}", tr!("license-header"));
+    println!();
 }
 
 /// Returns a connection to the D-Bus system bus using the specified `path`
