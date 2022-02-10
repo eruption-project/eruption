@@ -266,9 +266,6 @@ pub struct Options {
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
 
-    hostname: Option<String>,
-    port: Option<u16>,
-
     /// Sets the configuration file to use
     #[clap(short, long)]
     config: Option<String>,
