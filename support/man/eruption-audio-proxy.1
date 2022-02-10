@@ -1,28 +1,23 @@
 .\" Manpage for Eruption.
-.TH man 1 "Aug 2021" "0.0.1" "eruption-audio-proxy man page"
+.TH man 1 "Feb 2022" "0.0.6" "eruption-audio-proxy man page"
 .SH NAME
  eruption-audio-proxy - Audio proxy daemon for the Eruption Linux user-mode driver
 .SH SYNOPSIS
 
  USAGE:
-     eruption-audio-proxy [FLAGS] [OPTIONS] [ARGS] <SUBCOMMAND>
-
- ARGS:
-     <hostname>
-     <port>
-
- FLAGS:
-     -h, --help       Prints help information
-     -v, --verbose    Verbose mode (-v, -vv, -vvv, etc.)
-     -V, --version    Prints version information
+    eruption-audio-proxy [OPTIONS] <SUBCOMMAND>
 
  OPTIONS:
-     -c, --config <config>    Sets the configuration file to use
+    -c, --config <CONFIG>    Sets the configuration file to use
+    -h, --help               Print help information
+    -v, --verbose            Verbose mode (-v, -vv, -vvv, etc.)
+    -V, --version            Print version information
 
  SUBCOMMANDS:
-     daemon    Run in background and monitor running processes
-     help      Prints this message or the help of the given sub-command(s)
-     rules     Rules related sub-commands
+    completions    Generate shell completions
+    daemon         Run in background
+    help           Print this message or the help of the given subcommand(s)
+
 
 .SH SEE ALSO
  eruption(8), eruption.conf(5)

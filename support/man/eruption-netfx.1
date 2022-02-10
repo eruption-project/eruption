@@ -1,28 +1,32 @@
 .\" Manpage for Eruption.
-.TH man 1 "Aug 2021" "0.0.5" "eruption-netfx man page"
+.TH man 1 "Feb 2022" "0.0.7" "eruption-netfx man page"
 .SH NAME
  eruption-netfx - A Network FX protocol client for the Eruption Linux user-mode driver
 .SH SYNOPSIS
 
  USAGE:
-    eruption-netfx [FLAGS] [ARGS] <SUBCOMMAND>
+    eruption-netfx [OPTIONS] [ARGS] <SUBCOMMAND>
 
  ARGS:
-    <hostname>
-    <port>
+    <MODEL>       The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"
+    <HOSTNAME>
+    <PORT>
 
- FLAGS:
-    -h, --help       Prints help information
+ OPTIONS:
+    -h, --help       Print help information
     -v, --verbose    Verbose mode (-v, -vv, -vvv, etc.)
-    -V, --version    Prints version information
+    -V, --version    Print version information
 
  SUBCOMMANDS:
-    ambient    Make the LEDs of connected devices reflect what is shown on the screen
-    animation  Load image files from a directory and display each one on the connected devices
-    command    Send Network FX protocol commands to the server
-    help       Prints this message or the help of the given sub-command(s)
-    image      Load an image file and display it on the connected devices
-    ping       Pings the server
+    ambient        Make the LEDs of connected devices reflect what is shown on the screen
+    animation      Load image files from a directory and display each one on the connected
+                   devices
+    command        Send Network FX raw protocol commands to the server
+    completions    Generate shell completions
+    help           Print this message or the help of the given subcommand(s)
+    image          Load an image file and display it on the connected devices
+    ping           Ping the server
+
 
 .SH SEE ALSO
  eruption(8), eruption.conf(5)

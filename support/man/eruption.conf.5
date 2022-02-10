@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 5 "Aug 2021" "0.1.22" "eruption.conf man page"
+.TH man 5 "Feb 2022" "0.1.23" "eruption.conf man page"
 .SH NAME
  Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 .SH SYNOPSIS
@@ -13,6 +13,12 @@
 .br
 [global]
 .br
+enable_experimental_features = false
+.br
+driver_maturity_level = "testing"
+.br
+.br
+
 profile_dirs = ["/var/lib/eruption/profiles/"]
 .br
 script_dirs = ["/usr/share/eruption/scripts/"]
@@ -40,6 +46,12 @@ afk_timeout_secs = 0
 
 .SH Section [global]
 .br
+enable_experimental_features = Set this to true, to enable feature-gated functionality. May expose serious bugs.
+.br
+driver_maturity_level = "stable" or "testing" or "experimental", only allows drivers with the respective code maturity level to bind.
+.br
+.br
+
 keyboard_variant = Switch between sub-variants of your device. (Only partially supported)
 .br
 
