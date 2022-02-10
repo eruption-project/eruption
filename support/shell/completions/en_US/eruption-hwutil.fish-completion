@@ -1,4 +1,3 @@
-
 complete -c eruption-hwutil -n "__fish_use_subcommand" -s c -l config -d 'Sets the configuration file to use' -r
 complete -c eruption-hwutil -n "__fish_use_subcommand" -s h -l help -d 'Print help information'
 complete -c eruption-hwutil -n "__fish_use_subcommand" -s V -l version -d 'Print version information'
@@ -24,4 +23,3 @@ complete -c eruption-hwutil -n "__fish_seen_subcommand_from firmware; and __fish
 complete -c eruption-hwutil -n "__fish_seen_subcommand_from firmware; and __fish_seen_subcommand_from help" -l version -d 'Print version information'
 complete -c eruption-hwutil -n "__fish_seen_subcommand_from firmware; and __fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
 complete -c eruption-hwutil -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-hwutil -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'

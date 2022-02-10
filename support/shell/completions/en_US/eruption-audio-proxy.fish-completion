@@ -7,4 +7,3 @@ complete -c eruption-audio-proxy -n "__fish_use_subcommand" -f -a "completions" 
 complete -c eruption-audio-proxy -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c eruption-audio-proxy -n "__fish_seen_subcommand_from daemon" -s h -l help -d 'Print help information'
 complete -c eruption-audio-proxy -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-audio-proxy -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'

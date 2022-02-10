@@ -118,4 +118,3 @@ complete -c eruptionctl -n "__fish_seen_subcommand_from scripts; and __fish_seen
 complete -c eruptionctl -n "__fish_seen_subcommand_from scripts; and __fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from param" -s h -l help -d 'Print help information'
 complete -c eruptionctl -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruptionctl -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'

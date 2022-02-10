@@ -9,7 +9,7 @@ _eruption-process-monitor() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            eruption-process-monitor)
+            "$1")
                 cmd="eruption__process__monitor"
                 ;;
             add)
@@ -46,7 +46,7 @@ _eruption-process-monitor() {
 
     case "${cmd}" in
         eruption__process__monitor)
-            opts="-h -V -v -c --help --version --verbose --config <HOSTNAME> <PORT> daemon rules completions help"
+            opts="-h -V -v -c --help --version --verbose --config daemon rules completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -96,7 +96,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__help)
-            opts="-h --help"
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -166,7 +166,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__help)
-            opts="-h --version --help"
+            opts="-h --version --help <SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

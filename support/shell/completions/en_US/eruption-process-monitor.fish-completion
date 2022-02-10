@@ -27,4 +27,3 @@ complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules; and 
 complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules; and __fish_seen_subcommand_from help" -l version -d 'Print version information'
 complete -c eruption-process-monitor -n "__fish_seen_subcommand_from rules; and __fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
 complete -c eruption-process-monitor -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-process-monitor -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'

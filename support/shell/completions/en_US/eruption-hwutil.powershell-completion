@@ -12,7 +12,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-hwutil' -ScriptBlock {
             $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
                 $element.StringConstantType -ne [StringConstantType]::BareWord -or
-                $element.Value.StartsWith('-')) {
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
                 break
         }
         $element.Value
@@ -85,8 +86,6 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-hwutil' -ScriptBlock {
             break
         }
         'eruption-hwutil;help' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
     })

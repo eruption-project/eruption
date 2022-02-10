@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
+# Copyright (c) 2019-2022, The Eruption Development Team
+
+
 function gen_completions {
     ./target/debug/"$1" "completions" "bash" > "support/shell/completions/$LANG/$1.bash-completion"
     ./target/debug/"$1" "completions" "elvish" > "support/shell/completions/$LANG/$1.elvish-completion"

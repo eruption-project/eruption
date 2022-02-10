@@ -9,7 +9,7 @@ _eruption-netfx() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            eruption-netfx)
+            "$1")
                 cmd="eruption__netfx"
                 ;;
             ambient)
@@ -110,7 +110,7 @@ _eruption-netfx() {
             return 0
             ;;
         eruption__netfx__help)
-            opts="-h --help"
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

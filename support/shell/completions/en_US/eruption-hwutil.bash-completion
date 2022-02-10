@@ -1,4 +1,3 @@
-
 _eruption-hwutil() {
     local i cur prev opts cmds
     COMPREPLY=()
@@ -10,7 +9,7 @@ _eruption-hwutil() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            eruption-hwutil)
+            "$1")
                 cmd="eruption__hwutil"
                 ;;
             blackout)
@@ -122,7 +121,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__firmware__help)
-            opts="-h --version --help"
+            opts="-h --version --help <SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -150,7 +149,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__help)
-            opts="-h --help"
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

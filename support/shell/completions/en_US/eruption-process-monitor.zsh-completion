@@ -23,17 +23,15 @@ _eruption-process-monitor() {
 '--version[Print version information]' \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'::hostname:' \
-'::port:' \
 ":: :_eruption-process-monitor_commands" \
 "*::: :->eruption-process-monitor" \
 && ret=0
     case $state in
     (eruption-process-monitor)
-        words=($line[3] "${words[@]}")
+        words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruption-process-monitor-command-$line[3]:"
-        case $line[3] in
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-command-$line[1]:"
+        case $line[1] in
             (daemon)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -98,6 +96,7 @@ _arguments "${_arguments_options[@]}" \
 '--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
+'*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
         esac
@@ -113,8 +112,7 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
         esac

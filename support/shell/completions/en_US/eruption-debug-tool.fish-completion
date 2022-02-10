@@ -1,4 +1,3 @@
-
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s V -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
@@ -31,4 +30,3 @@ complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils; and __fis
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils; and __fish_seen_subcommand_from help" -l version -d 'Print version information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from utils; and __fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
 complete -c eruption-debug-tool -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-debug-tool -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'

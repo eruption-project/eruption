@@ -1,4 +1,3 @@
-
 _eruption-debug-tool() {
     local i cur prev opts cmds
     COMPREPLY=()
@@ -10,7 +9,7 @@ _eruption-debug-tool() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            eruption-debug-tool)
+            "$1")
                 cmd="eruption__debug__tool"
                 ;;
             completions)
@@ -87,7 +86,7 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__help)
-            opts="-h --help"
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -213,7 +212,7 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__utils__help)
-            opts="-h --version --help"
+            opts="-h --version --help <SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

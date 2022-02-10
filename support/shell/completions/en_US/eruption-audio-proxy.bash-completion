@@ -9,7 +9,7 @@ _eruption-audio-proxy() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            eruption-audio-proxy)
+            "$1")
                 cmd="eruption__audio__proxy"
                 ;;
             completions)
@@ -78,7 +78,7 @@ _eruption-audio-proxy() {
             return 0
             ;;
         eruption__audio__proxy__help)
-            opts="-h --help"
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -14,4 +14,3 @@ complete -c eruption-netfx -n "__fish_seen_subcommand_from image" -s h -l help -
 complete -c eruption-netfx -n "__fish_seen_subcommand_from animation" -s h -l help -d 'Print help information'
 complete -c eruption-netfx -n "__fish_seen_subcommand_from ambient" -s h -l help -d 'Print help information'
 complete -c eruption-netfx -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
-complete -c eruption-netfx -n "__fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
