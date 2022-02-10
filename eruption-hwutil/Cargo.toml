@@ -59,8 +59,8 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" 
 hexdump = "0.1.1"
 serialport = "4.0.1"
 crc8 = "0.1.1"
-i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = "0.6.1"
+i18n-embed = { version = "0.13.3", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.4"
 rust-embed = "6.3.0"
 unic-langid = "0.9.0"
 icecream = "0.1.0"

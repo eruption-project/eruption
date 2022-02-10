@@ -92,7 +92,7 @@ crc8 = "0.1.1"
 bytes = "1.1.0"
 prost = "0.9.0"
 prost-types = "0.9.0"
-i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
+i18n-embed = { version = "0.13.3", features = ["fluent-system", "desktop-requester"] }
 rust-embed = "6.3.0"
 unic-langid = "0.9.0"
 icecream = "0.1.0"

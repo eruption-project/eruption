@@ -46,8 +46,8 @@ thiserror = "1.0.30"
 eyre = "0.6.6"
 color-eyre = "0.6.0"
 lockfile = "0.3.0"
-i18n-embed = { version = "0.13.1", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = "0.6.1"
+i18n-embed = { version = "0.13.3", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.6.4"
 rust-embed = "6.3.0"
 unic-langid = "0.9.0"
 icecream = "0.1.0"
