@@ -66,7 +66,7 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-use crate::hwdevices::{DeviceStatus, RGBA};
+use crate::hwdevices::{DeviceStatus, MaturityLevel, RGBA};
 use crate::plugins::sdk_support;
 
 #[cfg(feature = "mimalloc_allocator")]
@@ -157,6 +157,9 @@ lazy_static! {
 
     /// Global "enable experimental features" flag
     pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
+
+    /// Global "driver maturity level" param
+    pub static ref DRIVER_MATURITY_LEVEL: Arc<Mutex<MaturityLevel>> = Arc::new(Mutex::new(MaturityLevel::Stable));
 
     // Other state
 
@@ -3041,6 +3044,25 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
         warn!("** EXPERIMENTAL FEATURES are ENABLED, this may expose serious bugs! **");
+    }
+
+    // driver maturity level
+    let driver_maturity_level = config
+        .get::<MaturityLevel>("global.driver_maturity_level")
+        .unwrap_or(MaturityLevel::Stable);
+
+    *DRIVER_MATURITY_LEVEL.lock() = driver_maturity_level;
+
+    match *DRIVER_MATURITY_LEVEL.lock() {
+        MaturityLevel::Stable => {
+            info!("Using only drivers that are marked as stable (default)")
+        }
+        MaturityLevel::Testing => {
+            info!("Using drivers that are marked as testing, this may expose some bugs!")
+        }
+        MaturityLevel::Experimental => {
+            warn!("** EXPERIMENTAL DRIVERS are ENABLED, this may expose serious bugs! **")
+        }
     }
 
     // load and initialize global runtime state

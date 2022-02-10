@@ -22,6 +22,7 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
+use serde::{self, Deserialize};
 use std::collections::HashMap;
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
@@ -55,6 +56,16 @@ pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
 pub type MiscDevice = Arc<RwLock<Box<dyn MiscDeviceTrait + Sync + Send>>>;
 pub type MiscSerialDevice = Arc<RwLock<Box<dyn MiscDeviceTrait + Sync + Send>>>;
 
+#[derive(Debug, Clone, Copy, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
+pub enum MaturityLevel {
+    #[serde(rename = "stable")]
+    Stable,
+    #[serde(rename = "testing")]
+    Testing,
+    #[serde(rename = "experimental")]
+    Experimental,
+}
+
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[rustfmt::skip]
@@ -66,64 +77,64 @@ lazy_static! {
         // ROCCAT
 
         // Vulcan 100/12x/Pro (TKL) series
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev),
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &roccat_vulcan_pro_tkl::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
 
-        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &roccat_magma::bind_hiddev),
+        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &roccat_magma::bind_hiddev, MaturityLevel::Experimental),
 
         // CORSAIR
 
         // Corsair STRAFE Gaming Keyboard
-        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &corsair_strafe::bind_hiddev),
+        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &corsair_strafe::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported mice
 
         // ROCCAT
-        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &roccat_kone_aimo_remastered::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &roccat_kone_aimo_remastered::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &roccat_kone_xtd::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &roccat_kone_xtd::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
 
-        MouseDriver::register("ROCCAT", "Kone Pro Air",      0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kone Pro Air",      0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &roccat_kain_2xx::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev),
-        // MouseDriver::register("ROCCAT", "Kain 202 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        // MouseDriver::register("ROCCAT", "Kain 202 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev, Status::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev),
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported miscellaneous devices
 
         // ROCCAT/Turtle Beach
-        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev),
+        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev, MaturityLevel::Testing),
 
-        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &roccat_aimo_pad::bind_hiddev),
+        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &roccat_aimo_pad::bind_hiddev, MaturityLevel::Stable),
 
 
         // Misc Serial devices
 
         // Eruption Custom Hardware
-        // MiscSerialDriver::register("Eruption", "Custom Serial LEDs", &custom_serial_leds::bind_serial),
+        // MiscSerialDriver::register("Eruption", "Custom Serial LEDs", &custom_serial_leds::bind_serial, Status::Testing),
     ]));
 }
 
@@ -195,6 +206,8 @@ pub struct KeyboardDriver<'a> {
     pub usb_pid: u16,
 
     pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<KeyboardDevice> + Sync + Send),
+
+    pub status: MaturityLevel,
 }
 
 impl<'a> KeyboardDriver<'a>
@@ -207,6 +220,7 @@ where
         usb_vid: u16,
         usb_pid: u16,
         bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<KeyboardDevice> + Sync + Send),
+        status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(KeyboardDriver {
             device_make,
@@ -215,6 +229,7 @@ where
             usb_vid,
             usb_pid,
             bind_fn,
+            status,
         })
     }
 }
@@ -250,6 +265,8 @@ pub struct MouseDriver<'a> {
     pub usb_pid: u16,
 
     pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MouseDevice> + Sync + Send),
+
+    pub status: MaturityLevel,
 }
 
 impl<'a> MouseDriver<'a>
@@ -262,6 +279,7 @@ where
         usb_vid: u16,
         usb_pid: u16,
         bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MouseDevice> + Sync + Send),
+        status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MouseDriver {
             device_make,
@@ -270,6 +288,7 @@ where
             usb_vid,
             usb_pid,
             bind_fn,
+            status,
         })
     }
 }
@@ -305,6 +324,8 @@ pub struct MiscDriver<'a> {
     pub usb_pid: u16,
 
     pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
+
+    pub status: MaturityLevel,
 }
 
 impl<'a> MiscDriver<'a>
@@ -318,6 +339,7 @@ where
         usb_vid: u16,
         usb_pid: u16,
         bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
+        status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MiscDriver {
             device_make,
@@ -326,6 +348,7 @@ where
             usb_vid,
             usb_pid,
             bind_fn,
+            status,
         })
     }
 }
@@ -360,6 +383,8 @@ pub struct MiscSerialDriver<'a> {
     pub serial_port: Option<&'a str>,
 
     pub bind_fn: &'a (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
+
+    pub status: MaturityLevel,
 }
 
 impl<'a> MiscSerialDriver<'a>
@@ -371,6 +396,7 @@ where
         device_make: &'a str,
         device_name: &'a str,
         bind_fn: &'a (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
+        status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MiscSerialDriver {
             device_make,
@@ -378,6 +404,7 @@ where
             device_class: DeviceClass::Misc,
             serial_port: None,
             bind_fn,
+            status,
         })
     }
 }
@@ -978,21 +1005,27 @@ pub fn probe_devices(
                             );
 
                             let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
 
-                            if let Ok(device) = (*driver.bind_fn)(
-                                api,
-                                driver.get_usb_vid(),
-                                driver.get_usb_pid(),
-                                serial,
-                            ) {
-                                keyboard_devices.push(device);
-                                bound_devices.push((
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
-                                ));
+                                ) {
+                                    keyboard_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
                             } else {
-                                error!("Failed to bind the device driver");
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
                             }
                         }
 
@@ -1013,21 +1046,27 @@ pub fn probe_devices(
                             );
 
                             let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
 
-                            if let Ok(device) = (*driver.bind_fn)(
-                                api,
-                                driver.get_usb_vid(),
-                                driver.get_usb_pid(),
-                                serial,
-                            ) {
-                                mouse_devices.push(device);
-                                bound_devices.push((
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
-                                ));
+                                ) {
+                                    mouse_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
                             } else {
-                                error!("Failed to bind the device driver");
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
                             }
                         }
 
@@ -1048,21 +1087,27 @@ pub fn probe_devices(
                             );
 
                             let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
 
-                            if let Ok(device) = (*driver.bind_fn)(
-                                api,
-                                driver.get_usb_vid(),
-                                driver.get_usb_pid(),
-                                serial,
-                            ) {
-                                misc_devices.push(device);
-                                bound_devices.push((
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
-                                ));
+                                ) {
+                                    misc_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
                             } else {
-                                error!("Failed to bind the device driver");
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
                             }
                         }
 
