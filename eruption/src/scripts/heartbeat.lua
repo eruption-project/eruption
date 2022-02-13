@@ -1,17 +1,20 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 
 require "declarations"
 require "debug"
@@ -25,9 +28,7 @@ percentage = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do
-        color_map[i] = 0x00000000
-    end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_tick(delta)
@@ -35,12 +36,16 @@ function on_tick(delta)
 
     -- update system load indicator approximately every second
     if ticks % target_fps == 0 then
-        heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier, 3.25), 0.25)
-        trace("HeartBeat: Runqueue: " .. get_runnable_tasks() .. " Step: " .. heartbeat_step)
+        heartbeat_step = max(min(get_runnable_tasks() * heartbeat_multiplier,
+                                 3.25), 0.25)
+        trace("HeartBeat: Runqueue: " .. get_runnable_tasks() .. " Step: " ..
+                  heartbeat_step)
     end
 
     -- calculate 'fill' percentage for heartbeat effect
-    percentage = percentage + ((heartbeat_step * max(delta, 1)) + (easing(percentage) * heartbeat_step))
+    percentage = percentage +
+                     ((heartbeat_step * max(delta, 1)) +
+                         (easing(percentage) * heartbeat_step))
     if percentage >= (100 - heartbeat_upper_lim) then
         percentage = 100 - heartbeat_upper_lim
         heartbeat_step = heartbeat_step * -1
@@ -69,6 +74,4 @@ function on_tick(delta)
 end
 
 -- a simple easing function that mimics heartbeat
-function easing(x)
-    return pow(sin(5 * x / 3.14159), 2)
-end
+function easing(x) return pow(sin(5 * x / 3.14159), 2) end

@@ -1,17 +1,20 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 
 require "declarations"
 require "utilities"
@@ -31,16 +34,14 @@ local function split(str, pat)
     local s, e, cap = str:find(fpat, 1)
 
     while s do
-       if s ~= 1 or cap ~= "" then
-          table.insert(t, cap)
-       end
-       last_end = e + 1
-       s, e, cap = str:find(fpat, last_end)
+        if s ~= 1 or cap ~= "" then table.insert(t, cap) end
+        last_end = e + 1
+        s, e, cap = str:find(fpat, last_end)
     end
 
     if last_end <= #str then
-       cap = str:sub(last_end)
-       table.insert(t, cap)
+        cap = str:sub(last_end)
+        table.insert(t, cap)
     end
 
     return t
@@ -48,9 +49,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do
-        color_map[i] = 0x00000000
-    end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
     -- bind server socket
     local status, socket = pcall(require, "socket")
@@ -65,13 +64,15 @@ function on_startup(config)
 
         local status, msg = server:bind(bind_address, port)
         if status == nil then
-            error("Network FX: Could not bind socket to the specified address: " .. msg)
+            error("Network FX: Could not bind socket to the specified address: " ..
+                    msg)
             return
         end
 
         local status, msg = server:listen(0)
         if status == nil then
-            error("Network FX: Could not transition socket to listening state: " .. msg)
+            error("Network FX: Could not transition socket to listening state: " ..
+                    msg)
             return
         end
 
@@ -144,8 +145,8 @@ function on_tick(delta)
                                        tonumber(result[4]), tonumber(result[5])
 
                     -- validate colors
-                    if r < 0 or r > 255 or g < 0 or g > 255 or
-                       b < 0 or b > 255 or a < 0 or a > 255 then
+                    if r < 0 or r > 255 or g < 0 or g > 255 or b < 0 or b > 255 or
+                        a < 0 or a > 255 then
                         error("Network FX: Color component value out of range")
 
                         conn:send("ERROR: 110\n")
@@ -183,10 +184,11 @@ function on_tick(delta)
                             end
                         else
                             -- set a range of pixels to a specific color
-                            if spec[1] ~= nil and spec[2] ~= nil and
-                               spec[1] ~= ''  and spec[2] ~= '' and
-                               tonumber(spec[1]) > 0 and tonumber(spec[1]) <= canvas_size and
-                               tonumber(spec[2]) > 0 and tonumber(spec[2]) <= canvas_size then
+                            if spec[1] ~= nil and spec[2] ~= nil and spec[1] ~=
+                                '' and spec[2] ~= '' and tonumber(spec[1]) > 0 and
+                                tonumber(spec[1]) <= canvas_size and
+                                tonumber(spec[2]) > 0 and tonumber(spec[2]) <=
+                                canvas_size then
                                 local low = tonumber(spec[1])
                                 local high = tonumber(spec[2])
 

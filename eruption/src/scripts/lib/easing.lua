@@ -1,24 +1,25 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 --
 -- Adapted from
 -- Tweener's easing functions (Penner's Easing Equations)
 -- and http://code.google.com/p/tweener/ (jstweener javascript version)
 --
-
 --[[
 Disclaimer for Robert Penner's Easing Equations license:
 TERMS OF USE - EASING EQUATIONS
@@ -30,14 +31,11 @@ Redistribution and use in source and binary forms, with or without modification,
     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
     * Neither the name of the author nor the names of contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-]]
-
--- For all easing functions:
+]] -- For all easing functions:
 -- t = elapsed time
 -- b = begin
 -- c = change == ending - beginning
 -- d = duration (total time)
-
 -- local pow = math.pow
 -- local sin = math.sin
 -- local cos = math.cos
@@ -45,12 +43,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 -- local sqrt = math.sqrt
 -- local abs = math.abs
 -- local asin  = math.asin
-
 local pi = 3.14159265359
 
-function linear(t, b, c, d)
-    return c * t / d + b
-end
+function linear(t, b, c, d) return c * t / d + b end
 
 function inQuad(t, b, c, d)
     t = t / d
@@ -163,17 +158,11 @@ function outInQuint(t, b, c, d)
     end
 end
 
-function inSine(t, b, c, d)
-    return -c * cos(t / d * (pi / 2)) + c + b
-end
+function inSine(t, b, c, d) return -c * cos(t / d * (pi / 2)) + c + b end
 
-function outSine(t, b, c, d)
-    return c * sin(t / d * (pi / 2)) + b
-end
+function outSine(t, b, c, d) return c * sin(t / d * (pi / 2)) + b end
 
-function inOutSine(t, b, c, d)
-    return -c / 2 * (cos(pi * t / d) - 1) + b
-end
+function inOutSine(t, b, c, d) return -c / 2 * (cos(pi * t / d) - 1) + b end
 
 function outInSine(t, b, c, d)
     if t < d / 2 then
@@ -382,9 +371,7 @@ function outBounce(t, b, c, d)
     end
 end
 
-function inBounce(t, b, c, d)
-    return c - outBounce(d - t, 0, c, d) + b
-end
+function inBounce(t, b, c, d) return c - outBounce(d - t, 0, c, d) + b end
 
 function inOutBounce(t, b, c, d)
     if t < d / 2 then

@@ -1,17 +1,20 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 
 require "declarations"
 require "queue"
@@ -25,7 +28,8 @@ key_ringbuffer = queue.new(15)
 
 -- utility functions --
 local function load_key_histogram(name)
-    trace("Statistics: Loading histogram '" .. name .. "' from persistent storage")
+    trace("Statistics: Loading histogram '" .. name ..
+              "' from persistent storage")
 
     local result = {}
 
@@ -69,9 +73,9 @@ function on_quit()
 end
 
 function on_apply_parameter(parameter, value)
-	local update_fn = load("" .. parameter .. " = " .. value)
+    local update_fn = load("" .. parameter .. " = " .. value)
 
-	update_fn()
+    update_fn()
 end
 
 function on_key_down(key_index)

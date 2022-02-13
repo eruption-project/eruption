@@ -1,266 +1,290 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 
 -- This is the default macro definitions file, that gets used when
 -- no override has been specified. You may want to customize the code below
 
 require "macros/examples"
 
-function easyshift_macro_1()
-	info("UserMacros: Executing: 'easyshift_macro_1'")
-end
+function easyshift_macro_1() info("UserMacros: Executing: 'easyshift_macro_1'") end
 
-function easyshift_macro_2()
-	info("UserMacros: Executing: 'easyshift_macro_2'")
-end
+function easyshift_macro_2() info("UserMacros: Executing: 'easyshift_macro_2'") end
 
-function easyshift_macro_3()
-    info("UserMacros: Executing: 'easyshift_macro_3'")
-end
+function easyshift_macro_3() info("UserMacros: Executing: 'easyshift_macro_3'") end
 
 function easyshift_mouse_macro_1()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_1'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_1'")
 end
 
 function easyshift_mouse_macro_2()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_2'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_2'")
 end
 
 function easyshift_mouse_macro_3()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_3'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_3'")
 end
 
 function easyshift_mouse_macro_4()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_4'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_4'")
 end
 
 function easyshift_mouse_macro_5()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_5'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_5'")
 end
 
 function easyshift_mouse_macro_6()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_6'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_6'")
 end
 
 function easyshift_mouse_macro_7()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_7'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_7'")
 end
 
 function easyshift_mouse_macro_8()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_8'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_8'")
 end
 
 function easyshift_mouse_macro_9()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_9'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_9'")
 end
 
 function easyshift_mouse_macro_10()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_10'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_10'")
 end
 
 function easyshift_mouse_macro_11()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_11'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_11'")
 end
 
 function easyshift_mouse_macro_12()
-	info("UserMacros: Executing: 'easyshift_mouse_macro_12'")
+    info("UserMacros: Executing: 'easyshift_mouse_macro_12'")
 end
 
 function easyshift_mouse_wheel_scroll_up()
-	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_up'")
+    info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_up'")
 end
 
 function easyshift_mouse_wheel_scroll_down()
-	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_down'")
+    info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_down'")
 end
 
 function easyshift_mouse_wheel_scroll_left()
-	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_left'")
+    info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_left'")
 end
 
 function easyshift_mouse_wheel_scroll_right()
-	info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_right'")
+    info("UserMacros: Executing: 'easyshift_mouse_wheel_scroll_right'")
 end
 
 function easyshift_mouse_dpi_changed()
-	info("UserMacros: Executing: 'easyshift_mouse_dpi_changed'")
+    info("UserMacros: Executing: 'easyshift_mouse_dpi_changed'")
 end
 
 function on_dial_knob_rotate_left()
-	debug("UserMacros: Executing: 'on_dial_knob_rotate_left'")
+    debug("UserMacros: Executing: 'on_dial_knob_rotate_left'")
 
-	return false -- we did not handle the event, so return `false`
-				 -- to perform the default action
+    return false -- we did not handle the event, so return `false`
+    -- to perform the default action
 end
 
 function on_dial_knob_rotate_right()
-	debug("UserMacros: Executing: 'on_dial_knob_rotate_right'")
+    debug("UserMacros: Executing: 'on_dial_knob_rotate_right'")
 
-	return false -- we did not handle the event, so return `false`
-				 -- to perform the default action
+    return false -- we did not handle the event, so return `false`
+    -- to perform the default action
 end
 
 function on_macro_key_down(index)
-	info("UserMacros: Executing: Macro #" .. index + 1)
+    info("UserMacros: Executing: Macro #" .. index + 1)
 
-	-- NOTE:
-	-- We filter by slots, if you want to enable macros on all slots equally,
-	-- just remove the 'and get_current_slot() == 0' part in each if statement.
+    -- NOTE:
+    -- We filter by slots, if you want to enable macros on all slots equally,
+    -- just remove the 'and get_current_slot() == 0' part in each if statement.
 
-	if index == 0 and get_current_slot() == 0 then
-		-- if we are in slot #1, the macro key #1 will execute this if-branch
+    if index == 0 and get_current_slot() == 0 then
+        -- if we are in slot #1, the macro key #1 will execute this if-branch
 
-		if MODIFIER_KEY ~= RIGHT_MENU then
-			inject_key(MODIFIER_KEY_EV_CODE, false)  -- modifier key up
-		end
+        if MODIFIER_KEY ~= RIGHT_MENU then
+            inject_key(MODIFIER_KEY_EV_CODE, false) -- modifier key up
+        end
 
-		-- consume the original keystroke
-		consume_key()
+        -- consume the original keystroke
+        consume_key()
 
-		-- place your code here --
+        -- place your code here --
 
-	elseif index == 1 and get_current_slot() == 0 then
-		-- if we are in slot #1, the macro key #4 will write the
-		-- text "Message from eruption" to the system journal
+    elseif index == 1 and get_current_slot() == 0 then
+        -- if we are in slot #1, the macro key #4 will write the
+        -- text "Message from eruption" to the system journal
 
-		-- consume the original keystroke
-		consume_key()
+        -- consume the original keystroke
+        consume_key()
 
-		-- result = system("/usr/bin/logger", { "-i", "Message from eruption" })
-		-- if result ~= 0 then
-		-- 	error("Command execution failed with result: " .. result)
-		-- end
+        -- result = system("/usr/bin/logger", { "-i", "Message from eruption" })
+        -- if result ~= 0 then
+        -- 	error("Command execution failed with result: " .. result)
+        -- end
 
-		-- NOTE: does not work as the 'root' user
-		-- system("notify-send", { "Title", "Message from eruption" })
-	else
-		-- no match, just consume the original keystroke and do nothing
-		consume_key()
-	end
+        -- NOTE: does not work as the 'root' user
+        -- system("notify-send", { "Title", "Message from eruption" })
+    else
+        -- no match, just consume the original keystroke and do nothing
+        consume_key()
+    end
 end
 
 function update_color_state()
-	if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
-		-- Easy Shift+ key has been pressed
+    if ENABLE_EASY_SHIFT and game_mode_enabled and modifier_map[CAPS_LOCK] then
+        -- Easy Shift+ key has been pressed
 
-		-- highlight all keys
-		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
+        -- highlight all keys
+        for i = 0, canvas_size do
+            color_map_highlight[i] = color_highlight
+        end
 
-		-- highlight remapped keys
-		for i = 0, num_keys do
-			if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
-				color_map_highlight[i] = COLOR_REMAPPED_KEY
-			end
-		end
+        -- highlight remapped keys
+        for i = 0, num_keys do
+            if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
+                color_map_highlight[i] = COLOR_REMAPPED_KEY
+            end
+        end
 
-		-- highlight keys with associated macros
-		for i = 0, num_keys do
-			if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
-				color_map_highlight[i] = COLOR_ASSOCIATED_MACRO
-			end
-		end
+        -- highlight keys with associated macros
+        for i = 0, num_keys do
+            if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
+                color_map_highlight[i] = COLOR_ASSOCIATED_MACRO
+            end
+        end
 
-		-- Highlight Easy Shift+ key
-		color_map_highlight[key_name_to_index("CAPS_LOCK")] = COLOR_FUNCTION_KEY_SPECIAL
+        -- Highlight Easy Shift+ key
+        color_map_highlight[key_name_to_index("CAPS_LOCK")] =
+            COLOR_FUNCTION_KEY_SPECIAL
 
-		-- highlight the macro keys (INSERT - PAGEDOWN)
-		color_map_highlight[key_name_to_index("INSERT")] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_name_to_index("POS1")] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_name_to_index("PGUP")] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_name_to_index("DEL")] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_name_to_index("END")] = COLOR_SWITCH_EASY_SHIFT_LAYER
-		color_map_highlight[key_name_to_index("PGDWN")] = COLOR_SWITCH_EASY_SHIFT_LAYER
+        -- highlight the macro keys (INSERT - PAGEDOWN)
+        color_map_highlight[key_name_to_index("INSERT")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
+        color_map_highlight[key_name_to_index("POS1")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
+        color_map_highlight[key_name_to_index("PGUP")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
+        color_map_highlight[key_name_to_index("DEL")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
+        color_map_highlight[key_name_to_index("END")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
+        color_map_highlight[key_name_to_index("PGDWN")] =
+            COLOR_SWITCH_EASY_SHIFT_LAYER
 
-		-- highlight the active slot in a different color
-		if ACTIVE_EASY_SHIFT_LAYER == 1 then
-			color_map_highlight[key_name_to_index("INSERT")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
-			color_map_highlight[key_name_to_index("POS1")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		elseif ACTIVE_EASY_SHIFT_LAYER == 3 then
-			color_map_highlight[key_name_to_index("PGUP")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		elseif ACTIVE_EASY_SHIFT_LAYER == 4 then
-			color_map_highlight[key_name_to_index("DEL")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		elseif ACTIVE_EASY_SHIFT_LAYER == 5 then
-			color_map_highlight[key_name_to_index("END")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		elseif ACTIVE_EASY_SHIFT_LAYER == 6 then
-			color_map_highlight[key_name_to_index("PGDWN")] = COLOR_ACTIVE_EASY_SHIFT_LAYER
-		end
+        -- highlight the active slot in a different color
+        if ACTIVE_EASY_SHIFT_LAYER == 1 then
+            color_map_highlight[key_name_to_index("INSERT")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        elseif ACTIVE_EASY_SHIFT_LAYER == 2 then
+            color_map_highlight[key_name_to_index("POS1")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        elseif ACTIVE_EASY_SHIFT_LAYER == 3 then
+            color_map_highlight[key_name_to_index("PGUP")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        elseif ACTIVE_EASY_SHIFT_LAYER == 4 then
+            color_map_highlight[key_name_to_index("DEL")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        elseif ACTIVE_EASY_SHIFT_LAYER == 5 then
+            color_map_highlight[key_name_to_index("END")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        elseif ACTIVE_EASY_SHIFT_LAYER == 6 then
+            color_map_highlight[key_name_to_index("PGDWN")] =
+                COLOR_ACTIVE_EASY_SHIFT_LAYER
+        end
 
-		highlight_ttl = highlight_max_ttl
+        highlight_ttl = highlight_max_ttl
 
-	elseif modifier_map[MODIFIER_KEY] then
-		-- modifier key has been pressed (eg: FN)
+    elseif modifier_map[MODIFIER_KEY] then
+        -- modifier key has been pressed (eg: FN)
 
-		-- highlight all keys
-		for i = 0, canvas_size do color_map_highlight[i] = color_highlight end
+        -- highlight all keys
+        for i = 0, canvas_size do
+            color_map_highlight[i] = color_highlight
+        end
 
-		-- highlight the slot keys
-		color_map_highlight[key_name_to_index("F1")] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_name_to_index("F2")] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_name_to_index("F3")] = COLOR_SWITCH_SLOT
-		color_map_highlight[key_name_to_index("F4")] = COLOR_SWITCH_SLOT
+        -- highlight the slot keys
+        color_map_highlight[key_name_to_index("F1")] = COLOR_SWITCH_SLOT
+        color_map_highlight[key_name_to_index("F2")] = COLOR_SWITCH_SLOT
+        color_map_highlight[key_name_to_index("F3")] = COLOR_SWITCH_SLOT
+        color_map_highlight[key_name_to_index("F4")] = COLOR_SWITCH_SLOT
 
-		-- highlight the active slot in a different color
-		if get_current_slot() == 0 then
-			color_map_highlight[key_name_to_index("F1")] = COLOR_ACTIVE_SLOT
-		elseif get_current_slot() == 1 then
-			color_map_highlight[key_name_to_index("F2")] = COLOR_ACTIVE_SLOT
-		elseif get_current_slot() == 2 then
-			color_map_highlight[key_name_to_index("F3")] = COLOR_ACTIVE_SLOT
-		elseif get_current_slot() == 3 then
-			color_map_highlight[key_name_to_index("F4")] = COLOR_ACTIVE_SLOT
-		end
+        -- highlight the active slot in a different color
+        if get_current_slot() == 0 then
+            color_map_highlight[key_name_to_index("F1")] = COLOR_ACTIVE_SLOT
+        elseif get_current_slot() == 1 then
+            color_map_highlight[key_name_to_index("F2")] = COLOR_ACTIVE_SLOT
+        elseif get_current_slot() == 2 then
+            color_map_highlight[key_name_to_index("F3")] = COLOR_ACTIVE_SLOT
+        elseif get_current_slot() == 3 then
+            color_map_highlight[key_name_to_index("F4")] = COLOR_ACTIVE_SLOT
+        end
 
-		-- highlight function and media keys
-		if MODIFIER_KEY == FN then
-			if ENABLE_FUNCTION_KEYS then
-				color_map_highlight[key_name_to_index("F5")] = COLOR_FUNCTION_KEY  -- F5 action
-				color_map_highlight[key_name_to_index("F6")] = COLOR_FUNCTION_KEY  -- F6 action
-				color_map_highlight[key_name_to_index("F7")] = COLOR_FUNCTION_KEY  -- F7 action
-				color_map_highlight[key_name_to_index("F8")] = COLOR_FUNCTION_KEY  -- F8 action
-			end
+        -- highlight function and media keys
+        if MODIFIER_KEY == FN then
+            if ENABLE_FUNCTION_KEYS then
+                color_map_highlight[key_name_to_index("F5")] =
+                    COLOR_FUNCTION_KEY -- F5 action
+                color_map_highlight[key_name_to_index("F6")] =
+                    COLOR_FUNCTION_KEY -- F6 action
+                color_map_highlight[key_name_to_index("F7")] =
+                    COLOR_FUNCTION_KEY -- F7 action
+                color_map_highlight[key_name_to_index("F8")] =
+                    COLOR_FUNCTION_KEY -- F8 action
+            end
 
-			if ENABLE_MEDIA_KEYS then
-				color_map_highlight[key_name_to_index("F9")] = COLOR_FUNCTION_KEY  -- F9 action
-				color_map_highlight[key_name_to_index("F10")] = COLOR_FUNCTION_KEY  -- F10 action
-				color_map_highlight[key_name_to_index("F11")] = COLOR_FUNCTION_KEY  -- F11 action
-				color_map_highlight[key_name_to_index("F12")] = COLOR_FUNCTION_KEY  -- F12 action
-			end
+            if ENABLE_MEDIA_KEYS then
+                color_map_highlight[key_name_to_index("F9")] =
+                    COLOR_FUNCTION_KEY -- F9 action
+                color_map_highlight[key_name_to_index("F10")] =
+                    COLOR_FUNCTION_KEY -- F10 action
+                color_map_highlight[key_name_to_index("F11")] =
+                    COLOR_FUNCTION_KEY -- F11 action
+                color_map_highlight[key_name_to_index("F12")] =
+                    COLOR_FUNCTION_KEY -- F12 action
+            end
 
-			color_map_highlight[key_name_to_index("GAME_MODE")] = COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
+            color_map_highlight[key_name_to_index("GAME_MODE")] =
+                COLOR_FUNCTION_KEY_SPECIAL -- SCROLL LOCK/Game Mode
 
-			if ENABLE_EASY_SHIFT and game_mode_enabled then
-				color_map_highlight[key_name_to_index("CAPS_LOCK")] = COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
-			end
-		end
+            if ENABLE_EASY_SHIFT and game_mode_enabled then
+                color_map_highlight[key_name_to_index("CAPS_LOCK")] =
+                    COLOR_FUNCTION_KEY_SPECIAL -- Easy Shift+
+            end
+        end
 
-		if ENABLE_MACRO_KEYS then
-			-- highlight the macro keys (INSERT - PAGEDOWN)
-			color_map_highlight[key_name_to_index("INSERT")] = COLOR_MACRO_KEY
-			color_map_highlight[key_name_to_index("POS1")] = COLOR_MACRO_KEY
-			color_map_highlight[key_name_to_index("PGUP")] = COLOR_MACRO_KEY
-			color_map_highlight[key_name_to_index("DEL")] = COLOR_MACRO_KEY
-			color_map_highlight[key_name_to_index("END")] = COLOR_MACRO_KEY
-			color_map_highlight[key_name_to_index("PGDWN")] = COLOR_MACRO_KEY
-		end
+        if ENABLE_MACRO_KEYS then
+            -- highlight the macro keys (INSERT - PAGEDOWN)
+            color_map_highlight[key_name_to_index("INSERT")] = COLOR_MACRO_KEY
+            color_map_highlight[key_name_to_index("POS1")] = COLOR_MACRO_KEY
+            color_map_highlight[key_name_to_index("PGUP")] = COLOR_MACRO_KEY
+            color_map_highlight[key_name_to_index("DEL")] = COLOR_MACRO_KEY
+            color_map_highlight[key_name_to_index("END")] = COLOR_MACRO_KEY
+            color_map_highlight[key_name_to_index("PGDWN")] = COLOR_MACRO_KEY
+        end
 
-		highlight_ttl = highlight_max_ttl
-	end
+        highlight_ttl = highlight_max_ttl
+    end
 
-	-- in addition to the generic key highlighting, perform device specific key highlights
-	device_specific_key_highlights()
+    -- in addition to the generic key highlighting, perform device specific key highlights
+    device_specific_key_highlights()
 end
 
 -- remapping tables
@@ -305,60 +329,60 @@ EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("ESC")]  = 113  -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("ESC")] = 113 -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- map F1 - F12 => F13 - F21 on the Easy Shift+ layer
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F1")]	= 183
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F2")]	= 184
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F3")]	= 185
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F4")]	= 186
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F5")]	= 187
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F6")]	= 188
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F7")]	= 189
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F8")]	= 190
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F9")]	= 191
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F10")]	= 192
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F11")]	= 193
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F12")]	= 194
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F1")] = 183
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F2")] = 184
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F3")] = 185
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F4")] = 186
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F5")] = 187
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F6")] = 188
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F7")] = 189
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F8")] = 190
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F9")] = 191
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F10")] = 192
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F11")] = 193
+EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F12")] = 194
 
 -- assign macros to keys on the Easy Shift+ layer
-EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("1")]		= easyshift_macro_1  --
-EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("2")]		= easyshift_macro_2  --
-EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("3")]		= easyshift_macro_3  --
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("1")] = easyshift_macro_1 --
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("2")] = easyshift_macro_2 --
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("3")] = easyshift_macro_3 --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer
-EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1]	= easyshift_mouse_macro_1  --
-EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][2]	= easyshift_mouse_macro_2  --
-EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][3]	= easyshift_mouse_macro_3  --
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1] = easyshift_mouse_macro_1 --
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][2] = easyshift_mouse_macro_2 --
+EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][3] = easyshift_mouse_macro_3 --
 
 -- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][1] = easyshift_mouse_macro_1  --
 -- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][2] = easyshift_mouse_macro_2  --
 -- EASY_SHIFT_MOUSE_UP_MACRO_TABLE[1][3] = easyshift_mouse_macro_3  --
 
-EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up  	--
-EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down  	--
-EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][3] = easyshift_mouse_wheel_scroll_left  	--
-EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][4] = easyshift_mouse_wheel_scroll_right  	--
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][1] = easyshift_mouse_wheel_scroll_up --
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][2] = easyshift_mouse_wheel_scroll_down --
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][3] = easyshift_mouse_wheel_scroll_left --
+EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[1][4] = easyshift_mouse_wheel_scroll_right --
 
-EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][1] = easyshift_mouse_dpi_changed  	--
-EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][2] = easyshift_mouse_dpi_changed  	--
-EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][3] = easyshift_mouse_dpi_changed  	--
-EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][4] = easyshift_mouse_dpi_changed  	--
-EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][5] = easyshift_mouse_dpi_changed  	--
+EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][1] = easyshift_mouse_dpi_changed --
+EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][2] = easyshift_mouse_dpi_changed --
+EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][3] = easyshift_mouse_dpi_changed --
+EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][4] = easyshift_mouse_dpi_changed --
+EASY_SHIFT_MOUSE_DPI_MACRO_TABLE[1][5] = easyshift_mouse_dpi_changed --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer, triggered by HID events
 -- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][1]	 = easyshift_mouse_macro_1   --
 -- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][2]	 = easyshift_mouse_macro_2   --
 -- EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][3]	 = easyshift_mouse_macro_3   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][4]	 = easyshift_mouse_macro_4   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][5]	 = easyshift_mouse_macro_5   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][6]	 = easyshift_mouse_macro_6   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][7]	 = easyshift_mouse_macro_7   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][8]	 = easyshift_mouse_macro_8   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][9]	 = easyshift_mouse_macro_9   --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][10] = easyshift_mouse_macro_10  --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][11] = easyshift_mouse_macro_11  --
-EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][12] = easyshift_mouse_macro_12  --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][4] = easyshift_mouse_macro_4 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][5] = easyshift_mouse_macro_5 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][6] = easyshift_mouse_macro_6 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][7] = easyshift_mouse_macro_7 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][8] = easyshift_mouse_macro_8 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][9] = easyshift_mouse_macro_9 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][10] = easyshift_mouse_macro_10 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][11] = easyshift_mouse_macro_11 --
+EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][12] = easyshift_mouse_macro_12 --
 
 -- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][1]  = easyshift_mouse_macro_1   --
 -- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][2]  = easyshift_mouse_macro_2   --
@@ -372,7 +396,6 @@ EASY_SHIFT_MOUSE_HID_DOWN_MACRO_TABLE[1][12] = easyshift_mouse_macro_12  --
 -- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][10] = easyshift_mouse_macro_10  --
 -- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][11] = easyshift_mouse_macro_11  --
 -- EASY_SHIFT_MOUSE_HID_UP_MACRO_TABLE[1][12] = easyshift_mouse_macro_12  --
-
 
 -- ****************************************************************************
 -- QWERTZ layout, column major order

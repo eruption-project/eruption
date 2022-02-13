@@ -1,17 +1,20 @@
 -- This file is part of Eruption.
-
+--
 -- Eruption is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
+--
 -- Eruption is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
+--
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+--
+-- Copyright (c) 2019-2022, The Eruption Development Team
+--
 
 require "declarations"
 require "debug"
@@ -34,7 +37,8 @@ end
 
 function on_key_down(key_index)
     hue_map[key_index] = 359
-    color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5, lerp(0, 255, opacity))
+    color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5,
+                                         lerp(0, 255, opacity))
 
     effect_ttl = max_effect_ttl
 end
@@ -51,7 +55,8 @@ function on_tick(delta)
                 hue_map[i] = hue_map[i] - hue_step_afterglow
 
                 if hue_map[i] >= hue_step_afterglow then
-                    r, g, b, alpha = color_to_rgba(hsl_to_color(hue_map[i], 1.0, 0.5))
+                    r, g, b, alpha = color_to_rgba(
+                                         hsl_to_color(hue_map[i], 1.0, 0.5))
                     color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
                 else
                     color_map[i] = 0x00000000
@@ -61,6 +66,6 @@ function on_tick(delta)
 
         effect_ttl = effect_ttl - 1
 
-	    submit_color_map(color_map)
+        submit_color_map(color_map)
     end
 end
