@@ -2748,47 +2748,67 @@ pub fn register_filesystem_watcher(
                         })
                         .unwrap_or_else(|e| error!("Could not register file watch: {}", e));
 
-                        for profile_dir in profiles::get_profile_dirs() {
-                            let fsevents_tx_c = fsevents_tx.clone();
+                    for profile_dir in profiles::get_profile_dirs() {
+                        let fsevents_tx_c = fsevents_tx.clone();
 
-                            hotwatch
-                                .watch(&profile_dir, move |event: Event| {
-                                    if let Event::Write(event) = event {
+                        hotwatch
+                            .watch(&profile_dir, move |event: Event| {
+                                if let Event::Write(event) = event {
+                                    if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                        info!("Existing profile state modified: {:?}", event);
+
+                                        // crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+                                    } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
                                         info!("Existing profile modified: {:?}", event);
 
                                         fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: event}).unwrap();
-                                    } else if let Event::Create(event) = event {
+                                    }
+                                } else if let Event::Create(event) = event {
+                                    if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                        info!("New profile state created: {:?}", event);
+
+                                        // crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+                                    } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
                                         info!("New profile created: {:?}", event);
 
                                         fsevents_tx_c.send(FileSystemEvent::ProfileChanged  { action: EventAction::Created , path: event }).unwrap();
-                                    } else if let Event::Rename(from, to) = event {
+                                    }
+                                } else if let Event::Rename(from, to) = event {
+                                    if to.extension().unwrap_or_default().to_string_lossy() == "profile" {
                                         info!("Profile file renamed: {:?}", (&from, &to));
 
                                         fsevents_tx_c.send(FileSystemEvent::ProfileChanged  { action: EventAction::Modified , path: to }).unwrap();
-                                    } else if let Event::Remove(event) = event {
+                                    }
+                                } else if let Event::Remove(event) = event {
+                                    if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                        info!("Profile state deleted: {:?}", event);
+
+                                        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+                                    } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
                                         info!("Profile deleted: {:?}", event);
 
                                         fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Deleted , path: event }).unwrap();
                                     }
+                                }
 
-                                    Flow::Continue
-                                })
-                                .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &profile_dir.display(), e));
-                        }
+                                Flow::Continue
+                            })
+                            .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &profile_dir.display(), e));
+                    }
 
-                        for script_dir in util::get_script_dirs() {
-                            let fsevents_tx_c = fsevents_tx.clone();
+                    for script_dir in util::get_script_dirs() {
+                        let fsevents_tx_c = fsevents_tx.clone();
 
-                            hotwatch
-                                .watch(&script_dir, move |event: Event| {
-                                    info!("Script file or manifest changed: {:?}", event);
+                        hotwatch
+                            .watch(&script_dir, move |event: Event| {
+                                info!("Script file or manifest changed: {:?}", event);
 
-                                    fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+                                fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
 
-                                    Flow::Continue
-                                })
-                                .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &script_dir.display(), e));
-                        }
+                                Flow::Continue
+                            })
+                            .unwrap_or_else(|e| error!("Could not register directory watch for {}: {}", &script_dir.display(), e));
+                    }
 
                     hotwatch.run();
                 }

@@ -27,10 +27,11 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::plugins::audio;
-use crate::script;
+use crate::scripting::manifest::ParseConfig;
 use crate::{constants, plugins};
 use crate::{hwdevices, profiles};
+use crate::{plugins::audio, scripting::manifest};
+use crate::{profiles::FindConfig, script};
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -45,9 +46,6 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum DbusApiError {
     #[error("D-Bus not connected")]
     BusNotConnected {},
-
-    #[error("Could not find script file")]
-    ScriptNotFound {},
 
     #[error("Invalid device")]
     InvalidDevice {},
@@ -1054,32 +1052,47 @@ pub fn initialize(dbus_tx: Sender<Message>) -> Result<DbusApi> {
 }
 
 fn apply_parameter(
-    _profile_file: &str,
+    profile_file: &str,
     script_file: &str,
     param_name: &str,
     value: &str,
 ) -> Result<()> {
+    let profile_path = PathBuf::from(&profile_file);
     let script_path = PathBuf::from(&script_file);
 
-    let mut found = false;
-    for lua_tx in crate::LUA_TXS.lock().iter() {
-        if lua_tx.script_file == script_path {
-            found = true;
+    // modify persistent profile state
+    match profiles::Profile::from(&profile_path) {
+        Ok(mut profile) => {
+            if let Some(ref mut profile_config) = profile.config {
+                let mut empty = vec![];
 
-            lua_tx.send(script::Message::SetParameter {
-                param_name: param_name.to_owned(),
-                value: value.to_owned(),
-            })?;
+                let manifest = manifest::Manifest::from(&script_path)?;
+                let config = profile_config.get_mut(&manifest.name).unwrap_or(&mut empty);
 
-            break;
+                if let Some(param) = config.clone().find_config_param(&param_name) {
+                    // param already exists, remove the existing one first
+                    config.retain(|elem| elem != param);
+                }
+
+                config.push(
+                    manifest
+                        .config
+                        .unwrap_or_default()
+                        .parse_config_param(&param_name, &value)?,
+                );
+            }
+
+            profile.save_params()?;
+        }
+
+        Err(e) => {
+            error!("Could not update profile state: {}", e);
         }
     }
 
-    if found {
-        Ok(())
-    } else {
-        Err(DbusApiError::ScriptNotFound {}.into())
-    }
+    crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+
+    Ok(())
 }
 
 /// Query the device specific status from the global status store

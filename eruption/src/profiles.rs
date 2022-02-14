@@ -50,9 +50,12 @@ pub enum ProfileError {
 
     #[error("Could not set a config value in a profile: {msg}")]
     SetValueError { msg: String },
+
+    #[error("Could not parse a param value")]
+    ParseParamError {},
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ConfigParam {
     Int {
@@ -395,7 +398,7 @@ impl Profile {
                         result.id = Uuid::new_v4();
                         result.profile_file = profile_file.to_path_buf();
 
-                        result.config = Some(HashMap::new());
+                        // result.config = Some(HashMap::new());
 
                         Ok(result)
                     }
@@ -429,6 +432,11 @@ impl Profile {
                     Ok(mut result) => {
                         // fill in required fields, after parsing
                         result.profile_file = profile_file.to_path_buf();
+
+                        // load persisted profile state from disk, but ignore errors
+                        let _ = result
+                            .load_params()
+                            .map_err(|e| trace!("Error loading profile state from disk: {}", e));
 
                         if result.config.is_none() {
                             result.config = Some(HashMap::new());
@@ -478,6 +486,28 @@ impl Profile {
         fs::write(&self.profile_file, &toml).map_err(|_| ProfileError::WriteError {
             msg: "Could not write file".into(),
         })?;
+
+        Ok(())
+    }
+
+    pub fn load_params(&mut self) -> Result<()> {
+        let path = self.profile_file.with_extension("profile.state");
+        let json_string = fs::read_to_string(&path)?;
+
+        let map: HashMap<String, Vec<ConfigParam>> = serde_json::from_str(&json_string)?;
+
+        self.config = Some(map);
+
+        Ok(())
+    }
+
+    pub fn save_params(&self) -> Result<()> {
+        if let Some(ref config) = self.config {
+            let json_string = serde_json::to_string_pretty(&config)?;
+            let path = self.profile_file.with_extension("profile.state");
+
+            fs::write(&path, json_string)?;
+        }
 
         Ok(())
     }

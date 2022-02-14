@@ -28,6 +28,8 @@ fn test_eruption_debug_tool_version() {
         .output()
         .expect("Failed to execute the test");
 
-        assert!(String::from_utf8_lossy(&output.stdout)
-        .contains(&format!("eruption-hotplug-helper {}\n", env!("CARGO_PKG_VERSION"))));
+    assert!(String::from_utf8_lossy(&output.stdout).contains(&format!(
+        "eruption-hotplug-helper {}\n",
+        env!("CARGO_PKG_VERSION")
+    )));
 }

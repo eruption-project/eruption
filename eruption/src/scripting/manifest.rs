@@ -43,7 +43,7 @@ pub enum ManifestError {
     #[error("Could not enumerate script files")]
     ScriptEnumerationError {},
 
-    #[error("Could not parse param value")]
+    #[error("Could not parse a param value")]
     ParseParamError {},
 }
 
@@ -152,14 +152,25 @@ impl ParseConfig for Vec<ConfigParam> {
 
                 ConfigParam::Color { name, default, .. } => {
                     if name == param {
-                        let value = u32::from_str_radix(&val[1..], 16)
-                            .map_err(|_e| ManifestError::ParseParamError {})?;
+                        if &val[0..1] == "#" {
+                            let value = u32::from_str_radix(&val[1..], 16)
+                                .map_err(|_e| ManifestError::ParseParamError {})?;
 
-                        return Ok(profiles::ConfigParam::Color {
-                            name: name.to_string(),
-                            value,
-                            default: *default,
-                        });
+                            return Ok(profiles::ConfigParam::Color {
+                                name: name.to_string(),
+                                value,
+                                default: *default,
+                            });
+                        } else {
+                            let value = u32::from_str(val)
+                                .map_err(|_e| ManifestError::ParseParamError {})?;
+
+                            return Ok(profiles::ConfigParam::Color {
+                                name: name.to_string(),
+                                value,
+                                default: *default,
+                            });
+                        }
                     }
                 }
             }
