@@ -1064,10 +1064,8 @@ fn apply_parameter(
     match profiles::Profile::from(&profile_path) {
         Ok(mut profile) => {
             if let Some(ref mut profile_config) = profile.config {
-                let mut empty = vec![];
-
                 let manifest = manifest::Manifest::from(&script_path)?;
-                let config = profile_config.get_mut(&manifest.name).unwrap_or(&mut empty);
+                let config = profile_config.get_mut(&manifest.name).unwrap();
 
                 if let Some(param) = config.clone().find_config_param(&param_name) {
                     // param already exists, remove the existing one first
