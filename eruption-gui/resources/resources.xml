@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/eruption/eruption-gui">
-    <file compressed="true">ui/main.glade</file>
-    <file compressed="true">ui/about.glade</file>
-    <file compressed="true">ui/rule.glade</file>
-    <file compressed="true">ui/no-device-template.ui</file>
-    <file compressed="true">ui/keyboard-device-template.ui</file>
-    <file compressed="true">ui/mouse-device-template.ui</file>
-    <file compressed="true">ui/misc-device-template.ui</file>
-    <file>styles/app.css</file>
     <file>img/eruption-gui.png</file>
     <file>img/generic-keyboard.png</file>
     <file>img/generic-mouse.png</file>
@@ -24,5 +16,13 @@
     <file>img/roccat-kone-pro-air.png</file>
     <file>img/roccat-burst-pro.png</file>
     <file>img/roccat-kain-2xx.png</file>
+    <file compressed="true">styles/app.css</file>
+    <file compressed="true">ui/main.glade</file>
+    <file compressed="true">ui/about.glade</file>
+    <file compressed="true">ui/rule.glade</file>
+    <file compressed="true">ui/no-device-template.ui</file>
+    <file compressed="true">ui/keyboard-device-template.ui</file>
+    <file compressed="true">ui/mouse-device-template.ui</file>
+    <file compressed="true">ui/misc-device-template.ui</file>
   </gresource>
 </gresources>
