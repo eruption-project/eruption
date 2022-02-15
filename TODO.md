@@ -10,7 +10,7 @@
 _This is a non-exhaustive listing of planned features:_
 
 * Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
-* Improve support for device hotplug: Don't always restart the eruption daemon, but implement device bind/unbind code
+* Improve support for device hotplug: Don't always restart the Eruption daemon, but implement device bind/unbind code
 * Finish support for Wayland (The `NetworkFX Ambient Effect` feature is currently missing)
 * GUI support: Improve the GTK3+ based GUI
 * Improve the GNOME Shell Extension

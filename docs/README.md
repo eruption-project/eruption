@@ -7,9 +7,11 @@
     - [Macros Documentation](#macros-documentation)
     - [Network FX Protocol Specification](#network-fx-protocol-specification)
     - [Eruption Support Library Documentation](#eruption-support-library-documentation)
+    - [File Format Specification](#file-format-specification)
     - [Installation from Source](#installation-from-source)
     - [Setup Audio](#setup-audio)
     - [Privacy Considerations](#privacy-considerations)
+    - [FAQs](#faqs)
 
 ## Welcome to the Eruption documentation
 
@@ -68,3 +70,9 @@ HowTo setup audio for Eruption
 Privacy considerations
 
 [PRIVACY.md](PRIVACY.md)
+
+### FAQs
+
+FAQs - Freuqently asked questions
+
+[FAQs.md](FAQs.md)

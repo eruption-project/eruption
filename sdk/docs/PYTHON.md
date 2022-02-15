@@ -2,23 +2,23 @@
 
 This is the documentation of the Python 3 SDK for Eruption
 
-# Table of Contents
+## Table of Contents
 
 - [Eruption Python 3 SDK](#eruption-python-3-sdk)
-- [Table of Contents](#table-of-contents)
-- [Using the Python SDK](#using-the-python-sdk)
-  - [Getting started](#getting-started)
+  - [Table of Contents](#table-of-contents)
+  - [Using the Python SDK](#using-the-python-sdk)
+    - [Getting started](#getting-started)
     - [Installation Instructions](#installation-instructions)
-  - [Example Code](#example-code)
-    - [Imports](#imports)
-    - [Establishing a Connection](#establishing-a-connection)
-    - [The Canvas](#the-canvas)
-    - [Terminating the Connection](#terminating-the-connection)
-    - [Full Code Listing](#full-code-listing)
+    - [Example Code](#example-code)
+      - [Imports](#imports)
+      - [Establishing a Connection](#establishing-a-connection)
+      - [The Canvas](#the-canvas)
+      - [Terminating the Connection](#terminating-the-connection)
+      - [Full Code Listing](#full-code-listing)
 
-# Using the Python SDK
+## Using the Python SDK
 
-## Getting started
+### Getting started
 
 First you need to set up the required environment:
 
@@ -43,15 +43,15 @@ Now install the dependencies
 pip install protobuf
 ```
 
-## Example Code
+### Example Code
 
-### Imports
+#### Imports
 
 ```python
 from eruption import SDK_VERSION, Connection, Canvas, Color
 ```
 
-### Establishing a Connection
+#### Establishing a Connection
 
 The following code will establish a connection to a running instance of Eruption via the
 local transport (UNIX domain socket)
@@ -69,7 +69,7 @@ local transport (UNIX domain socket)
         print(status)
 ```
 
-### The Canvas
+#### The Canvas
 
 Using the canvas with the Color class
 
@@ -106,7 +106,7 @@ Using the canvas with the Color class
         connection.submit_canvas(canvas)
 ```
 
-### Terminating the Connection
+#### Terminating the Connection
 
 ```python
         connection.disconnect()
@@ -116,7 +116,7 @@ Using the canvas with the Color class
         print(f"An error occurred: {type(e).__name__} {e}" )
 ```
 
-### Full Code Listing
+#### Full Code Listing
 
 ```python
 import sys

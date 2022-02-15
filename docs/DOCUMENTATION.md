@@ -151,7 +151,6 @@ All script files and their corresponding manifests reside in the directory
 `/usr/share/eruption/scripts`. You may use the provided scripts as a starting
 point to write your own effects.
 
-
 ### Support for Macros
 
 Eruption 0.1.1 added the infrastructure to support injection of keystrokes

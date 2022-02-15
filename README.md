@@ -24,6 +24,7 @@
     - [Examples](#examples)
     - [Removing a rule](#removing-a-rule)
   - [Further Reading](#further-reading)
+  - [FAQs](#faqs)
   - [Contributing](#contributing)
 
 ---
@@ -260,6 +261,10 @@ For further information about the supported Lua functions and libraries, please 
 [LIBRARY.md](docs/LIBRARY.md).
 
 For a detailed documentation on how to write your own macros, please refer to [MACROS.md](docs/MACROS.md)
+
+## FAQs
+
+Please find a list of frequently asked questions and their respective answers at [FAQs.md](docs/FAQs.md)
 
 ## Contributing
 

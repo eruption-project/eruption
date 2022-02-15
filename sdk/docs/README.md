@@ -3,6 +3,8 @@
 - [Table of Contents](#table-of-contents)
   - [Documentation](#documentation)
   - [FAQs](#faqs)
+    - [Q: What is the Software Development Kit for?](#q-what-is-the-software-development-kit-for)
+    - [Q: What can be done with the Eruption SDK?](#q-what-can-be-done-with-the-eruption-sdk)
 
 ## Documentation
 
@@ -15,8 +17,10 @@
 
 ## FAQs
 
-Q: What is the Software Development Kit for?
+### Q: What is the Software Development Kit for?
+
 A: It is suitable for controlling Eruption from other software
 
-Q: What can be done with the Eruption SDK?
+### Q: What can be done with the Eruption SDK?
+
 A: The SDK can be used to override the colors on the color map
