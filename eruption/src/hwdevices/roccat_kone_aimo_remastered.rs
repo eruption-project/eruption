@@ -334,6 +334,10 @@ impl DeviceTrait for RoccatKoneAimoRemastered {
         self.ctrl_hiddev_info.as_ref().unwrap().product_id()
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        self.ctrl_hiddev_info.as_ref().unwrap().serial_number()
+    }
+
     fn get_support_script_file(&self) -> String {
         "mice/roccat_kone_aimo_remastered".to_string()
     }

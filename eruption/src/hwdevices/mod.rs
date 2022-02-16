@@ -650,6 +650,9 @@ pub trait DeviceTrait: DeviceInfoTrait {
     /// Returns the USB product ID of the device
     fn get_usb_pid(&self) -> u16;
 
+    /// Returns a device specific serial number/identifier
+    fn get_serial(&self) -> Option<&str>;
+
     /// Returns the file name of the Lua support script for the device
     fn get_support_script_file(&self) -> String;
 

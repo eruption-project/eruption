@@ -89,6 +89,10 @@ impl DeviceTrait for CustomSerialLeds {
         0
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        None
+    }
+
     fn get_support_script_file(&self) -> String {
         "misc/custom_serial_leds".to_string()
     }

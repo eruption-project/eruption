@@ -324,6 +324,10 @@ impl DeviceTrait for RoccatBurstPro {
         self.ctrl_hiddev_info.as_ref().unwrap().product_id()
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        self.ctrl_hiddev_info.as_ref().unwrap().serial_number()
+    }
+
     fn get_support_script_file(&self) -> String {
         "mice/roccat_burst_pro".to_string()
     }

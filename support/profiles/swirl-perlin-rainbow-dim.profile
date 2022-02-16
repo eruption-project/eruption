@@ -4,7 +4,7 @@ description = 'Color Swirl effect with high contrast'
 active_scripts = [
     'swirl-perlin.lua',
     'batique.lua',
-    'dim-zone.lua',
+#   'dim-zone.lua',
     'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
@@ -38,6 +38,12 @@ type = 'float'
 name = 'coord_scale'
 value = 14.0
 default = 14.0
+
+[[config."Perlin Swirl"]]
+type = 'float'
+name = 'opacity'
+value = 0.15
+default = 0.15
 
 [[config.Shockwave]]
 type = 'color'

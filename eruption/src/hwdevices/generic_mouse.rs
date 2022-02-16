@@ -103,6 +103,10 @@ impl DeviceTrait for GenericMouse {
         self.usb_pid
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        None
+    }
+
     fn get_support_script_file(&self) -> String {
         "mice/generic_mouse".to_string()
     }

@@ -21,6 +21,7 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::RwLock;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
@@ -45,6 +46,8 @@ lazy_static! {
     pub static ref STATE: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 }
 
+pub type DeviceMakeModelSerial = String;
+
 #[derive(Serialize)]
 #[serde(rename_all = "lowercase")]
 struct State {
@@ -52,7 +55,12 @@ struct State {
     slot_names: Vec<String>,
     profiles: Vec<PathBuf>,
     enable_sfx: bool,
+
+    /// Global brightness
     brightness: i64,
+
+    /// Device specific brightness
+    device_brightness: HashMap<DeviceMakeModelSerial, i32>,
 }
 
 pub fn init_global_runtime_state() -> Result<()> {
@@ -170,8 +178,111 @@ pub fn init_global_runtime_state() -> Result<()> {
     Ok(())
 }
 
+pub fn init_global_runtime_state_late() -> Result<()> {
+    let device_brightness = STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get_table("device_brightness")
+        .unwrap();
+
+    for device in &*crate::KEYBOARD_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let val = config::Value::new(None, 100);
+
+        let brightness = device_brightness
+            .get(&format!("{}:{}:{}", make, model, serial))
+            .unwrap_or(&val);
+
+        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device.write().set_local_brightness(brightness)?;
+    }
+
+    for device in &*crate::MOUSE_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let val = config::Value::new(None, 100);
+
+        let brightness = device_brightness
+            .get(&format!("{}:{}:{}", make, model, serial))
+            .unwrap_or(&val);
+
+        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device.write().set_local_brightness(brightness)?;
+    }
+
+    for device in &*crate::MISC_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let val = config::Value::new(None, 100);
+
+        let brightness = device_brightness
+            .get(&format!("{}:{}:{}", make, model, serial))
+            .unwrap_or(&val);
+
+        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device.write().set_local_brightness(brightness)?;
+    }
+
+    Ok(())
+}
+
 pub fn save_runtime_state() -> Result<()> {
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
+
+    let mut device_brightness = HashMap::new();
+
+    for device in &*crate::KEYBOARD_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let brightness = device.read().get_local_brightness()?;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+    }
+
+    for device in &*crate::MOUSE_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let brightness = device.read().get_local_brightness()?;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+    }
+
+    for device in &*crate::MISC_DEVICES.lock() {
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
+
+        let brightness = device.read().get_local_brightness()?;
+
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+
+        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+    }
 
     let config = State {
         active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
@@ -179,6 +290,7 @@ pub fn save_runtime_state() -> Result<()> {
         profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
+        device_brightness: device_brightness,
     };
 
     let toml = toml::ser::to_string_pretty(&config).map_err(|e| StateError::StateWriteError {

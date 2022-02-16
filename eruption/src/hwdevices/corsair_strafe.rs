@@ -394,6 +394,10 @@ impl DeviceTrait for CorsairStrafe {
         self.led_hiddev_info.as_ref().unwrap().product_id()
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        self.led_hiddev_info.as_ref().unwrap().serial_number()
+    }
+
     fn get_support_script_file(&self) -> String {
         "keyboards/corsair_strafe".to_string()
     }

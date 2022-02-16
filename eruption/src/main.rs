@@ -3241,6 +3241,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 info!("Performing late initializations...");
 
+                // load and initialize global runtime state (late init)
+                info!("Loading saved device state...");
+                state::init_global_runtime_state_late()
+                    .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
                 // initialize the D-Bus API
                 info!("Initializing D-Bus API...");
                 let (dbus_tx, dbus_rx) = unbounded();
@@ -3320,6 +3325,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 plugins::PersistencePlugin::store_persistent_data()
                     .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
 
+                // save state
+                info!("Saving global runtime state...");
+                state::save_runtime_state()
+                    .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
+
                 // close all managed devices
                 info!("Closing all devices now...");
 
@@ -3378,10 +3388,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             process::exit(1);
         }
     }
-
-    // save state
-    debug!("Saving state...");
-    state::save_runtime_state().unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
 
     info!("Exiting now");
 

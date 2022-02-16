@@ -109,6 +109,10 @@ impl DeviceTrait for GenericKeyboard {
         self.usb_pid
     }
 
+    fn get_serial(&self) -> Option<&str> {
+        None
+    }
+
     fn get_support_script_file(&self) -> String {
         "keyboards/generic_keyboard".to_string()
     }
