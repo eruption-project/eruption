@@ -37,8 +37,8 @@ use std::{
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-use crate::plugins;
 use crate::plugins::Plugin;
+use crate::{constants, plugins};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -353,6 +353,7 @@ impl Animal {
             }
         }
 
+        result.resize_with(constants::CANVAS_SIZE, || 0x000000000);
         result
     }
 }

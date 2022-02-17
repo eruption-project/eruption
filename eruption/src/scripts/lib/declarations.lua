@@ -24,11 +24,11 @@ canvas_size = get_canvas_size()
 canvas_height = get_canvas_height()
 canvas_width = get_canvas_width()
 
-keyboard_zone_start = 0
+keyboard_zone_start = 1
 keyboard_zone_end = get_num_keys()
 
-mouse_zone_start = 144
-mouse_zone_end = 144 + 36
+mouse_zone_start = get_canvas_size() - 36
+mouse_zone_end = get_canvas_size() + 36
 
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model

@@ -34,10 +34,12 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const NUM_KEYS: usize = 144;
+pub const NUM_KEYS: usize = 96;
 
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 16;
+
+pub const LED_INDICES: usize = 144;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -917,11 +919,11 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
         } else {
             match *self.led_hiddev.lock() {
                 Some(ref led_dev) => {
-                    if led_map.len() < NUM_KEYS {
+                    if led_map.len() < LED_INDICES {
                         error!(
                             "Received a short LED map: Got {} elements, but should be {}",
                             led_map.len(),
-                            NUM_KEYS
+                            LED_INDICES
                         );
 
                         Err(HwDeviceError::LedMapError {}.into())
@@ -932,7 +934,7 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                         let mut buffer: [u8; 448] = [0; 448];
                         buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
-                        for i in 0..NUM_KEYS {
+                        for i in 0..LED_INDICES {
                             let color = led_map[i];
                             let offset = ((i / 12) * 36) + (i % 12);
 

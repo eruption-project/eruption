@@ -714,7 +714,10 @@ mod callbacks {
     /// Get the number of keys of the managed device.
     pub(crate) fn get_num_keys() -> usize {
         // TODO: Return the number of keys of a specific device
-        144
+        let device = crate::KEYBOARD_DEVICES.lock();
+        let result = device[0].read().get_num_keys();
+
+        result
     }
 
     /// Get state of all LEDs
