@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "utilities"
 require "debug"
@@ -49,6 +48,9 @@ function on_startup(config)
                                          min(0.5, ((i * 1.45) / 256)),
                                          lerp(0, 255, opacity))
     end
+
+    -- display a solid color on all other devices, like mice or RGB pads
+    for i = mouse_zone_start, canvas_size do color_map[i] = color_palette[80] end
 end
 
 function on_tick(delta)
