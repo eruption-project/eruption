@@ -32,7 +32,7 @@ default = [] #["mimalloc_allocator"]
 mimalloc_allocator = ["mimalloc"]
 
 [dependencies]
-mimalloc = { version = "0.1.27", optional = true, default-features = false }
+mimalloc = { version = "0.1.28", optional = true, default-features = false }
 cfg-if = "1.0.0"
 crossbeam = "0.8.1"
 futures = "0.3.21"
@@ -41,7 +41,7 @@ async-trait = "0.1.52"
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
-libc = "0.2.117"
+libc = "0.2.118"
 nix = "0.23.1"
 log = "0.4.14"
 syslog = "6.0.1"
@@ -52,10 +52,10 @@ color-eyre = "0.6.0"
 toml = "0.5.8"
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
-tokio = { version = "1.16.1", features = ["full", "rt-multi-thread"] }
+tokio = { version = "1.17.0", features = ["full", "rt-multi-thread"] }
 socket2 = { version = "0.4.4", features = ["all"] }
 ctrlc = { version = "3.2.1", features = ["termination"] }
-clap = "3.0.14"
+clap = "3.1.0"
 hotwatch = "0.4.6"
 config = "0.11.0"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -80,7 +80,7 @@ simdnoise = "3.1.6"
 mlua = { version = "0.7.3", features = ["luajit52"] }
 sysinfo = "0.23.2"
 procinfo = "0.4.2"
-bincode = "2.0.0-beta.2"
+bincode = "2.0.0-beta.3"
 rustfft = "6.0.1"
 uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 dbus = "0.9.5"
@@ -103,7 +103,7 @@ icecream = "0.1.0"
 [dev-dependencies]
 pretty_assertions = "1.1.0"
 thiserror = "1.0.30"
-tokio = { version = "1.16.1", features = ["test-util"] }
+tokio = { version = "1.17.0", features = ["test-util"] }
 
 [build-dependencies]
 prost-build = "0.9.0"

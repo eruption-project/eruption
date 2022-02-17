@@ -1293,10 +1293,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
-            let mut app = Options::into_app();
+            let mut command = Options::command();
             let mut fd = std::io::stdout();
 
-            clap_complete::generate(shell, &mut app, BIN_NAME.to_string(), &mut fd);
+            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
         }
     }
 

@@ -18,7 +18,7 @@
 */
 
 // use async_macros::join;
-use clap::{App, Arg};
+use clap::{Arg, Command};
 use crossbeam::channel::{self, unbounded, Receiver, Select, Sender};
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
@@ -321,7 +321,7 @@ fn print_header() {
 
 /// Process commandline options
 fn parse_commandline() -> clap::ArgMatches {
-    App::new("Eruption")
+    Command::new("Eruption")
         .version(
             format!(
                 "{} ({}) ({} build)",
