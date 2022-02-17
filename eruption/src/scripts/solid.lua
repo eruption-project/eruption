@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "debug"
 
@@ -25,7 +24,7 @@ max_effect_ttl = target_fps * 3
 effect_ttl = max_effect_ttl
 
 function on_startup(config)
-    for i = 0, canvas_size do
+    for i = 1, canvas_size do
         r, g, b, alpha = color_to_rgba(color_background)
         color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
     end
@@ -39,7 +38,7 @@ function on_apply_parameter(parameter, value)
     update_fn()
 
     -- update state
-    for i = 0, canvas_size do
+    for i = 1, canvas_size do
         r, g, b, alpha = color_to_rgba(color_background)
         color_map[i] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
     end

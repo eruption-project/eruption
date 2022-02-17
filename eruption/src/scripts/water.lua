@@ -37,7 +37,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         color_map[i] = 0x00000000
         state_map[i] = key_state.idle
     end
@@ -47,7 +47,7 @@ function on_key_down(key_index)
     color_map[key_index] = color_water
 
     if key_index ~= 0 then
-        for i = 0, max_neigh do
+        for i = 1, max_neigh do
             local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
                                     table_offset]) + 1
 
@@ -64,7 +64,7 @@ function on_key_up(key_index)
     color_map[key_index] = color_water
 
     if key_index ~= 0 then
-        for i = 0, max_neigh do
+        for i = 1, max_neigh do
             local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
                                     table_offset]) + 1
 

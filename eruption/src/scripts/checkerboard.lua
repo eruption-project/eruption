@@ -28,7 +28,7 @@ function on_tick(delta)
 
     -- calculate checkerboard effect
     if ticks % animation_delay == 0 then
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             local x = i / canvas_height
             local y = i / canvas_width
 

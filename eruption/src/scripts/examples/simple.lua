@@ -15,13 +15,12 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- global array that stores each key's current color
 color_map = {}
 
 function on_startup()
     -- turn off all LEDs
-    for i = 0, get_canvas_size() do color_map[i] = 0x00000000 end
+    for i = 1, get_canvas_size() do color_map[i] = 0x00000000 end
 
     -- update LED state
     submit_color_map(color_map)

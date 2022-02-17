@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "utilities"
 require "debug"
@@ -31,14 +30,14 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
-    for i = 0, num_keys do fireworks_grid[i] = 0.0 end
+    for i = 1, num_keys do fireworks_grid[i] = 0.0 end
 end
 
 function on_key_down(key_index)
     if key_index ~= 0 then
-        for i = 0, max_neigh do
+        for i = 1, max_neigh do
             local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
                                     table_offset]) + 1
 

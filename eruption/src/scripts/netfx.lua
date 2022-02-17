@@ -49,7 +49,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
     -- bind server socket
     local status, socket = pcall(require, "socket")
@@ -164,7 +164,7 @@ function on_tick(delta)
                         if #spec < 2 then
                             if result[1] == "ALL" then
                                 -- predefined zone: full canvas
-                                for i = 0, canvas_size do
+                                for i = 1, canvas_size do
                                     color_map[i] = color
                                 end
                             else

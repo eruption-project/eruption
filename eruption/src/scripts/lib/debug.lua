@@ -15,13 +15,12 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 function debug_print_led_state(color_map)
     info("************************************************************")
 
     local row = ""
 
-    for i = 0, get_canvas_size() - 1 do
+    for i = 1, get_canvas_size() - 1 do
 
         if i % 21 == 0 then
             info(row)

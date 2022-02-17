@@ -21,31 +21,31 @@ require "debug"
 
 -- set gradient stops
 gradient_stops = {
-    [0] = {
+    [1] = {
         start = rgba_to_color(255, 0, 0, lerp(0, 255, opacity)),
         dest = rgba_to_color(255, 165, 0, lerp(0, 255, opacity))
     },
-    [1] = {
+    [2] = {
         start = rgba_to_color(255, 165, 0, lerp(0, 255, opacity)),
         dest = rgba_to_color(0, 255, 255, lerp(0, 255, opacity))
     },
-    [2] = {
+    [3] = {
         start = rgba_to_color(0, 255, 255, lerp(0, 255, opacity)),
         dest = rgba_to_color(0, 255, 0, lerp(0, 255, opacity))
     },
-    [3] = {
+    [4] = {
         start = rgba_to_color(0, 255, 0, lerp(0, 255, opacity)),
         dest = rgba_to_color(0, 0, 255, lerp(0, 255, opacity))
     },
-    [4] = {
+    [5] = {
         start = rgba_to_color(0, 0, 255, lerp(0, 255, opacity)),
         dest = rgba_to_color(75, 0, 130, lerp(0, 255, opacity))
     },
-    [5] = {
+    [6] = {
         start = rgba_to_color(75, 0, 130, lerp(0, 255, opacity)),
         dest = rgba_to_color(238, 130, 238, lerp(0, 255, opacity))
     },
-    [6] = {
+    [7] = {
         start = rgba_to_color(238, 130, 238, lerp(0, 255, opacity)),
         dest = rgba_to_color(255, 0, 0, lerp(0, 255, opacity))
     },
@@ -58,7 +58,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do
+    for i = 1, canvas_size do
         color_map[i] = linear_gradient_multi(gradient_stops,
                                              (i * num_keys / 100))
     end
@@ -69,7 +69,7 @@ function on_tick(delta)
 
     -- animate gradient
     if animate_gradient and (ticks % gradient_step == 0) then
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
         end
     end

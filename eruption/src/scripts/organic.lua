@@ -38,7 +38,7 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         local angle = open_simplex_noise_2d(ticks / time_scale, 42)
 
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             local x = i / canvas_width
             local y = i / canvas_height
 

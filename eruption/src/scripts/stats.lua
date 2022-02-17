@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "queue"
 require "debug"
@@ -33,7 +32,7 @@ local function load_key_histogram(name)
 
     local result = {}
 
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
         result[i] = load_int(key, 0)
     end
@@ -44,7 +43,7 @@ end
 local function store_key_histogram(key_histogram, name)
     trace("Statistics: Saving histogram '" .. name .. "' to persistent storage")
 
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
         store_int(key, key_histogram[i])
     end
@@ -53,7 +52,7 @@ end
 local function dump_key_histogram(name)
     info("Statistics: Dumping: '" .. name .. "'")
 
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
         local result = load_int(key, 0)
 

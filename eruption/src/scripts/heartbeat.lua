@@ -28,7 +28,7 @@ percentage = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_tick(delta)
@@ -56,7 +56,7 @@ function on_tick(delta)
 
     -- generate heartbeat color map values
     local upper_bound = num_keys * (clamp(percentage, 0, 100) / 100)
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         if i <= upper_bound then
             color_map[i] = color_map[i] + rgba_to_color(0, 0, 0, 10)
 

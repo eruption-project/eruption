@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "debug"
 
@@ -28,7 +27,7 @@ function on_tick(delta)
 
     -- calculate psychedelic effect
     if ticks % animation_delay == 0 then
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             local x = i / num_rows
             local y = i / num_cols
 

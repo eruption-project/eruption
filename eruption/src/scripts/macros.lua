@@ -120,7 +120,7 @@ function on_startup(config)
     modifier_map[RIGHT_MENU] = get_key_state(key_name_to_index("RIGHT_MENU"))
     modifier_map[FN] = get_key_state(key_name_to_index("FN"))
 
-    for i = 0, canvas_size do
+    for i = 1, canvas_size do
         color_map[i] = 0x00000000
         color_map_highlight[i] = 0x00000000
         color_map_overlay[i] = 0x00000000
@@ -696,7 +696,7 @@ function on_tick(delta)
 
     -- show key highlight effect or the active overlay
     if ticks % animation_delay == 0 then
-        for i = 0, num_keys do
+        for i = 1, num_keys do
             -- key highlight effect
             if highlight_ttl > 0 then
                 r, g, b, a = color_to_rgba(color_map_highlight[i])

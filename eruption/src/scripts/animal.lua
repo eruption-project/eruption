@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "utilities"
 require "debug"
@@ -35,7 +34,7 @@ handle = animal_create(name, speed, len_min, len_max, max_radius,
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = color_background end
+    for i = 1, canvas_size do color_map[i] = color_background end
 end
 
 function on_tick(delta)
@@ -48,7 +47,7 @@ function on_tick(delta)
 
         -- render the animal
         local animal_map = animal_render(handle)
-        for i = 0, num_keys do color_map[i] = animal_map[i] end
+        for i = 1, num_keys do color_map[i] = animal_map[i] end
 
         submit_color_map(color_map)
     end

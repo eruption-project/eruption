@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "debug"
 
@@ -28,7 +27,7 @@ adaptive_offset = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_tick(delta)
@@ -39,7 +38,7 @@ function on_tick(delta)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             local x = i / canvas_width
             local y = i / canvas_height
 

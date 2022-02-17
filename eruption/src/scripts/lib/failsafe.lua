@@ -33,7 +33,7 @@ function consume_key() inject_key(0, false) end
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
     submit_color_map(color_map)
 end

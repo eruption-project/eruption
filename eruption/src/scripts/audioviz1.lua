@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "debug"
 
@@ -26,7 +25,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = color_background end
+    for i = 1, canvas_size do color_map[i] = color_background end
 end
 
 function on_tick(delta)
@@ -45,7 +44,7 @@ function on_tick(delta)
     local percentage = min(loudness / max_loudness * 100, 100)
 
     color = linear_gradient(color_silence, color_loud, percentage / 100)
-    for i = 0, canvas_size do color_map[i] = color end
+    for i = 1, canvas_size do color_map[i] = color end
 
     submit_color_map(color_map)
 end

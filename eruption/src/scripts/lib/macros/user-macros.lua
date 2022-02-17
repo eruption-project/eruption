@@ -153,19 +153,19 @@ function update_color_state()
         -- Easy Shift+ key has been pressed
 
         -- highlight all keys
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             color_map_highlight[i] = color_highlight
         end
 
         -- highlight remapped keys
-        for i = 0, num_keys do
+        for i = 1, num_keys do
             if EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
                 color_map_highlight[i] = COLOR_REMAPPED_KEY
             end
         end
 
         -- highlight keys with associated macros
-        for i = 0, num_keys do
+        for i = 1, num_keys do
             if EASY_SHIFT_MACRO_TABLE[ACTIVE_EASY_SHIFT_LAYER][i] ~= nil then
                 color_map_highlight[i] = COLOR_ASSOCIATED_MACRO
             end
@@ -216,7 +216,7 @@ function update_color_state()
         -- modifier key has been pressed (eg: FN)
 
         -- highlight all keys
-        for i = 0, canvas_size do
+        for i = 1, canvas_size do
             color_map_highlight[i] = color_highlight
         end
 

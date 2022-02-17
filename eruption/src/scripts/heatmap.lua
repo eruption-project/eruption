@@ -26,7 +26,7 @@ color_map = {}
 local function load_key_histogram(name)
     local result = {}
 
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         local key = "statistics.histograms." .. name .. "[" .. i .. "]"
         result[i] = load_int(key, 1)
     end
@@ -37,7 +37,7 @@ end
 local function accum(key_histogram)
     local result = 0
 
-    for i = 0, num_keys do result = result + key_histogram[i] end
+    for i = 1, num_keys do result = result + key_histogram[i] end
 
     return result
 end
@@ -47,7 +47,7 @@ function on_tick(delta)
     local key_histogram = load_key_histogram(histogram_name)
     local sum_total = accum(key_histogram)
 
-    for i = 0, num_keys do
+    for i = 1, num_keys do
         local percentile = ((key_histogram[i] * 10) / sum_total)
         color_map[i] = linear_gradient(color_cold, color_hot, percentile)
     end

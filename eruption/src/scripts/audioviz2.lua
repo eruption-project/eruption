@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "debug"
 
@@ -28,7 +27,7 @@ column = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = color_background end
+    for i = 1, canvas_size do color_map[i] = color_background end
 end
 
 function on_tick(delta)
@@ -48,7 +47,7 @@ function on_tick(delta)
     if column > max_keys_per_row then column = 0 end
 
     local color = hsl_to_color(color_angle, 1.0, 0.5)
-    for i = 0, num_rows - 1 do color_map[column * num_rows + i] = color end
+    for i = 1, num_rows - 1 do color_map[column * num_rows + i] = color end
 
     column = column + 1
 

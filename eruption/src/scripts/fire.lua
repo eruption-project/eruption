@@ -33,7 +33,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
     -- initialize fire grid
     for y = 0, fire_grid_rows do
@@ -43,7 +43,7 @@ function on_startup(config)
     end
 
     -- initialize palette
-    for i = 0, 255 do
+    for i = 1, 255 do
         color_palette[i] = hsla_to_color(i / 3, 1.0,
                                          min(0.5, ((i * 1.45) / 256)),
                                          lerp(0, 255, opacity))

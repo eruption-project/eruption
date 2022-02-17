@@ -32,7 +32,7 @@ end
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_tick(delta)
@@ -43,7 +43,7 @@ function on_tick(delta)
 
     -- fade out raindrops
     if ticks % raindrop_step == 0 then
-        for i = 0, num_keys do
+        for i = 1, num_keys do
             if color_map[i] > 0x00000000 then
                 r, g, b, alpha = color_to_rgba(color_map[i])
                 alpha = alpha - 10
