@@ -15,10 +15,8 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- This is the default macro definitions file, that gets used when
 -- no override has been specified. You may want to customize the code below
-
 require "macros/examples"
 
 function easyshift_macro_1() info("UserMacros: Executing: 'easyshift_macro_1'") end

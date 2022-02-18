@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- target framerate of the core engine
 target_fps = get_target_fps()
 

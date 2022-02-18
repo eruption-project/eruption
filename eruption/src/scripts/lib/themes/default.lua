@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- switch slots via F1-F4
 COLOR_SWITCH_SLOT = rgb_to_color(32, 255, 255)
 -- currently active slot

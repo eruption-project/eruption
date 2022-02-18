@@ -15,10 +15,8 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- This is the macro definitions file for the game "Star Craft 2".
 -- You may want to customize the code below
-
 -- override color scheme
 require "themes/gaming"
 

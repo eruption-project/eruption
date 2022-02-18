@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "utilities"
 
 ENABLE_EASY_SHIFT = true -- set this to false if you don't want to

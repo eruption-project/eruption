@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 queue = {}
 
 function queue.new(max_size) return {first = 0, last = -1, max_size = max_size} end

@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 function macro_inject_double_click_left()
     debug("UserMacros: macro_inject_double_click_left")
 
