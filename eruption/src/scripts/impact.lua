@@ -15,12 +15,10 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -------------------------------------------------------------------------------
 -- This script was heavily inspired by the excellent work of duncanthrax
 -- Please see: https://github.com/duncanthrax/roccat-vulcan
 -------------------------------------------------------------------------------
-
 require "declarations"
 require "utilities"
 require "debug"

@@ -59,13 +59,13 @@ function on_tick(delta)
     -- calculate fire effect
     if ticks % fire_speed == 0 then
         -- randomize bottom row
-        for x = 0, fire_grid_cols do
+        for x = 1, fire_grid_cols do
             fire_grid[fire_grid_rows * x + fire_grid_cols] = rand(35, 255)
         end
 
         -- compute fire effect, from top to bottom
-        for y = 0, fire_grid_rows - 2 do
-            for x = 0, fire_grid_cols - 1 do
+        for y = 1, fire_grid_rows - 2 do
+            for x = 1, fire_grid_cols - 1 do
                 fire_grid[y * fire_grid_cols + x] =
                     ((fire_grid[((y + 1) % fire_grid_rows) * fire_grid_cols +
                         ((x - 1 + fire_grid_cols) % fire_grid_cols)] +

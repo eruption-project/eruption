@@ -30,9 +30,9 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
-    for i = 1, num_keys do fireworks_grid[i] = 0.0 end
+    for i = 0, num_keys do fireworks_grid[i] = 0.0 end
 end
 
 function on_key_down(key_index)
@@ -57,8 +57,8 @@ function on_tick(delta)
     if ticks % animation_speed == 0 then
         -- compute fireworks effect
         for key_index = 1, num_keys - 1 do
-            local avg = (fireworks_grid[key_index - 1] +
-                            fireworks_grid[key_index + 1]) / 2
+            local avg = n((fireworks_grid[key_index - 1] +
+                              fireworks_grid[key_index + 1]) / 2)
             fireworks_grid[key_index - 1] =
                 (fireworks_grid[key_index] - 0.25) + (avg * 0.5)
 
@@ -71,18 +71,18 @@ function on_tick(delta)
             for x = 0, max_keys_per_row - 1 do
                 local idx = y * max_keys_per_row + x
 
-                if fireworks_grid[idx] > 0 then
+                if n(fireworks_grid[idx]) > 0 then
                     fireworks_grid[idx] =
                         fireworks_grid[idx] - (fireworks_grid[idx] * 0.25)
                 end
 
                 local epsilon = 0.1
-                if fireworks_grid[idx] <= epsilon then
+                if n(fireworks_grid[idx]) <= epsilon then
                     fireworks_grid[idx] = 0.0
                 end
 
                 -- compute color
-                if fireworks_grid[idx] > 0.0 then
+                if n(fireworks_grid[idx]) > 0.0 then
                     local hue = lerp(0, 360, sin(fireworks_grid[idx]))
                     color_map[idx] = hsla_to_color(hue, 1.0, 0.5,
                                                    lerp(0, 255, opacity))

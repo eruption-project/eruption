@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 require "declarations"
 require "utilities"
 require "debug"
@@ -54,7 +53,8 @@ function on_startup(config)
     -- bind server socket
     local status, socket = pcall(require, "socket")
     if not status then
-        error("Your system is missing a required Lua library. You may want to install a package named like 'lua51-socket' or 'lua-socket-compat'")
+        error(
+            "Your system is missing a required Lua library. You may want to install a package named like 'lua51-socket' or 'lua-socket-compat'")
     else
         server = socket.tcp()
 
@@ -64,14 +64,16 @@ function on_startup(config)
 
         local status, msg = server:bind(bind_address, port)
         if status == nil then
-            error("Network FX: Could not bind socket to the specified address: " ..
+            error(
+                "Network FX: Could not bind socket to the specified address: " ..
                     msg)
             return
         end
 
         local status, msg = server:listen(0)
         if status == nil then
-            error("Network FX: Could not transition socket to listening state: " ..
+            error(
+                "Network FX: Could not transition socket to listening state: " ..
                     msg)
             return
         end
@@ -124,7 +126,8 @@ function on_tick(delta)
                         conn = nil
                         return
                     elseif data == "STATUS" then
-                        conn:send("Eruption Network FX / Protocol version: 1.0\n")
+                        conn:send(
+                            "Eruption Network FX / Protocol version: 1.0\n")
                         return
                     end
 
