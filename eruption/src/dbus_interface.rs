@@ -1458,14 +1458,19 @@ mod perms {
             Ok(HAS_MONITOR_PERMISSION.read().unwrap())
         } else {
             // cache is invalid, we need to call out to PolKit
-            let result = has_monitor_permission(sender);
+            let result = has_monitor_permission(sender)?;
 
-            if let Ok(value) = result {
-                // call succeeded, update cached state
-                HAS_MONITOR_PERMISSION.write().replace(value);
+            if !result.1 {
+                if result.0 {
+                    // call succeeded, update cached state
+                    HAS_MONITOR_PERMISSION.write().replace(result.0);
+                }
+
+                Ok(result.0)
+            } else {
+                // user pressed cancel in authentication dialog
+                Ok(false)
             }
-
-            result
         }
     }
 
@@ -1475,14 +1480,19 @@ mod perms {
             Ok(HAS_SETTINGS_PERMISSION.read().unwrap())
         } else {
             // cache is invalid, we need to call out to PolKit
-            let result = has_settings_permission(sender);
+            let result = has_settings_permission(sender)?;
 
-            if let Ok(value) = result {
-                // call succeeded, update cached state
-                HAS_SETTINGS_PERMISSION.write().replace(value);
+            if !result.1 {
+                if result.0 {
+                    // call succeeded, update cached state
+                    HAS_SETTINGS_PERMISSION.write().replace(result.0);
+                }
+
+                Ok(result.0)
+            } else {
+                // user pressed cancel in authentication dialog
+                Ok(false)
             }
-
-            result
         }
     }
 
@@ -1492,18 +1502,23 @@ mod perms {
             Ok(HAS_MANAGE_PERMISSION.read().unwrap())
         } else {
             // cache is invalid, we need to call out to PolKit
-            let result = has_manage_permission(sender);
+            let result = has_manage_permission(sender)?;
 
-            if let Ok(value) = result {
-                // call succeeded, update cached state
-                HAS_MANAGE_PERMISSION.write().replace(value);
+            if !result.1 {
+                if result.0 {
+                    // call succeeded, update cached state
+                    HAS_MANAGE_PERMISSION.write().replace(result.0);
+                }
+
+                Ok(result.0)
+            } else {
+                // user pressed cancel in authentication dialog
+                Ok(false)
             }
-
-            result
         }
     }
 
-    pub fn has_monitor_permission(sender: &str) -> Result<bool> {
+    pub fn has_monitor_permission(sender: &str) -> Result<(bool, bool)> {
         use bus::OrgFreedesktopDBus;
         use polkit::OrgFreedesktopPolicyKit1Authority;
 
@@ -1547,14 +1562,14 @@ mod perms {
 
             if (result.0 && !dismissed) || (!result.0 && dismissed) {
                 // we have either been dismissed with 'cancel' or the authentication succeeded
-                break 'AUTH_LOOP result;
+                break 'AUTH_LOOP (result, dismissed);
             }
         };
 
-        Ok(result.0)
+        Ok((result.0 .0, false))
     }
 
-    pub fn has_settings_permission(sender: &str) -> Result<bool> {
+    pub fn has_settings_permission(sender: &str) -> Result<(bool, bool)> {
         use bus::OrgFreedesktopDBus;
         use polkit::OrgFreedesktopPolicyKit1Authority;
 
@@ -1598,14 +1613,14 @@ mod perms {
 
             if (result.0 && !dismissed) || (!result.0 && dismissed) {
                 // we have either been dismissed with 'cancel' or the authentication succeeded
-                break 'AUTH_LOOP result;
+                break 'AUTH_LOOP (result, dismissed);
             }
         };
 
-        Ok(result.0)
+        Ok((result.0 .0, false))
     }
 
-    pub fn has_manage_permission(sender: &str) -> Result<bool> {
+    pub fn has_manage_permission(sender: &str) -> Result<(bool, bool)> {
         use bus::OrgFreedesktopDBus;
         use polkit::OrgFreedesktopPolicyKit1Authority;
 
@@ -1649,11 +1664,11 @@ mod perms {
 
             if (result.0 && !dismissed) || (!result.0 && dismissed) {
                 // we have either been dismissed with 'cancel' or the authentication succeeded
-                break 'AUTH_LOOP result;
+                break 'AUTH_LOOP (result, dismissed);
             }
         };
 
-        Ok(result.0)
+        Ok((result.0 .0, false))
     }
 
     mod bus {
