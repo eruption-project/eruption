@@ -186,6 +186,8 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 * Persistence: Provides a persistence layer for the Lua scripts to store data
 * Profiles: Switch slots, switch profiles based on system state, ...
 * Macros: Inject programmable key stroke sequences
+* Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
+* SDK Support: Support for the Eruption SDK
 
 **Additional Plugins:**
 * Animal: Simulation of organic movements (support library)
@@ -226,6 +228,7 @@ Eruption currently ships with the following Lua scripts:
 | Color Swirls (Turbulence Noise) | Background | `swirl-turbulence.lua` | Ready  | Color swirls effect, based on the Turbulence Noise function that serves as input to produce a HSL color      |
 | Color Swirls (Voronoi Noise)    | Background | `swirl-voronoi.lua`    | Ready  | Color swirls effect, based on the Voronoi Noise function that serves as input to produce a HSL color         |
 | Lava Lamp                       | Background | `lava-lamp.lua`        | Ready  | Display a lava lamp like effect                                                                              |
+| Domain Coloring                 | Background | `domain-coloring.lua`  | Ready  | Visualize a mathematical function |
 | Dim Zone                        | Filter     | `dim-zone.lua`         | Ready  | Dim (darken) a zone on the canvas                                                                            |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:

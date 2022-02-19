@@ -67,7 +67,7 @@ use scripting::manifest::Manifest;
 use scripting::script;
 
 use crate::hwdevices::{DeviceStatus, MaturityLevel, RGBA};
-use crate::plugins::sdk_support;
+use crate::plugins::{sdk_support, uleds};
 
 #[cfg(feature = "mimalloc_allocator")]
 use mimalloc::MiMalloc;
@@ -2612,6 +2612,27 @@ async fn run_main_loop(
                 }
 
                 {
+                    // blend the LED map of the Userspace LEDs support plugin
+                    let uleds_led_map = uleds::LED_MAP.read();
+                    let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
+                    for (idx, background) in script::LED_MAP.write().iter_mut().enumerate() {
+                        let bg = &background;
+                        let fg = uleds_led_map[idx];
+
+                        #[rustfmt::skip]
+                        let color = RGBA {
+                            r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                            a: fg.a as u8,
+                        };
+
+                        *background = color;
+                    }
+                }
+
+                {
                     // finally, blend the LED map of the SDK support plugin
                     let sdk_led_map = sdk_support::LED_MAP.read();
                     let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
@@ -3245,6 +3266,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 info!("Loading saved device state...");
                 state::init_global_runtime_state_late()
                     .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
+                // initialize the Linux uleds interface
+                info!("Initializing Linux Userspace LEDs interface...");
+                plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
+                    warn!("Could not spawn a thread: {}", e);
+                    panic!()
+                });
 
                 // initialize the D-Bus API
                 info!("Initializing D-Bus API...");

@@ -29,6 +29,7 @@ pub mod profiles;
 pub mod sdk_support;
 pub mod sensors;
 pub mod system;
+pub mod uleds;
 
 pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
@@ -42,6 +43,7 @@ pub use profiles::ProfilesPlugin;
 pub use sdk_support::SdkSupportPlugin;
 pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
+pub use uleds::UledsPlugin;
 
 use log::*;
 
@@ -65,41 +67,66 @@ pub async fn register_plugins() -> Result<()> {
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
     // Base plugins
-    plugin_manager
+    let _ = plugin_manager
         .register_plugin(Box::new(KeyboardPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(MousePlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(MacrosPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(IntrospectionPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(PersistencePlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(ProfilesPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(SystemPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(SensorsPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
+        .register_plugin(Box::new(UledsPlugin::new()))
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(SdkSupportPlugin::new()))
-        .await?;
-    plugin_manager
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
         .register_plugin(Box::new(AudioPlugin::new()))
-        .await?;
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     // Additional plugins
-    plugin_manager
+    let _ = plugin_manager
         .register_plugin(Box::new(AnimalPlugin::new()))
-        .await?;
+        .await
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     trace!("Done registering all available plugins");
 

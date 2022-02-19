@@ -18,6 +18,9 @@ Table of new and noteworthy changes:
 | 0.1.23 | Add a new administrative companion utility `eruption-hwutil` that can be used to configure devices offline, without requiring the Eruption daemon to be running                                                                                                     |
 | 0.1.23 | Add a new `device status` subsystem that allows to poll status information like e.g. wireless signal strength or battery levels                                                                                                                                     |
 | 0.1.23 | Improve formatting of syslog log output; the default log-level is now `WARN` for all of the provided daemons                                                                                                                                                        |
+| 0.1.23 | Add experimental support for Linux Userspace LEDs interface. This allows kernel-level triggers like e.g. net or disk activity to trigger userspace events |
+| 0.1.23 | Add new Lua script: `domain-coloring.lua` |
+| 0.1.23 | Add new profiles: `Audio Visualization (1-4)` and `Domain Coloring (1-3)` |
 | 0.1.23 | Add new profile: `Blackout` that turns all LEDs off, except for overlays and indicators |
 | 0.1.23 | Add experimental support for `ROCCAT Magma` series keyboards                                                                                                                                                                                                        |
 | 0.1.23 | Add experimental support for `ROCCAT/Turtle Beach Elo 7.1 Air` series headsets                                                                                                                                                                                      |
