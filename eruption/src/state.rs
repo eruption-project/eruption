@@ -179,65 +179,68 @@ pub fn init_global_runtime_state() -> Result<()> {
 }
 
 pub fn init_global_runtime_state_late() -> Result<()> {
-    let device_brightness = STATE
+    // TODO: retain inactive device's brightness values across
+    //       restarts of the Eruption daemon
+
+    if let Ok(device_brightness) = STATE
         .read()
         .as_ref()
         .unwrap()
         .get_table("device_brightness")
-        .unwrap();
+    {
+        for device in &*crate::KEYBOARD_DEVICES.lock() {
+            let make = format!("0x{:x}", device.read().get_usb_vid());
+            let model = format!("0x{:x}", device.read().get_usb_pid());
+            let serial = device.read().get_serial().unwrap_or("").to_string();
 
-    for device in &*crate::KEYBOARD_DEVICES.lock() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
+            let val = config::Value::new(None, 100);
 
-        let val = config::Value::new(None, 100);
+            let brightness = device_brightness
+                .get(&format!("{}:{}:{}", make, model, serial))
+                .unwrap_or(&val);
 
-        let brightness = device_brightness
-            .get(&format!("{}:{}:{}", make, model, serial))
-            .unwrap_or(&val);
+            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
 
-        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+            device.write().set_local_brightness(brightness)?;
+        }
 
-        device.write().set_local_brightness(brightness)?;
-    }
+        for device in &*crate::MOUSE_DEVICES.lock() {
+            let make = format!("0x{:x}", device.read().get_usb_vid());
+            let model = format!("0x{:x}", device.read().get_usb_pid());
+            let serial = device.read().get_serial().unwrap_or("").to_string();
 
-    for device in &*crate::MOUSE_DEVICES.lock() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
+            let val = config::Value::new(None, 100);
 
-        let val = config::Value::new(None, 100);
+            let brightness = device_brightness
+                .get(&format!("{}:{}:{}", make, model, serial))
+                .unwrap_or(&val);
 
-        let brightness = device_brightness
-            .get(&format!("{}:{}:{}", make, model, serial))
-            .unwrap_or(&val);
+            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
 
-        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+            device.write().set_local_brightness(brightness)?;
+        }
 
-        device.write().set_local_brightness(brightness)?;
-    }
+        for device in &*crate::MISC_DEVICES.lock() {
+            let make = format!("0x{:x}", device.read().get_usb_vid());
+            let model = format!("0x{:x}", device.read().get_usb_pid());
+            let serial = device.read().get_serial().unwrap_or("").to_string();
 
-    for device in &*crate::MISC_DEVICES.lock() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
+            let val = config::Value::new(None, 100);
 
-        let val = config::Value::new(None, 100);
+            let brightness = device_brightness
+                .get(&format!("{}:{}:{}", make, model, serial))
+                .unwrap_or(&val);
 
-        let brightness = device_brightness
-            .get(&format!("{}:{}:{}", make, model, serial))
-            .unwrap_or(&val);
+            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
 
-        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
-
-        device.write().set_local_brightness(brightness)?;
+            device.write().set_local_brightness(brightness)?;
+        }
     }
 
     Ok(())
