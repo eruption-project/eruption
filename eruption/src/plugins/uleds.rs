@@ -78,33 +78,37 @@ impl UledsPlugin {
             .spawn(move || -> Result<()> {
                 // Self::initialize_thread_locals()?;
 
-                loop {
-                    for fd in ULEDS_FDS.read().iter() {
-                        let mut brightness: isize = 0;
+                if ULEDS_FDS.read().len() > 0 {
+                    loop {
+                        for fd in ULEDS_FDS.read().iter() {
+                            let mut brightness: isize = 0;
 
-                        let _result = unsafe {
-                            libc::read(
-                                *fd,
-                                std::ptr::addr_of_mut!(brightness) as *mut libc::c_void,
-                                std::mem::size_of::<isize>(),
-                            )
-                        };
+                            let _result = unsafe {
+                                libc::read(
+                                    *fd,
+                                    std::ptr::addr_of_mut!(brightness) as *mut libc::c_void,
+                                    std::mem::size_of::<isize>(),
+                                )
+                            };
 
-                        debug!("ULEDS: read: {}", brightness);
+                            debug!("ULEDS: value read: {}", brightness);
 
-                        let mut led_map = LED_MAP.write();
-                        for (_i, color) in led_map.iter_mut().enumerate() {
-                            *color = RGBA {
-                                r: brightness as u8,
-                                g: brightness as u8,
-                                b: brightness as u8,
-                                a: brightness as u8,
+                            let mut led_map = LED_MAP.write();
+                            for (_i, color) in led_map.iter_mut().enumerate() {
+                                *color = RGBA {
+                                    r: brightness as u8,
+                                    g: brightness as u8,
+                                    b: brightness as u8,
+                                    a: brightness as u8,
+                                }
                             }
-                        }
 
-                        FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+                            FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+                        }
                     }
                 }
+
+                Ok(())
             })?;
 
         // *ULEDS_TX.write() = Some(uleds_tx);
@@ -125,7 +129,7 @@ impl Plugin for UledsPlugin {
 
     async fn initialize(&mut self) -> plugins::Result<()> {
         let fd = fcntl::open("/dev/uleds", OFlag::O_RDWR, Mode::from_bits(0o660).unwrap())?;
-        debug!("Successfuly opened the ULEDs device");
+        debug!("Successfully opened the ULEDs device");
 
         //
         let mut dev = UledsUserDev {
@@ -141,10 +145,11 @@ impl Plugin for UledsPlugin {
 
         //
         let bytes = unsafe { any_as_u8_slice(&dev) };
-        let result = nix::unistd::write(fd, &bytes)?;
-        info!("wrote: {}", result);
+        let _result = nix::unistd::write(fd, &bytes)?;
 
         ULEDS_FDS.write().push(fd);
+
+        debug!("Successfully initialized the ULEDs subsystem");
 
         Ok(())
     }
