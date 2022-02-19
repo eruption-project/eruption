@@ -901,7 +901,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_QUIT.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_QUIT.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
 
                             if errors_present {
@@ -985,7 +987,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
 
                             if errors_present {
@@ -1008,7 +1012,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
 
                             if errors_present {
@@ -1102,7 +1108,9 @@ pub fn run_script(
                                     });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.notify_all();
 
                             if errors_present {
@@ -1152,7 +1160,9 @@ pub fn run_script(
                                     });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.notify_all();
 
                             if errors_present {
@@ -1177,7 +1187,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
 
                             if errors_present {
@@ -1202,7 +1214,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
 
                             if errors_present {
@@ -1233,7 +1247,9 @@ pub fn run_script(
                                 }
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
 
                             if errors_present {
@@ -1258,7 +1274,9 @@ pub fn run_script(
                                 });
                             }
 
-                            *crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() -= 1;
+                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+                            *val = val.saturating_sub(1);
+
                             crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
 
                             if errors_present {
