@@ -19,7 +19,7 @@ require "declarations"
 require "debug"
 
 -- global state variables --
-max_loudness = 64
+max_loudness = 128000
 color_map = {}
 ticks = 0
 
@@ -35,7 +35,7 @@ function on_tick(delta)
     loudness = get_audio_loudness()
     if loudness > max_loudness then max_loudness = loudness end
 
-    max_loudness = max_loudness * 0.999
+    max_loudness = max_loudness * 0.8
     if max_loudness < 8 then max_loudness = 8 end
 
     -- debug("AudioViz1: Loudness  " .. loudness .. " / " .. max_loudness)

@@ -1,6 +1,6 @@
 id = '5dc59faf-e965-45cb-a1da-e87d28713395'
-name = 'Blackout (Turn all LEDs off)'
-description = 'Turn all LEDs off, except for overlays and indicators'
+name = 'Blackout (all LEDs off)'
+description = 'Turn all LEDs off except for overlays and indicators'
 active_scripts = [
 	'solid.lua',
  	'macros.lua',

@@ -80,6 +80,14 @@ support/profiles/animal-blobby-swirl.profile var/lib/eruption/profiles
 support/profiles/animal-breathing-1.profile var/lib/eruption/profiles
 support/profiles/animal-breathing-2.profile var/lib/eruption/profiles
 support/profiles/animal-breathing-3.profile var/lib/eruption/profiles
+support/profiles/audio-visualization-1.profile var/lib/eruption/profiles
+support/profiles/audio-visualization-2.profile var/lib/eruption/profiles
+support/profiles/audio-visualization-3.profile var/lib/eruption/profiles
+support/profiles/audio-visualization-4.profile var/lib/eruption/profiles
+support/profiles/audio-visualization-5.profile var/lib/eruption/profiles
+support/profiles/domain-coloring-1.profile var/lib/eruption/profiles
+support/profiles/domain-coloring-2.profile var/lib/eruption/profiles
+support/profiles/domain-coloring-3.profile var/lib/eruption/profiles
 support/profiles/default.profile var/lib/eruption/profiles
 support/profiles/fx1.profile var/lib/eruption/profiles
 support/profiles/fx2.profile var/lib/eruption/profiles
@@ -233,6 +241,8 @@ eruption/src/scripts/macros.lua usr/share/eruption/scripts
 eruption/src/scripts/macros.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/stats.lua usr/share/eruption/scripts
 eruption/src/scripts/stats.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/domain-coloring.lua usr/share/eruption/scripts
+eruption/src/scripts/domain-coloring.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/dim-zone.lua usr/share/eruption/scripts
 eruption/src/scripts/dim-zone.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/lib/debug.lua usr/share/eruption/scripts/lib

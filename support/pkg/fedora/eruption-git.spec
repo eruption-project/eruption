@@ -135,6 +135,14 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-blobby-swirl.profi
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-breathing-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-breathing-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/animal-breathing-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/audio-visualization-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/audio-visualization-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/audio-visualization-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-5.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -288,6 +296,14 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_sharedstatedir}/%{ShortName}/profiles/animal-breathing-1.profile
 %{_sharedstatedir}/%{ShortName}/profiles/animal-breathing-2.profile
 %{_sharedstatedir}/%{ShortName}/profiles/animal-breathing-3.profile
+%{_sharedstatedir}/%{ShortName}/profiles/audio-visualization-1.profile
+%{_sharedstatedir}/%{ShortName}/profiles/audio-visualization-2.profile
+%{_sharedstatedir}/%{ShortName}/profiles/audio-visualization-3.profile
+%{_sharedstatedir}/%{ShortName}/profiles/audio-visualization-4.profile
+%{_sharedstatedir}/%{ShortName}/profiles/audio-visualization-5.profile
+%{_sharedstatedir}/%{ShortName}/profiles/domain-coloring-1.profile
+%{_sharedstatedir}/%{ShortName}/profiles/domain-coloring-2.profile
+%{_sharedstatedir}/%{ShortName}/profiles/domain-coloring-3.profile
 %{_sharedstatedir}/%{ShortName}/profiles/default.profile
 %{_sharedstatedir}/%{ShortName}/profiles/checkerboard.profile
 %{_sharedstatedir}/%{ShortName}/profiles/fx1.profile
@@ -475,6 +491,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui 
 %{_datarootdir}/%{ShortName}/scripts/wave.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/snake.lua
 %{_datarootdir}/%{ShortName}/scripts/snake.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/domain-coloring.lua
+%{_datarootdir}/%{ShortName}/scripts/domain-coloring.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/dim-zone.lua
 %{_datarootdir}/%{ShortName}/scripts/dim-zone.lua.manifest
 %{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
