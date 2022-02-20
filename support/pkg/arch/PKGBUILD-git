@@ -275,6 +275,7 @@ package() {
     install -m 644 "eruption/src/scripts/lib/macros/examples.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/modifiers.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/user-macros.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
+    install -m 644 "eruption/src/scripts/lib/macros/failsafe-macros.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/macros/starcraft2.lua" "$pkgdir/usr/share/eruption/scripts/lib/macros/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/generic_keyboard.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"
     install -m 644 "eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua" "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards/"

@@ -76,7 +76,12 @@ EASY_SHIFT_MOUSE_DPI_MACRO_TABLE =
 require "themes/default"
 
 -- import custom macro definitions sub-modules
-require(requires)
+local status, _ = pcall(require, requires)
+if not status then
+    error(
+        "Error loading custom macro definitions, falling back to fail-safe mode")
+    require("macros/failsafe-macros")
+end
 
 -- global state variables --
 ticks = 0

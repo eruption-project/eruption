@@ -388,6 +388,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %config %{_datarootdir}/%{ShortName}/scripts/lib/themes/gaming.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/modifiers.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/user-macros.lua
+%config %{_datarootdir}/%{ShortName}/scripts/lib/macros/failsafe-macros.lua
 %config %{_datarootdir}/%{ShortName}/scripts/lib/macros/starcraft2.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/macros/examples.lua
 %{_datarootdir}/%{ShortName}/scripts/macros.lua
