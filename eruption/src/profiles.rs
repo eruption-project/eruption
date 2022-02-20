@@ -398,7 +398,9 @@ impl Profile {
                         result.id = Uuid::new_v4();
                         result.profile_file = profile_file.to_path_buf();
 
-                        // result.config = Some(HashMap::new());
+                        if result.config.is_none() {
+                            result.config = Some(HashMap::new());
+                        }
 
                         Ok(result)
                     }

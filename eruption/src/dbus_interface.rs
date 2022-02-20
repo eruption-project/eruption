@@ -1063,32 +1063,36 @@ fn apply_parameter(
     // modify persistent profile state
     match profiles::Profile::from(&profile_path) {
         Ok(mut profile) => {
-            if let Some(ref mut profile_config) = profile.config {
-                let manifest = manifest::Manifest::from(&script_path)?;
-                let config = profile_config.get_mut(&manifest.name).unwrap();
+            assert!(profile.config.is_some());
 
-                if let Some(param) = config.clone().find_config_param(&param_name) {
-                    // param already exists, remove the existing one first
-                    config.retain(|elem| elem != param);
-                }
+            let manifest = manifest::Manifest::from(&script_path)?;
 
-                config.push(
-                    manifest
-                        .config
-                        .unwrap_or_default()
-                        .parse_config_param(&param_name, &value)?,
-                );
+            let profile_config = profile.config.as_mut().unwrap();
+            let profile_config = profile_config
+                .entry(manifest.name)
+                .or_insert_with(|| vec![]);
+
+            if let Some(param) = profile_config.clone().find_config_param(&param_name) {
+                // param already exists, remove the existing one first
+                profile_config.retain(|elem| elem != param);
             }
 
+            profile_config.push(
+                manifest
+                    .config
+                    .unwrap_or_default()
+                    .parse_config_param(&param_name, &value)?,
+            );
+
             profile.save_params()?;
+
+            crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
 
         Err(e) => {
             error!("Could not update profile state: {}", e);
         }
     }
-
-    crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
 
     Ok(())
 }

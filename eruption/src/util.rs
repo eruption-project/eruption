@@ -72,6 +72,10 @@ pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
     fs::read_to_string(p)
 }
 
+pub fn file_exists<P: AsRef<Path>>(p: P) -> bool {
+    p.as_ref().exists()
+}
+
 /// Checks whether a script file is readable
 #[allow(dead_code)]
 pub fn is_script_file_accessible(script_file: &Path) -> bool {
