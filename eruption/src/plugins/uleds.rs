@@ -23,10 +23,12 @@ use log::*;
 use mlua::prelude::*;
 use nix::fcntl::{self, OFlag};
 use nix::sys::stat::Mode;
+use nix::unistd;
 use parking_lot::RwLock;
 use std::any::Any;
 use std::ffi::CString;
 use std::os::unix::prelude::RawFd;
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::thread;
@@ -34,7 +36,7 @@ use std::thread;
 use crate::hwdevices::RGBA;
 use crate::plugins::Plugin;
 use crate::scripting::script::FRAME_GENERATION_COUNTER;
-use crate::{constants, plugins};
+use crate::{constants, plugins, util};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -81,15 +83,10 @@ impl UledsPlugin {
                 if ULEDS_FDS.read().len() > 0 {
                     loop {
                         for fd in ULEDS_FDS.read().iter() {
-                            let mut brightness: isize = 0;
+                            let mut buffer = [0u8; 4];
+                            let _result = unistd::read(*fd, &mut buffer)?;
 
-                            let _result = unsafe {
-                                libc::read(
-                                    *fd,
-                                    std::ptr::addr_of_mut!(brightness) as *mut libc::c_void,
-                                    std::mem::size_of::<isize>(),
-                                )
-                            };
+                            let brightness = i32::from_ne_bytes(buffer);
 
                             debug!("ULEDS: value read: {}", brightness);
 
@@ -128,30 +125,38 @@ impl Plugin for UledsPlugin {
     }
 
     async fn initialize(&mut self) -> plugins::Result<()> {
-        let fd = fcntl::open("/dev/uleds", OFlag::O_RDWR, Mode::from_bits(0o660).unwrap())?;
-        debug!("Successfully opened the ULEDs device");
+        let filename = PathBuf::from("/dev/uleds");
 
-        //
-        let mut dev = UledsUserDev {
-            ..Default::default()
-        };
+        if util::file_exists(&filename) {
+            let fd = fcntl::open(&filename, OFlag::O_RDWR, Mode::from_bits(0o660).unwrap())?;
+            debug!("Successfully opened the ULEDs device");
 
-        let name = CString::new("eruption::zone1")?;
-        let name = name.as_bytes_with_nul();
-        dev.name[0..name.len()]
-            .copy_from_slice(&name.iter().map(|&c| c as i8).collect::<Vec<i8>>());
+            //
+            let mut dev = UledsUserDev {
+                ..Default::default()
+            };
 
-        dev.max_brightness = 255;
+            let name = CString::new("eruption::all")?;
+            let name = name.as_bytes_with_nul();
+            dev.name[0..name.len()]
+                .copy_from_slice(&name.iter().map(|&c| c as i8).collect::<Vec<i8>>());
 
-        //
-        let bytes = unsafe { any_as_u8_slice(&dev) };
-        let _result = nix::unistd::write(fd, &bytes)?;
+            dev.max_brightness = 255;
 
-        ULEDS_FDS.write().push(fd);
+            //
+            let bytes = unsafe { any_as_u8_slice(&dev) };
+            let _result = nix::unistd::write(fd, &bytes)?;
 
-        debug!("Successfully initialized the ULEDs subsystem");
+            ULEDS_FDS.write().push(fd);
 
-        Ok(())
+            debug!("Successfully initialized the ULEDs subsystem");
+
+            Ok(())
+        } else {
+            info!("The ULEDs subsystem is not available on this kernel");
+
+            Ok(())
+        }
     }
 
     fn register_lua_funcs(&self, _lua_ctx: &Lua) -> mlua::Result<()> {
