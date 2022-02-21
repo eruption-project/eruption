@@ -162,10 +162,12 @@ pub fn init_global_runtime_state_late() -> Result<()> {
     // TODO: retain inactive device's brightness values across
     //       restarts of the Eruption daemon
 
+    let empty = Config::builder().build()?;
+
     if let Ok(device_brightness) = STATE
         .read()
         .as_ref()
-        .unwrap()
+        .unwrap_or(&empty)
         .get_table("device_brightness")
     {
         for device in &*crate::KEYBOARD_DEVICES.lock() {
