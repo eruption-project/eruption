@@ -44,11 +44,10 @@ Conflicts: eruption-roccat-vulcan-git
 Linux user-mode input and LED driver for keyboards, mice and other devices (git snapshot)
 
 %prep
-# %autosetup -n %{name}-%{version}
-%autosetup %{OrigName}-master
+%autosetup eruption-master
 
 %build
-cargo build --all --release --verbose
+cargo build --all --release --verbose --features=sourceview
 
 %install
 %{__mkdir_p} %{buildroot}%{_mandir}/man5
