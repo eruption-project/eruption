@@ -1,7 +1,7 @@
 name = "Animal"
 description = "Simulate a lifeform with organic movements"
 version = "0.0.2"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.1.20"
 tags = ['Effect', 'Vendor']
 

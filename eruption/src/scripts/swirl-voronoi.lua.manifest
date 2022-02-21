@@ -1,7 +1,7 @@
 name = "Voronoi Swirl"
 description = "Display color swirls (HSL color space)"
 version = "0.0.2"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.1.12"
 tags = ['Background', 'Vendor', 'Noise']
 

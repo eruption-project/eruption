@@ -1,7 +1,7 @@
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
 version = "0.0.8"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
 

@@ -1,7 +1,7 @@
 name = "Fireworks"
 description = "Shows a fireworks effect on the keyboard"
 version = "0.0.7"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']
 

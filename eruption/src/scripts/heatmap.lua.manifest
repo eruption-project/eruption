@@ -1,7 +1,7 @@
 name = "Heatmap"
 description = "Display a heat map of previously recorded statistics"
 version = "0.0.2"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.1.11"
 tags = ['Effect', 'Vendor']
 

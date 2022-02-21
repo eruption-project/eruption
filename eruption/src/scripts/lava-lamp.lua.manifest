@@ -1,7 +1,7 @@
 name = "Lava Lamp"
 description = "Compute a lava lamp effect"
 version = "0.0.2"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.1.19"
 tags = ['Background', 'Vendor', 'Noise']
 

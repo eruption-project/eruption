@@ -1,7 +1,7 @@
 name = "Temperature"
 description = "Make the keyboard reflect the system temperature"
 version = "0.0.4"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo']
 

@@ -1,7 +1,7 @@
 name = "Afterhue"
 description = "Show an afterglow effect with a linearly decreasing hue angle (in HSL color-space), after a key has been pressed"
 version = "0.0.6"
-author = "The Eruption development team"
+author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor', 'Demo']
 
