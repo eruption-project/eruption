@@ -20,6 +20,7 @@
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use colored::*;
+use config::Config;
 use crossbeam::channel::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -280,9 +281,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .config
         .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
 
-    let mut config = config::Config::default();
-    config
-        .merge(config::File::new(&config_file, config::FileFormat::Toml))
+    let config = Config::builder()
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .build()
         .unwrap_or_else(|e| {
             log::error!("Could not parse configuration file: {}", e);
             process::exit(4);

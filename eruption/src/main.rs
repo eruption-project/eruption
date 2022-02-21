@@ -19,6 +19,7 @@
 
 // use async_macros::join;
 use clap::{Arg, Command};
+use config::Config;
 use crossbeam::channel::{self, unbounded, Receiver, Select, Sender};
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
@@ -3066,11 +3067,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .value_of("config")
         .unwrap_or(constants::DEFAULT_CONFIG_FILE);
 
-    let mut config = config::Config::default();
-    config
-        .merge(config::File::new(config_file, config::FileFormat::Toml))
+    let config = Config::builder()
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .build()
         .unwrap_or_else(|e| {
-            error!("Could not parse configuration file: {}", e);
+            log::error!("Could not parse configuration file: {}", e);
             process::exit(4);
         });
 

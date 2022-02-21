@@ -24,6 +24,7 @@ use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, CellAlignment, ContentArrangement, Table};
+use config::Config;
 use crossbeam::channel::unbounded;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
@@ -662,9 +663,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .config
         .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
 
-    let mut config = config::Config::default();
-    config
-        .merge(config::File::new(&config_file, config::FileFormat::Toml))
+    let config = Config::builder()
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .build()
         .unwrap_or_else(|e| {
             log::error!("{}", tr!("could-not-parse-config", message = e.to_string()));
             process::exit(4);

@@ -17,6 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use config::Config;
 use gio::{prelude::*, ApplicationFlags};
 use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
@@ -542,9 +543,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             config_file.to_string()
         };
 
-        let mut config = config::Config::default();
-        config
-            .merge(config::File::new(&config_file, config::FileFormat::Toml))
+        let config = Config::builder()
+            .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+            .build()
             .unwrap_or_else(|e| {
                 log::error!("Could not parse configuration file: {}", e);
                 process::exit(4);

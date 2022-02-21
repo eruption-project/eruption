@@ -17,6 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use config::Config;
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::RwLock;
@@ -86,41 +87,20 @@ pub fn init_global_runtime_state() -> Result<()> {
     // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
-    let state = config::Config::default();
-    *STATE.write() = Some(state);
-
-    STATE
-        .write()
-        .as_mut()
-        .unwrap()
-        .set_default("active_slot", 0)
-        .unwrap();
-
-    STATE
-        .write()
-        .as_mut()
-        .unwrap()
-        .set_default("enable_sfx", false)
-        .unwrap();
-
-    STATE
-        .write()
-        .as_mut()
-        .unwrap()
-        .set_default("brightness", 85)
-        .unwrap();
-
-    STATE
-        .write()
-        .as_mut()
-        .unwrap()
-        .merge(config::File::new(
+    let state = Config::builder()
+        .add_source(config::File::new(
             state_path.to_str().unwrap(),
             config::FileFormat::Toml,
         ))
+        .set_default("active_slot", 0)?
+        .set_default("enable_sfx", false)?
+        .set_default("brightness", 85)?
+        .build()
         .map_err(|e| StateError::StateLoadError {
             description: format!("{}", e),
         })?;
+
+    *STATE.write() = Some(state);
 
     audio::ENABLE_SFX.store(
         STATE

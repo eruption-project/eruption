@@ -869,7 +869,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
         for entry in devices.iter() {
             let table = entry.clone().into_table()?;
 
-            if table["entry_type"].clone().into_str()? == "blacklist" {
+            if table["entry_type"].clone().into_string()? == "blacklist" {
                 let usb_vid = table["vendor_id"].clone().into_int()?;
                 let usb_pid = table["product_id"].clone().into_int()?;
 
@@ -877,7 +877,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
                     // specified vid/pid is blacklisted
                     return Ok(true);
                 }
-            } else if table["entry_type"].clone().into_str()? == "device" {
+            } else if table["entry_type"].clone().into_string()? == "device" {
                 /* skip device declarations */
             } else {
                 error!("Invalid 'entry_type' specified in the configuration file");
@@ -903,10 +903,10 @@ pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
         for entry in devices.iter() {
             let table = entry.clone().into_table()?;
 
-            if table["entry_type"].clone().into_str()? == "device" {
-                let class = table["device_class"].clone().into_str()?;
-                let name = table["device_name"].clone().into_str()?;
-                let device_file = PathBuf::from(&table["device_file"].clone().into_str()?);
+            if table["entry_type"].clone().into_string()? == "device" {
+                let class = table["device_class"].clone().into_string()?;
+                let name = table["device_name"].clone().into_string()?;
+                let device_file = PathBuf::from(&table["device_file"].clone().into_string()?);
 
                 let device = NonPnPDevice {
                     class,
@@ -915,7 +915,7 @@ pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
                 };
 
                 result.push(device);
-            } else if table["entry_type"].clone().into_str()? == "blacklist" {
+            } else if table["entry_type"].clone().into_string()? == "blacklist" {
                 /* skip blacklist entries */
             } else {
                 error!("Invalid 'entry_type' specified in the configuration file");

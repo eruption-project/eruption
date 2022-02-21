@@ -30,6 +30,7 @@ use crate::sensors::X11SensorData;
 
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
+use config::Config;
 use crossbeam::channel::{unbounded, Receiver, Select, Sender};
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
@@ -50,7 +51,7 @@ use regex::Regex;
 use rust_embed::RustEmbed;
 use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
-use std::{env, fmt, fs, path::PathBuf, sync::atomic::AtomicBool, sync::Arc};
+use std::{env, fmt, fs, path::PathBuf, process, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
 use syslog::Facility;
 
@@ -931,7 +932,7 @@ fn load_rules_map() -> Result<()> {
         .lock()
         .as_ref()
         .unwrap()
-        .get_str("global.default_profile")
+        .get_string("global.default_profile")
         .unwrap_or_else(|_| {
             dbus_client::get_active_profile()
                 .unwrap_or_else(|_| constants::DEFAULT_PROFILE.to_string())
@@ -1065,10 +1066,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .config
         .unwrap_or_else(|| constants::PROCESS_MONITOR_CONFIG_FILE.to_string());
 
-    let mut config = config::Config::default();
-    if let Err(e) = config.merge(config::File::new(&config_file, config::FileFormat::Toml)) {
-        warn!("Could not parse configuration file: {}", e);
-    }
+    let config = Config::builder()
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .build()
+        .unwrap_or_else(|e| {
+            log::error!("Could not parse configuration file: {}", e);
+            process::exit(4);
+        });
 
     // enable support for experimental features?
     let enable_experimental_features = config

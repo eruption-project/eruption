@@ -84,7 +84,7 @@ impl X11Sensor {
             .lock()
             .as_ref()
             .unwrap()
-            .get_str("X11.display")
+            .get_string("X11.display")
             .unwrap_or_else(|_| {
                 env::var("DISPLAY")
                     .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string())
