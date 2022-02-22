@@ -368,6 +368,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_tkl.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro_tkl.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_magma.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/corsair_strafe.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/generic_mouse.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua
