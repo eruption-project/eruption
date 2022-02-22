@@ -222,13 +222,19 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{Commit}/target/release/eruption-p
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{Commit}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
 %post
-%systemd_post %{ShortName}.service
+%systemd_post eruption.service
+%systemd_user_post eruption-audio-proxy.service
+%systemd_user_post eruption-process-monitor.service
 
 %preun
-%systemd_preun %{ShortName}.service
+%systemd_preun eruption.service
+%systemd_user_preun eruption-audio-proxy.service
+%systemd_user_preun eruption-process-monitor.service
 
 %postun
-%systemd_postun_with_restart %{ShortName}.service
+%systemd_postun_with_restart eruption.service
+%systemd_user_postun_with_restart eruption-audio-proxy.service
+%systemd_user_postun_with_restart eruption-process-monitor.service
 
 %files
 %doc %{_mandir}/man5/eruption.conf.5.gz
