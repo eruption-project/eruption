@@ -139,6 +139,8 @@ cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/animal-breathing-3.pro
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-5.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
