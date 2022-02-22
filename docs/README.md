@@ -3,6 +3,7 @@
 - [Table of Contents](#table-of-contents)
   - [Welcome to the Eruption documentation](#welcome-to-the-eruption-documentation)
     - [General Overview](#general-overview)
+    - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
     - [Network FX Protocol Specification](#network-fx-protocol-specification)
@@ -22,6 +23,12 @@ Here you find an overview of the documentation available for the Eruption projec
 General overview
 
 [DOCUMENTATION.md](DOCUMENTATION.md)
+
+### HOWTOs
+
+Usage examples and HOWTOs regarding Eruption
+
+[HOWTO.md](HOWTO.md)
 
 ### Systems Architecture
 
@@ -55,7 +62,7 @@ Developer documentation
 
 ### Installation from Source
 
-HowTo setup Eruption
+How to setup Eruption
 
 [INSTALL.md](INSTALL.md)
 
