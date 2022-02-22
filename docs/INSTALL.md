@@ -7,11 +7,7 @@
       - [On Fedora-based distros](#on-fedora-based-distros)
       - [On Debian-based distros](#on-debian-based-distros)
     - [Clone the project and build the release binaries](#clone-the-project-and-build-the-release-binaries)
-    - [Create the target directories and copy over all the required files](#create-the-target-directories-and-copy-over-all-the-required-files)
-      - [1. Create the target directories](#1-create-the-target-directories)
-      - [2. Copy over the base files](#2-copy-over-the-base-files)
-      - [3. Copy over scripts and profiles](#3-copy-over-scripts-and-profiles)
-      - [4. Copy over the binaries](#4-copy-over-the-binaries)
+    - [Install Eruption](#install-eruption)
     - [Run Eruption](#run-eruption)
 
 # How to build and install Eruption from source
@@ -19,9 +15,6 @@
 To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build
 dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.56.1`).
 You probably may want to use [https://rustup.rs/](https://rustup.rs/).
-
-The list of files and directories were taken from `support/pkg/arch/PKGBUILD`, but they should be applicable to most
-Linux based systems.
 
 ### Install build dependencies
 
@@ -52,137 +45,24 @@ sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus
 
 ```shell
 git clone https://github.com/X3n0m0rph59/eruption.git
-
 cd eruption
-cargo build --all --release
+make
 ```
 
-### Create the target directories and copy over all the required files
-
-#### 1. Create the target directories
+### Install Eruption
 
 ```shell
-sudo mkdir -p "/etc/eruption"
-sudo mkdir -p "/usr/share/doc/eruption"
-sudo mkdir -p /usr/share/eruption/scripts/{lib/{macros,themes,hwdevices/{keyboards,mice}},examples}
-
-sudo mkdir -p "/usr/share/applications"
-sudo mkdir -p "/usr/share/icons/hicolor/64x64/apps"
-sudo mkdir -p "/usr/share/eruption-gui/schemas"
-sudo mkdir -p "/var/lib/eruption/profiles"
-sudo mkdir -p "/usr/lib/systemd/system"
-sudo mkdir -p "/usr/lib/systemd/system-preset"
-sudo mkdir -p "/usr/lib/systemd/user"
-sudo mkdir -p "/usr/lib/systemd/user-preset"
-sudo mkdir -p "/usr/lib/systemd/system-sleep"
-sudo mkdir -p "/usr/lib/udev/rules.d/"
-sudo mkdir -p "/usr/share/dbus-1/system.d"
-sudo mkdir -p "/usr/share/dbus-1/session.d"
-sudo mkdir -p "/usr/share/polkit-1/actions"
-sudo mkdir -p "/usr/share/man/man8"
-sudo mkdir -p "/usr/share/man/man5"
-sudo mkdir -p "/usr/share/man/man1"
-sudo mkdir -p "/usr/share/bash-completion/completions"
-sudo mkdir -p "/usr/share/fish/completions"
-sudo mkdir -p "/usr/share/zsh/site-functions"
-sudo mkdir -p "/usr/share/eruption/i18n"
-sudo mkdir -p "/usr/share/eruption/sfx"
-```
-
-#### 2. Copy over the base files
-
-```shell
-sudo cp "support/assets/eruption-gui/eruption-gui.desktop" "/usr/share/applications/"
-sudo cp "support/assets/eruption-gui/eruption-gui.png" "/usr/share/icons/hicolor/64x64/apps/"
-sudo cp "eruption-gui/schemas/gschemas.compiled" "/usr/share/eruption-gui/schemas/"
-sudo cp "support/systemd/eruption-suspend.sh" "/usr/lib/systemd/system-sleep/eruption"
-sudo cp "support/config/eruption.conf" "/etc/eruption/"
-sudo cp "support/config/audio-proxy.conf" "/etc/eruption/"
-sudo cp "support/config/process-monitor.conf" "/etc/eruption/"
-sudo cp "support/systemd/eruption.service" "/usr/lib/systemd/system/"
-sudo cp "support/systemd/eruption.preset" "/usr/lib/systemd/system-preset/50-eruption.preset"
-sudo cp "support/systemd/eruption-audio-proxy.service" "/usr/lib/systemd/user/"
-sudo cp "support/systemd/eruption-audio-proxy.preset" "/usr/lib/systemd/user-preset/50-eruption-audio-proxy.preset"
-sudo cp "support/systemd/eruption-process-monitor.service" "/usr/lib/systemd/user/"
-sudo cp "support/systemd/eruption-process-monitor.preset" "/usr/lib/systemd/user-preset/50-eruption-process-monitor.preset"
-sudo cp "support/systemd/eruption-hotplug-helper.service" "/usr/lib/systemd/system/"
-sudo cp "support/systemd/eruption-hotplug-helper.preset" "/usr/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
-sudo cp "support/udev/99-eruption.rules" "/usr/lib/udev/rules.d/"
-sudo cp "support/dbus/org.eruption.control.conf" "/usr/share/dbus-1/system.d/"
-sudo cp "support/dbus/org.eruption.process_monitor.conf" "/usr/share/dbus-1/session.d/"
-sudo cp "support/policykit/org.eruption.policy" "/usr/share/polkit-1/actions/"
-sudo cp "support/man/eruption.8" "/usr/share/man/man8/"
-sudo cp "support/man/eruption-cmd.8" "$pkgdir/usr/share/man/man8/"
-sudo cp "support/man/eruption.conf.5" "/usr/share/man/man5/"
-sudo cp "support/man/process-monitor.conf.5" "/usr/share/man/man5/"
-sudo cp "support/man/eruptionctl.1" "/usr/share/man/man1/"
-sudo cp "support/man/eruption-hwutil.8" "/usr/share/man/man8/"
-sudo cp "support/man/eruption-netfx.1" "/usr/share/man/man1/"
-sudo cp "support/man/eruption-audio-proxy.1" "/usr/share/man/man1/"
-sudo cp "support/man/eruption-process-monitor.1" "/usr/share/man/man1/"
-
-sudo cp "support/shell/completions/en_US/eruption-cmd.bash-completion" "/usr/share/bash-completion/completions/eruption-cmd"
-sudo cp "support/shell/completions/en_US/eruption-hwutil.bash-completion" "/usr/share/bash-completion/completions/eruption-hwutil"
-sudo cp "support/shell/completions/en_US/eruption-debug-tool.bash-completion" "/usr/share/bash-completion/completions/eruption-debug-tool"
-sudo cp "support/shell/completions/en_US/eruption-netfx.bash-completion" "/usr/share/bash-completion/completions/eruption-netfx"
-sudo cp "support/shell/completions/en_US/eruption-audio-proxy.bash-completion" "/usr/share/bash-completion/completions/eruption-audio-proxy"
-sudo cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "/usr/share/bash-completion/completions/eruption-process-monitor"
-sudo cp "support/shell/completions/en_US/eruptionctl.bash-completion" "/usr/share/bash-completion/completions/eruptionctl"
-
-sudo cp "support/shell/completions/en_US/eruption-cmd.fish-completion" "/usr/share/fish/completions/eruption-cmd.fish"
-sudo cp "support/shell/completions/en_US/eruption-hwutil.fish-completion" "/usr/share/fish/completions/eruption-hwutil.fish"
-sudo cp "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "/usr/share/fish/completions/eruption-debug-tool.fish"
-sudo cp "support/shell/completions/en_US/eruption-netfx.fish-completion" "/usr/share/fish/completions/eruption-netfx.fish"
-sudo cp "support/shell/completions/en_US/eruption-audio-proxy.fish-completion" "/usr/share/fish/completions/eruption-audio-proxy.fish"
-sudo cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "/usr/share/fish/completions/eruption-process-monitor.fish"
-sudo cp "support/shell/completions/en_US/eruptionctl.fish-completion" "/usr/share/fish/completions/eruptionctl.fish"
-
-sudo cp "support/shell/completions/en_US/eruption-cmd.zsh-completion" "/usr/share/zsh/site-functions/_eruption-cmd"
-sudo cp "support/shell/completions/en_US/eruption-hwutil.zsh-completion" "/usr/share/zsh/site-functions/_eruption-hwutil"
-sudo cp "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "/usr/share/zsh/site-functions/_eruption-debug-tool"
-sudo cp "support/shell/completions/en_US/eruption-netfx.zsh-completion" "/usr/share/zsh/site-functions/_eruption-netfx"
-sudo cp "support/shell/completions/en_US/eruption-audio-proxy.zsh-completion" "/usr/share/zsh/site-functions/_eruption-audio-proxy"
-sudo cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "/usr/share/zsh/site-functions/_eruption-process-monitor"
-sudo cp "support/shell/completions/en_US/eruptionctl.zsh-completion" "/usr/share/zsh/site-functions/_eruptionctl"
-
-sudo cp "support/sfx/typewriter1.wav" "/usr/share/eruption/sfx/"
-sudo cp "support/sfx/phaser1.wav" "/usr/share/eruption/sfx/"
-sudo cp "support/sfx/phaser2.wav" "/usr/share/eruption/sfx/"
-
-# Set file modes
-sudo chmod 0755 /usr/lib/systemd/system-sleep/eruption
-
-# Create required symlinks
-sudo ln -s "phaser1.wav" "/usr/share/eruption/sfx/key-down.wav"
-sudo ln -s "phaser2.wav" "/usr/share/eruption/sfx/key-up.wav"
-```
-
-#### 3. Copy over scripts and profiles
-
-```shell
-sudo cp -r eruption/src/scripts/* /usr/share/eruption/scripts/
-sudo cp -r support/profiles/* /var/lib/eruption/profiles/
-```
-
-#### 4. Copy over the binaries
-
-```shell
-sudo cp target/release/eruption{,ctl,-cmd,-hwutil,-netfx,-debug-tool,-hotplug-helper,-gui,-audio-proxy,-process-monitor} /usr/bin/ && sudo setcap CAP_NET_ADMIN+ep /usr/bin/eruption-process-monitor
+sudo make install
 ```
 
 ### Run Eruption
-
-Notify systemd of the changes with:
-
-```shell
-sudo systemctl daemon-reload
-```
 
 To activate Eruption now, you may either hotplug a supported device, or manually start the daemons with the following
 commands:
 
 ```shell
 systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-process-monitor.service
 sudo systemctl enable --now eruption.service
 ```
 

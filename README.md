@@ -152,9 +152,14 @@ sudo systemctl enable --now eruption.service
 ```shell
 git clone https://github.com/X3n0m0rph59/eruption.git
 cd eruption
-cargo build --all --release
+make
+sudo make install
+```
 
-sudo target/release/eruption -c support/config/eruption.conf
+To remove Eruption from your system run:
+
+```shell
+sudo make uninstall
 ```
 
 Please refer to [INSTALL.md](docs/INSTALL.md) for further information, e.g. the dependencies you need to install to be
