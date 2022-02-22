@@ -5,7 +5,7 @@
 
 Name:    eruption-git
 Version: 0.1.22
-Release: 10%{?dist}
+Release: 11%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
@@ -142,8 +142,6 @@ cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/audio-visualization-3.
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/domain-coloring-5.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{OrigName}-%{Commit}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/

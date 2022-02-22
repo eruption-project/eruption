@@ -141,8 +141,6 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/audio-visualization-3.pro
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{name}-%{version}/support/profiles/domain-coloring-5.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
