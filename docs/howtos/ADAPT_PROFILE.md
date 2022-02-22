@@ -5,9 +5,8 @@
     - [Caveats](#caveats)
     - [Copying the `.profile` file to a new location](#copying-the-profile-file-to-a-new-location)
     - [Changing the UUID, Name and Description](#changing-the-uuid-name-and-description)
-    - [Changing some Parameters like e.g. colors](#changing-some-parameters-like-eg-colors)
+    - [Changing some Parameters like e.g. Colors](#changing-some-parameters-like-eg-colors)
       - [Example Colors](#example-colors)
-
 
 ## Adapting an existing Profile
 
@@ -16,7 +15,7 @@ In this HOWTO we will outline each step that is required to customize an existin
 ### Caveats
 
 Since Eruption `0.1.23` it is possible to override the values defined in a `.profile` file using a `.profile.state` file.
-This file will be created if you customize a parameter using the `Eruption GUI` or by using the `eruptionctl param` command.
+This state file will be created if you customize a parameter using the `Eruption GUI` or by using the `eruptionctl param` command.
 
 If such a file exists, all parameters will be set to the values from that `.profile.state` file. Values from the original
 `.profile` file will only be used again if you delete the `.profile.state` file.
@@ -47,7 +46,7 @@ Generate a new UUID:
 uuidgen
 ```
 
-### Changing some Parameters like e.g. colors
+### Changing some Parameters like e.g. Colors
 
 Every parameter exported by a Lua script file can be customized by a `.profile` file. Please use the following
 command to find out, what parameters each referenced Lua script exports:
@@ -68,7 +67,7 @@ B: Blue channel: 0-255, (0x00 - 0xFF)
 
 #### Example Colors
 
-Red (fully opaque): 0xFFFF0000
+Red (fully opaque): 0xFFFF0000\
 Red (semi transparent): 0x40FF0000
 
 Yellow (fully opaque): 0xFFFFFF00

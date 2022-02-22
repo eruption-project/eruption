@@ -1,7 +1,7 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Welcome to the Eruption documentation](#welcome-to-the-eruption-documentation)
+  - [Welcome to the Eruption Documentation](#welcome-to-the-eruption-documentation)
     - [General Overview](#general-overview)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
@@ -14,7 +14,7 @@
     - [Privacy Considerations](#privacy-considerations)
     - [FAQs](#faqs)
 
-## Welcome to the Eruption documentation
+## Welcome to the Eruption Documentation
 
 Here you find an overview of the documentation available for the Eruption project
 
