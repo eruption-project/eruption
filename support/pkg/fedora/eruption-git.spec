@@ -1,7 +1,7 @@
 %global OrigName eruption
 %global ShortName eruption
 
-%global Commit 2dc192b4285dcc947a9dca6922da7d0a16f19b30
+%global Commit f0480183acf87131a7b5208ea3a875d53a57529e
 
 Name:    eruption-git
 Version: 0.1.22
