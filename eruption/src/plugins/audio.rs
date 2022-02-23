@@ -759,7 +759,7 @@ mod backends {
     impl AudioBackend for ProxyBackend {
         fn play_sfx(&self, id: u32) -> Result<()> {
             if let Some(ref tx) = *SFX_TX.lock() {
-                tx.send_timeout(id, Duration::from_millis(100))?;
+                tx.send_timeout(id, Duration::from_millis(1))?;
             }
 
             Ok(())

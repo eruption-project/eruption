@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{constants, events, script, SDK_SUPPORT_ACTIVE};
+use crate::{constants, script, SDK_SUPPORT_ACTIVE};
 use lazy_static::lazy_static;
 use log::{debug, error, info, trace};
 use mlua::prelude::*;
@@ -345,17 +345,17 @@ impl Plugin for SdkSupportPlugin {
         Self::initialize_socket()?;
         Self::start_control_thread()?;
 
-        events::register_observer(|event: &events::Event| {
-            match event {
-                events::Event::KeyDown(_index) => {}
+        // events::register_observer(|event: &events::Event| {
+        //     match event {
+        //         events::Event::KeyDown(_index) => {}
 
-                events::Event::KeyUp(_index) => {}
+        //         events::Event::KeyUp(_index) => {}
 
-                _ => (),
-            };
+        //         _ => (),
+        //     };
 
-            Ok(true) // event has been processed
-        });
+        //     Ok(true) // event has been processed
+        // });
 
         Ok(())
     }
