@@ -21,7 +21,7 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 #### On Arch-based distros
 
 ```shell
-sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua51-socket gtksourceview4
+sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua53-socket gtksourceview4
 sudo pacman -Sy xorg-server-devel libxrandr gtk3
 ```
 

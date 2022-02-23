@@ -54,7 +54,7 @@ function on_startup(config)
     local status, socket = pcall(require, "socket")
     if not status then
         error(
-            "Your system is missing a required Lua library. You may want to install a package named like 'lua51-socket' or 'lua-socket-compat'")
+            "Your system is missing a required Lua library. You may want to install a package named like 'lua53-socket' or 'lua-socket-compat'")
     else
         server = socket.tcp()
 

@@ -89,7 +89,7 @@ color_map = {}
 color_map_highlight = {}
 color_map_overlay = {}
 
-max_effect_ttl = target_fps * 3
+max_effect_ttl = target_fps * 4
 effect_ttl = max_effect_ttl
 
 -- overlays
