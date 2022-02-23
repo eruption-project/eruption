@@ -225,6 +225,7 @@ Eruption currently ships with the following Lua scripts:
 | Gradient                        | Background | `gradient.lua`         | Ready  | Gradient Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                    |
 | Turbulence                      | Background | `turbulence.lua`       | Ready  | Turbulence Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                  |
 | Color Swirls (Perlin Noise)     | Background | `swirl-perlin.lua`     | Ready  | Color swirls effect, based on the Perlin Noise function that serves as input to produce a HSL color          |
+| Color Swirls (Simplex Noise)    | Background | `swirl-simplex.lua`    | Ready  | Color swirls effect, based on the Simplex Noise function that serves as input to produce a HSL color          |
 | Color Swirls (Turbulence Noise) | Background | `swirl-turbulence.lua` | Ready  | Color swirls effect, based on the Turbulence Noise function that serves as input to produce a HSL color      |
 | Color Swirls (Voronoi Noise)    | Background | `swirl-voronoi.lua`    | Ready  | Color swirls effect, based on the Voronoi Noise function that serves as input to produce a HSL color         |
 | Lava Lamp                       | Background | `lava-lamp.lua`        | Ready  | Display a lava lamp like effect                                                                              |

@@ -136,6 +136,7 @@ support/profiles/swirl-perlin-dim.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-blue-red-dim.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-rainbow-dim.profile var/lib/eruption/profiles
 support/profiles/swirl-perlin-red-yellow-dim.profile var/lib/eruption/profiles
+support/profiles/swirl-simplex-rainbow.profile var/lib/eruption/profiles
 support/profiles/swirl-turbulence.profile var/lib/eruption/profiles
 support/profiles/swirl-voronoi.profile var/lib/eruption/profiles
 
@@ -219,6 +220,8 @@ eruption/src/scripts/shockwave.lua usr/share/eruption/scripts
 eruption/src/scripts/shockwave.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/swirl-perlin.lua usr/share/eruption/scripts
 eruption/src/scripts/swirl-perlin.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/swirl-simplex.lua usr/share/eruption/scripts
+eruption/src/scripts/swirl-simplex.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/swirl-turbulence.lua usr/share/eruption/scripts
 eruption/src/scripts/swirl-turbulence.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/swirl-voronoi.lua usr/share/eruption/scripts

@@ -191,6 +191,7 @@ cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-dim.profile 
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-blue-red-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-rainbow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-perlin-red-yellow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-simplex-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/swirl-voronoi.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-%{version}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -352,6 +353,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-blue-red-dim.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-rainbow-dim.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-perlin-red-yellow-dim.profile
+%{_sharedstatedir}/%{ShortName}/profiles/swirl-simplex-rainbow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-turbulence.profile
 %{_sharedstatedir}/%{ShortName}/profiles/swirl-voronoi.profile
 %{_sharedstatedir}/%{ShortName}/profiles/turbulence.profile
@@ -475,6 +477,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/swirl-perlin.lua
 %{_datarootdir}/%{ShortName}/scripts/swirl-perlin.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/swirl-simplex.lua
+%{_datarootdir}/%{ShortName}/scripts/swirl-simplex.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/swirl-turbulence.lua
 %{_datarootdir}/%{ShortName}/scripts/swirl-turbulence.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/swirl-voronoi.lua
