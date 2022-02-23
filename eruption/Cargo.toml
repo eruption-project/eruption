@@ -77,7 +77,7 @@ simdnoise = "3.1.6"
 #mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 #luajit-src = "210.3.2+resty1085a4d"
 #mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.7.3", features = ["lua53"] }
+mlua = { version = "0.7.3", features = ["lua54"] }
 sysinfo = "0.23.2"
 procinfo = "0.4.2"
 bincode = "2.0.0-beta.3"
