@@ -13,7 +13,7 @@
 # How to build and install Eruption from source
 
 To build Eruption from source you need to have `git` and `rust` installed, and you need to install the build
-dependencies of Eruption as well. You need at least the current `stable` release of `rust` (version `1.56.1`).
+dependencies of Eruption as well. You need at least the current `stable` release of `rust` (MSRV: `1.58`).
 You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 ### Install build dependencies
@@ -21,23 +21,23 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 #### On Arch-based distros
 
 ```shell
-sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua53-socket gtksourceview4
+sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse lua lua-socket gtksourceview4
 sudo pacman -Sy xorg-server-devel libxrandr gtk3
 ```
 
 #### On Fedora-based distros
 
 ```shell
-sudo dnf install systemd dbus hidapi libevdev luajit gtksourceview4 lua-socket-compat
+sudo dnf install systemd dbus hidapi libevdev lua gtksourceview4 lua-socket-compat
 sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
-  pulseaudio-libs-devel luajit-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel
+  pulseaudio-libs-devel lua-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel
 ```
 
 #### On Debian-based distros
 
 ```shell
 sudo apt install libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev \
-  libpulse-dev luajit libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev \
+  libpulse-dev lua liblua-5.4-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev \
   libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4.0-dev
 ```
 
