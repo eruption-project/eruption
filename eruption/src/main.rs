@@ -162,6 +162,14 @@ lazy_static! {
     /// Global "driver maturity level" param
     pub static ref DRIVER_MATURITY_LEVEL: Arc<Mutex<MaturityLevel>> = Arc::new(Mutex::new(MaturityLevel::Stable));
 
+
+    /// Global "enable SDK support" flag
+    pub static ref SDK_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+    /// Global "enable Linux Userspace LEDs support" flag
+    pub static ref ULEDS_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+
     // Other state
 
     /// Global "keyboard brightness" modifier
@@ -1303,7 +1311,7 @@ async fn process_filesystem_event(
     match fsevent {
         FileSystemEvent::ProfileChanged { action: _, path: _ } => {
             events::notify_observers(events::Event::FileSystemEvent(fsevent.clone()))
-                .unwrap_or_else(|e| error!("{}", e));
+                .unwrap_or_else(|e| error!("Error during notification of observers: {}", e));
 
             dbus_api_tx
                 .send(DbusApiEvent::ProfilesChanged)
@@ -1408,8 +1416,14 @@ async fn process_keyboard_hid_events(
             Ok(result) if result != KeyboardHidEvent::Unknown => {
                 event_processed = true;
 
-                events::notify_observers(events::Event::KeyboardHidEvent(result))
-                    .unwrap_or_else(|e| error!("{}", e));
+                events::notify_observers(events::Event::KeyboardHidEvent(result)).unwrap_or_else(
+                    |e| {
+                        error!(
+                            "Error during notification of observers [keyboard_hid_event]: {}",
+                            e
+                        )
+                    },
+                );
 
                 *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() =
                     LUA_TXS.lock().len() - failed_txs.len();
@@ -1492,8 +1506,9 @@ async fn process_keyboard_hid_events(
                             // update AFK timer
                             *crate::LAST_INPUT_TIME.lock() = Instant::now();
 
-                            events::notify_observers(events::Event::KeyDown(index))
-                                .unwrap_or_else(|e| error!("{}", e));
+                            events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(
+                                |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),
+                            );
                         }
                     }
 
@@ -1541,8 +1556,9 @@ async fn process_keyboard_hid_events(
                             // update AFK timer
                             *crate::LAST_INPUT_TIME.lock() = Instant::now();
 
-                            events::notify_observers(events::Event::KeyUp(index))
-                                .unwrap_or_else(|e| error!("{}", e));
+                            events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(
+                                |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),
+                            );
                         }
                     }
 
@@ -1582,8 +1598,14 @@ async fn process_mouse_hid_events(
             Ok(result) if result != MouseHidEvent::Unknown => {
                 event_processed = true;
 
-                events::notify_observers(events::Event::MouseHidEvent(result))
-                    .unwrap_or_else(|e| error!("{}", e));
+                events::notify_observers(events::Event::MouseHidEvent(result)).unwrap_or_else(
+                    |e| {
+                        error!(
+                            "Error during notification of observers [mouse_hid_event]: {}",
+                            e
+                        )
+                    },
+                );
 
                 *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() =
                     LUA_TXS.lock().len() - failed_txs.len();
@@ -1739,7 +1761,12 @@ async fn process_mouse_event(
                 }
 
                 events::notify_observers(events::Event::MouseMove(direction, raw_event.value))
-                    .unwrap_or_else(|e| error!("{}", e));
+                    .unwrap_or_else(|e| {
+                        error!(
+                            "Error during notification of observers [mouse_event]: {}",
+                            e
+                        )
+                    });
             }
 
             evdev_rs::enums::EV_REL::REL_WHEEL
@@ -1802,8 +1829,14 @@ async fn process_mouse_event(
                     }
                 }
 
-                events::notify_observers(events::Event::MouseWheelEvent(direction))
-                    .unwrap_or_else(|e| error!("{}", e));
+                events::notify_observers(events::Event::MouseWheelEvent(direction)).unwrap_or_else(
+                    |e| {
+                        error!(
+                            "Error during notification of observers [mouse_event]: {}",
+                            e
+                        )
+                    },
+                );
             }
 
             _ => (), // ignore other events
@@ -1849,8 +1882,12 @@ async fn process_mouse_event(
                 }
             }
 
-            events::notify_observers(events::Event::MouseButtonDown(index))
-                .unwrap_or_else(|e| error!("{}", e));
+            events::notify_observers(events::Event::MouseButtonDown(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [mouse_event]: {}",
+                    e
+                )
+            });
         } else {
             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
@@ -1885,8 +1922,12 @@ async fn process_mouse_event(
                 }
             }
 
-            events::notify_observers(events::Event::MouseButtonUp(index))
-                .unwrap_or_else(|e| error!("{}", e));
+            events::notify_observers(events::Event::MouseButtonUp(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [mouse_event]: {}",
+                    e
+                )
+            });
         }
     }
 
@@ -1900,7 +1941,12 @@ async fn process_mouse_event(
             .as_ref()
             .unwrap()
             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
-            .unwrap_or_else(|e| error!("Could not send a pending mouse event: {}", e));
+            .unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [mouse_event]: {}",
+                    e
+                )
+            });
     }
 
     Ok(())
@@ -1963,7 +2009,7 @@ async fn process_mouse_event(
 //                             }
 
 //                             events::notify_observers(events::Event::MouseButtonDown(index))
-//                                 .unwrap_or_else(|e| error!("{}", e));
+//                                 .unwrap_or_else(|e| error!("Error during notification of observers: {}", e));
 //                         } else {
 //                             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
 //                                 LUA_TXS.lock().len() - failed_txs.len();
@@ -2002,7 +2048,7 @@ async fn process_mouse_event(
 //                             }
 
 //                             events::notify_observers(events::Event::MouseButtonUp(index))
-//                                 .unwrap_or_else(|e| error!("{}", e));
+//                                 .unwrap_or_else(|e| error!("Error during notification of observers: {}", e));
 //                         }
 //                     }
 
@@ -2077,8 +2123,12 @@ async fn process_keyboard_event(
                 }
             }
 
-            events::notify_observers(events::Event::KeyDown(index))
-                .unwrap_or_else(|e| error!("{}", e));
+            events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [keyboard_event]: {}",
+                    e
+                )
+            });
         } else {
             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.lock().len() - failed_txs.len();
 
@@ -2115,8 +2165,12 @@ async fn process_keyboard_event(
                 }
             }
 
-            events::notify_observers(events::Event::KeyUp(index))
-                .unwrap_or_else(|e| error!("{}", e));
+            events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [keyboard_event]: {}",
+                    e
+                )
+            });
         }
     }
 
@@ -2612,7 +2666,7 @@ async fn run_main_loop(
                     }
                 }
 
-                {
+                if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                     // blend the LED map of the Userspace LEDs support plugin
                     let uleds_led_map = uleds::LED_MAP.read();
                     let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
@@ -2633,7 +2687,7 @@ async fn run_main_loop(
                     }
                 }
 
-                {
+                if SDK_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                     // finally, blend the LED map of the SDK support plugin
                     let sdk_led_map = sdk_support::LED_MAP.read();
                     let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);

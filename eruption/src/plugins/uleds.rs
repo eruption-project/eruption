@@ -36,7 +36,7 @@ use std::thread;
 use crate::hwdevices::RGBA;
 use crate::plugins::Plugin;
 use crate::scripting::script::FRAME_GENERATION_COUNTER;
-use crate::{constants, plugins, util};
+use crate::{constants, plugins, util, ULEDS_SUPPORT_ACTIVE};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -81,6 +81,8 @@ impl UledsPlugin {
                 // Self::initialize_thread_locals()?;
 
                 if ULEDS_FDS.read().len() > 0 {
+                    ULEDS_SUPPORT_ACTIVE.store(true, Ordering::SeqCst);
+
                     loop {
                         for fd in ULEDS_FDS.read().iter() {
                             let mut buffer = [0u8; 4];

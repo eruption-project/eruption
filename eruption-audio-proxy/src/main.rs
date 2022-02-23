@@ -473,11 +473,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                         }
                     }
 
-                    if RECORDING.load(Ordering::SeqCst) {
-                        thread::sleep(Duration::from_millis(1));
-                    } else {
-                        thread::sleep(Duration::from_millis(25));
-                    }
+                    thread::sleep(Duration::from_millis(15));
                 }
             }
 

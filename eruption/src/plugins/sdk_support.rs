@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{constants, events, script};
+use crate::{constants, events, script, SDK_SUPPORT_ACTIVE};
 use lazy_static::lazy_static;
 use log::{debug, error, info, trace};
 use mlua::prelude::*;
@@ -256,6 +256,9 @@ impl SdkSupportPlugin {
 
                                                     LED_MAP.write().copy_from_slice(&led_map);
 
+                                                    SDK_SUPPORT_ACTIVE
+                                                        .store(true, Ordering::SeqCst);
+
                                                     script::FRAME_GENERATION_COUNTER
                                                         .fetch_add(1, Ordering::SeqCst);
 
@@ -306,13 +309,11 @@ impl SdkSupportPlugin {
                                 }
                             }
 
-                            /* if AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst) {
+                            if SDK_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                                 thread::sleep(Duration::from_millis(1));
                             } else {
-                                thread::sleep(Duration::from_millis(25));
-                            } */
-
-                            thread::sleep(Duration::from_millis(25));
+                                thread::sleep(Duration::from_millis(15));
+                            }
                         }
                     }
 

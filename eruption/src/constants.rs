@@ -83,7 +83,7 @@ pub const CANVAS_HEIGHT: usize = 6;
 pub const NET_BUFFER_CAPACITY: usize = 4096;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 25;
 
 /// Max number of events that will be processed in each iteration of the main loop
 pub const MAX_EVENTS_PER_ITERATION: u64 = 128;

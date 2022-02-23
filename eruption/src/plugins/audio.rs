@@ -737,7 +737,7 @@ mod backends {
                                 if AUDIO_GRABBER_RECORDING.load(Ordering::SeqCst) {
                                     thread::sleep(Duration::from_millis(1));
                                 } else {
-                                    thread::sleep(Duration::from_millis(25));
+                                    thread::sleep(Duration::from_millis(15));
                                 }
                             }
                         }
