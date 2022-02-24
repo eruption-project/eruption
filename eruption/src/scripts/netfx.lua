@@ -62,7 +62,7 @@ function on_startup(config)
         server:setoption("reuseaddr", true)
         -- server:setoption("reuseport", true)
 
-        local status, msg = server:bind(bind_address, port)
+        local status, msg = server:bind(bind_address, port, 1)
         if status == nil then
             error(
                 "Network FX: Could not bind socket to the specified address: " ..
@@ -114,7 +114,7 @@ function on_tick(delta)
             local data, status
 
             repeat
-                data, status = conn:receive()
+                data, status = conn:receive("*l")
 
                 if data ~= nil then
                     trace("Network FX: Request: " .. data)
