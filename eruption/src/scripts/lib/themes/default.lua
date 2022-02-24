@@ -40,4 +40,4 @@ COLOR_ACTIVE_EASY_SHIFT_LAYER = rgb_to_color(128, 128, 255)
 -- indicators
 COLOR_MUTE_AUDIO_MUTED = rgba_to_color(255, 0, 0, 255)
 COLOR_MUTE_AUDIO_UNMUTED = rgba_to_color(0, 0, 0, 0)
-COLOR_MUTE_AUDIO_OVERLAY = rgba_to_color(0, 0, 0, 255)
+COLOR_MUTE_AUDIO_OVERLAY = rgba_to_color(32, 32, 32, 32)

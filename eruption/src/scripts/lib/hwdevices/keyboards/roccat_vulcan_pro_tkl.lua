@@ -15,7 +15,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- global config
 ENABLE_FUNCTION_KEYS = false -- ROCCAT Vulcan TKL variant does not have special function keys
 ENABLE_MEDIA_KEYS = true
@@ -114,6 +113,19 @@ function device_specific_key_highlights_indicators()
         color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
     end
 
+    -- Easy Shift+ overlay
+    if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled then
+        if audio_muted then
+            color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+            color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+            color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+        else
+            color_map_highlight[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+            color_map_overlay[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+            color_map[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+        end
+    end
+
     -- FN overlay active
     if MODIFIER_KEY == FN and modifier_map[MODIFIER_KEY] or overlay_state ~=
         NO_OVERLAY then
@@ -122,9 +134,9 @@ function device_specific_key_highlights_indicators()
             color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
             color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
         else
-            color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
-            color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
-            color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_OVERLAY
+            color_map_highlight[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+            color_map_overlay[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+            color_map[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
         end
     end
 end

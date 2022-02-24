@@ -152,7 +152,14 @@ function on_hid_event(event_type, arg1)
         -- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
         modifier_map[CAPS_LOCK] = is_pressed
 
-        debug("Macros: Easy Shift+ key event registered")
+        if ENABLE_EASY_SHIFT and game_mode_enabled then
+            debug("Macros: Easy Shift+ key event registered")
+
+            -- forcefully disable other overlays
+            overlay_ttl = 0
+        else
+            debug("Macros: CAPS LOCK key event registered")
+        end
     elseif key_code == GAME_MODE_KEY then
         -- "SCROLL LOCK/GAME MODE" key event
         local fn_pressed = modifier_map[FN]
@@ -259,7 +266,6 @@ function on_hid_event(event_type, arg1)
             end
 
             saved_audio_muted = audio_muted
-            effect_ttl = max_effect_ttl
         end
     elseif event_type == 4 then
         -- Volume dial knob rotation
@@ -465,18 +471,23 @@ function on_key_down(key_index)
     end
 
     -- switch Easy Shift+ layers via Caps Lock + macro keys
-    if modifier_map[CAPS_LOCK] and key_index == key_name_to_index("INSERT") then
-        do_switch_easy_shift_layer(0)
-    elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("POS1") then
-        do_switch_easy_shift_layer(1)
-    elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("PGUP") then
-        do_switch_easy_shift_layer(2)
-    elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("DEL") then
-        do_switch_easy_shift_layer(3)
-    elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("END") then
-        do_switch_easy_shift_layer(4)
-    elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("PGDWN") then
-        do_switch_easy_shift_layer(5)
+    if ENABLE_EASY_SHIFT and game_mode_enabled then
+        if modifier_map[CAPS_LOCK] and key_index == key_name_to_index("INSERT") then
+            do_switch_easy_shift_layer(0)
+        elseif modifier_map[CAPS_LOCK] and key_index ==
+            key_name_to_index("POS1") then
+            do_switch_easy_shift_layer(1)
+        elseif modifier_map[CAPS_LOCK] and key_index ==
+            key_name_to_index("PGUP") then
+            do_switch_easy_shift_layer(2)
+        elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("DEL") then
+            do_switch_easy_shift_layer(3)
+        elseif modifier_map[CAPS_LOCK] and key_index == key_name_to_index("END") then
+            do_switch_easy_shift_layer(4)
+        elseif modifier_map[CAPS_LOCK] and key_index ==
+            key_name_to_index("PGDWN") then
+            do_switch_easy_shift_layer(5)
+        end
     end
 
     simple_remapping(key_index, true)
@@ -603,7 +614,7 @@ end
 
 -- perform a simple remapping
 function simple_remapping(key_index, down)
-    if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
+    if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled then
         code = EASY_SHIFT_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][key_index]
         if code ~= nil then inject_key(code, down) end
     else
@@ -614,7 +625,7 @@ end
 
 -- perform a simple remapping (for mouse events)
 function simple_mouse_remapping(button_index, down)
-    if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT then
+    if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled then
         code =
             EASY_SHIFT_MOUSE_HID_REMAPPING_TABLE[ACTIVE_EASY_SHIFT_LAYER][button_index]
         if code ~= nil then inject_mouse_button(code, down) end
@@ -675,20 +686,22 @@ function on_tick(delta)
     ticks = ticks + delta
 
     -- audio muted state changed?
-    if ticks % (target_fps * 1) == 0 then
-        local audio_muted = is_audio_muted()
-        store_bool_transient("global.audio_muted", audio_muted)
+    local force_update = false
 
-        if saved_audio_muted ~= audio_muted then
-            if audio_muted then
-                debug("Audio muted")
-            else
-                debug("Audio unmuted")
-            end
+    local audio_muted = is_audio_muted()
+    store_bool_transient("global.audio_muted", audio_muted)
 
-            saved_audio_muted = audio_muted
-            effect_ttl = max_effect_ttl
+    if saved_audio_muted ~= audio_muted then
+        if audio_muted then
+            debug("Audio muted")
+        else
+            debug("Audio unmuted")
         end
+
+        saved_audio_muted = audio_muted
+        effect_ttl = max_effect_ttl
+
+        force_update = true
     end
 
     update_overlay_state()
@@ -699,7 +712,9 @@ function on_tick(delta)
     end
 
     -- show key highlight effect or the active overlay
-    if ticks % animation_delay == 0 then
+    if ticks % animation_delay == 0 or force_update then
+        force_update = false
+
         for i = 1, num_keys do
             -- key highlight effect
             if highlight_ttl > 0 then
