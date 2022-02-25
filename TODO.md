@@ -3,7 +3,7 @@
 ## Preliminary Roadmap
 
 * Widen the scope of the project: Add support for more hardware devices
-  Please find the list of most requested hardware here: https://github.com/X3n0m0rph59/eruption/issues
+  Please find the list of most requested hardware here: <https://github.com/X3n0m0rph59/eruption/issues>
 
 ## Planned Features
 
