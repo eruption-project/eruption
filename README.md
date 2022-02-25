@@ -1,4 +1,5 @@
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
+![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
 
 # Table of Contents
 
