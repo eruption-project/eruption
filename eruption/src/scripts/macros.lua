@@ -108,6 +108,7 @@ highlight_max_ttl = 255
 modifier_map = {} -- holds the state of modifier keys
 game_mode_enabled = load_bool_transient("global.game_mode_enabled", false) -- keyboard can be in "game mode" or in "normal mode";
 saved_audio_muted = is_audio_muted()
+force_update = false -- force a call to submit_color_map(...) during the current frame
 
 -- utility functions --
 function consume_key() inject_key(0, false) end
@@ -266,6 +267,9 @@ function on_hid_event(event_type, arg1)
             end
 
             saved_audio_muted = audio_muted
+            effect_ttl = max_effect_ttl
+
+            force_update = true
         end
     elseif event_type == 4 then
         -- Volume dial knob rotation
@@ -686,8 +690,6 @@ function on_tick(delta)
     ticks = ticks + delta
 
     -- audio muted state changed?
-    local force_update = false
-
     local audio_muted = is_audio_muted()
     store_bool_transient("global.audio_muted", audio_muted)
 
