@@ -26,7 +26,7 @@ use i18n_embed::{
 };
 use jwalk::WalkDir;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::{cmp::Ordering, env, thread};
 use std::{path::PathBuf, sync::Arc};
@@ -35,10 +35,10 @@ use tokio::io::{AsyncReadExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::time::Duration;
 
+mod backends;
 mod constants;
 mod hwdevices;
 mod utils;
-mod xwrap;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
@@ -47,6 +47,8 @@ struct Localizations;
 lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+
+    pub static ref OPTIONS: Arc<RwLock<Option<Options>>> = Arc::new(RwLock::new(None));
 }
 
 #[allow(unused)]
@@ -75,7 +77,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -97,7 +99,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum Subcommands {
     /// Ping the server
     Ping,
@@ -175,6 +177,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     let opts = Options::parse();
+    *crate::OPTIONS.write() = Some(opts.clone());
+
     match opts.command {
         Subcommands::Ping => {
             let address = format!(
@@ -426,8 +430,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Ambient { frame_delay } => {
-            let device = hwdevices::get_keyboard_device(&opts.model)?;
-
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -440,23 +442,17 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let socket = TcpStream::connect(address).await?;
             let mut buf_reader = BufReader::new(socket);
 
-            let display = xwrap::Display::open(None).unwrap();
-            let window = display.get_default_root();
-            let window_rect = display.get_window_rect(window);
-            let sel = xwrap::Rect {
-                x: 0,
-                y: 0,
-                w: window_rect.w,
-                h: window_rect.h,
-            };
+            // register all available screenshot backends
+            backends::register_backends()?;
+
+            // instantiate the best fitting backend for the current system configuration
+            let mut backend = backends::get_best_fitting_backend()?;
 
             loop {
-                let image = display
-                    .get_image(window, sel, xwrap::ALL_PLANES, x11::xlib::ZPixmap)
-                    .unwrap();
-                let commands = utils::process_screenshot(&image, &device)?;
+                // request a screenshot encoded as Network FX protocol commands from the backend
+                let commands = backend.poll()?;
 
-                // print and send the specified commands
+                // print and send the commands
                 if opts.verbose > 0 {
                     println!("{}", tr!("sending-data"));
                 }

@@ -25,12 +25,12 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum UtilError {
-    #[cfg(feature = "procmon")]
+    #[cfg(feature = "sensor-procmon")]
     #[error("Operation failed")]
     OpFailed {},
 }
 
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 pub fn get_process_comm(pid: i32) -> Result<String> {
     Ok(
         std::fs::read_to_string(Path::new(&format!("/proc/{}/comm", pid)))?
@@ -39,7 +39,7 @@ pub fn get_process_comm(pid: i32) -> Result<String> {
     )
 }
 
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 pub fn get_process_file_name(pid: i32) -> Result<String> {
     let tmp = format!("/proc/{}/exe", pid);
     let filename = Path::new(&tmp);

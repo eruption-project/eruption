@@ -19,6 +19,7 @@
 
 use super::Keyboard;
 
+#[derive(Debug, Clone)]
 pub struct RoccatVulcanPro {}
 
 impl RoccatVulcanPro {

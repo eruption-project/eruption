@@ -19,13 +19,13 @@
 
 use crate::dbus_client::Message;
 
-#[cfg(feature = "mutter")]
+#[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
 
-#[cfg(feature = "wayland")]
+#[cfg(feature = "sensor-wayland")]
 use crate::sensors::WaylandSensorData;
 
-#[cfg(feature = "x11")]
+#[cfg(feature = "sensor-x11")]
 use crate::sensors::X11SensorData;
 
 use clap::{IntoApp, Parser};
@@ -59,7 +59,7 @@ mod constants;
 mod dbus_client;
 mod dbus_interface;
 
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 mod procmon;
 mod sensors;
 mod util;
@@ -241,7 +241,7 @@ impl fmt::Display for RuleMetadata {
     }
 }
 
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 #[derive(Debug, Clone)]
 pub enum SystemEvent {
     ProcessExec {
@@ -396,7 +396,7 @@ async fn process_action(action: &Action) -> Result<()> {
 }
 
 /// Process system related events
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 async fn process_system_event(event: &SystemEvent) -> Result<()> {
     match event {
         SystemEvent::ProcessExec {
@@ -560,6 +560,7 @@ async fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
                                 break;
                             }
                         }
+
                         WindowFocusedSelectorMode::WindowClass => {
                             if re.is_match(event.window_class().unwrap_or_default()) {
                                 process_action(action).await?;
@@ -789,7 +790,7 @@ mod thread_util {
 }
 
 pub async fn run_main_loop(
-    #[cfg(feature = "procmon")] sysevents_rx: &Receiver<SystemEvent>,
+    #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
     ctrl_c_rx: &Receiver<bool>,
@@ -803,7 +804,7 @@ pub async fn run_main_loop(
     let fsevents = sel.recv(fsevents_rx);
     let dbusevents = sel.recv(dbusevents_rx);
 
-    #[cfg(feature = "procmon")]
+    #[cfg(feature = "sensor-procmon")]
     let sysevents = sel.recv(sysevents_rx);
 
     'MAIN_LOOP: loop {
@@ -843,7 +844,7 @@ pub async fn run_main_loop(
                     }
                 }
 
-                #[cfg(feature = "procmon")]
+                #[cfg(feature = "sensor-procmon")]
                 i if i == sysevents => {
                     let event = &oper.recv(sysevents_rx);
                     if let Ok(event) = event {
@@ -867,28 +868,30 @@ pub async fn run_main_loop(
                 match sensor.poll().await {
                     #[allow(unused_variables)]
                     Ok(data) => {
+                        // debug!("Sensor data: {}", data);
+
                         #[allow(unused_mut)]
                         let mut handled = false;
 
-                        #[cfg(feature = "x11")]
-                        if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
-                            process_window_event(data).await?;
-
-                            X11_POLL_SUCCEEDED.store(true, Ordering::SeqCst);
-
-                            handled = true;
-                        }
-
-                        #[cfg(feature = "mutter")]
+                        #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
                             process_window_event(data).await?;
 
                             handled = true;
                         }
 
-                        #[cfg(feature = "wayland")]
+                        #[cfg(feature = "sensor-wayland")]
                         if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
                             process_window_event(data).await?;
+
+                            handled = true;
+                        }
+
+                        #[cfg(feature = "sensor-x11")]
+                        if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
+                            process_window_event(data).await?;
+
+                            X11_POLL_SUCCEEDED.store(true, Ordering::SeqCst);
 
                             handled = true;
                         }
@@ -902,7 +905,7 @@ pub async fn run_main_loop(
                     }
 
                     Err(e) => {
-                        error!("Could not poll a sensor: {}", e);
+                        error!("Could not poll sensor '{}': {}", sensor.get_id(), e);
 
                         // sensor.set_failed(true);
                     }
@@ -1118,10 +1121,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             register_filesystem_watcher(fsevents_tx, rules_file)?;
 
             // configure plugins
-            #[cfg(feature = "procmon")]
+            #[cfg(feature = "sensor-procmon")]
             let (sysevents_tx, sysevents_rx) = unbounded();
 
-            #[cfg(feature = "procmon")]
+            #[cfg(feature = "sensor-procmon")]
             if let Some(mut s) = sensors::find_sensor_by_id("process") {
                 let process_sensor = s
                     .as_any_mut()
@@ -1137,7 +1140,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             // enter the main loop
             run_main_loop(
-                #[cfg(feature = "procmon")]
+                #[cfg(feature = "sensor-procmon")]
                 &sysevents_rx,
                 &fsevents_rx,
                 &dbusevents_rx,

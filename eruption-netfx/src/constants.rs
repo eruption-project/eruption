@@ -17,6 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+#![allow(dead_code)]
+
 /// Default host name
 pub const DEFAULT_HOST: &str = "localhost";
 
@@ -28,3 +30,6 @@ pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
 
 /// Default delay between screenshots, used for ambient mode
 pub const DEFAULT_FRAME_DELAY_MILLIS: u64 = 37;
+
+/// Timeout value to use for D-Bus connections
+pub const DBUS_TIMEOUT_MILLIS: u32 = 250;

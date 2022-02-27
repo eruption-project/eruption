@@ -17,6 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use dyn_clonable::clonable;
+
 mod generic_keyboard;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
@@ -35,7 +37,8 @@ pub enum HwDevicesError {
     InvalidHexFormat,
 }
 
-pub trait Keyboard {
+#[clonable]
+pub trait Keyboard: Clone {
     fn get_num_keys(&self) -> usize;
 
     fn get_num_rows(&self) -> usize;

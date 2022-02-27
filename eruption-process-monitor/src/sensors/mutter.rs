@@ -57,20 +57,24 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 /// JavaScript code that fetches the properties of the top-level window from mutter
 const MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT: &str = r#"let w = global
                                                         .get_window_actors()
-                                                        .map(a=>a.meta_window)
-                                                        .find(w=>w.has_focus());
+                                                        .map(a => a.meta_window)
+                                                        .find(w => w.has_focus());
 
-                                                        Object({
+                                                        print(w);
+
+                                                        return Object({
+                                                            pid: w.get_pid(),
                                                             window_title: w.get_title(),
                                                             window_instance: w.get_wm_class_instance(),
                                                             window_class: w.get_wm_class()
-                                                        })"#;
+                                                        });"#;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct MutterSensorData {
     pub window_title: String,
     pub window_instance: String,
     pub window_class: String,
+    pub pid: i32,
 }
 
 impl super::SensorData for MutterSensorData {

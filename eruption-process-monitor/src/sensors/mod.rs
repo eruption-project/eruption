@@ -25,22 +25,22 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
 
-#[cfg(feature = "mutter")]
+#[cfg(feature = "sensor-mutter")]
 mod mutter;
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 mod process;
-#[cfg(feature = "wayland")]
+#[cfg(feature = "sensor-wayland")]
 mod wayland;
 
-#[cfg(feature = "x11")]
+#[cfg(feature = "sensor-x11")]
 mod x11;
-#[cfg(feature = "mutter")]
+#[cfg(feature = "sensor-mutter")]
 pub use mutter::*;
-#[cfg(feature = "procmon")]
+#[cfg(feature = "sensor-procmon")]
 pub use process::*;
-#[cfg(feature = "wayland")]
+#[cfg(feature = "sensor-wayland")]
 pub use wayland::*;
-#[cfg(feature = "x11")]
+#[cfg(feature = "sensor-x11")]
 pub use x11::*;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -103,6 +103,7 @@ pub trait WindowSensorData: SensorData {
 }
 
 /// Register a sensor
+#[allow(dead_code)]
 pub fn register_sensor<S>(sensor: S)
 where
     S: Sensor + Clone + Send + Sync + 'static,
@@ -116,17 +117,17 @@ where
 pub fn register_sensors() -> Result<()> {
     info!("Registering sensor plugins:");
 
-    #[cfg(feature = "procmon")]
+    #[cfg(feature = "sensor-procmon")]
     register_sensor(ProcessSensor::new());
 
-    #[cfg(feature = "x11")]
-    register_sensor(X11Sensor::new());
-
-    #[cfg(feature = "mutter")]
+    #[cfg(feature = "sensor-mutter")]
     register_sensor(MutterSensor::new());
 
-    #[cfg(feature = "wayland")]
+    #[cfg(feature = "sensor-wayland")]
     register_sensor(WaylandSensor::new());
+
+    #[cfg(feature = "sensor-x11")]
+    register_sensor(X11Sensor::new());
 
     // initialize all registered sensors
     for s in SENSORS.lock().iter_mut() {
