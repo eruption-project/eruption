@@ -124,6 +124,11 @@ usage. Both of these session daemons run as the respective logged-in user.
 
 ```shell
 paru -Syu aur/eruption
+
+systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-process-monitor.service
+
+sudo systemctl enable --now eruption.service
 ```
 
 ### Fedora based
@@ -131,6 +136,11 @@ paru -Syu aur/eruption
 ```shell
 sudo dnf copr enable x3n0m0rph59/eruption
 sudo dnf install eruption
+
+systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-process-monitor.service
+
+sudo systemctl enable --now eruption.service
 ```
 
 ### Ubuntu or Pop!_OS
@@ -139,12 +149,10 @@ sudo dnf install eruption
 sudo add-apt-repository ppa:x3n0m0rph59/eruption
 sudo apt update
 sudo apt install eruption
-```
 
-To activate Eruption now, you may either hotplug a supported device, or manually start
-the daemon with the command:
+systemctl --user enable --now eruption-audio-proxy.service
+systemctl --user enable --now eruption-process-monitor.service
 
-```shell
 sudo systemctl enable --now eruption.service
 ```
 
@@ -155,11 +163,13 @@ git clone https://github.com/X3n0m0rph59/eruption.git
 cd eruption
 make
 sudo make install
+make start
 ```
 
 To remove Eruption from your system run:
 
 ```shell
+make stop
 sudo make uninstall
 ```
 

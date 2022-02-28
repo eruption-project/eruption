@@ -57,13 +57,10 @@ sudo make install
 
 ### Run Eruption
 
-To activate Eruption now, you may either hotplug a supported device, or manually start the daemons with the following
-commands:
+To activate Eruption now, manually start the daemons with the following command:
 
 ```shell
-systemctl --user enable --now eruption-audio-proxy.service
-systemctl --user enable --now eruption-process-monitor.service
-sudo systemctl enable --now eruption.service
+make start
 ```
 
 Finally, if you want to use one of the audio visualizer profiles, then please select an audio device monitor e.g.
