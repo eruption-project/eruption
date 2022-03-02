@@ -2,6 +2,7 @@
 
 - [Table of Contents](#table-of-contents)
   - [Welcome to the Eruption Documentation](#welcome-to-the-eruption-documentation)
+    - [Features Overview (a.k.a The Eruption Handbook)](#features-overview-aka-the-eruption-handbook)
     - [General Overview](#general-overview)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
@@ -17,6 +18,13 @@
 ## Welcome to the Eruption Documentation
 
 Here you find an overview of the documentation available for the Eruption project
+
+### Features Overview (a.k.a The Eruption Handbook)
+
+A general overview over the features of Eruption and how to use them.
+Read this first to get a quick introduction!
+
+[FEATURES.md](FEATURES.md)
 
 ### General Overview
 

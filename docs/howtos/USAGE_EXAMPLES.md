@@ -9,6 +9,12 @@
 eruptionctl switch profile /var/lib/eruption/profiles/swirl-perlin-rainbow.profile
 ```
 
+Short form:
+
+```sh
+eruptionctl switch profile swirl-perlin-rainbow.profile
+```
+
 ```sh
 eruptionctl switch slot 4
 ```

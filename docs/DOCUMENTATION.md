@@ -1,7 +1,6 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Features](#features)
   - [Experimental Features](#experimental-features)
   - [Configuration and Usage](#configuration-and-usage)
     - [Eruption configuration file](#eruption-configuration-file)
@@ -18,19 +17,6 @@
   - [Further Reading](#further-reading)
   - [Process Monitor](#process-monitor)
   - [Contributing](#contributing)
-
-## Features
-
-Overview:
-
-- Integrated Lua interpreter
-- LED Control via Lua scripts
-- Multiple Lua scripts may be executed in parallel, with their outputs combined
-- Allows for construction of complex "effect pipelines"
-- Event-based architecture
-- Daemon plugins may export functions to Lua
-- Profiles may be switched at runtime via a D-Bus method
-- A GNOME based profile switcher extension is available
 
 ## Experimental Features
 

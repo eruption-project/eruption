@@ -12,6 +12,8 @@ Below you find a list of the most frequently asked questions and their respectiv
 
 ### Q: I have a problem with getting Eruption to build from source. How to correctly build the project?
 
+Please ensure that you are using the latest versions of Rust.
+
 MSRV (Minimum supported Rust version) `Rust 1.58`
 
 ### Q: What can I do to help getting new hardware supported

@@ -25,6 +25,8 @@
     - [Examples](#examples)
     - [Removing a rule](#removing-a-rule)
   - [Further Reading](#further-reading)
+    - [Features Overview (a.k.a The Eruption Handbook)](#features-overview-aka-the-eruption-handbook)
+    - [Other Documentation](#other-documentation)
   - [HOWTOs](#howtos)
   - [FAQs](#faqs)
   - [Contributing](#contributing)
@@ -270,6 +272,14 @@ eruption-process-monitor rules remove 1
 ---
 
 ## Further Reading
+
+### Features Overview (a.k.a The Eruption Handbook)
+
+A general overview over the features of Eruption and how to use them
+
+[FEATURES.md](docs/FEATURES.md)
+
+### Other Documentation
 
 Please see [DOCUMENTATION.md](docs/DOCUMENTATION.md) for a more thorough explanation of what Eruption is, and how to use
 and customize it properly.
