@@ -18,6 +18,7 @@
 */
 
 use crate::canvas::Canvas;
+use crate::hardware::HotplugInfo;
 use crate::transport::{ServerStatus, Transport};
 use crate::{util, Result};
 use eyre::eyre;
@@ -114,6 +115,44 @@ impl Transport for LocalTransport {
             .iter()
             .flat_map(|c| vec![c.r(), c.g(), c.b(), c.a()])
             .collect();
+
+        request.payload = Some(RequestPayload::Data(bytes));
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.lock();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let _result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+
+                        Ok(())
+                    }
+
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
+
+    fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
+        let mut request = protocol::Request::default();
+        request.set_request_type(protocol::RequestType::NotifyHotplug);
+
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(&hotplug_info, config).unwrap();
 
         request.payload = Some(RequestPayload::Data(bytes));
 

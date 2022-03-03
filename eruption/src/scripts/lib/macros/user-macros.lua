@@ -25,6 +25,12 @@ function easyshift_macro_2() info("UserMacros: Executing: 'easyshift_macro_2'") 
 
 function easyshift_macro_3() info("UserMacros: Executing: 'easyshift_macro_3'") end
 
+function emergency_exit()
+    info("UserMacros: Executing: 'emergency_exit'")
+
+    exit()
+end
+
 function easyshift_mouse_macro_1()
     info("UserMacros: Executing: 'easyshift_mouse_macro_1'")
 end
@@ -347,6 +353,9 @@ EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("F12")] = 194
 EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("1")] = easyshift_macro_1 --
 EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("2")] = easyshift_macro_2 --
 EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("3")] = easyshift_macro_3 --
+
+-- Enable emergency exit of Eruption using Easy Shift+ + BACKSPACE key
+EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("BACKSPACE")] = emergency_exit --
 
 -- assign macros to mouse buttons on the Easy Shift+ layer
 EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[1][1] = easyshift_mouse_macro_1 --

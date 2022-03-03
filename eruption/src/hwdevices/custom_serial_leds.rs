@@ -122,6 +122,10 @@ impl DeviceTrait for CustomSerialLeds {
         Ok(())
     }
 
+    fn has_failed(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn send_init_sequence(&mut self) -> Result<()> {
         trace!("Sending device init sequence...");
 
@@ -138,6 +142,10 @@ impl DeviceTrait for CustomSerialLeds {
         }
 
         Ok(())
+    }
+
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(true)
     }
 
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {

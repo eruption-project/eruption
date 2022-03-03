@@ -129,6 +129,14 @@ impl DeviceTrait for GenericMouse {
         Ok(())
     }
 
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(true)
+    }
+
+    fn has_failed(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
         Ok(())
     }

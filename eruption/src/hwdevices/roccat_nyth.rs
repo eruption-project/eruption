@@ -85,6 +85,8 @@ pub struct RoccatNyth {
     pub is_opened: bool,
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
+    pub has_failed: bool,
+
     pub button_states: Arc<Mutex<BitVec>>,
 }
 
@@ -101,6 +103,8 @@ impl RoccatNyth {
 
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
+
+            has_failed: false,
 
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
         }
@@ -335,6 +339,14 @@ impl DeviceTrait for RoccatNyth {
 
             Ok(())
         }
+    }
+
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(self.is_initialized)
+    }
+
+    fn has_failed(&self) -> Result<bool> {
+        Ok(self.has_failed)
     }
 
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {

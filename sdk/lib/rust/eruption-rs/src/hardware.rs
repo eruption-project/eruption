@@ -34,6 +34,14 @@ impl Default for Hardware {
 }
 */
 
+use bincode::{Decode, Encode};
+
+#[derive(Debug, Default, Clone, Encode, Decode)]
+pub struct HotplugInfo {
+    pub usb_vid: u16,
+    pub usb_pid: u16,
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

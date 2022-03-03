@@ -1060,12 +1060,13 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.0.10"
+version = "0.1.1"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 3.1.5",
  "clap_complete",
  "color-eyre",
+ "eruption-rs",
  "eyre",
  "i18n-embed",
  "i18n-embed-fl",
@@ -1212,6 +1213,7 @@ dependencies = [
 name = "eruption-rs"
 version = "0.0.1"
 dependencies = [
+ "bincode",
  "cfg-if 1.0.0",
  "color-eyre",
  "crossbeam",
@@ -1224,6 +1226,7 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
+ "serde",
  "socket2",
  "thiserror",
 ]

@@ -666,6 +666,12 @@ pub trait DeviceTrait: DeviceInfoTrait {
     /// to a known good state. Should be called after `open()`ing the device
     fn send_init_sequence(&mut self) -> Result<()>;
 
+    /// Returns `true` if the device has been initialized
+    fn is_initialized(&self) -> Result<bool>;
+
+    /// Returns `true` if the device has failed or has been disconnected
+    fn has_failed(&self) -> Result<bool>;
+
     /// Send raw data to the control device
     fn write_data_raw(&self, buf: &[u8]) -> Result<()>;
 
@@ -931,9 +937,7 @@ pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
 
 /// Enumerates all HID devices on the system (and static device declarations
 /// from the .conf file as well), and then returns a tuple of all the supported devices
-pub fn probe_devices(
-    api: &hidapi::HidApi,
-) -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
+pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
     let mut keyboard_devices = vec![];
     let mut mouse_devices = vec![];
     let mut misc_devices = vec![];
@@ -961,6 +965,9 @@ pub fn probe_devices(
     }
 
     let mut bound_devices = vec![];
+
+    let hidapi = crate::HIDAPI.read();
+    let api = hidapi.as_ref().unwrap();
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
@@ -1012,7 +1019,7 @@ pub fn probe_devices(
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    api,
+                                    &api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1048,12 +1055,15 @@ pub fn probe_devices(
                                     .to_string()
                             );
 
+                            let hidapi = crate::HIDAPI.read();
+                            let api = hidapi.as_ref().unwrap();
+
                             let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
                             let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    api,
+                                    &api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1094,7 +1104,7 @@ pub fn probe_devices(
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    api,
+                                    &api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1162,7 +1172,7 @@ pub fn probe_devices(
                             );
 
                             if let Ok(device) = generic_keyboard::bind_hiddev(
-                                api,
+                                &api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,
@@ -1195,7 +1205,302 @@ pub fn probe_devices(
                             );
 
                             if let Ok(device) = generic_mouse::bind_hiddev(
-                                api,
+                                &api,
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                serial,
+                            ) {
+                                mouse_devices.push(device);
+                                bound_devices.push((
+                                    device_info.vendor_id(),
+                                    device_info.product_id(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
+                        }
+
+                        Ok(DeviceClass::Unknown) | Ok(DeviceClass::Misc) => { /* unknown device class, ignore the device */
+                        }
+
+                        Err(e) => {
+                            error!("Failed to query device class: {}", e);
+                        }
+                    }
+                }
+            }
+        } else {
+            info!(
+                "Skipping blacklisted device: 0x{:x}:0x{:x} - {} {}",
+                device_info.vendor_id(),
+                device_info.product_id(),
+                device_info
+                    .manufacturer_string()
+                    .unwrap_or("<unknown>")
+                    .to_string(),
+                device_info
+                    .product_string()
+                    .unwrap_or("<unknown>")
+                    .to_string()
+            );
+        }
+    }
+
+    Ok((keyboard_devices, mouse_devices, misc_devices))
+}
+
+/// Enumerates all HID devices on the system and then returns a tuple of all the supported devices
+/// Already bound devices will be ignored
+pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
+    // wait for devices to settle
+    // thread::sleep(Duration::from_millis(3000));
+
+    let mut keyboard_devices = vec![];
+    let mut mouse_devices = vec![];
+    let mut misc_devices = vec![];
+
+    let mut bound_devices = vec![];
+
+    let mut hidapi = crate::HIDAPI.write();
+    let api = hidapi.as_mut().unwrap();
+
+    api.refresh_devices()?;
+
+    for device_info in api.device_list() {
+        if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
+            if let Some(driver) = DRIVERS.lock().iter().find(|&d| {
+                d.get_usb_vid() == device_info.vendor_id()
+                    && d.get_usb_pid() == device_info.product_id()
+            }) {
+                debug!(
+                    "Found supported device: 0x{:x}:0x{:x} - {} {}",
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    device_info
+                        .manufacturer_string()
+                        .unwrap_or("<unknown>")
+                        .to_string(),
+                    device_info
+                        .product_string()
+                        .unwrap_or("<unknown>")
+                        .to_string()
+                );
+
+                let serial = device_info.serial_number().unwrap_or("");
+                let path = device_info.path().to_string_lossy().to_string();
+
+                if !bound_devices.contains(&(
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    serial,
+                )) {
+                    match driver.get_device_class() {
+                        DeviceClass::Keyboard => {
+                            info!(
+                                "Found supported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string()
+                            );
+
+                            let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    &api,
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ) {
+                                    keyboard_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
+                            } else {
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                            }
+                        }
+
+                        DeviceClass::Mouse => {
+                            info!(
+                                "Found supported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string()
+                            );
+
+                            let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    &api,
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ) {
+                                    mouse_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
+                            } else {
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                            }
+                        }
+
+                        DeviceClass::Misc => {
+                            info!(
+                                "Found supported misc device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string()
+                            );
+
+                            let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+
+                            if driver.status <= driver_maturity_level {
+                                if let Ok(device) = (*driver.bind_fn)(
+                                    &api,
+                                    driver.get_usb_vid(),
+                                    driver.get_usb_pid(),
+                                    serial,
+                                ) {
+                                    misc_devices.push(device);
+                                    bound_devices.push((
+                                        driver.get_usb_vid(),
+                                        driver.get_usb_pid(),
+                                        serial,
+                                    ));
+                                } else {
+                                    error!("Failed to bind the device driver");
+                                }
+                            } else {
+                                warn!("Not binding the device driver because it would require a lesser code maturity level");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                            }
+                        }
+
+                        DeviceClass::Unknown => {
+                            error!("Failed to bind the device driver, unsupported device class");
+                        }
+                    }
+                }
+            } else {
+                // found an unsupported device
+
+                debug!(
+                    "Found unsupported device: 0x{:x}:0x{:x} - {} {}",
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    device_info
+                        .manufacturer_string()
+                        .unwrap_or("<unknown>")
+                        .to_string(),
+                    device_info
+                        .product_string()
+                        .unwrap_or("<unknown>")
+                        .to_string()
+                );
+
+                let serial = device_info.serial_number().unwrap_or("");
+                let path = device_info.path().to_string_lossy().to_string();
+
+                if !bound_devices.contains(&(
+                    device_info.vendor_id(),
+                    device_info.product_id(),
+                    serial,
+                )) {
+                    match get_usb_device_class(device_info.vendor_id(), device_info.product_id()) {
+                        Ok(DeviceClass::Keyboard) => {
+                            info!(
+                                "Found unsupported keyboard device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string()
+                            );
+
+                            if let Ok(device) = generic_keyboard::bind_hiddev(
+                                &api,
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                serial,
+                            ) {
+                                keyboard_devices.push(device);
+                                bound_devices.push((
+                                    device_info.vendor_id(),
+                                    device_info.product_id(),
+                                    serial,
+                                ));
+                            } else {
+                                error!("Failed to bind the device driver");
+                            }
+                        }
+
+                        Ok(DeviceClass::Mouse) => {
+                            info!(
+                                "Found unsupported mouse device: 0x{:x}:0x{:x} ({}) - {} {}",
+                                device_info.vendor_id(),
+                                device_info.product_id(),
+                                path,
+                                device_info
+                                    .manufacturer_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string(),
+                                device_info
+                                    .product_string()
+                                    .unwrap_or("<unknown>")
+                                    .to_string()
+                            );
+
+                            if let Ok(device) = generic_mouse::bind_hiddev(
+                                &api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,

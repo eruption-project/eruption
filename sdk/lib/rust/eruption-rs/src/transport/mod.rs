@@ -19,6 +19,7 @@
 
 use crate::canvas::Canvas;
 use crate::Result;
+use crate::hardware::HotplugInfo;
 
 mod local;
 pub use local::*;
@@ -29,6 +30,8 @@ pub trait Transport {
 
     fn get_server_status(&self) -> Result<ServerStatus>;
     fn submit_canvas(&self, canvas: &Canvas) -> Result<()>;
+
+    fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()>;
 }
 
 #[derive(Debug, Default, Clone)]

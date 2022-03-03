@@ -130,7 +130,7 @@ impl Animal {
         let width;
         let height;
 
-        let keyboard_devices = crate::KEYBOARD_DEVICES.lock();
+        let keyboard_devices = crate::KEYBOARD_DEVICES.read();
         if !keyboard_devices.is_empty() {
             let keyboard_device = keyboard_devices[0].as_ref();
 
@@ -307,7 +307,7 @@ impl Animal {
 
         let mut result = vec![];
 
-        let keyboard_devices = crate::KEYBOARD_DEVICES.lock();
+        let keyboard_devices = crate::KEYBOARD_DEVICES.read();
 
         if !keyboard_devices.is_empty() {
             let keyboard_device = keyboard_devices[0].as_ref();

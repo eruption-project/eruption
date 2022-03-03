@@ -17,7 +17,12 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{constants, script, SDK_SUPPORT_ACTIVE};
+use crate::{
+    constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
+    spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread,
+    spawn_mouse_input_thread_secondary, EXPERIMENTAL_FEATURES, SDK_SUPPORT_ACTIVE,
+};
+use crossbeam::channel::unbounded;
 use lazy_static::lazy_static;
 use log::{debug, error, info, trace};
 use mlua::prelude::*;
@@ -65,6 +70,169 @@ lazy_static! {
 
 lazy_static! {
     pub static ref LISTENER: Arc<Mutex<Option<Socket>>> = Arc::new(Mutex::new(None));
+}
+
+use bincode::{Decode, Encode};
+
+#[derive(Debug, Default, Clone, Encode, Decode)]
+pub struct HotplugInfo {
+    pub usb_vid: u16,
+    pub usb_pid: u16,
+}
+
+pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
+    if crate::QUIT.load(Ordering::SeqCst) {
+        info!("Ignoring device hotplug event since Eruption is shutting down");
+    } else {
+        // enumerate devices
+        info!("Enumerating connected devices...");
+
+        if let Ok(devices) = hwdevices::probe_devices_hotplug() {
+            // initialize keyboard devices
+            for (index, device) in devices.0.iter().enumerate() {
+                if !crate::KEYBOARD_DEVICES.read().iter().any(|d| {
+                    d.read().get_usb_vid() == device.read().get_usb_vid()
+                        && d.read().get_usb_pid() == device.read().get_usb_pid()
+                }) {
+                    info!("Initializing the hotplugged keyboard device...");
+
+                    init_keyboard_device(device);
+
+                    let usb_vid = device.read().get_usb_vid();
+                    let usb_pid = device.read().get_usb_pid();
+
+                    // spawn a thread to handle keyboard input
+                    info!("Spawning keyboard input thread...");
+
+                    let (kbd_tx, kbd_rx) = unbounded();
+                    spawn_keyboard_input_thread(
+                        kbd_tx.clone(),
+                        device.clone(),
+                        index,
+                        usb_vid,
+                        usb_pid,
+                    )
+                    .unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
+
+                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
+                    crate::KEYBOARD_DEVICES.write().push(device.clone());
+                }
+            }
+
+            // initialize mouse devices
+            for (index, device) in devices.1.iter().enumerate() {
+                let enable_mouse = (*crate::CONFIG.lock())
+                    .as_ref()
+                    .unwrap()
+                    .get::<bool>("global.enable_mouse")
+                    .unwrap_or(true);
+
+                // enable mouse input
+                if enable_mouse {
+                    if !crate::MOUSE_DEVICES.read().iter().any(|d| {
+                        d.read().get_usb_vid() == device.read().get_usb_vid()
+                            && d.read().get_usb_pid() == device.read().get_usb_pid()
+                    }) {
+                        info!("Initializing the hotplugged mouse device...");
+
+                        init_mouse_device(device);
+
+                        let usb_vid = device.read().get_usb_vid();
+                        let usb_pid = device.read().get_usb_pid();
+
+                        let (mouse_tx, mouse_rx) = unbounded();
+                        let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+
+                        // spawn a thread to handle mouse input
+                        info!("Spawning mouse input thread...");
+
+                        spawn_mouse_input_thread(
+                            mouse_tx.clone(),
+                            device.clone(),
+                            index,
+                            usb_vid,
+                            usb_pid,
+                        )
+                        .unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
+
+                        // spawn a thread to handle possible sub-devices
+                        if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                            && device.read().has_secondary_device()
+                        {
+                            info!("Spawning mouse input thread for secondary sub-device...");
+                            spawn_mouse_input_thread_secondary(
+                                mouse_secondary_tx,
+                                device.clone(),
+                                index,
+                                usb_vid,
+                                usb_pid,
+                            )
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
+                        }
+
+                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
+                        crate::MOUSE_DEVICES.write().push(device.clone());
+                    }
+                } else {
+                    info!("Found mouse device, but mouse support is DISABLED by configuration");
+                }
+            }
+
+            // initialize misc devices
+            for (index, device) in devices.2.iter().enumerate() {
+                if !crate::MISC_DEVICES.read().iter().any(|d| {
+                    d.read().get_usb_vid() == device.read().get_usb_vid()
+                        && d.read().get_usb_pid() == device.read().get_usb_pid()
+                }) {
+                    info!("Initializing the hotplugged misc device...");
+
+                    init_misc_device(device);
+
+                    if device.read().has_input_device() {
+                        let usb_vid = device.read().get_usb_vid();
+                        let usb_pid = device.read().get_usb_pid();
+
+                        // spawn a thread to handle keyboard input
+                        info!("Spawning misc device input thread...");
+
+                        let (misc_tx, misc_rx) = unbounded();
+                        spawn_misc_input_thread(
+                            misc_tx.clone(),
+                            device.clone(),
+                            index,
+                            usb_vid,
+                            usb_pid,
+                        )
+                        .unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
+
+                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                    } else {
+                        let (_misc_tx, misc_rx) = unbounded();
+
+                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                    }
+
+                    crate::MISC_DEVICES.write().push(device.clone());
+                }
+            }
+
+            info!("Device enumeration completed");
+        }
+    }
+
+    Ok(())
 }
 
 ///
@@ -131,7 +299,7 @@ impl SdkSupportPlugin {
 
                 match listener.accept() {
                     Ok((socket, _sockaddr)) => {
-                        info!("Eruption SDK client connected");
+                        debug!("Eruption SDK client connected");
 
                         // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
                         socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
@@ -157,7 +325,7 @@ impl SdkSupportPlugin {
                             if poll_fds[0].revents().unwrap().contains(PollFlags::POLLHUP)
                                 | poll_fds[0].revents().unwrap().contains(PollFlags::POLLERR)
                             {
-                                info!("Eruption SDK client disconnected");
+                                debug!("Eruption SDK client disconnected");
 
                                 break 'EVENT_LOOP;
                             }
@@ -170,7 +338,7 @@ impl SdkSupportPlugin {
                                     [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
                                 match socket.recv(&mut tmp) {
                                     Ok(0) => {
-                                        info!("Eruption SDK client disconnected");
+                                        debug!("Eruption SDK client disconnected");
 
                                         break 'EVENT_LOOP;
                                     }
@@ -261,6 +429,50 @@ impl SdkSupportPlugin {
 
                                                     script::FRAME_GENERATION_COUNTER
                                                         .fetch_add(1, Ordering::SeqCst);
+
+                                                    let mut response =
+                                                        protocol::Response::default();
+                                                    response.set_response_type(
+                                                        protocol::RequestType::Noop,
+                                                    );
+
+                                                    let mut buf = Vec::new();
+                                                    response.encode_length_delimited(&mut buf)?;
+
+                                                    // send data
+                                                    match socket.send(&buf) {
+                                                        Ok(_n) => {}
+
+                                                        Err(_e) => {
+                                                            return Err(SdkPluginError::PluginError {
+                                                                description: "Lost connection to Eruption SDK client".to_owned(),
+                                                            }
+                                                                .into());
+                                                        }
+                                                    }
+                                                }
+
+                                                protocol::RequestType::NotifyHotplug => {
+                                                    trace!("Notify hotplug");
+
+                                                    let RequestPayload::Data(payload_hotplug_info) =
+                                                        request.payload.unwrap();
+
+                                                    let config = bincode::config::standard();
+                                                    let hotplug_info: HotplugInfo =
+                                                        bincode::decode_from_slice(
+                                                            &payload_hotplug_info,
+                                                            config,
+                                                        )?
+                                                        .0;
+
+                                                    info!("Hotplug event received, trying to claim newly added devices now...");
+
+                                                    claim_hotplugged_devices(&hotplug_info)?;
+
+                                                    // we need to terminate and then re-enter the main loop to update all global state
+                                                    crate::REENTER_MAIN_LOOP
+                                                        .store(true, Ordering::SeqCst);
 
                                                     let mut response =
                                                         protocol::Response::default();

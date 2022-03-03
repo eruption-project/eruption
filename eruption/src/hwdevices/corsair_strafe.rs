@@ -108,6 +108,8 @@ pub struct CorsairStrafe {
     // pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
+    pub has_failed: bool,
+
     // device specific configuration options
     pub brightness: i32,
 }
@@ -127,6 +129,8 @@ impl CorsairStrafe {
             is_opened: false,
             // ctrl_hiddev: Arc::new(Mutex::new(None)),
             led_hiddev: Arc::new(Mutex::new(None)),
+
+            has_failed: false,
 
             brightness: 100,
         }
@@ -481,6 +485,14 @@ impl DeviceTrait for CorsairStrafe {
 
             Ok(())
         }
+    }
+
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(self.is_initialized)
+    }
+
+    fn has_failed(&self) -> Result<bool> {
+        Ok(self.has_failed)
     }
 
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
@@ -869,7 +881,14 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                                 }
                             }
 
-                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                            Err(_) => {
+                                // the device has failed or has been disconnected
+                                self.is_initialized = false;
+                                self.is_opened = false;
+                                self.has_failed = true;
+
+                                return Err(HwDeviceError::InvalidResult {}.into());
+                            }
                         }
 
                         Ok(())

@@ -18,6 +18,7 @@
 */
 
 use crate::canvas::Canvas;
+use crate::hardware::HotplugInfo;
 use crate::transport::{LocalTransport, ServerStatus, Transport};
 use crate::Result;
 use parking_lot::Mutex;
@@ -49,6 +50,10 @@ impl Connection {
 
     pub fn get_server_status(&self) -> Result<ServerStatus> {
         self.con.lock().get_server_status()
+    }
+
+    pub fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
+        self.con.lock().notify_device_hotplug(&hotplug_info)
     }
 }
 

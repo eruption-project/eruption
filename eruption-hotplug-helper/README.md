@@ -9,16 +9,16 @@ $ sudo eruption-hotplug-helper hotplug
  INFO  eruption_hotplug_helper > A hotplug event has been triggered, notifying the Eruption daemon...
  INFO  eruption_hotplug_helper > Waiting for the devices to settle...
  INFO  eruption_hotplug_helper > Done, all devices have settled
- INFO  eruption_hotplug_helper > Now restarting the eruption.service...
- INFO  eruption_hotplug_helper > Waiting for Eruption to be fully operational...
- INFO  eruption_hotplug_helper > Notification sent successfully, exiting now
+ INFO  eruption_hotplug_helper > Connecting to the Eruption daemon...
+ INFO  eruption_hotplug_helper > Notifying the Eruption daemon about the hotplug event...
+ INFO  eruption_hotplug_helper > Disconnected from the Eruption daemon
 ```
 
 ### eruption-hotplug-helper
 
 ```shell
 $ eruption-hotplug-helper
-eruption-hotplug-helper 0.0.6
+eruption-hotplug-helper 0.1.1
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

@@ -22,6 +22,7 @@ use mlua::prelude::*;
 use std::any::Any;
 
 use std::process::Command;
+use std::sync::atomic::Ordering;
 
 use crate::plugins;
 use crate::plugins::Plugin;
@@ -102,6 +103,11 @@ impl SystemPlugin {
             .map_or(Ok(std::i32::MIN), |v| v.code().ok_or(std::i32::MIN))
             .unwrap()
     }
+
+    /// Terminate the Eruption daemon
+    pub(crate) fn exit() {
+        crate::QUIT.store(true, Ordering::SeqCst);
+    }
 }
 
 #[async_trait::async_trait]
@@ -145,6 +151,9 @@ impl Plugin for SystemPlugin {
             Ok(SystemPlugin::system(&command, &args))
         })?;
         globals.set("system", system)?;
+
+        let exit = lua_ctx.create_function(|_, (): ()| Ok(SystemPlugin::exit()))?;
+        globals.set("exit", exit)?;
 
         Ok(())
     }

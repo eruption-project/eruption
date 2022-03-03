@@ -106,6 +106,8 @@ pub struct RoccatMagma {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
+    pub has_failed: bool,
+
     pub dial_mode: Arc<Mutex<DialMode>>,
 
     // device specific configuration options
@@ -127,6 +129,8 @@ impl RoccatMagma {
             is_opened: false,
             ctrl_hiddev: Arc::new(Mutex::new(None)),
             led_hiddev: Arc::new(Mutex::new(None)),
+
+            has_failed: false,
 
             dial_mode: Arc::new(Mutex::new(DialMode::Brightness)),
 
@@ -579,6 +583,14 @@ impl DeviceTrait for RoccatMagma {
         }
     }
 
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(self.is_initialized)
+    }
+
+    fn has_failed(&self) -> Result<bool> {
+        Ok(self.has_failed)
+    }
+
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -993,7 +1005,14 @@ impl KeyboardDeviceTrait for RoccatMagma {
                                 }
                             }
 
-                            Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                            Err(_) => {
+                                // the device has failed or has been disconnected
+                                self.is_initialized = false;
+                                self.is_opened = false;
+                                self.has_failed = true;
+
+                                return Err(HwDeviceError::InvalidResult {}.into());
+                            }
                         }
 
                         Ok(())

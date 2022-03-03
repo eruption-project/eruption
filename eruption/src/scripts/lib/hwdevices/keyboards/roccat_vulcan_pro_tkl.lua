@@ -70,6 +70,8 @@ key_to_index['DOWN'] = 92
 key_to_index['LEFT'] = 87
 key_to_index['RIGHT'] = 96
 
+key_to_index['BACKSPACE'] = 81
+
 key_to_index['1'] = 9
 key_to_index['2'] = 15
 key_to_index['3'] = 22

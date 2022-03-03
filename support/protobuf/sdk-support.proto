@@ -22,6 +22,7 @@ enum RequestType {
   NOOP = 0;
   STATUS = 1;
   SET_CANVAS = 2;
+  NOTIFY_HOTPLUG = 3;
 }
 
 message Request {

@@ -347,7 +347,7 @@ impl DbusApi {
 
                                         {
                                             keyboards.extend(
-                                                crate::KEYBOARD_DEVICES.lock().iter().map(
+                                                crate::KEYBOARD_DEVICES.read().iter().map(
                                                     |device| {
                                                         (
                                                             device.read().get_usb_vid(),
@@ -359,7 +359,7 @@ impl DbusApi {
                                         }
 
                                         {
-                                            mice.extend(crate::MOUSE_DEVICES.lock().iter().map(
+                                            mice.extend(crate::MOUSE_DEVICES.read().iter().map(
                                                 |device| {
                                                     (
                                                         device.read().get_usb_vid(),
@@ -370,7 +370,7 @@ impl DbusApi {
                                         }
 
                                         {
-                                            misc.extend(crate::MISC_DEVICES.lock().iter().map(
+                                            misc.extend(crate::MISC_DEVICES.read().iter().map(
                                                 |device| {
                                                     (
                                                         device.read().get_usb_vid(),
@@ -498,7 +498,7 @@ impl DbusApi {
                                         }
 
                                         let keyboards = {
-                                            let keyboards = crate::KEYBOARD_DEVICES.lock();
+                                            let keyboards = crate::KEYBOARD_DEVICES.read();
 
                                             let keyboards: Vec<(u16, u16)> = keyboards
                                                 .iter()
@@ -514,7 +514,7 @@ impl DbusApi {
                                         };
 
                                         let mice = {
-                                            let mice = crate::MOUSE_DEVICES.lock();
+                                            let mice = crate::MOUSE_DEVICES.read();
 
                                             let mice: Vec<(u16, u16)> = mice
                                                 .iter()
@@ -530,7 +530,7 @@ impl DbusApi {
                                         };
 
                                         let misc = {
-                                            let misc = crate::MISC_DEVICES.lock();
+                                            let misc = crate::MISC_DEVICES.read();
 
                                             let misc: Vec<(u16, u16)> = misc
                                                 .iter()
@@ -1110,31 +1110,31 @@ fn query_device_specific_status(device: u64) -> Result<String> {
 /// Query the device driver for status information
 /// this will likely cause stuttering when not synchronized with the main loop
 // fn query_device_specific_status_no_cache(device: u64) -> Result<String> {
-//     let json = if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
-//         let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+//     let json = if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
+//         let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
 
 //         let status = device.read().device_status()?;
 //         let result = serde_json::to_string_pretty(&*status)?;
 
 //         result
 //     } else if (device as usize)
-//         < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+//         < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
 //     {
-//         let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
-//         let device = &crate::MOUSE_DEVICES.lock()[index];
+//         let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
+//         let device = &crate::MOUSE_DEVICES.read()[index];
 
 //         let status = device.read().device_status()?;
 //         let result = serde_json::to_string_pretty(&*status)?;
 
 //         result
 //     } else if (device as usize)
-//         < (crate::KEYBOARD_DEVICES.lock().len()
-//             + crate::MOUSE_DEVICES.lock().len()
-//             + crate::MISC_DEVICES.lock().len())
+//         < (crate::KEYBOARD_DEVICES.read().len()
+//             + crate::MOUSE_DEVICES.read().len()
+//             + crate::MISC_DEVICES.read().len())
 //     {
 //         let index = device as usize
-//             - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
-//         let device = &crate::MISC_DEVICES.lock()[index];
+//             - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
+//         let device = &crate::MISC_DEVICES.read()[index];
 
 //         let status = device.read().device_status()?;
 //         let result = serde_json::to_string_pretty(&*status)?;
@@ -1148,8 +1148,8 @@ fn query_device_specific_status(device: u64) -> Result<String> {
 // }
 
 fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
-        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
+        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
 
         match param {
             "brightness" => {
@@ -1164,10 +1164,10 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
             _ => Err(DbusApiError::InvalidParameter {}.into()),
         }
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
     {
-        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
-        let device = &crate::MOUSE_DEVICES.lock()[index];
+        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
+        let device = &crate::MOUSE_DEVICES.read()[index];
 
         match param {
             "profile" => {
@@ -1224,13 +1224,13 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
             _ => Err(DbusApiError::InvalidParameter {}.into()),
         }
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len()
-            + crate::MOUSE_DEVICES.lock().len()
-            + crate::MISC_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len()
+            + crate::MOUSE_DEVICES.read().len()
+            + crate::MISC_DEVICES.read().len())
     {
         let index = device as usize
-            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
-        let device = &crate::MISC_DEVICES.lock()[index];
+            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
+        let device = &crate::MISC_DEVICES.read()[index];
 
         match param {
             "brightness" => {
@@ -1250,8 +1250,8 @@ fn apply_device_specific_configuration(device: u64, param: &str, value: &str) ->
 }
 
 fn query_device_specific_configuration(device: u64, param: &str) -> Result<String> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
-        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
+        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
 
         match param {
             "info" => {
@@ -1285,10 +1285,10 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
             _ => Err(DbusApiError::InvalidParameter {}.into()),
         }
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
     {
-        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
-        let device = &crate::MOUSE_DEVICES.lock()[index];
+        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
+        let device = &crate::MOUSE_DEVICES.read()[index];
 
         match param {
             "info" => {
@@ -1358,13 +1358,13 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
             _ => Err(DbusApiError::InvalidParameter {}.into()),
         }
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len()
-            + crate::MOUSE_DEVICES.lock().len()
-            + crate::MISC_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len()
+            + crate::MOUSE_DEVICES.read().len()
+            + crate::MISC_DEVICES.read().len())
     {
         let index = device as usize
-            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
-        let device = &crate::MISC_DEVICES.lock()[index];
+            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
+        let device = &crate::MISC_DEVICES.read()[index];
 
         match param {
             "info" => {
@@ -1403,31 +1403,31 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
 }
 
 fn get_device_specific_ids(device: u64) -> Result<(u16, u16)> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.lock().len() {
-        let device = &crate::KEYBOARD_DEVICES.lock()[device as usize];
+    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
+        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
 
         let usb_vid = device.read().get_usb_vid();
         let usb_pid = device.read().get_usb_pid();
 
         Ok((usb_vid, usb_pid))
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
     {
-        let index = device as usize - crate::KEYBOARD_DEVICES.lock().len();
-        let device = &crate::MOUSE_DEVICES.lock()[index];
+        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
+        let device = &crate::MOUSE_DEVICES.read()[index];
 
         let usb_vid = device.read().get_usb_vid();
         let usb_pid = device.read().get_usb_pid();
 
         Ok((usb_vid, usb_pid))
     } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.lock().len()
-            + crate::MOUSE_DEVICES.lock().len()
-            + crate::MISC_DEVICES.lock().len())
+        < (crate::KEYBOARD_DEVICES.read().len()
+            + crate::MOUSE_DEVICES.read().len()
+            + crate::MISC_DEVICES.read().len())
     {
         let index = device as usize
-            - (crate::KEYBOARD_DEVICES.lock().len() + crate::MOUSE_DEVICES.lock().len());
-        let device = &crate::MISC_DEVICES.lock()[index];
+            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
+        let device = &crate::MISC_DEVICES.read()[index];
 
         let usb_vid = device.read().get_usb_vid();
         let usb_pid = device.read().get_usb_pid();

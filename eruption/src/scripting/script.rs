@@ -36,9 +36,9 @@ use std::sync::Arc;
 use std::vec::Vec;
 
 use crate::constants;
-use crate::hwdevices::{
-    KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent, RGBA,
-};
+use crate::hwdevices::KeyboardHidEvent;
+use crate::hwdevices::MouseHidEvent;
+use crate::hwdevices::RGBA;
 use crate::plugin_manager;
 use crate::profiles::Profile;
 use crate::scripting::manifest::{ConfigParam, Manifest};
@@ -263,15 +263,15 @@ mod callbacks {
     pub(crate) fn get_support_script_files() -> Vec<String> {
         let mut result = Vec::new();
 
-        for device in crate::KEYBOARD_DEVICES.lock().iter() {
+        for device in crate::KEYBOARD_DEVICES.read().iter() {
             result.push(device.read().get_support_script_file());
         }
 
-        for device in crate::MOUSE_DEVICES.lock().iter() {
+        for device in crate::MOUSE_DEVICES.read().iter() {
             result.push(device.read().get_support_script_file());
         }
 
-        for device in crate::MISC_DEVICES.lock().iter() {
+        for device in crate::MISC_DEVICES.read().iter() {
             result.push(device.read().get_support_script_file());
         }
 
@@ -812,9 +812,6 @@ pub fn run_script(
     file: PathBuf,
     profile: Option<Profile>,
     rx: &Receiver<Message>,
-    keyboard_devices: &[KeyboardDevice],
-    _mouse_devices: &[MouseDevice],
-    _misc_devices: &[MiscDevice],
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(file.clone()) {
         Ok(script) => {
@@ -1034,14 +1031,14 @@ pub fn run_script(
                                 let arg1: u8;
                                 let event_type: u32 = match param {
                                     KeyboardHidEvent::KeyUp { code } => {
-                                        arg1 = keyboard_devices[0]
+                                        arg1 = crate::KEYBOARD_DEVICES.read()[0]
                                             .read()
                                             .hid_event_code_to_report(&code);
                                         1
                                     }
 
                                     KeyboardHidEvent::KeyDown { code } => {
-                                        arg1 = keyboard_devices[0]
+                                        arg1 = crate::KEYBOARD_DEVICES.read()[0]
                                             .read()
                                             .hid_event_code_to_report(&code);
                                         2

@@ -105,13 +105,25 @@ macro_rules! tr {
 
 lazy_static! {
     /// Managed keyboard devices
-    pub static ref KEYBOARD_DEVICES: Arc<Mutex<Vec<hwdevices::KeyboardDevice>>> = Arc::new(Mutex::new(Vec::new()));
+    pub static ref KEYBOARD_DEVICES: Arc<RwLock<Vec<hwdevices::KeyboardDevice>>> = Arc::new(RwLock::new(Vec::new()));
+
+    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
 
     /// Managed mouse devices
-    pub static ref MOUSE_DEVICES: Arc<Mutex<Vec<hwdevices::MouseDevice>>> = Arc::new(Mutex::new(Vec::new()));
+    pub static ref MOUSE_DEVICES: Arc<RwLock<Vec<hwdevices::MouseDevice>>> = Arc::new(RwLock::new(Vec::new()));
+
+    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
 
     /// Managed miscellaneous devices
-    pub static ref MISC_DEVICES: Arc<Mutex<Vec<hwdevices::MiscDevice>>> = Arc::new(Mutex::new(Vec::new()));
+    pub static ref MISC_DEVICES: Arc<RwLock<Vec<hwdevices::MiscDevice>>> = Arc::new(RwLock::new(Vec::new()));
+
+    pub static ref MISC_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
+
+    /// Hidapi object
+    pub static ref HIDAPI: Arc<RwLock<Option<hidapi::HidApi>>> = Arc::new(RwLock::new(None));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
     pub static ref DEVICE_STATUS: Arc<Mutex<HashMap<u64, DeviceStatus>>> =
@@ -146,6 +158,9 @@ lazy_static! {
 
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
+
+    /// Global "quit and the re-enter the main loop" status flag
+    pub static ref REENTER_MAIN_LOOP: AtomicBool = AtomicBool::new(false);
 
     /// Global "is AFK" status flag
     pub static ref AFK: AtomicBool = AtomicBool::new(false);
@@ -456,9 +471,9 @@ fn spawn_keyboard_input_thread(
                             // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                             info!("Grabbing the keyboard device exclusively");
-                            device
+                            let _ = device
                                 .grab(GrabMode::Grab)
-                                .expect("Could not grab the device, terminating now.");
+                                .map_err(|e| error!("Could not grab the device: {}", e));
 
                             device
                         }
@@ -503,15 +518,17 @@ fn spawn_keyboard_input_thread(
 
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
-                            error!("Fatal: Keyboard device went away: {}", e);
+                            warn!("Keyboard device went away: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         } else {
-                            error!("Fatal: Could not peek evdev event: {}", e);
+                            error!("Could not peek evdev event: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         }
@@ -563,9 +580,9 @@ fn spawn_mouse_input_thread(
                             // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                             info!("Grabbing the mouse device exclusively");
-                            device
+                            let _ = device
                                 .grab(GrabMode::Grab)
-                                .expect("Could not grab the device, terminating now.");
+                                .map_err(|e| error!("Could not grab the device: {}", e));
 
                             device
                         }
@@ -655,15 +672,17 @@ fn spawn_mouse_input_thread(
 
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
-                            error!("Fatal: Mouse device went away: {}", e);
+                            warn!("Mouse device went away: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         } else {
-                            error!("Fatal: Could not peek evdev event: {}", e);
+                            error!("Could not peek evdev event: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         }
@@ -715,9 +734,9 @@ fn spawn_mouse_input_thread_secondary(
                             // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                             info!("Grabbing the sub-device exclusively");
-                            device
+                            let _ = device
                                 .grab(GrabMode::Grab)
-                                .expect("Could not grab the device, terminating now.");
+                                .map_err(|e| error!("Could not grab the device: {}", e));
 
                             device
                         }
@@ -804,15 +823,19 @@ fn spawn_mouse_input_thread_secondary(
 
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
-                            error!("Fatal: Mouse sub-device went away: {}", e);
+                            warn!("Mouse sub-device went away: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP
+                            .store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         } else {
-                            error!("Fatal: Could not peek evdev event: {}", e);
+                            error!("Could not peek evdev event: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP
+                            .store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         }
@@ -864,9 +887,9 @@ fn spawn_misc_input_thread(
                             // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
 
                             info!("Grabbing the misc device input exclusively");
-                            device
+                            let _ = device
                                 .grab(GrabMode::Grab)
-                                .expect("Could not grab the misc device, terminating now.");
+                                .map_err(|e| error!("Could not grab the device: {}", e));
 
                             device
                         }
@@ -917,15 +940,17 @@ fn spawn_misc_input_thread(
 
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
-                            error!("Fatal: Misc device went away: {}", e);
+                            warn!("Misc device went away: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         } else {
-                            error!("Fatal: Could not peek evdev event: {}", e);
+                            error!("Could not peek evdev event: {}", e);
 
-                            QUIT.store(true, Ordering::SeqCst);
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                             return Err(EvdevError::EvdevEventError {}.into());
                         }
@@ -946,9 +971,6 @@ fn spawn_lua_thread(
     lua_rx: Receiver<script::Message>,
     script_path: PathBuf,
     profile: Option<Profile>,
-    keyboard_devices: Vec<KeyboardDevice>,
-    mouse_devices: Vec<MouseDevice>,
-    misc_devices: Vec<MiscDevice>,
 ) -> Result<()> {
     info!("Loading Lua script: {}", &script_path.display());
 
@@ -983,14 +1005,7 @@ fn spawn_lua_thread(
     builder.spawn(move || -> Result<()> {
         #[allow(clippy::never_loop)]
         loop {
-            let result = script::run_script(
-                script_path.clone(),
-                profile,
-                &lua_rx,
-                &keyboard_devices.clone(),
-                &mouse_devices.clone(),
-                &misc_devices.clone(),
-            );
+            let result = script::run_script(script_path.clone(), profile, &lua_rx);
 
             match result {
                 Ok(script::RunScriptResult::TerminatedGracefully) => return Ok(()),
@@ -1026,18 +1041,9 @@ fn spawn_lua_thread(
 fn switch_profile(
     profile_file: Option<&Path>,
     dbus_api_tx: &Sender<DbusApiEvent>,
-    keyboard_devices: &[KeyboardDevice],
-    mouse_devices: &[MouseDevice],
-    misc_devices: &[MiscDevice],
     notify: bool,
 ) -> Result<bool> {
-    fn switch_to_failsafe_profile(
-        dbus_api_tx: &Sender<DbusApiEvent>,
-        keyboard_devices: &[KeyboardDevice],
-        mouse_devices: &[MouseDevice],
-        misc_devices: &[MiscDevice],
-        notify: bool,
-    ) -> Result<()> {
+    fn switch_to_failsafe_profile(dbus_api_tx: &Sender<DbusApiEvent>, notify: bool) -> Result<()> {
         let mut errors_present = false;
 
         // force hardcoded directory for failsafe scripts
@@ -1051,16 +1057,7 @@ fn switch_profile(
             let script_path = script_dir.join(&script_file);
 
             let (lua_tx, lua_rx) = unbounded();
-            spawn_lua_thread(
-                thread_idx,
-                lua_rx,
-                script_path.clone(),
-                None,
-                keyboard_devices.to_owned(),
-                mouse_devices.to_owned(),
-                misc_devices.to_owned(),
-            )
-            .unwrap_or_else(|e| {
+            spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), None).unwrap_or_else(|e| {
                 errors_present = true;
 
                 error!("Could not spawn a thread: {}", e);
@@ -1115,13 +1112,7 @@ fn switch_profile(
         // be safe and clear any leftover channels
         LUA_TXS.lock().clear();
 
-        switch_to_failsafe_profile(
-            dbus_api_tx,
-            keyboard_devices,
-            mouse_devices,
-            misc_devices,
-            notify,
-        )?;
+        switch_to_failsafe_profile(dbus_api_tx, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
 
         debug!("Successfully entered failsafe mode");
@@ -1169,13 +1160,7 @@ fn switch_profile(
                     // do not have a currently active profile, like e.g. during startup
                     if crate::ACTIVE_PROFILE.lock().is_none() {
                         error!("An error occurred during switching of profiles, loading failsafe profile now");
-                        switch_to_failsafe_profile(
-                            dbus_api_tx,
-                            keyboard_devices,
-                            mouse_devices,
-                            misc_devices,
-                            notify,
-                        )?;
+                        switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
                         return Ok(false);
                     } else {
@@ -1219,9 +1204,6 @@ fn switch_profile(
                     lua_rx,
                     script_path.clone(),
                     Some(profile.clone()),
-                    keyboard_devices.to_owned(),
-                    mouse_devices.to_owned(),
-                    misc_devices.to_owned(),
                 ) {
                     errors_present = true;
 
@@ -1245,13 +1227,7 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(
-                    dbus_api_tx,
-                    keyboard_devices,
-                    mouse_devices,
-                    misc_devices,
-                    notify,
-                )?;
+                switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
                 Ok(false)
             } else {
@@ -1282,13 +1258,7 @@ fn switch_profile(
                 error!(
                     "An error occurred during switching of profiles, loading failsafe profile now"
                 );
-                switch_to_failsafe_profile(
-                    dbus_api_tx,
-                    keyboard_devices,
-                    mouse_devices,
-                    misc_devices,
-                    notify,
-                )?;
+                switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
                 Ok(false)
             } else {
@@ -1331,9 +1301,6 @@ async fn process_filesystem_event(
 async fn process_dbus_event(
     dbus_event: &dbus_interface::Message,
     dbus_api_tx: &Sender<DbusApiEvent>,
-    keyboard_devices: &[KeyboardDevice],
-    mouse_devices: &[MouseDevice],
-    misc_devices: &[MiscDevice],
 ) -> Result<()> {
     match dbus_event {
         dbus_interface::Message::SwitchSlot(slot) => {
@@ -1345,14 +1312,7 @@ async fn process_dbus_event(
         dbus_interface::Message::SwitchProfile(profile_path) => {
             info!("Loading profile: {}", profile_path.display());
 
-            if let Err(e) = switch_profile(
-                Some(profile_path),
-                dbus_api_tx,
-                keyboard_devices,
-                mouse_devices,
-                misc_devices,
-                true,
-            ) {
+            if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
                 error!("Could not switch profiles: {}", e);
             }
         }
@@ -1362,15 +1322,10 @@ async fn process_dbus_event(
 }
 
 /// Process a timer tick event
-async fn process_timer_event(
-    _event: &Instant,
-    keyboard_devices: &[KeyboardDevice],
-    mouse_devices: &[MouseDevice],
-    misc_devices: &[MiscDevice],
-) -> Result<()> {
+async fn process_timer_event(_event: &Instant) -> Result<()> {
     let offset = 0;
 
-    for (index, dev) in keyboard_devices.iter().enumerate() {
+    for (index, dev) in crate::KEYBOARD_DEVICES.read().iter().enumerate() {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
@@ -1378,9 +1333,9 @@ async fn process_timer_event(
             .insert((index + offset) as u64, device_status);
     }
 
-    let offset = keyboard_devices.len();
+    let offset = crate::KEYBOARD_DEVICES.read().len();
 
-    for (index, dev) in mouse_devices.iter().enumerate() {
+    for (index, dev) in crate::MOUSE_DEVICES.read().iter().enumerate() {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
@@ -1388,9 +1343,9 @@ async fn process_timer_event(
             .insert((index + offset) as u64, device_status);
     }
 
-    let offset = keyboard_devices.len() + mouse_devices.len();
+    let offset = crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len();
 
-    for (index, dev) in misc_devices.iter().enumerate() {
+    for (index, dev) in crate::MISC_DEVICES.read().iter().enumerate() {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
@@ -2187,9 +2142,6 @@ async fn process_keyboard_event(
 }
 
 async fn run_main_loop(
-    keyboard_devices: Vec<(KeyboardDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
-    mouse_devices: Vec<(MouseDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
-    misc_devices: Vec<(MiscDevice, Receiver<Option<evdev_rs::InputEvent>>)>,
     dbus_api_tx: &Sender<DbusApiEvent>,
     ctrl_c_rx: &Receiver<bool>,
     dbus_rx: &Receiver<dbus_interface::Message>,
@@ -2199,20 +2151,9 @@ async fn run_main_loop(
 
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
-    let keyboard_devices_c = keyboard_devices
-        .iter()
-        .map(|device| device.0.clone())
-        .collect::<Vec<KeyboardDevice>>();
-
-    let mouse_devices_c = mouse_devices
-        .iter()
-        .map(|device| device.0.clone())
-        .collect::<Vec<MouseDevice>>();
-
-    let misc_devices_c = misc_devices
-        .iter()
-        .map(|device| device.0.clone())
-        .collect::<Vec<MiscDevice>>();
+    // let keyboard_devices = Vec<(KeyboardDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
+    // let mouse_devices =  Vec<(MouseDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
+    // let misc_devices =  Vec<(MiscDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
 
     // main loop iterations, monotonic counter
     let mut ticks = 0;
@@ -2250,18 +2191,29 @@ async fn run_main_loop(
     let timer_events = sel.recv(&timer);
 
     let mut keyboard_events = vec![];
-    for device in keyboard_devices.iter() {
-        let index = sel.recv(&device.1);
-        keyboard_events.push((index, device));
+    let rxs = crate::KEYBOARD_DEVICES_RX.read();
+    for rx in rxs.iter() {
+        let index = sel.recv(&rx);
+        keyboard_events.push((index, rx));
     }
 
     let mut mouse_events = vec![];
-    for device in mouse_devices.iter() {
-        let index = sel.recv(&device.1);
-        mouse_events.push((index, device));
+    let rxs = crate::MOUSE_DEVICES_RX.read();
+    for rx in rxs.iter() {
+        let index = sel.recv(&rx);
+        mouse_events.push((index, rx));
     }
 
     'MAIN_LOOP: loop {
+        // check if we shall terminate the main loop (and later re-enter it)
+        // this is needed e.g. after a device hotplug event or after device removal
+        if REENTER_MAIN_LOOP.load(Ordering::SeqCst) {
+            // reset flag
+            crate::REENTER_MAIN_LOOP.store(false, Ordering::SeqCst);
+
+            return Ok(());
+        }
+
         // update timekeeping and state
         ticks += 1;
         start_time = Instant::now();
@@ -2281,14 +2233,7 @@ async fn run_main_loop(
                 // reset the audio backend, it will be enabled again if needed
                 plugins::audio::reset_audio_backend();
 
-                if let Err(e) = switch_profile(
-                    None,
-                    dbus_api_tx,
-                    &keyboard_devices_c,
-                    &mouse_devices_c,
-                    &misc_devices_c,
-                    true,
-                ) {
+                if let Err(e) = switch_profile(None, dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 }
 
@@ -2312,14 +2257,7 @@ async fn run_main_loop(
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
                 };
 
-                switch_profile(
-                    Some(&profile_path),
-                    dbus_api_tx,
-                    &keyboard_devices_c,
-                    &mouse_devices_c,
-                    &misc_devices_c,
-                    true,
-                )?;
+                switch_profile(Some(&profile_path), dbus_api_tx, true)?;
 
                 saved_slot = active_slot;
                 failed_txs.clear();
@@ -2383,14 +2321,7 @@ async fn run_main_loop(
 
                 let profile_path = Path::new(active_profile);
 
-                if let Err(e) = switch_profile(
-                    Some(profile_path),
-                    dbus_api_tx,
-                    &keyboard_devices_c,
-                    &mouse_devices_c,
-                    &misc_devices_c,
-                    true,
-                ) {
+                if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 }
 
@@ -2418,14 +2349,8 @@ async fn run_main_loop(
                 drop(active_profile);
 
                 if let Some(profile) = &profile_clone {
-                    if let Err(e) = switch_profile(
-                        Some(&profile.profile_file),
-                        dbus_api_tx,
-                        &keyboard_devices_c,
-                        &mouse_devices_c,
-                        &misc_devices_c,
-                        false,
-                    ) {
+                    if let Err(e) = switch_profile(Some(&profile.profile_file), dbus_api_tx, false)
+                    {
                         error!("Could not reload profile: {}", e);
                     }
                 }
@@ -2480,15 +2405,9 @@ async fn run_main_loop(
                 i if i == dbus_events => {
                     let event = &oper.recv(dbus_rx);
                     if let Ok(event) = event {
-                        process_dbus_event(
-                            event,
-                            dbus_api_tx,
-                            &keyboard_devices_c,
-                            &mouse_devices_c,
-                            &misc_devices_c,
-                        )
-                        .await
-                        .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
+                        process_dbus_event(event, dbus_api_tx)
+                            .await
+                            .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
 
                         failed_txs.clear();
                     } else {
@@ -2506,14 +2425,7 @@ async fn run_main_loop(
 
                     let event = &oper.recv(&timer);
                     if let Ok(event) = event {
-                        if let Err(_e) = process_timer_event(
-                            event,
-                            &keyboard_devices_c,
-                            &mouse_devices_c,
-                            &misc_devices_c,
-                        )
-                        .await
-                        {
+                        if let Err(_e) = process_timer_event(event).await {
                             /* do nothing  */
 
                             // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
@@ -2539,26 +2451,30 @@ async fn run_main_loop(
                 }
 
                 i => {
-                    if let Some(event) = keyboard_events.iter().find(|&&e| e.0 == i) {
-                        let event = &oper.recv(&(event.1).1);
+                    if let Some(event) = keyboard_events.iter().find(|e| e.0 == i) {
+                        let event = &oper.recv(&(event.1));
                         if let Ok(Some(event)) = event {
-                            process_keyboard_event(event, &keyboard_devices[0].0, &failed_txs)
-                                .await
-                                .unwrap_or_else(|e| {
-                                    error!("Could not process a keyboard event: {}", e)
-                                });
+                            process_keyboard_event(
+                                event,
+                                &crate::KEYBOARD_DEVICES.read()[0],
+                                &failed_txs,
+                            )
+                            .await
+                            .unwrap_or_else(|e| {
+                                error!("Could not process a keyboard event: {}", e)
+                            });
                         } else {
                             error!(
                                 "Could not process a keyboard event: {}",
                                 event.as_ref().unwrap_err()
                             );
                         }
-                    } else if let Some(event) = mouse_events.iter().find(|&&e| e.0 == i) {
-                        let event = &oper.recv(&(event.1).1);
+                    } else if let Some(event) = mouse_events.iter().find(|e| e.0 == i) {
+                        let event = &oper.recv(&(event.1));
                         if let Ok(Some(event)) = event {
                             process_mouse_event(
                                 event,
-                                &mouse_devices[0].0,
+                                &crate::MOUSE_DEVICES.read()[0],
                                 &failed_txs,
                                 &mut mouse_move_event_last_dispatched,
                                 &mut mouse_motion_buf,
@@ -2582,14 +2498,14 @@ async fn run_main_loop(
 
         if delay_time.elapsed() >= Duration::from_millis(1000 / (constants::TARGET_FPS * 4)) {
             // poll HID events on all available devices
-            for device in keyboard_devices.iter() {
-                process_keyboard_hid_events(&device.0, &failed_txs)
+            for device in crate::KEYBOARD_DEVICES.read().iter() {
+                process_keyboard_hid_events(&device, &failed_txs)
                     .await
                     .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
             }
 
-            for device in mouse_devices.iter() {
-                process_mouse_hid_events(&device.0, &failed_txs)
+            for device in crate::MOUSE_DEVICES.read().iter() {
+                process_mouse_hid_events(&device, &failed_txs)
                     .await
                     .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
             }
@@ -2720,16 +2636,28 @@ async fn run_main_loop(
 
                 // send the final (combined) color map to all of the devices
                 if !drop_frame {
-                    for device in keyboard_devices.iter() {
-                        device.0.write().send_led_map(&script::LED_MAP.read())?;
+                    for device in crate::KEYBOARD_DEVICES.read().iter() {
+                        if device.read().is_initialized()? {
+                            device.write().send_led_map(&script::LED_MAP.read())?;
+                        } else {
+                            warn!("Skipping uninitialized device")
+                        }
                     }
 
-                    for device in mouse_devices.iter() {
-                        device.0.write().send_led_map(&script::LED_MAP.read())?;
+                    for device in crate::MOUSE_DEVICES.read().iter() {
+                        if device.read().is_initialized()? {
+                            device.write().send_led_map(&script::LED_MAP.read())?;
+                        } else {
+                            warn!("Skipping uninitialized device")
+                        }
                     }
 
-                    for device in misc_devices.iter() {
-                        device.0.write().send_led_map(&script::LED_MAP.read())?;
+                    for device in crate::MISC_DEVICES.read().iter() {
+                        if device.read().is_initialized()? {
+                            device.write().send_led_map(&script::LED_MAP.read())?;
+                        } else {
+                            warn!("Skipping uninitialized device")
+                        }
                     }
 
                     // update the current frame generation
@@ -2799,6 +2727,64 @@ async fn run_main_loop(
     events::notify_observers(events::Event::DaemonShutdown).unwrap();
 
     Ok(())
+}
+
+/// Hot-unplug all failed or disconnected devices
+fn remove_failed_devices() -> Result<bool> {
+    let mut result = false;
+
+    let mut keyboard_devices = crate::KEYBOARD_DEVICES.write();
+    if let Some(index) = keyboard_devices
+        .iter()
+        .position(|device: &hwdevices::KeyboardDevice| device.read().has_failed().unwrap_or(true))
+    {
+        info!("Unplugging a failed keyboard device...");
+
+        let mut devices_rx = crate::KEYBOARD_DEVICES_RX.write();
+        assert!(devices_rx.len() > index);
+        devices_rx.remove(index);
+
+        assert!(keyboard_devices.len() > index);
+        keyboard_devices.remove(index);
+
+        result = true;
+    }
+
+    let mut mouse_devices = crate::MOUSE_DEVICES.write();
+    if let Some(index) = mouse_devices
+        .iter()
+        .position(|device: &hwdevices::MouseDevice| device.read().has_failed().unwrap_or(true))
+    {
+        info!("Unplugging a failed mouse device...");
+
+        let mut devices_rx = crate::MOUSE_DEVICES_RX.write();
+        assert!(devices_rx.len() > index);
+        devices_rx.remove(index);
+
+        assert!(mouse_devices.len() > index);
+        mouse_devices.remove(index);
+
+        result = true;
+    }
+
+    let mut misc_devices = crate::MISC_DEVICES.write();
+    if let Some(index) = misc_devices
+        .iter()
+        .position(|device: &hwdevices::MiscDevice| device.read().has_failed().unwrap_or(true))
+    {
+        info!("Unplugging a failed misc device...");
+
+        let mut devices_rx = crate::MISC_DEVICES_RX.write();
+        assert!(devices_rx.len() > index);
+        devices_rx.remove(index);
+
+        assert!(misc_devices.len() > index);
+        misc_devices.remove(index);
+
+        result = true;
+    }
+
+    Ok(result)
 }
 
 /// Watch profiles and script directory, as well as our
@@ -2928,9 +2914,13 @@ mod thread_util {
 }
 
 /// open the control and LED devices of the keyboard
-fn init_keyboard_device(keyboard_device: &KeyboardDevice, hidapi: &hidapi::HidApi) {
+fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     info!("Opening keyboard device...");
-    keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
+
+    let hidapi = crate::HIDAPI.read();
+    let hidapi = hidapi.as_ref().unwrap();
+
+    keyboard_device.write().open(&hidapi).unwrap_or_else(|e| {
         error!("Error opening the keyboard device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -2959,10 +2949,13 @@ fn init_keyboard_device(keyboard_device: &KeyboardDevice, hidapi: &hidapi::HidAp
 }
 
 /// open the sub-devices of the mouse
-fn init_mouse_device(mouse_device: &MouseDevice, hidapi: &hidapi::HidApi) {
+fn init_mouse_device(mouse_device: &MouseDevice) {
     info!("Opening mouse device...");
 
-    mouse_device.write().open(hidapi).unwrap_or_else(|e| {
+    let hidapi = crate::HIDAPI.read();
+    let hidapi = hidapi.as_ref().unwrap();
+
+    mouse_device.write().open(&hidapi).unwrap_or_else(|e| {
         error!("Error opening the mouse device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -2990,10 +2983,13 @@ fn init_mouse_device(mouse_device: &MouseDevice, hidapi: &hidapi::HidApi) {
 }
 
 /// open the misc device
-fn init_misc_device(misc_device: &MiscDevice, hidapi: &hidapi::HidApi) {
+fn init_misc_device(misc_device: &MiscDevice) {
     info!("Opening misc device...");
 
-    misc_device.write().open(hidapi).unwrap_or_else(|e| {
+    let hidapi = crate::HIDAPI.read();
+    let hidapi = hidapi.as_ref().unwrap();
+
+    misc_device.write().open(&hidapi).unwrap_or_else(|e| {
         error!("Error opening the misc device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -3172,6 +3168,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
+            {
+                *crate::HIDAPI.write() = Some(hidapi);
+            }
+
             // initialize plugins
             info!("Registering plugins...");
             plugins::register_plugins()
@@ -3187,7 +3187,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             // enumerate devices
             info!("Enumerating connected devices...");
 
-            if let Ok(devices) = hwdevices::probe_devices(&hidapi) {
+            if let Ok(devices) = hwdevices::probe_devices() {
                 // store device handles and associated sender/receiver pairs
                 let mut keyboard_devices = vec![];
                 let mut mouse_devices = vec![];
@@ -3195,7 +3195,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize keyboard devices
                 for (index, device) in devices.0.iter().enumerate() {
-                    init_keyboard_device(device, &hidapi);
+                    init_keyboard_device(device);
 
                     let usb_vid = device.read().get_usb_vid();
                     let usb_pid = device.read().get_usb_pid();
@@ -3216,15 +3216,17 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         panic!()
                     });
 
-                    keyboard_devices.push((device, kbd_rx, kbd_tx));
-                    crate::KEYBOARD_DEVICES.lock().push(device.clone());
+                    keyboard_devices.push((device, kbd_rx.clone(), kbd_tx));
+
+                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
+                    crate::KEYBOARD_DEVICES.write().push(device.clone());
                 }
 
                 // initialize mouse devices
                 for (index, device) in devices.1.iter().enumerate() {
                     // enable mouse input
                     if enable_mouse {
-                        init_mouse_device(device, &hidapi);
+                        init_mouse_device(device);
 
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
@@ -3265,8 +3267,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             });
                         }
 
-                        mouse_devices.push((device, mouse_rx, mouse_tx));
-                        crate::MOUSE_DEVICES.lock().push(device.clone());
+                        mouse_devices.push((device, mouse_rx.clone(), mouse_tx));
+
+                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
+                        crate::MOUSE_DEVICES.write().push(device.clone());
                     } else {
                         info!("Found mouse device, but mouse support is DISABLED by configuration");
                     }
@@ -3274,7 +3278,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize misc devices
                 for (index, device) in devices.2.iter().enumerate() {
-                    init_misc_device(device, &hidapi);
+                    init_misc_device(device);
 
                     if device.read().has_input_device() {
                         let usb_vid = device.read().get_usb_vid();
@@ -3296,23 +3300,20 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             panic!()
                         });
 
-                        misc_devices.push((device, misc_rx, misc_tx));
-                    } else {
-                        let (misc_tx, misc_rx) = unbounded();
-                        misc_devices.push((device, misc_rx, misc_tx));
+                        misc_devices.push((device, misc_rx.clone(), misc_tx));
+                        crate::MISC_DEVICES_RX.write().push(misc_rx);
                     }
 
-                    crate::MISC_DEVICES.lock().push(device.clone());
+                    crate::MISC_DEVICES.write().push(device.clone());
                 }
 
                 info!("Device enumeration completed");
 
-                if crate::KEYBOARD_DEVICES.lock().is_empty()
-                    && crate::MOUSE_DEVICES.lock().is_empty()
-                    && crate::MISC_DEVICES.lock().is_empty()
+                if crate::KEYBOARD_DEVICES.read().is_empty()
+                    && crate::MOUSE_DEVICES.read().is_empty()
+                    && crate::MISC_DEVICES.read().is_empty()
                 {
-                    error!("No supported devices found, exiting now");
-                    process::exit(5);
+                    warn!("No supported devices found!");
                 }
 
                 info!("Performing late initializations...");
@@ -3349,31 +3350,33 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 // fs::remove_file("/run/lock/eruption-hotplug-helper.lock")
                 //     .unwrap_or_else(|e| error!("Could not remove lock file: {}", e));
 
-                debug!("Entering the main loop now...");
+                'OUTER_LOOP: loop {
+                    info!("Entering the main loop now...");
 
-                // enter the main loop
-                run_main_loop(
-                    keyboard_devices
-                        .iter()
-                        .map(|d| (d.0.clone(), d.1.clone()))
-                        .collect::<Vec<_>>(),
-                    mouse_devices
-                        .iter()
-                        .map(|d| (d.0.clone(), d.1.clone()))
-                        .collect::<Vec<_>>(),
-                    misc_devices
-                        .iter()
-                        .map(|d| (d.0.clone(), d.1.clone()))
-                        .collect::<Vec<_>>(),
-                    &dbus_api_tx,
-                    &ctrl_c_rx,
-                    &dbus_rx,
-                    &fsevents_rx,
-                )
-                .await
-                .unwrap_or_else(|e| error!("{}", e));
+                    let mut errors_present = false;
 
-                debug!("Left the main loop");
+                    // enter the main loop
+                    run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx)
+                        .await
+                        .unwrap_or_else(|e| {
+                            warn!("Left the main loop due to an irrecoverable error: {}", e);
+                            errors_present = true;
+                        });
+
+                    if !errors_present {
+                        info!("Main loop terminated gracefully");
+                    }
+
+                    if crate::QUIT.load(Ordering::SeqCst) {
+                        break 'OUTER_LOOP;
+                    }
+
+                    // wait a few miliseconds to give devices time to settle
+                    thread::sleep(Duration::from_millis(50));
+
+                    // remove disconnected or failed devices
+                    remove_failed_devices()?;
+                }
 
                 // we left the main loop, so send a final message to the running Lua VMs
                 info!("Shutting down all Lua VMs now...");
@@ -3395,7 +3398,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         .wait_for(&mut pending, Duration::from_millis(2500));
 
                     if result.timed_out() {
-                        warn!("Timed out while waiting for a Lua VM to shut down, terminating now");
+                        warn!("Timed out while waiting for a Lua VM to shut down");
                         break;
                     }
 

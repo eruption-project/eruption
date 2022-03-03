@@ -87,6 +87,8 @@ pub struct RoccatKovaAimo {
 
     pub button_states: Arc<Mutex<BitVec>>,
 
+    pub has_failed: bool,
+
     // device specific configuration options
     pub brightness: i32,
 }
@@ -106,6 +108,8 @@ impl RoccatKovaAimo {
             ctrl_hiddev: Arc::new(Mutex::new(None)),
 
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
+
+            has_failed: false,
 
             brightness: 100,
         }
@@ -390,6 +394,14 @@ impl DeviceTrait for RoccatKovaAimo {
 
             Ok(())
         }
+    }
+
+    fn is_initialized(&self) -> Result<bool> {
+        Ok(self.is_initialized)
+    }
+
+    fn has_failed(&self) -> Result<bool> {
+        Ok(self.has_failed)
     }
 
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
@@ -786,7 +798,14 @@ impl MouseDeviceTrait for RoccatKovaAimo {
                     Ok(())
                 }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+                Err(_) => {
+                    // the device has failed or has been disconnected
+                    self.is_initialized = false;
+                    self.is_opened = false;
+                    self.has_failed = true;
+
+                    return Err(HwDeviceError::InvalidResult {}.into());
+                }
             }
         }
     }
