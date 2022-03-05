@@ -115,9 +115,9 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
         MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
 
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
         MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
