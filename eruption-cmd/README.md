@@ -20,7 +20,7 @@ $ eruption-cmd
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-eruption-cmd 0.0.1
+eruption-cmd 0.0.2
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
@@ -37,5 +37,5 @@ FLAGS:
 SUBCOMMANDS:
     completions           Generate shell completions
     help                  Print this message or the help of the given subcommand(s)
-    
+
 ```

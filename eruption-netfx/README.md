@@ -24,7 +24,7 @@ OK
 ```shell
 $ eruption-netfx
 
-eruption-netfx 0.0.5
+eruption-netfx 0.1.1
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

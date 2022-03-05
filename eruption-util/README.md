@@ -20,7 +20,7 @@ $ eruption-util
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-eruption-util 0.0.5
+eruption-util 0.0.7
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

@@ -27,7 +27,7 @@ $ eruption-process-monitor rules remove 5
 
 ```shell
 $ eruption-process-monitor
-eruption-process-monitor 0.0.9
+eruption-process-monitor 0.0.15
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

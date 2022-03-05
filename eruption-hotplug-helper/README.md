@@ -18,7 +18,7 @@ $ sudo eruption-hotplug-helper hotplug
 
 ```shell
 $ eruption-hotplug-helper
-eruption-hotplug-helper 0.1.1
+eruption-hotplug-helper 0.1.2
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
