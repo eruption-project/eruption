@@ -20,7 +20,7 @@
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread,
-    spawn_mouse_input_thread_secondary, EXPERIMENTAL_FEATURES, SDK_SUPPORT_ACTIVE,
+    SDK_SUPPORT_ACTIVE,
 };
 use crossbeam::channel::unbounded;
 use lazy_static::lazy_static;
@@ -98,6 +98,10 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     init_keyboard_device(device);
 
+                    // place a request to re-enter the main loop, this will drop all global locks
+                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                    thread::sleep(Duration::from_millis(25));
+
                     let usb_vid = device.read().get_usb_vid();
                     let usb_pid = device.read().get_usb_pid();
 
@@ -140,11 +144,15 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         init_mouse_device(device);
 
+                        // place a request to re-enter the main loop, this will drop all global locks
+                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                        thread::sleep(Duration::from_millis(25));
+
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
 
                         let (mouse_tx, mouse_rx) = unbounded();
-                        let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -162,7 +170,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         });
 
                         // spawn a thread to handle possible sub-devices
-                        if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
                             && device.read().has_secondary_device()
                         {
                             info!("Spawning mouse input thread for secondary sub-device...");
@@ -177,7 +185,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                                 error!("Could not spawn a thread: {}", e);
                                 panic!()
                             });
-                        }
+                        }*/
 
                         crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
                         crate::MOUSE_DEVICES.write().push(device.clone());
@@ -196,6 +204,10 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                     info!("Initializing the hotplugged misc device...");
 
                     init_misc_device(device);
+
+                    // place a request to re-enter the main loop, this will drop all global locks
+                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                    thread::sleep(Duration::from_millis(25));
 
                     if device.read().has_input_device() {
                         let usb_vid = device.read().get_usb_vid();
@@ -219,8 +231,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
                     } else {
+                        // insert an unused rx
                         let (_misc_tx, misc_rx) = unbounded();
-
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
                     }
 

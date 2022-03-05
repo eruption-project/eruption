@@ -699,7 +699,7 @@ fn spawn_mouse_input_thread(
 }
 
 /// Spawns the mouse events thread for an additional sub-device on the mouse and executes the thread's main loop
-fn spawn_mouse_input_thread_secondary(
+/* fn spawn_mouse_input_thread_secondary(
     mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
     mouse_device: MouseDevice,
     device_index: usize,
@@ -849,7 +849,7 @@ fn spawn_mouse_input_thread_secondary(
         });
 
     Ok(())
-}
+} */
 
 /// Spawns the misc devices input thread and executes it's main loop
 fn spawn_misc_input_thread(
@@ -2151,10 +2151,6 @@ async fn run_main_loop(
 
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
-    // let keyboard_devices = Vec<(KeyboardDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
-    // let mouse_devices =  Vec<(MouseDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
-    // let misc_devices =  Vec<(MiscDevice, Receiver<Option<evdev_rs::InputEvent>>)>;
-
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
@@ -2205,6 +2201,10 @@ async fn run_main_loop(
     }
 
     'MAIN_LOOP: loop {
+        // update timekeeping and state
+        ticks += 1;
+        start_time = Instant::now();
+
         // check if we shall terminate the main loop (and later re-enter it)
         // this is needed e.g. after a device hotplug event or after device removal
         if REENTER_MAIN_LOOP.load(Ordering::SeqCst) {
@@ -2213,10 +2213,6 @@ async fn run_main_loop(
 
             return Ok(());
         }
-
-        // update timekeeping and state
-        ticks += 1;
-        start_time = Instant::now();
 
         {
             if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
@@ -2694,14 +2690,14 @@ async fn run_main_loop(
                     elapsed_after_sleep,
                     1000 / constants::TARGET_FPS
                 );
-            } /* else if elapsed_after_sleep < 5_u128 {
-                  debug!("Short loop detected");
-                  debug!(
-                      "Loop took: {} milliseconds, goal: {}",
-                      elapsed_after_sleep,
-                      1000 / constants::TARGET_FPS
-                  );
-              } else {
+            } else if elapsed_after_sleep < 5_u128 {
+                debug!("Short loop detected");
+                debug!(
+                    "Loop took: {} milliseconds, goal: {}",
+                    elapsed_after_sleep,
+                    1000 / constants::TARGET_FPS
+                );
+            } /* else {
                   debug!(
                       "Loop took: {} milliseconds, goal: {}",
                       elapsed_after_sleep,
@@ -3188,11 +3184,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             info!("Enumerating connected devices...");
 
             if let Ok(devices) = hwdevices::probe_devices() {
-                // store device handles and associated sender/receiver pairs
-                let mut keyboard_devices = vec![];
-                let mut mouse_devices = vec![];
-                let mut misc_devices = vec![];
-
                 // initialize keyboard devices
                 for (index, device) in devices.0.iter().enumerate() {
                     init_keyboard_device(device);
@@ -3216,8 +3207,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         panic!()
                     });
 
-                    keyboard_devices.push((device, kbd_rx.clone(), kbd_tx));
-
                     crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
                     crate::KEYBOARD_DEVICES.write().push(device.clone());
                 }
@@ -3232,7 +3221,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         let usb_pid = device.read().get_usb_pid();
 
                         let (mouse_tx, mouse_rx) = unbounded();
-                        let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -3250,7 +3239,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         });
 
                         // spawn a thread to handle possible sub-devices
-                        if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
                             && device.read().has_secondary_device()
                         {
                             info!("Spawning mouse input thread for secondary sub-device...");
@@ -3265,9 +3254,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 error!("Could not spawn a thread: {}", e);
                                 panic!()
                             });
-                        }
-
-                        mouse_devices.push((device, mouse_rx.clone(), mouse_tx));
+                        } */
 
                         crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
                         crate::MOUSE_DEVICES.write().push(device.clone());
@@ -3300,7 +3287,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             panic!()
                         });
 
-                        misc_devices.push((device, misc_rx.clone(), misc_tx));
+                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                    } else {
+                        // insert an unused rx
+                        let (_misc_tx, misc_rx) = unbounded();
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
                     }
 
@@ -3345,10 +3335,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 info!("Late initializations completed");
 
                 info!("Startup completed");
-
-                // debug!("Removing eruption-hotplug-helper.lock file...");
-                // fs::remove_file("/run/lock/eruption-hotplug-helper.lock")
-                //     .unwrap_or_else(|e| error!("Could not remove lock file: {}", e));
 
                 'OUTER_LOOP: loop {
                     info!("Entering the main loop now...");
@@ -3425,12 +3411,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // set LEDs of all keyboards to a known final state, then close all associated devices
                 let shutdown_keyboards = async {
-                    for device in keyboard_devices.iter() {
-                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
+                    for device in crate::KEYBOARD_DEVICES.read().iter() {
+                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
-                        device.0.write().close_all().unwrap_or_else(|e| {
+                        device.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
                     }
@@ -3438,12 +3424,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // set LEDs of all mice to a known final state, then close all associated devices
                 let shutdown_mice = async {
-                    for device in mouse_devices.iter() {
-                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
+                    for device in crate::MOUSE_DEVICES.read().iter() {
+                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
-                        device.0.write().close_all().unwrap_or_else(|e| {
+                        device.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
                     }
@@ -3451,12 +3437,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // set LEDs of all misc devices to a known final state, then close all associated devices
                 let shutdown_misc = async {
-                    for device in misc_devices.iter() {
-                        device.0.write().set_led_off_pattern().unwrap_or_else(|e| {
+                    for device in crate::MISC_DEVICES.read().iter() {
+                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
-                        device.0.write().close_all().unwrap_or_else(|e| {
+                        device.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
                     }
@@ -3473,6 +3459,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             error!("Could not open HIDAPI");
             process::exit(1);
         }
+    }
+
+    if util::file_exists("/run/lock/eruption-hotplug-helper.lock") {
+        debug!("Removing stale eruption-hotplug-helper.lock file...");
+
+        fs::remove_file("/run/lock/eruption-hotplug-helper.lock")
+            .unwrap_or_else(|e| warn!("Could not remove lock file: {}", e));
     }
 
     info!("Exiting now");

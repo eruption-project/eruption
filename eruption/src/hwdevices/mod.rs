@@ -1637,7 +1637,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
 }
 
 /// Get the path of the USB device from udev
-pub fn get_input_sub_dev_from_udev(
+/* pub fn get_input_sub_dev_from_udev(
     usb_vid: u16,
     usb_pid: u16,
     device_index: usize,
@@ -1726,8 +1726,7 @@ pub fn get_input_sub_dev_from_udev(
             }
         }
     }
-}
-
+} */
 // Get the path of the USB device from udev
 // pub fn get_input_dev_from_udev_unsafe(usb_vid: u16, usb_pid: u16) -> Result<String> {
 //     match Enumerator::new() {
