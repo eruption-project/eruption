@@ -39,6 +39,9 @@ The eruption configuration file `/etc/eruption/eruption.conf`:
 # Main configuration file
 
 [global]
+enable_experimental_features = false
+driver_maturity_level = "testing"
+
 profile_dirs = ["/var/lib/eruption/profiles/"]
 script_dirs = ["/usr/share/eruption/scripts/"]
 
@@ -46,11 +49,31 @@ script_dirs = ["/usr/share/eruption/scripts/"]
 # keyboard_variant = "ANSI"
 keyboard_variant = "ISO"
 
+# Mouse handling
 enable_mouse = true
 grab_mouse = true
+
+# "Away from keyboard" handling
+afk_profile = "/var/lib/eruption/profiles/rainbow-wave.profile"
+afk_timeout_secs = 0
+
+# [[devices]]
+# entry_type = "device"
+# device_class = "serial"
+# device_name = "Adalight Custom Serial LEDs"
+# device_file = "/dev/ttyACM0"
+
+# [[devices]]
+# entry_type = "blacklist"
+# vendor_id = 0x1e7d
+# product_id = 0x311a
 ```
 
 #### Section [global]
+
+*enable_experimental_features* = Enable experimental (unstable) features
+
+*driver_maturity_level* = Allow drivers with this maturity levels: "stable", "testing", "experimental"
 
 *keyboard_variant* = Switch between sub-variants of your device. (Only partially supported)
 
