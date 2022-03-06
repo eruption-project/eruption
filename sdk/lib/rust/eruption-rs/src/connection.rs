@@ -79,12 +79,3 @@ pub enum ConnectionType {
 fn make_transport(_connection_type: &ConnectionType) -> Result<impl Transport> {
     LocalTransport::new()
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}

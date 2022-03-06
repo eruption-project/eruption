@@ -17,12 +17,14 @@
 #
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
+from sqlite3 import connect
 import sys
 import time
 
 from eruption import SDK_VERSION, Connection, Canvas, Color
+from eruption.hardware import HotplugInfo
 
-EXAMPLE_NAME = "Simple Python Example #1"
+EXAMPLE_NAME = "Python Example 'hotplug'"
 
 
 def main():
@@ -42,36 +44,8 @@ def main():
         status = connection.get_server_status()
         print(status)
 
-        # create a new canvas
-        canvas = Canvas()
-
-        red = Color(255, 0, 0, 128)
-        green = Color(0, 255, 0, 128)
-        blue = Color(0, 0, 255, 128)
-        final = Color(0, 0, 0, 0)
-
-        canvas.fill(red)
-        print("Submitting canvas...")
-        connection.submit_canvas(canvas)
-
-        time.sleep(1)
-
-        canvas.fill(green)
-
-        print("Submitting canvas...")
-        connection.submit_canvas(canvas)
-
-        time.sleep(1)
-
-        canvas.fill(blue)
-        print("Submitting canvas...")
-        connection.submit_canvas(canvas)
-
-        time.sleep(1)
-
-        canvas.fill(final)
-        print("Submitting canvas...")
-        connection.submit_canvas(canvas)
+        hotplug_info = HotplugInfo()
+        connection.notify_device_hotplug(hotplug_info)
 
         connection.disconnect()
         print("Exiting now")

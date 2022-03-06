@@ -4,6 +4,7 @@
 """Generated protocol buffer code."""
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,152 +15,18 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor.FileDescriptor(
-  name='sdk-support.proto',
-  package='sdk_support',
-  syntax='proto3',
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11sdk-support.proto\x12\x0bsdk_support\"T\n\x07Request\x12.\n\x0crequest_type\x18\x01 \x01(\x0e\x32\x18.sdk_support.RequestType\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\t\n\x07Payload\"V\n\x08Response\x12/\n\rresponse_type\x18\x01 \x01(\x0e\x32\x18.sdk_support.RequestType\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\t\n\x07Payload*3\n\x0bRequestType\x12\x08\n\x04NOOP\x10\x00\x12\n\n\x06STATUS\x10\x01\x12\x0e\n\nSET_CANVAS\x10\x02\x32@\n\nSdkSupport\x12\x32\n\x03Sdk\x12\x14.sdk_support.Request\x1a\x15.sdk_support.Responseb\x06proto3'
-)
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11sdk-support.proto\x12\x0bsdk_support\"T\n\x07Request\x12.\n\x0crequest_type\x18\x01 \x01(\x0e\x32\x18.sdk_support.RequestType\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\t\n\x07Payload\"V\n\x08Response\x12/\n\rresponse_type\x18\x01 \x01(\x0e\x32\x18.sdk_support.RequestType\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\t\n\x07Payload*G\n\x0bRequestType\x12\x08\n\x04NOOP\x10\x00\x12\n\n\x06STATUS\x10\x01\x12\x0e\n\nSET_CANVAS\x10\x02\x12\x12\n\x0eNOTIFY_HOTPLUG\x10\x03\x32@\n\nSdkSupport\x12\x32\n\x03Sdk\x12\x14.sdk_support.Request\x1a\x15.sdk_support.Responseb\x06proto3')
 
-_REQUESTTYPE = _descriptor.EnumDescriptor(
-  name='RequestType',
-  full_name='sdk_support.RequestType',
-  filename=None,
-  file=DESCRIPTOR,
-  create_key=_descriptor._internal_create_key,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='NOOP', index=0, number=0,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='STATUS', index=1, number=1,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='SET_CANVAS', index=2, number=2,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=208,
-  serialized_end=259,
-)
-_sym_db.RegisterEnumDescriptor(_REQUESTTYPE)
-
+_REQUESTTYPE = DESCRIPTOR.enum_types_by_name['RequestType']
 RequestType = enum_type_wrapper.EnumTypeWrapper(_REQUESTTYPE)
 NOOP = 0
 STATUS = 1
 SET_CANVAS = 2
+NOTIFY_HOTPLUG = 3
 
 
-
-_REQUEST = _descriptor.Descriptor(
-  name='Request',
-  full_name='sdk_support.Request',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='request_type', full_name='sdk_support.Request.request_type', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='data', full_name='sdk_support.Request.data', index=1,
-      number=2, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='Payload', full_name='sdk_support.Request.Payload',
-      index=0, containing_type=None,
-      create_key=_descriptor._internal_create_key,
-    fields=[]),
-  ],
-  serialized_start=34,
-  serialized_end=118,
-)
-
-
-_RESPONSE = _descriptor.Descriptor(
-  name='Response',
-  full_name='sdk_support.Response',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='response_type', full_name='sdk_support.Response.response_type', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='data', full_name='sdk_support.Response.data', index=1,
-      number=2, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='Payload', full_name='sdk_support.Response.Payload',
-      index=0, containing_type=None,
-      create_key=_descriptor._internal_create_key,
-    fields=[]),
-  ],
-  serialized_start=120,
-  serialized_end=206,
-)
-
-_REQUEST.fields_by_name['request_type'].enum_type = _REQUESTTYPE
-_REQUEST.oneofs_by_name['Payload'].fields.append(
-  _REQUEST.fields_by_name['data'])
-_REQUEST.fields_by_name['data'].containing_oneof = _REQUEST.oneofs_by_name['Payload']
-_RESPONSE.fields_by_name['response_type'].enum_type = _REQUESTTYPE
-_RESPONSE.oneofs_by_name['Payload'].fields.append(
-  _RESPONSE.fields_by_name['data'])
-_RESPONSE.fields_by_name['data'].containing_oneof = _RESPONSE.oneofs_by_name['Payload']
-DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
-DESCRIPTOR.message_types_by_name['Response'] = _RESPONSE
-DESCRIPTOR.enum_types_by_name['RequestType'] = _REQUESTTYPE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
+_REQUEST = DESCRIPTOR.message_types_by_name['Request']
+_RESPONSE = DESCRIPTOR.message_types_by_name['Response']
 Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,), {
   'DESCRIPTOR' : _REQUEST,
   '__module__' : 'sdk_support_pb2'
@@ -174,31 +41,16 @@ Response = _reflection.GeneratedProtocolMessageType('Response', (_message.Messag
   })
 _sym_db.RegisterMessage(Response)
 
+_SDKSUPPORT = DESCRIPTOR.services_by_name['SdkSupport']
+if _descriptor._USE_C_DESCRIPTORS == False:
 
-
-_SDKSUPPORT = _descriptor.ServiceDescriptor(
-  name='SdkSupport',
-  full_name='sdk_support.SdkSupport',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_start=261,
-  serialized_end=325,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='Sdk',
-    full_name='sdk_support.SdkSupport.Sdk',
-    index=0,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_SDKSUPPORT)
-
-DESCRIPTOR.services_by_name['SdkSupport'] = _SDKSUPPORT
-
+  DESCRIPTOR._options = None
+  _REQUESTTYPE._serialized_start=208
+  _REQUESTTYPE._serialized_end=279
+  _REQUEST._serialized_start=34
+  _REQUEST._serialized_end=118
+  _RESPONSE._serialized_start=120
+  _RESPONSE._serialized_end=206
+  _SDKSUPPORT._serialized_start=281
+  _SDKSUPPORT._serialized_end=345
 # @@protoc_insertion_point(module_scope)

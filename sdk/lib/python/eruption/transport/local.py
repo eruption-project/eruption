@@ -25,6 +25,7 @@ from eruption.transport.sdk_support_pb2 import Request, Response, RequestType
 SOCKET_ADDRESS = "/run/eruption/control.sock"
 MAX_BUF = 4096
 
+
 class LocalTransport:
     """The Local transport (connects to Eruption via a UNIX domain socket)"""
 
@@ -55,7 +56,7 @@ class LocalTransport:
         response = Response()
         response.ParseFromString(recv_buf[1:])
 
-        return { "server": str(response.data, 'utf-8') }
+        return {"server": str(response.data, 'utf-8')}
 
     def submit_canvas(self, canvas):
         """Submit the canvas to Eruption for realization"""
@@ -69,6 +70,26 @@ class LocalTransport:
             color_bytes.append(color.data[3])
 
         request.data = bytes(color_bytes)
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        return response
+
+    def notify_device_hotplug(self, hotplug_info):
+        """Notify Eruption about a device hotplug event"""
+        request = Request(request_type=RequestType.NOTIFY_HOTPLUG)
+
+        data_bytes = []
+        data_bytes.append(hotplug_info.usb_vid)
+        data_bytes.append(hotplug_info.usb_pid)
+
+        request.data = bytes(data_bytes)
 
         buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
         buf += request.SerializeToString()

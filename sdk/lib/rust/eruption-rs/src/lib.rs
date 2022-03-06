@@ -28,12 +28,3 @@ pub const SDK_NAME: &str = "Eruption SDK";
 pub const SDK_VERSION: &str = "0.0.2";
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}

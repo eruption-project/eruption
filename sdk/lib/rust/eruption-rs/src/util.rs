@@ -22,12 +22,3 @@ use std::mem::MaybeUninit;
 pub unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
     &*(buf as *const [MaybeUninit<u8>] as *const [u8])
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}

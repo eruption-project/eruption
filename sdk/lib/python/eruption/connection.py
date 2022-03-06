@@ -18,13 +18,14 @@
 
 from eruption.transport.local import LocalTransport
 
+
 class Connection:
     """Connection to a running instance of the Eruption daemon"""
 
     # Connection types
-    UNKNOWN: int    = 0  # unknown connection
-    LOCAL: int      = 1  # local transport
-    REMOTE: int     = 2  # type REMOTE is currently not implemented
+    UNKNOWN: int = 0  # unknown connection
+    LOCAL: int = 1  # local transport
+    REMOTE: int = 2  # type REMOTE is currently not implemented
 
     def __init__(self, *args, **kwargs):
         if not ("type" in kwargs and kwargs["type"] == Connection.LOCAL):
@@ -68,12 +69,22 @@ class Connection:
         result = self._con.submit_canvas(canvas)
         return result
 
+    def notify_device_hotplug(self, hotplug_info, *args, **kwargs):
+        """Notify Eruption about a device hotplug event"""
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.notify_device_hotplug(hotplug_info)
+        return result
+
 
 class InvalidParam(Exception):
     pass
 
+
 class NotConnectedError(Exception):
     pass
+
 
 class ConnectionFailed(Exception):
     pass

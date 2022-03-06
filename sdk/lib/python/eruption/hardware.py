@@ -14,3 +14,10 @@
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
 #    Copyright (c) 2019-2022, The Eruption Development Team
+
+
+class HotplugInfo:
+    """Holds information about a device Hotplug event"""
+
+    usb_vid = 0
+    usb_pid = 0

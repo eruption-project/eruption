@@ -16,9 +16,9 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-SDK_NAME = "Eruption SDK"
-SDK_VERSION = "0.0.1"
-
-from eruption.connection import Connection
-from eruption.color  import Color
 from eruption.canvas import Canvas
+from eruption.color import Color
+from eruption.connection import Connection
+
+SDK_NAME = "Eruption SDK"
+SDK_VERSION = "0.0.2"

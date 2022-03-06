@@ -20,6 +20,7 @@ from eruption.color import Color
 
 CANVAS_SIZE = 144 + 36
 
+
 class Canvas:
     """A canvas that can be submitted to Eruption via an open connection"""
 
