@@ -31,8 +31,8 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 crossbeam = "0.8.1"
-clap =  { version = "3.1.2", features = ["derive"] }
-clap_complete = "3.1.0"
+clap =  { version = "3.1.5", features = ["derive"] }
+clap_complete = "3.1.1"
 ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
@@ -50,8 +50,8 @@ config = "0.12.0"
 uuid = { version = "1.0.0-alpha.1", features = ["serde", "v4"] }
 toml = "0.5.8"
 thiserror = "1.0.30"
-eyre = "0.6.6"
-color-eyre = "0.6.0"
+eyre = "0.6.7"
+color-eyre = "0.6.1"
 comfy-table = "5.0.1"
 paste = "1.0.6"
 dbus = "0.9.5"
