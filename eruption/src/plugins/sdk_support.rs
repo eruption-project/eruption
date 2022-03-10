@@ -19,7 +19,7 @@
 
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
-    spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread,
+    spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
     SDK_SUPPORT_ACTIVE,
 };
 use crossbeam::channel::unbounded;
@@ -123,6 +123,17 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
                     crate::KEYBOARD_DEVICES.write().push(device.clone());
+
+                    debug!("Sending device hotplug notification...");
+
+                    let dbus_api_tx = crate::DBUS_API_TX.lock();
+                    let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+                    dbus_api_tx
+                        .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
                 }
             }
 
@@ -189,6 +200,17 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
                         crate::MOUSE_DEVICES.write().push(device.clone());
+
+                        debug!("Sending device hotplug notification...");
+
+                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+                        dbus_api_tx
+                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending dbus API event: {}", e)
+                            });
                     }
                 } else {
                     info!("Found mouse device, but mouse support is DISABLED by configuration");
@@ -230,10 +252,32 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         });
 
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
+
+                        debug!("Sending device hotplug notification...");
+
+                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+                        dbus_api_tx
+                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending dbus API event: {}", e)
+                            });
                     } else {
                         // insert an unused rx
                         let (_misc_tx, misc_rx) = unbounded();
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
+
+                        debug!("Sending device hotplug notification...");
+
+                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+                        dbus_api_tx
+                            .send(DbusApiEvent::DeviceHotplug((0, 0), false))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending dbus API event: {}", e)
+                            });
                     }
 
                     crate::MISC_DEVICES.write().push(device.clone());

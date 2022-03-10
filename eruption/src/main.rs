@@ -193,6 +193,9 @@ lazy_static! {
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
+    /// Channel to the D-Bus interface
+    static ref DBUS_API_TX: Arc<Mutex<Option<Sender<DbusApiEvent>>>> = Arc::new(Mutex::new(None));
+
     /// Channels to the Lua VMs
     static ref LUA_TXS: Arc<Mutex<Vec<LuaTx>>> = Arc::new(Mutex::new(vec![]));
 
@@ -386,6 +389,7 @@ pub enum DbusApiEvent {
     ActiveSlotChanged,
     BrightnessChanged,
     DeviceStatusChanged,
+    DeviceHotplug((u16, u16), bool),
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
@@ -419,6 +423,10 @@ fn spawn_dbus_api_thread(
                         DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed()?,
 
                         DbusApiEvent::DeviceStatusChanged => dbus.notify_device_status_changed()?,
+
+                        DbusApiEvent::DeviceHotplug(device_info, remove) => {
+                            dbus.notify_device_hotplug(device_info, remove)?
+                        }
                     },
 
                     Err(_e) => {
@@ -2744,6 +2752,15 @@ fn remove_failed_devices() -> Result<bool> {
         keyboard_devices.remove(index);
 
         result = true;
+
+        debug!("Sending device hot remove notification...");
+
+        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+        dbus_api_tx
+            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
     let mut mouse_devices = crate::MOUSE_DEVICES.write();
@@ -2761,6 +2778,15 @@ fn remove_failed_devices() -> Result<bool> {
         mouse_devices.remove(index);
 
         result = true;
+
+        debug!("Sending device hot remove notification...");
+
+        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+        dbus_api_tx
+            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
     let mut misc_devices = crate::MISC_DEVICES.write();
@@ -2778,6 +2804,15 @@ fn remove_failed_devices() -> Result<bool> {
         misc_devices.remove(index);
 
         result = true;
+
+        debug!("Sending device hot remove notification...");
+
+        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+        dbus_api_tx
+            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
     Ok(result)
@@ -3327,6 +3362,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     error!("Could not spawn a thread: {}", e);
                     panic!()
                 });
+
+                *DBUS_API_TX.lock() = Some(dbus_api_tx.clone());
 
                 let (fsevents_tx, fsevents_rx) = unbounded();
                 register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))

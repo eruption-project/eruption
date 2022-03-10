@@ -475,6 +475,11 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 log::info!("Process monitor ruleset has changed");
                 ui::process_monitor::update_rules_view(&builder)?;
             }
+
+            dbus_client::Message::DeviceHotplug(_device_info) => {
+                log::info!("A device has been hotplugged/removed");
+                ui::main::update_main_window(&builder).unwrap();
+            }
         }
     }
 

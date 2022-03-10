@@ -73,6 +73,7 @@ pub struct DbusApi {
     profiles_changed: Arc<Signal<()>>,
     brightness_changed: Arc<Signal<()>>,
     device_status_changed: Arc<Signal<()>>,
+    device_hotplug: Arc<Signal<()>>,
 }
 
 #[allow(dead_code)]
@@ -120,6 +121,12 @@ impl DbusApi {
                 .sarg::<String, _>("status"),
         );
         let device_status_changed_signal_clone = device_status_changed_signal.clone();
+
+        let device_hotplug_signal = Arc::new(
+            f.signal("DeviceHotplug", ())
+                .sarg::<(u16, u16, bool), _>("device_info"),
+        );
+        let device_hotplug_signal_clone = device_hotplug_signal.clone();
 
         let active_slot_property = f
             .property::<u64, _>("ActiveSlot", ())
@@ -404,6 +411,7 @@ impl DbusApi {
                     .add(
                         f.interface("org.eruption.Device", ())
                             .add_s(device_status_changed_signal_clone)
+                            .add_s(device_hotplug_signal_clone)
                             .add_m(
                                 f.method("SetDeviceConfig", (), move |m| {
                                     if perms::has_settings_permission_cached(
@@ -883,6 +891,7 @@ impl DbusApi {
             profiles_changed: profiles_changed_signal,
             brightness_changed: brightness_changed_signal,
             device_status_changed: device_status_changed_signal,
+            device_hotplug: device_hotplug_signal,
         })
     }
 
@@ -914,7 +923,23 @@ impl DbusApi {
                 &"/org/eruption/devices".into(),
                 &"org.eruption.Device".into(),
                 &[result],
-            ));
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
+
+        Ok(())
+    }
+
+    pub fn notify_device_hotplug(&self, device_info: (u16, u16), removed: bool) -> Result<()> {
+        let _ = self
+            .connection
+            .as_ref()
+            .unwrap()
+            .send(self.device_hotplug.emit(
+                &"/org/eruption/devices".into(),
+                &"org.eruption.Device".into(),
+                &[(device_info.0, device_info.1, removed)],
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
 
         Ok(())
     }
@@ -930,7 +955,8 @@ impl DbusApi {
                 &"/org/eruption/config".into(),
                 &"org.eruption.Config".into(),
                 &[brightness as i64],
-            ));
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
 
         Ok(())
     }
@@ -946,7 +972,8 @@ impl DbusApi {
                 &"/org/eruption/slot".into(),
                 &"org.eruption.Slot".into(),
                 &[active_slot as u64],
-            ));
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
 
         Ok(())
     }
@@ -969,7 +996,8 @@ impl DbusApi {
                 &"/org/eruption/profile".into(),
                 &"org.eruption.Profile".into(),
                 &[active_profile],
-            ));
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
 
         Ok(())
     }
@@ -982,7 +1010,8 @@ impl DbusApi {
             .send(self.profiles_changed.msg(
                 &"/org/eruption/profile".into(),
                 &"org.eruption.Profile".into(),
-            ));
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
 
         Ok(())
     }
