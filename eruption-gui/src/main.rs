@@ -580,7 +580,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         if let Err(e) = ui::main::initialize_main_window(app) {
             log::error!("Could not start the Eruption GUI: {}", e);
 
-            let message = "Could not start the Eruption GUI, is the daemon running?".to_string();
+            let message =
+                "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
             let secondary = format!("Reason:\n{}", e);
 
             let message_dialog = MessageDialogBuilder::new()
