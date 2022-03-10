@@ -280,8 +280,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     if Path::new("/run/lock/eruption-sleep.lock").exists() {
                         log::info!("Waking up from system sleep...");
 
+                        // after resume from sleep, the connected devices will be in an indeterminate state
+                        // so restart the eruption daemon to be on the safe side
                         restart_eruption_daemon()?;
                     } else {
+                        // a hotplug event has been received while the system is up and running
+
                         // sleep until udev has settled
                         log::info!("Waiting for the devices to settle...");
 

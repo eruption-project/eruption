@@ -30,6 +30,9 @@ if [ "$1" = "pre" ] ; then
 else
     # wake up Eruption after system sleep
 
+    systemctl reset-failed eruption-hotplug-helper.service
+    systemctl reset-failed eruption.service
+
     rm /run/lock/eruption-hotplug-helper.lock
 
     systemctl start eruption-hotplug-helper.service
