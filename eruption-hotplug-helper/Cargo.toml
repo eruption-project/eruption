@@ -30,7 +30,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "3.1.5", features = ["derive"] }
+clap =  { version = "3.1.6", features = ["derive"] }
 clap_complete = "3.1.1"
 log = "0.4.14"
 syslog = "6.0.1"
@@ -54,5 +54,5 @@ icecream = "0.1.0"
 eruption-rs = { path = "../sdk/lib/rust/eruption-rs" }
 
 [dev-dependencies]
-pretty_assertions = "1.1.0"
+pretty_assertions = "1.2.0"
 tokio = { version = "1.17.0", features = ["test-util"] }

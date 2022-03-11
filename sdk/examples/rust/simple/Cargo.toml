@@ -28,7 +28,7 @@ log = "0.4.14"
 thiserror = "1.0.30"
 eyre = "0.6.7"
 color-eyre = "0.6.1"
-clap = "3.1.5"
+clap = "3.1.6"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 rust-embed = "6.3.0"
