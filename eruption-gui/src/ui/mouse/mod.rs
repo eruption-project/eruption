@@ -17,14 +17,12 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::time::Duration;
-
-use crate::constants;
-use crate::util;
-
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
+
+use crate::constants;
+use crate::util;
 
 mod hwdevices;
 
@@ -131,11 +129,11 @@ pub fn initialize_mouse_page(
     });
 
     // near realtime update path
-    glib::timeout_add_local(
-        Duration::from_millis(250),
+    crate::register_timer(
+        250,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak mouse_signal_label, @weak mouse_battery_level_label =>
-                    @default-return Continue(true), move || {
+                    @default-return Ok(()), move || {
 
             // device status
             if let Ok(device_status) = util::get_device_status(mouse_device_handle) {
@@ -164,16 +162,16 @@ pub fn initialize_mouse_page(
                 }
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     // fast update path
-    glib::timeout_add_local(
-        Duration::from_millis(2500),
+    crate::register_timer(
+        2500,
         clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
                     @weak mouse_profile_label, @weak debounce_switch,
-                    @weak angle_snapping_switch => @default-return Continue(true), move || {
+                    @weak angle_snapping_switch => @default-return Ok(()), move || {
 
             if let Ok(device_brightness) = util::get_device_brightness(mouse_device_handle) {
                 device_brightness_scale.set_value(device_brightness as f64);
@@ -195,14 +193,14 @@ pub fn initialize_mouse_page(
                 angle_snapping_switch.set_active(angle_snapping);
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     // slow update path
-    glib::timeout_add_local(
-        Duration::from_millis(4000),
-        clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Continue(true), move || {
+    crate::register_timer(
+        4000,
+        clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Ok(()), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
                 mouse_firmware_label.set_label(&firmware);
             }
@@ -211,18 +209,18 @@ pub fn initialize_mouse_page(
                 mouse_rate_label.set_label(&format!("{}", poll_rate));
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
-    glib::timeout_add_local(
-        Duration::from_millis(1000 / constants::TARGET_FPS),
-        clone!(@weak drawing_area => @default-return Continue(true), move || {
+    crate::register_timer(
+        1000 / constants::TARGET_FPS,
+        clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     Ok(mouse_device_page)
 }

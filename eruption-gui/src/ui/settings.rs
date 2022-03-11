@@ -20,7 +20,6 @@
 use std::{
     io::Read,
     process::{Command, Stdio},
-    time::Duration,
 };
 
 use crate::preferences;
@@ -94,11 +93,11 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         gtk::Inhibit(false)
     });
 
-    glib::timeout_add_local(
-        Duration::from_millis(500),
+    crate::register_timer(
+        500,
         clone!(@weak eruption_daemon_status_label, @weak eruption_daemon_switch, @weak process_monitor_daemon_status_label,
                     @weak process_monitor_daemon_switch, @weak audio_proxy_daemon_switch, @weak audio_proxy_daemon_status_label
-                    => @default-return Continue(true), move || {
+                    => @default-return Ok(()), move || {
 
                         match get_daemon_status(Daemon::Eruption) {
                             Ok(status) => {
@@ -206,10 +205,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                             }
                         }
 
-
-                Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     Ok(())
 }

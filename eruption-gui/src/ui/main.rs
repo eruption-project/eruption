@@ -17,6 +17,15 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use gio::prelude::*;
+use glib::clone;
+use glib::IsA;
+use gtk::builders::MessageDialogBuilder;
+use gtk::glib;
+use gtk::prelude::*;
+use std::path::PathBuf;
+use std::sync::atomic::Ordering;
+
 use crate::dbus_client;
 use crate::device;
 use crate::events;
@@ -26,16 +35,6 @@ use crate::util;
 use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
-use gio::prelude::*;
-use glib::clone;
-use glib::Continue;
-use glib::IsA;
-use gtk::builders::MessageDialogBuilder;
-use gtk::glib;
-use gtk::prelude::*;
-use std::path::PathBuf;
-use std::sync::atomic::Ordering;
-use std::time::Duration;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -740,9 +739,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     main_window.show_all();
 
     // should we update the GUI, e.g. were new devices attached?
-    glib::timeout_add_local(
-        Duration::from_millis(250),
-        clone!(@weak application => @default-return Continue(true), move || {
+    crate::register_timer(
+        250,
+        clone!(@weak application => @default-return Ok(()), move || {
             if crate::dbus_client::ping().is_err() {
                 notification_box_global.show();
 
@@ -768,19 +767,19 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 update_main_window(&builder).unwrap();
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     // update the global LED color map vector
-    glib::timeout_add_local(
-        Duration::from_millis(1000 / crate::constants::TARGET_FPS),
-        clone!(@weak application => @default-return Continue(true), move || {
+    crate::register_timer(
+        1000 / (crate::constants::TARGET_FPS * 2),
+        clone!(@weak application => @default-return Ok(()), move || {
             let _result = crate::update_color_map();
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     Ok(())
 }

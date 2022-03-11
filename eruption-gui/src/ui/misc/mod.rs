@@ -167,13 +167,13 @@ pub fn initialize_misc_page(
     //     }),
     // );
 
-    glib::timeout_add_local(
-        Duration::from_millis(1000 / constants::TARGET_FPS),
-        clone!(@weak drawing_area => @default-return Continue(true), move || {
+    crate::register_timer(
+        1000 / constants::TARGET_FPS,
+        clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     Ok(misc_device_page)
 }

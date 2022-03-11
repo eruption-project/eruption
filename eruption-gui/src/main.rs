@@ -19,6 +19,7 @@
 
 use config::Config;
 use gio::{prelude::*, ApplicationFlags};
+use glib::clone;
 use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
 use gtk::builders::MessageDialogBuilder;
@@ -31,11 +32,15 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
+use std::cell::RefCell;
 use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
+use std::time::Instant;
 use std::{env, process};
+
 use util::RGBA;
 
 mod constants;
@@ -74,6 +79,46 @@ macro_rules! tr {
 }
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+type Callback = dyn Fn() -> Result<()> + 'static;
+
+thread_local! {
+    /// Global timers (interval millis, last fired, callback Fn())
+    pub static TIMERS: RefCell<Vec<(u64, Instant, Box<Callback>)>> = RefCell::new(Vec::new());
+}
+
+/// Register a timer callback
+pub fn register_timer<T>(timeout: u64, callback: T) -> Result<()>
+where
+    T: Fn() -> Result<()> + 'static,
+{
+    TIMERS.with(|f| {
+        let mut timers = f.borrow_mut();
+
+        timers.push((timeout, Instant::now(), Box::new(callback)));
+    });
+
+    Ok(())
+}
+
+/// Handle timer callbacks
+pub fn handle_timers() -> Result<()> {
+    TIMERS.with(|f| -> Result<()> {
+        let mut timers = f.borrow_mut();
+
+        for (ref timeout_millis, ref mut last_fired, callback) in timers.iter_mut() {
+            if Instant::now() - *last_fired > Duration::from_millis(*timeout_millis) {
+                callback()?;
+
+                *last_fired = Instant::now();
+            }
+        }
+
+        Ok(())
+    })?;
+
+    Ok(())
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
@@ -600,6 +645,17 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             app.quit();
         }
     });
+
+    // global timer support
+    glib::idle_add_local(
+        clone!(@weak application => @default-return Continue(true), move || {
+            if let Err(e) = handle_timers() {
+                log::error!("An error occurred in a timer callback: {}", e);
+            }
+
+            Continue(true)
+        }),
+    );
 
     application.run_with_args(&args().collect::<Vec<_>>());
 

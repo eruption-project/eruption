@@ -19,11 +19,9 @@
 
 use crate::constants;
 use crate::util;
-use gdk::prelude::Continue;
 use glib_macros::clone;
 use gtk::glib;
 use gtk::prelude::{BuilderExtManual, LabelExt, ProgressBarExt, RangeExt, WidgetExt};
-use std::time::Duration;
 
 mod hwdevices;
 
@@ -107,11 +105,11 @@ pub fn initialize_keyboard_page(
     });
 
     // near realtime update path
-    glib::timeout_add_local(
-        Duration::from_millis(250),
+    crate::register_timer(
+        250,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
-                    @default-return Continue(true), move || {
+                    @default-return Ok(()), move || {
 
             // device status
             if let Ok(device_status) = util::get_device_status(keyboard_device_handle) {
@@ -140,17 +138,15 @@ pub fn initialize_keyboard_page(
                 }
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
-    glib::timeout_add_local(
-        Duration::from_millis(1000 / constants::TARGET_FPS),
-        clone!(@weak drawing_area => @default-return Continue(true), move || {
-            drawing_area.queue_draw();
-            Continue(true)
-        }),
-    );
+    crate::register_timer(1000 / (constants::TARGET_FPS * 2), move || {
+        drawing_area.queue_draw();
+
+        Ok(())
+    })?;
 
     Ok(keyboard_device_page)
 }
