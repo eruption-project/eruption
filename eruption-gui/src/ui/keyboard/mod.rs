@@ -106,7 +106,7 @@ pub fn initialize_keyboard_page(
 
     // near realtime update path
     crate::register_timer(
-        250,
+        139,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
                     @default-return Ok(()), move || {

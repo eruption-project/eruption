@@ -130,7 +130,7 @@ pub fn initialize_mouse_page(
 
     // near realtime update path
     crate::register_timer(
-        250,
+        151,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak mouse_signal_label, @weak mouse_battery_level_label =>
                     @default-return Ok(()), move || {
@@ -168,7 +168,7 @@ pub fn initialize_mouse_page(
 
     // fast update path
     crate::register_timer(
-        2500,
+        1051,
         clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
                     @weak mouse_profile_label, @weak debounce_switch,
                     @weak angle_snapping_switch => @default-return Ok(()), move || {
@@ -199,7 +199,7 @@ pub fn initialize_mouse_page(
 
     // slow update path
     crate::register_timer(
-        4000,
+        3023,
         clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Ok(()), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
                 mouse_firmware_label.set_label(&firmware);
