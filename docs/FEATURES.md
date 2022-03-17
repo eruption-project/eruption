@@ -26,22 +26,7 @@
     - [Macros (accessible via the FN Key)](#macros-accessible-via-the-fn-key)
       - [Macro Keys](#macro-keys)
     - [Easy Shift+](#easy-shift)
-- [Easy Shift+](#easy-shift-1)
       - [Special (Media) Keys](#special-media-keys)
-      - [Assignable Easy Shift Macros (up to 6 Layers)](#assignable-easy-shift-macros-up-to-6-layers)
-  - [Extending Eruption (using the SDK)](#extending-eruption-using-the-sdk)
-    - [Python SDK](#python-sdk)
-    - [Rust SDK](#rust-sdk)
-    - [C++ SDK](#c-sdk)
-    - [Python SDK](#python-sdk-1)
-    - [Rust SDK](#rust-sdk-1)
-    - [C++ SDK](#c-sdk-1)
-  - [Reporting Bugs](#reporting-bugs)
-<<<<<<< HEAD
-    - [Easy Shift+](#easy-shift)
-=======
-      - [Special (Media) Keys](#special-media-keys)
->>>>>>> 936e66c (WIP: Update documentation)
       - [Assignable Easy Shift Macros (up to 6 Layers)](#assignable-easy-shift-macros-up-to-6-layers)
   - [Extending Eruption (using the SDK)](#extending-eruption-using-the-sdk)
     - [Python SDK](#python-sdk)
@@ -212,16 +197,12 @@ The `Eruption GUI` is currently available as a technology preview version only
 
 ## The Macro System
 
-<<<<<<< HEAD
 Eruption ships with a feature rich macro system.
 
-=======
->>>>>>> 936e66c (WIP: Update documentation)
 ### Macros (accessible via the FN Key)
 
 #### Macro Keys
 
-<<<<<<< HEAD
 | Key 1 | + Key 2 | + Key 3 | Function |
 |----------|----------|-----------|---------|
 | FN | F1  | | Switch to slot 1 |
@@ -236,10 +217,7 @@ Eruption ships with a feature rich macro system.
 
 ### Easy Shift+
 
-Easy Shift+
-=======
 #### Special (Media) Keys
->>>>>>> 936e66c (WIP: Update documentation)
 
 #### Assignable Easy Shift Macros (up to 6 Layers)
 
@@ -250,7 +228,6 @@ Easy Shift+
 
 ## Extending Eruption (using the SDK)
 
-<<<<<<< HEAD
 Eruption ships with support for the Eruption Software Development Kit (SDK) in the default installation.
 
 ### Python SDK
@@ -266,14 +243,6 @@ For a Rust example, please refer to `sdk/examples/rust`.
 For a C++ example, please refer to `sdk/examples/c++`.
 
 
-=======
-### Python SDK
-
-### Rust SDK
-
-### C++ SDK
-
->>>>>>> 936e66c (WIP: Update documentation)
 ## Reporting Bugs
 
 Please feel free to report issues and minor paper cuts that you encounter on the project's GitHub site at
