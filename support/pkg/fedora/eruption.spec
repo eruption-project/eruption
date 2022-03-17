@@ -19,7 +19,7 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: luajit-devel
+BuildRequires: lua-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
 #BuildRequires: gtk3-devel
