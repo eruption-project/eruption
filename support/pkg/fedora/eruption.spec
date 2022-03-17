@@ -8,7 +8,7 @@ Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
-Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/v0.1.23/v0.1.23.tar.gz
+Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v0.1.23/v0.1.23.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-build
 
