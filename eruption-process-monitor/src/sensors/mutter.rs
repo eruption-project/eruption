@@ -60,8 +60,6 @@ const MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT: &str = r#"let w = global
                                                         .map(a => a.meta_window)
                                                         .find(w => w.has_focus());
 
-                                                        print(w);
-
                                                         return Object({
                                                             pid: w.get_pid(),
                                                             window_title: w.get_title(),
