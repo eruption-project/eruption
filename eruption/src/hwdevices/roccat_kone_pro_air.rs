@@ -18,16 +18,15 @@
 */
 
 use bitvec::prelude::*;
-use byteorder::{BigEndian, ByteOrder};
+// use byteorder::{BigEndian, ByteOrder};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use log::*;
 use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
-use lazy_static::lazy_static;
 use std::any::Any;
 use std::collections::HashMap;
-use std::{mem::size_of, sync::Arc};
+use std::sync::Arc;
 
 use crate::constants;
 
@@ -38,18 +37,14 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
-pub const LED_INTERFACE: i32 = 2; // LED USB sub device
+// pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
+// pub const LED_INTERFACE: i32 = 1; // LED USB sub device
 
 // pub const NUM_BUTTONS: usize = 9;
 
 // canvas to LED index mapping
-// pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-// pub const LED_1: usize = constants::CANVAS_SIZE - 1;
-
-lazy_static! {
-    static ref CRC8: Arc<Mutex<crc8::Crc8>> = Arc::new(Mutex::new(crc8::Crc8::create_msb(0x01)));
-}
+pub const LED_0: usize = constants::CANVAS_SIZE - 36;
+pub const LED_1: usize = constants::CANVAS_SIZE - 1;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -58,19 +53,40 @@ pub fn bind_hiddev(
     usb_pid: u16,
     serial: &str,
 ) -> super::Result<MouseDevice> {
-    let ctrl_dev = hidapi.device_list().find(|&device| {
-        device.vendor_id() == usb_vid
-            && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
-            && device.interface_number() == CTRL_INTERFACE
-    });
+    let ctrl_dev;
+    let led_dev;
 
-    let led_dev = hidapi.device_list().find(|&device| {
-        device.vendor_id() == usb_vid
-            && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
-            && device.interface_number() == LED_INTERFACE
-    });
+    if usb_pid == 0x2c8e {
+        // wireless mode
+        ctrl_dev = hidapi.device_list().find(|&device| {
+            device.vendor_id() == usb_vid
+                && device.product_id() == usb_pid
+                && device.serial_number().unwrap_or("") == serial
+                && device.interface_number() == 1
+        });
+
+        led_dev = hidapi.device_list().find(|&device| {
+            device.vendor_id() == usb_vid
+                && device.product_id() == usb_pid
+                && device.serial_number().unwrap_or("") == serial
+                && device.interface_number() == 2
+        });
+    } else {
+        // cable mode
+        ctrl_dev = hidapi.device_list().find(|&device| {
+            device.vendor_id() == usb_vid
+                && device.product_id() == usb_pid
+                && device.serial_number().unwrap_or("") == serial
+                && device.interface_number() == 2
+        });
+
+        led_dev = hidapi.device_list().find(|&device| {
+            device.vendor_id() == usb_vid
+                && device.product_id() == usb_pid
+                && device.serial_number().unwrap_or("") == serial
+                && device.interface_number() == 1
+        });
+    }
 
     if ctrl_dev.is_none() || led_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
@@ -100,10 +116,12 @@ pub struct RoccatKoneProAir {
     pub is_initialized: bool,
 
     pub is_bound: bool,
+
     pub ctrl_hiddev_info: Option<hidapi::DeviceInfo>,
     pub led_hiddev_info: Option<hidapi::DeviceInfo>,
 
     pub is_opened: bool,
+
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
@@ -118,16 +136,18 @@ pub struct RoccatKoneProAir {
 impl RoccatKoneProAir {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone Pro Air AIMO");
+        info!("Bound driver: ROCCAT Kone Pro Air");
 
         Self {
             is_initialized: false,
 
             is_bound: true,
+
             ctrl_hiddev_info: Some(ctrl_dev.clone()),
             led_hiddev_info: Some(led_dev.clone()),
 
             is_opened: false,
+
             ctrl_hiddev: Arc::new(Mutex::new(None)),
             led_hiddev: Arc::new(Mutex::new(None)),
 
@@ -179,10 +199,34 @@ impl RoccatKoneProAir {
     //     } else if !self.is_opened {
     //         Err(HwDeviceError::DeviceNotOpened {}.into())
     //     } else {
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         // using led_hiddev is intentional here
+    //         let ctrl_dev = self.led_hiddev.as_ref().lock();
     //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-    //         Ok(())
+    //         match id {
+    //             0x90 => {
+    //                 let buf: [u8; 65] = [
+    //                     0x00, 0x90, 0x00, 0x04, 0x00, 0x18, 0x25, 0x51, 0x32, 0x00, 0x00, 0x00,
+    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    //                     0x00, 0x00, 0x00, 0x00, 0x00,
+    //                 ];
+
+    //                 match ctrl_dev.write(&buf) {
+    //                     Ok(_result) => {
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+    //                         Ok(())
+    //                     }
+
+    //                     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+    //                 }
+    //             }
+
+    //             _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+    //         }
     //     }
     // }
 
@@ -194,77 +238,78 @@ impl RoccatKoneProAir {
     //     } else if !self.is_opened {
     //         Err(HwDeviceError::DeviceNotOpened {}.into())
     //     } else {
-    //         loop {
-    //             let mut buf: [u8; 2] = [0; 2];
-    //             buf[0] = 0x00;
+    //         // loop {
+    //         //     let mut buf: [u8; 2] = [0; 2];
+    //         //     buf[0] = 0x00;
 
-    //             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-    //             let ctrl_dev = ctrl_dev.as_ref().unwrap();
+    //         //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-    //             match ctrl_dev.get_feature_report(&mut buf) {
-    //                 Ok(_result) => {
-    //                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         //     match ctrl_dev.get_feature_report(&mut buf) {
+    //         //         Ok(_result) => {
+    //         //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-    //                     if buf[1] == 0x01 {
-    //                         return Ok(());
-    //                     }
-    //                 }
+    //         //             if buf[1] == 0x01 {
+    //         //                 return Ok(());
+    //         //             }
+    //         //         }
 
-    //                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+    //         //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+    //         //     }
+    //         // }
+
+    //         Ok(())
+    //     }
+    // }
+
+    // fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
+    //     } else {
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+    //         match ctrl_dev.send_feature_report(buffer) {
+    //             Ok(_result) => {
+    //                 hexdump::hexdump_iter(buffer).for_each(|s| trace!("  {}", s));
+
+    //                 Ok(())
     //             }
+
+    //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
     //         }
     //     }
     // }
 
-    fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else {
-            // we have to use the led_hiddev here, this is intentional
-            let ctrl_dev = self.led_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+    // fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
+    //     if !self.is_bound {
+    //         Err(HwDeviceError::DeviceNotBound {}.into())
+    //     } else {
+    //         // we have to use the led_hiddev here, this is intentional
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.send_feature_report(buffer) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(buffer).for_each(|s| trace!("  {}", s));
+    //         loop {
+    //             let mut buf = Vec::new();
+    //             buf.resize(size, 0);
+    //             buf[0] = id;
 
-                    Ok(())
-                }
+    //             match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
+    //                 Ok(_result) => {
+    //                     if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
+    //                         continue;
+    //                     } else {
+    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
-        }
-    }
+    //                         break Ok(buf);
+    //                     }
+    //                 }
 
-    fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else {
-            // we have to use the led_hiddev here, this is intentional
-            let ctrl_dev = self.led_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-            loop {
-                let mut buf = Vec::new();
-                buf.resize(size, 0);
-                buf[0] = id;
-
-                match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
-                    Ok(_result) => {
-                        if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
-                            continue;
-                        } else {
-                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                            break Ok(buf);
-                        }
-                    }
-
-                    Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
-                }
-            }
-        }
-    }
+    //                 Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 impl DeviceInfoTrait for RoccatKoneProAir {
@@ -280,7 +325,7 @@ impl DeviceInfoTrait for RoccatKoneProAir {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let mut buf = [0; size_of::<DeviceInfo>()];
+            /* let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
@@ -297,7 +342,10 @@ impl DeviceInfoTrait for RoccatKoneProAir {
                 }
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            } */
+
+            let result = super::DeviceInfo::new(0 as i32);
+            Ok(result)
         }
     }
 
@@ -379,6 +427,9 @@ impl DeviceTrait for RoccatKoneProAir {
             trace!("Closing control device...");
             *self.ctrl_hiddev.lock() = None;
 
+            trace!("Closing LED device...");
+            *self.led_hiddev.lock() = None;
+
             self.is_opened = false;
 
             Ok(())
@@ -412,7 +463,7 @@ impl DeviceTrait for RoccatKoneProAir {
             //     }
             // }
 
-            // self.send_ctrl_report(0x04)
+            // self.send_ctrl_report(0x90)
             //     .unwrap_or_else(|e| error!("Step 1: {}", e));
             // self.wait_for_ctrl_dev()
             //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
@@ -481,69 +532,69 @@ impl DeviceTrait for RoccatKoneProAir {
     }
 
     fn device_status(&self) -> Result<super::DeviceStatus> {
-        let read_results = || -> Result<super::DeviceStatus> {
-            let mut table = HashMap::new();
+        // let read_results = || -> Result<super::DeviceStatus> {
+        //     let mut table = HashMap::new();
 
-            for _ in 0..=2 {
-                // query results
-                let buf = self.read_feature_report(0x07, 22)?;
+        //     for _ in 0..=2 {
+        //         // query results
+        //         let buf = self.read_feature_report(0x07, 22)?;
 
-                match buf[1] {
-                    0x04 => {
-                        if buf[2] == 0x40 {
-                            let battery_status = buf[5];
+        //         match buf[1] {
+        //             0x04 => {
+        //                 if buf[2] == 0x40 {
+        //                     let battery_status = buf[5];
 
-                            let battery_level = match battery_status {
-                                71 => "100",
-                                64 => "80",
-                                65 => "60",
-                                66 => "40",
-                                67 => "20",
-                                68 => "0",
-                                _ => "unknown",
-                            };
+        //                     let battery_level = match battery_status {
+        //                         71 => "100",
+        //                         64 => "80",
+        //                         65 => "60",
+        //                         66 => "40",
+        //                         67 => "20",
+        //                         68 => "0",
+        //                         _ => "unknown",
+        //                     };
 
-                            table.insert(
-                                "battery-level-percent".to_string(),
-                                battery_level.to_string(),
-                            );
+        //                     table.insert(
+        //                         "battery-level-percent".to_string(),
+        //                         battery_level.to_string(),
+        //                     );
 
-                            table.insert(
-                                "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
-                            );
-                        }
-                    }
+        //                     table.insert(
+        //                         "battery-level-raw".to_string(),
+        //                         format!("{}", battery_status),
+        //                     );
+        //                 }
+        //             }
 
-                    0x07 => {
-                        if buf[2] == 0x53 {
-                            let transceiver_enabled = buf[6] != 0x00;
-                            let signal = BigEndian::read_u16(&buf[7..9]);
+        //             0x07 => {
+        //                 if buf[2] == 0x53 {
+        //                     let transceiver_enabled = buf[6] != 0x00;
+        //                     let signal = BigEndian::read_u16(&buf[7..9]);
 
-                            // radio
-                            table.insert(
-                                "transceiver-enabled".to_string(),
-                                format!("{}", transceiver_enabled),
-                            );
+        //                     // radio
+        //                     table.insert(
+        //                         "transceiver-enabled".to_string(),
+        //                         format!("{}", transceiver_enabled),
+        //                     );
 
-                            // signal strength
-                            table.insert(
-                                "signal-strength-percent".to_string(),
-                                format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
-                            );
+        //                     // signal strength
+        //                     table.insert(
+        //                         "signal-strength-percent".to_string(),
+        //                         format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
+        //                     );
 
-                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
-                        }
-                    }
+        //                     table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+        //                 }
+        //             }
 
-                    _ => { /* do nothing */ }
-                }
+        //             _ => { /* do nothing */ }
+        //         }
 
-                // thread::sleep(Duration::from_millis(15));
-            }
+        //         // thread::sleep(Duration::from_millis(15));
+        //     }
 
-            Ok(DeviceStatus(table))
-        };
+        //     Ok(DeviceStatus(table))
+        // };
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -554,25 +605,25 @@ impl DeviceTrait for RoccatKoneProAir {
         } else {
             // TODO: Further investigate the meaning of the fields
 
-            let buf: [u8; 22] = [
-                0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
+            // let buf: [u8; 22] = [
+            //     0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
 
-            self.write_feature_report(&buf)?;
+            // self.write_feature_report(&buf)?;
 
-            let result = read_results()?;
+            // let result = read_results()?;
 
             // thread::sleep(Duration::from_millis(15));
 
-            let buf: [u8; 22] = [
-                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
+            // let buf: [u8; 22] = [
+            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
 
-            self.write_feature_report(&buf)?;
+            // self.write_feature_report(&buf)?;
 
-            let result2 = read_results()?;
+            // let result2 = read_results()?;
 
             // let buf: [u8; 22] = [
             //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -610,16 +661,16 @@ impl DeviceTrait for RoccatKoneProAir {
 
             // let result6 = read_results()?;
 
-            Ok(DeviceStatus(
-                result
-                    .0
-                    .into_iter()
-                    .chain(result2.0)
+            Ok(DeviceStatus(HashMap::new()
+                // result
+                //     .0
+                //     .into_iter()
+                    // .chain(result2.0)
                     // .chain(result3.0)
                     // .chain(result4.0)
                     // .chain(result5.0)
                     // .chain(result6.0)
-                    .collect(),
+                    // .collect(),
             ))
         }
     }
@@ -811,8 +862,7 @@ impl MouseDeviceTrait for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            // led_hiddev has to be used to query HID events, this is intentional
-            let ctrl_dev = self.led_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = [0; 8];
@@ -989,7 +1039,7 @@ impl MouseDeviceTrait for RoccatKoneProAir {
         }
     }
 
-    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
+    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
         if !self.is_bound {
@@ -999,14 +1049,20 @@ impl MouseDeviceTrait for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            /* let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = self.led_hiddev.as_ref().lock();
             let led_dev = led_dev.as_ref().unwrap();
 
-            let mut buf: [u8; 22] = [
-                0x08,
-                0x09,
-                0x33,
+            let buf: [u8; 65] = [
                 0x00,
+                0x10,
+                0x10,
+                0x0b,
+                0x00,
+                0x09,
+                0x64,
+                0x64,
+                0x64,
+                0x06,
                 (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
                 (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
                 (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
@@ -1025,11 +1081,46 @@ impl MouseDeviceTrait for RoccatKoneProAir {
                 0x00,
                 0x00,
                 0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
             ];
 
-            buf[10] = CRC8.lock().calc(&buf[4..10], 6, 0x32);
-
-            match led_dev.send_feature_report(&buf) {
+            match led_dev.write(&buf) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                 }
@@ -1042,7 +1133,7 @@ impl MouseDeviceTrait for RoccatKoneProAir {
 
                     return Err(HwDeviceError::InvalidResult {}.into());
                 }
-            } */
+            }
 
             Ok(())
         }

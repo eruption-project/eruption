@@ -249,7 +249,7 @@ pub fn bind_device(
         }
 
         // ROCCAT Kone Pro Air
-        (0x1e7d, 0x2c8e) => {
+        (0x1e7d, 0x2c8e) | (0x1e7d, 0x2c92) => {
             let ctrldev = hidapi
                 .device_list()
                 .find(|dev| {

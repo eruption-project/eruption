@@ -52,7 +52,7 @@ impl Mouse for RoccatKoneProAir {
     }
 
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Kone Pure Air")
+        ("ROCCAT", "Kone Pro Air")
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
@@ -100,10 +100,10 @@ impl Mouse for RoccatKoneProAir {
         match cell_index {
             0 => {
                 let cell_def = Rectangle {
-                    x: ((width + 220.0 + BORDER.0 * scale_factor) / 2.0) * scale_factor,
-                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (180.0 * scale_factor),
-                    width: 70.0 * scale_factor,
-                    height: 100.0 * scale_factor,
+                    x: ((width + 180.0 + BORDER.0 * scale_factor) / 2.0) * scale_factor,
+                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (240.0 * scale_factor),
+                    width: 100.0 * scale_factor,
+                    height: 160.0 * scale_factor,
                 };
 
                 // post-process color
@@ -130,10 +130,10 @@ impl Mouse for RoccatKoneProAir {
 
             35 => {
                 let cell_def = Rectangle {
-                    x: ((width + 95.0 + BORDER.0 * scale_factor) / 2.0) * scale_factor,
-                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (90.0 * scale_factor),
-                    width: 190.0 * scale_factor,
-                    height: 310.0 * scale_factor,
+                    x: ((width + 425.0 + BORDER.0 * scale_factor) / 2.0) * scale_factor,
+                    y: ((height / 2.0) + BORDER.1 * scale_factor) - (240.0 * scale_factor),
+                    width: 100.0 * scale_factor,
+                    height: 160.0 * scale_factor,
                 };
 
                 // post-process color

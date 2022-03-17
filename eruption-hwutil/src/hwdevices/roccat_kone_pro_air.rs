@@ -17,11 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use byteorder::{BigEndian, ByteOrder};
-use lazy_static::lazy_static;
-use parking_lot::Mutex;
+// use byteorder::{BigEndian, ByteOrder};
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
@@ -30,11 +27,8 @@ use crate::{constants, eprintln_v, println_v};
 
 use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
 
+// pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
-
-lazy_static! {
-    static ref CRC8: Arc<Mutex<crc8::Crc8>> = Arc::new(Mutex::new(crc8::Crc8::create_msb(0x01)));
-}
 
 /// Device specific code for the ROCCAT Kone Pro Air mouse
 pub struct RoccatKoneProAir {
@@ -237,11 +231,17 @@ impl DeviceTrait for RoccatKoneProAir {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let mut buf: [u8; 22] = [
-                0x08,
-                0x09,
-                0x33,
+            let buf: [u8; 65] = [
                 0x00,
+                0x10,
+                0x10,
+                0x0b,
+                0x00,
+                0x09,
+                0x64,
+                0x64,
+                0x64,
+                0x06,
                 led_map[0].r,
                 led_map[0].g,
                 led_map[0].b,
@@ -260,11 +260,46 @@ impl DeviceTrait for RoccatKoneProAir {
                 0x00,
                 0x00,
                 0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
             ];
 
-            buf[10] = CRC8.lock().calc(&buf[4..10], 6, 0x32);
-
-            match ctrl_dev.send_feature_report(&buf) {
+            match ctrl_dev.write(&buf) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
                 }
@@ -298,23 +333,6 @@ impl DeviceTrait for RoccatKoneProAir {
 
         self.send_led_map(&[
             RGBA {
-                r: 0x59,
-                g: 0xa5,
-                b: 0xff,
-                a: 0xff,
-            },
-            RGBA {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 255,
-            },
-        ])?;
-
-        thread::sleep(Duration::from_millis(500));
-
-        self.send_led_map(&[
-            RGBA {
                 r: 0,
                 g: 0,
                 b: 255,
@@ -332,92 +350,92 @@ impl DeviceTrait for RoccatKoneProAir {
     }
 
     fn device_status(&self) -> super::Result<super::DeviceStatus> {
-        let read_results = || -> Result<super::DeviceStatus> {
-            let mut table = HashMap::new();
+        // let read_results = || -> Result<super::DeviceStatus> {
+        //     let mut table = HashMap::new();
 
-            for _ in 0..=2 {
-                // query results
-                let buf = self.read_feature_report(0x07, 22)?;
+        //     for _ in 0..=2 {
+        //         // query results
+        //         let buf = self.read_feature_report(0x07, 22)?;
 
-                match buf[1] {
-                    0x04 => {
-                        if buf[2] == 0x40 {
-                            let battery_status = buf[5];
+        //         match buf[1] {
+        //             0x04 => {
+        //                 if buf[2] == 0x40 {
+        //                     let battery_status = buf[5];
 
-                            let battery_level = match battery_status {
-                                71 => "100",
-                                64 => "80",
-                                65 => "60",
-                                66 => "40",
-                                67 => "20",
-                                68 => "0",
-                                _ => "unknown",
-                            };
+        //                     let battery_level = match battery_status {
+        //                         71 => "100",
+        //                         64 => "80",
+        //                         65 => "60",
+        //                         66 => "40",
+        //                         67 => "20",
+        //                         68 => "0",
+        //                         _ => "unknown",
+        //                     };
 
-                            table.insert(
-                                "battery-level-percent".to_string(),
-                                battery_level.to_string(),
-                            );
+        //                     table.insert(
+        //                         "battery-level-percent".to_string(),
+        //                         battery_level.to_string(),
+        //                     );
 
-                            table.insert(
-                                "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
-                            );
-                        }
-                    }
+        //                     table.insert(
+        //                         "battery-level-raw".to_string(),
+        //                         format!("{}", battery_status),
+        //                     );
+        //                 }
+        //             }
 
-                    0x07 => {
-                        if buf[2] == 0x53 {
-                            let transceiver_enabled = buf[6] != 0x00;
-                            let signal = BigEndian::read_u16(&buf[7..9]);
+        //             0x07 => {
+        //                 if buf[2] == 0x53 {
+        //                     let transceiver_enabled = buf[6] != 0x00;
+        //                     let signal = BigEndian::read_u16(&buf[7..9]);
 
-                            // radio
-                            table.insert(
-                                "transceiver-enabled".to_string(),
-                                format!("{}", transceiver_enabled),
-                            );
+        //                     // radio
+        //                     table.insert(
+        //                         "transceiver-enabled".to_string(),
+        //                         format!("{}", transceiver_enabled),
+        //                     );
 
-                            // signal strength
-                            table.insert(
-                                "signal-strength-percent".to_string(),
-                                format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
-                            );
+        //                     // signal strength
+        //                     table.insert(
+        //                         "signal-strength-percent".to_string(),
+        //                         format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
+        //                     );
 
-                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
-                        }
-                    }
+        //                     table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+        //                 }
+        //             }
 
-                    _ => { /* do nothing */ }
-                }
+        //             _ => { /* do nothing */ }
+        //         }
 
-                thread::sleep(Duration::from_millis(15));
-            }
+        //         thread::sleep(Duration::from_millis(15));
+        //     }
 
-            Ok(DeviceStatus(table))
-        };
+        //     Ok(DeviceStatus(table))
+        // };
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
             // TODO: Further investigate the meaning of the fields
 
-            let buf: [u8; 22] = [
-                0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
+            // let buf: [u8; 22] = [
+            //     0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
 
-            self.write_feature_report(&buf)?;
+            // self.write_feature_report(&buf)?;
 
-            let result = read_results()?;
+            // let result = read_results()?;
 
-            let buf: [u8; 22] = [
-                0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            ];
+            // let buf: [u8; 22] = [
+            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // ];
 
-            self.write_feature_report(&buf)?;
+            // self.write_feature_report(&buf)?;
 
-            let result2 = read_results()?;
+            // let result2 = read_results()?;
 
             // let buf: [u8; 22] = [
             //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -456,15 +474,16 @@ impl DeviceTrait for RoccatKoneProAir {
             // let result6 = read_results()?;
 
             Ok(DeviceStatus(
-                result
-                    .0
-                    .into_iter()
-                    .chain(result2.0)
+                HashMap::new()
+                    // result
+                    //     .0
+                    //     .into_iter()
+                    //     .chain(result2.0)
                     // .chain(result3.0)
                     // .chain(result4.0)
                     // .chain(result5.0)
                     // .chain(result6.0)
-                    .collect(),
+                    // .collect(),
             ))
         }
     }

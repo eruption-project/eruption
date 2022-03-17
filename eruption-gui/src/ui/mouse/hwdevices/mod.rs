@@ -47,10 +47,10 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
                 device_handle,
             ))),
 
-            // ROCCAT Kone Pure Air
-            (0x1e7d, 0x2c8e) => Ok(Box::new(roccat_kone_pro_air::RoccatKoneProAir::new(
-                device_handle,
-            ))),
+            // ROCCAT Kone Pro Air
+            (0x1e7d, 0x2c8e) | (0x1e7d, 0x2c92) => Ok(Box::new(
+                roccat_kone_pro_air::RoccatKoneProAir::new(device_handle),
+            )),
 
             // ROCCAT Burst Pro
             (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new(
