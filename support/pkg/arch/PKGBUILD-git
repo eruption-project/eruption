@@ -3,7 +3,7 @@
 pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
-pkgver='0.1.22'
+pkgver='0.1.23'
 pkgrel='0'
 epoch=
 arch=('i686' 'x86_64')
@@ -17,7 +17,7 @@ optdepends=()
 provides=('eruption')
 conflicts=('eruption-roccat-vulcan' 'eruption-roccat-vulcan-git')
 replaces=('eruption-roccat-vulcan-git')
-backup=(etc/eruption/eruption.conf usr/share/eruption/scripts/lib/themes/* usr/share/eruption/scripts/lib/macros/*)
+backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/audio-proxy.conf)
 options=()
 install='eruption.install'
 changelog=

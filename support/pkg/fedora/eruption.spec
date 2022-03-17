@@ -2,13 +2,13 @@
 %global ShortName eruption
 
 Name:    eruption
-Version: 0.1.22
-Release: 2%{?dist}
+Version: 0.1.23
+Release: 0%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
-Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/master/master.tar.gz
+Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/v0.1.23/v0.1.23.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-build
 
@@ -45,7 +45,7 @@ Conflicts: eruption-roccat-vulcan-git
 Linux user-mode input and LED driver for keyboards, mice and other devices
 
 %prep
-%autosetup -v -n eruption-master
+%autosetup -v -n eruption-releases-%{version}
 
 %build
 cargo build --release --verbose
@@ -222,13 +222,19 @@ install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-proc
 #install -Dp -m 0755 %{_builddir}/%{name}-%{version}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
 
 %post
-%systemd_post %{ShortName}.service
+%systemd_post eruption.service
+%systemd_user_post eruption-audio-proxy.service
+%systemd_user_post eruption-process-monitor.service
 
 %preun
-%systemd_preun %{ShortName}.service
+%systemd_preun eruption.service
+%systemd_user_preun eruption-audio-proxy.service
+%systemd_user_preun eruption-process-monitor.service
 
 %postun
-%systemd_postun_with_restart %{ShortName}.service
+%systemd_postun_with_restart eruption.service
+%systemd_user_postun_with_restart eruption-audio-proxy.service
+%systemd_user_postun_with_restart eruption-process-monitor.service
 
 %files
 %doc %{_mandir}/man5/eruption.conf.5.gz
