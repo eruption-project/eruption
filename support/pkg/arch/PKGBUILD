@@ -21,7 +21,7 @@ backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruptio
 options=()
 install='eruption.install'
 changelog=
-source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git#branch=releases/v0.1.23')
+source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git#commit=c35663501ab5a76103166acdfab2a3cd5d0c5216')
 noextract=()
 sha512sums=('SKIP')
 
