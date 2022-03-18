@@ -85,14 +85,14 @@ pub fn register_backends() -> Result<()> {
         println!("Registering backend plugins:");
     }
 
+    #[cfg(feature = "backend-x11")]
+    register_backend(X11Backend::new()?);
+
     #[cfg(feature = "backend-wayland")]
     register_backend(WaylandBackend::new()?);
 
     #[cfg(feature = "backend-gnome")]
     register_backend(GnomeBackend::new()?);
-
-    #[cfg(feature = "backend-x11")]
-    register_backend(X11Backend::new()?);
 
     // initialize all registered Backends
     BACKENDS.with(|backends| -> Result<()> {

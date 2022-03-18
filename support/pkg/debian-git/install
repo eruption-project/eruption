@@ -283,5 +283,5 @@ eruption/src/scripts/examples usr/share/eruption/scripts
 eruption/src/scripts/examples/simple.lua usr/share/eruption/scripts
 
 support/sfx/typewriter1.wav usr/share/eruption/sfx
-support/sfx/phaser1.wav usr/share/eruption/sfx
-support/sfx/phaser2.wav usr/share/eruption/sfx
+support/sfx/phaser1.wav => usr/share/eruption/sfx/key-down.wav
+support/sfx/phaser2.wav => usr/share/eruption/sfx/key-up.wav

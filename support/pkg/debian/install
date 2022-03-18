@@ -34,7 +34,7 @@ support/systemd/eruption-process-monitor.preset usr/lib/systemd/user-preset
 support/systemd/eruption-hotplug-helper.service usr/lib/systemd/system
 support/systemd/eruption-hotplug-helper.preset usr/lib/systemd/system-preset
 
-support/udev/99-eruption.rules lib/udev/rules.d
+support/udev/99-eruption.rules usr/lib/udev/rules.d
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d
 support/dbus/org.eruption.process_monitor.conf etc/dbus-1/session.d
@@ -283,5 +283,5 @@ eruption/src/scripts/examples usr/share/eruption/scripts
 eruption/src/scripts/examples/simple.lua usr/share/eruption/scripts
 
 support/sfx/typewriter1.wav usr/share/eruption/sfx
-support/sfx/phaser1.wav usr/share/eruption/sfx
-support/sfx/phaser2.wav usr/share/eruption/sfx
+support/sfx/phaser1.wav => usr/share/eruption/sfx/key-down.wav
+support/sfx/phaser2.wav => usr/share/eruption/sfx/key-up.wav

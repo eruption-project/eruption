@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 11),
 		libudev-dev (>= 237),
 		libdbus-1-dev (>= 1.12),
 		libpulse-dev (>= 11.1),
-		liblua5.4-dev (>= 5.4),
+		liblua5.3-dev (>= 5.3),
 		libx11-dev (>= 2:1.6.4),
         libxrandr-dev (>= 2:1.5.1),
 Standards-Version: 4.1.3
