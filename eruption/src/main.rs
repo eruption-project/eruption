@@ -501,6 +501,11 @@ fn spawn_keyboard_input_thread(
                     break Ok(());
                 }
 
+                if keyboard_device.read().has_failed()? {
+                    warn!("Terminating input thread due to a failed device");
+                    break Ok(());
+                }
+
                 match device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
                     Ok(k) => {
                         trace!("Key event: {:?}", k.1);
@@ -607,6 +612,11 @@ fn spawn_mouse_input_thread(
             loop {
                 // check if we shall terminate the input thread, before we poll the mouse device
                 if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                if mouse_device.read().has_failed()? {
+                    warn!("Terminating input thread due to a failed device");
                     break Ok(());
                 }
 
@@ -764,6 +774,11 @@ fn spawn_mouse_input_thread(
                     break Ok(());
                 }
 
+                if mouse_device.read().has_failed()? {
+                    warn!("Terminating input thread due to a failed device");
+                    break Ok(());
+                }
+
                 match device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
                     Ok(k) => {
                         trace!("Mouse sub-device event: {:?}", k.1);
@@ -862,7 +877,7 @@ fn spawn_mouse_input_thread(
 /// Spawns the misc devices input thread and executes it's main loop
 fn spawn_misc_input_thread(
     misc_tx: Sender<Option<evdev_rs::InputEvent>>,
-    _misc_device: MiscDevice,
+    misc_device: MiscDevice,
     device_index: usize,
     usb_vid: u16,
     usb_pid: u16,
@@ -914,6 +929,11 @@ fn spawn_misc_input_thread(
             loop {
                 // check if we shall terminate the input thread, before we poll the device
                 if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                if misc_device.read().has_failed()? {
+                    warn!("Terminating input thread due to a failed device");
                     break Ok(());
                 }
 
@@ -2490,6 +2510,9 @@ async fn run_main_loop(
                                 "Could not process a mouse event: {}",
                                 event.as_ref().unwrap_err()
                             );
+
+                            // remove failed devices
+                            REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         }
                     } else {
                         error!("Invalid or missing event type");

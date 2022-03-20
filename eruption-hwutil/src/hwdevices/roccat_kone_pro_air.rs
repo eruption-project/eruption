@@ -17,7 +17,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-// use byteorder::{BigEndian, ByteOrder};
 use std::collections::HashMap;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
@@ -162,7 +161,7 @@ impl DeviceTrait for RoccatKoneProAir {
             let mut buf = Vec::new();
             buf.resize(size, 0);
 
-            match ctrl_dev.read(buf.as_mut_slice()) {
+            match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
@@ -207,13 +206,9 @@ impl DeviceTrait for RoccatKoneProAir {
 
                 match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
                     Ok(_result) => {
-                        if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
-                            continue;
-                        } else {
-                            hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
+                        hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
-                            break Ok(buf);
-                        }
+                        break Ok(buf);
                     }
 
                     Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
@@ -350,92 +345,111 @@ impl DeviceTrait for RoccatKoneProAir {
     }
 
     fn device_status(&self) -> super::Result<super::DeviceStatus> {
-        // let read_results = || -> Result<super::DeviceStatus> {
-        //     let mut table = HashMap::new();
+        let read_results = || -> Result<super::DeviceStatus> {
+            let mut table = HashMap::new();
 
-        //     for _ in 0..=2 {
-        //         // query results
-        //         let buf = self.read_feature_report(0x07, 22)?;
+            for _ in 0..1 {
+                // query results
+                let buf = self.read_data_raw(64)?;
 
-        //         match buf[1] {
-        //             0x04 => {
-        //                 if buf[2] == 0x40 {
-        //                     let battery_status = buf[5];
+                match buf[1] {
+                    0x09 => {
+                        if buf[2] == 0x01 {
+                            let battery_status = buf[4];
 
-        //                     let battery_level = match battery_status {
-        //                         71 => "100",
-        //                         64 => "80",
-        //                         65 => "60",
-        //                         66 => "40",
-        //                         67 => "20",
-        //                         68 => "0",
-        //                         _ => "unknown",
-        //                     };
+                            let battery_level = match battery_status {
+                                221 => "unknown", // no data/offline
+                                205 => "100",
+                                204 => "80",
+                                203 => "60",
+                                202 => "40",
+                                201 => "20",
+                                200 => "0",
+                                _ => "unknown",
+                            };
 
-        //                     table.insert(
-        //                         "battery-level-percent".to_string(),
-        //                         battery_level.to_string(),
-        //                     );
+                            table.insert(
+                                "battery-level-percent".to_string(),
+                                battery_level.to_string(),
+                            );
 
-        //                     table.insert(
-        //                         "battery-level-raw".to_string(),
-        //                         format!("{}", battery_status),
-        //                     );
-        //                 }
-        //             }
+                            table.insert(
+                                "battery-level-raw".to_string(),
+                                format!("{}", battery_status),
+                            );
+                        }
+                    }
 
-        //             0x07 => {
-        //                 if buf[2] == 0x53 {
-        //                     let transceiver_enabled = buf[6] != 0x00;
-        //                     let signal = BigEndian::read_u16(&buf[7..9]);
+                    0x70 => {
+                        if buf[2] == 0x01 {
+                            let transceiver_enabled = buf[2] != 0x00;
+                            let signal = buf[4];
 
-        //                     // radio
-        //                     table.insert(
-        //                         "transceiver-enabled".to_string(),
-        //                         format!("{}", transceiver_enabled),
-        //                     );
+                            // radio
+                            table.insert(
+                                "transceiver-enabled".to_string(),
+                                format!("{}", transceiver_enabled),
+                            );
 
-        //                     // signal strength
-        //                     table.insert(
-        //                         "signal-strength-percent".to_string(),
-        //                         format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
-        //                     );
+                            // signal strength
+                            table.insert(
+                                "signal-strength-percent".to_string(),
+                                format!("{:.0}", ((256.0 - signal as f32) / 2.0).clamp(0.0, 100.0)),
+                            );
 
-        //                     table.insert("signal-strength-raw".to_string(), format!("{}", signal));
-        //                 }
-        //             }
+                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+                        }
+                    }
 
-        //             _ => { /* do nothing */ }
-        //         }
+                    _ => { /* do nothing */ }
+                }
 
-        //         thread::sleep(Duration::from_millis(15));
-        //     }
+                thread::sleep(Duration::from_millis(15));
+            }
 
-        //     Ok(DeviceStatus(table))
-        // };
+            Ok(DeviceStatus(table))
+        };
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
             // TODO: Further investigate the meaning of the fields
 
-            // let buf: [u8; 22] = [
-            //     0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
+            let buf: [u8; 64] = [
+                0x90, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
 
-            // self.write_feature_report(&buf)?;
+            self.write_data_raw(&buf)?;
 
-            // let result = read_results()?;
+            let result = read_results()?;
 
-            // let buf: [u8; 22] = [
-            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
+            let buf: [u8; 64] = [
+                0x90, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
 
-            // self.write_feature_report(&buf)?;
+            self.write_data_raw(&buf)?;
 
-            // let result2 = read_results()?;
+            let result2 = read_results()?;
+
+            let buf: [u8; 64] = [
+                0x90, 0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            self.write_data_raw(&buf)?;
+
+            let result3 = read_results()?;
 
             // let buf: [u8; 22] = [
             //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -474,16 +488,15 @@ impl DeviceTrait for RoccatKoneProAir {
             // let result6 = read_results()?;
 
             Ok(DeviceStatus(
-                HashMap::new()
-                    // result
-                    //     .0
-                    //     .into_iter()
-                    //     .chain(result2.0)
-                    // .chain(result3.0)
+                result
+                    .0
+                    .into_iter()
+                    .chain(result2.0)
+                    .chain(result3.0)
                     // .chain(result4.0)
                     // .chain(result5.0)
                     // .chain(result6.0)
-                    // .collect(),
+                    .collect(),
             ))
         }
     }

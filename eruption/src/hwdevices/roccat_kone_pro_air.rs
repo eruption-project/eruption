@@ -18,9 +18,8 @@
 */
 
 use bitvec::prelude::*;
-// use byteorder::{BigEndian, ByteOrder};
 use evdev_rs::enums::EV_KEY;
-use hidapi::HidApi;
+use hidapi::{HidApi, HidDevice};
 use log::*;
 use parking_lot::{Mutex, RwLock};
 // use std::sync::atomic::Ordering;
@@ -36,9 +35,6 @@ use super::{
 };
 
 pub type Result<T> = super::Result<T>;
-
-// pub const CTRL_INTERFACE: i32 = 2; // Control USB sub device
-// pub const LED_INTERFACE: i32 = 1; // LED USB sub device
 
 // pub const NUM_BUTTONS: usize = 9;
 
@@ -131,6 +127,9 @@ pub struct RoccatKoneProAir {
 
     // device specific configuration options
     pub brightness: i32,
+
+    // device status
+    pub device_status: DeviceStatus,
 }
 
 impl RoccatKoneProAir {
@@ -156,6 +155,8 @@ impl RoccatKoneProAir {
             has_failed: false,
 
             brightness: 100,
+
+            device_status: DeviceStatus(HashMap::new()),
         }
     }
 
@@ -191,76 +192,73 @@ impl RoccatKoneProAir {
     //     }
     // }
 
-    // fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
-    //     trace!("Sending control device feature report");
+    fn send_ctrl_report(&mut self, id: u8) -> Result<()> {
+        trace!("Sending control device feature report");
 
-    //     if !self.is_bound {
-    //         Err(HwDeviceError::DeviceNotBound {}.into())
-    //     } else if !self.is_opened {
-    //         Err(HwDeviceError::DeviceNotOpened {}.into())
-    //     } else {
-    //         // using led_hiddev is intentional here
-    //         let ctrl_dev = self.led_hiddev.as_ref().lock();
-    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // using led_hiddev is intentional here
+            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = led_dev.as_ref().unwrap();
 
-    //         match id {
-    //             0x90 => {
-    //                 let buf: [u8; 65] = [
-    //                     0x00, 0x90, 0x00, 0x04, 0x00, 0x18, 0x25, 0x51, 0x32, 0x00, 0x00, 0x00,
-    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    //                     0x00, 0x00, 0x00, 0x00, 0x00,
-    //                 ];
+            match id {
+                0x90 => {
+                    let buf: [u8; 65] = [
+                        0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00,
+                    ];
 
-    //                 match ctrl_dev.write(&buf) {
-    //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    match led_dev.write(&buf) {
+                        Ok(_result) => {
+                            hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        }
 
-    //                         Ok(())
-    //                     }
+                        Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                    }
 
-    //                     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-    //                 }
-    //             }
+                    Ok(())
+                }
 
-    //             _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
-    //         }
-    //     }
-    // }
+                _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
+            }
+        }
+    }
 
-    // fn wait_for_ctrl_dev(&mut self) -> Result<()> {
-    //     trace!("Waiting for control device to respond...");
+    fn wait_for_ctrl_dev(&self) -> Result<()> {
+        trace!("Waiting for control device to respond...");
 
-    //     if !self.is_bound {
-    //         Err(HwDeviceError::DeviceNotBound {}.into())
-    //     } else if !self.is_opened {
-    //         Err(HwDeviceError::DeviceNotOpened {}.into())
-    //     } else {
-    //         // loop {
-    //         //     let mut buf: [u8; 2] = [0; 2];
-    //         //     buf[0] = 0x00;
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            let mut buf: [u8; 1] = [0; 1];
 
-    //         //     let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-    //         //     let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            let ctrl_dev = self.led_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-    //         //     match ctrl_dev.get_feature_report(&mut buf) {
-    //         //         Ok(_result) => {
-    //         //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            match ctrl_dev.read_timeout(&mut buf, 15) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-    //         //             if buf[1] == 0x01 {
-    //         //                 return Ok(());
-    //         //             }
-    //         //         }
+                    // if buf[1] == 0x01 {
+                    return Ok(());
+                    // }
+                }
 
-    //         //         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
-    //         //     }
-    //         // }
+                Err(_) => { /* do nothing */ }
+            }
 
-    //         Ok(())
-    //     }
-    // }
+            Ok(())
+        }
+    }
 
     // fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
     //     if !self.is_bound {
@@ -310,6 +308,170 @@ impl RoccatKoneProAir {
     //         }
     //     }
     // }
+
+    fn update_device_status(&mut self) -> Result<()> {
+        fn read_results(led_dev: &HidDevice) -> Result<super::DeviceStatus> {
+            let mut table = HashMap::new();
+
+            let mut cntr = 0;
+            'POLL_LOOP: loop {
+                // query results
+                let mut buf = Vec::new();
+                buf.resize(64, 0);
+
+                match led_dev.read_timeout(&mut buf, 10) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    }
+
+                    Err(_) => {
+                        error!("Could not read results from previous status query");
+
+                        // return Err(HwDeviceError::InvalidResult {}.into());
+                    }
+                }
+
+                match buf[0] {
+                    0x00 => break 'POLL_LOOP,
+
+                    0x90 => {
+                        match buf[1] {
+                            0x0a => {
+                                let battery_status = buf[10];
+                                let battery_level_percent = battery_status.clamp(0, 100);
+
+                                table.insert(
+                                    "battery-level-percent".to_string(),
+                                    format!("{:.0}", battery_level_percent),
+                                );
+
+                                table.insert(
+                                    "battery-level-raw".to_string(),
+                                    format!("{}", battery_status),
+                                );
+                            }
+
+                            0x70 => {
+                                let signal = buf[4];
+                                let transceiver_enabled = signal != 236;
+
+                                // radio
+                                table.insert(
+                                    "transceiver-enabled".to_string(),
+                                    format!("{}", transceiver_enabled),
+                                );
+
+                                if transceiver_enabled {
+                                    // signal strength
+                                    table.insert(
+                                        "signal-strength-percent".to_string(),
+                                        format!("{:.0}", (128.0 - signal as f32).clamp(0.0, 100.0)),
+                                    );
+
+                                    table.insert(
+                                        "signal-strength-raw".to_string(),
+                                        format!("{}", signal),
+                                    );
+                                } else {
+                                    // signal strength when radio is off
+                                    table.insert(
+                                        "signal-strength-percent".to_string(),
+                                        format!("{:.0}", 0.0),
+                                    );
+
+                                    table.insert(
+                                        "signal-strength-raw".to_string(),
+                                        format!("{}", 0),
+                                    );
+                                }
+                            }
+
+                            _ => { /* do nothing */ }
+                        }
+
+                        break 'POLL_LOOP;
+                    }
+
+                    _ => { /* do nothing */ }
+                }
+
+                if cntr > 3 {
+                    break 'POLL_LOOP;
+                }
+
+                cntr += 1;
+            }
+
+            Ok(DeviceStatus(table))
+        }
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
+        } else {
+            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = led_dev.as_ref().unwrap();
+
+            // TODO: Further investigate the meaning of the fields
+            let buf: [u8; 65] = [
+                0x00, 0x90, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            match led_dev.write(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                }
+
+                Err(_) => {
+                    error!("Could not write to the device");
+
+                    // return Err(HwDeviceError::InvalidResult {}.into());
+                }
+            }
+
+            let result = read_results(&led_dev)?;
+
+            let buf: [u8; 65] = [
+                0x00, 0x90, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ];
+
+            match led_dev.write(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                }
+
+                Err(_) => {
+                    error!("Could not write to the device");
+
+                    // return Err(HwDeviceError::InvalidResult {}.into());
+                }
+            }
+
+            let result1 = read_results(&led_dev)?;
+
+            self.device_status = DeviceStatus(
+                result
+                    .0
+                    .into_iter()
+                    .chain(result1.0)
+                    // .chain(result2.0)
+                    .collect(),
+            );
+
+            Ok(())
+        }
+    }
 }
 
 impl DeviceInfoTrait for RoccatKoneProAir {
@@ -463,10 +625,10 @@ impl DeviceTrait for RoccatKoneProAir {
             //     }
             // }
 
-            // self.send_ctrl_report(0x90)
-            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
-            // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+            self.send_ctrl_report(0x90)
+                .unwrap_or_else(|e| error!("Step 1: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.is_initialized = true;
 
@@ -532,147 +694,7 @@ impl DeviceTrait for RoccatKoneProAir {
     }
 
     fn device_status(&self) -> Result<super::DeviceStatus> {
-        // let read_results = || -> Result<super::DeviceStatus> {
-        //     let mut table = HashMap::new();
-
-        //     for _ in 0..=2 {
-        //         // query results
-        //         let buf = self.read_feature_report(0x07, 22)?;
-
-        //         match buf[1] {
-        //             0x04 => {
-        //                 if buf[2] == 0x40 {
-        //                     let battery_status = buf[5];
-
-        //                     let battery_level = match battery_status {
-        //                         71 => "100",
-        //                         64 => "80",
-        //                         65 => "60",
-        //                         66 => "40",
-        //                         67 => "20",
-        //                         68 => "0",
-        //                         _ => "unknown",
-        //                     };
-
-        //                     table.insert(
-        //                         "battery-level-percent".to_string(),
-        //                         battery_level.to_string(),
-        //                     );
-
-        //                     table.insert(
-        //                         "battery-level-raw".to_string(),
-        //                         format!("{}", battery_status),
-        //                     );
-        //                 }
-        //             }
-
-        //             0x07 => {
-        //                 if buf[2] == 0x53 {
-        //                     let transceiver_enabled = buf[6] != 0x00;
-        //                     let signal = BigEndian::read_u16(&buf[7..9]);
-
-        //                     // radio
-        //                     table.insert(
-        //                         "transceiver-enabled".to_string(),
-        //                         format!("{}", transceiver_enabled),
-        //                     );
-
-        //                     // signal strength
-        //                     table.insert(
-        //                         "signal-strength-percent".to_string(),
-        //                         format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
-        //                     );
-
-        //                     table.insert("signal-strength-raw".to_string(), format!("{}", signal));
-        //                 }
-        //             }
-
-        //             _ => { /* do nothing */ }
-        //         }
-
-        //         // thread::sleep(Duration::from_millis(15));
-        //     }
-
-        //     Ok(DeviceStatus(table))
-        // };
-
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            // TODO: Further investigate the meaning of the fields
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x03, 0x53, 0x00, 0x58, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result = read_results()?;
-
-            // thread::sleep(Duration::from_millis(15));
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result2 = read_results()?;
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x01, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result3 = read_results()?;
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x05, 0x12, 0x01, 0x04, 0x02, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result4 = read_results()?;
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x04, 0x33, 0x85, 0x04, 0xbe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result5 = read_results()?;
-
-            // let buf: [u8; 22] = [
-            //     0x08, 0x04, 0x34, 0x01, 0x00, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            // ];
-
-            // self.write_feature_report(&buf)?;
-
-            // let result6 = read_results()?;
-
-            Ok(DeviceStatus(HashMap::new()
-                // result
-                //     .0
-                //     .into_iter()
-                    // .chain(result2.0)
-                    // .chain(result3.0)
-                    // .chain(result4.0)
-                    // .chain(result5.0)
-                    // .chain(result6.0)
-                    // .collect(),
-            ))
-        }
+        Ok(self.device_status.clone())
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -1049,91 +1071,120 @@ impl MouseDeviceTrait for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_dev = self.led_hiddev.as_ref().lock();
-            let led_dev = led_dev.as_ref().unwrap();
+            {
+                let led_dev = self.led_hiddev.as_ref().lock();
+                let led_dev = led_dev.as_ref().unwrap();
 
-            let buf: [u8; 65] = [
-                0x00,
-                0x10,
-                0x10,
-                0x0b,
-                0x00,
-                0x09,
-                0x64,
-                0x64,
-                0x64,
-                0x06,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ];
+                let buf: [u8; 65] = [
+                    0x00,
+                    0x10,
+                    0x10,
+                    0x0b,
+                    0x00,
+                    0x09,
+                    0x64,
+                    0x64,
+                    0x64,
+                    0x06,
+                    (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                ];
 
-            match led_dev.write(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                }
+                match led_dev.write(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                Err(_) => {
-                    // the device has failed or has been disconnected
-                    self.is_initialized = false;
-                    self.is_opened = false;
-                    self.has_failed = true;
+                        let mut poll_cntr = 0;
+                        'POLL_LOOP: loop {
+                            let mut buf: [u8; 32] = [0x00; 32];
+                            match led_dev.read_timeout(&mut buf, 10) {
+                                Ok(_result) => {
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    return Err(HwDeviceError::InvalidResult {}.into());
+                                    match buf[1] {
+                                        0x10 => break 'POLL_LOOP,
+                                        0x00 => break 'POLL_LOOP,
+
+                                        _ => { /* do nothing */ }
+                                    }
+                                }
+
+                                Err(e) => error!("Error in poll loop: {}", e),
+                            }
+
+                            if poll_cntr >= 15 {
+                                break 'POLL_LOOP;
+                            }
+
+                            poll_cntr += 1;
+                        }
+                    }
+
+                    Err(_) => {
+                        // the device has failed; maybe it has been disconnected?
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        return Err(HwDeviceError::InvalidResult {}.into());
+                    }
                 }
             }
+
+            self.update_device_status()?;
 
             Ok(())
         }
