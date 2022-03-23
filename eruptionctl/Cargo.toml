@@ -37,7 +37,7 @@ ctrlc = { version = "3.2.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
 console = "0.15.0"
-log = "0.4.14"
+log = "0.4.16"
 libc = "0.2.121"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 serde = { version = "1.0.136", features = ["derive"] }

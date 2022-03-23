@@ -24,7 +24,7 @@ edition = "2021"
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.14"
+log = "0.4.16"
 thiserror = "1.0.30"
 eyre = "0.6.7"
 color-eyre = "0.6.1"
