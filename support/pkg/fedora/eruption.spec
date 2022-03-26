@@ -381,6 +381,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/generic_mouse.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_xtd.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kain_100.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kain_2xx.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_burst_pro.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo_remastered.lua

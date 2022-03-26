@@ -268,6 +268,7 @@ eruption/src/scripts/lib/hwdevices/keyboards/roccat_vulcan_pro.lua usr/share/eru
 eruption/src/scripts/lib/hwdevices/keyboards/corsair_strafe.lua usr/share/eruption/scripts/lib/hwdevices/keyboards
 eruption/src/scripts/lib/hwdevices/mice/generic_mouse.lua usr/share/eruption/scripts/lib/hwdevices/mice
 eruption/src/scripts/lib/hwdevices/mice/roccat_kone_aimo.lua usr/share/eruption/scripts/lib/hwdevices/mice
+eruption/src/scripts/lib/hwdevices/mice/roccat_kain_100.lua usr/share/eruption/scripts/lib/hwdevices/mice
 eruption/src/scripts/lib/hwdevices/mice/roccat_kain_2xx.lua usr/share/eruption/scripts/lib/hwdevices/mice
 eruption/src/scripts/lib/hwdevices/mice/roccat_kone_xtd.lua usr/share/eruption/scripts/lib/hwdevices/mice
 eruption/src/scripts/lib/hwdevices/mice/roccat_burst_pro.lua usr/share/eruption/scripts/lib/hwdevices/mice

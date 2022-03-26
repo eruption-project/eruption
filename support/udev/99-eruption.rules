@@ -51,6 +51,9 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2c
 # ROCCAT Burst Pro
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2de1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 
+# ROCCAT Kain 100
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2d00", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
+
 # ROCCAT Kain 2xx
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2d5f", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2d60", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"

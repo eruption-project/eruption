@@ -22,6 +22,7 @@ use crate::{dbus_client, util::RGBA};
 mod generic_mouse;
 mod null_mouse;
 mod roccat_burst_pro;
+mod roccat_kain_100;
 mod roccat_kain_2xx;
 mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
@@ -56,6 +57,9 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
             (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::new(
                 device_handle,
             ))),
+
+            // ROCCAT Kain 100
+            (0x1e7d, 0x2d00) => Ok(Box::new(roccat_kain_100::RoccatKain100::new(device_handle))),
 
             // ROCCAT Kain 2xx
             (0x1e7d, 0x2d5f) | (0x1e7d, 0x2d60) => {

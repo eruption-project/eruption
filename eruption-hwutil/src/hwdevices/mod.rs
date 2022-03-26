@@ -22,6 +22,7 @@ mod custom_serial_leds;
 mod roccat_aimo_pad;
 mod roccat_burst_pro;
 mod roccat_elo_71_air;
+mod roccat_kain_100;
 mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
@@ -231,6 +232,9 @@ pub fn bind_device(
 
         // ROCCAT Burst Pro
         (0x1e7d, 0x2de1) => Ok(Box::new(roccat_burst_pro::RoccatBurstPro::bind(hiddev))),
+
+        // ROCCAT Kain 100 AIMO
+        (0x1e7d, 0x2d00) => Ok(Box::new(roccat_kain_100::RoccatKain100::bind(hiddev))),
 
         // ROCCAT Kain 2xx AIMO
         (0x1e7d, 0x2d60) | (0x1e7d, 0x2d5f) => {
