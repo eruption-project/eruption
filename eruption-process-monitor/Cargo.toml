@@ -39,7 +39,7 @@ sensor-mutter = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.52"
+async-trait = "0.1.53"
 byteorder = "1.4.3"
 clap =  { version = "3.1.6", features = ["derive"] }
 clap_complete = "3.1.1"
