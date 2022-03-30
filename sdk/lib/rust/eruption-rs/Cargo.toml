@@ -35,10 +35,10 @@ parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 crossbeam = "0.8.1"
 serde = "1.0.136"
 bincode = "2.0.0-rc.1"
-prost = "0.9.0"
-prost-types = "0.9.0"
+prost = "0.10.0"
+prost-types = "0.10.0"
 socket2 = { version = "0.4.4", features = ["all"] }
 
 
 [build-dependencies]
-prost-build = "0.9.0"
+prost-build = "0.10.0"

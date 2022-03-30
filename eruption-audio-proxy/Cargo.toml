@@ -59,8 +59,8 @@ rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = 
 # dbus-tree = "0.9.1"
 byteorder = "1.4.3"
 bytes = "1.1.0"
-prost = "0.9.0"
-prost-types = "0.9.0"
+prost = "0.10.0"
+prost-types = "0.10.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.3.0"
@@ -73,4 +73,4 @@ pretty_assertions = "1.2.0"
 tokio = { version = "1.17.0", features = ["test-util"] }
 
 [build-dependencies]
-prost-build = "0.9.0"
+prost-build = "0.10.0"
