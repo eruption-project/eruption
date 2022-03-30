@@ -268,9 +268,15 @@ checksum = "e3b5ca7a04898ad4bcd41c90c5285445ff5b791899bb1b0abdd2a2aa791211d7"
 
 [[package]]
 name = "bytemuck"
+<<<<<<< HEAD
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdead85bdec19c194affaeeb670c0e41fe23de31459efd1c174d049269cf02cc"
+=======
+version = "1.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee1e0e2125faccb856bf10b0a9dfa89c4c718d05ef85580dfefbdf1c422ef801"
+>>>>>>> f1e4a28 (Update dependencies)
 
 [[package]]
 name = "byteorder"
@@ -404,6 +410,7 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "clap_lex"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -413,6 +420,8 @@ dependencies = [
 ]
 
 [[package]]
+=======
+>>>>>>> f1e4a28 (Update dependencies)
 name = "cmake"
 version = "0.1.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2085,7 +2094,11 @@ dependencies = [
  "color_quant",
  "exr",
  "gif",
+<<<<<<< HEAD
  "jpeg-decoder 0.2.4",
+=======
+ "jpeg-decoder 0.2.3",
+>>>>>>> f1e4a28 (Update dependencies)
  "num-iter",
  "num-rational 0.4.0",
  "num-traits",
@@ -2209,9 +2222,15 @@ dependencies = [
 
 [[package]]
 name = "jpeg-decoder"
+<<<<<<< HEAD
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "744c24117572563a98a7e9168a5ac1ee4a1ca7f702211258797bbe0ed0346c3c"
+=======
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a55ad40a2d27923f63b6fbde5934926176c69ac5e23da6ac05ebfaca984e163f"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "rayon",
 ]
@@ -3411,9 +3430,15 @@ dependencies = [
 
 [[package]]
 name = "prost"
+<<<<<<< HEAD
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a07b0857a71a8cb765763950499cae2413c3f9cede1133478c43600d9e146890"
+=======
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bd5316aa8f5c82add416dfbc25116b84b748a21153f512917e8143640a71bbd"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "bytes",
  "prost-derive",
@@ -3421,9 +3446,15 @@ dependencies = [
 
 [[package]]
 name = "prost-build"
+<<<<<<< HEAD
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "120fbe7988713f39d780a58cf1a7ef0d7ef66c6d87e5aa3438940c05357929f4"
+=======
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "328f9f29b82409216decb172d81e936415d21245befa79cd34c3f29d87d1c50b"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "bytes",
  "cfg-if 1.0.0",
@@ -3443,9 +3474,15 @@ dependencies = [
 
 [[package]]
 name = "prost-derive"
+<<<<<<< HEAD
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b670f45da57fb8542ebdbb6105a925fe571b67f9e7ed9f47a06a84e72b4e7cc"
+=======
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df35198f0777b75e9ff669737c6da5136b59dba33cf5a010a6d1cc4d56defc6f"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "anyhow",
  "itertools 0.10.3",
@@ -3456,9 +3493,15 @@ dependencies = [
 
 [[package]]
 name = "prost-types"
+<<<<<<< HEAD
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d0a014229361011dc8e69c8a1ec6c2e8d0f2af7c91e3ea3f5b2170298461e68"
+=======
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "926681c118ae6e512a3ccefd4abbe5521a14f4cc1e207356d4d00c0b7f2006fd"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "bytes",
  "prost",
@@ -4122,9 +4165,15 @@ dependencies = [
 
 [[package]]
 name = "syn"
+<<<<<<< HEAD
 version = "1.0.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b683b2b825c8eef438b77c36a06dc262294da3d5a5813fac20da149241dcd44d"
+=======
+version = "1.0.90"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "704df27628939572cd88d33f171cd6f896f4eaca85252c6e0a72d8d8287ee86f"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4133,9 +4182,15 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
+<<<<<<< HEAD
 version = "0.23.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4eea2ed6847da2e0c7289f72cb4f285f0bd704694ca067d32be811b2a45ea858"
+=======
+version = "0.23.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f3c0db8e08e06cfd352a043bd0143498fb7d42783a6e941da83b55464eb27d2"
+>>>>>>> f1e4a28 (Update dependencies)
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",
