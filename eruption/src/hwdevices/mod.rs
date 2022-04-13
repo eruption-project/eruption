@@ -40,6 +40,7 @@ mod roccat_kain_100;
 mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
+mod roccat_kone_pro;
 mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
@@ -107,6 +108,8 @@ lazy_static! {
         MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
 
         MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
+
+        MouseDriver::register("ROCCAT", "Kone Pro",         0x1e7d, 0x2c88, &roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
 
         MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
         MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
