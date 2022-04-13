@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-hwutil"
-version = "0.0.11"
+version = "0.0.12"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "A CLI control utility for hardware supported by the Eruption Linux user-mode driver"
