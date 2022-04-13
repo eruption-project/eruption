@@ -64,6 +64,8 @@ lazy_static! {
         DeviceInfo { make: "ROCCAT", model: "Kone Pro Air Dongle",  usb_vid: 0x1e7d, usb_pid: 0x2c8e, },
         DeviceInfo { make: "ROCCAT", model: "Kone Pro Air",         usb_vid: 0x1e7d, usb_pid: 0x2c92, },
 
+        DeviceInfo { make: "ROCCAT", model: "Kone Pro",             usb_vid: 0x1e7d, usb_pid: 0x2c88, },
+
         DeviceInfo { make: "ROCCAT", model: "Burst Pro",            usb_vid: 0x1e7d, usb_pid: 0x2de1, },
 
         DeviceInfo { make: "ROCCAT", model: "Kain 100 AIMO",        usb_vid: 0x1e7d, usb_pid: 0x2d00, },

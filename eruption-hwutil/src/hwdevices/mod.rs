@@ -26,6 +26,7 @@ mod roccat_kain_100;
 mod roccat_kain_2xx;
 mod roccat_kone_aimo;
 mod roccat_kone_aimo_remastered;
+mod roccat_kone_pro;
 mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 mod roccat_kone_xtd;
@@ -251,6 +252,9 @@ pub fn bind_device(
 
             Ok(Box::new(roccat_kain_2xx::RoccatKain2xx::bind(ctrldev)))
         }
+
+        // ROCCAT Kone Pro
+        (0x1e7d, 0x2c88) => Ok(Box::new(roccat_kone_pro::RoccatKonePro::bind(hiddev))),
 
         // ROCCAT Kone Pro Air
         (0x1e7d, 0x2c8e) | (0x1e7d, 0x2c92) => {
