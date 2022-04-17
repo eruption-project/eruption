@@ -68,7 +68,7 @@ pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/rainbow-wave.profile";
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
 /// Target frames per second
-pub const TARGET_FPS: u64 = 20;
+pub const TARGET_FPS: u64 = 24;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = 144 + 36;
