@@ -17,7 +17,7 @@ Every contribution counts!
 
 ## Pull Requests
 
-* Fork the repo and create your branch from `master`
+* Fork the repo and create your branch from `develop`
 * Implement your changes
 * Make sure your code lints with `cargo clippy`
 * Run `cargo fmt`
