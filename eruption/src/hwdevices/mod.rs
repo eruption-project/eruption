@@ -73,7 +73,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 26]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 27]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // ROCCAT
@@ -109,7 +109,7 @@ lazy_static! {
 
         MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kone Pro",         0x1e7d, 0x2c88, &roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88, &roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
 
         MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
         MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),

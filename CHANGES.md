@@ -5,7 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                                                                                                         |
 | ------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.1.24 | __New Release__                                                                                                                                                                                                                                                     |
-| 0.1.24 | *No changes yet* |
+| 0.1.24 | Add experimental support for `ROCCAT Kone Pro` series mice |
 | 0.1.23 | __New Release__                                                                                                                                                                                                                                                     |
 | 0.1.23 | Implement emergency exit of Eruption using Easy Shift+ + BACKSPACE key |
 | 0.1.23 | Implement full support for Wayland based graphics stacks (Add support for `NetworkFX Ambient Effect`) |

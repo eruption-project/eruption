@@ -853,7 +853,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.1.25"
+version = "0.1.24"
 dependencies = [
  "async-trait",
  "bincode",
