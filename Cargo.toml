@@ -33,7 +33,7 @@ lto = false
 #strip = false
 debug-assertions = true
 overflow-checks = true
-codegen-units = 256
+codegen-units = 512
 incremental = true
 panic = 'unwind'
 
