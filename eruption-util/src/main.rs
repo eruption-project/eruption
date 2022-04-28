@@ -20,11 +20,8 @@
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use colored::*;
-use crossbeam::{
-    channel::{unbounded, Sender},
-    select,
-};
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
+use flume::{unbounded, Sender};
 use hwdevices::{EvdevError, HwDevice, KeyboardHidEvent, RGBA};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -525,8 +522,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                     hwdev.lock().send_led_map(&led_map)?;
 
-                                    select! {
-                                        recv(kbd_rx) -> msg => match msg.unwrap() {
+                                    flume::Selector::new()
+                                        .recv(&kbd_rx, |msg| -> Result<()> {
+                                            match msg.unwrap() {
                                             Some(ev) => {
                                                 // debug!("{:?}", ev);
 
@@ -553,12 +551,21 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                             }
 
                                             None => error!("Received an invalid event"),
-                                        },
+                                        }
 
-                                        recv(ctrl_c_rx) -> _msg => {
-                                            info!("Terminating now");
-                                            break;
-                                        },
+                                            Ok(())
+                                        })
+                                        .recv(&ctrl_c_rx, |_| {
+                                            // signal that we want to quit
+                                            QUIT.store(true, Ordering::SeqCst);
+
+                                            Ok(())
+                                        })
+                                        .wait()?;
+
+                                    if QUIT.load(Ordering::SeqCst) {
+                                        info!("Terminating now");
+                                        break;
                                     }
                                 }
 
@@ -668,33 +675,48 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         break;
                                     }
 
-                                    select! {
-                                        recv(kbd_rx) -> msg => match msg.unwrap() {
-                                            Some(ev) => {
-                                                info!("{:?}", ev);
+                                    flume::Selector::new()
+                                        .recv(&kbd_rx, |msg| -> Result<()> {
+                                            match msg.unwrap() {
+                                                Some(ev) => {
+                                                    info!("{:?}", ev);
 
-                                                if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
-                                                    let key_index = hwdev.lock().ev_key_to_key_index(code) as usize - 1;
+                                                    if let evdev_rs::enums::EventCode::EV_KEY(
+                                                        code,
+                                                    ) = ev.event_code
+                                                    {
+                                                        let key_index =
+                                                            hwdev.lock().ev_key_to_key_index(code)
+                                                                as usize
+                                                                - 1;
 
-                                                    // set highlighted LEDs
-                                                    led_map[key_index] = RGBA {
-                                                        r: 255,
-                                                        g: 0,
-                                                        b: 0,
-                                                        a: 0,
-                                                    };
+                                                        // set highlighted LEDs
+                                                        led_map[key_index] = RGBA {
+                                                            r: 255,
+                                                            g: 0,
+                                                            b: 0,
+                                                            a: 0,
+                                                        };
 
-                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                        hwdev.lock().send_led_map(&led_map)?;
+                                                    }
                                                 }
+
+                                                None => error!("Received an invalid event"),
                                             }
 
-                                            None => error!("Received an invalid event"),
-                                        },
+                                            Ok(())
+                                        })
+                                        .recv(&ctrl_c_rx, |_| {
+                                            // signal that we want to quit
+                                            QUIT.store(true, Ordering::SeqCst);
+                                            Ok(())
+                                        })
+                                        .wait()?;
 
-                                        recv(ctrl_c_rx) -> _msg => {
-                                            info!("Terminating now");
-                                            break;
-                                        },
+                                    if QUIT.load(Ordering::SeqCst) {
+                                        info!("Terminating now");
+                                        break;
                                     }
                                 }
                             } else {
@@ -830,47 +852,56 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                             break;
                                         }
 
-                                        select! {
-                                            recv(kbd_rx) -> msg => match msg.unwrap() {
-                                                Some(ev) => {
-                                                    // debug!("{:?}", ev);
+                                        flume::Selector::new()
+                                            .recv(&kbd_rx, |msg| -> Result<()> {
+                                                match msg.unwrap() {
+                                                    Some(ev) => {
+                                                        // debug!("{:?}", ev);
 
-                                                    if ev.value >= 1 {
-                                                        if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
-                                                            if code == evdev_rs::enums::EV_KEY::KEY_ESC {
-                                                                info!("Skipping key index: {}", &key_index);
-                                                                key_index += 1;
+                                                        if ev.value >= 1 {
+                                                            if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
+                                                                if code == evdev_rs::enums::EV_KEY::KEY_ESC {
+                                                                    info!("Skipping key index: {}", &key_index);
+                                                                    key_index += 1;
+                                                                } else {
+                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+
+                                                                    info!("Recorded key with index {}", idx);
+
+                                                                    topology[(i * keys_per_row) + key_index] = idx;
+                                                                    key_index += 1;
+
+                                                                    // set highlighted LEDs
+                                                                    led_map[idx as usize] = RGBA {
+                                                                        r: 255,
+                                                                        g: 0,
+                                                                        b: 0,
+                                                                        a: 0,
+                                                                    };
+
+                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                }
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
-
-                                                                info!("Recorded key with index {}", idx);
-
-                                                                topology[(i * keys_per_row) + key_index] = idx;
-                                                                key_index += 1;
-
-                                                                // set highlighted LEDs
-                                                                led_map[idx as usize] = RGBA {
-                                                                    r: 255,
-                                                                    g: 0,
-                                                                    b: 0,
-                                                                    a: 0,
-                                                                };
-
-                                                                hwdev.lock().send_led_map(&led_map)?;
+                                                                // warn!("Event ignored");
                                                             }
-                                                        } else {
-                                                            // warn!("Event ignored");
                                                         }
                                                     }
+
+                                                    None => error!("Received an invalid event"),
                                                 }
 
-                                                None => error!("Received an invalid event"),
-                                            },
+                                                Ok(())
+                                            })
+                                            .recv(&ctrl_c_rx, |_| {
+                                                // signal that we want to quit
+                                                QUIT.store(true, Ordering::SeqCst);
+                                                Ok(())
+                                            })
+                                            .wait()?;
 
-                                            recv(ctrl_c_rx) -> _msg => {
-                                                info!("Terminating now");
-                                                break;
-                                            },
+                                        if QUIT.load(Ordering::SeqCst) {
+                                            info!("Terminating now");
+                                            break;
                                         }
                                     }
                                 }
@@ -1035,47 +1066,56 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                             break;
                                         }
 
-                                        select! {
-                                            recv(kbd_rx) -> msg => match msg.unwrap() {
-                                                Some(ev) => {
-                                                    // debug!("{:?}", ev);
+                                        flume::Selector::new()
+                                            .recv(&kbd_rx, |msg| -> Result<()> {
+                                                match msg.unwrap() {
+                                                    Some(ev) => {
+                                                        // debug!("{:?}", ev);
 
-                                                    if ev.value >= 1 {
-                                                        if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
-                                                            if code == evdev_rs::enums::EV_KEY::KEY_ESC {
-                                                                info!("Skipping key index: {}", &key_index);
-                                                                key_index += 1;
+                                                        if ev.value >= 1 {
+                                                            if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
+                                                                if code == evdev_rs::enums::EV_KEY::KEY_ESC {
+                                                                    info!("Skipping key index: {}", &key_index);
+                                                                    key_index += 1;
+                                                                } else {
+                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+
+                                                                    info!("Recorded key with index {}", idx);
+
+                                                                    topology[(i * num_rows) + key_index] = idx;
+                                                                    key_index += 1;
+
+                                                                    // set highlighted LEDs
+                                                                    led_map[idx as usize] = RGBA {
+                                                                        r: 255,
+                                                                        g: 0,
+                                                                        b: 0,
+                                                                        a: 0,
+                                                                    };
+
+                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                }
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
-
-                                                                info!("Recorded key with index {}", idx);
-
-                                                                topology[(i * num_rows) + key_index] = idx;
-                                                                key_index += 1;
-
-                                                                // set highlighted LEDs
-                                                                led_map[idx as usize] = RGBA {
-                                                                    r: 255,
-                                                                    g: 0,
-                                                                    b: 0,
-                                                                    a: 0,
-                                                                };
-
-                                                                hwdev.lock().send_led_map(&led_map)?;
+                                                                // warn!("Event ignored");
                                                             }
-                                                        } else {
-                                                            // warn!("Event ignored");
                                                         }
                                                     }
+
+                                                    None => error!("Received an invalid event"),
                                                 }
 
-                                                None => error!("Received an invalid event"),
-                                            },
+                                                Ok(())
+                                            })
+                                            .recv(&ctrl_c_rx, |_| {
+                                                // signal that we want to quit
+                                                QUIT.store(true, Ordering::SeqCst);
+                                                Ok(())
+                                            })
+                                            .wait()?;
 
-                                            recv(ctrl_c_rx) -> _msg => {
-                                                info!("Terminating now");
-                                                break;
-                                            },
+                                        if QUIT.load(Ordering::SeqCst) {
+                                            info!("Terminating now");
+                                            break;
                                         }
                                     }
                                 }
@@ -1232,47 +1272,56 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                             break;
                                         }
 
-                                        select! {
-                                            recv(kbd_rx) -> msg => match msg.unwrap() {
-                                                Some(ev) => {
-                                                    // debug!("{:?}", ev);
+                                        flume::Selector::new()
+                                            .recv(&kbd_rx, |msg| -> Result<()> {
+                                                match msg.unwrap() {
+                                                    Some(ev) => {
+                                                        // debug!("{:?}", ev);
 
-                                                    if ev.value >= 1 {
-                                                        if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
-                                                            if code == evdev_rs::enums::EV_KEY::KEY_ESC {
-                                                                info!("Skipping key index: {}", &key_index);
-                                                                key_index += 1;
+                                                        if ev.value >= 1 {
+                                                            if let evdev_rs::enums::EventCode::EV_KEY(code) = ev.event_code {
+                                                                if code == evdev_rs::enums::EV_KEY::KEY_ESC {
+                                                                    info!("Skipping key index: {}", &key_index);
+                                                                    key_index += 1;
+                                                                } else {
+                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+
+                                                                    info!("Recorded neighbor with index {} for key: {}", idx, i);
+
+                                                                    neighbor_topology[(i * 10) + key_index] = idx;
+                                                                    key_index += 1;
+
+                                                                    // set highlighted LEDs
+                                                                    led_map[idx as usize] = RGBA {
+                                                                        r: 255,
+                                                                        g: 200,
+                                                                        b: 200,
+                                                                        a: 0,
+                                                                    };
+
+                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                }
                                                             } else {
-                                                                let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
-
-                                                                info!("Recorded neighbor with index {} for key: {}", idx, i);
-
-                                                                neighbor_topology[(i * 10) + key_index] = idx;
-                                                                key_index += 1;
-
-                                                                // set highlighted LEDs
-                                                                led_map[idx as usize] = RGBA {
-                                                                    r: 255,
-                                                                    g: 200,
-                                                                    b: 200,
-                                                                    a: 0,
-                                                                };
-
-                                                                hwdev.lock().send_led_map(&led_map)?;
+                                                                // warn!("Event ignored");
                                                             }
-                                                        } else {
-                                                            // warn!("Event ignored");
                                                         }
                                                     }
+
+                                                    None => error!("Received an invalid event"),
                                                 }
 
-                                                None => error!("Received an invalid event"),
-                                            },
+                                                Ok(())
+                                            })
+                                            .recv(&ctrl_c_rx, |_| {
+                                                // signal that we want to quit
+                                                QUIT.store(true, Ordering::SeqCst);
+                                                Ok(())
+                                            })
+                                            .wait()?;
 
-                                            recv(ctrl_c_rx) -> _msg => {
-                                                info!("Terminating now");
-                                                break;
-                                            },
+                                        if QUIT.load(Ordering::SeqCst) {
+                                            info!("Terminating now");
+                                            break;
                                         }
                                     }
                                 }

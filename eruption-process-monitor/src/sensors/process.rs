@@ -21,7 +21,7 @@ use super::Sensor;
 use crate::procmon::{self, ProcMon};
 use crate::{util, SystemEvent};
 use async_trait::async_trait;
-use crossbeam::channel::Sender;
+use flume::Sender;
 use log::*;
 use std::{sync::atomic::Ordering, thread};
 
@@ -147,7 +147,7 @@ rules add exec gnome-calc.* 2
         // no op
     }
 
-    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         Err(ProcessSensorError::NotSupported.into())
     }
 

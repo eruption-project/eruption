@@ -31,10 +31,10 @@ use crate::sensors::X11SensorData;
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use config::Config;
-use crossbeam::channel::{unbounded, Receiver, Select, Sender};
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use dbus_client::{profile, slot};
+use flume::{unbounded, Receiver, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -361,7 +361,7 @@ fn print_header() {
 }
 
 /// Execute an action
-async fn process_action(action: &Action) -> Result<()> {
+fn process_action(action: &Action) -> Result<()> {
     match action {
         Action::SwitchToProfile { profile_name } => {
             if CURRENT_STATE.read().1.is_none()
@@ -371,7 +371,7 @@ async fn process_action(action: &Action) -> Result<()> {
 
                 PROFILE_CHANGING.store(true, Ordering::SeqCst);
 
-                dbus_client::switch_profile(profile_name).await?;
+                dbus_client::switch_profile(profile_name)?;
             }
 
             CURRENT_STATE.write().1 = Some(profile_name.clone());
@@ -385,7 +385,7 @@ async fn process_action(action: &Action) -> Result<()> {
 
                 PROFILE_CHANGING.store(true, Ordering::SeqCst);
 
-                dbus_client::switch_slot(*slot_index).await?;
+                dbus_client::switch_slot(*slot_index)?;
             }
 
             CURRENT_STATE.write().0 = Some(*slot_index);
@@ -397,7 +397,7 @@ async fn process_action(action: &Action) -> Result<()> {
 
 /// Process system related events
 #[cfg(feature = "sensor-procmon")]
-async fn process_system_event(event: &SystemEvent) -> Result<()> {
+fn process_system_event(event: &SystemEvent) -> Result<()> {
     match event {
         SystemEvent::ProcessExec {
             event,
@@ -409,7 +409,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     match selector {
                         Selector::ProcessExec { comm: regex } => {
                             if metadata.enabled {
-                                let re = Regex::new(regex)?;
+                                let re = Regex::new(&regex)?;
 
                                 if re.is_match(comm) {
                                     debug!("Matching rule for: {}", comm);
@@ -433,7 +433,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                                         }
                                     }
 
-                                    process_action(action).await?;
+                                    process_action(action)?;
                                     break;
                                 }
                             }
@@ -453,13 +453,13 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     Action::SwitchToProfile { profile_name } => {
                         debug!("Returning to profile: {}", profile_name);
 
-                        dbus_client::switch_profile(profile_name).await?;
+                        dbus_client::switch_profile(&profile_name)?;
                     }
 
                     Action::SwitchToSlot { slot_index } => {
                         debug!("Returning to slot: {}", slot_index + 1);
 
-                        dbus_client::switch_slot(*slot_index).await?;
+                        dbus_client::switch_slot(*slot_index)?;
                     }
                 },
 
@@ -474,10 +474,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
 }
 
 /// Process filesystem related events
-async fn process_fs_event(
-    event: &FileSystemEvent,
-    dbus_api_tx: &Sender<DbusApiEvent>,
-) -> Result<()> {
+fn process_fs_event(event: &FileSystemEvent, dbus_api_tx: &Sender<DbusApiEvent>) -> Result<()> {
     match event {
         FileSystemEvent::RulesChanged => {
             info!("Rules changed, reloading...");
@@ -498,7 +495,7 @@ async fn process_fs_event(
 }
 
 /// Process D-Bus related events
-async fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
+fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
     match event {
         Message::ProfileChanged(profile_name) => {
             // update the default rule to use the newly selected profile,
@@ -537,33 +534,33 @@ async fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
 }
 
 #[allow(dead_code)]
-async fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
+fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
     trace!("Sensor data: {:#?}", event);
 
     for (selector, (metadata, action)) in RULES_MAP.read().iter() {
         match selector {
             Selector::WindowFocused { mode, regex } => {
                 if metadata.enabled {
-                    let re = Regex::new(regex)?;
+                    let re = Regex::new(&regex)?;
 
                     match mode {
                         WindowFocusedSelectorMode::WindowName => {
                             if re.is_match(event.window_name().unwrap_or_default()) {
-                                process_action(action).await?;
+                                process_action(action)?;
                                 break;
                             }
                         }
 
                         WindowFocusedSelectorMode::WindowInstance => {
                             if re.is_match(event.window_instance().unwrap_or_default()) {
-                                process_action(action).await?;
+                                process_action(action)?;
                                 break;
                             }
                         }
 
                         WindowFocusedSelectorMode::WindowClass => {
                             if re.is_match(event.window_class().unwrap_or_default()) {
-                                process_action(action).await?;
+                                process_action(action)?;
                                 break;
                             }
                         }
@@ -789,7 +786,7 @@ mod thread_util {
     }
 }
 
-pub async fn run_main_loop(
+pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
@@ -798,74 +795,50 @@ pub async fn run_main_loop(
 ) -> Result<()> {
     trace!("Entering main loop...");
 
-    let mut sel = Select::new();
-
-    let ctrl_c = sel.recv(ctrl_c_rx);
-    let fsevents = sel.recv(fsevents_rx);
-    let dbusevents = sel.recv(dbusevents_rx);
-
-    #[cfg(feature = "sensor-procmon")]
-    let sysevents = sel.recv(sysevents_rx);
-
     'MAIN_LOOP: loop {
         if QUIT.load(Ordering::SeqCst) {
             break 'MAIN_LOOP;
         }
 
-        match sel.select_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS)) {
-            Ok(oper) => match oper.index() {
-                i if i == ctrl_c => {
-                    // consume the event, so that we don't cause a panic
-                    let _event = &oper.recv(ctrl_c_rx);
-                    break 'MAIN_LOOP;
+        let mut sel = flume::Selector::new()
+            .recv(&ctrl_c_rx, |_| {
+                QUIT.store(true, Ordering::SeqCst);
+            })
+            .recv(&fsevents_rx, |event| {
+                if let Ok(event) = event {
+                    process_fs_event(&event, &dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not process a filesystem event: {}", e))
+                } else {
+                    error!("{}", event.as_ref().unwrap_err());
                 }
-
-                i if i == fsevents => {
-                    let event = &oper.recv(fsevents_rx);
-                    if let Ok(event) = event {
-                        process_fs_event(event, dbus_api_tx)
-                            .await
-                            .unwrap_or_else(|e| {
-                                error!("Could not process a filesystem event: {}", e)
-                            })
-                    } else {
-                        error!("{}", event.as_ref().unwrap_err());
-                    }
+            })
+            .recv(&dbusevents_rx, |event| {
+                if let Ok(event) = event {
+                    process_dbus_event(&event)
+                        .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e))
+                } else {
+                    error!("{}", event.as_ref().unwrap_err());
                 }
+            });
 
-                i if i == dbusevents => {
-                    let event = &oper.recv(dbusevents_rx);
-                    if let Ok(event) = event {
-                        process_dbus_event(event)
-                            .await
-                            .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e))
-                    } else {
-                        error!("{}", event.as_ref().unwrap_err());
-                    }
+        #[cfg(feature = "sensor-procmon")]
+        {
+            sel = sel.recv(&sysevents_rx, |event| {
+                if let Ok(event) = event {
+                    process_system_event(&event)
+                        .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
+                } else {
+                    error!("{}", event.as_ref().unwrap_err());
                 }
-
-                #[cfg(feature = "sensor-procmon")]
-                i if i == sysevents => {
-                    let event = &oper.recv(sysevents_rx);
-                    if let Ok(event) = event {
-                        process_system_event(event)
-                            .await
-                            .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
-                    } else {
-                        error!("{}", event.as_ref().unwrap_err());
-                    }
-                }
-
-                _ => unreachable!(),
-            },
-
-            Err(_) => {}
+            });
         }
+
+        let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
 
         // poll all pollable sensors that do not notify us via messages
         for sensor in sensors::SENSORS.lock().iter_mut() {
             if sensor.is_pollable() && !sensor.is_failed() {
-                match sensor.poll().await {
+                match sensor.poll() {
                     #[allow(unused_variables)]
                     Ok(data) => {
                         // debug!("Sensor data: {}", data);
@@ -875,21 +848,21 @@ pub async fn run_main_loop(
 
                         #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
-                            process_window_event(data).await?;
+                            process_window_event(data)?;
 
                             handled = true;
                         }
 
                         #[cfg(feature = "sensor-wayland")]
                         if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
-                            process_window_event(data).await?;
+                            process_window_event(data)?;
 
                             handled = true;
                         }
 
                         #[cfg(feature = "sensor-x11")]
                         if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
-                            process_window_event(data).await?;
+                            process_window_event(data)?;
 
                             X11_POLL_SUCCEEDED.store(true, Ordering::SeqCst);
 
@@ -1147,7 +1120,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 &ctrl_c_rx,
                 &dbus_api_tx,
             )
-            .await
             .unwrap_or_else(|e| error!("{}", e));
 
             debug!("Left the main loop");

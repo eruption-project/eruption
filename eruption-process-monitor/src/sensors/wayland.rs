@@ -96,11 +96,15 @@ rules add window-instance gnome-calculator 2
         !crate::X11_POLL_SUCCEEDED.load(Ordering::SeqCst)
     }
 
+    fn is_failed(&self) -> bool {
+        false
+    }
+
     fn set_failed(&mut self, _failed: bool) {
         // no op
     }
 
-    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         let result = self::WaylandSensorData {
             window_title: "".to_string(),
             window_instance: "".to_string(),

@@ -65,7 +65,7 @@ pub trait Sensor: Clone {
     fn set_failed(&mut self, failed: bool);
 
     fn is_pollable(&self) -> bool;
-    async fn poll(&mut self) -> Result<Box<dyn SensorData>>;
+    fn poll(&mut self) -> Result<Box<dyn SensorData>>;
 
     fn as_any(&self) -> &dyn std::any::Any;
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
@@ -86,7 +86,7 @@ pub trait WindowSensor: Clone {
     fn set_failed(&mut self, failed: bool);
 
     fn is_pollable(&self) -> bool;
-    async fn poll(&mut self) -> Result<Box<dyn WindowSensorData>>;
+    fn poll(&mut self) -> Result<Box<dyn WindowSensorData>>;
 
     fn as_any(&self) -> &dyn std::any::Any;
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any;

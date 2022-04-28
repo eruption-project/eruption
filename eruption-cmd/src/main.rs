@@ -19,7 +19,7 @@
 
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
-use crossbeam::channel::unbounded;
+use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,

@@ -257,7 +257,7 @@ mod backends {
     use super::CURRENT_RMS;
     use super::FFT_SIZE;
 
-    use crossbeam::channel::{self, Receiver, Sender};
+    use flume::{self, bounded, Receiver, Sender};
     use lazy_static::lazy_static;
     use log::*;
     use nix::unistd::unlink;
@@ -355,7 +355,7 @@ mod backends {
 
             LISTENER.lock().replace(listener);
 
-            let (tx, rx): (Sender<u32>, Receiver<u32>) = channel::bounded(1);
+            let (tx, rx): (Sender<u32>, Receiver<u32>) = bounded(1);
 
             *SFX_TX.lock() = Some(tx);
             *SFX_RX.lock() = Some(rx);

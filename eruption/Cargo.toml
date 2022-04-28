@@ -34,14 +34,15 @@ mimalloc_allocator = ["mimalloc"]
 [dependencies]
 mimalloc = { version = "0.1.28", optional = true, default-features = false }
 cfg-if = "1.0.0"
-crossbeam = "0.8.1"
+#flume = { version = "0.10.12", features = ["async", "eventual-fairness"]}
+flume = { version = "0.10.12", features = ["async"] }
 futures = "0.3.21"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 async-trait = "0.1.53"
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
-libc = "0.2.124"
+libc = "0.2.125"
 nix = "0.24.1"
 log = "0.4.16"
 syslog = "6.0.1"
@@ -78,7 +79,7 @@ simdnoise = "3.1.6"
 #luajit-src = "210.3.2+resty1085a4d"
 #mlua = { version = "0.7.3", features = ["luajit52"] }
 mlua = { version = "0.7.4", features = ["lua54"] }
-sysinfo = "0.23.10"
+sysinfo = "0.23.11"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.1"
 rustfft = "6.0.1"

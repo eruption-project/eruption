@@ -20,10 +20,9 @@
 // use async_macros::join;
 use clap::{Arg, Command};
 use config::Config;
-use crossbeam::channel::{self, unbounded, Receiver, Select, Sender};
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
-use futures::future::join_all;
+use flume::{unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -203,6 +202,9 @@ lazy_static! {
     pub static ref KEY_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_KEYS]));
 
     pub static ref BUTTON_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_MOUSE_BUTTONS]));
+
+    static ref MOUSE_MOVE_EVENT_LAST_DISPATCHED: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now()));
+    static ref MOUSE_MOTION_BUF: Arc<RwLock<(i32, i32, i32)>> = Arc::new(RwLock::new((0,0,0)));
 
     // cached value
     static ref GRAB_MOUSE: AtomicBool = {
@@ -1302,7 +1304,7 @@ fn switch_profile(
 }
 
 /// Process file system related events
-async fn process_filesystem_event(
+fn process_filesystem_event(
     fsevent: &FileSystemEvent,
     dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
@@ -1326,7 +1328,7 @@ async fn process_filesystem_event(
 }
 
 /// Process D-Bus events
-async fn process_dbus_event(
+fn process_dbus_event(
     dbus_event: &dbus_interface::Message,
     dbus_api_tx: &Sender<DbusApiEvent>,
 ) -> Result<()> {
@@ -1350,7 +1352,7 @@ async fn process_dbus_event(
 }
 
 /// Process a timer tick event
-async fn process_timer_event(_event: &Instant) -> Result<()> {
+fn process_timer_event() -> Result<()> {
     let offset = 0;
 
     for (index, dev) in crate::KEYBOARD_DEVICES.read().iter().enumerate() {
@@ -1385,7 +1387,7 @@ async fn process_timer_event(_event: &Instant) -> Result<()> {
 }
 
 /// Process HID events
-async fn process_keyboard_hid_events(
+fn process_keyboard_hid_events(
     keyboard_device: &KeyboardDevice,
     failed_txs: &HashSet<usize>,
 ) -> Result<()> {
@@ -1567,10 +1569,7 @@ async fn process_keyboard_hid_events(
 }
 
 /// Process HID events
-async fn process_mouse_hid_events(
-    mouse_device: &MouseDevice,
-    failed_txs: &HashSet<usize>,
-) -> Result<()> {
+fn process_mouse_hid_events(mouse_device: &MouseDevice, failed_txs: &HashSet<usize>) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
@@ -1648,12 +1647,10 @@ async fn process_mouse_hid_events(
 }
 
 /// Process mouse events
-async fn process_mouse_event(
+fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
     mouse_device: &MouseDevice,
     failed_txs: &HashSet<usize>,
-    mouse_move_event_last_dispatched: &mut Instant,
-    mouse_motion_buf: &mut (i32, i32, i32),
 ) -> Result<()> {
     // send pending mouse events to the Lua VMs and to the event dispatcher
 
@@ -1674,26 +1671,29 @@ async fn process_mouse_event(
 
                 // accumulate relative changes
                 let direction = if *code == evdev_rs::enums::EV_REL::REL_X {
-                    mouse_motion_buf.0 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().0 += raw_event.value;
 
                     1
                 } else if *code == evdev_rs::enums::EV_REL::REL_Y {
-                    mouse_motion_buf.1 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().1 += raw_event.value;
 
                     2
                 } else if *code == evdev_rs::enums::EV_REL::REL_Z {
-                    mouse_motion_buf.2 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().2 += raw_event.value;
 
                     3
                 } else {
                     4
                 };
 
-                if *mouse_motion_buf != (0, 0, 0)
-                    && mouse_move_event_last_dispatched.elapsed().as_millis()
+                if *MOUSE_MOTION_BUF.read() != (0, 0, 0)
+                    && MOUSE_MOVE_EVENT_LAST_DISPATCHED
+                        .read()
+                        .elapsed()
+                        .as_millis()
                         > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into()
                 {
-                    *mouse_move_event_last_dispatched = Instant::now();
+                    *MOUSE_MOVE_EVENT_LAST_DISPATCHED.write() = Instant::now();
 
                     *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
                         LUA_TXS.lock().len() - failed_txs.len();
@@ -1702,9 +1702,9 @@ async fn process_mouse_event(
                         if !failed_txs.contains(&idx) {
                             lua_tx
                                 .send(script::Message::MouseMove(
-                                    mouse_motion_buf.0,
-                                    mouse_motion_buf.1,
-                                    mouse_motion_buf.2,
+                                    MOUSE_MOTION_BUF.read().0,
+                                    MOUSE_MOTION_BUF.read().1,
+                                    MOUSE_MOTION_BUF.read().2,
                                 ))
                                 .unwrap_or_else(|e| {
                                     error!(
@@ -1714,7 +1714,7 @@ async fn process_mouse_event(
                                 });
 
                             // reset relative motion buffer, since it has been submitted
-                            *mouse_motion_buf = (0, 0, 0);
+                            *MOUSE_MOTION_BUF.write() = (0, 0, 0);
                         } else {
                             warn!("Not sending a message to a failed tx");
                         }
@@ -1936,7 +1936,7 @@ async fn process_mouse_event(
 }
 
 /// Process mouse events from a secondary sub-device on the primary mouse
-// async fn process_mouse_secondary_events(
+// fn process_mouse_secondary_events(
 //     mouse_rx: &Receiver<Option<evdev_rs::InputEvent>>,
 //     failed_txs: &HashSet<usize>,
 // ) -> Result<()> {
@@ -2056,7 +2056,7 @@ async fn process_mouse_event(
 // }
 
 /// Process keyboard events
-async fn process_keyboard_event(
+fn process_keyboard_event(
     raw_event: &evdev_rs::InputEvent,
     keyboard_device: &KeyboardDevice,
     failed_txs: &HashSet<usize>,
@@ -2169,7 +2169,7 @@ async fn process_keyboard_event(
     Ok(())
 }
 
-async fn run_main_loop(
+fn run_main_loop(
     dbus_api_tx: &Sender<DbusApiEvent>,
     ctrl_c_rx: &Receiver<bool>,
     dbus_rx: &Receiver<dbus_interface::Message>,
@@ -2183,6 +2183,7 @@ async fn run_main_loop(
     let mut ticks = 0;
     let mut start_time;
     let mut delay_time = Instant::now();
+    let mut last_status_poll = Instant::now();
 
     // used to detect changes of the active slot
     let mut saved_slot = 0;
@@ -2193,7 +2194,7 @@ async fn run_main_loop(
     let mut saved_afk_mode = false;
 
     // stores indices of failed Lua TXs
-    let mut failed_txs = HashSet::new();
+    let /*mut*/ failed_txs = HashSet::new();
 
     // stores the generation number of the frame that is currently visible on the keyboard
     let saved_frame_generation = AtomicUsize::new(0);
@@ -2202,33 +2203,77 @@ async fn run_main_loop(
     let mut fps_counter: i32 = 0;
     let mut fps_timer = Instant::now();
 
-    let mut mouse_move_event_last_dispatched: Instant = Instant::now();
-    let mut mouse_motion_buf: (i32, i32, i32) = (0, 0, 0);
-
-    let mut sel = Select::new();
-
-    let ctrl_c = sel.recv(ctrl_c_rx);
-    let fs_events = sel.recv(fsevents_rx);
-    let dbus_events = sel.recv(dbus_rx);
-
-    let timer = channel::tick(Duration::from_millis(constants::POLL_TIMER_INTERVAL_MILLIS));
-    let timer_events = sel.recv(&timer);
-
-    let mut keyboard_events = vec![];
-    let rxs = crate::KEYBOARD_DEVICES_RX.read();
-    for rx in rxs.iter() {
-        let index = sel.recv(rx);
-        keyboard_events.push((index, rx));
-    }
-
-    let mut mouse_events = vec![];
-    let rxs = crate::MOUSE_DEVICES_RX.read();
-    for rx in rxs.iter() {
-        let index = sel.recv(rx);
-        mouse_events.push((index, rx));
-    }
+    let kbd_rxs = crate::KEYBOARD_DEVICES_RX.read();
+    let mouse_rxs = crate::MOUSE_DEVICES_RX.read();
 
     'MAIN_LOOP: loop {
+        let mut sel = Selector::new()
+            .recv(ctrl_c_rx, |_event| {
+                QUIT.store(true, Ordering::SeqCst);
+            })
+            .recv(fsevents_rx, |event| {
+                if let Ok(event) = event {
+                    process_filesystem_event(&event, dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not process a filesystem event: {}", e))
+                } else {
+                    error!(
+                        "Could not process a filesystem event: {}",
+                        event.as_ref().unwrap_err()
+                    );
+                }
+            })
+            .recv(dbus_rx, |event| {
+                if let Ok(event) = event {
+                    process_dbus_event(&event, dbus_api_tx)
+                        .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
+
+                    //failed_txs.clear();
+                } else {
+                    error!(
+                        "Could not process a D-Bus event: {}",
+                        event.as_ref().unwrap_err()
+                    );
+
+                    // TODO: remove this event
+                }
+            });
+
+        for rx in kbd_rxs.iter() {
+            let mapper = |event| {
+                if let Ok(Some(event)) = event {
+                    // TODO: support multiple keyboards
+                    process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0], &failed_txs)
+                        .unwrap_or_else(|e| error!("Could not process a keyboard event: {}", e));
+                } else {
+                    error!(
+                        "Could not process a keyboard event: {}",
+                        event.as_ref().unwrap_err()
+                    );
+                }
+            };
+
+            sel = sel.recv(&rx, mapper);
+        }
+
+        for rx in mouse_rxs.iter() {
+            let mapper = |event| {
+                if let Ok(Some(event)) = event {
+                    process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0], &failed_txs)
+                        .unwrap_or_else(|e| error!("Could not process a mouse event: {}", e));
+                } else {
+                    error!(
+                        "Could not process a mouse event: {}",
+                        event.as_ref().unwrap_err()
+                    );
+
+                    // remove failed devices
+                    REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                }
+            };
+
+            sel = sel.recv(&rx, mapper);
+        }
+
         // update timekeeping and state
         ticks += 1;
         start_time = Instant::now();
@@ -2261,7 +2306,7 @@ async fn run_main_loop(
                     error!("Could not switch profiles: {}", e);
                 }
 
-                failed_txs.clear();
+                // failed_txs.clear();
             }
         }
 
@@ -2284,7 +2329,7 @@ async fn run_main_loop(
                 switch_profile(Some(&profile_path), dbus_api_tx, true)?;
 
                 saved_slot = active_slot;
-                failed_txs.clear();
+                //failed_txs.clear();
             }
         }
 
@@ -2349,7 +2394,7 @@ async fn run_main_loop(
                     error!("Could not switch profiles: {}", e);
                 }
 
-                failed_txs.clear();
+                // failed_txs.clear();
             }
 
             *ACTIVE_PROFILE_NAME.lock() = None;
@@ -2388,7 +2433,7 @@ async fn run_main_loop(
         let plugins = plugin_manager.get_plugins();
 
         // call main loop hook of each registered plugin
-        let mut futures = vec![];
+        // let mut futures = vec![];
         for plugin in plugins.iter() {
             // call the sync main loop hook, intended to be used
             // for very short running pieces of code
@@ -2396,144 +2441,49 @@ async fn run_main_loop(
 
             // enqueue a call to the async main loop hook, intended
             // to be used for longer running pieces of code
-            futures.push(plugin.main_loop_hook(ticks));
+            // futures.push(plugin.main_loop_hook(ticks));
         }
 
-        join_all(futures).await;
+        // join_all(futures);
+
+        if last_status_poll.elapsed()
+            >= Duration::from_millis(constants::POLL_TIMER_INTERVAL_MILLIS)
+        {
+            let saved_status = crate::DEVICE_STATUS.as_ref().lock().clone();
+
+            if let Err(_e) = process_timer_event() {
+                /* do nothing  */
+
+                // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
+                //     error!("Could not process a timer event: {}", e);
+                // } else {
+                //     trace!("Result is a NoOp");
+                // }
+            }
+
+            last_status_poll = Instant::now();
+
+            let current_status = crate::DEVICE_STATUS.lock().clone();
+
+            if current_status != saved_status {
+                dbus_api_tx
+                    .send(DbusApiEvent::DeviceStatusChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            }
+        }
 
         // now, process events from all available sources...
-        match sel.select_timeout(Duration::from_millis(1000 / constants::TARGET_FPS / 4)) {
-            Ok(oper) => match oper.index() {
-                i if i == ctrl_c => {
-                    // consume the event, so that we don't cause a panic
-                    let _event = &oper.recv(ctrl_c_rx);
-                    break 'MAIN_LOOP;
-                }
-
-                i if i == fs_events => {
-                    let event = &oper.recv(fsevents_rx);
-                    if let Ok(event) = event {
-                        process_filesystem_event(event, dbus_api_tx)
-                            .await
-                            .unwrap_or_else(|e| {
-                                error!("Could not process a filesystem event: {}", e)
-                            })
-                    } else {
-                        error!(
-                            "Could not process a filesystem event: {}",
-                            event.as_ref().unwrap_err()
-                        );
-                    }
-                }
-
-                i if i == dbus_events => {
-                    let event = &oper.recv(dbus_rx);
-                    if let Ok(event) = event {
-                        process_dbus_event(event, dbus_api_tx)
-                            .await
-                            .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
-
-                        failed_txs.clear();
-                    } else {
-                        error!(
-                            "Could not process a D-Bus event: {}",
-                            event.as_ref().unwrap_err()
-                        );
-
-                        sel.remove(dbus_events);
-                    }
-                }
-
-                i if i == timer_events => {
-                    let saved_status = crate::DEVICE_STATUS.as_ref().lock().clone();
-
-                    let event = &oper.recv(&timer);
-                    if let Ok(event) = event {
-                        if let Err(_e) = process_timer_event(event).await {
-                            /* do nothing  */
-
-                            // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
-                            //     error!("Could not process a timer event: {}", e);
-                            // } else {
-                            //     trace!("Result is a NoOp");
-                            // }
-                        }
-
-                        let current_status = crate::DEVICE_STATUS.lock().clone();
-
-                        if current_status != saved_status {
-                            dbus_api_tx
-                                .send(DbusApiEvent::DeviceStatusChanged)
-                                .unwrap_or_else(|e| {
-                                    error!("Could not send a pending dbus API event: {}", e)
-                                });
-                        }
-                    } else {
-                        error!("Could not receive a timer event: {}", event.unwrap_err());
-                        sel.remove(timer_events);
-                    }
-                }
-
-                i => {
-                    if let Some(event) = keyboard_events.iter().find(|e| e.0 == i) {
-                        let event = &oper.recv(event.1);
-                        if let Ok(Some(event)) = event {
-                            process_keyboard_event(
-                                event,
-                                &crate::KEYBOARD_DEVICES.read()[0],
-                                &failed_txs,
-                            )
-                            .await
-                            .unwrap_or_else(|e| {
-                                error!("Could not process a keyboard event: {}", e)
-                            });
-                        } else {
-                            error!(
-                                "Could not process a keyboard event: {}",
-                                event.as_ref().unwrap_err()
-                            );
-                        }
-                    } else if let Some(event) = mouse_events.iter().find(|e| e.0 == i) {
-                        let event = &oper.recv(event.1);
-                        if let Ok(Some(event)) = event {
-                            process_mouse_event(
-                                event,
-                                &crate::MOUSE_DEVICES.read()[0],
-                                &failed_txs,
-                                &mut mouse_move_event_last_dispatched,
-                                &mut mouse_motion_buf,
-                            )
-                            .await
-                            .unwrap_or_else(|e| error!("Could not process a mouse event: {}", e));
-                        } else {
-                            error!(
-                                "Could not process a mouse event: {}",
-                                event.as_ref().unwrap_err()
-                            );
-
-                            // remove failed devices
-                            REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                        }
-                    } else {
-                        error!("Invalid or missing event type");
-                    }
-                }
-            },
-
-            Err(_e) => { /* do nothing */ }
-        };
+        let _result = sel.wait_timeout(Duration::from_millis(1000 / constants::TARGET_FPS / 4));
 
         if delay_time.elapsed() >= Duration::from_millis(1000 / (constants::TARGET_FPS * 4)) {
             // poll HID events on all available devices
             for device in crate::KEYBOARD_DEVICES.read().iter() {
                 process_keyboard_hid_events(device, &failed_txs)
-                    .await
                     .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
             }
 
             for device in crate::MOUSE_DEVICES.read().iter() {
                 process_mouse_hid_events(device, &failed_txs)
-                    .await
                     .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
             }
         }
@@ -2551,7 +2501,7 @@ async fn run_main_loop(
                         .send(script::Message::Tick(delta))
                         .unwrap_or_else(|e| {
                             error!("Send error during timer tick event: {}", e);
-                            failed_txs.insert(index);
+                            // failed_txs.insert(index);
                         });
                 }
             }
@@ -2591,7 +2541,7 @@ async fn run_main_loop(
                             .send(script::Message::RealizeColorMap)
                             .unwrap_or_else(|e| {
                                 error!("Send error during realization of color maps: {}", e);
-                                failed_txs.insert(index);
+                                // failed_txs.insert(index);
                             });
 
                         let result = COLOR_MAPS_READY_CONDITION.1.wait_for(
@@ -3402,12 +3352,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     let mut errors_present = false;
 
                     // enter the main loop
-                    run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx)
-                        .await
-                        .unwrap_or_else(|e| {
+                    run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx).unwrap_or_else(
+                        |e| {
                             warn!("Left the main loop due to an irrecoverable error: {}", e);
                             errors_present = true;
-                        });
+                        },
+                    );
 
                     if !errors_present {
                         info!("Main loop terminated gracefully");

@@ -21,13 +21,11 @@
 // use byteorder::{ByteOrder, LittleEndian};
 // use dbus::arg::RefArg;
 // use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
-use dbus::nonblock;
 use std::{sync::atomic::Ordering, time::Duration};
 // use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use async_trait::async_trait;
-use dbus_tokio::connection;
+use dbus::blocking::Connection;
 use serde::Deserialize;
-use std::sync::Arc;
 
 use super::Sensor;
 
@@ -147,8 +145,8 @@ rules add window-instance gnome-calculator 2
         // no op
     }
 
-    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
-        let result = get_top_level_window_attrs().await?;
+    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+        let result = get_top_level_window_attrs()?;
 
         Ok(Box::from(result))
     }
@@ -163,33 +161,20 @@ rules add window-instance gnome-calculator 2
 }
 
 /// Get the current top level window attributes from Mutter
-pub async fn get_top_level_window_attrs() -> Result<MutterSensorData> {
+pub fn get_top_level_window_attrs() -> Result<MutterSensorData> {
     let script = MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT.to_owned();
 
-    let (_result, attributes): (bool, String) = dbus_session_bus("/org/gnome/Shell")
-        .await?
-        .method_call("org.gnome.Shell", "Eval", (script,))
-        .await?;
+    let conn = Connection::new_session()?;
+    let proxy = conn.with_proxy(
+        "org.gnome.Shell",
+        "/org/gnome/Shell",
+        Duration::from_millis(4000),
+    );
 
+    let (attributes,): (String,) = proxy.method_call("org.gnome.Shell", "Eval", (script,))?;
     let v: MutterSensorData = serde_json::from_str(&attributes)?;
 
     Ok(v)
-}
-
-/// Returns a connection to the D-Bus system bus using the specified `path`
-pub async fn dbus_session_bus(
-    path: &str,
-) -> Result<dbus::nonblock::Proxy<'_, Arc<dbus::nonblock::SyncConnection>>> {
-    let (resource, conn) = connection::new_session_sync()?;
-
-    tokio::spawn(async {
-        let err = resource.await;
-        panic!("Lost connection to D-Bus: {}", err);
-    });
-
-    let proxy = nonblock::Proxy::new("org.gnome.Shell", path, Duration::from_secs(4), conn);
-
-    Ok(proxy)
 }
 
 mod gnome {

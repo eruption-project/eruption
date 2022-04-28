@@ -25,11 +25,11 @@ use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, CellAlignment, ContentArrangement, Table};
 use config::Config;
-use crossbeam::channel::unbounded;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use dbus_tokio::connection;
 use eyre::Context;
+use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,

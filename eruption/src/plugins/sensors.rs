@@ -180,7 +180,17 @@ impl Plugin for SensorsPlugin {
         Ok(())
     }
 
-    async fn main_loop_hook(&self, ticks: u64) {
+    async fn main_loop_hook(&self, _ticks: u64) {
+        // refresh sensor state (default: every other second), but only
+        // if the sensors have been used at least once
+        // if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
+        //     log::debug!("Refreshing sensors...");
+        //
+        //     Self::refresh();
+        // }
+    }
+
+    fn sync_main_loop_hook(&self, ticks: u64) {
         // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
@@ -189,8 +199,6 @@ impl Plugin for SensorsPlugin {
             Self::refresh();
         }
     }
-
-    fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
         self

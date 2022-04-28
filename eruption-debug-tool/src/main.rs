@@ -20,7 +20,7 @@
 use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use colored::*;
-use crossbeam::channel::unbounded;
+use flume::unbounded;
 use hwdevices::RGBA;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},

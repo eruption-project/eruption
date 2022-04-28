@@ -86,9 +86,7 @@ impl X11Sensor {
             .unwrap()
             .get_string("X11.display")
             .unwrap_or_else(|_| {
-                env::var("DISPLAY")
-                    .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string())
-                    
+                env::var("DISPLAY").unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string())
             });
 
         X11Sensor {
@@ -148,7 +146,7 @@ You may want to use the command line tool `xprop` to find the relevant informati
         self.is_failed = failed;
     }
 
-    async fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
+    fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         if let Some(conn) = &self.conn {
             let conn = conn.lock();
 

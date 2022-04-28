@@ -17,8 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crossbeam::channel::{unbounded, Sender};
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
+use flume::{unbounded, Sender};
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;

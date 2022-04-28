@@ -17,9 +17,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crossbeam::channel::Sender;
 use dbus::{ffidisp::Connection, ffidisp::NameFlag, MethodErr};
 use dbus_tree::{Factory, Signal};
+use flume::Sender;
 use indexmap::IndexMap;
 use log::*;
 use std::sync::Arc;
@@ -149,7 +149,7 @@ impl DbusApi {
                                     ) -> Result<(Selector, (RuleMetadata, Action))>
                                     {
                                         let sensor;
-                                        
+
                                         let action;
 
                                         match sensor_val {

@@ -18,7 +18,7 @@
 */
 
 use callbacks::CallbacksError;
-use crossbeam::channel::Receiver;
+use flume::Receiver;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;

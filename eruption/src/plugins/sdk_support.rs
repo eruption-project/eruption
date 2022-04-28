@@ -22,7 +22,7 @@ use crate::{
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
     SDK_SUPPORT_ACTIVE,
 };
-use crossbeam::channel::unbounded;
+use flume::unbounded;
 use lazy_static::lazy_static;
 use log::{debug, error, info, trace};
 use mlua::prelude::*;

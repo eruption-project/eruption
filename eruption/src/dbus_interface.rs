@@ -17,11 +17,11 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crossbeam::channel::Sender;
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
 use dbus_tree::{
     Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
 };
+use flume::Sender;
 use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
