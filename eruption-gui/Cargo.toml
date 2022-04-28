@@ -44,7 +44,7 @@ walkdir = "2.3.2"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
-tokio = { version = "1.17.0", features = ["full"] }
+tokio = { version = "1.18.0", features = ["full"] }
 #tracing = "0.1.29"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.3.2"
@@ -61,19 +61,19 @@ color-eyre = "0.6.1"
 paste = "1.0.7"
 dbus = "0.9.5"
 dbus-tokio = "0.7.5"
-cairo-rs = "0.15.10"
-glib = "0.15.10"
-glib-macros = "0.15.10"
-gio = "0.15.10"
+cairo-rs = "0.15.11"
+glib = "0.15.11"
+glib-macros = "0.15.11"
+gio = "0.15.11"
 gdk = "0.15.4"
-gdk-pixbuf = "0.15.10"
+gdk-pixbuf = "0.15.11"
 pango = "0.15.10"
 glib-sys = "0.15.10"
 gtk-sys = "0.15.3"
 gobject-sys = "0.15.10"
 gio-sys = "0.15.10"
 gdk-sys = "0.15.1"
-gtk = { version = "0.15.4", features = ["v3_20"] }
+gtk = { version = "0.15.5", features = ["v3_20"] }
 pangocairo = "0.15.1"
 sourceview4 = { version = "0.3.0", optional = true }
 # sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs" }
@@ -85,4 +85,4 @@ icecream = "0.1.0"
 pretty_assertions = "1.2.1"
 
 [dev-dependencies]
-tokio = { version = "1.17.0", features = ["test-util"] }
+tokio = { version = "1.18.0", features = ["test-util"] }
