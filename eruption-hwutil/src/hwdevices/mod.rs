@@ -29,6 +29,7 @@ mod roccat_kone_aimo_remastered;
 mod roccat_kone_pro;
 mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
+mod roccat_kone_xp;
 mod roccat_kone_xtd;
 mod roccat_kova_2016;
 mod roccat_kova_aimo;
@@ -225,6 +226,9 @@ pub fn bind_device(
         }
 
         // Mouse devices
+
+        // ROCCAT Kone XP
+        (0x1e7d, 0x2c8b) => Ok(Box::new(roccat_kone_xp::RoccatKoneXp::bind(hiddev))),
 
         // ROCCAT Kone Pure Ultra
         (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::bind(

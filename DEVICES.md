@@ -54,11 +54,12 @@ Hardware feature support matrix
 Hardware feature support matrix
 
 | Vendor | Product              | Status | Profiles | DPI  | Poll Rate | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift Key |
-| ------ | -------------------- | ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
+| ------ |----------------------| ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
 | ROCCAT | Kone Pure Ultra      | 100%   | Yes      | Yes  | TODO      | Yes      | Yes            | No  | N.a.       | N.a.           |
 | ROCCAT | Burst Pro            | 100%   | Yes      | Yes¹ | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kain 100 AIMO        | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kain 2xx AIMO        | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone XP              | ??%    | Yes      | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Pro             | ??%    | Yes      | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Pro Air         | ??%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
