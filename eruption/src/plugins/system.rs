@@ -152,7 +152,10 @@ impl Plugin for SystemPlugin {
         })?;
         globals.set("system", system)?;
 
-        let exit = lua_ctx.create_function(|_, (): ()| Ok(SystemPlugin::exit()))?;
+        let exit = lua_ctx.create_function(|_, (): ()| {
+            SystemPlugin::exit();
+            Ok(())
+        })?;
         globals.set("exit", exit)?;
 
         Ok(())

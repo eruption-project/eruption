@@ -886,7 +886,7 @@ impl MouseDeviceTrait for RoccatKonePro {
                     self.is_opened = false;
                     self.has_failed = true;
 
-                    return Err(HwDeviceError::InvalidResult {}.into());
+                    Err(HwDeviceError::InvalidResult {}.into())
                 }
             }
         }

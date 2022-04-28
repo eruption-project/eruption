@@ -1099,9 +1099,9 @@ fn apply_parameter(
             let profile_config = profile.config.as_mut().unwrap();
             let profile_config = profile_config
                 .entry(manifest.name)
-                .or_insert_with(|| vec![]);
+                .or_insert_with(std::vec::Vec::new);
 
-            if let Some(param) = profile_config.clone().find_config_param(&param_name) {
+            if let Some(param) = profile_config.clone().find_config_param(param_name) {
                 // param already exists, remove the existing one first
                 profile_config.retain(|elem| elem != param);
             }
@@ -1110,7 +1110,7 @@ fn apply_parameter(
                 manifest
                     .config
                     .unwrap_or_default()
-                    .parse_config_param(&param_name, &value)?,
+                    .parse_config_param(param_name, value)?,
             );
 
             profile.save_params()?;

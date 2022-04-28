@@ -149,7 +149,7 @@ impl DbusApi {
                                     ) -> Result<(Selector, (RuleMetadata, Action))>
                                     {
                                         let sensor;
-                                        let metadata;
+                                        
                                         let action;
 
                                         match sensor_val {
@@ -188,7 +188,7 @@ impl DbusApi {
                                         let enabled = metadata_val.contains("enabled");
                                         let internal = metadata_val.contains("internal");
 
-                                        metadata = RuleMetadata { enabled, internal };
+                                        let metadata = RuleMetadata { enabled, internal };
 
                                         if action_val.contains(".profile") {
                                             action = Action::SwitchToProfile {

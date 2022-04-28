@@ -436,7 +436,7 @@ impl RoccatKoneProAir {
                 }
             }
 
-            let result = read_results(&led_dev)?;
+            let result = read_results(led_dev)?;
 
             let buf: [u8; 65] = [
                 0x00, 0x90, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -458,7 +458,7 @@ impl RoccatKoneProAir {
                 }
             }
 
-            let result1 = read_results(&led_dev)?;
+            let result1 = read_results(led_dev)?;
 
             self.device_status = DeviceStatus(
                 result
@@ -506,7 +506,7 @@ impl DeviceInfoTrait for RoccatKoneProAir {
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             } */
 
-            let result = super::DeviceInfo::new(0 as i32);
+            let result = super::DeviceInfo::new(0_i32);
             Ok(result)
         }
     }

@@ -94,7 +94,7 @@ impl Backend for X11Backend {
             .get_image(window, sel, xwrap::ALL_PLANES, x11::xlib::ZPixmap)
             .unwrap();
 
-        let commands = super::utils::process_screenshot(&image, &device)?;
+        let commands = super::utils::process_screenshot(&image, device)?;
 
         Ok(commands)
     }

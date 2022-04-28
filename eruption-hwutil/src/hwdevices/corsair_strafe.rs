@@ -492,7 +492,7 @@ impl DeviceTrait for CorsairStrafe {
         )?;
 
         // test each LED
-        for i in (0..NUM_KEYS).into_iter() {
+        for i in 0..NUM_KEYS {
             let mut led_map = [RGBA {
                 r: 0,
                 g: 0,

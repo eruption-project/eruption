@@ -1027,7 +1027,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1071,7 +1071,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1112,7 +1112,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1180,7 +1180,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                             );
 
                             if let Ok(device) = generic_keyboard::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,
@@ -1213,7 +1213,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                             );
 
                             if let Ok(device) = generic_mouse::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,
@@ -1325,7 +1325,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1366,7 +1366,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1407,7 +1407,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
-                                    &api,
+                                    api,
                                     driver.get_usb_vid(),
                                     driver.get_usb_pid(),
                                     serial,
@@ -1475,7 +1475,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                             );
 
                             if let Ok(device) = generic_keyboard::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,
@@ -1508,7 +1508,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                             );
 
                             if let Ok(device) = generic_mouse::bind_hiddev(
-                                &api,
+                                api,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,

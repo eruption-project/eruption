@@ -387,9 +387,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             .map_err(|e| {
                                 eprintln!("{}", tr!("image-error", message = e.to_string()))
                             })
-                            .and_then(|commands| {
+                            .map(|commands| {
                                 processed_images.lock().push(commands);
-                                Ok(())
+                                
                             });
                     });
                 }

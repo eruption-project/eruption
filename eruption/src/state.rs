@@ -275,7 +275,7 @@ pub fn save_runtime_state() -> Result<()> {
         profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
-        device_brightness: device_brightness,
+        device_brightness,
     };
 
     let toml = toml::ser::to_string_pretty(&config).map_err(|e| StateError::StateWriteError {

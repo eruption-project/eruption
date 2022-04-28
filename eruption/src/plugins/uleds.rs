@@ -147,7 +147,7 @@ impl Plugin for UledsPlugin {
 
             //
             let bytes = unsafe { any_as_u8_slice(&dev) };
-            let _result = nix::unistd::write(fd, &bytes)?;
+            let _result = nix::unistd::write(fd, bytes)?;
 
             ULEDS_FDS.write().push(fd);
 

@@ -144,7 +144,7 @@ mod wayshot {
 
             let env = Environment::new(
                 &attached_display,
-                &mut &mut queue,
+                &mut queue,
                 App {
                     outputs,
                     xdg_output,
@@ -156,7 +156,7 @@ mod wayshot {
 
             for output in env.get_all_outputs() {
                 with_output_info(&output, |info| {
-                    if info.obsolete == false {
+                    if !info.obsolete {
                         valid_outputs.push((output.clone(), info.clone()));
                     } else {
                         output.release();
@@ -189,7 +189,7 @@ mod wayshot {
         let globals = GlobalManager::new(&attached_display);
         event_queue.sync_roundtrip(&mut (), |_, _, _| unreachable!())?;
 
-        let valid_outputs = output::get_valid_outputs(display.clone());
+        let valid_outputs = output::get_valid_outputs(display);
         let (output, _): (WlOutput, OutputInfo) = valid_outputs.first().unwrap().clone();
 
         let frame_formats: Rc<RefCell<Vec<FrameFormat>>> = Rc::new(RefCell::new(Vec::new()));
@@ -198,7 +198,7 @@ mod wayshot {
 
         let screencopy_manager = globals.instantiate_exact::<ZwlrScreencopyManagerV1>(3)?;
 
-        let frame: Main<ZwlrScreencopyFrameV1>;
+        
         let cursor_overlay = 0;
 
         // if args.is_present("output") {
@@ -221,7 +221,7 @@ mod wayshot {
         //     }
         // }
 
-        frame = screencopy_manager.capture_output(cursor_overlay, &output);
+        let frame: Main<ZwlrScreencopyFrameV1> = screencopy_manager.capture_output(cursor_overlay, &output);
 
         frame.quick_assign({
             let frame_formats = frame_formats.clone();
@@ -286,8 +286,7 @@ mod wayshot {
                     f.format,
                     wl_shm::Format::Argb8888 | wl_shm::Format::Xrgb8888 | wl_shm::Format::Xbgr8888
                 )
-            })
-            .nth(0)
+            }).next()
             .copied();
 
         log::debug!("Selected frame buffer format: {:#?}", frame_format);
@@ -336,9 +335,7 @@ mod wayshot {
                             wl_shm::Format::Argb8888 | wl_shm::Format::Xrgb8888 => {
                                 for chunk in data.chunks_exact_mut(4) {
                                     // swap in place (b with r)
-                                    let tmp = chunk[0];
-                                    chunk[0] = chunk[2];
-                                    chunk[2] = tmp;
+                                    chunk.swap(0, 2);
                                 }
                                 Rgba8
                             }

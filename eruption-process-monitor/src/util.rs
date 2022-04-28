@@ -54,7 +54,7 @@ pub fn get_process_file_name(pid: i32) -> Result<String> {
 pub fn tilde_expand(path: &str) -> Result<PathBuf> {
     let home = env::var("HOME")?;
 
-    let result = path.replacen("~", &home, 1);
+    let result = path.replacen('~', &home, 1);
     let result = PathBuf::from(result);
 
     Ok(result)

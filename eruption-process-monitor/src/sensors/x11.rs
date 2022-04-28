@@ -88,7 +88,7 @@ impl X11Sensor {
             .unwrap_or_else(|_| {
                 env::var("DISPLAY")
                     .unwrap_or_else(|_| constants::DEFAULT_X11_DISPLAY.to_string())
-                    .to_string()
+                    
             });
 
         X11Sensor {

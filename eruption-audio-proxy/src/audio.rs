@@ -276,7 +276,7 @@ mod backends {
                 let sfx_map = crate::SOUND_FX.read();
                 let data = &sfx_map[&id];
 
-                player.write(&data).map_err(|e| AudioError::PlayerError {
+                player.write(data).map_err(|e| AudioError::PlayerError {
                     description: format!("Error during playback: {}", e),
                 })?;
 

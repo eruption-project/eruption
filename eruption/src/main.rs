@@ -2217,14 +2217,14 @@ async fn run_main_loop(
     let mut keyboard_events = vec![];
     let rxs = crate::KEYBOARD_DEVICES_RX.read();
     for rx in rxs.iter() {
-        let index = sel.recv(&rx);
+        let index = sel.recv(rx);
         keyboard_events.push((index, rx));
     }
 
     let mut mouse_events = vec![];
     let rxs = crate::MOUSE_DEVICES_RX.read();
     for rx in rxs.iter() {
-        let index = sel.recv(&rx);
+        let index = sel.recv(rx);
         mouse_events.push((index, rx));
     }
 
@@ -2476,7 +2476,7 @@ async fn run_main_loop(
 
                 i => {
                     if let Some(event) = keyboard_events.iter().find(|e| e.0 == i) {
-                        let event = &oper.recv(&(event.1));
+                        let event = &oper.recv(event.1);
                         if let Ok(Some(event)) = event {
                             process_keyboard_event(
                                 event,
@@ -2494,7 +2494,7 @@ async fn run_main_loop(
                             );
                         }
                     } else if let Some(event) = mouse_events.iter().find(|e| e.0 == i) {
-                        let event = &oper.recv(&(event.1));
+                        let event = &oper.recv(event.1);
                         if let Ok(Some(event)) = event {
                             process_mouse_event(
                                 event,
@@ -2526,13 +2526,13 @@ async fn run_main_loop(
         if delay_time.elapsed() >= Duration::from_millis(1000 / (constants::TARGET_FPS * 4)) {
             // poll HID events on all available devices
             for device in crate::KEYBOARD_DEVICES.read().iter() {
-                process_keyboard_hid_events(&device, &failed_txs)
+                process_keyboard_hid_events(device, &failed_txs)
                     .await
                     .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
             }
 
             for device in crate::MOUSE_DEVICES.read().iter() {
-                process_mouse_hid_events(&device, &failed_txs)
+                process_mouse_hid_events(device, &failed_txs)
                     .await
                     .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
             }
@@ -2974,7 +2974,7 @@ fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
-    keyboard_device.write().open(&hidapi).unwrap_or_else(|e| {
+    keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the keyboard device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -3009,7 +3009,7 @@ fn init_mouse_device(mouse_device: &MouseDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
-    mouse_device.write().open(&hidapi).unwrap_or_else(|e| {
+    mouse_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the mouse device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -3043,7 +3043,7 @@ fn init_misc_device(misc_device: &MiscDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
-    misc_device.write().open(&hidapi).unwrap_or_else(|e| {
+    misc_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the misc device: {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
@@ -3172,7 +3172,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or(constants::DEFAULT_CONFIG_FILE);
 
     let config = Config::builder()
-        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .add_source(config::File::new(config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
             log::error!("Could not parse configuration file: {}", e);

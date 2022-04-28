@@ -409,7 +409,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     match selector {
                         Selector::ProcessExec { comm: regex } => {
                             if metadata.enabled {
-                                let re = Regex::new(&regex)?;
+                                let re = Regex::new(regex)?;
 
                                 if re.is_match(comm) {
                                     debug!("Matching rule for: {}", comm);
@@ -453,7 +453,7 @@ async fn process_system_event(event: &SystemEvent) -> Result<()> {
                     Action::SwitchToProfile { profile_name } => {
                         debug!("Returning to profile: {}", profile_name);
 
-                        dbus_client::switch_profile(&profile_name).await?;
+                        dbus_client::switch_profile(profile_name).await?;
                     }
 
                     Action::SwitchToSlot { slot_index } => {
@@ -544,7 +544,7 @@ async fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
         match selector {
             Selector::WindowFocused { mode, regex } => {
                 if metadata.enabled {
-                    let re = Regex::new(&regex)?;
+                    let re = Regex::new(regex)?;
 
                     match mode {
                         WindowFocusedSelectorMode::WindowName => {

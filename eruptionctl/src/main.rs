@@ -1398,7 +1398,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     for scr in scripts {
                         if scr.name == script {
-                            for param in scr.config.unwrap_or_else(|| Vec::new()) {
+                            for param in scr.config.unwrap_or_default() {
                                 println!(
                                     "\"{}\" {} default: {}",
                                     scr.name,
@@ -1464,7 +1464,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             SwitchSubcommands::Slot { index } => {
-                if index < 1 || index > constants::NUM_SLOTS {
+                if !(1..=constants::NUM_SLOTS).contains(&index) {
                     eprintln!(
                         "Slot index out of bounds. Valid range is: {}-{}",
                         1,
