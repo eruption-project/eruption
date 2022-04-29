@@ -11,13 +11,11 @@ license=('GPL3+')
 depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'gtksourceview4')
 makedepends=('git' 'rust' 'pkgconf' 'xorg-server-devel' 'libxrandr' 'gtk3')
 provides=('eruption')
-conflicts=('eruption-roccat-vulcan' 'eruption-roccat-vulcan-git')
+conflicts=('eruption' 'eruption-roccat-vulcan')
 replaces=('eruption-roccat-vulcan-git')
 backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/audio-proxy.conf)
 install='eruption.install'
-changelog=
-source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git#commit=630aafc42df1680452ad64635e9375d1092766f5')
-noextract=()
+source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git')
 sha512sums=('SKIP')
 
 pkgver() {
