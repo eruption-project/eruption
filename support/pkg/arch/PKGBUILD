@@ -30,8 +30,6 @@ package() {
     mkdir -p "$pkgdir/usr/bin"
     mkdir -p "$pkgdir/etc/eruption"
     mkdir -p "$pkgdir/usr/share/doc/eruption"
-    mkdir -p "$pkgdir/usr/share/eruption/scripts"
-    mkdir -p "$pkgdir/usr/share/eruption/scripts/lib"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards"
