@@ -7,6 +7,7 @@
 
 - [Table of Contents](#table-of-contents)
   - [Eruption](#eruption)
+    - [Gallery](#gallery)
   - [Supported Devices](#supported-devices)
     - [Keyboard Devices](#keyboard-devices)
     - [Mouse Devices](#mouse-devices)
@@ -38,6 +39,8 @@
 ## Eruption
 
 A Linux user-mode input and LED driver for keyboards, mice and other devices
+
+### Gallery
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
