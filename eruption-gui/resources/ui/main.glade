@@ -1002,7 +1002,7 @@ Author: X3n0m0rph59
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption Daemon</property>
+                                    <property name="label" translatable="yes">Eruption Core</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
@@ -1014,7 +1014,7 @@ Author: X3n0m0rph59
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption Process Monitor Daemon</property>
+                                    <property name="label" translatable="yes">Eruption Process Monitor</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
@@ -1026,7 +1026,7 @@ Author: X3n0m0rph59
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption Audio Proxy Daemon</property>
+                                    <property name="label" translatable="yes">Eruption Audio Proxy</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
