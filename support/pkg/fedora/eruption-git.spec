@@ -6,7 +6,7 @@
 
 Name:    eruption-git
 Version: 0.1.23
-Release: 2.%{shortcommit}
+Release: 3.%{shortcommit}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
@@ -16,6 +16,8 @@ Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/%{commit}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-build
 
 BuildRequires: cargo
+BuildRequires: cmake
+BuildRequires: protobuf-devel
 BuildRequires: systemd-devel
 BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
