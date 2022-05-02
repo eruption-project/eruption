@@ -68,7 +68,7 @@ stop:
 
 install:
 	# Please be sure that all Eruption daemons have been shut down completely!
-	# Otherwise there will be errors during installation (text file busy)
+	# Otherwise there will be errors during installation (file busy)
 
 	@echo ""
 	@echo "Commencing installation of Eruption..."
@@ -166,6 +166,7 @@ install:
 	@cp target/release/eruption-netfx $(TARGET_DIR)/bin/
 	@cp target/release/eruption-debug-tool $(TARGET_DIR)/bin/
 	@cp target/release/eruption-hotplug-helper $(TARGET_DIR)/bin/
+	@cp target/release/eruption-util $(TARGET_DIR)/bin/
 	@cp target/release/eruption-gui $(TARGET_DIR)/bin/
 	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
@@ -186,6 +187,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-netfx
 	-@rm $(TARGET_DIR)/bin/eruption-debug-tool
 	-@rm $(TARGET_DIR)/bin/eruption-hotplug-helper
+	-@rm $(TARGET_DIR)/bin/eruption-util
 	-@rm $(TARGET_DIR)/bin/eruption-gui
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
