@@ -32,7 +32,7 @@ default = [] #["mimalloc_allocator"]
 mimalloc_allocator = ["mimalloc"]
 
 [dependencies]
-mimalloc = { version = "0.1.28", optional = true, default-features = false }
+mimalloc = { version = "0.1.29", optional = true, default-features = false }
 cfg-if = "1.0.0"
 #flume = { version = "0.10.12", features = ["async", "eventual-fairness"]}
 flume = { version = "0.10.12", features = ["async"] }
@@ -47,16 +47,16 @@ nix = "0.24.1"
 log = "0.4.16"
 syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
-thiserror = "1.0.30"
+thiserror = "1.0.31"
 eyre = "0.6.8"
 color-eyre = "0.6.1"
 toml = "0.5.9"
-serde = { version = "1.0.136", features = ["derive"] }
-serde_json = "1.0.79"
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.80"
 tokio = { version = "1.18.0", features = ["full", "rt-multi-thread"] }
 socket2 = { version = "0.4.4", features = ["all"] }
 ctrlc = { version = "3.2.2", features = ["termination"] }
-clap = "3.1.12"
+clap = "3.1.14"
 hotwatch = "0.4.6"
 config = "0.13.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -71,7 +71,7 @@ rand = "0.8.5"
 csscolorparser = "0.5.0"
 colorgrad = "0.5.0"
 palette = "0.6.0"
-nalgebra = "0.30.1"
+nalgebra = "0.31.0"
 noise = "0.7.0"
 simdnoise = "3.1.6"
 #lua-src = "544.0.0"
@@ -103,7 +103,7 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-thiserror = "1.0.30"
+thiserror = "1.0.31"
 tokio = { version = "1.18.0", features = ["test-util"] }
 
 [build-dependencies]

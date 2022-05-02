@@ -30,7 +30,7 @@ crate-type = ["cdylib"]
 [dependencies]
 cfg-if = "1.0.0"
 log = "0.4.16"
-thiserror = "1.0.30"
+thiserror = "1.0.31"
 eyre = "0.6.8"
 color-eyre = "0.6.1"
 lazy_static = "1.4.0"
@@ -43,7 +43,7 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-thiserror = "1.0.30"
+thiserror = "1.0.31"
 
 
 [build-dependencies]
