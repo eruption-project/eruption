@@ -126,7 +126,7 @@ Setting LEDs from supplied map...
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-eruption-debug-tool 0.0.17
+eruption-debug-tool 0.0.19
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

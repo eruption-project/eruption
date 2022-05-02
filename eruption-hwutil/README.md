@@ -6,7 +6,7 @@ This utility may be used to configure devices without the Eruption daemon requir
 
 ```
 $ sudo eruption-hwutil 
-eruption-hwutil 0.0.10
+eruption-hwutil 0.0.13
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

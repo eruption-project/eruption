@@ -20,7 +20,7 @@ Eruption Linux user-mode input and LED driver for keyboards, mice and other devi
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Eruption 0.1.23 (0.1.22.r42.gb15045a) (release build)
+Eruption 0.1.24 () (release build)
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
