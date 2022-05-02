@@ -3,12 +3,12 @@
 
 Name:    eruption
 Version: 0.1.23
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
-Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v0.1.23/v0.1.23.tar.gz
+Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v%{Version}/v%{Version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-build
 
@@ -387,6 +387,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_burst_pro.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_aimo_remastered.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pure_ultra.lua
+%{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pro.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kone_pro_air.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_aimo.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/mice/roccat_kova_2016.lua
