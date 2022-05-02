@@ -63,13 +63,14 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Burst Pro (as of version `0.1.20`, testing)
 - ROCCAT Kain 100 AIMO (as of version `0.1.24`, experimental)
 - ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
-- ROCCAT Burst Pro (as of version `0.1.24`, experimental)
 - ROCCAT Kone XP (work-in-progress, as of version `0.1.24`, experimental)
+- ROCCAT Kone Pro (work-in-progress, as of version `0.1.24`, experimental)
 - ROCCAT Kone Pro Air (work-in-progress, as of version `0.1.24`, experimental)
 - ROCCAT Kone Aimo (experimental)
 - ROCCAT Kone Aimo Remastered (experimental)
 - ROCCAT Kova AIMO (testing)
 - ROCCAT Kova 2016 (as of version `0.1.23`, testing)
+- ROCCAT Kone XTD (as of version `0.1.20`, experimental)
 
 ### Miscellaneous Devices
 
