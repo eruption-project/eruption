@@ -811,11 +811,11 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
                             let offset = ((i / 12) * 36) + (i % 12);
 
                             buffer[offset] =
-                                (color.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                             buffer[offset + 12] =
-                                (color.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                             buffer[offset + 24] =
-                                (color.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                         }
 
                         for (cntr, bytes) in buffer.chunks(60).take(6).enumerate() {

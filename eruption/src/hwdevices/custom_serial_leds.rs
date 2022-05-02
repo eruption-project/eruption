@@ -233,11 +233,11 @@ impl MiscDeviceTrait for CustomSerialLeds {
                 let mut cntr = 0;
                 for e in led_map[0..NUM_LEDS].iter() {
                     buffer[HEADER_OFFSET + cntr + 0] =
-                        (e.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                        (e.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                     buffer[HEADER_OFFSET + cntr + 1] =
-                        (e.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                        (e.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                     buffer[HEADER_OFFSET + cntr + 2] =
-                        (e.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                        (e.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
 
                     cntr += 3;
                 }

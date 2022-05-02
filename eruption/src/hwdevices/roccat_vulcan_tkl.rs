@@ -951,11 +951,11 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                             let offset = ((i / 12) * 36) + (i % 12);
 
                             buffer[offset + 4] =
-                                (color.r as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                             buffer[offset + 4 + 12] =
-                                (color.g as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                             buffer[offset + 4 + 24] =
-                                (color.b as f32 * (self.brightness as f32 / 100.0)).round() as u8;
+                                (color.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                         }
 
                         for bytes in buffer.chunks(64) {

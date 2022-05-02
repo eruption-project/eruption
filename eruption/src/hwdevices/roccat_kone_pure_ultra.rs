@@ -1104,9 +1104,9 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
             let buf: [u8; 11] = [
                 0x0d,
                 0x0b,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 0x00,
                 0x00,
                 0x00,

@@ -585,14 +585,14 @@ impl MiscDeviceTrait for RoccatAimoPad {
 
             let buf: [u8; 9] = [
                 0x03,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                0xff - (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).round() as u8,
-                0xff - (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).round() as u8,
+                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                0xff - (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                0xff - (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {
