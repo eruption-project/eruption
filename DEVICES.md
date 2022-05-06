@@ -6,6 +6,7 @@
     - [Keyboard Devices](#keyboard-devices)
     - [Mouse Devices](#mouse-devices)
     - [Miscellaneous Devices](#miscellaneous-devices)
+  - [Enabling `experimental` drivers](#enabling-experimental-drivers)
   - [ROCCAT Vulcan 100/12x series keyboard](#roccat-vulcan-10012x-series-keyboard)
     - [Support status](#support-status)
     - [Remarks and known Issues](#remarks-and-known-issues)
@@ -86,6 +87,15 @@ Hardware feature support matrix
 | Adalight / Custom     | Custom serial LEDs | 95%    | LED Strip (variable length) |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
+
+## Enabling `experimental` drivers
+
+Experimental drivers are `disabled` in the default configuration!
+
+To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
+```toml
+driver_maturity_level = "experimental"
+```
 
 ## ROCCAT Vulcan 100/12x series keyboard
 

@@ -80,6 +80,15 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
+> __NOTE__
+>
+> Experimental drivers are `disabled` in the default configuration!
+>
+> To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
+> ```toml
+> driver_maturity_level = "experimental"
+> ```
+
 ## Important Information
 
 This project is still in an early stage of development, and thus may contain some possibly serious bugs.
