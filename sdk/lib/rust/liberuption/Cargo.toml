@@ -29,7 +29,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.16"
+log = "0.4.17"
 thiserror = "1.0.31"
 eyre = "0.6.8"
 color-eyre = "0.6.1"
@@ -48,4 +48,4 @@ thiserror = "1.0.31"
 
 [build-dependencies]
 cbindgen = "0.23.0"
-prost-build = "0.10.1"
+prost-build = "0.10.3"

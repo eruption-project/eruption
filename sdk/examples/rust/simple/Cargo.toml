@@ -24,11 +24,11 @@ edition = "2021"
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.16"
+log = "0.4.17"
 thiserror = "1.0.31"
 eyre = "0.6.8"
 color-eyre = "0.6.1"
-clap = "3.1.14"
+clap = "3.1.15"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 rust-embed = "6.4.0"
