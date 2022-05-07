@@ -409,7 +409,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
                     match selector {
                         Selector::ProcessExec { comm: regex } => {
                             if metadata.enabled {
-                                let re = Regex::new(&regex)?;
+                                let re = Regex::new(regex)?;
 
                                 if re.is_match(comm) {
                                     debug!("Matching rule for: {}", comm);
@@ -453,7 +453,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
                     Action::SwitchToProfile { profile_name } => {
                         debug!("Returning to profile: {}", profile_name);
 
-                        dbus_client::switch_profile(&profile_name)?;
+                        dbus_client::switch_profile(profile_name)?;
                     }
 
                     Action::SwitchToSlot { slot_index } => {
@@ -541,7 +541,7 @@ fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
         match selector {
             Selector::WindowFocused { mode, regex } => {
                 if metadata.enabled {
-                    let re = Regex::new(&regex)?;
+                    let re = Regex::new(regex)?;
 
                     match mode {
                         WindowFocusedSelectorMode::WindowName => {
@@ -801,18 +801,18 @@ pub fn run_main_loop(
         }
 
         let mut sel = flume::Selector::new()
-            .recv(&ctrl_c_rx, |_| {
+            .recv(ctrl_c_rx, |_| {
                 QUIT.store(true, Ordering::SeqCst);
             })
-            .recv(&fsevents_rx, |event| {
+            .recv(fsevents_rx, |event| {
                 if let Ok(event) = event {
-                    process_fs_event(&event, &dbus_api_tx)
+                    process_fs_event(&event, dbus_api_tx)
                         .unwrap_or_else(|e| error!("Could not process a filesystem event: {}", e))
                 } else {
                     error!("{}", event.as_ref().unwrap_err());
                 }
             })
-            .recv(&dbusevents_rx, |event| {
+            .recv(dbusevents_rx, |event| {
                 if let Ok(event) = event {
                     process_dbus_event(&event)
                         .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e))
@@ -823,7 +823,7 @@ pub fn run_main_loop(
 
         #[cfg(feature = "sensor-procmon")]
         {
-            sel = sel.recv(&sysevents_rx, |event| {
+            sel = sel.recv(sysevents_rx, |event| {
                 if let Ok(event) = event {
                     process_system_event(&event)
                         .unwrap_or_else(|e| error!("Could not process a system event: {}", e));

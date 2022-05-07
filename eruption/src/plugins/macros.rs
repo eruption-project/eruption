@@ -554,7 +554,7 @@ impl MacrosPlugin {
                 device.write_event(&event).unwrap();
 
                 // send an EV_SYN::SYN_REPORT event immediately
-                let event = InputEvent {
+                /*let event = InputEvent {
                     time: TimeVal {
                         tv_sec: event.time.tv_sec,
                         tv_usec: event.time.tv_usec,
@@ -563,7 +563,7 @@ impl MacrosPlugin {
                     value: 0,
                 };
 
-                device.write_event(&event).unwrap();
+                device.write_event(&event).unwrap();*/
             } else {
                 error!("Device is not initialized");
                 //do_initialize = true;

@@ -139,11 +139,9 @@ impl DeviceTrait for GenericKeyboard {
         Ok(true)
     }
 
-
     fn has_failed(&self) -> Result<bool> {
         Ok(false)
     }
-
 
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
         Ok(())

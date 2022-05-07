@@ -179,7 +179,8 @@ mod screenshot {
                 "org.freedesktop.DBus.Properties",
                 "Get",
                 (interface_name, property_name),
-            ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+            )
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -187,7 +188,8 @@ mod screenshot {
                 "org.freedesktop.DBus.Properties",
                 "GetAll",
                 (interface_name,),
-            ).map(|r: (arg::PropMap,)| r.0)
+            )
+            .map(|r: (arg::PropMap,)| r.0)
         }
 
         fn set(
@@ -212,7 +214,8 @@ mod screenshot {
         OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -229,7 +232,8 @@ mod screenshot {
         }
 
         fn get_machine_id(&self) -> Result<String, dbus::Error> {
-            self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ()).map(|r: (String,)| r.0)
+            self.method_call("org.freedesktop.DBus.Peer", "GetMachineId", ())
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -308,7 +312,8 @@ mod screenshot {
         }
 
         fn pick_color(&self) -> Result<arg::PropMap, dbus::Error> {
-            self.method_call("org.gnome.Shell.Screenshot", "PickColor", ()).map(|r: (arg::PropMap,)| r.0)
+            self.method_call("org.gnome.Shell.Screenshot", "PickColor", ())
+                .map(|r: (arg::PropMap,)| r.0)
         }
 
         fn flash_area(&self, x_: i32, y_: i32, width: i32, height: i32) -> Result<(), dbus::Error> {

@@ -91,7 +91,7 @@ pub struct DeviceInfo {
 #[derive(Debug, PartialEq)]
 pub enum DialMode {
     // Volume,
-// Brightness,
+    // Brightness,
 }
 
 #[derive(Clone)]

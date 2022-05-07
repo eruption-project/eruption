@@ -18,8 +18,8 @@
 */
 
 use crate::canvas::Canvas;
-use crate::Result;
 use crate::hardware::HotplugInfo;
+use crate::Result;
 
 mod local;
 pub use local::*;

@@ -116,16 +116,24 @@ pub fn register_backends() -> Result<()> {
 /// Find a Backend by its respective id
 #[allow(dead_code)]
 pub fn find_backend_by_id(id: &str) -> Option<Box<dyn Backend + 'static>> {
-    BACKENDS.with(
-        |backends| backends.borrow().iter().find(|&e| e.get_id() == id).map(|s| dyn_clone::clone_box(&(*s.as_ref()))),
-    )
+    BACKENDS.with(|backends| {
+        backends
+            .borrow()
+            .iter()
+            .find(|&e| e.get_id() == id)
+            .map(|s| dyn_clone::clone_box(&(*s.as_ref())))
+    })
 }
 
 pub fn get_best_fitting_backend() -> Result<Box<dyn Backend + 'static>> {
     let result = BACKENDS
-        .with(
-            |backends| backends.borrow().iter().find(|&e| !e.is_failed()).map(|s| dyn_clone::clone_box(&(*s.as_ref()))),
-        )
+        .with(|backends| {
+            backends
+                .borrow()
+                .iter()
+                .find(|&e| !e.is_failed())
+                .map(|s| dyn_clone::clone_box(&(*s.as_ref())))
+        })
         .expect("Could not find any suitable screenshot backends!");
 
     eprintln!("Found suitable backend: {}", result.get_name());

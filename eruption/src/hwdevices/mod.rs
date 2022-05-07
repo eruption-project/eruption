@@ -221,16 +221,13 @@ pub struct KeyboardDriver<'a> {
     pub status: MaturityLevel,
 }
 
-impl<'a> KeyboardDriver<'a>
-where
-    'a: 'static,
-{
+impl KeyboardDriver<'static> {
     pub fn register(
-        device_make: &'a str,
-        device_name: &'a str,
+        device_make: &'static str,
+        device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<KeyboardDevice> + Sync + Send),
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<KeyboardDevice> + Sync + Send),
         status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(KeyboardDriver {
@@ -245,10 +242,7 @@ where
     }
 }
 
-impl<'a> DriverMetadata for KeyboardDriver<'a>
-where
-    'a: 'static,
-{
+impl DriverMetadata for KeyboardDriver<'static> {
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
     }
@@ -280,16 +274,13 @@ pub struct MouseDriver<'a> {
     pub status: MaturityLevel,
 }
 
-impl<'a> MouseDriver<'a>
-where
-    'a: 'static,
-{
+impl MouseDriver<'static> {
     pub fn register(
-        device_make: &'a str,
-        device_name: &'a str,
+        device_make: &'static str,
+        device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MouseDevice> + Sync + Send),
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<MouseDevice> + Sync + Send),
         status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MouseDriver {
@@ -304,10 +295,7 @@ where
     }
 }
 
-impl<'a> DriverMetadata for MouseDriver<'a>
-where
-    'a: 'static,
-{
+impl DriverMetadata for MouseDriver<'static> {
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
     }
@@ -339,17 +327,14 @@ pub struct MiscDriver<'a> {
     pub status: MaturityLevel,
 }
 
-impl<'a> MiscDriver<'a>
-where
-    'a: 'static,
-{
+impl MiscDriver<'static> {
     #[allow(dead_code)]
     pub fn register(
-        device_make: &'a str,
-        device_name: &'a str,
+        device_make: &'static str,
+        device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<MiscDevice> + Sync + Send),
         status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MiscDriver {
@@ -364,10 +349,7 @@ where
     }
 }
 
-impl<'a> DriverMetadata for MiscDriver<'a>
-where
-    'a: 'static,
-{
+impl DriverMetadata for MiscDriver<'static> {
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
     }
@@ -398,15 +380,12 @@ pub struct MiscSerialDriver<'a> {
     pub status: MaturityLevel,
 }
 
-impl<'a> MiscSerialDriver<'a>
-where
-    'a: 'static,
-{
+impl MiscSerialDriver<'static> {
     #[allow(dead_code)]
     pub fn register(
-        device_make: &'a str,
-        device_name: &'a str,
-        bind_fn: &'a (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
+        device_make: &'static str,
+        device_name: &'static str,
+        bind_fn: &'static (dyn Fn(&str) -> Result<MiscSerialDevice> + Sync + Send),
         status: MaturityLevel,
     ) -> Box<(dyn DriverMetadata + Sync + Send + 'static)> {
         Box::new(MiscSerialDriver {
@@ -420,18 +399,7 @@ where
     }
 }
 
-impl<'a> DriverMetadata for MiscSerialDriver<'a>
-where
-    'a: 'static,
-{
-    fn get_device_class(&self) -> DeviceClass {
-        self.device_class
-    }
-
-    fn as_any(&self) -> &(dyn Any) {
-        self
-    }
-
+impl DriverMetadata for MiscSerialDriver<'static> {
     fn get_usb_vid(&self) -> u16 {
         0
     }
@@ -439,12 +407,17 @@ where
     fn get_usb_pid(&self) -> u16 {
         0
     }
+
+    fn get_device_class(&self) -> DeviceClass {
+        self.device_class
+    }
+
+    fn as_any(&self) -> &(dyn Any) {
+        self
+    }
 }
 
-impl<'a> SerialDriverMetadata for MiscSerialDriver<'a>
-where
-    'a: 'static,
-{
+impl SerialDriverMetadata for MiscSerialDriver<'static> {
     fn get_serial_port(&self) -> Option<&str> {
         self.serial_port
     }

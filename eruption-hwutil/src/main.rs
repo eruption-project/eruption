@@ -81,13 +81,13 @@ macro_rules! println_v {
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($($params),*)
         }
     };
@@ -100,13 +100,13 @@ macro_rules! eprintln_v {
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($($params),*)
         }
     };

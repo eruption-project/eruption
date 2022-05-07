@@ -389,7 +389,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             })
                             .map(|commands| {
                                 processed_images.lock().push(commands);
-                                
                             });
                     });
                 }

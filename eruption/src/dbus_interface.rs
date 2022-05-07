@@ -427,10 +427,8 @@ impl DbusApi {
                                             device, &param, &value
                                         );
 
-                                        let _result = apply_device_specific_configuration(
-                                            device, &param, &value,
-                                        )
-                                        .map_err(|_e| MethodErr::invalid_arg(&param))?;
+                                        apply_device_specific_configuration(device, &param, &value)
+                                            .map_err(|_e| MethodErr::invalid_arg(&param))?;
 
                                         Ok(vec![m.msg.method_return().append1(true)])
                                     } else {
@@ -858,7 +856,7 @@ impl DbusApi {
                                             &profile_file, &script_file, &param_name, &value
                                         );
 
-                                        let _result = apply_parameter(
+                                        apply_parameter(
                                             profile_file,
                                             script_file,
                                             param_name,

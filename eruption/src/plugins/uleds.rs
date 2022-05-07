@@ -78,6 +78,9 @@ impl UledsPlugin {
         thread::Builder::new()
             .name("uleds".into())
             .spawn(move || -> Result<()> {
+                #[cfg(feature = "profiling")]
+                coz::thread_init();
+
                 // Self::initialize_thread_locals()?;
 
                 if ULEDS_FDS.read().len() > 0 {

@@ -400,7 +400,7 @@ pub async fn get_slot_names() -> Result<Vec<String>> {
 pub async fn set_slot_names(names: &[String]) -> Result<()> {
     let arg = Box::new(names);
 
-    let _result = dbus_system_bus("/org/eruption/slot")
+    dbus_system_bus("/org/eruption/slot")
         .await?
         .set("org.eruption.Slot", "SlotNames", arg)
         .await?;
@@ -512,7 +512,7 @@ pub async fn get_brightness() -> Result<i64> {
 pub async fn set_brightness(brightness: i64) -> Result<()> {
     let arg = Box::new(brightness as i64);
 
-    let _result = dbus_system_bus("/org/eruption/config")
+    dbus_system_bus("/org/eruption/config")
         .await?
         .set("org.eruption.Config", "Brightness", arg)
         .await?;
@@ -534,7 +534,7 @@ pub async fn get_sound_fx() -> Result<bool> {
 pub async fn set_sound_fx(enabled: bool) -> Result<()> {
     let arg = Box::new(enabled);
 
-    let _result = dbus_system_bus("/org/eruption/config")
+    dbus_system_bus("/org/eruption/config")
         .await?
         .set("org.eruption.Config", "EnableSfx", arg)
         .await?;

@@ -57,7 +57,7 @@ pub fn switch_profile(name: &str) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let _result = proxy.switch_profile(&name)?;
+    let _result = proxy.switch_profile(name)?;
 
     Ok(())
 }

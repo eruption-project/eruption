@@ -183,9 +183,8 @@ impl Keyboard for RoccatVulcanTKL {
             // saturate and darken color somewhat to use as the key color
             let key_color = Hsva::from_color(source_color);
             let key_color = Srgba::from_color(
-                key_color
-                    // .saturate(0.75)
-                    // .darken(0.15),
+                key_color, // .saturate(0.75)
+                          // .darken(0.15),
             )
             .into_components();
 

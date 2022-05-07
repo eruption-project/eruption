@@ -61,7 +61,7 @@ impl Backend for WaylandBackend {
     }
 
     fn poll(&mut self) -> Result<BackendData> {
-        let _result = wayshot::screenshot()?;
+        wayshot::screenshot()?;
 
         Ok("".to_string())
     }
@@ -198,7 +198,6 @@ mod wayshot {
 
         let screencopy_manager = globals.instantiate_exact::<ZwlrScreencopyManagerV1>(3)?;
 
-        
         let cursor_overlay = 0;
 
         // if args.is_present("output") {
@@ -221,7 +220,8 @@ mod wayshot {
         //     }
         // }
 
-        let frame: Main<ZwlrScreencopyFrameV1> = screencopy_manager.capture_output(cursor_overlay, &output);
+        let frame: Main<ZwlrScreencopyFrameV1> =
+            screencopy_manager.capture_output(cursor_overlay, &output);
 
         frame.quick_assign({
             let frame_formats = frame_formats.clone();
@@ -286,7 +286,8 @@ mod wayshot {
                     f.format,
                     wl_shm::Format::Argb8888 | wl_shm::Format::Xrgb8888 | wl_shm::Format::Xbgr8888
                 )
-            }).next()
+            })
+            .next()
             .copied();
 
         log::debug!("Selected frame buffer format: {:#?}", frame_format);
