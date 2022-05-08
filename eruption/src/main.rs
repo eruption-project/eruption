@@ -1270,7 +1270,7 @@ mod thread_util {
 }
 
 /// open the control and LED devices of the keyboard
-fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
+pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     info!("Opening keyboard device...");
 
     let hidapi = crate::HIDAPI.read();
@@ -1305,7 +1305,7 @@ fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
 }
 
 /// open the sub-devices of the mouse
-fn init_mouse_device(mouse_device: &MouseDevice) {
+pub fn init_mouse_device(mouse_device: &MouseDevice) {
     info!("Opening mouse device...");
 
     let hidapi = crate::HIDAPI.read();
@@ -1339,7 +1339,7 @@ fn init_mouse_device(mouse_device: &MouseDevice) {
 }
 
 /// open the misc device
-fn init_misc_device(misc_device: &MiscDevice) {
+pub fn init_misc_device(misc_device: &MiscDevice) {
     info!("Opening misc device...");
 
     let hidapi = crate::HIDAPI.read();

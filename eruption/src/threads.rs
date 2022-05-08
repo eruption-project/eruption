@@ -851,8 +851,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // send the final (combined) color map to all of the devices
                             if !drop_frame {
-                                for device in crate::KEYBOARD_DEVICES.read().iter() {
-                                    if let Some(mut device) = device.try_write() {
+                                for keyboard_device in crate::KEYBOARD_DEVICES.read().iter() {
+                                    if let Some(mut device) = keyboard_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
@@ -866,7 +866,20 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device");
+                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+
+                                                let hidapi = crate::HIDAPI.read();
+                                                let hidapi = hidapi.as_ref().unwrap();
+
+                                                device.open(hidapi).unwrap_or_else(|e| {
+                                                    error!("Error opening the keyboard device: {}", e);
+                                                });
+
+                                                // send initialization handshake
+                                                info!("Initializing keyboard device...");
+                                                device
+                                                    .send_init_sequence()
+                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");
@@ -876,8 +889,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     }
                                 }
 
-                                for device in crate::MOUSE_DEVICES.read().iter() {
-                                    if let Some(mut device) = device.try_write() {
+                                for mouse_device in crate::MOUSE_DEVICES.read().iter() {
+                                    if let Some(mut device) = mouse_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
@@ -891,7 +904,20 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device");
+                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+
+                                                let hidapi = crate::HIDAPI.read();
+                                                let hidapi = hidapi.as_ref().unwrap();
+
+                                                device.open(hidapi).unwrap_or_else(|e| {
+                                                    error!("Error opening the mouse device: {}", e);
+                                                });
+
+                                                // send initialization handshake
+                                                info!("Initializing mouse device...");
+                                                device
+                                                    .send_init_sequence()
+                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");
@@ -901,8 +927,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     }
                                 }
 
-                                for device in crate::MISC_DEVICES.read().iter() {
-                                    if let Some(mut device) = device.try_write() {
+                                for misc_device in crate::MISC_DEVICES.read().iter() {
+                                    if let Some(mut device) = misc_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
@@ -916,7 +942,20 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device");
+                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+
+                                                let hidapi = crate::HIDAPI.read();
+                                                let hidapi = hidapi.as_ref().unwrap();
+
+                                                device.open(hidapi).unwrap_or_else(|e| {
+                                                    error!("Error opening the misc device: {}", e);
+                                                });
+
+                                                // send initialization handshake
+                                                info!("Initializing misc device...");
+                                                device
+                                                    .send_init_sequence()
+                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");
