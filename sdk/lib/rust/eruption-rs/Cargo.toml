@@ -37,7 +37,7 @@ serde = "1.0.137"
 bincode = "2.0.0-rc.1"
 prost = "0.10.3"
 prost-types = "0.10.1"
-socket2 = { version = "0.4.4", features = ["all"] }
+socket2 = { version = "0.4.5", features = ["all"] }
 
 
 [build-dependencies]
