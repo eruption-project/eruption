@@ -70,13 +70,6 @@ function on_startup(config)
     end
 end
 
-function on_key_down(key_index)
-    color_map_afterglow[key_index] = color_afterglow
-    set_neighbor_states(key_index, key_state.shockwave_origin)
-
-    effect_ttl = max_effect_ttl
-end
-
 function on_mouse_button_down(button_index)
     if not mouse_events then return end
 
@@ -122,10 +115,27 @@ function on_mouse_hid_event(event_type, arg1)
     end
 end
 
+function on_key_down(key_index) effect_ttl = max_effect_ttl end
+
+function on_key_up(key_index) effect_ttl = max_effect_ttl end
+
+local function update_key_states()
+    for key_index = 1, num_keys do
+        local pressed = get_key_state(key_index)
+
+        if pressed then
+            color_map_afterglow[key_index] = color_afterglow
+            set_neighbor_states(key_index, key_state.shockwave_origin)
+        end
+    end
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
+
+    update_key_states()
 
     for i = 1, canvas_size do visited_map[i] = false end
 

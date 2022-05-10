@@ -87,27 +87,41 @@ function on_mouse_hid_event(event_type, arg1)
     end
 end
 
-function on_key_down(key_index)
-    color_map_afterglow[key_index] = color_afterglow
+function on_key_down(key_index) effect_ttl = max_effect_ttl end
 
-    grid[key_index] = 1.0
+function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
-    if key_index ~= 0 then
-        for i = 1, max_neigh do
-            local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
-                                    table_offset]) + 1
+local function update_key_states()
+    for key_index = 1, num_keys do
+        local pressed = get_key_state(key_index)
 
-            if neigh_key ~= 0xff then grid[neigh_key] = 1.5 end
+        if pressed then
+            color_map_afterglow[key_index] = color_afterglow
+
+            grid[key_index] = 1.0
+
+            if key_index ~= 0 then
+                for i = 1, max_neigh do
+                    local neigh_key = n(
+                                          neighbor_topology[(key_index *
+                                              max_neigh) + i + table_offset]) +
+                                          1
+
+                    if neigh_key ~= 0xff then
+                        grid[neigh_key] = 1.5
+                    end
+                end
+            end
         end
     end
-
-    effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
+
+    update_key_states()
 
     -- compute halo effect
     for key_index = 1, canvas_size do

@@ -34,18 +34,28 @@ function on_startup(config)
     end
 end
 
-function on_key_down(key_index)
-    hue_map[key_index] = 359
-    color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5,
-                                         lerp(0, 255, opacity))
+function on_key_down(key_index) effect_ttl = max_effect_ttl end
 
-    effect_ttl = max_effect_ttl
+function on_key_up(key_index) effect_ttl = max_effect_ttl end
+
+local function update_key_states()
+    for key_index = 1, num_keys do
+        local pressed = get_key_state(key_index)
+
+        if pressed then
+            hue_map[key_index] = 359
+            color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5,
+                                                 lerp(0, 255, opacity))
+        end
+    end
 end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
+
+    update_key_states()
 
     -- calculate afterhue effect for pressed keys
     if ticks % afterglow_step == 0 then

@@ -34,27 +34,39 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
-function on_key_down(key_index)
-    color_map[key_index] = color_impact
+function on_key_down(key_index) effect_ttl = max_effect_ttl end
 
-    if key_index ~= 0 then
-        for i = 1, max_neigh do
-            local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
-                                    table_offset]) + 1
+function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
-            if neigh_key ~= 0xff then
-                color_map[neigh_key] = color_impact
+local function update_key_states()
+    for key_index = 1, num_keys do
+        local pressed = get_key_state(key_index)
+
+        if pressed then
+            color_map[key_index] = color_impact
+
+            if key_index ~= 0 then
+                for i = 1, max_neigh do
+                    local neigh_key = n(
+                                          neighbor_topology[(key_index *
+                                              max_neigh) + i + table_offset]) +
+                                          1
+
+                    if neigh_key ~= 0xff then
+                        color_map[neigh_key] = color_impact
+                    end
+                end
             end
         end
     end
-
-    effect_ttl = max_effect_ttl
 end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
+
+    update_key_states()
 
     -- compute impact effect
     if ticks % impact_step == 0 then

@@ -30,16 +30,24 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
-function on_key_down(key_index)
-    color_map[key_index] = color_afterglow
+function on_key_down(key_index) effect_ttl = max_effect_ttl end
 
-    effect_ttl = max_effect_ttl
+function on_key_up(key_index) effect_ttl = max_effect_ttl end
+
+local function update_key_states()
+    for key_index = 1, num_keys do
+        local pressed = get_key_state(key_index)
+
+        if pressed then color_map[key_index] = color_afterglow end
+    end
 end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
+
+    update_key_states()
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then

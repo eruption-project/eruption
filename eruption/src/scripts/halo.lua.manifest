@@ -18,7 +18,7 @@
 
 name = "Halo"
 description = "Show a spreading rainbow colored halo when a key has been pressed"
-version = "0.0.1"
+version = "0.0.2"
 author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Effect', 'Vendor']

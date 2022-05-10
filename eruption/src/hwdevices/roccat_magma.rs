@@ -813,7 +813,7 @@ impl KeyboardDeviceTrait for RoccatMagma {
                         _ => KeyboardHidEvent::Unknown,
                     };
 
-                    match event {
+                    /*  match event {
                         KeyboardHidEvent::KeyDown { code } => {
                             // update our internal representation of the keyboard state
                             let index = self.hid_event_code_to_key_index(&code) as usize;
@@ -827,7 +827,7 @@ impl KeyboardDeviceTrait for RoccatMagma {
                         }
 
                         _ => { /* ignore other events */ }
-                    }
+                    } */
 
                     Ok(event)
                 }

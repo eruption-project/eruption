@@ -18,7 +18,7 @@
 
 name = "Impact"
 description = "Highlight neighboring keys when a key has been pressed"
-version = "0.0.6"
+version = "0.0.7"
 author = "The Eruption Development Team"
 min_supported_version = "0.1.10"
 tags = ['Effect', 'Vendor']
