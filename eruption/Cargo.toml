@@ -56,9 +56,9 @@ toml = "0.5.9"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
 tokio = { version = "1.18.2", features = ["full", "rt-multi-thread"] }
-socket2 = { version = "0.4.5", features = ["all"] }
+socket2 = { version = "0.4.4", features = ["all"] }
 ctrlc = { version = "3.2.2", features = ["termination"] }
-clap = "3.1.17"
+clap = "3.1.18"
 hotwatch = "0.4.6"
 config = "0.13.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -81,7 +81,7 @@ simdnoise = "3.1.6"
 #luajit-src = "210.3.2+resty1085a4d"
 #mlua = { version = "0.7.3", features = ["luajit52"] }
 mlua = { version = "0.7.4", features = ["lua54"] }
-sysinfo = "0.23.11"
+sysinfo = "0.23.12"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.1"
 rustfft = "6.0.1"

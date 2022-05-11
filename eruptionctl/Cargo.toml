@@ -31,7 +31,7 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 flume = "0.10.12"
-clap =  { version = "3.1.17", features = ["derive"] }
+clap =  { version = "3.1.18", features = ["derive"] }
 clap_complete = "3.1.4"
 ctrlc = { version = "3.2.2", features = ["termination"] }
 cfg-if = "1.0.0"
