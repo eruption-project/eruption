@@ -64,6 +64,9 @@ pub const AFK_TIMEOUT_SECS: u64 = 0;
 /// Default AFK profile
 pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/rainbow-wave.profile";
 
+/// Notify the software watchdog every n milliseconds
+pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
+
 /// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 

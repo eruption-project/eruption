@@ -648,6 +648,7 @@ fn run_main_loop(
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
+    let mut watchdog_time = Instant::now();
     let mut delay_time_hid_poll = Instant::now();
     let mut delay_time_render = Instant::now();
     let mut last_status_poll = Instant::now();
@@ -1036,6 +1037,17 @@ fn run_main_loop(
                 1000 / constants::TARGET_FPS
             );
         } */
+
+        // notify the software watchdog that we are still "alive"
+        if watchdog_time.elapsed() >= Duration::from_millis(constants::WATCHDOG_NOTIFY_MILLIS) {
+            let result =
+                systemd::daemon::notify(false, [(systemd::daemon::STATE_WATCHDOG, "1")].iter());
+            if result.is_err() || !result.unwrap() {
+                error!("Could not notify the systemd software watchdog");
+            }
+
+            watchdog_time = Instant::now();
+        }
 
         // shall we quit the main loop?
         if QUIT.load(Ordering::SeqCst) {
