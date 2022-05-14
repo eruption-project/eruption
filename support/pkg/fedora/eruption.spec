@@ -3,9 +3,9 @@
 
 Name:    eruption
 Version: 0.1.23
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
-URL:     https://github.com/X3n0m0rph59/eruption
+URL:     https://eruption-project.org
 License: GPLv3+
 
 Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v%{Version}/v%{Version}.tar.gz
