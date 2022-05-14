@@ -2,7 +2,7 @@
 
 pkgname='eruption-git'
 _pkgname='eruption'
-pkgdesc='Linux user-mode input and LED driver for keyboards, mice and other devices'
+pkgdesc='Realtime RGB LED Driver for Linux'
 pkgver='0.1.23'
 pkgrel='0'
 arch=('i686' 'x86_64')

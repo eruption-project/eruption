@@ -36,9 +36,9 @@
 
 ---
 
-## Eruption
+## Eruption - Realtime RGB LED Software for Linux
 
-A Linux user-mode input and LED driver for keyboards, mice and other devices
+A Linux user-mode input and RGB LED driver for keyboards, mice and other devices
 
 ### Gallery
 
@@ -46,9 +46,9 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 
 ---
 
-## Supported Devices
+## Device Compatibility
 
-### Keyboard Devices
+### Keyboards
 
 - ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
 - ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
@@ -57,7 +57,7 @@ A Linux user-mode input and LED driver for keyboards, mice and other devices
 - ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
 - Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
-### Mouse Devices
+### Mice
 
 - ROCCAT Kone Pure Ultra (stable)
 - ROCCAT Burst Pro (as of version `0.1.20`, testing)
@@ -82,7 +82,7 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 > __NOTE__
 >
-> Experimental drivers are `disabled` in the default configuration!
+> **Experimental** drivers are `disabled` in the default configuration!
 >
 > To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
 > ```toml
@@ -118,9 +118,9 @@ sudo systemctl unmask eruption.service
 
 ### Introduction
 
-Eruption is a Linux daemon written in the Rust programming language. Eruption consists of a core daemon with an integrated
-Lua interpreter, and additional plugin components. Its intended usage is to execute Lua scripts that may react to certain
-events on the system like e.g. `Timer tick`, `Key pressed` or `Mouse moved` and subsequently control the connected LED
+Eruption is a Linux daemon written in the Rust programming language. Eruption consists of a core daemon providing an integrated
+Lua interpreter, and additional plugin components. Its primary usage is to execute Lua scripts that may react to certain
+events on the system like e.g. `Timer tick`, `Key press` or `Mouse move` and subsequently control the connected LED
 devices and/or transform the user input via the integrated programmable macro feature.
 Eruption plugins may export additional functionality to the Lua scripting engine. Multiple Lua scripts may be run in
 parallel, each one in its own VM thread. A Lua script shall compute some kind of effect resulting in a 'color map'.

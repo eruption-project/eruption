@@ -1,6 +1,6 @@
 ## eruption
 
-Eruption Linux user-mode input and LED driver for keyboards, mice and other devices
+Realtime RGB LED Driver for Linux
 
 ### eruption
 
@@ -24,7 +24,7 @@ Eruption 0.1.24 () (release build)
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
-A Linux user-mode input and LED driver for keyboards, mice and other devices
+Realtime RGB LED Driver for Linux
 
 USAGE:
     eruption [OPTIONS]

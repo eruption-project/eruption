@@ -25,5 +25,5 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lua-socket (>= 3.0~rc1+git+ac3201d-4)
 Provides: eruption
 Conflicts: eruption-git
-Description: Linux user-mode input and LED driver for keyboards, mice and other devices
- Eruption is a Linux daemon written in Rust, consisting of a core, an integrated Lua interpreter and additional plugin components. Its intended usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" and subsequently control the LEDs on the keyboard and mouse. Plugins may export additional functionality to the Lua scripting engine.
+Description: Realtime RGB LED Driver for Linux
+ Eruption is a Linux daemon written in Rust, consisting of a core, an integrated Lua interpreter and additional plugin components. Its primary usage is to execute Lua scripts that may react to certain events on the system like e.g. "Key pressed" and subsequently control the LEDs on the keyboard and mouse. Plugins may export additional functionality to the Lua scripting engine.

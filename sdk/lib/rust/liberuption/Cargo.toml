@@ -19,8 +19,14 @@
 [package]
 name = "liberuption"
 version = "0.0.1"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
-
+description = "Eruption SDK"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
+homepage = "https://eruption-project.org"
+license = "LGPLv3+"
+readme = "README.md"
+resolver = "2"
 
 [lib]
 name = "eruption"

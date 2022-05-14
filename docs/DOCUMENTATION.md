@@ -35,7 +35,7 @@ GNOME Shell extension, for easy switching of profiles on the fly.
 The eruption configuration file `/etc/eruption/eruption.conf`:
 
 ```toml
-# Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
+# Eruption - Realtime RGB LED Driver for Linux
 # Main configuration file
 
 [global]

@@ -7,7 +7,7 @@
 Name:    eruption-git
 Version: 0.1.23
 Release: 3.%{shortcommit}
-Summary: Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices
+Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://github.com/X3n0m0rph59/eruption
 License: GPLv3+
 
@@ -46,7 +46,7 @@ Conflicts: eruption-roccat-vulcan-git
 %global debug_package %{nil}
 
 %description
-Linux user-mode input and LED driver for keyboards, mice and other devices (git snapshot)
+Realtime RGB LED Driver for Linux (git snapshot)
 
 %prep
 %autosetup -v -n %{OrigName}-%{commit}

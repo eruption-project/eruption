@@ -376,7 +376,7 @@ fn parse_commandline() -> clap::ArgMatches {
             .as_str(),
         )
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
-        .about("A Linux user-mode input and LED driver for keyboards, mice and other devices")
+        .about("Realtime RGB LED Driver for Linux")
         .arg(
             Arg::new("config")
                 .short('c')
@@ -1456,7 +1456,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let matches = parse_commandline();
 
     info!(
-        "Starting Eruption - Linux user-mode input and LED driver for keyboards, mice and other devices: Version {} ({}) ({} build)",
+        "Starting Eruption - Realtime RGB LED Driver for Linux: Version {} ({}) ({} build)",
         env!("CARGO_PKG_VERSION"),
         env!("ERUPTION_GIT_PKG_VERSION"),
         if cfg!(debug_assertions) {
