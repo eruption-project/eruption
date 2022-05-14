@@ -50,7 +50,7 @@ libc = "0.2.125"
 memmap2 = "0.5.3"
 nix = "0.24.1"
 tempfile = "3.3.0"
-rayon = "1.5.2"
+rayon = "1.5.3"
 jwalk = "0.6.0"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
 tokio = { version = "1.18.2", features = ["full"] }
