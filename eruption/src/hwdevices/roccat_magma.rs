@@ -35,7 +35,7 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const NUM_KEYS: usize = 144;
+pub const NUM_KEYS: usize = 143;
 
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;

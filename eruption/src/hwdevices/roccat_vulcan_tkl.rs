@@ -39,7 +39,7 @@ pub const NUM_KEYS: usize = 96;
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 16;
 
-pub const LED_INDICES: usize = 144;
+pub const LED_INDICES: usize = 143;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
