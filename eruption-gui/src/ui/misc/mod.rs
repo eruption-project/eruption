@@ -17,14 +17,13 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use crate::timers;
 use crate::{constants, util};
 use glib::clone;
-use glib::Continue;
 use gtk::glib;
 use gtk::prelude::*;
-use std::time::Duration;
 
-mod hwdevices;
+pub mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -42,7 +41,7 @@ pub fn initialize_misc_page(
     template: &gtk::Builder,
     device: u64,
 ) -> Result<gtk::Widget> {
-    let misc_device = hwdevices::get_misc_devices(device)?;
+    let misc_device = hwdevices::get_misc_device(device)?;
 
     let misc_device_page = template.object("misc_device_template").unwrap();
 
@@ -106,11 +105,12 @@ pub fn initialize_misc_page(
     });
 
     // near realtime update path
-    glib::timeout_add_local(
-        Duration::from_millis(250),
+    timers::register_timer(
+        timers::MISC_TIMER_ID,
+        250,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak misc_signal_label, @weak misc_battery_level_label =>
-                    @default-return Continue(true), move || {
+                    @default-return Ok(()), move || {
 
             // device status
             if let Ok(device_status) = util::get_device_status(misc_device_handle) {
@@ -139,9 +139,9 @@ pub fn initialize_misc_page(
                 }
             }
 
-            Continue(true)
+            Ok(())
         }),
-    );
+    )?;
 
     // // fast update path
     // glib::timeout_add_local(
@@ -167,7 +167,8 @@ pub fn initialize_misc_page(
     //     }),
     // );
 
-    crate::register_timer(
+    timers::register_timer(
+        timers::MISC_RENDER_TIMER_ID,
         1000 / constants::TARGET_FPS,
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();

@@ -18,9 +18,9 @@
 
 name = "Gradient Noise"
 description = "Compute Gradient Noise, mapped to the HSL color space"
-version = "0.0.3"
+version = "0.1.0"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.5"
+min_supported_version = "0.1.24"
 tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
@@ -45,7 +45,7 @@ name = 'coord_scale'
 description = 'Scale of coordinates (1st and 2nd coordinates of the noise function)'
 min = 0.0
 max = 100.0
-default = 0.25
+default = 1.0
 
 [[config]]
 type = 'float'

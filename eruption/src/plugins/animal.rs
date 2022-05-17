@@ -42,8 +42,6 @@ use crate::{constants, plugins};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-pub const SUPER_SAMPLES: (usize, usize) = (2, 2);
-
 // #[derive(Debug, thiserror::Error)]
 // pub enum AnimalPluginError {
 //     #[error("Unknown error: {}", description)]
@@ -61,9 +59,8 @@ pub enum AnimalError {
     #[error("Invalid thickness specification: Must be between 0.5 and 1000")]
     InvalidThickness {},
 
-    #[error("Invalid height: Height must be a multiple of 2")]
-    InvalidHeight {},
-
+    // #[error("Invalid height: Height must be a multiple of 2")]
+    // InvalidHeight {},
     #[error("Invalid length: Length must be between 1 and 1000")]
     InvalidLength {},
 
@@ -127,25 +124,8 @@ impl Animal {
         ]);
 
         // Dimensions of the arena, in blocks
-        let width;
-        let height;
-
-        let keyboard_devices = crate::KEYBOARD_DEVICES.read();
-        if !keyboard_devices.is_empty() {
-            let keyboard_device = keyboard_devices[0].as_ref();
-
-            let num_cols = keyboard_device.read().get_num_cols();
-            let num_rows = keyboard_device.read().get_num_rows();
-
-            width = (num_cols + 1) * SUPER_SAMPLES.0;
-            height = (num_rows + 1) * SUPER_SAMPLES.1;
-
-            if height % 2 != 0 {
-                return Err(AnimalError::InvalidHeight {}.into());
-            }
-        } else {
-            return Err(crate::MainError::DeviceDisconnected {}.into());
-        }
+        let width = constants::CANVAS_WIDTH;
+        let height = constants::CANVAS_HEIGHT;
 
         // Minimum and maximum length of the model, in blocks.
         // The program will animate between the two for a "creeping" motion.
@@ -305,55 +285,33 @@ impl Animal {
     pub fn render(&self) -> Vec<u32> {
         log::trace!("{}: Rendering", self.name);
 
-        let mut result = vec![];
+        let mut result = vec![0x000000000; constants::CANVAS_SIZE];
 
-        let keyboard_devices = crate::KEYBOARD_DEVICES.read();
-
-        if !keyboard_devices.is_empty() {
-            let keyboard_device = keyboard_devices[0].as_ref();
-
-            let num_keys = keyboard_device.read().get_num_keys();
-            let num_cols = keyboard_device.read().get_num_cols();
-            let num_rows = keyboard_device.read().get_num_rows();
-
-            /// Convert RGBA components to a 32 bits color value.
-            fn rgba_to_color(r: f64, g: f64, b: f64, a: f64) -> u32 {
-                LittleEndian::read_u32(&[
-                    (b * 255.0) as u8,
-                    (g * 255.0) as u8,
-                    (r * 255.0) as u8,
-                    (a * 255.0) as u8,
-                ])
-            }
-
-            let canvas = ternimal::rasterize(&self.model, &self.gradient, self.width, self.height);
-            // ternimal::render(&canvas, true);
-
-            for x in 0..num_cols {
-                for y in 0..num_rows {
-                    let key_index: usize =
-                        keyboard_device.read().get_row_topology(y)[x] as usize + 1;
-                    if !(1..=num_keys).contains(&key_index) {
-                        continue;
-                    }
-
-                    let cell = canvas[y * SUPER_SAMPLES.1][x * SUPER_SAMPLES.0];
-
-                    if let Some(color) = cell {
-                        result.push(rgba_to_color(
-                            color.red,
-                            color.green,
-                            color.blue,
-                            self.opacity,
-                        ));
-                    } else {
-                        result.push(0x00000000);
-                    }
-                }
-            }
+        /// Convert RGBA components to a 32 bits color value.
+        fn rgba_to_color(r: f64, g: f64, b: f64, a: f64) -> u32 {
+            LittleEndian::read_u32(&[
+                (b * 255.0) as u8,
+                (g * 255.0) as u8,
+                (r * 255.0) as u8,
+                (a * 255.0) as u8,
+            ])
         }
 
-        result.resize_with(constants::CANVAS_SIZE, || 0x000000000);
+        let canvas = ternimal::rasterize(&self.model, &self.gradient, self.width, self.height);
+
+        // let output = ternimal::render(&canvas, true);
+        // print!("{output}");
+
+        for i in 0..constants::CANVAS_SIZE {
+            let x = i % constants::CANVAS_WIDTH;
+            let y = i / constants::CANVAS_WIDTH;
+
+            let color = canvas[y][x].unwrap_or_else(|| ternimal::Color::new(0.0, 0.0, 0.0));
+            let color = rgba_to_color(color.red, color.green, color.blue, self.opacity);
+
+            result[i] = color;
+        }
+
         result
     }
 }

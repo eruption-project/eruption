@@ -278,21 +278,6 @@ mod callbacks {
         result
     }
 
-    /// Returns the number of "pixels" on the canvas
-    pub(crate) fn get_canvas_size() -> usize {
-        constants::CANVAS_SIZE
-    }
-
-    /// Returns the height of the canvas
-    pub(crate) fn get_canvas_height() -> usize {
-        constants::CANVAS_HEIGHT
-    }
-
-    /// Returns the width of the canvas
-    pub(crate) fn get_canvas_width() -> usize {
-        constants::CANVAS_WIDTH
-    }
-
     /// Inject a key on the eruption virtual keyboard.
     pub(crate) fn inject_key(ev_key: u32, down: bool) {
         // calling inject_key(..) from Lua will drop the current input;
@@ -756,34 +741,44 @@ mod callbacks {
         //     )
         // );
 
-        let mut led_map = [RGBA {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 0,
-        }; constants::CANVAS_SIZE];
+        if map.len() != constants::CANVAS_SIZE {
+            error!(
+                "Script: in submit_color_map: Invalid number of elements: {}/{}",
+                map.len(),
+                constants::CANVAS_SIZE
+            );
 
-        let mut i = 0;
-        loop {
-            led_map[i] = RGBA {
-                a: u8::try_from((map[i] >> 24) & 0xff)?,
-                r: u8::try_from((map[i] >> 16) & 0xff)?,
-                g: u8::try_from((map[i] >> 8) & 0xff)?,
-                b: u8::try_from(map[i] & 0xff)?,
-            };
+            Ok(())
+        } else {
+            let mut led_map = [RGBA {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            }; constants::CANVAS_SIZE];
 
-            i += 1;
-            if i >= led_map.len() || i >= map.len() {
-                break;
+            let mut i = 0;
+            loop {
+                led_map[i] = RGBA {
+                    a: map[i].checked_shr(24).unwrap_or(0) as u8,
+                    r: map[i].checked_shr(16).unwrap_or(0) as u8,
+                    g: map[i].checked_shr(8).unwrap_or(0) as u8,
+                    b: map[i] as u8,
+                };
+
+                i += 1;
+                if i >= led_map.len() || i >= map.len() {
+                    break;
+                }
             }
+
+            LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
+            LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
+
+            super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+            Ok(())
         }
-
-        LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
-        LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
-
-        super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-
-        Ok(())
     }
 
     pub(crate) fn get_brightness() -> isize {
@@ -1451,16 +1446,6 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     let get_support_script_files =
         lua_ctx.create_function(|_, ()| Ok(callbacks::get_support_script_files()))?;
     globals.set("get_support_script_files", get_support_script_files)?;
-
-    // canvas related functions
-    let get_canvas_size = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_size()))?;
-    globals.set("get_canvas_size", get_canvas_size)?;
-
-    let get_canvas_width = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_width()))?;
-    globals.set("get_canvas_width", get_canvas_width)?;
-
-    let get_canvas_height = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_height()))?;
-    globals.set("get_canvas_height", get_canvas_height)?;
 
     // math library
     let max = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.max(f2)))?;

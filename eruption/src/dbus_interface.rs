@@ -72,6 +72,11 @@ pub struct DbusApi {
     active_profile_changed: Arc<Signal<()>>,
     profiles_changed: Arc<Signal<()>>,
     brightness_changed: Arc<Signal<()>>,
+
+    hue_changed: Arc<Signal<()>>,
+    saturation_changed: Arc<Signal<()>>,
+    lightness_changed: Arc<Signal<()>>,
+
     device_status_changed: Arc<Signal<()>>,
     device_hotplug: Arc<Signal<()>>,
 }
@@ -115,6 +120,19 @@ impl DbusApi {
                 .sarg::<i64, _>("brightness"),
         );
         let brightness_changed_signal_clone = brightness_changed_signal.clone();
+
+        let hue_changed_signal = Arc::new(f.signal("HueChanged", ()).sarg::<f64, _>("hue"));
+        let hue_changed_signal_clone = hue_changed_signal.clone();
+
+        let saturation_changed_signal = Arc::new(
+            f.signal("SaturationChanged", ())
+                .sarg::<f64, _>("saturation"),
+        );
+        let saturation_changed_signal_clone = saturation_changed_signal.clone();
+
+        let lightness_changed_signal =
+            Arc::new(f.signal("LightnessChanged", ()).sarg::<f64, _>("lightness"));
+        let lightness_changed_signal_clone = lightness_changed_signal.clone();
 
         let device_status_changed_signal = Arc::new(
             f.signal("DeviceStatusChanged", ())
@@ -219,6 +237,102 @@ impl DbusApi {
             });
 
         let brightness_property_clone = Arc::new(brightness_property);
+
+        let hue_property = f
+            .property::<f64, _>("Hue", ())
+            .emits_changed(EmitsChangedSignal::True)
+            .access(Access::ReadWrite)
+            .auto_emit_on_set(true)
+            .on_get(|i, m| {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    let result = crate::CANVAS_HSL.lock().0;
+                    i.append(result);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            })
+            .on_set(|i, m| {
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    crate::CANVAS_HSL.lock().0 = i.read::<f64>()?;
+                    script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            });
+
+        let hue_property_clone = Arc::new(hue_property);
+
+        let saturation_property = f
+            .property::<f64, _>("Saturation", ())
+            .emits_changed(EmitsChangedSignal::True)
+            .access(Access::ReadWrite)
+            .auto_emit_on_set(true)
+            .on_get(|i, m| {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    let result = crate::CANVAS_HSL.lock().1;
+                    i.append(result);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            })
+            .on_set(|i, m| {
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    crate::CANVAS_HSL.lock().1 = i.read::<f64>()?;
+                    script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            });
+
+        let saturation_property_clone = Arc::new(saturation_property);
+
+        let lightness_property = f
+            .property::<f64, _>("Lightness", ())
+            .emits_changed(EmitsChangedSignal::True)
+            .access(Access::ReadWrite)
+            .auto_emit_on_set(true)
+            .on_get(|i, m| {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    let result = crate::CANVAS_HSL.lock().2;
+                    i.append(result);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            })
+            .on_set(|i, m| {
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                    .unwrap_or(false)
+                {
+                    crate::CANVAS_HSL.lock().2 = i.read::<f64>()?;
+                    script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                    Ok(())
+                } else {
+                    Err(MethodErr::failed("Authentication failed"))
+                }
+            });
+
+        let lightness_property_clone = Arc::new(lightness_property);
 
         let device_status_property = f
             .property::<String, _>("DeviceStatus", ())
@@ -559,6 +673,19 @@ impl DbusApi {
                     ),
             )
             .add(
+                f.object_path("/org/eruption/canvas", ())
+                    .introspectable()
+                    .add(
+                        f.interface("org.eruption.Canvas", ())
+                            .add_s(hue_changed_signal_clone)
+                            .add_s(saturation_changed_signal_clone)
+                            .add_s(lightness_changed_signal_clone)
+                            .add_p(hue_property_clone)
+                            .add_p(saturation_property_clone)
+                            .add_p(lightness_property_clone),
+                    ),
+            )
+            .add(
                 f.object_path("/org/eruption/config", ())
                     .introspectable()
                     .add(
@@ -872,6 +999,11 @@ impl DbusApi {
             active_profile_changed: active_profile_changed_signal,
             profiles_changed: profiles_changed_signal,
             brightness_changed: brightness_changed_signal,
+
+            hue_changed: hue_changed_signal,
+            saturation_changed: saturation_changed_signal,
+            lightness_changed: lightness_changed_signal,
+
             device_status_changed: device_status_changed_signal,
             device_hotplug: device_hotplug_signal,
         })
@@ -937,6 +1069,57 @@ impl DbusApi {
                 &"/org/eruption/config".into(),
                 &"org.eruption.Config".into(),
                 &[brightness as i64],
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
+
+        Ok(())
+    }
+
+    pub fn notify_hue_changed(&self) -> Result<()> {
+        let hue = crate::CANVAS_HSL.lock().0;
+
+        let _ = self
+            .connection
+            .as_ref()
+            .unwrap()
+            .send(self.hue_changed.emit(
+                &"/org/eruption/canvas".into(),
+                &"org.eruption.Canvas".into(),
+                &[hue as f64],
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
+
+        Ok(())
+    }
+
+    pub fn notify_saturation_changed(&self) -> Result<()> {
+        let saturation = crate::CANVAS_HSL.lock().1;
+
+        let _ = self
+            .connection
+            .as_ref()
+            .unwrap()
+            .send(self.saturation_changed.emit(
+                &"/org/eruption/canvas".into(),
+                &"org.eruption.Canvas".into(),
+                &[saturation as f64],
+            ))
+            .map_err(|_| error!("D-Bus error during send call"));
+
+        Ok(())
+    }
+
+    pub fn notify_lightness_changed(&self) -> Result<()> {
+        let lightness = crate::CANVAS_HSL.lock().2;
+
+        let _ = self
+            .connection
+            .as_ref()
+            .unwrap()
+            .send(self.lightness_changed.emit(
+                &"/org/eruption/canvas".into(),
+                &"org.eruption.Canvas".into(),
+                &[lightness as f64],
             ))
             .map_err(|_| error!("D-Bus error during send call"));
 

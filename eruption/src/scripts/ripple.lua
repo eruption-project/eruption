@@ -35,7 +35,7 @@ function on_startup(config)
 end
 
 function on_key_down(key_index)
-    split_column = trunc(key_index / max_keys_per_col)
+    split_column = trunc(key_index / canvas_height)
     easing_state = 0
 
     effect_ttl = max_effect_ttl
@@ -55,8 +55,8 @@ function on_tick(delta)
     end
 
     -- left wave
-    for i = split_column, 0, -1 do
-        for j = 1, max_keys_per_col do
+    for i = split_column, 1, -1 do
+        for j = 1, canvas_width - 1 do
             if easing_state == 0 then
                 local local_alpha
 
@@ -68,7 +68,7 @@ function on_tick(delta)
                                         0, 255)
                 end
 
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = hsla_to_color((i * hue_multiplier),
                                                  color_saturation,
                                                  color_lightness, local_alpha)
@@ -86,12 +86,12 @@ function on_tick(delta)
                                         0, 255)
                 end
 
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = hsla_to_color((i * hue_multiplier),
                                                  color_saturation,
                                                  color_lightness, local_alpha)
             elseif easing_state == 2 then
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = 0x00000000
             else
                 error("Invalid easing_state")
@@ -100,8 +100,8 @@ function on_tick(delta)
     end
 
     -- right wave
-    for i = split_column, num_cols, 1 do
-        for j = 1, max_keys_per_col do
+    for i = split_column, canvas_width, 1 do
+        for j = 1, canvas_height - 1 do
             if easing_state == 0 then
                 local local_alpha
 
@@ -113,7 +113,7 @@ function on_tick(delta)
                                         0, 255)
                 end
 
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = hsla_to_color((i * hue_multiplier),
                                                  color_saturation,
                                                  color_lightness, local_alpha)
@@ -131,12 +131,12 @@ function on_tick(delta)
                                         0, 255)
                 end
 
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = hsla_to_color((i * hue_multiplier),
                                                  color_saturation,
                                                  color_lightness, local_alpha)
             elseif easing_state == 2 then
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                local index = j + (i * canvas_height)
                 color_map[index] = 0x00000000
             else
                 error("Invalid easing_state")

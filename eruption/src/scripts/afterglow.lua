@@ -16,6 +16,7 @@
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -27,7 +28,7 @@ effect_ttl = max_effect_ttl
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size - 1 do color_map[i] = 0x00000000 end
 end
 
 function on_key_down(key_index) effect_ttl = max_effect_ttl end
@@ -38,7 +39,9 @@ local function update_key_states()
     for key_index = 1, num_keys do
         local pressed = get_key_state(key_index)
 
-        if pressed then color_map[key_index] = color_afterglow end
+        if pressed then
+            color_map[key_index_to_canvas(key_index) + 1] = color_afterglow
+        end
     end
 end
 
@@ -51,7 +54,7 @@ function on_tick(delta)
 
     -- calculate afterglow effect for pressed keys
     if ticks % afterglow_step == 0 then
-        for i = 1, canvas_size do
+        for i = 0, canvas_size - 1 do
             r, g, b, alpha = color_to_rgba(color_map[i])
             if alpha > 0 then
                 color_map[i] = rgba_to_color(r, g, b, max(

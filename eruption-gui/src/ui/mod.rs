@@ -18,10 +18,11 @@
 */
 
 pub mod about;
-pub mod keyboard;
+pub mod canvas;
+pub mod keyboards;
 pub mod main;
+pub mod mice;
 pub mod misc;
-pub mod mouse;
 pub mod process_monitor;
 pub mod profiles;
 pub mod rule;

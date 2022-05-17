@@ -26,7 +26,7 @@ offsets = {0, 0, 0}
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_mouse_move(rel_x, rel_y, rel_z)
@@ -40,21 +40,20 @@ function on_tick(delta)
 
     -- calculate perlin swirl effect
     if ticks % animation_delay == 0 then
-        -- compute the colors in the keyboard zone on the canvas
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local val = perlin_noise((i + (offsets[2] / 256)) / coord_scale,
-                                         (j + (offsets[1] / 256)) / coord_scale,
-                                         (ticks + (offsets[3] / 256)) /
-                                             time_scale)
-                val = lerp(0, 360, val)
+        for i = 0, canvas_size - 1 do
+            local x = i % canvas_width
+            local y = i / canvas_width
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = hsla_to_color(
-                                       (val / color_divisor) + color_offset,
-                                       color_saturation, color_lightness,
-                                       lerp(0, 255, opacity))
-            end
+            local val = perlin_noise((y + (offsets[2] / 256)) / coord_scale,
+                                     (x + (offsets[1] / 256)) / coord_scale,
+                                     (ticks + (offsets[3] / 256)) / time_scale)
+
+            val = lerp(0, 360, val)
+
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation, color_lightness,
+                                   lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

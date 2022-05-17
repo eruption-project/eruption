@@ -38,18 +38,19 @@ function on_tick(delta)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        for i = 1, canvas_size do
-            local x = i / canvas_width
-            local y = i / canvas_height
+        for i = 0, canvas_size - 1 do
+            local x = i % canvas_width
+            local y = i / canvas_width
 
             local val = open_simplex_noise(x / coord_scale + adaptive_offset,
                                            y / coord_scale + adaptive_offset,
                                            ticks / time_scale)
             val = lerp(0, 360, val)
 
-            color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                         color_saturation, color_lightness,
-                                         lerp(0, 255, opacity))
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation, color_lightness,
+                                   lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

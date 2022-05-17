@@ -22,7 +22,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::preferences;
+use crate::{preferences, timers};
 use glib::clone;
 use gtk::prelude::*;
 
@@ -93,7 +93,8 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         gtk::Inhibit(false)
     });
 
-    crate::register_timer(
+    timers::register_timer(
+        timers::SETTINGS_TIMER_ID,
         500,
         clone!(@weak eruption_daemon_status_label, @weak eruption_daemon_switch, @weak process_monitor_daemon_status_label,
                     @weak process_monitor_daemon_switch, @weak audio_proxy_daemon_switch, @weak audio_proxy_daemon_status_label

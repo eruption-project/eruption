@@ -54,8 +54,6 @@ Author: X3n0m0rph59
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-left">8</property>
-        <property name="margin-right">8</property>
         <property name="margin-start">8</property>
         <property name="margin-end">8</property>
         <property name="margin-top">8</property>
@@ -126,7 +124,7 @@ Author: X3n0m0rph59
             <property name="fill-level">100</property>
             <property name="round-digits">0</property>
             <property name="digits">0</property>
-            <property name="value-pos">right</property>
+            <property name="value-pos">left</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -163,7 +161,7 @@ Author: X3n0m0rph59
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Battery Level</property>
+            <property name="label" translatable="yes">Battery</property>
           </object>
           <packing>
             <property name="left-attach">0</property>

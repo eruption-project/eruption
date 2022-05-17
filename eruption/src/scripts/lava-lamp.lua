@@ -42,20 +42,17 @@ function on_tick(delta)
 
     -- calculate the lava lamp effect
     if ticks % animation_delay == 0 then
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local x = j / coord_scale
-                local y = i / coord_scale
+        for i = 0, canvas_size - 1 do
+            local x = i % canvas_width / coord_scale
+            local y = i / canvas_width / coord_scale
 
-                local val = perlin_noise((x + (offsets[1] / 2048)),
-                                         (y + (offsets[2] / 2048)),
-                                         ticks / time_scale)
+            local val = perlin_noise((x + (offsets[1] / 2048)),
+                                     (y + (offsets[2] / 2048)),
+                                     ticks / time_scale)
 
-                local pos = clamp(val + 0.5 / 2.0, 0.0, 1.0)
+            local pos = clamp(val + 0.5 / 2.0, 0.0, 1.0)
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = gradient_color_at(grad, pos)
-            end
+            color_map[i + 1] = gradient_color_at(grad, pos)
         end
 
         submit_color_map(color_map)

@@ -32,13 +32,11 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
-use std::cell::RefCell;
 use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::time::Duration;
-use std::time::Instant;
+
 use std::{env, process};
 
 use util::RGBA;
@@ -52,6 +50,7 @@ mod error_log;
 mod manifest;
 mod preferences;
 mod profiles;
+mod timers;
 mod ui;
 mod util;
 
@@ -83,46 +82,6 @@ macro_rules! tr {
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-type Callback = dyn Fn() -> Result<()> + 'static;
-
-thread_local! {
-    /// Global timers (interval millis, last fired, callback Fn())
-    pub static TIMERS: RefCell<Vec<(u64, Instant, Box<Callback>)>> = RefCell::new(Vec::new());
-}
-
-/// Register a timer callback
-pub fn register_timer<T>(timeout: u64, callback: T) -> Result<()>
-where
-    T: Fn() -> Result<()> + 'static,
-{
-    TIMERS.with(|f| {
-        let mut timers = f.borrow_mut();
-
-        timers.push((timeout, Instant::now(), Box::new(callback)));
-    });
-
-    Ok(())
-}
-
-/// Handle timer callbacks
-pub fn handle_timers() -> Result<()> {
-    TIMERS.with(|f| -> Result<()> {
-        let mut timers = f.borrow_mut();
-
-        for (ref timeout_millis, ref mut last_fired, callback) in timers.iter_mut() {
-            if Instant::now() - *last_fired > Duration::from_millis(*timeout_millis) {
-                callback()?;
-
-                *last_fired = Instant::now();
-            }
-        }
-
-        Ok(())
-    })?;
-
-    Ok(())
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
     #[error("Unknown error: {description}")]
@@ -136,6 +95,9 @@ pub struct State {
     active_profile: Option<String>,
     saved_profile: Option<String>,
     current_brightness: Option<i64>,
+    canvas_hue: Option<f64>,
+    canvas_saturation: Option<f64>,
+    canvas_lightness: Option<f64>,
 }
 
 impl State {
@@ -145,6 +107,9 @@ impl State {
             active_profile: None,
             saved_profile: None,
             current_brightness: None,
+            canvas_hue: None,
+            canvas_saturation: None,
+            canvas_lightness: None,
         }
     }
 }
@@ -412,76 +377,84 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                         // slot 1
                         let combo_box: gtk::ComboBox = builder.object("slot1_combo").unwrap();
 
-                        combo_box.model().unwrap().foreach(|model, _path, iter| {
-                            let file = model.value(iter, 2).get::<String>().unwrap();
-                            let file = PathBuf::from(file).to_string_lossy().to_string();
+                        if let Some(model) = combo_box.model() {
+                            model.foreach(|model, _path, iter| {
+                                let file = model.value(iter, 2).get::<String>().unwrap();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                            if *profile == file {
-                                // found a match
-                                combo_box.set_active_iter(Some(iter));
+                                if *profile == file {
+                                    // found a match
+                                    combo_box.set_active_iter(Some(&iter));
 
-                                true
-                            } else {
-                                false
-                            }
-                        });
+                                    true
+                                } else {
+                                    false
+                                }
+                            });
+                        }
                     }
 
                     1 => {
                         // slot 2
                         let combo_box: gtk::ComboBox = builder.object("slot2_combo").unwrap();
 
-                        combo_box.model().unwrap().foreach(|model, _path, iter| {
-                            let file = model.value(iter, 2).get::<String>().unwrap();
-                            let file = PathBuf::from(file).to_string_lossy().to_string();
+                        if let Some(model) = combo_box.model() {
+                            model.foreach(|model, _path, iter| {
+                                let file = model.value(iter, 2).get::<String>().unwrap();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                                
+                                if *profile == file {
+                                    // found a match
+                                    combo_box.set_active_iter(Some(&iter));
 
-                            if *profile == file {
-                                // found a match
-                                combo_box.set_active_iter(Some(iter));
-
-                                true
-                            } else {
-                                false
-                            }
-                        });
+                                    true
+                                } else {
+                                    false
+                                }
+                            });
+                        }
                     }
 
                     2 => {
                         // slot 3
                         let combo_box: gtk::ComboBox = builder.object("slot3_combo").unwrap();
 
-                        combo_box.model().unwrap().foreach(|model, _path, iter| {
-                            let file = model.value(iter, 2).get::<String>().unwrap();
-                            let file = PathBuf::from(file).to_string_lossy().to_string();
+                        if let Some(model) = combo_box.model() {
+                            model.foreach(|model, _path, iter| {
+                                let file = model.value(iter, 2).get::<String>().unwrap();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                            if *profile == file {
-                                // found a match
-                                combo_box.set_active_iter(Some(iter));
+                                if *profile == file {
+                                    // found a match
+                                    combo_box.set_active_iter(Some(&iter));
 
-                                true
-                            } else {
-                                false
-                            }
-                        });
+                                    true
+                                } else {
+                                    false
+                                }
+                            });
+                        }
                     }
 
                     3 => {
                         // slot 4
                         let combo_box: gtk::ComboBox = builder.object("slot4_combo").unwrap();
 
-                        combo_box.model().unwrap().foreach(|model, _path, iter| {
-                            let file = model.value(iter, 2).get::<String>().unwrap();
-                            let file = PathBuf::from(file).to_string_lossy().to_string();
+                        if let Some(model) = combo_box.model() {
+                            model.foreach(|model, _path, iter| {
+                                let file = model.value(iter, 2).get::<String>().unwrap();
+                                let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                            if *profile == file {
-                                // found a match
-                                combo_box.set_active_iter(Some(iter));
+                                if *profile == file {
+                                    // found a match
+                                    combo_box.set_active_iter(Some(&iter));
 
-                                true
-                            } else {
-                                false
-                            }
-                        });
+                                    true
+                                } else {
+                                    false
+                                }
+                            });
+                        }
                     }
 
                     _ => log::error!("Internal error detected"),
@@ -502,6 +475,49 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::ignore_next_ui_events(1);
 
                 brightness_scale.set_value(brightness as f64);
+
+                events::reenable_ui_events();
+                events::reenable_dbus_events();
+            }
+
+            dbus_client::Message::HueChanged(hue) => {
+                STATE.write().canvas_hue = Some(hue);
+
+                let hue_scale: gtk::Scale = builder.object("canvas_hue_scale").unwrap();
+
+                events::ignore_next_dbus_events(1);
+                events::ignore_next_ui_events(1);
+
+                hue_scale.set_value(hue as f64);
+
+                events::reenable_ui_events();
+                events::reenable_dbus_events();
+            }
+
+            dbus_client::Message::SaturationChanged(saturation) => {
+                STATE.write().canvas_saturation = Some(saturation);
+
+                let saturation_scale: gtk::Scale =
+                    builder.object("canvas_saturation_scale").unwrap();
+
+                events::ignore_next_dbus_events(1);
+                events::ignore_next_ui_events(1);
+
+                saturation_scale.set_value(saturation as f64);
+
+                events::reenable_ui_events();
+                events::reenable_dbus_events();
+            }
+
+            dbus_client::Message::LightnessChanged(lightness) => {
+                STATE.write().canvas_lightness = Some(lightness);
+
+                let lightness_scale: gtk::Scale = builder.object("canvas_lightness_scale").unwrap();
+
+                events::ignore_next_dbus_events(1);
+                events::ignore_next_ui_events(1);
+
+                lightness_scale.set_value(lightness as f64);
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
@@ -654,8 +670,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         if let Err(e) = ui::main::initialize_main_window(app) {
             log::error!("Could not start the Eruption GUI: {}", e);
 
-            let message =
-                "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
+            let message = "Could not start the Eruption GUI".to_string();
             let secondary = format!("Reason:\n{}", e);
 
             let message_dialog = MessageDialogBuilder::new()
@@ -677,7 +692,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // global timer support
     glib::idle_add_local(
         clone!(@weak application => @default-return Continue(true), move || {
-            if let Err(e) = handle_timers() {
+            if let Err(e) = timers::handle_timers() {
                 log::error!("An error occurred in a timer callback: {}", e);
             }
 

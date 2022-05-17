@@ -1273,7 +1273,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-netfx"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
  "clap",
@@ -1358,7 +1358,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-rs"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "bincode",
  "cfg-if 1.0.0",
@@ -4355,9 +4355,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.24.6"
+version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b6e19da72a8d75be4d40e4dd4686afca31507f26c3ffdf6bd3073278d9de0a0"
+checksum = "a0c481baae55ea597122229896b67df9af4b941678bf2eab6228139331e66fb0"
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",

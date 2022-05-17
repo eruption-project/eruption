@@ -25,10 +25,13 @@ use gtk::glib;
 use gtk::prelude::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use std::thread;
+use std::time::Duration;
 
 use crate::dbus_client;
 use crate::device;
 use crate::events;
+use crate::timers;
 use crate::ui;
 use crate::update_ui_state;
 use crate::util;
@@ -514,12 +517,22 @@ fn register_actions<A: IsA<gtk::Application>>(
     application.add_action(&switch_to_page6);
     application.set_accels_for_action("app.switch-to-page-6", &["<alt>6"]);
 
+    let switch_to_page7 = gio::SimpleAction::new("switch-to-page-7", None);
+    switch_to_page7.connect_activate(clone!(@weak main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page6");
+    }));
+
+    application.add_action(&switch_to_page7);
+    application.set_accels_for_action("app.switch-to-page-7", &["<alt>7"]);
+
     // switching between slots
     let switch_to_slot1 = gio::SimpleAction::new("switch-to-slot-1", None);
     switch_to_slot1.connect_activate(clone!(@weak builder => move |_, _| {
         if !events::shall_ignore_pending_ui_event() {
-            switch_to_slot(0).unwrap();
-            update_slot_indicator_state(&builder, 0);
+            match switch_to_slot(0) {
+                Ok(()) => update_slot_indicator_state(&builder, 0),
+                Err(e) => log::error!("Could not switch slots: {e}"),
+            }
         }
     }));
 
@@ -529,8 +542,10 @@ fn register_actions<A: IsA<gtk::Application>>(
     let switch_to_slot2 = gio::SimpleAction::new("switch-to-slot-2", None);
     switch_to_slot2.connect_activate(clone!(@weak builder => move |_, _| {
         if !events::shall_ignore_pending_ui_event() {
-            switch_to_slot(1).unwrap();
-            update_slot_indicator_state(&builder, 1);
+            match switch_to_slot(1) {
+                Ok(()) => update_slot_indicator_state(&builder, 1),
+                Err(e) => log::error!("Could not switch slots: {e}"),
+            }
         }
     }));
 
@@ -540,8 +555,10 @@ fn register_actions<A: IsA<gtk::Application>>(
     let switch_to_slot3 = gio::SimpleAction::new("switch-to-slot-3", None);
     switch_to_slot3.connect_activate(clone!(@weak builder => move |_, _| {
         if !events::shall_ignore_pending_ui_event() {
-            switch_to_slot(2).unwrap();
-            update_slot_indicator_state(&builder, 2);
+            match switch_to_slot(2) {
+                Ok(()) => update_slot_indicator_state(&builder, 2),
+                Err(e) => log::error!("Could not switch slots: {e}"),
+            }
         }
     }));
 
@@ -551,8 +568,10 @@ fn register_actions<A: IsA<gtk::Application>>(
     let switch_to_slot4 = gio::SimpleAction::new("switch-to-slot-4", None);
     switch_to_slot4.connect_activate(clone!(@weak builder => move |_, _| {
         if !events::shall_ignore_pending_ui_event() {
-            switch_to_slot(3).unwrap();
-            update_slot_indicator_state(&builder, 3);
+            match switch_to_slot(3) {
+                Ok(()) => update_slot_indicator_state(&builder, 3),
+                Err(e) => log::error!("Could not switch slots: {e}"),
+            }
         }
     }));
 
@@ -595,6 +614,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
     let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
+
     let about_item: gtk::MenuItem = builder.object("about_item").unwrap();
     let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
     let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
@@ -647,7 +667,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // brightness
 
     // no need to ignore events here, since handler is not connected
-    brightness_scale.set_value(util::get_brightness()? as f64);
+    brightness_scale.set_value(util::get_brightness().unwrap_or(0) as f64);
 
     brightness_scale.connect_value_changed(move |s| {
         if !events::shall_ignore_pending_ui_event() {
@@ -655,9 +675,20 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }
     });
 
-    restart_eruption_daemon_button.connect_clicked(clone!(@weak builder => move |_| {
-        util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
-    }));
+    restart_eruption_daemon_button.connect_clicked(
+        clone!(@weak application, @weak builder => move |_| {
+            // try to re-connect to eruption daemon first
+            initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
+
+            thread::sleep(Duration::from_millis(1000));
+
+            let connected = crate::dbus_client::ping().is_err();
+            if !connected {
+                // connection failed, restart the eruption daemon
+                util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
+            }
+        }),
+    );
 
     // special options
     networkfx_ambient_switch.connect_state_set(
@@ -720,30 +751,63 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }),
     );
 
-    update_main_window(&builder)?;
+    fn initialize_sub_pages_and_spawn_dbus_threads(
+        application: &gtk::Application,
+        builder: &gtk::Builder,
+    ) {
+        let _ = update_main_window(&builder).map_err(|e| {
+            eprintln!("Error updating the main window: {:?}", e);
+            e
+        });
 
-    ui::profiles::initialize_profiles_page(application, &builder)?;
-    ui::process_monitor::initialize_process_monitor_page(application, &builder)?;
-    ui::settings::initialize_settings_page(&builder)?;
+        let _ = ui::canvas::initialize_canvas_page(&builder).map_err(|e| {
+            eprintln!("Error updating the canvas page: {:?}", e);
+            e
+        });
 
-    initialize_slot_bar(&builder)?;
+        let _ = ui::profiles::initialize_profiles_page(application, &builder).map_err(|e| {
+            eprintln!("Error updating the main window: {:?}", e);
+            e
+        });
 
-    dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state)?;
-    dbus_client::spawn_dbus_event_loop_session(&builder, &|_b, m| {
-        println!("{:?}", m);
-        Ok(())
-    })?;
+        let _ = ui::process_monitor::initialize_process_monitor_page(application, &builder)
+            .map_err(|e| {
+                eprintln!("Error updating the main window: {:?}", e);
+                e
+            });
+
+        let _ = ui::settings::initialize_settings_page(&builder).map_err(|e| {
+            eprintln!("Error updating the main window: {:?}", e);
+            e
+        });
+
+        let _ = initialize_slot_bar(&builder).map_err(|e| {
+            eprintln!("Error updating the main window: {:?}", e);
+            e
+        });
+
+        let _ = dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state);
+        let _ = dbus_client::spawn_dbus_event_loop_session(&builder, &|_b, m| {
+            eprintln!("{:?}", m);
+            Ok(())
+        });
+    }
+
+    initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
 
     main_window.show_all();
 
     // should we update the GUI, e.g. were new devices attached?
-    crate::register_timer(
+    timers::register_timer(
+        timers::HOTPLUG_TIMER_ID,
         250,
         clone!(@weak application => @default-return Ok(()), move || {
             if crate::dbus_client::ping().is_err() {
                 notification_box_global.show();
 
                 events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+
+                timers::clear_timers()?;
 
                 // remove all devices sub-pages for now, until we regain the connection
                 update_main_window(&builder).unwrap();
@@ -754,8 +818,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                     // we re-established the connection to the Eruption daemon,
                     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
+                    initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
+
                     // update the GUI to show e.g. newly attached devices
-                    events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
+                    update_main_window(&builder).unwrap();
                 }
             }
 
@@ -770,7 +836,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     )?;
 
     // update the global LED color map vector
-    crate::register_timer(
+    timers::register_timer(
+        timers::COLOR_MAP_TIMER_ID,
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak application => @default-return Ok(()), move || {
             let _result = crate::update_color_map();
@@ -783,12 +850,26 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 }
 
 pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
+    let canvas_stack: gtk::Stack = builder.object("canvas_stack").unwrap();
     let keyboard_devices_stack: gtk::Stack = builder.object("keyboard_devices_stack").unwrap();
     let mouse_devices_stack: gtk::Stack = builder.object("mouse_devices_stack").unwrap();
     let misc_devices_stack: gtk::Stack = builder.object("misc_devices_stack").unwrap();
 
     // clean up all previously instantiated sub-pages
-    while !keyboard_devices_stack.children().is_empty() {
+    while canvas_stack.children().len() > 1 {
+        let child = &canvas_stack.children()[1];
+        canvas_stack.remove(child);
+    
+        unsafe {
+            child.destroy();
+        }
+    }
+
+    // hide unified canvas page
+    let child = &canvas_stack.children()[0];
+    child.hide();
+
+    while keyboard_devices_stack.children().len() > 0 {
         let child = &keyboard_devices_stack.children()[0];
         keyboard_devices_stack.remove(child);
 
@@ -816,8 +897,15 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     }
 
     if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+        let no_connection_template =
+            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-connection-template.ui");
+
         let no_device_template =
             gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-device-template.ui");
+
+        let page: gtk::Grid = no_connection_template.object("no_connection_template").unwrap();
+
+        canvas_stack.add_titled(&page, "NoConnection", "No Connection");
 
         let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
@@ -848,6 +936,20 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         let mut any_mouse_device = false;
         let mut any_misc_device = false;
 
+        // clean up all previously instantiated sub-pages on the canvas stack
+        while canvas_stack.children().len() > 1 {
+            let child = &canvas_stack.children()[1];
+            canvas_stack.remove(child);
+        
+            unsafe {
+                child.destroy();
+            }
+        }
+
+        // show unified canvas page
+        let child = &canvas_stack.children()[0];
+        child.show_all();
+
         // instantiate stack pages for all keyboard devices
         for (_device, (vid, pid)) in devices.0.iter().enumerate() {
             let template = gtk::Builder::from_resource(
@@ -855,7 +957,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
             );
 
             let page =
-                ui::keyboard::initialize_keyboard_page(builder, &template, device_index as u64)?;
+                ui::keyboards::initialize_keyboard_page(&builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",
@@ -885,7 +987,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
                 "/org/eruption/eruption-gui/ui/mouse-device-template.ui",
             );
 
-            let page = ui::mouse::initialize_mouse_page(builder, &template, device_index as u64)?;
+            let page = ui::mice::initialize_mouse_page(&builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",
@@ -938,6 +1040,8 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
 
             misc_devices_stack.add_titled(&page, "None", "None");
         }
+
+        ui::canvas::update_canvas_page(&builder)?;
 
         Ok(())
     }

@@ -17,10 +17,10 @@
 
 
 name = "Fire"
-description = "Shows a bonfire effect on the keyboard"
-version = "0.0.6"
+description = "Renders a bonfire effect"
+version = "0.1.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.24"
 tags = ['Background', 'Vendor']
 
 [[config]]

@@ -60,6 +60,10 @@ struct State {
     /// Global brightness
     brightness: i64,
 
+    canvas_hue: f64,
+    canvas_saturation: f64,
+    canvas_lightness: f64,
+
     /// Device specific brightness
     device_brightness: HashMap<DeviceMakeModelSerial, i32>,
 }
@@ -95,6 +99,9 @@ pub fn init_global_runtime_state() -> Result<()> {
         .set_default("active_slot", 0)?
         .set_default("enable_sfx", false)?
         .set_default("brightness", 85)?
+        .set_default("canvas_hue", 0.0)?
+        .set_default("canvas_saturation", 0.0)?
+        .set_default("canvas_lightness", 0.0)?
         .build()
         .map_err(|e| StateError::StateLoadError {
             description: format!("{}", e),
@@ -141,6 +148,29 @@ pub fn init_global_runtime_state() -> Result<()> {
             .unwrap() as isize,
         Ordering::SeqCst,
     );
+
+    let hue = STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get::<f64>("canvas_hue")
+        .unwrap_or(0.0);
+
+    let saturation = STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get::<f64>("canvas_saturation")
+        .unwrap_or(0.0);
+
+    let lightness = STATE
+        .read()
+        .as_ref()
+        .unwrap()
+        .get::<f64>("canvas_lightness")
+        .unwrap_or(0.0);
+
+    *crate::CANVAS_HSL.lock() = (hue, saturation, lightness);
 
     *slot_names = STATE
         .read()
@@ -269,12 +299,17 @@ pub fn save_runtime_state() -> Result<()> {
         device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
     }
 
+    let canvas_hsl = crate::CANVAS_HSL.lock();
+
     let config = State {
         active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
         slot_names: crate::SLOT_NAMES.lock().clone(),
         profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
+        canvas_hue: canvas_hsl.0,
+        canvas_saturation: canvas_hsl.1,
+        canvas_lightness: canvas_hsl.2,
         device_brightness,
     };
 

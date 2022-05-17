@@ -22,6 +22,7 @@ about = A CLI control utility for the Eruption Linux user-mode driver
 verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
 completions-about = Generate shell completions
 
+canvas-about = Configure post-processing filters of the global canvas
 config-about = Configuration related sub-commands
 devices-about = Get or set some device specific configuration parameters
 status-about = Shows the currently active profile or slot

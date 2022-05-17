@@ -21,8 +21,6 @@ name = 'Color Swirls (Perlin): Rainbow (dimmed)'
 description = 'Color Swirl effect with high contrast'
 active_scripts = [
     'swirl-perlin.lua',
-    'batique.lua',
-#   'dim-zone.lua',
     'halo.lua',
     'shockwave.lua',
 #   'impact.lua',
@@ -104,40 +102,3 @@ type = 'color'
 name = 'color_hot'
 value = 0xffff0000
 default = 0xffff0000
-
-# mouse support
-[[config.Batique]]
-type = 'int'
-name = 'zone_start'
-value = 144
-default = 144
-
-[[config.Batique]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
-
-[[config.Batique]]
-type = 'float'
-name = 'coord_scale'
-value = 0.5
-default = 0.5
-
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_start'
-value = 0
-default = 0
-
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
-
-[[config."Dim Zone"]]
-type = 'float'
-name = 'opacity'
-value = 0.9
-default = 0.9

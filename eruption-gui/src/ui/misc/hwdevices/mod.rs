@@ -32,7 +32,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnsupportedDevice,
 // }
 
-pub fn get_misc_devices(device_handle: u64) -> Result<Box<dyn MiscDevice>> {
+pub fn get_misc_device(device_handle: u64) -> Result<Box<dyn MiscDevice>> {
     let devices = dbus_client::get_managed_devices()?;
 
     match dbus_client::get_managed_devices()?

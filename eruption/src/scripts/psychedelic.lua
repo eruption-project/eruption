@@ -27,7 +27,7 @@ function on_tick(delta)
 
     -- calculate psychedelic effect
     if ticks % animation_delay == 0 then
-        for i = 1, canvas_size do
+        for i = 0, canvas_size - 1 do
             local x = i / num_rows
             local y = i / num_cols
 
@@ -36,9 +36,10 @@ function on_tick(delta)
 
             val = lerp(0, 360, val * color_boost)
 
-            color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                         color_saturation * saturation_boost,
-                                         color_lightness, lerp(0, 255, opacity))
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation * saturation_boost,
+                                   color_lightness, lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

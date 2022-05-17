@@ -32,10 +32,10 @@ function on_tick(delta)
 
     -- animate gradient
     if ticks % gradient_speed == 0 then
-        for i = 1, canvas_size do
-            color_map[i] = hsla_to_color((i * hue_multiplier) + ticks,
-                                         color_saturation, color_lightness,
-                                         lerp(0, 255, opacity))
+        for i = 0, canvas_size - 1 do
+            color_map[i + 1] = hsla_to_color((i * hue_multiplier) + ticks,
+                                             color_saturation, color_lightness,
+                                             lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

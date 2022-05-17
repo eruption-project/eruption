@@ -37,9 +37,9 @@ function on_tick(delta)
         min((get_audio_loudness() / 100) * loudness_scale_factor, 100.0)
 
     -- generate heartbeat color map values
-    local upper_bound = num_keys * (min(percentage, 100) / 100)
-    for i = 1, num_keys do
-        if i <= upper_bound then
+    local upper_bound = canvas_size * (min(percentage, 100) / 100)
+    for i = 1, canvas_size do
+        if i >= upper_bound then
             color_map[i] = color_map[i] + color_step
 
             if color_map[i] >= 0xffffffff then

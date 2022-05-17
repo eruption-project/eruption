@@ -40,21 +40,21 @@ function on_tick(delta)
 
     -- calculate turbulence swirl effect
     if ticks % animation_delay == 0 then
-        -- compute the colors in the keyboard zone on the canvas
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local val = turbulence_noise_3d(
-                                (i + (offsets[2] / 256)) / coord_scale,
-                                (j + (offsets[1] / 256)) / coord_scale,
-                                (ticks + (offsets[3] / 256)) / time_scale)
-                val = lerp(0, 360, val)
+        for i = 0, canvas_size - 1 do
+            local x = i % canvas_width
+            local y = i / canvas_width
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = hsla_to_color(
-                                       (val / color_divisor) + color_offset,
-                                       color_saturation, color_lightness,
-                                       lerp(0, 255, opacity))
-            end
+            local val = turbulence_noise_3d(
+                            (y + (offsets[2] / 256)) / coord_scale,
+                            (x + (offsets[1] / 256)) / coord_scale,
+                            (ticks + (offsets[3] / 256)) / time_scale)
+
+            val = lerp(0, 360, val)
+
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation, color_lightness,
+                                   lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

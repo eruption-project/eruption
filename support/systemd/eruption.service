@@ -4,6 +4,7 @@ Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:erupti
 Wants=basic.target
 
 [Service]
+Environment=LAUNCHED_BY_SYSTEMD=1
 Environment=RUST_LOG=warn
 RuntimeDirectory=eruption
 PIDFile=/run/eruption/eruption.pid

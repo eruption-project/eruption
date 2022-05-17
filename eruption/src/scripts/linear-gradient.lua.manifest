@@ -18,9 +18,9 @@
 
 name = "Gradient"
 description = "Display a linear color gradient"
-version = "0.0.4"
+version = "0.1.0"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.24"
 tags = ['Background', 'Vendor', 'Gradient']
 
 [[config]]

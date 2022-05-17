@@ -36,7 +36,7 @@ pub mod protocol {
 }
 
 const SOCKET_ADDRESS: &str = "/run/eruption/control.sock";
-const MAX_BUF: usize = 4096;
+const MAX_BUF: usize = 4096 * 16;
 
 #[derive(Debug, Clone)]
 pub struct LocalTransport {

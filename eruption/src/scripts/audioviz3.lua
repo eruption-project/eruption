@@ -24,7 +24,7 @@ color_map = {}
 
 ticks = 0
 column = 0
-power_envelope = 128.0
+power_envelope = 4.0
 
 -- event handler functions --
 function on_startup(config)
@@ -39,25 +39,23 @@ function on_tick(delta)
     end
 
     local spectrum = get_audio_spectrum()
-    local num_buckets = 32
-    local num_rows = max_keys_per_col
+    local num_buckets = canvas_width
 
-    for col = 1, num_cols + 1, 1 do
-        local bucket = trunc(num_buckets / num_cols * col)
-        local val = spectrum[bucket]
-        if val == nil then val = 0 end
+    for col = 1, canvas_width do
+        local bucket = trunc(num_buckets / canvas_width * col)
+        local val = n(spectrum[bucket])
 
-        local p = trunc(max(num_rows - (val / power_envelope), 0))
+        local p = trunc(max(canvas_height - (val / power_envelope), 0))
 
         -- debug("Col: " .. col .. " Value: " .. val .. " Envelope: " .. power_envelope ..
         -- 		 " Bucket: " .. bucket .. " p: " .. p)
 
-        for i = num_rows - 1, p, -1 do
-            local index = n(rows_topology[col + i * max_keys_per_row]) + 1
+        for i = canvas_height - 1, p, -1 do
+            local index = col + i * canvas_width
             color_map[index] = linear_gradient(color_hot, color_cold,
-                                               i / num_rows)
+                                               i / canvas_height)
 
-            local peak_index = n(rows_topology[col + p * max_keys_per_row]) + 1
+            local peak_index = col + p * canvas_width
             if i ~= p then
                 color_map[peak_index] = rgba_to_color(0, 0, 0,
                                                       lerp(0, 255, opacity))

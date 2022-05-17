@@ -18,7 +18,7 @@
 
 ## eruption-netfx
 
-about = -
+about = Ein Network FX Protokoll Client für Eruption
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
 

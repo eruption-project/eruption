@@ -27,17 +27,34 @@ Author: X3n0m0rph59
   <!-- interface-name Eruption -->
   <!-- interface-copyright 2019-2022 The Eruption Development Team -->
   <!-- interface-authors X3n0m0rph59 -->
+  <object class="GtkAdjustment" id="adjustment_hue">
+    <property name="upper">359</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_lightness">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
   <object class="GtkAdjustment" id="adjustment_percent">
     <property name="upper">100</property>
     <property name="value">100</property>
     <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
+    <property name="page-increment">5</property>
   </object>
   <object class="GtkAdjustment" id="adjustment_port">
     <property name="upper">65535</property>
     <property name="value">2359</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_saturation">
+    <property name="lower">-100</property>
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
   </object>
   <object class="GtkImage" id="edit_image">
     <property name="visible">True</property>
@@ -87,6 +104,11 @@ Author: X3n0m0rph59
     <property name="margin-end">4</property>
     <property name="icon-name">document-new-symbolic</property>
     <property name="icon_size">2</property>
+  </object>
+  <object class="GtkImage" id="image_reload">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">reload</property>
   </object>
   <object class="GtkImage" id="image_reload_rules">
     <property name="visible">True</property>
@@ -159,7 +181,7 @@ Author: X3n0m0rph59
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
     <property name="default-width">1440</property>
-    <property name="default-height">768</property>
+    <property name="default-height">800</property>
     <property name="icon-name">/org/eruption/eruption-gui/img/eruption-gui.png</property>
     <property name="show-menubar">False</property>
     <child>
@@ -219,7 +241,301 @@ Author: X3n0m0rph59
             <property name="can-focus">False</property>
             <property name="hhomogeneous">False</property>
             <property name="vhomogeneous">False</property>
-            <property name="interpolate-size">True</property>
+            <property name="transition-duration">100</property>
+            <property name="transition-type">crossfade</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkStack" id="canvas_stack">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="interpolate-size">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkDrawingArea" id="drawing_area_canvas">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <!-- n-columns=2 n-rows=5 -->
+                              <object class="GtkGrid">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-start">8</property>
+                                <property name="margin-end">8</property>
+                                <property name="margin-top">8</property>
+                                <property name="margin-bottom">8</property>
+                                <property name="column-spacing">8</property>
+                                <child>
+                                  <object class="GtkLabel" id="canvas_caption_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Unified Canvas Setup</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="scale" value="2"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="valign">center</property>
+                                    <property name="pixel-size">64</property>
+                                    <property name="icon-name">document-page-setup-symbolic</property>
+                                    <property name="icon_size">0</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">Hue</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">Saturation</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScale" id="canvas_saturation_scale">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="adjustment">adjustment_saturation</property>
+                                    <property name="restrict-to-fill-level">False</property>
+                                    <property name="fill-level">0</property>
+                                    <property name="digits">0</property>
+                                    <property name="value-pos">left</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">Lightness</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScale" id="canvas_lightness_scale">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="adjustment">adjustment_lightness</property>
+                                    <property name="restrict-to-fill-level">False</property>
+                                    <property name="fill-level">0</property>
+                                    <property name="digits">0</property>
+                                    <property name="value-pos">left</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="postproc_caption_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="valign">end</property>
+                                    <property name="label" translatable="yes">Image Post Processing</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="scale" value="1"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScale" id="canvas_hue_scale">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="adjustment">adjustment_hue</property>
+                                    <property name="restrict-to-fill-level">False</property>
+                                    <property name="fill-level">0</property>
+                                    <property name="round-digits">0</property>
+                                    <property name="digits">0</property>
+                                    <property name="value-pos">left</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="reset_postproc_button">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="tooltip-text" translatable="yes">Reset image post processing parameters to their default values</property>
+                                    <property name="halign">end</property>
+                                    <property name="valign">start</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="image">image_reload</property>
+                                    <property name="relief">none</property>
+                                    <property name="always-show-image">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-top">16</property>
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkLabel" id="devices_caption_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">Zone Allocation</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="scale" value="2"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeView" id="devices_tree_view">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-start">8</property>
+                                    <property name="margin-top">8</property>
+                                    <property name="headers-visible">False</property>
+                                    <property name="reorderable">True</property>
+                                    <property name="search-column">2</property>
+                                    <property name="enable-grid-lines">both</property>
+                                    <property name="enable-tree-lines">True</property>
+                                    <property name="activate-on-single-click">True</property>
+                                    <child internal-child="selection">
+                                      <object class="GtkTreeSelection"/>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="pack-type">end</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="padding">8</property>
+                            <property name="pack-type">end</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="name">page0</property>
+                        <property name="title" translatable="yes">Unified Canvas</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkStackSwitcher" id="canvas_switcher">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="stack">canvas_stack</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="padding">8</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">Unified Canvas</property>
+                <property name="icon-name">document-page-setup-symbolic</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -255,9 +571,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page0</property>
+                <property name="name">page1</property>
                 <property name="title" translatable="yes">Keyboard Devices</property>
                 <property name="icon-name">keyboard-brightness-symbolic</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -295,10 +612,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page1</property>
+                <property name="name">page2</property>
                 <property name="title" translatable="yes">Mouse Devices</property>
                 <property name="icon-name">input-mouse-symbolic</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -336,10 +653,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page2</property>
+                <property name="name">page3</property>
                 <property name="title" translatable="yes">Misc Devices</property>
                 <property name="icon-name">view-more-symbolic</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -568,10 +885,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page3</property>
+                <property name="name">page4</property>
                 <property name="title" translatable="yes">Profiles</property>
                 <property name="icon-name">folder-documents-symbolic</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -587,7 +904,7 @@ Author: X3n0m0rph59
                       <object class="GtkLabel" id="connection_failed_label">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Connection to eruption-system-monitor daemon failed</property>
+                        <property name="label" translatable="yes">Connection to eruption-process-monitor daemon failed</property>
                         <style>
                           <class name="notification"/>
                         </style>
@@ -811,10 +1128,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page4</property>
+                <property name="name">page5</property>
                 <property name="title" translatable="yes">Process Monitor</property>
                 <property name="icon-name">view-refresh-symbolic</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
             <child>
@@ -1164,10 +1481,10 @@ Author: X3n0m0rph59
                 </child>
               </object>
               <packing>
-                <property name="name">page5</property>
+                <property name="name">page6</property>
                 <property name="title" translatable="yes">Settings</property>
                 <property name="icon-name">system-run-symbolic</property>
-                <property name="position">5</property>
+                <property name="position">6</property>
               </packing>
             </child>
           </object>
@@ -1763,7 +2080,7 @@ Author: X3n0m0rph59
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="homogeneous">True</property>
-            <property name="icon-size">5</property>
+            <property name="icon-size">0</property>
             <property name="stack">main_stack</property>
           </object>
           <packing>
@@ -1813,10 +2130,10 @@ Author: X3n0m0rph59
             <property name="margin-end">92</property>
             <property name="hexpand">True</property>
             <property name="adjustment">adjustment_percent</property>
-            <property name="show-fill-level">True</property>
             <property name="fill-level">100</property>
             <property name="round-digits">0</property>
             <property name="digits">0</property>
+            <property name="draw-value">False</property>
             <property name="value-pos">right</property>
           </object>
           <packing>

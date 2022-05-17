@@ -17,10 +17,10 @@
 
 
 name = "Wave"
-description = "A wave effect"
-version = "0.0.1"
+description = "A sinusoidal Wave Effect"
+version = "0.1.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.12"
+min_supported_version = "0.1.24"
 tags = ['Effect', 'Vendor']
 
 [[config]]
@@ -57,7 +57,7 @@ name = 'wave_length'
 description = 'Wave length divisor'
 min = 0.0
 max = 1000.0
-default = 4.0
+default = 25.0
 
 [[config]]
 type = 'color'

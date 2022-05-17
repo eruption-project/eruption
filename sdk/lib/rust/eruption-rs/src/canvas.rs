@@ -18,9 +18,8 @@
 */
 
 use crate::color::Color;
+use crate::constants;
 use std::ops;
-
-const CANVAS_SIZE: usize = 144 + 36;
 
 #[derive(Debug, Default, Clone)]
 pub struct Canvas {
@@ -30,7 +29,7 @@ pub struct Canvas {
 impl Canvas {
     pub fn new() -> Self {
         Self {
-            data: vec![Color::default(); CANVAS_SIZE],
+            data: vec![Color::default(); constants::CANVAS_SIZE],
         }
     }
 

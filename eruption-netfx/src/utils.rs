@@ -17,6 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use crate::constants;
 use crate::hwdevices::KeyboardDevice;
 use image::{imageops::FilterType, GenericImageView};
 use std::path::Path;
@@ -24,24 +25,19 @@ use std::path::Path;
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Converts an image buffer to a Network FX command stream
-pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<String> {
+pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
     let img = image::load_from_memory(buffer)?;
     let img = img.resize_exact(
-        device.get_num_cols() as u32,
-        device.get_num_rows() as u32,
-        FilterType::Gaussian,
+        constants::CANVAS_WIDTH as u32,
+        constants::CANVAS_HEIGHT as u32,
+        FilterType::Lanczos3,
     );
 
-    for x in 0..device.get_num_cols() {
-        for y in 0..device.get_num_rows() {
-            let key_index: usize =
-                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
-
-            if !(1..=device.get_num_keys()).contains(&key_index) {
-                continue;
-            }
+    for y in 0..constants::CANVAS_HEIGHT {
+        for x in 0..constants::CANVAS_WIDTH {
+            let index: usize = x + (y * (constants::CANVAS_WIDTH));
 
             let pixel = img.get_pixel(x as u32, y as u32);
 
@@ -50,7 +46,7 @@ pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<St
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", key_index, r, g, b, a);
+            result += &format!("{}:{}:{}:{}:{}\n", index, r, g, b, a);
         }
     }
 
@@ -58,26 +54,21 @@ pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<St
 }
 
 /// Loads and converts an image file to a Network FX command stream
-pub fn process_image_file<P: AsRef<Path>>(filename: P, device: &KeyboardDevice) -> Result<String> {
+pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice) -> Result<String> {
     let mut result = String::new();
 
     let filename = filename.as_ref();
 
     let img = image::open(&filename)?;
     let img = img.resize_exact(
-        device.get_num_cols() as u32,
-        device.get_num_rows() as u32,
-        FilterType::Gaussian,
+        constants::CANVAS_WIDTH as u32,
+        constants::CANVAS_HEIGHT as u32,
+        FilterType::Lanczos3,
     );
 
-    for x in 0..device.get_num_cols() {
-        for y in 0..device.get_num_rows() {
-            let key_index: usize =
-                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
-
-            if !(1..=device.get_num_keys()).contains(&key_index) {
-                continue;
-            }
+    for y in 0..constants::CANVAS_HEIGHT {
+        for x in 0..constants::CANVAS_WIDTH {
+            let index: usize = x + (y * constants::CANVAS_WIDTH);
 
             let pixel = img.get_pixel(x as u32, y as u32);
 
@@ -86,7 +77,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, device: &KeyboardDevice) 
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", key_index, r, g, b, a);
+            result += &format!("{}:{}:{}:{}:{}\n", index, r, g, b, a);
         }
     }
 

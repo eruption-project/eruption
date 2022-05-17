@@ -20,11 +20,12 @@
 pub mod canvas;
 pub mod color;
 pub mod connection;
+pub mod constants;
 pub mod hardware;
 pub mod transport;
 pub mod util;
 
 pub const SDK_NAME: &str = "Eruption SDK";
-pub const SDK_VERSION: &str = "0.0.2";
+pub const SDK_VERSION: &str = "0.0.3";
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;

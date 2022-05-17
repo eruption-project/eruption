@@ -163,7 +163,7 @@ pub fn stop_or_kill_eruption_daemon() -> Result<()> {
         match status {
             Ok(status) => {
                 if status.success() {
-                    log::info!("Eruption has been killed successfully, exiting now");
+                    log::info!("Eruption has been killed successfully");
 
                     break 'WAIT_KILL_LOOP Ok(());
                 } else {

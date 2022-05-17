@@ -38,29 +38,25 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- calculate perlin swirl effect
+    -- calculate domain coloring effect
     if ticks % animation_delay == 0 then
-        -- compute the colors in the keyboard zone on the canvas
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local x = (i + (offsets[2] / 256)) / coord_scale
-                local y = (j + (offsets[1] / 256)) / coord_scale
-                local z = (ticks / time_scale + (offsets[3] / 256))
+        for i = 0, canvas_size - 1 do
+            local x = (i % canvas_width + (offsets[2] / 256)) / coord_scale
+            local y = (i / canvas_width + (offsets[1] / 256)) / coord_scale
+            local z = (ticks / time_scale + (offsets[3] / 256))
 
-                local m = sqrt(x * x + y * y)
-                local t = atan2(y, x)
+            local m = sqrt(x * x + y * y)
+            local t = atan2(y, x)
 
-                z = cos(sqrt(z * z))
+            z = cos(sqrt(z * z))
 
-                val = m * t * z
-                val = lerp(0, 360, val)
+            val = m * t * z
+            val = lerp(0, 360, val)
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = hsla_to_color(
-                                       (val / color_divisor) + color_offset,
-                                       color_saturation, color_lightness,
-                                       lerp(0, 255, opacity))
-            end
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation, color_lightness,
+                                   lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)

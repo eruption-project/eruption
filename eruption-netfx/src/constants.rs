@@ -25,6 +25,15 @@ pub const DEFAULT_HOST: &str = "localhost";
 /// Default port number
 pub const DEFAULT_PORT: u16 = 2359;
 
+/// The width of the canvas
+pub const CANVAS_WIDTH: usize = 128;
+
+/// The height of the canvas
+pub const CANVAS_HEIGHT: usize = 64;
+
+/// The number of "pixels" on the canvas
+pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
+
 /// Default delay between images, used for animation mode
 pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
 

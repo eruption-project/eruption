@@ -92,7 +92,7 @@ type = 'int'
 name = 'zone_start'
 description = 'Zone on the canvas to paint to (start index)'
 min = 0
-max = 144
+max = 8192
 default = 0
 
 [[config]]
@@ -100,5 +100,5 @@ type = 'int'
 name = 'zone_end'
 description = 'Zone on the canvas to paint to (end index)'
 min = 0
-max = 144
-default = 180
+max = 8192
+default = 8192

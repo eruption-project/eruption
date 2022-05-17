@@ -267,6 +267,96 @@ pub fn set_brightness(brightness: i64) -> Result<()> {
     Ok(())
 }
 
+/// Get the current canvas hue value
+pub fn get_canvas_hue() -> Result<f64> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = proxy.get("org.eruption.Canvas", "Hue")?;
+
+    Ok(result)
+}
+
+/// Set the current canvas hue value
+pub fn set_canvas_hue(value: f64) -> Result<()> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let arg = Box::new(value as f64);
+
+    proxy.set("org.eruption.Canvas", "Hue", arg)?;
+
+    Ok(())
+}
+
+/// Get the current canvas saturation value
+pub fn get_canvas_saturation() -> Result<f64> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = proxy.get("org.eruption.Canvas", "Saturation")?;
+
+    Ok(result)
+}
+
+/// Set the current canvas saturation value
+pub fn set_canvas_saturation(value: f64) -> Result<()> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let arg = Box::new(value as f64);
+
+    proxy.set("org.eruption.Canvas", "Saturation", arg)?;
+
+    Ok(())
+}
+
+/// Get the current canvas lightness value
+pub fn get_canvas_lightness() -> Result<f64> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = proxy.get("org.eruption.Canvas", "Lightness")?;
+
+    Ok(result)
+}
+
+/// Set the current canvas lightness value
+pub fn set_canvas_lightness(value: f64) -> Result<()> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/canvas",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let arg = Box::new(value as f64);
+
+    proxy.set("org.eruption.Canvas", "Lightness", arg)?;
+
+    Ok(())
+}
+
 /// Get the device specific status
 pub fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
     let conn = Connection::new_system()?;

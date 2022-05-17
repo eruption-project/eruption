@@ -668,23 +668,22 @@ function update_overlay_state()
     elseif overlay_state == VOLUME_OVERLAY then
         -- generate color map values
         local percentage = clamp(get_audio_volume(), 0, 100)
-        local highlight_columns = (num_cols + 1) * percentage / 100
-
-        -- compute which keys to highlight
-        local upper_bound = 1
-        for i = 1, highlight_columns do
-            upper_bound = n(upper_bound) + n(keys_per_col[i])
-        end
+        local highlight_columns = canvas_width * percentage / 100
 
         -- fill background
-        for i = 1, num_keys do
+        for i = 1, canvas_size do
             color_map_overlay[i] = rgb_to_color(16, 16, 16)
         end
 
         -- render volume level as highlight
-        for i = 1, num_keys do
-            if i < upper_bound then
-                color_map_overlay[i] = rgb_to_color(255, 255, 255)
+        for x = 0, highlight_columns - 1 do
+            for y = 0, canvas_height - 1 do
+                local index = canvas_width * y + x + 1
+                local p = x / canvas_width
+
+                color_map_overlay[index] = linear_gradient(
+                                               rgba_to_color(0, 255, 0, 255),
+                                               rgba_to_color(255, 0, 0, 255), p)
             end
         end
     end
@@ -721,7 +720,7 @@ function on_tick(delta)
     if ticks % animation_delay == 0 or force_update then
         force_update = false
 
-        for i = 1, num_keys do
+        for i = 1, canvas_size do
             -- key highlight effect
             if highlight_ttl > 0 then
                 r, g, b, a = color_to_rgba(color_map_highlight[i])

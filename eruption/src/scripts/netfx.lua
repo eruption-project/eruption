@@ -21,6 +21,7 @@ require "debug"
 
 -- global state variables --
 color_map = {}
+
 server = nil
 conn = nil
 initialized = false
@@ -111,10 +112,12 @@ function on_tick(delta)
             end
         else
             -- receive and process data
-            local data, status
+            local data, status, part
 
             repeat
-                data, status = conn:receive("*l")
+                msg, status, part = conn:receive("*l")
+
+                data = msg -- or part
 
                 if data ~= nil then
                     trace("Network FX: Request: " .. data)
@@ -127,7 +130,7 @@ function on_tick(delta)
                         return
                     elseif data == "STATUS" then
                         conn:send(
-                            "Eruption Network FX / Protocol version: 1.0\n")
+                            "Eruption Network FX / Protocol version: 1.1\n")
                         return
                     end
 
@@ -173,7 +176,7 @@ function on_tick(delta)
                             else
                                 -- set a single pixel on the canvas to a specific color
                                 local num = tonumber(components[idx])
-                                if n(num) > 0 and n(num) <= canvas_size then
+                                if n(num) >= 0 and n(num) <= canvas_size then
                                     local index = tonumber(components[idx])
                                     color_map[index] = color
                                 else

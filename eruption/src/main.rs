@@ -179,6 +179,9 @@ lazy_static! {
     /// Global "driver maturity level" param
     pub static ref DRIVER_MATURITY_LEVEL: Arc<Mutex<MaturityLevel>> = Arc::new(Mutex::new(MaturityLevel::Stable));
 
+    /// Global are we "launched by systemd" status flag
+    pub static ref LAUNCHED_BY_SYSTEMD: AtomicBool = AtomicBool::new(false);
+
 
     /// Global "enable SDK support" flag
     pub static ref SDK_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -189,11 +192,11 @@ lazy_static! {
 
     // Other state
 
-    /// Global "keyboard brightness" modifier
+    /// Global brightness modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
-    /// Global "keyboard brightness" modifier
-    pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+    /// Canvas post-processing parameters
+    pub static ref CANVAS_HSL: Arc<Mutex<(f64, f64, f64)>> = Arc::new(Mutex::new((0.0, 0.0, 0.0)));
 
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
@@ -664,6 +667,10 @@ fn run_main_loop(
 
     let mut saved_brightness = BRIGHTNESS.load(Ordering::SeqCst);
 
+    let mut saved_hue = CANVAS_HSL.lock().0;
+    let mut saved_saturation = CANVAS_HSL.lock().1;
+    let mut saved_lightness = CANVAS_HSL.lock().2;
+
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
@@ -810,6 +817,33 @@ fn run_main_loop(
                 .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
             saved_brightness = current_brightness;
+        }
+
+        // post-processing parameters changed?
+        let current_hsl = *CANVAS_HSL.lock();
+
+        if current_hsl.0 != saved_hue {
+            dbus_api_tx
+                .send(DbusApiEvent::HueChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            saved_hue = current_hsl.0;
+        }
+
+        if current_hsl.1 != saved_saturation {
+            dbus_api_tx
+                .send(DbusApiEvent::SaturationChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            saved_saturation = current_hsl.1;
+        }
+
+        if current_hsl.2 != saved_lightness {
+            dbus_api_tx
+                .send(DbusApiEvent::LightnessChanged)
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            saved_lightness = current_hsl.2;
         }
 
         // user is AFK?
@@ -1049,15 +1083,17 @@ fn run_main_loop(
             );
         } */
 
-        // notify the software watchdog that we are still "alive"
-        if watchdog_time.elapsed() >= Duration::from_millis(constants::WATCHDOG_NOTIFY_MILLIS) {
-            let result =
-                systemd::daemon::notify(false, [(systemd::daemon::STATE_WATCHDOG, "1")].iter());
-            if result.is_err() || !result.unwrap() {
-                error!("Could not notify the systemd software watchdog");
-            }
+        if LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
+            // notify the software watchdog that we are still "alive"
+            if watchdog_time.elapsed() >= Duration::from_millis(constants::WATCHDOG_NOTIFY_MILLIS) {
+                let result =
+                    systemd::daemon::notify(false, [(systemd::daemon::STATE_WATCHDOG, "1")].iter());
+                if result.is_err() || !result.unwrap() {
+                    error!("Could not notify the systemd software watchdog");
+                }
 
-            watchdog_time = Instant::now();
+                watchdog_time = Instant::now();
+            }
         }
 
         // shall we quit the main loop?
@@ -1460,6 +1496,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
+    // are we being launched by Systemd?
+    LAUNCHED_BY_SYSTEMD.store(
+        env::vars().any(|a| a == ("LAUNCHED_BY_SYSTEMD".to_string(), "1".to_string())),
+        Ordering::SeqCst,
+    );
+
     // start the thread deadlock detector
     #[cfg(debug_assertions)]
     thread_util::deadlock_detector()
@@ -1477,6 +1519,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             "release"
         }
     );
+
+    if !LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
+        log::warn!("We are not being launched by Systemd, the software watchdog will not be enabled unless you run it manually using `eruption-watchdog`");
+    }
 
     // register ctrl-c handler
     let (ctrl_c_tx, ctrl_c_rx) = unbounded();

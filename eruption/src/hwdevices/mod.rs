@@ -1019,7 +1019,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 
@@ -1063,7 +1063,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 
@@ -1104,7 +1104,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 
@@ -1317,7 +1317,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 
@@ -1358,7 +1358,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 
@@ -1399,7 +1399,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                                 }
                             } else {
                                 warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf respectively");
+                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                             }
                         }
 

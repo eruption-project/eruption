@@ -76,20 +76,19 @@ pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 /// Target frames per second
 pub const TARGET_FPS: u64 = 24;
 
-/// Fade in on profile switch for n frames
-pub const FADE_FRAMES: u64 = 32;
+/// The width of the canvas (max. reasonable value approx. 128)
+/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
+pub const CANVAS_WIDTH: usize = 64;
+
+/// The height of the canvas (max. reasonable value approx. 128)
+/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
+pub const CANVAS_HEIGHT: usize = 32;
 
 /// The number of "pixels" on the canvas
-pub const CANVAS_SIZE: usize = 144 + 36;
+pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 
-/// The width of the canvas
-pub const CANVAS_WIDTH: usize = 22 + 8;
-
-/// The height of the canvas
-pub const CANVAS_HEIGHT: usize = 6;
-
-/// The capacity of the buffer used for receiving audio samples
-pub const NET_BUFFER_CAPACITY: usize = 4096;
+/// The capacity of the buffer used for receiving audio samples as well as control messages
+pub const NET_BUFFER_CAPACITY: usize = 4096 * 16;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;

@@ -51,15 +51,15 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         time_offset = easing(sin(ticks / speed))
 
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local val = perlin_noise((i + (offsets[2] / 256)) / coord_scale,
-                                         (j + (offsets[1] / 256)) / coord_scale,
+        for j = 0, canvas_height - 1 do
+            for i = 0, canvas_width - 1 do
+                local val = perlin_noise((i + (offsets[1] / 256)) / coord_scale,
+                                         (j + (offsets[2] / 256)) / coord_scale,
                                          time_offset + (offsets[3] / 256) /
                                              time_scale)
                 val = lerp(0, 360, val)
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
+                local index = i + 1 + (j * canvas_width)
                 color_map[index] = hsla_to_color(
                                        (val / color_divisor) + color_offset,
                                        color_saturation, color_lightness,

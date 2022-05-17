@@ -32,7 +32,7 @@ function on_tick(delta)
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        for i = zone_start, zone_end do
+        for i = 1, zone_end do
             local x = i / (zone_end - zone_start)
             local y = i / (zone_end - zone_start)
 

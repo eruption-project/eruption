@@ -19,6 +19,7 @@
 
 pub mod animal;
 pub mod audio;
+pub mod canvas;
 pub mod introspection;
 pub mod keyboard;
 pub mod macros;
@@ -33,6 +34,7 @@ pub mod uleds;
 
 pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
+pub use canvas::CanvasPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
 pub use macros::MacrosPlugin;
@@ -67,6 +69,10 @@ pub fn register_plugins() -> Result<()> {
     let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
 
     // Base plugins
+    let _ = plugin_manager
+        .register_plugin(Box::new(CanvasPlugin::new()))
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
     let _ = plugin_manager
         .register_plugin(Box::new(KeyboardPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));

@@ -98,6 +98,7 @@ lazy_static! {
     static ref ABOUT: String = tr!("about");
     static ref VERBOSE_ABOUT: String = tr!("verbose-about");
     static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+    static ref CANVAS_ABOUT: String = tr!("canvas-about");
     static ref CONFIG_ABOUT: String = tr!("config-about");
     static ref DEVICES_ABOUT: String = tr!("devices-about");
     static ref STATUS_ABOUT: String = tr!("status-about");
@@ -135,6 +136,12 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
+    #[clap(about(CANVAS_ABOUT.as_str()))]
+    Canvas {
+        #[clap(subcommand)]
+        command: CanvasSubcommands,
+    },
+
     #[clap(about(CONFIG_ABOUT.as_str()))]
     Config {
         #[clap(subcommand)]
@@ -189,6 +196,19 @@ pub enum Subcommands {
         // #[clap(subcommand)]
         shell: Shell,
     },
+}
+
+/// Sub-commands of the "canvas" command
+#[derive(Debug, clap::Parser)]
+pub enum CanvasSubcommands {
+    /// Get or set the global 'hue' adjustment during canvas post-processing
+    Hue { hue: Option<f64> },
+
+    /// Get or set the global 'saturation' adjustment during canvas post-processing
+    Saturation { saturation: Option<f64> },
+
+    /// Get or set the global 'lightness' adjustment during canvas post-processing
+    Lightness { lightness: Option<f64> },
 }
 
 /// Sub-commands of the "config" command
@@ -520,6 +540,72 @@ pub async fn set_brightness(brightness: i64) -> Result<()> {
     Ok(())
 }
 
+/// Get the current canvas hue value
+pub async fn get_canvas_hue() -> Result<f64> {
+    let result = dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .get("org.eruption.Canvas", "Hue")
+        .await?;
+
+    Ok(result)
+}
+
+/// Set the current canvas hue value
+pub async fn set_canvas_hue(value: f64) -> Result<()> {
+    let arg = Box::new(value as f64);
+
+    dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .set("org.eruption.Canvas", "Hue", arg)
+        .await?;
+
+    Ok(())
+}
+
+/// Get the current canvas saturation value
+pub async fn get_canvas_saturation() -> Result<f64> {
+    let result = dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .get("org.eruption.Canvas", "Saturation")
+        .await?;
+
+    Ok(result)
+}
+
+/// Set the current canvas saturation value
+pub async fn set_canvas_saturation(value: f64) -> Result<()> {
+    let arg = Box::new(value as f64);
+
+    dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .set("org.eruption.Canvas", "Saturation", arg)
+        .await?;
+
+    Ok(())
+}
+
+/// Get the current canvas lightness value
+pub async fn get_canvas_lightness() -> Result<f64> {
+    let result = dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .get("org.eruption.Canvas", "Lightness")
+        .await?;
+
+    Ok(result)
+}
+
+/// Set the current canvas lightness value
+pub async fn set_canvas_lightness(value: f64) -> Result<()> {
+    let arg = Box::new(value as f64);
+
+    dbus_system_bus("/org/eruption/canvas")
+        .await?
+        .set("org.eruption.Canvas", "Lightness", arg)
+        .await?;
+
+    Ok(())
+}
+
 /// Returns true when SoundFX is enabled
 pub async fn get_sound_fx() -> Result<bool> {
     let result = dbus_system_bus("/org/eruption/config")
@@ -674,6 +760,57 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     *CONFIG.lock() = Some(config);
 
     match opts.command {
+        // canvas related sub-commands
+        Subcommands::Canvas { command } => match command {
+            CanvasSubcommands::Hue { hue } => {
+                if let Some(hue) = hue {
+                    set_canvas_hue(hue)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                } else {
+                    let result = get_canvas_hue()
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                    println!("{}", format!("Hue: {}", format!("{}", result).bold()));
+                }
+            }
+
+            CanvasSubcommands::Saturation { saturation } => {
+                if let Some(saturation) = saturation {
+                    set_canvas_saturation(saturation)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                } else {
+                    let result = get_canvas_saturation()
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                    println!(
+                        "{}",
+                        format!("Saturation: {}", format!("{}", result).bold())
+                    );
+                }
+            }
+
+            CanvasSubcommands::Lightness { lightness } => {
+                if let Some(lightness) = lightness {
+                    set_canvas_lightness(lightness)
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                } else {
+                    let result = get_canvas_lightness()
+                        .await
+                        .wrap_err("Could not connect to the Eruption daemon")
+                        .suggestion("Please verify that the Eruption daemon is running")?;
+                    println!("{}", format!("Lightness: {}", format!("{}", result).bold()));
+                }
+            }
+        },
+
         // configuration related sub-commands
         Subcommands::Config { command } => match command {
             ConfigSubcommands::Brightness { brightness } => {

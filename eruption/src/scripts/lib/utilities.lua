@@ -59,5 +59,35 @@ function key_index(x, y)
         error("Utilities: Coordinate out of bounds: x or y")
     end
 
-    return n(rows_topology[22 * y + x]) + 1
+    return n(rows_topology[max_keys_per_row * y + x]) + 1
+end
+
+-- map the key index to an index into the unified canvas
+function key_index_to_canvas(key_index)
+    index = n2(position(rows_topology, key_index), 0)
+
+    local x = n(trunc(index % max_keys_per_row)) - 1
+    local y = n(trunc(round(index / max_keys_per_row))) - 1
+
+    local scale_x = 1 -- canvas_width / max_keys_per_row
+    local scale_y = 1 -- canvas_height / max_keys_per_col
+
+    local result = n(trunc((canvas_width * y * scale_y) + (x * scale_x)))
+
+    -- debug("x: " .. x .. "  y: " .. y .. " result: " .. result)
+
+    return result
+end
+
+function position(table, val)
+    local position = nil
+
+    for k, v in pairs(table) do
+        if v == val then
+            position = k
+            break
+        end
+    end
+
+    return position
 end

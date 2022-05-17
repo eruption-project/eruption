@@ -25,7 +25,6 @@ active_scripts = [
     'shockwave.lua',
 #   'water.lua',
 #   'raindrops.lua',
-#   'dim-zone.lua',
     'macros.lua',
 #   'stats.lua',
 ]
@@ -59,22 +58,3 @@ type = 'string'
 name = 'requires'
 value = 'macros/starcraft2'
 default = 'macros/starcraft2'
-
-# dim a specific zone, e.g. if the mouse LEDs are too bright
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_start'
-value = 144
-default = 144
-
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
-
-[[config."Dim Zone"]]
-type = 'float'
-name = 'opacity'
-value = 0.95
-default = 0.95

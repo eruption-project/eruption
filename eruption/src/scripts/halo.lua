@@ -96,9 +96,11 @@ local function update_key_states()
         local pressed = get_key_state(key_index)
 
         if pressed then
-            color_map_afterglow[key_index] = color_afterglow
+            local index = key_index_to_canvas(key_index) + 1
 
-            grid[key_index] = 1.0
+            color_map_afterglow[index] = color_afterglow
+
+            grid[index] = 1.0
 
             if key_index ~= 0 then
                 for i = 1, max_neigh do
@@ -108,7 +110,7 @@ local function update_key_states()
                                           1
 
                     if neigh_key ~= 0xff then
-                        grid[neigh_key] = 1.5
+                        grid[index] = 1.5
                     end
                 end
             end
@@ -124,45 +126,43 @@ function on_tick(delta)
     update_key_states()
 
     -- compute halo effect
-    for key_index = 1, canvas_size do
+    for index = 1, canvas_size do
         local epsilon = 0.1
-        if grid[key_index] >= epsilon then
-            grid[key_index - 1] = grid[key_index] - 0.25
+        if grid[index] >= epsilon then
+            grid[index - 1] = grid[index] - 0.25
 
             -- compute colors
-            local color = hsl_to_color(lerp(0, 360, sin(grid[key_index])) +
+            local color = hsl_to_color(lerp(0, 360, sin(grid[index])) +
                                            ((ticks % 360) * 3), 1.0, 0.5)
 
             local r, g, b, a = color_to_rgba(color)
-            color_map[key_index] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
+            color_map[index] = rgba_to_color(r, g, b, lerp(0, 255, opacity))
         else
-            grid[key_index - 1] = 0.0
-            color_map[key_index] = 0x000000000
+            grid[index - 1] = 0.0
+            color_map[index] = 0x000000000
         end
 
         -- compute effects
-        if color_map_effects[key_index] > 0x00000000 then
-            color_map_effects[key_index] =
-                color_map_effects[key_index] - 0x0a0a0a0a
-            color_map[key_index] = color_map[key_index] +
-                                       color_map_effects[key_index]
+        if color_map_effects[index] > 0x00000000 then
+            color_map_effects[index] = color_map_effects[index] - 0x0a0a0a0a
+            color_map[index] = color_map[index] + color_map_effects[index]
         else
-            color_map_effects[key_index] = 0x00000000
+            color_map_effects[index] = 0x00000000
         end
 
         -- compute afterglow
-        if color_map_afterglow[key_index] > 0x00000000 then
-            color_map_afterglow[key_index] =
-                color_map_afterglow[key_index] - color_step_afterglow
-            color_map[key_index] = color_map_afterglow[key_index]
+        if color_map_afterglow[index] > 0x00000000 then
+            color_map_afterglow[index] =
+                color_map_afterglow[index] - color_step_afterglow
+            color_map[key_index] = color_map_afterglow[index]
         else
-            color_map_afterglow[key_index] = 0x00000000
+            color_map_afterglow[index] = 0x00000000
         end
 
         -- safety net
-        if color_map[key_index] == nil or color_map[key_index] < 0x00000000 or
-            color_map[key_index] > 0xffffffff then
-            color_map[key_index] = 0x00000000
+        if color_map[index] == nil or color_map[index] < 0x00000000 or
+            color_map[index] > 0xffffffff then
+            color_map[index] = 0x00000000
         end
     end
 

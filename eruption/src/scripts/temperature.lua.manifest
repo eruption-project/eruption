@@ -17,8 +17,8 @@
 
 
 name = "Temperature"
-description = "Make the keyboard reflect the system temperature"
-version = "0.0.4"
+description = "Make the canvas reflect the system temperature"
+version = "0.0.5"
 author = "The Eruption Development Team"
 min_supported_version = "0.0.12"
 tags = ['Background', 'Vendor', 'Demo']

@@ -24,9 +24,9 @@ ticks = 0
 
 -- utility functions --
 local function place_raindrop()
-    local key = rand(0, num_keys)
+    local index = rand(0, canvas_size)
 
-    color_map[key] = rgba_to_color(255, 255, 255, lerp(0, 255, opacity))
+    color_map[index] = rgba_to_color(255, 255, 255, lerp(0, 255, opacity))
 end
 
 -- event handler functions --
@@ -42,7 +42,7 @@ function on_tick(delta)
 
     -- fade out raindrops
     if ticks % raindrop_step == 0 then
-        for i = 1, num_keys do
+        for i = 1, canvas_size do
             if color_map[i] > 0x00000000 then
                 r, g, b, alpha = color_to_rgba(color_map[i])
                 alpha = alpha - 10

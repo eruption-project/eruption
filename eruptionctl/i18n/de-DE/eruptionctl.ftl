@@ -22,6 +22,7 @@ about = Ein CLI utility für den Eruption Linux Benutzermodus Treiber
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
 
+canvas-about = Nachbearbeitungs-Filter für die globale Leinwand konfigurieren
 config-about = Laufzeit Konfiguration des Eruption Daemons bearbeiten
 devices-about = Gerätespezifische Konfiguration bearbeiten
 status-about = Zeigt das aktuell aktive Profil oder den Slot

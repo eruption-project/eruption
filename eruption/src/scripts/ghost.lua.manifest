@@ -18,9 +18,9 @@
 
 name = "Ghost"
 description = "Show randomized ghost typing"
-version = "0.0.1"
+version = "0.1.0"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.1.24"
 tags = ['Effect', 'Vendor']
 
 [[config]]

@@ -323,6 +323,7 @@ impl SdkSupportPlugin {
     pub fn start_control_thread() -> Result<()> {
         let builder = thread::Builder::new().name("control".into());
         builder
+            // .stack_size(4096 * 8)
             .spawn(move || loop {
                 if crate::QUIT.load(Ordering::SeqCst) {
                     break;

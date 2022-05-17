@@ -35,12 +35,12 @@ use super::{
 
 pub type Result<T> = super::Result<T>;
 
-pub const NUM_KEYS: usize = 96;
+pub const NUM_KEYS: usize = 82;
 
 pub const NUM_ROWS: usize = 6;
-pub const NUM_COLS: usize = 16;
+pub const NUM_COLS: usize = 17;
 
-pub const LED_INDICES: usize = 127;
+pub const LED_INDICES: usize = 96;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -807,12 +807,43 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
+                        // #[inline]
+                        // fn index_to_canvas(index: usize) -> usize {
+                        //     let index = index.clamp(0, COLS_TOPOLOGY.len()) as usize;
+
+                        //     if index < COLS_TOPOLOGY.len() - 1 {
+                        //         COLS_TOPOLOGY[index] as usize
+                        //     } else {
+                        //         log::trace!("Non-mappable index: {index}");
+
+                        //         index
+                        //     }
+                        // }
+
+                        #[inline]
+                        fn index_to_canvas(index: usize) -> usize {
+                            let index = ROWS_TOPOLOGY
+                                .iter()
+                                .position(|e| *e as usize == index)
+                                .unwrap_or(0);
+
+                            let x = index % NUM_COLS;
+                            let y = index / NUM_COLS;
+
+                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
+                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
+
+                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
+
+                            result.clamp(0, constants::CANVAS_SIZE - 1)
+                        }
+
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
 
                         let mut buffer: [u8; 448] = [0; 448];
                         for i in 0..LED_INDICES {
-                            let color = led_map[i];
+                            let color = led_map[index_to_canvas(i)];
                             let offset = ((i / 12) * 36) + (i % 12);
 
                             buffer[offset] =

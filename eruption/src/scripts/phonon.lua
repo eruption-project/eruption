@@ -33,7 +33,7 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
     -- initialize scalar field
-    for i = 1, num_keys do grid[i] = 0.0 end
+    for i = 1, canvas_size do grid[i] = 0.0 end
 end
 
 function on_key_up(key_index)

@@ -186,6 +186,7 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 
 ## Available Plugins
 
+* Canvas: Canvas related functions
 * Keyboard: Keyboard related functions
 * Mouse: Mouse related functions
 * System: Basic system information and status, like e.g. running processes. Execute external commands, ...

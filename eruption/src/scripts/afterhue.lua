@@ -16,6 +16,7 @@
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -43,9 +44,11 @@ local function update_key_states()
         local pressed = get_key_state(key_index)
 
         if pressed then
-            hue_map[key_index] = 359
-            color_map[key_index] = hsla_to_color(hue_map[key_index], 1.0, 0.5,
-                                                 lerp(0, 255, opacity))
+            local index = key_index_to_canvas(key_index) + 1
+
+            hue_map[index] = 359
+            color_map[index] = hsla_to_color(hue_map[index], 1.0, 0.5,
+                                             lerp(0, 255, opacity))
         end
     end
 end

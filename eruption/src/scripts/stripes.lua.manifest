@@ -18,9 +18,9 @@
 
 name = "Stripes"
 description = "Display horizontal stripes of multiple colors (HSL color space)"
-version = "0.0.3"
+version = "0.1.0"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.2"
+min_supported_version = "0.1.24"
 tags = ['Vendor', 'Gradient']
 
 [[config]]

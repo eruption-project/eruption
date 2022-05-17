@@ -18,12 +18,13 @@
 */
 
 use crate::constants;
+use crate::timers;
 use crate::util;
 use glib_macros::clone;
 use gtk::glib;
 use gtk::prelude::{BuilderExtManual, LabelExt, ProgressBarExt, RangeExt, WidgetExt};
 
-mod hwdevices;
+pub mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -105,7 +106,8 @@ pub fn initialize_keyboard_page(
     });
 
     // near realtime update path
-    crate::register_timer(
+    timers::register_timer(
+        timers::KEYBOARD_TIMER_ID,
         139,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
@@ -142,11 +144,15 @@ pub fn initialize_keyboard_page(
         }),
     )?;
 
-    crate::register_timer(1000 / (constants::TARGET_FPS * 2), move || {
-        drawing_area.queue_draw();
+    timers::register_timer(
+        timers::KEYBOARD_RENDER_TIMER_ID,
+        1000 / (constants::TARGET_FPS * 2),
+        move || {
+            drawing_area.queue_draw();
 
-        Ok(())
-    })?;
+            Ok(())
+        },
+    )?;
 
     Ok(keyboard_device_page)
 }

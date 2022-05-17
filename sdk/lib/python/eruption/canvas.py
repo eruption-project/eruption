@@ -18,7 +18,7 @@
 
 from eruption.color import Color
 
-CANVAS_SIZE = 144 + 36
+CANVAS_SIZE = 128 * 48
 
 
 class Canvas:

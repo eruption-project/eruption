@@ -21,6 +21,7 @@ use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
 use log::{debug, error, info, trace, warn};
+use palette::{FromColor, Hsva, Hue, Saturate, Shade, Srgba};
 use std::fs::File;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -42,6 +43,11 @@ pub enum DbusApiEvent {
     ActiveProfileChanged,
     ActiveSlotChanged,
     BrightnessChanged,
+
+    HueChanged,
+    SaturationChanged,
+    LightnessChanged,
+
     DeviceStatusChanged,
     DeviceHotplug((u16, u16), bool),
 }
@@ -78,6 +84,10 @@ pub fn spawn_dbus_api_thread(
                         DbusApiEvent::ActiveSlotChanged => dbus.notify_active_slot_changed()?,
 
                         DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed()?,
+
+                        DbusApiEvent::HueChanged => dbus.notify_hue_changed()?,
+                        DbusApiEvent::SaturationChanged => dbus.notify_saturation_changed()?,
+                        DbusApiEvent::LightnessChanged => dbus.notify_lightness_changed()?,
 
                         DbusApiEvent::DeviceStatusChanged => dbus.notify_device_status_changed()?,
 
@@ -685,11 +695,13 @@ pub fn spawn_lua_thread(
         return Err(MainError::ScriptExecError {}.into());
     }
 
-    let builder = thread::Builder::new().name(format!(
-        "{}:{}",
-        thread_idx,
-        script_path.file_name().unwrap().to_string_lossy(),
-    ));
+    let builder = thread::Builder::new()
+        // .stack_size(4096 * 32)
+        .name(format!(
+            "{}:{}",
+            thread_idx,
+            script_path.file_name().unwrap().to_string_lossy(),
+        ));
 
     builder.spawn(move || -> Result<()> {
         #[cfg(feature = "profiling")]
@@ -770,7 +782,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // instruct Lua VMs to realize their color maps,
                             // e.g. to blend their local color maps with the canvas
-                            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+                            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.read().len().saturating_sub(FAILED_TXS.read().len());
 
                             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
                                 // if this tx failed previously, then skip it completely
@@ -856,6 +868,36 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     "Pending blend ops before writing LED map to device: {}",
                                     ops_pending
                                         );
+                            }
+
+                            // apply global post-processing
+                            let hsl = *crate::CANVAS_HSL.lock();
+
+                            let hue_value = hsl.0;
+                            let saturation_value = hsl.1 / 100.0;
+                            let lighten_value = hsl.2 / 100.0;
+
+                            for (_idx, color_val) in script::LED_MAP.write().iter_mut().enumerate() {
+                                let color = Srgba::new(
+                                    color_val.r as f64 / 255.0,
+                                    color_val.g as f64 / 255.0,
+                                    color_val.b as f64 / 255.0,
+                                    color_val.a as f64 / 255.0,
+                                );
+
+                                let color = Hsva::from_color(color);
+                                let color = Srgba::from_color(
+                                    color
+                                        .shift_hue(hue_value)
+                                        .saturate(saturation_value)
+                                        .lighten(lighten_value),
+                                )
+                                .into_components();
+
+                                color_val.r = (color.0 * 255.0) as u8;
+                                color_val.g = (color.1 * 255.0) as u8;
+                                color_val.b = (color.2 * 255.0) as u8;
+                                color_val.a = (color.3 * 255.0) as u8;
                             }
 
                             // send the final (combined) color map to all of the devices

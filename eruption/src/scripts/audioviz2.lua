@@ -44,7 +44,7 @@ function on_tick(delta)
     local l = loudness / max_loudness
     local color_angle = lerp(0, 360, l)
 
-    if column > max_keys_per_row then column = 0 end
+    if column > canvas_width then column = 0 end
 
     local color = hsl_to_color(color_angle, 1.0, 0.5)
     for i = 1, num_rows - 1 do color_map[column * num_rows + i] = color end

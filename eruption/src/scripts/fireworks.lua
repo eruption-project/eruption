@@ -30,9 +30,9 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 0, canvas_size do color_map[i] = 0x00000000 end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
-    for i = 0, num_keys do fireworks_grid[i] = 0.0 end
+    for i = 1, num_keys do fireworks_grid[i] = 0.0 end
 end
 
 function on_key_down(key_index) effect_ttl = max_effect_ttl end

@@ -81,7 +81,7 @@ pub enum MainError {
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    about = "A Network FX protocol client for the Eruption Linux user-mode driver",
+    about = "A Network FX protocol client for Eruption",
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)

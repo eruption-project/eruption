@@ -37,9 +37,9 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         local angle = open_simplex_noise_2d(ticks / time_scale, 42)
 
-        for i = 1, canvas_size do
-            local x = i / canvas_width
-            local y = i / canvas_height
+        for i = 0, canvas_size - 1 do
+            local x = i % canvas_width
+            local y = i / canvas_width
 
             local x2 = (cos(angle) * x) - (sin(angle) * y)
             local y2 = (sin(angle) * x) + (cos(angle) * y)
@@ -50,9 +50,10 @@ function on_tick(delta)
                             (ticks + (offsets[3] / 256)) / time_scale)
             val = lerp(0, 360, val)
 
-            color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                         color_saturation, color_lightness,
-                                         lerp(0, 255, opacity))
+            color_map[i + 1] = hsla_to_color(
+                                   (val / color_divisor) + color_offset,
+                                   color_saturation, color_lightness,
+                                   lerp(0, 255, opacity))
         end
 
         submit_color_map(color_map)
