@@ -46,13 +46,13 @@ pretty_env_logger = "0.4.0"
 lazy_static = "1.4.0"
 thread_local = "1.1.4"
 dyn-clonable = "0.9.0"
-libc = "0.2.125"
+libc = "0.2.126"
 memmap2 = "0.5.3"
 nix = "0.24.1"
 tempfile = "3.3.0"
 rayon = "1.5.3"
 jwalk = "0.6.0"
-parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.18.2", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
@@ -67,7 +67,7 @@ image = "0.24.2"
 smithay-client-toolkit = { version = "0.15.4", optional = true }
 x11 = { version = "2.19.1", features = ["xlib", "xrandr"], optional = true }
 x11rb = { version = "0.9.0", features = ["allow-unsafe-code"], optional = true }
-wayland-client = { version = "0.30.0-alpha9", optional = true }
+wayland-client = { version = "0.30.0-beta.3", optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.0"

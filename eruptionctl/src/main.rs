@@ -890,7 +890,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         .load_preset(UTF8_FULL)
                         .apply_modifier(UTF8_ROUND_CORNERS)
                         .set_content_arrangement(ContentArrangement::Dynamic)
-                        .set_table_width(40)
+                        .set_width(40)
                         .set_header(vec!["Parameter", "Value"]);
 
                     // counts the number of lines that we printed
