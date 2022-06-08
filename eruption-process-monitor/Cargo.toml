@@ -39,7 +39,7 @@ sensor-mutter = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.53"
+async-trait = "0.1.56"
 byteorder = "1.4.3"
 clap =  { version = "3.1.18", features = ["derive"] }
 clap_complete = "3.1.4"
@@ -60,7 +60,7 @@ parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 regex = "1.5.6"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
-tokio = { version = "1.18.2", features = ["full"] }
+tokio = { version = "1.19.2", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
@@ -82,4 +82,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-tokio = { version = "1.18.2", features = ["test-util"] }
+tokio = { version = "1.19.2", features = ["test-util"] }

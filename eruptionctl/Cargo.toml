@@ -42,12 +42,12 @@ libc = "0.2.126"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
-tokio = { version = "1.18.2", features = ["full"] }
+tokio = { version = "1.19.2", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
 config = "0.13.1"
-uuid = { version = "1.1.0", features = ["serde", "v4"] }
+uuid = { version = "1.1.1", features = ["serde", "v4"] }
 toml = "0.5.9"
 thiserror = "1.0.31"
 eyre = "0.6.8"
@@ -64,4 +64,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-tokio = { version = "1.18.2", features = ["test-util"] }
+tokio = { version = "1.19.2", features = ["test-util"] }
