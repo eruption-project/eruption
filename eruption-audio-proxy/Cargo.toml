@@ -34,7 +34,7 @@ clap =  { version = "3.1.18", features = ["derive"] }
 clap_complete = "3.1.4"
 serde = { version = "1.0.137", features = ["derive"] }
 lazy_static = "1.4.0"
-flume = "0.10.12"
+flume = "0.10.13"
 log = "0.4.17"
 syslog = "6.0.1"
 pretty_env_logger = "0.4.0"

@@ -326,9 +326,9 @@ dependencies = [
 
 [[package]]
 name = "cbindgen"
-version = "0.24.2"
+version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30d7a0c9cbd32a86bd907051146240f6c69a96fa2a837ac84ad884b791cf1d37"
+checksum = "a6358dedf60f4d9b8db43ad187391afe959746101346fe51bb978126bec61dfb"
 dependencies = [
  "clap",
  "heck",
@@ -1194,7 +1194,7 @@ dependencies = [
  "thread_local",
  "tokio",
  "unic-langid",
- "wayland-client 0.30.0-beta.3",
+ "wayland-client 0.30.0-beta.4",
  "x11",
  "x11rb",
 ]
@@ -1521,9 +1521,9 @@ dependencies = [
 
 [[package]]
 name = "flume"
-version = "0.10.12"
+version = "0.10.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "843c03199d0c0ca54bc1ea90ac0d507274c28abcc4f691ae8b4eaa375087c76a"
+checksum = "1ceeb589a3157cac0ab8cc585feb749bd2cea5cb55a6ee802ad72d9fd38303da"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -2706,9 +2706,9 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.8.0-beta.5"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bb054c5769e1aeb137554b95941e997b62d17f5265bef213cb63179d75a6bf6"
+checksum = "d75eb178f8a9d6654ef31f094fb3da6d1e81e714f27007e92a3094ddd6587aa2"
 dependencies = [
  "bstr",
  "cc",
@@ -4154,15 +4154,15 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "strum"
-version = "0.24.0"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e96acfc1b70604b8b2f1ffa4c57e59176c7dbb05d556c71ecd2f5498a1dee7f8"
+checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
 
 [[package]]
 name = "strum_macros"
-version = "0.24.0"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6878079b17446e4d3eba6192bb0a2950d5b14f0ed8424b852310e5a94345d0ef"
+checksum = "9550962e7cf70d9980392878dfaf1dcc3ece024f4cf3bf3c46b978d0bad61d6c"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4184,9 +4184,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.24.2"
+version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a2809487b962344ca55d9aea565f9ffbcb6929780802217acc82561f6746770"
+checksum = "6e6241cec618592e5d52f7ed0c8abba0cd1969a5aa4be7b5351281d922113e1d"
 dependencies = [
  "cfg-if 1.0.0",
  "core-foundation-sys",
@@ -4413,9 +4413,9 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.34"
+version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d0ecdcb44a79f0fe9844f0c4f33a342cbcbb5117de8001e6ba0dc2351327d09"
+checksum = "a400e31aa60b9d44a52a8ee0343b5b18566b03a8321e0d321f695cf56e940160"
 dependencies = [
  "cfg-if 1.0.0",
  "pin-project-lite",
@@ -4534,9 +4534,9 @@ checksum = "55bcbb425141152b10d5693095950b51c3745d019363fc2929ffd8f61449b628"
 
 [[package]]
 name = "uuid"
-version = "1.1.1"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6d5d669b51467dcf7b2f1a796ce0f955f05f01cafda6c19d6e95f730df29238"
+checksum = "dd6469f4314d5f1ffec476e05f17cc9a78bc7a27a6a857842170bdf8d6f98d2f"
 dependencies = [
  "getrandom 0.2.6",
  "serde",
@@ -4651,9 +4651,9 @@ checksum = "d554b7f530dee5964d9a9468d95c1f8b8acae4f282807e7d27d4b03099a46744"
 
 [[package]]
 name = "wayland-backend"
-version = "0.1.0-beta.3"
+version = "0.1.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee0502f3c3c258b4afa4af0a23a37022e39f3b19473ba8577e1e8eebd4a8175c"
+checksum = "d53af59d7350735c2a8157f2ddf8d1f75931f867b6f483734ef8f3f86ddf0fd3"
 dependencies = [
  "cc",
  "downcast-rs",
@@ -4661,7 +4661,7 @@ dependencies = [
  "nix 0.24.1",
  "scoped-tls",
  "smallvec",
- "wayland-sys 0.30.0-beta.3",
+ "wayland-sys 0.30.0-beta.4",
 ]
 
 [[package]]
@@ -4682,9 +4682,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-client"
-version = "0.30.0-beta.3"
+version = "0.30.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9817d458e9eaadf8cd279e1bd8d8dbebecf1226ba7dbc503d7a1b5d1850a8ec5"
+checksum = "d131d216660e8a80e0bd35a54416afb9332dbb05f419d0c04525c16f63d2438f"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -4692,7 +4692,7 @@ dependencies = [
  "nix 0.24.1",
  "thiserror",
  "wayland-backend",
- "wayland-scanner 0.30.0-beta.3",
+ "wayland-scanner 0.30.0-beta.4",
 ]
 
 [[package]]
@@ -4743,9 +4743,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-scanner"
-version = "0.30.0-beta.3"
+version = "0.30.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47fa94bcf5700de28c9849ce9d8442ff686ff0f4314e3fecac1412a4fb576e44"
+checksum = "204323991a87e1c1f1a59cb613075775e944af497aa5515edd040de99e01723f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4766,9 +4766,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-sys"
-version = "0.30.0-beta.3"
+version = "0.30.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60f68ccbd50692c338be609b568286b9567ad35b4fd0b1ea3e8bb7a14a7b9bc2"
+checksum = "d27ea40a9942d6f38baa7f67afbcaa003c7d7769702d810b50fadbe0fdcaed2f"
 dependencies = [
  "dlib",
  "log",
@@ -4928,15 +4928,25 @@ dependencies = [
 
 [[package]]
 name = "x11rb"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e99be55648b3ae2a52342f9a870c0e138709a3493261ce9b469afe6e4df6d8a"
+checksum = "dd6f76eafe9aaf10d0a27525bb0a27ece2969d8b2e447d328e319b35e92c76e3"
 dependencies = [
  "gethostname",
  "libc",
- "nix 0.22.3",
+ "nix 0.24.1",
  "winapi 0.3.9",
  "winapi-wsapoll",
+ "x11rb-protocol",
+]
+
+[[package]]
+name = "x11rb-protocol"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56b245751c0ac9db0e006dc812031482784e434630205a93c73cfefcaabeac67"
+dependencies = [
+ "nix 0.24.1",
 ]
 
 [[package]]

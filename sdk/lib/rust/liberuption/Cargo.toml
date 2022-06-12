@@ -53,5 +53,5 @@ thiserror = "1.0.31"
 
 
 [build-dependencies]
-cbindgen = "0.24.2"
+cbindgen = "0.24.3"
 prost-build = "0.10.4"
