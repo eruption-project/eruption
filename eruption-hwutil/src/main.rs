@@ -279,7 +279,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     // process configuration file
     let config_file = opts
         .config
-        .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
+        .unwrap_or_else(|| constants::DEFAULT_CONFIG_FILE.to_string());
 
     let config = Config::builder()
         .add_source(config::File::new(&config_file, config::FileFormat::Toml))
