@@ -103,12 +103,12 @@ impl CustomSerialLeds {
                 b'a',
                 0x00,
                 NUM_LEDS as u8,
-                0x00 ^ NUM_LEDS as u8 ^ 0x55,
+                NUM_LEDS as u8 ^ 0x55,
             ]);
 
             let mut cntr = 0;
             for e in led_map[0..NUM_LEDS].iter() {
-                buffer[HEADER_OFFSET + cntr + 0] = e.r;
+                buffer[HEADER_OFFSET + cntr] = e.r;
                 buffer[HEADER_OFFSET + cntr + 1] = e.g;
                 buffer[HEADER_OFFSET + cntr + 2] = e.b;
 

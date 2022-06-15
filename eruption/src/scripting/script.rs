@@ -1784,16 +1784,16 @@ fn register_script_config(
                 ConfigParam::String { name, default, .. } => {
                     if let Some(profile) = profile {
                         if let Some(val) = profile.get_string_value(script_name, name) {
-                            globals.raw_set::<&str, &str>(name, &*val)?;
+                            globals.raw_set::<&str, &str>(name, val)?;
                         } else {
                             debug!("Parameter is undefined, using defaults from script manifest");
 
-                            globals.raw_set::<&str, &str>(name, &*default)?;
+                            globals.raw_set::<&str, &str>(name, default)?;
                         }
                     } else {
                         warn!("Active profile is undefined, using config parameters from script manifest");
 
-                        globals.raw_set::<&str, &str>(name, &*default)?;
+                        globals.raw_set::<&str, &str>(name, default)?;
                     }
                 }
 

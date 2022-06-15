@@ -99,7 +99,7 @@ pub struct RGBA {
 }
 
 /// A Keyboard HID event
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum KeyboardHidEvent {
     Unknown,
 
@@ -120,7 +120,7 @@ pub enum KeyboardHidEvent {
 
 /// Event code of a device HID message
 #[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum KeyboardHidEventCode {
     Unknown(u8),
 

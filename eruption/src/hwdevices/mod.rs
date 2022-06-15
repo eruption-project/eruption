@@ -441,7 +441,7 @@ pub struct RGBA {
 }
 
 /// A Keyboard HID event
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum KeyboardHidEvent {
     Unknown,
 
@@ -467,7 +467,7 @@ pub enum KeyboardHidEvent {
 
 /// Event code of a device HID message
 #[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum KeyboardHidEventCode {
     Unknown(u8),
 
@@ -488,7 +488,7 @@ pub enum KeyboardHidEventCode {
 }
 
 /// A Mouse HID event
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MouseHidEvent {
     Unknown,
 
@@ -566,7 +566,7 @@ impl DeviceInfo {
 }
 
 /// Generic Device status information, like e.g.: 'signal strength' or 'battery level'
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DeviceStatus(pub HashMap<String, String>);
 
 impl std::ops::Deref for DeviceStatus {

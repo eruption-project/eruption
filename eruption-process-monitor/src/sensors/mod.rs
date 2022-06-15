@@ -141,7 +141,7 @@ pub fn register_sensors() -> Result<()> {
 #[allow(dead_code)]
 pub fn find_sensor_by_id(id: &str) -> Option<Box<dyn Sensor + Send + Sync + 'static>> {
     match SENSORS.lock().iter().find(|&e| e.get_id() == id) {
-        Some(s) => Some(dyn_clone::clone_box(&(*s.as_ref()))),
+        Some(s) => Some(dyn_clone::clone_box(s.as_ref())),
 
         None => None,
     }

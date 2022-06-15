@@ -227,12 +227,12 @@ impl MiscDeviceTrait for CustomSerialLeds {
                     b'a',
                     0x00,
                     NUM_LEDS as u8,
-                    0x00 ^ NUM_LEDS as u8 ^ 0x55,
+                    NUM_LEDS as u8 ^ 0x55,
                 ]);
 
                 let mut cntr = 0;
                 for e in led_map[0..NUM_LEDS].iter() {
-                    buffer[HEADER_OFFSET + cntr + 0] =
+                    buffer[HEADER_OFFSET + cntr] =
                         (e.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
                     buffer[HEADER_OFFSET + cntr + 1] =
                         (e.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;

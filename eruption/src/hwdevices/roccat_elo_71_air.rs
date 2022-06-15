@@ -88,7 +88,7 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum QueryResult {
     Ok,
     Invalid,

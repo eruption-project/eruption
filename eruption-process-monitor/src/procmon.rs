@@ -25,7 +25,7 @@ pub struct ProcMon {
     nls: i32,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EventType {
     Nothing,
     Fork,

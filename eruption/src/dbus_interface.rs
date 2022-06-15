@@ -132,7 +132,7 @@ impl DbusApi {
             .property::<u64, _>("ActiveSlot", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::ACTIVE_SLOT.load(Ordering::SeqCst) as u64;
@@ -150,7 +150,7 @@ impl DbusApi {
             .property::<String, _>("ActiveProfile", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::ACTIVE_PROFILE.lock();
@@ -174,7 +174,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     i.append(audio::ENABLE_SFX.load(Ordering::SeqCst));
@@ -185,7 +185,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     audio::ENABLE_SFX.store(i.read::<bool>()?, Ordering::SeqCst);
@@ -204,7 +204,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::BRIGHTNESS.load(Ordering::SeqCst) as i64;
@@ -216,7 +216,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     crate::BRIGHTNESS.store(i.read::<i64>()? as isize, Ordering::SeqCst);
@@ -236,7 +236,7 @@ impl DbusApi {
             .access(Access::Read)
             // .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
@@ -281,7 +281,7 @@ impl DbusApi {
                                     .emits_changed(EmitsChangedSignal::True)
                                     .on_get(|i, m| {
                                         if perms::has_monitor_permission_cached(
-                                            &m.msg.sender().unwrap().to_string(),
+                                            &m.msg.sender().unwrap(),
                                         )
                                         .unwrap_or(false)
                                         {
@@ -293,7 +293,7 @@ impl DbusApi {
                                     })
                                     .on_set(|i, m| {
                                         if perms::has_settings_permission_cached(
-                                            &m.msg.sender().unwrap().to_string(),
+                                            &m.msg.sender().unwrap(),
                                         )
                                         .unwrap_or(false)
                                         {
@@ -311,7 +311,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetLedColors", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -338,7 +338,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -415,7 +415,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("SetDeviceConfig", (), move |m| {
                                     if perms::has_settings_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -443,7 +443,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetDeviceConfig", (), move |m| {
                                     if perms::has_settings_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -471,7 +471,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetDeviceStatus", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -493,7 +493,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetManagedDevices", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -581,7 +581,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("WriteFile", (), move |m| {
                                     if perms::has_manage_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -608,7 +608,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("Ping", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -623,7 +623,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("PingPrivileged", (), move |m| {
                                     if perms::has_manage_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -647,7 +647,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("SwitchSlot", (), move |m| {
                                     if perms::has_settings_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -694,7 +694,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("GetSlotProfiles", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -720,7 +720,7 @@ impl DbusApi {
                                     .auto_emit_on_set(true)
                                     .on_get(|i, m| {
                                         if perms::has_monitor_permission_cached(
-                                            &m.msg.sender().unwrap().to_string(),
+                                            &m.msg.sender().unwrap(),
                                         )
                                         .unwrap_or(false)
                                         {
@@ -734,7 +734,7 @@ impl DbusApi {
                                     })
                                     .on_set(|i, m| {
                                         if perms::has_settings_permission_cached(
-                                            &m.msg.sender().unwrap().to_string(),
+                                            &m.msg.sender().unwrap(),
                                         )
                                         .unwrap_or(false)
                                         {
@@ -765,7 +765,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("SwitchProfile", (), move |m| {
                                     if perms::has_settings_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -810,7 +810,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("EnumProfiles", (), move |m| {
                                     if perms::has_monitor_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {
@@ -840,7 +840,7 @@ impl DbusApi {
                             .add_m(
                                 f.method("SetParameter", (), move |m| {
                                     if perms::has_settings_permission_cached(
-                                        &m.msg.sender().unwrap().to_string(),
+                                        &m.msg.sender().unwrap(),
                                     )
                                     .unwrap_or(false)
                                     {

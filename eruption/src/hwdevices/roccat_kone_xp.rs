@@ -67,7 +67,7 @@ pub const LED_22: usize = constants::CANVAS_SIZE - 14;
 
 // stripes
 pub const LED_23: usize = constants::CANVAS_SIZE - 36;
-pub const LED_24: usize = constants::CANVAS_SIZE - 0;
+pub const LED_24: usize = constants::CANVAS_SIZE;
 
 pub const LED_25: usize = constants::CANVAS_SIZE - 35;
 pub const LED_26: usize = constants::CANVAS_SIZE - 1;
@@ -88,7 +88,7 @@ pub const LED_35: usize = constants::CANVAS_SIZE - 35;
 pub const LED_36: usize = constants::CANVAS_SIZE - 1;
 
 pub const LED_37: usize = constants::CANVAS_SIZE - 36;
-pub const LED_38: usize = constants::CANVAS_SIZE - 0;
+pub const LED_38: usize = constants::CANVAS_SIZE;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(

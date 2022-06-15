@@ -386,7 +386,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
 
-                ui::profiles::update_profile_state(&builder)?;
+                ui::profiles::update_profile_state(builder)?;
             }
 
             dbus_client::Message::SlotNamesChanged(ref names) => {
@@ -415,7 +415,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                             if *profile == file {
                                 // found a match
-                                combo_box.set_active_iter(Some(&iter));
+                                combo_box.set_active_iter(Some(iter));
 
                                 true
                             } else {
@@ -434,7 +434,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                             if *profile == file {
                                 // found a match
-                                combo_box.set_active_iter(Some(&iter));
+                                combo_box.set_active_iter(Some(iter));
 
                                 true
                             } else {
@@ -453,7 +453,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                             if *profile == file {
                                 // found a match
-                                combo_box.set_active_iter(Some(&iter));
+                                combo_box.set_active_iter(Some(iter));
 
                                 true
                             } else {
@@ -472,7 +472,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                             if *profile == file {
                                 // found a match
-                                combo_box.set_active_iter(Some(&iter));
+                                combo_box.set_active_iter(Some(iter));
 
                                 true
                             } else {
@@ -487,7 +487,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::reenable_ui_events();
 
                 STATE.write().active_profile = Some(profile.clone());
-                ui::profiles::update_profile_state(&builder)?;
+                ui::profiles::update_profile_state(builder)?;
             }
 
             dbus_client::Message::BrightnessChanged(brightness) => {
@@ -518,12 +518,12 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
             dbus_client::Message::RulesChanged => {
                 log::info!("Process monitor ruleset has changed");
-                ui::process_monitor::update_rules_view(&builder)?;
+                ui::process_monitor::update_rules_view(builder)?;
             }
 
             dbus_client::Message::DeviceHotplug(_device_info) => {
                 log::info!("A device has been hotplugged/removed");
-                ui::main::update_main_window(&builder).unwrap();
+                ui::main::update_main_window(builder).unwrap();
             }
         }
     }
@@ -572,12 +572,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     );
 
     application.add_main_option(
-        &"configuration",
+        "configuration",
         glib::Char::try_from('c').unwrap(),
         OptionFlags::NONE,
         OptionArg::String,
-        &"The configuration file to use",
-        Some(&constants::DEFAULT_CONFIG_FILE),
+        "The configuration file to use",
+        Some(constants::DEFAULT_CONFIG_FILE),
     );
 
     application.connect_handle_local_options(|_application, opts| {
@@ -585,12 +585,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         let config_file = opts
             .lookup_value("configuration", None)
             .map(|v| v.str().unwrap().to_owned())
-            .unwrap_or(constants::DEFAULT_CONFIG_FILE.to_string());
+            .unwrap_or_else(|| constants::DEFAULT_CONFIG_FILE.to_string());
 
         let config_file = if config_file.trim().is_empty() {
             constants::DEFAULT_CONFIG_FILE.to_string()
         } else {
-            config_file.to_string()
+            config_file
         };
 
         let config = Config::builder()

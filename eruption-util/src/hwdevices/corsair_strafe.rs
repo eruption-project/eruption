@@ -427,19 +427,19 @@ impl DeviceTrait for CorsairStrafe {
                         for i in 0..NUM_KEYS {
                             let offset = i * 3;
                             let color = led_map[i];
-                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.r);
+                            bitvec[offset..(offset + 3)].store(255_u8 - color.r);
                         }
 
                         for i in 0..NUM_KEYS {
                             let offset = i * 3 + (NUM_KEYS * 3);
                             let color = led_map[i];
-                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.g);
+                            bitvec[offset..(offset + 3)].store(255_u8 - color.g);
                         }
 
                         for i in 0..NUM_KEYS {
                             let offset = i * 3 + (NUM_KEYS * 6);
                             let color = led_map[i];
-                            bitvec[(offset + 0)..(offset + 3)].store(255_u8 - color.b);
+                            bitvec[offset..(offset + 3)].store(255_u8 - color.b);
                         }
 
                         for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {

@@ -79,7 +79,7 @@ mod backends {
 
         fn play_sfx(&self, id: u32) -> Result<()>;
 
-        fn play_samples(&self, data: &Vec<u8>) -> Result<()>;
+        fn play_samples(&self, data: &[u8]) -> Result<()>;
         fn record_samples(&self) -> Result<()>;
     }
 
@@ -88,6 +88,17 @@ mod backends {
         pub player_handle: Arc<RwLock<Option<Simple>>>,
         pub is_playback_open: bool,
         pub is_recorder_open: bool,
+    }
+
+    impl Default for PulseAudioBackend {
+        fn default() -> Self {
+            Self {
+                recorder_handle: Arc::new(RwLock::new(None)),
+                player_handle: Arc::new(RwLock::new(None)),
+                is_playback_open: false,
+                is_recorder_open: false,
+            }
+        }
     }
 
     impl PulseAudioBackend {
@@ -289,7 +300,7 @@ mod backends {
             }
         }
 
-        fn play_samples(&self, data: &Vec<u8>) -> Result<()> {
+        fn play_samples(&self, data: &[u8]) -> Result<()> {
             if let Some(player) = &*self.player_handle.read() {
                 player.write(data).map_err(|e| AudioError::PlayerError {
                     description: format!("Error during playback: {}", e),

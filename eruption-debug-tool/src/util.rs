@@ -168,7 +168,7 @@ pub fn parse_report_id(src: &str) -> std::result::Result<u8, ParseIntError> {
     if let Some(stripped) = src.strip_prefix("0x") {
         u8::from_str_radix(stripped, 16)
     } else {
-        u8::from_str_radix(src, 10)
+        src.parse()
     }
 }
 
@@ -184,7 +184,7 @@ pub fn parse_hex_vec(src: &str) -> Result<Vec<u8>> {
             let val = if let Some(stripped) = e.strip_prefix("0x") {
                 u8::from_str_radix(stripped, 16)
             } else {
-                u8::from_str_radix(e, 10)
+                e.parse()
             }?;
 
             result.push(val);
