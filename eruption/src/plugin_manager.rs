@@ -48,14 +48,14 @@ impl PluginManager {
     }
 
     /// Register a plugin with the system
-    pub async fn register_plugin(&mut self, mut plugin: Box<PluginType>) -> Result<()> {
+    pub fn register_plugin(&mut self, mut plugin: Box<PluginType>) -> Result<()> {
         info!(
             "Registering plugin: {} - {}",
             plugin.get_name(),
             plugin.get_description()
         );
 
-        plugin.initialize().await.map_err(|e| {
+        plugin.initialize().map_err(|e| {
             error!(
                 "Initialization failed for plugin '{}': {}",
                 plugin.get_name(),

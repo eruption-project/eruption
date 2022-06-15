@@ -377,7 +377,7 @@ impl Plugin for AnimalPlugin {
         "Simulation of organic movements (support library)".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

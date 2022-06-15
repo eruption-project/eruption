@@ -609,7 +609,7 @@ impl Plugin for SdkSupportPlugin {
         "Support for the Eruption SDK".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Self::initialize_socket()?;
         Self::start_control_thread()?;
 

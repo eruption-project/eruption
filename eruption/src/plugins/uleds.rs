@@ -129,7 +129,7 @@ impl Plugin for UledsPlugin {
         "Linux Userspace LEDs interface".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         let filename = PathBuf::from("/dev/uleds");
 
         if util::file_exists(&filename) {

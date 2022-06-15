@@ -73,7 +73,7 @@ impl Plugin for ProfilesPlugin {
         "Switch profiles based on system state".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

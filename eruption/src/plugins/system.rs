@@ -120,7 +120,7 @@ impl Plugin for SystemPlugin {
         "Basic system information and status".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

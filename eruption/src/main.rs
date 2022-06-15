@@ -1546,7 +1546,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             // initialize plugins
             info!("Registering plugins...");
             plugins::register_plugins()
-                .await
                 .unwrap_or_else(|_e| error!("Could not register one or more plugins"));
 
             // load plugin state from disk

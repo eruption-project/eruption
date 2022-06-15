@@ -659,7 +659,7 @@ impl Plugin for MacrosPlugin {
         "Inject programmable keyboard and mouse events".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Self::spawn_uinput_thread()?;
 
         Ok(())

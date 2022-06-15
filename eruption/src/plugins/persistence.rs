@@ -231,7 +231,7 @@ impl Plugin for PersistencePlugin {
         "A storage and persistence layer for Lua Scripts".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

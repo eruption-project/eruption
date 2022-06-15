@@ -32,7 +32,7 @@ pub trait Plugin: Any {
     fn get_description(&self) -> String;
 
     /// Called upon initialization of the plugin
-    async fn initialize(&mut self) -> Result<()>;
+    fn initialize(&mut self) -> Result<()>;
 
     /// Register supplied lua functions and extensions
     fn register_lua_funcs(&self, lua_ctx: &Lua) -> mlua::Result<()>;

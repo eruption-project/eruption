@@ -49,7 +49,7 @@ impl Plugin for MousePlugin {
         "Mouse related functions".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         Ok(())
     }
 

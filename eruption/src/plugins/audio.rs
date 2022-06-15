@@ -176,7 +176,7 @@ impl Plugin for AudioPlugin {
         "Audio related functions".to_string()
     }
 
-    async fn initialize(&mut self) -> plugins::Result<()> {
+    fn initialize(&mut self) -> plugins::Result<()> {
         start_audio_proxy_thread()?;
 
         events::register_observer(|event: &events::Event| {
