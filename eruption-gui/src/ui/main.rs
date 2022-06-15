@@ -55,7 +55,7 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
     let mut found = false;
 
     treestore.foreach(|model, _path, iter| {
-        let file = model.value(&iter, 2).to_value().get::<String>().unwrap();
+        let file = model.value(iter, 2).to_value().get::<String>().unwrap();
         let path = PathBuf::from(&file);
 
         if slot_profile_path == path {
@@ -188,9 +188,9 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot1_combo.pack_start(&cell_renderer_name, true);
 
-    slot1_combo.add_attribute(&cell_renderer_id, &"text", 0);
-    slot1_combo.add_attribute(&cell_renderer_name, &"text", 1);
-    slot1_combo.add_attribute(&cell_renderer_filename, &"text", 2);
+    slot1_combo.add_attribute(&cell_renderer_id, "text", 0);
+    slot1_combo.add_attribute(&cell_renderer_name, "text", 1);
+    slot1_combo.add_attribute(&cell_renderer_filename, "text", 2);
 
     slot1_combo.set_model(Some(&profiles_treestore));
     slot1_combo.show_all();
@@ -215,9 +215,9 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot2_combo.pack_start(&cell_renderer_name, true);
 
-    slot2_combo.add_attribute(&cell_renderer_id, &"text", 0);
-    slot2_combo.add_attribute(&cell_renderer_name, &"text", 1);
-    slot2_combo.add_attribute(&cell_renderer_filename, &"text", 2);
+    slot2_combo.add_attribute(&cell_renderer_id, "text", 0);
+    slot2_combo.add_attribute(&cell_renderer_name, "text", 1);
+    slot2_combo.add_attribute(&cell_renderer_filename, "text", 2);
 
     slot2_combo.set_model(Some(&profiles_treestore));
     slot2_combo.show_all();
@@ -242,9 +242,9 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot3_combo.pack_start(&cell_renderer_name, true);
 
-    slot3_combo.add_attribute(&cell_renderer_id, &"text", 0);
-    slot3_combo.add_attribute(&cell_renderer_name, &"text", 1);
-    slot3_combo.add_attribute(&cell_renderer_filename, &"text", 2);
+    slot3_combo.add_attribute(&cell_renderer_id, "text", 0);
+    slot3_combo.add_attribute(&cell_renderer_name, "text", 1);
+    slot3_combo.add_attribute(&cell_renderer_filename, "text", 2);
 
     slot3_combo.set_model(Some(&profiles_treestore));
     slot3_combo.show_all();
@@ -269,9 +269,9 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot4_combo.pack_start(&cell_renderer_name, true);
 
-    slot4_combo.add_attribute(&cell_renderer_id, &"text", 0);
-    slot4_combo.add_attribute(&cell_renderer_name, &"text", 1);
-    slot4_combo.add_attribute(&cell_renderer_filename, &"text", 2);
+    slot4_combo.add_attribute(&cell_renderer_id, "text", 0);
+    slot4_combo.add_attribute(&cell_renderer_name, "text", 1);
+    slot4_combo.add_attribute(&cell_renderer_filename, "text", 2);
 
     slot4_combo.set_model(Some(&profiles_treestore));
     slot4_combo.show_all();
@@ -704,7 +704,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 });
 
                 if let Some(saved_profile) = &crate::STATE.read().saved_profile {
-                    let _result = util::switch_profile(&saved_profile);
+                    let _result = util::switch_profile(saved_profile);
                 }
             }
 
@@ -790,7 +790,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     let misc_devices_stack: gtk::Stack = builder.object("misc_devices_stack").unwrap();
 
     // clean up all previously instantiated sub-pages
-    while keyboard_devices_stack.children().len() > 0 {
+    while !keyboard_devices_stack.children().is_empty() {
         let child = &keyboard_devices_stack.children()[0];
         keyboard_devices_stack.remove(child);
 
@@ -799,7 +799,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
     }
 
-    while mouse_devices_stack.children().len() > 0 {
+    while !mouse_devices_stack.children().is_empty() {
         let child = &mouse_devices_stack.children()[0];
         mouse_devices_stack.remove(child);
 
@@ -808,7 +808,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
     }
 
-    while misc_devices_stack.children().len() > 0 {
+    while !misc_devices_stack.children().is_empty() {
         let child = &misc_devices_stack.children()[0];
         misc_devices_stack.remove(child);
 
@@ -857,7 +857,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
             );
 
             let page =
-                ui::keyboard::initialize_keyboard_page(&builder, &template, device_index as u64)?;
+                ui::keyboard::initialize_keyboard_page(builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",
@@ -887,7 +887,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
                 "/org/eruption/eruption-gui/ui/mouse-device-template.ui",
             );
 
-            let page = ui::mouse::initialize_mouse_page(&builder, &template, device_index as u64)?;
+            let page = ui::mouse::initialize_mouse_page(builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",
@@ -917,7 +917,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
                 "/org/eruption/eruption-gui/ui/misc-device-template.ui",
             );
 
-            let page = ui::misc::initialize_misc_page(&builder, &template, device_index as u64)?;
+            let page = ui::misc::initialize_misc_page(builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",

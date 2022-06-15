@@ -430,7 +430,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     let mut script_dirs = script_dirs
         .iter()
-        .map(|e| PathBuf::from(e))
+        .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
     result.append(&mut script_dirs);
@@ -490,8 +490,7 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
                 &PathBuf::from(&constants::DEFAULT_PROFILE_DIR),
                 "netfx.profile",
             )
-            .to_string_lossy()
-            .to_string(),
+            .to_string_lossy(),
         )?;
 
         thread::sleep(Duration::from_millis(constants::PROCESS_SPAWN_WAIT_MILLIS));

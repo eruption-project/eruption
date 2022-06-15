@@ -241,7 +241,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
         if !selection.is_empty() {
             for p in selection.iter() {
-                rules_treestore.remove(&rules_treestore.iter(&p).unwrap());
+                rules_treestore.remove(&rules_treestore.iter(p).unwrap());
             }
 
             if let Err(e) = transmit_rules_to_process_monitor(&builder) {
@@ -305,12 +305,12 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
             let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
 
-            let rule_enabled = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
-            let index = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 1).get::<u64>().unwrap();
-            let sensor = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 2).get::<String>().unwrap();
-            let selector = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 3).get::<String>().unwrap();
-            let action = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 4).get::<String>().unwrap();
-            let metadata = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 5).get::<String>().unwrap();
+            let rule_enabled = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 0).get::<bool>().unwrap();
+            let index = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 1).get::<u64>().unwrap();
+            let sensor = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 2).get::<String>().unwrap();
+            let selector = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 3).get::<String>().unwrap();
+            let action = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 4).get::<String>().unwrap();
+            let metadata = rules_treestore.value(&rules_treestore.iter(p).unwrap(), 5).get::<String>().unwrap();
 
             let rule = rule::Rule::new(Some(index as usize), rule_enabled, sensor, selector, action, metadata);
 
@@ -337,7 +337,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 );
 
                 // remove original item
-                rules_treestore.remove(&rules_treestore.iter(&p).unwrap());
+                rules_treestore.remove(&rules_treestore.iter(p).unwrap());
 
                 if let Err(e) = transmit_rules_to_process_monitor(&builder) {
                     log::error!("{}", e);
@@ -409,31 +409,31 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     );
 
     let enabled_column = TreeViewColumnBuilder::new()
-        .title(&"Enabled")
+        .title("Enabled")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
     let index_column = TreeViewColumnBuilder::new()
-        .title(&"#")
+        .title("#")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
     let sensor_column = TreeViewColumnBuilder::new()
-        .title(&"Sensor")
+        .title("Sensor")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .build();
 
     let selector_column = TreeViewColumnBuilder::new()
-        .title(&"Selector")
+        .title("Selector")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(true)
         .build();
 
-    let action_column = TreeViewColumnBuilder::new().title(&"Action").build();
+    let action_column = TreeViewColumnBuilder::new().title("Action").build();
 
-    let metadata_column = TreeViewColumnBuilder::new().title(&"Metadata").build();
+    let metadata_column = TreeViewColumnBuilder::new().title("Metadata").build();
 
     let cell_renderer_toggle = gtk::CellRendererToggle::new();
     let cell_renderer_text = gtk::CellRendererText::new();
@@ -468,15 +468,15 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     rules_treeview.insert_column(&action_column, 4);
     rules_treeview.insert_column(&metadata_column, 5);
 
-    enabled_column.add_attribute(&cell_renderer_toggle, &"active", 0);
-    index_column.add_attribute(&cell_renderer_text, &"text", 1);
-    sensor_column.add_attribute(&cell_renderer_text, &"text", 2);
-    selector_column.add_attribute(&cell_renderer_text, &"text", 3);
-    action_column.add_attribute(&cell_renderer_text, &"text", 4);
-    metadata_column.add_attribute(&cell_renderer_text, &"text", 5);
+    enabled_column.add_attribute(&cell_renderer_toggle, "active", 0);
+    index_column.add_attribute(&cell_renderer_text, "text", 1);
+    sensor_column.add_attribute(&cell_renderer_text, "text", 2);
+    selector_column.add_attribute(&cell_renderer_text, "text", 3);
+    action_column.add_attribute(&cell_renderer_text, "text", 4);
+    metadata_column.add_attribute(&cell_renderer_text, "text", 5);
 
     // update the rules view or show an error notification
-    update_rules_view(&builder).unwrap_or_else(
+    update_rules_view(builder).unwrap_or_else(
         clone!(@weak notification_box,@weak rules_box => move |_e| {
             notification_box.show_now();
             rules_box.hide();

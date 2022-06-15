@@ -603,7 +603,7 @@ fn create_config_editor(
         crate::dbus_client::set_parameter(
             &profile.profile_file.to_string_lossy(),
             &script.script_file.to_string_lossy(),
-            &name,
+            name,
             &format!("{}", &value),
         )
         .unwrap();
@@ -634,22 +634,20 @@ fn create_config_editor(
                     manifest::ConfigParam::Int {
                         name: _, default, ..
                     } => profile
-                        .get_default_int(&script.name, &name)
-                        .or_else(|| Some(*default))
-                        .unwrap(),
+                        .get_default_int(&script.name, name)
+                        .unwrap_or(*default),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
             let default = profile
-                .get_default_int(&script.name, &name)
-                .or_else(|| Some(*default))
-                .unwrap();
+                .get_default_int(&script.name, name)
+                .unwrap_or(*default);
 
             let widget = build_config_widget_i64(
-                &name,
-                &description,
+                name,
+                description,
                 default,
                 *min,
                 *max,
@@ -680,22 +678,20 @@ fn create_config_editor(
                     manifest::ConfigParam::Float {
                         name: _, default, ..
                     } => profile
-                        .get_default_float(&script.name, &name)
-                        .or_else(|| Some(*default))
-                        .unwrap(),
+                        .get_default_float(&script.name, name)
+                        .unwrap_or(*default),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
             let default = profile
-                .get_default_float(&script.name, &name)
-                .or_else(|| Some(*default))
-                .unwrap();
+                .get_default_float(&script.name, name)
+                .unwrap_or(*default);
 
             let widget = build_config_widget_f64(
-                &name,
-                &description,
+                name,
+                description,
                 default,
                 *min,
                 *max,
@@ -724,22 +720,20 @@ fn create_config_editor(
                     manifest::ConfigParam::Bool {
                         name: _, default, ..
                     } => profile
-                        .get_default_bool(&script.name, &name)
-                        .or_else(|| Some(*default))
-                        .unwrap(),
+                        .get_default_bool(&script.name, name)
+                        .unwrap_or(*default),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
             let default = profile
-                .get_default_bool(&script.name, &name)
-                .or_else(|| Some(*default))
-                .unwrap();
+                .get_default_bool(&script.name, name)
+                .unwrap_or(*default);
 
             let widget = build_config_widget_switch_bool(
-                &name,
-                &description,
+                name,
+                description,
                 default,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
@@ -766,22 +760,22 @@ fn create_config_editor(
                     manifest::ConfigParam::String {
                         name: _, default, ..
                     } => profile
-                        .get_default_string(&script.name, &name)
+                        .get_default_string(&script.name, name)
                         .or_else(|| Some(default.clone()))
                         .unwrap()
-                        .to_owned(),
+                        ,
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
             let default = profile
-                .get_default_string(&script.name, &name)
+                .get_default_string(&script.name, name)
                 .or_else(|| Some(default.clone()))
                 .unwrap();
 
             let widget = build_config_widget_input_string(
-                &name,
-                &description,
+                name,
+                description,
                 default,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
@@ -810,22 +804,20 @@ fn create_config_editor(
                     manifest::ConfigParam::Color {
                         name: _, default, ..
                     } => profile
-                        .get_default_color(&script.name, &name)
-                        .or_else(|| Some(*default))
-                        .unwrap(),
+                        .get_default_color(&script.name, name)
+                        .unwrap_or(*default),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };
 
             let default = profile
-                .get_default_color(&script.name, &name)
-                .or_else(|| Some(*default))
-                .unwrap();
+                .get_default_color(&script.name, name)
+                .unwrap_or(*default);
 
             let widget = build_config_widget_color_u32(
-                &name,
-                &description,
+                name,
+                description,
                 default,
                 *min,
                 *max,
@@ -862,7 +854,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
     let profile = Profile::from(profile.as_ref())?;
 
     let label = LabelBuilder::new()
-        .label(&format!("{}", &profile.name,))
+        .label(&(&profile.name).to_string())
         .justify(Justification::Fill)
         .halign(Align::Start)
         .build();
@@ -1383,7 +1375,7 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
         String::static_type(),
     ]);
 
-    for (index, ref profile) in util::enumerate_profiles()
+    for (index, profile) in util::enumerate_profiles()
         .unwrap_or_else(|_| vec![])
         .iter()
         .enumerate()
@@ -1413,21 +1405,21 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     }
 
     let id_column = TreeViewColumnBuilder::new()
-        .title(&"ID")
+        .title("ID")
         .sizing(TreeViewColumnSizing::Autosize)
         .visible(false)
         .build();
     let name_column = TreeViewColumnBuilder::new()
-        .title(&"Name")
+        .title("Name")
         .sizing(TreeViewColumnSizing::Autosize)
         .build();
     let filename_column = TreeViewColumnBuilder::new()
-        .title(&"Filename")
+        .title("Filename")
         .sizing(TreeViewColumnSizing::Autosize)
         .build();
     let path_column = TreeViewColumnBuilder::new()
         .visible(false)
-        .title(&"Path")
+        .title("Path")
         .build();
 
     let cell_renderer_id = CellRendererText::new();
@@ -1443,15 +1435,15 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     profiles_treeview.insert_column(&filename_column, 2);
     profiles_treeview.insert_column(&path_column, 3);
 
-    id_column.add_attribute(&cell_renderer_id, &"text", 0);
-    name_column.add_attribute(&cell_renderer_name, &"text", 1);
-    filename_column.add_attribute(&cell_renderer_filename, &"text", 2);
-    path_column.add_attribute(&cell_renderer_filename, &"text", 3);
+    id_column.add_attribute(&cell_renderer_id, "text", 0);
+    name_column.add_attribute(&cell_renderer_name, "text", 1);
+    filename_column.add_attribute(&cell_renderer_filename, "text", 2);
+    path_column.add_attribute(&cell_renderer_filename, "text", 3);
 
     profiles_treeview.set_model(Some(&profiles_treestore));
 
     profiles_treeview.connect_row_activated(clone!(@weak builder => move |tv, path, _column| {
-        let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 3).get::<String>().unwrap();
+        let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(path).unwrap(), 3).get::<String>().unwrap();
 
         let _result = populate_visual_config_editor(&builder, &profile).map_err(|e| { log::error!("{}", e) });
 
@@ -1461,8 +1453,8 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
 
     profiles_treeview.show_all();
 
-    update_profile_state(&builder)?;
-    register_actions(application, &builder)?;
+    update_profile_state(builder)?;
+    register_actions(application, builder)?;
 
     Ok(())
 }
@@ -1488,7 +1480,7 @@ fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder
                     .find(|v| v.1 .0 == index)
                     .map(|v| (v.0, &v.1 .1))
                 {
-                    let _result = save_buffer_contents_to_file(&path, &buffer, &builder);
+                    let _result = save_buffer_contents_to_file(&path, buffer, &builder);
                 }
             });
         }
@@ -1501,7 +1493,7 @@ fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder
     save_all_buffers.connect_activate(clone!(@weak builder => move |_, _| {
         TEXT_BUFFERS.with(|b| {
             'SAVE_LOOP: for (k, (_, v)) in b.borrow().iter() {
-                let result = save_buffer_contents_to_file(&k, &v, &builder);
+                let result = save_buffer_contents_to_file(&k, v, &builder);
 
                 // stop saving files if an error occurred, or auth has failed
                 if result.is_err() {
@@ -1532,8 +1524,8 @@ pub fn update_profile_state(builder: &Builder) -> Result<()> {
         let item = model.value(iter, 3).get::<String>().unwrap();
         if item == active_profile {
             // found a match
-            profiles_treeview.selection().select_iter(&iter);
-            profiles_treeview.row_activated(&path, &profiles_treeview.column(1).unwrap());
+            profiles_treeview.selection().select_iter(iter);
+            profiles_treeview.row_activated(path, &profiles_treeview.column(1).unwrap());
 
             true
         } else {

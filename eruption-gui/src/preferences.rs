@@ -71,7 +71,7 @@ pub fn get_port_number() -> Result<u16> {
 
 pub fn set_host_name(host_name: &str) -> Result<()> {
     get_settings()?
-        .set_string("netfx-host-name", &host_name)
+        .set_string("netfx-host-name", host_name)
         .map_err(|_e| PreferencesError::SetPreferencesError {}.into())
 }
 

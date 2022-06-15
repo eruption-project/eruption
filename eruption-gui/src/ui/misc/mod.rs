@@ -85,7 +85,7 @@ pub fn initialize_misc_page(
 
     // paint drawing area
     drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
-        if let Err(_e) = misc_device.draw(&da, &context) {
+        if let Err(_e) = misc_device.draw(da, context) {
             notification_box_global.show();
 
             // apparently we have lost the connection to the Eruption daemon

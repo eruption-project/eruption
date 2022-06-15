@@ -53,7 +53,7 @@ impl Connection {
     }
 
     pub fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
-        self.con.lock().notify_device_hotplug(&hotplug_info)
+        self.con.lock().notify_device_hotplug(hotplug_info)
     }
 }
 
