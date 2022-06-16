@@ -41,7 +41,7 @@ sensor-mutter = []
 cfg-if = "1.0.0"
 async-trait = "0.1.56"
 byteorder = "1.4.3"
-clap =  { version = "3.2.4", features = ["derive"] }
+clap =  { version = "3.2.5", features = ["derive"] }
 clap_complete = "3.2.1"
 ctrlc = { version = "3.2.2", features = ["termination"] }
 config = "0.13.1"
@@ -73,7 +73,7 @@ hotwatch = "0.4.6"
 lazy_static = "1.4.0"
 walkdir = "2.3.2"
 procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
-x11rb = { version = "0.10.0", optional = true, features = ["allow-unsafe-code"] }
+x11rb = { version = "0.10.1", optional = true, features = ["allow-unsafe-code"] }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.0"
