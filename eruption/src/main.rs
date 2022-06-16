@@ -691,11 +691,11 @@ fn run_main_loop(
                     // FAILED_TXS.write().clear();
                 } else {
                     error!(
-                        "Could not process a D-Bus event: {}",
+                        "Fatal: Could not process a D-Bus event: {}",
                         event.as_ref().unwrap_err()
                     );
 
-                    // TODO: remove this event
+                    QUIT.store(true, Ordering::SeqCst);
                 }
             });
 
