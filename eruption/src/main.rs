@@ -45,6 +45,7 @@ use std::{collections::HashSet, thread};
 use syslog::Facility;
 use tokio::join;
 
+mod logger;
 mod threads;
 use threads::*;
 
@@ -1408,12 +1409,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
 
         // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
+        logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
     } else {
         // initialize logging to syslog
         let mut errors_present = false;
