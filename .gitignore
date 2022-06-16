@@ -1,7 +1,7 @@
 .cargo/
 /.vscode
 /.idea
-/target
+**/target
 **/*.rs.bk
 **/*~
 **/*.glade~
