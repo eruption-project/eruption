@@ -20,7 +20,7 @@
 // use async_macros::join;
 use clap::{Arg, Command};
 use config::Config;
-use flume::{bounded, unbounded, Receiver, Selector, Sender};
+use flume::{unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -1706,7 +1706,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize the device I/O thread
                 info!("Initializing device I/O thread...");
-                let (dev_io_tx, dev_io_rx) = bounded(1);
+                let (dev_io_tx, dev_io_rx) = unbounded();
                 threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
                     error!("Could not spawn the render thread: {}", e);
                     panic!()
