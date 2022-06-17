@@ -318,7 +318,9 @@ pub fn spawn_mouse_input_thread(
                                     crate::BUTTON_STATES.write()[index as usize] = is_pressed
                                 }
 
-                                Err(e) => log::warn!("Event not processed: {}", e),
+                                Err(e) => {
+                                    log::warn!("Mouse event for '{code:?}' not processed: {e}")
+                                }
                             }
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
                             k.1.clone().event_code
