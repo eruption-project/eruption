@@ -313,10 +313,13 @@ pub fn spawn_mouse_input_thread(
                             k.1.clone().event_code
                         {
                             let is_pressed = k.1.value > 0;
-                            let index =
-                                mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
+                            match mouse_device.read().ev_key_to_button_index(code) {
+                                Ok(index) => {
+                                    crate::BUTTON_STATES.write()[index as usize] = is_pressed
+                                }
 
-                            crate::BUTTON_STATES.write()[index] = is_pressed;
+                                Err(e) => log::warn!("Event not processed: {}", e),
+                            }
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
                             k.1.clone().event_code
                         {
