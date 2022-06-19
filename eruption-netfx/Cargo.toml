@@ -29,9 +29,9 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["backends-all"]
+default = ["backends-most"]
 backends-all = ["backend-wayland", "backend-gnome", "backend-x11"]
-backends-most = ["backend-wayland", "backend-gnome", "backend-x11"]
+backends-most = ["backend-gnome", "backend-x11"]
 backend-wayland = ["wayland-client", "smithay-client-toolkit"]
 backend-gnome = ["dbus", "dbus-tokio"]
 backend-x11 = ["x11", "x11rb"]

@@ -49,6 +49,20 @@ codegen-units = 1
 incremental = false
 panic = 'abort'
 
+[profile.sccache]
+inherits = "dev"
+opt-level = 0
+debug = true
+rpath = false
+lto = false
+#strip = false
+debug-assertions = true
+overflow-checks = true
+codegen-units = 512
+incremental = false
+panic = 'unwind'
+
 [profile.profiling]
 inherits = "release"
 debug = 1
+
