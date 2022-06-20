@@ -4,6 +4,7 @@ target/release/eruption usr/bin
 target/release/eruptionctl usr/bin
 target/release/eruption-cmd usr/bin
 target/release/eruption-hwutil usr/bin
+target/release/eruption-keymap usr/bin
 target/release/eruption-netfx usr/bin
 target/release/eruption-util usr/bin
 target/release/eruption-debug-tool usr/bin
@@ -47,6 +48,7 @@ support/man/eruption-hwutil.8 usr/share/man/man8
 support/man/eruption.conf.5 usr/share/man/man5
 support/man/process-monitor.conf.5 usr/share/man/man5
 support/man/eruptionctl.1 usr/share/man/man1
+support/man/eruption-keymap.1 usr/share/man/man1
 support/man/eruption-netfx.1 usr/share/man/man1
 support/man/eruption-audio-proxy.1 usr/share/man/man1
 support/man/eruption-process-monitor.1 usr/share/man/man1
@@ -54,6 +56,7 @@ support/man/eruption-process-monitor.1 usr/share/man/man1
 support/shell/completions/en_US/eruption-cmd.bash-completion => usr/share/bash-completion/completions/eruption-cmd
 support/shell/completions/en_US/eruption-hwutil.bash-completion => usr/share/bash-completion/completions/eruption-hwutil
 support/shell/completions/en_US/eruption-debug-tool.bash-completion => usr/share/bash-completion/completions/eruption-debug-tool
+support/shell/completions/en_US/eruption-keymap.bash-completion => usr/share/bash-completion/completions/eruption-keymap
 support/shell/completions/en_US/eruption-netfx.bash-completion => usr/share/bash-completion/completions/eruption-netfx
 support/shell/completions/en_US/eruption-audio-proxy.bash-completion => usr/share/bash-completion/completions/eruption-audio-proxy
 support/shell/completions/en_US/eruption-process-monitor.bash-completion => usr/share/bash-completion/completions/eruption-process-monitor
@@ -62,6 +65,7 @@ support/shell/completions/en_US/eruptionctl.bash-completion => usr/share/bash-co
 support/shell/completions/en_US/eruption-cmd.fish-completion => usr/share/fish/completions/eruption-cmd.fish
 support/shell/completions/en_US/eruption-hwutil.fish-completion => usr/share/fish/completions/eruption-hwutil.fish
 support/shell/completions/en_US/eruption-debug-tool.fish-completion => usr/share/fish/completions/eruption-debug-tool.fish
+support/shell/completions/en_US/eruption-keymap.fish-completion => usr/share/fish/completions/eruption-keymap.fish
 support/shell/completions/en_US/eruption-netfx.fish-completion => usr/share/fish/completions/eruption-netfx.fish
 support/shell/completions/en_US/eruption-audio-proxy.fish-completion => usr/share/fish/completions/eruption-audio-proxy.fish
 support/shell/completions/en_US/eruption-process-monitor.fish-completion => usr/share/fish/completions/eruption-process-monitor.fish
@@ -70,6 +74,7 @@ support/shell/completions/en_US/eruptionctl.fish-completion => usr/share/fish/co
 support/shell/completions/en_US/eruption-cmd.zsh-completion => usr/share/zsh/site-functions/_eruption-cmd
 support/shell/completions/en_US/eruption-hwutil.zsh-completion => usr/share/zsh/site-functions/_eruption-hwutil
 support/shell/completions/en_US/eruption-debug-tool.zsh-completion => usr/share/zsh/site-functions/_eruption-debug-tool
+support/shell/completions/en_US/eruption-keymap.zsh-completion => usr/share/zsh/site-functions/_eruption-keymap
 support/shell/completions/en_US/eruption-netfx.zsh-completion => usr/share/zsh/site-functions/_eruption-netfx
 support/shell/completions/en_US/eruption-audio-proxy.zsh-completion => usr/share/zsh/site-functions/_eruption-audio-proxy
 support/shell/completions/en_US/eruption-process-monitor.zsh-completion => usr/share/zsh/site-functions/_eruption-process-monitor

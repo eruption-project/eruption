@@ -50,7 +50,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (brightness)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '::brightness:' \
@@ -58,7 +57,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (soundfx)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '::enable:' \
@@ -66,9 +64,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -92,14 +87,12 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (info)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -107,7 +100,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -115,7 +107,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (brightness)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -124,7 +115,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (profile)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -133,7 +123,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (dpi)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -142,7 +131,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (rate)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -151,7 +139,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (debounce)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -160,7 +147,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (distance)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -169,7 +155,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (angle-snapping)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -178,9 +163,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -204,23 +186,18 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -244,7 +221,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':profile-name:' \
@@ -252,7 +228,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':index:' \
@@ -260,9 +235,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -286,7 +258,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':profile-name:' \
@@ -294,7 +265,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':profile-name:' \
@@ -302,16 +272,12 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (list)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -335,14 +301,12 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (set)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':slot-index:' \
@@ -351,7 +315,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (set-all)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '*::names:' \
@@ -359,9 +322,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
@@ -385,7 +345,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':script-name:' \
@@ -393,7 +352,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':script-name:' \
@@ -401,16 +359,12 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (list)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;

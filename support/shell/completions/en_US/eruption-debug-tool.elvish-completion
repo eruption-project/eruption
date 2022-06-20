@@ -80,14 +80,10 @@ set edit:completion:arg-completer[eruption-debug-tool] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-debug-tool;utils;reverse-crc8'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruption-debug-tool;utils;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruption-debug-tool;completions'= {
             cand -h 'Print help information'

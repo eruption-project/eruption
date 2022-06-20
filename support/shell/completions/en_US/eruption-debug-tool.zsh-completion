@@ -114,7 +114,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (reverse-crc8)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '*::data -- Hex byte vectors each starting with expected CRC8, no spaces allowed. \[0x32,0xff,0x00,0x00,0x00,0x00,0xff\] \[0x31,0x59,0xa5,0xff,0x00,0x00,0x00\] \[0x31,0x00,0x00,0xff,0xff,0x00,0x00\]:' \
@@ -122,9 +121,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;

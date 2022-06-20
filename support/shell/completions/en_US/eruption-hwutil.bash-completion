@@ -107,7 +107,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__firmware__flash)
-            opts="-h --version --help <DEVICE>"
+            opts="-h --help <DEVICE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -121,7 +121,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__firmware__help)
-            opts="-h --version --help <SUBCOMMAND>..."
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -135,7 +135,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__firmware__info)
-            opts="-h --version --help <DEVICE>"
+            opts="-h --help <DEVICE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
