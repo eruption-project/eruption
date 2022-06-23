@@ -38,8 +38,8 @@ backend-x11 = ["x11", "x11rb"]
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "3.2.5", features = ["derive"] }
-clap_complete = "3.2.1"
+clap =  { version = "3.2.6", features = ["derive"] }
+clap_complete = "3.2.2"
 colored = "2.0.0"
 log = "0.4.17"
 pretty_env_logger = "0.4.0"
@@ -67,7 +67,7 @@ image = "0.24.2"
 smithay-client-toolkit = { version = "0.16.0", optional = true }
 x11 = { version = "2.19.1", features = ["xlib", "xrandr"], optional = true }
 x11rb = { version = "0.10.1", features = ["allow-unsafe-code"], optional = true }
-wayland-client = { version = "0.30.0-beta.4", optional = true }
+wayland-client = { version = "0.30.0-beta.5", optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.0"
