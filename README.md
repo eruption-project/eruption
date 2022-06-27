@@ -318,4 +318,4 @@ Please find a list of frequently asked questions and their respective answers at
 ## Contributing
 
 Contributions are welcome!
-Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
+Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.
