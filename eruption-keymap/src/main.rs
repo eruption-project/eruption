@@ -51,6 +51,7 @@ use crate::{
 mod backends;
 mod constants;
 mod mapping;
+mod messages;
 mod parsers;
 mod util;
 

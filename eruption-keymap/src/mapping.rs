@@ -1,27 +1,26 @@
 /*
-    This file is part of Eruption.
+This file is part of Eruption.
 
-    Eruption is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+Eruption is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    Eruption is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+Eruption is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Display;
-use std::ops::Add;
 use std::path::Path;
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -36,7 +35,7 @@ pub struct KeyMappingTable {
     pub metadata: TableMetadata,
 
     #[serde(with = "any_key_map")]
-    pub mappings: HashMap<Source, Action>,
+    pub mappings: BTreeMap<Source, Action>,
 }
 
 #[allow(unused)]
@@ -44,7 +43,7 @@ impl KeyMappingTable {
     pub fn new() -> Self {
         Self {
             metadata: TableMetadata::default(),
-            mappings: HashMap::new(),
+            mappings: BTreeMap::new(),
         }
     }
 
@@ -76,7 +75,7 @@ impl KeyMappingTable {
         &self.metadata
     }
 
-    pub fn mappings(&self) -> &HashMap<Source, Action> {
+    pub fn mappings(&self) -> &BTreeMap<Source, Action> {
         &self.mappings
     }
 
@@ -84,7 +83,7 @@ impl KeyMappingTable {
         &mut self.metadata
     }
 
-    pub fn mappings_mut(&mut self) -> &mut HashMap<Source, Action> {
+    pub fn mappings_mut(&mut self) -> &mut BTreeMap<Source, Action> {
         &mut self.mappings
     }
 }
@@ -129,7 +128,7 @@ impl Display for TableMetadata {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Source {
     pub event: Event,
@@ -168,13 +167,13 @@ impl Source {
 impl Display for Source {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!(
-            "Source: event: {}, on layers: [ {}]",
+            "Source: {} on layers: [ {}]",
             self.event, self.layers
         ))
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct LayerSet<T>(pub BTreeSet<T>)
 where
     T: Ord + PartialOrd;
@@ -192,7 +191,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Action {
     Null,
@@ -211,7 +210,7 @@ impl Display for Action {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Key {
     pub key_index: usize,
@@ -224,7 +223,7 @@ impl Display for Key {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Macro {
     pub function_name: String,
@@ -236,7 +235,7 @@ impl Display for Macro {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Event {
     Null,
@@ -288,7 +287,7 @@ impl Display for Event {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
     Up,

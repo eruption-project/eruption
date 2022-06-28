@@ -21,8 +21,10 @@ use std::fmt::Write;
 use std::{fs, path::Path};
 
 use chrono::Utc;
+use colored::Colorize;
 
-use crate::mapping::{Action, Event, KeyMappingTable, Source};
+use crate::mapping::{Action, Event, KeyMappingTable};
+use crate::messages;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -69,12 +71,17 @@ impl super::Backend for LuaBackend {
             Utc::now()
         )?;
 
-        for (_index, (source, action)) in table.mappings().iter().enumerate() {
+        for (index, (source, action)) in table.mappings().iter().enumerate() {
             writeln!(&mut text, "-- {:?} -> {:?}", source, action)?;
 
             match action {
                 Action::Null => {
-                    /* do nothing */
+                    messages::info!(
+                        "Rule: {}: {}",
+                        &format!("#{:0>2}", index + 1),
+                        "This action is disabled: null".white().bold()
+                    );
+
                     writeln!(&mut text, "-- ACTION IS DISABLED")?;
                 }
 
@@ -119,20 +126,33 @@ impl super::Backend for LuaBackend {
                 Action::InjectKey(dest) => {
                     match &source.event {
                         Event::Null => {
-                            /* do nothing */
+                            messages::info!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled: null".white().bold()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS DISABLED")?;
                         }
 
                         Event::HidKeyDown(_key) => {
-                            writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
 
-                            //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
+                            writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
                         }
 
                         Event::HidKeyUp(_key) => {
-                            writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
 
-                            //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
+                            writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
                         }
 
                         Event::HidMouseDown(key) => {
@@ -144,11 +164,17 @@ impl super::Backend for LuaBackend {
                         }
 
                         Event::HidMouseUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
 
                             //writeln!(
                             //&mut text,
-                            //"MOUSE_HID_REMAPPING_TABLEi[{}] = {}",
+                            //"MOUSE_HID_REMAPPING_TABLE[{}] = {}",
                             //key.key_index, dest.key_index
                             //)?;
                         }
@@ -158,22 +184,38 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_REMAPPING_TABLE[{}][{}] = {}",
-                                    layer + 1,
-                                    key.key_index,
-                                    dest.key_index
+                                    layer, key.key_index, dest.key_index
                                 )?;
                             }
                         }
 
                         Event::EasyShiftKeyUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
                         }
 
                         Event::EasyShiftMouseDown(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
                         }
 
                         Event::EasyShiftMouseUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
                         }
 
@@ -187,19 +229,37 @@ impl super::Backend for LuaBackend {
                             )?;
                         }
 
-                        Event::SimpleKeyUp(key) => {
-                            writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
+                        Event::SimpleKeyUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
                         }
 
-                        Event::SimpleMouseDown(key) => {
-                            writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
+                        Event::SimpleMouseDown(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
                         }
 
-                        Event::SimpleMouseUp(key) => {
-                            writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
+                        Event::SimpleMouseUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
                         }
 
-                        Event::SimpleMouseWheel(direction) => {
+                        Event::SimpleMouseWheel(_direction) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
                     }
@@ -208,23 +268,48 @@ impl super::Backend for LuaBackend {
                 Action::Call(call) => {
                     match &source.event {
                         Event::Null => {
-                            /* do nothing */
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS DISABLED")?;
                         }
 
-                        Event::HidKeyDown(key) => {
+                        Event::HidKeyDown(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
 
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
 
-                        Event::HidKeyUp(key) => {
+                        Event::HidKeyUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS DISABLED")?;
 
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
 
-                        Event::HidMouseDown(key) => {
+                        Event::HidMouseDown(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
+                            writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
+
                             //writeln!(
                             //&mut text,
                             //"MOUSE_HID_REMAPPING_TABLEi[{}] = {}",
@@ -233,6 +318,12 @@ impl super::Backend for LuaBackend {
                         }
 
                         Event::HidMouseUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is not implemented".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS NOT IMPLEMENTED")?;
 
                             //writeln!(
@@ -247,14 +338,18 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MACRO_TABLE[{}][{}] = {}",
-                                    layer + 1,
-                                    key.key_index,
-                                    call.function_name
+                                    layer, key.key_index, call.function_name
                                 )?;
                             }
                         }
 
                         Event::EasyShiftKeyUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS DISABLED")?;
                         }
 
@@ -263,9 +358,7 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[{}][{}] = {}",
-                                    layer + 1,
-                                    key.key_index,
-                                    call.function_name
+                                    layer, key.key_index, call.function_name
                                 )?;
                             }
                         }
@@ -275,9 +368,7 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_UP_MACRO_TABLE[{}][{}] = {}",
-                                    layer + 1,
-                                    key.key_index,
-                                    call.function_name
+                                    layer, key.key_index, call.function_name
                                 )?;
                             }
                         }
@@ -287,29 +378,59 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[{}] = {}",
-                                    layer + 1,
-                                    call.function_name
+                                    layer, call.function_name
                                 )?;
                             }
                         }
 
-                        Event::SimpleKeyDown(_key) => {
-                            writeln!(&mut text, "-- ACTION IS DISABLED")?;
+                        Event::SimpleKeyDown(key) => {
+                            writeln!(
+                                &mut text,
+                                "MACRO_TABLE[{}] = {}",
+                                key.key_index, call.function_name
+                            )?;
                         }
 
                         Event::SimpleKeyUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
                             writeln!(&mut text, "-- ACTION IS DISABLED")?;
                         }
 
-                        Event::SimpleMouseDown(key) => {
+                        Event::SimpleMouseDown(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
+                            writeln!(&mut text, "-- ACTION IS DISABLED")?;
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
 
-                        Event::SimpleMouseUp(key) => {
+                        Event::SimpleMouseUp(_key) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
+                            writeln!(&mut text, "-- ACTION IS DISABLED")?;
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
 
-                        Event::SimpleMouseWheel(direction) => {
+                        Event::SimpleMouseWheel(_direction) => {
+                            messages::warning!(
+                                "Rule: {}: {}",
+                                &format!("#{:0>2}", index + 1),
+                                "This action is disabled".yellow()
+                            );
+
+                            writeln!(&mut text, "-- ACTION IS DISABLED")?;
                             //writeln!(&mut text, "{} {}", key.key_index, dest.key_index)?;
                         }
                     }
