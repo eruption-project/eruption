@@ -30,8 +30,8 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "3.2.6", features = ["derive"] }
-clap_complete = "3.2.2"
+clap =  { version = "3.2.7", features = ["derive"] }
+clap_complete = "3.2.3"
 log = "0.4.17"
 syslog = "6.0.1"
 lazy_static = "1.4.0"
