@@ -292,4 +292,4 @@ Eruption `0.1.17` added a new daemon called `eruption-process-monitor`, which al
 ## Contributing
 
 Contributions are welcome!
-Please see `src/scripts/examples/*.lua` directory for Lua scripting examples.
+Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.
