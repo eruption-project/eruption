@@ -24,18 +24,14 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --version 'Print version information'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand assistant 'Run an assistant that guides you through creating one or more key mappings'
-            cand list 'List all available key-maps'
+            cand list 'List all available keymaps'
             cand mapping 'Add or remove a single mapping entry'
-            cand description 'Show or set the description of the specified key-map'
-            cand show 'Show some information about a key-map'
-            cand compile 'Compile a key-map to Lua code and make it available to Eruption'
+            cand description 'Show or set the description of the specified keymap'
+            cand show 'Show some information about a keymap'
+            cand list-macros 'Show a list of available macros'
+            cand compile 'Compile a keymap to Lua code and make it available to Eruption'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
-        }
-        &'eruption-keymap;assistant'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruption-keymap;list'= {
             cand -h 'Print help information'
@@ -49,6 +45,8 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-keymap;mapping;add'= {
+            cand -l 'Specify a list of layers'
+            cand --layers 'Specify a list of layers'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
@@ -63,6 +61,10 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-keymap;show'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-keymap;list-macros'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
         }

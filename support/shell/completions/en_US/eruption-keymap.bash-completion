@@ -15,9 +15,6 @@ _eruption-keymap() {
             add)
                 cmd+="__add"
                 ;;
-            assistant)
-                cmd+="__assistant"
-                ;;
             compile)
                 cmd+="__compile"
                 ;;
@@ -32,6 +29,9 @@ _eruption-keymap() {
                 ;;
             list)
                 cmd+="__list"
+                ;;
+            list-macros)
+                cmd+="__list__macros"
                 ;;
             mapping)
                 cmd+="__mapping"
@@ -49,22 +49,8 @@ _eruption-keymap() {
 
     case "${cmd}" in
         eruption__keymap)
-            opts="-h -V -v --help --version --verbose assistant list mapping description show compile completions help"
+            opts="-h -V -v --help --version --verbose list mapping description show list-macros compile completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__keymap__assistant)
-            opts="-h --help <KEYMAP>"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -105,7 +91,7 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__description)
-            opts="-h --help <KEYMAP>"
+            opts="-h --help <KEYMAP> <DESCRIPTION>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -146,6 +132,20 @@ _eruption-keymap() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruption__keymap__list__macros)
+            opts="-h --help <LUA_PATH>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__keymap__mapping)
             opts="-h --help add remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -161,12 +161,20 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__mapping__add)
-            opts="-h --help <KEYMAP> <SOURCE> <ACTION>"
+            opts="-l -h --layers --help <KEYMAP> <SOURCE> <ACTION>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --layers)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

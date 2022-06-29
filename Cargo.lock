@@ -1259,6 +1259,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
+ "mlua",
  "nix 0.24.1",
  "parking_lot",
  "pest",

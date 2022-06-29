@@ -17,11 +17,11 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-Source = { SOI ~ 
-	   
-	   Null | 
-	   
-	   EasyShiftKeyUp | EasyShiftKeyDown |  
+Source = { SOI ~
+
+	   Null |
+
+	   EasyShiftKeyUp | EasyShiftKeyDown |
 	   EasyShiftMouseUp | EasyShiftMouseDown |
  	   EasyShiftMouseWheel |
 
@@ -30,7 +30,7 @@ Source = { SOI ~
  	   SimpleMouseWheel |
 
 	   HidKeyUp | HidKeyDown |
-	   HidMouseUp | HidMouseDown 
+	   HidMouseUp | HidMouseDown
 
 	   ~ EOI }
 

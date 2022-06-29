@@ -30,14 +30,7 @@ _eruption-keymap() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruption-keymap-command-$line[1]:"
         case $line[1] in
-            (assistant)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':keymap:' \
-&& ret=0
-;;
-(list)
+            (list)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
@@ -59,6 +52,8 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (add)
 _arguments "${_arguments_options[@]}" \
+'*-l+[Specify a list of layers]:LAYERS: ' \
+'*--layers=[Specify a list of layers]:LAYERS: ' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':keymap:' \
@@ -70,7 +65,7 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-':keymap:' \
+':keymap -- Specify a list of layers:' \
 ':source:' \
 && ret=0
 ;;
@@ -88,6 +83,7 @@ _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':keymap:' \
+'::description:' \
 && ret=0
 ;;
 (show)
@@ -95,6 +91,13 @@ _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':keymap:' \
+&& ret=0
+;;
+(list-macros)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':lua-path:' \
 && ret=0
 ;;
 (compile)
@@ -124,12 +127,12 @@ esac
 (( $+functions[_eruption-keymap_commands] )) ||
 _eruption-keymap_commands() {
     local commands; commands=(
-'assistant:Run an assistant that guides you through creating one or more key mappings' \
-'list:List all available key-maps' \
+'list:List all available keymaps' \
 'mapping:Add or remove a single mapping entry' \
-'description:Show or set the description of the specified key-map' \
-'show:Show some information about a key-map' \
-'compile:Compile a key-map to Lua code and make it available to Eruption' \
+'description:Show or set the description of the specified keymap' \
+'show:Show some information about a keymap' \
+'list-macros:Show a list of available macros' \
+'compile:Compile a keymap to Lua code and make it available to Eruption' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -139,11 +142,6 @@ _eruption-keymap_commands() {
 _eruption-keymap__mapping__add_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap mapping add commands' commands "$@"
-}
-(( $+functions[_eruption-keymap__assistant_commands] )) ||
-_eruption-keymap__assistant_commands() {
-    local commands; commands=()
-    _describe -t commands 'eruption-keymap assistant commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__compile_commands] )) ||
 _eruption-keymap__compile_commands() {
@@ -174,6 +172,11 @@ _eruption-keymap__mapping__help_commands() {
 _eruption-keymap__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap list commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__list-macros_commands] )) ||
+_eruption-keymap__list-macros_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap list-macros commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__mapping_commands] )) ||
 _eruption-keymap__mapping_commands() {

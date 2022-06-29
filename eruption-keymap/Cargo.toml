@@ -51,6 +51,11 @@ color-eyre = "0.6.1"
 hexdump = "0.1.1"
 chrono = { version = "0.4.19", features = ["serde"] }
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
+#lua-src = "544.0.1"
+#mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
+#luajit-src = "210.3.2+resty1085a4d"
+#mlua = { version = "0.7.3", features = ["luajit52"] }
+mlua = { version = "0.8.0", features = ["lua54"] }
 udev = "0.6.3"
 evdev-rs = "0.5.0"
 lazy_static = "1.4.0"

@@ -44,12 +44,14 @@ use walkdir::WalkDir;
 use crate::{
     backends::Backend,
     backends::{lua::LuaBackend, native::NativeBackend},
+    lua_file::LuaFile,
     mapping::KeyMappingTable,
 };
 
 // mod assistants;
 mod backends;
 mod constants;
+mod lua_file;
 mod mapping;
 mod messages;
 mod parsers;
@@ -153,6 +155,10 @@ pub enum Subcommands {
     /// Show some information about a keymap
     #[clap(about(SHOW_ABOUT.as_str()))]
     Show { keymap: PathBuf },
+
+    /// Show a list of available macros
+    // #[clap(about(LUA_ABOUT.as_str()))]
+    ListMacros { lua_path: PathBuf },
 
     /// Compile a keymap to Lua code and make it available to Eruption
     #[clap(about(COMPILE_ABOUT.as_str()))]
@@ -467,6 +473,22 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             LuaBackend::new().write_to_file(&path, &table)?;
 
             println!("Success");
+        }
+
+        Subcommands::ListMacros { lua_path } => {
+            let path = if lua_path.components().count() > 1 {
+                lua_path
+            } else {
+                PathBuf::from(constants::DEFAULT_SCRIPT_DIR).join(lua_path)
+            };
+
+            println!("Functions in Lua file: {}\n", &path.display().bold());
+
+            let lua_file = LuaFile::new_from_file(&path)?;
+
+            for function in lua_file.functions() {
+                println!("function {}(...)", function.name());
+            }
         }
 
         Subcommands::Completions { shell } => {
