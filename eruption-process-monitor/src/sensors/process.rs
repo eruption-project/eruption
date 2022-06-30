@@ -111,7 +111,7 @@ impl ProcessSensor {
                         procmon::EventType::SocketError => {
                             log::error!("Error while receiving from Linux kernel netlink socket");
 
-                            PROCESS_SENSOR_FAILED.store(true, Ordering::SeqCst);
+                            QUIT.store(true, Ordering::SeqCst);
                             break Err(ProcessSensorError::SocketError {}.into());
                         }
 
