@@ -72,7 +72,7 @@ color-eyre = "0.6.1"
 hotwatch = "0.4.6"
 lazy_static = "1.4.0"
 walkdir = "2.3.2"
-procmon-sys = { version = "0.0.2", path = "src/procmon-sys", optional = true }
+procmon-sys = { version = "0.0.3", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.10.1", optional = true, features = ["allow-unsafe-code"] }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"

@@ -683,8 +683,9 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
                 move |h: profile::OrgEruptionProfileActiveProfileChanged,
                       _: &Connection,
                       _message: &dbus::Message| {
-                    tx.send(Message::ProfileChanged(h.new_profile_name))
-                        .unwrap();
+                    let _ = tx
+                        .send(Message::ProfileChanged(h.new_profile_name))
+                        .map_err(|e| log::error!("Could not send a message: {}", e));
 
                     true
                 },

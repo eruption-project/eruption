@@ -27,6 +27,7 @@ pub struct ProcMon {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EventType {
+    SocketError,
     Nothing,
     Fork,
     Exec,
@@ -44,7 +45,7 @@ pub struct Event {
 
 fn map_int_to_event_type(i: u32) -> EventType {
     match i {
-        0x0000_0000 => EventType::Nothing,
+        0x0000_0000 => EventType::SocketError,
         0x0000_0001 => EventType::Fork,
         0x0000_0002 => EventType::Exec,
         0x8000_0000 => EventType::Exit,

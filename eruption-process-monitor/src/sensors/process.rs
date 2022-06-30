@@ -31,6 +31,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ProcessSensorError {
+    #[error("Socket error")]
+    SocketError,
+
     #[error("Operation not supported")]
     NotSupported,
 }
@@ -95,6 +98,13 @@ impl ProcessSensor {
                             sysevents_tx
                                 .send(SystemEvent::ProcessExit { event })
                                 .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+                        }
+
+                        procmon::EventType::SocketError => {
+                            log::error!("Error while receiving from Linux kernel netlink socket");
+
+                            QUIT.store(true, Ordering::SeqCst);
+                            break Err(ProcessSensorError::SocketError {}.into());
                         }
 
                         _ => { /* ignore others */ }
