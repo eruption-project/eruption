@@ -45,7 +45,7 @@ pub struct Event {
 
 fn map_int_to_event_type(i: u32) -> EventType {
     match i {
-        0x0000_0000 => EventType::SocketError,
+        0x0000_0000 => EventType::Invalid,
         0x0000_0001 => EventType::Fork,
         0x0000_0002 => EventType::Exec,
         0x8000_0000 => EventType::Exit,
@@ -70,15 +70,23 @@ impl ProcMon {
             ppid: 0,
             tgid: 0,
         };
-        unsafe {
-            procmon_sys::handle_proc_ev(self.nls, &mut event);
-        };
 
-        Event {
-            event_type: map_int_to_event_type(event.event_type),
-            pid: event.pid,
-            ppid: event.ppid,
-            tgid: event.tgid,
+        let result = unsafe { procmon_sys::handle_proc_ev(self.nls, &mut event) };
+
+        if result < 0 {
+            Event {
+                event_type: EventType::SocketError,
+                pid: 0,
+                ppid: 0,
+                tgid: 0,
+            }
+        } else {
+            Event {
+                event_type: map_int_to_event_type(event.event_type),
+                pid: event.pid,
+                ppid: event.ppid,
+                tgid: event.tgid,
+            }
         }
     }
 }
