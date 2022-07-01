@@ -30,6 +30,9 @@ _eruption-keymap() {
             list)
                 cmd+="__list"
                 ;;
+            list-events)
+                cmd+="__list__events"
+                ;;
             list-macros)
                 cmd+="__list__macros"
                 ;;
@@ -49,7 +52,7 @@ _eruption-keymap() {
 
     case "${cmd}" in
         eruption__keymap)
-            opts="-h -V -v --help --version --verbose list mapping description show list-macros compile completions help"
+            opts="-h -V -v --help --version --verbose list mapping description show list-macros list-events compile completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -119,6 +122,20 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__list)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__list__events)
             opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

@@ -75,13 +75,6 @@ EASY_SHIFT_MOUSE_DPI_MACRO_TABLE =
 -- import default color scheme
 require "themes/default"
 
--- import keymap definitions sub-modules
-local status, message = pcall(require, keymap)
-if not status then
-    error(
-        "Error loading the keymap definition: " .. message)
-end
-
 -- import custom macro definitions sub-modules
 local status, _ = pcall(require, requires)
 if not status then
@@ -89,6 +82,10 @@ if not status then
         "Error loading custom macro definitions, falling back to fail-safe mode")
     require("macros/failsafe-macros")
 end
+
+-- import keymap definitions sub-modules
+local status, message = pcall(require, keymap)
+if not status then error("Error loading the keymap definition: " .. message) end
 
 -- global state variables --
 ticks = 0

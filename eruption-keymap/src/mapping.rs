@@ -27,6 +27,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json_any_key::any_key_map;
 
+use crate::util;
+
 //pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -166,10 +168,32 @@ impl Source {
 
 impl Display for Source {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&format!(
-            "Source: {} on layers: [ {}]",
-            self.event, self.layers
-        ))
+        let has_layers = match self.event {
+            Event::Null => false,
+            Event::HidKeyDown(_) => false,
+            Event::HidKeyUp(_) => false,
+            Event::HidMouseDown(_) => false,
+            Event::HidMouseUp(_) => false,
+            Event::EasyShiftKeyDown(_) => true,
+            Event::EasyShiftKeyUp(_) => true,
+            Event::EasyShiftMouseDown(_) => true,
+            Event::EasyShiftMouseUp(_) => true,
+            Event::EasyShiftMouseWheel(_) => true,
+            Event::SimpleKeyDown(_) => false,
+            Event::SimpleKeyUp(_) => false,
+            Event::SimpleMouseDown(_) => false,
+            Event::SimpleMouseUp(_) => false,
+            Event::SimpleMouseWheel(_) => false,
+        };
+
+        if has_layers {
+            f.write_str(&format!(
+                "Source: {} on layers: [ {}]",
+                self.event, self.layers
+            ))
+        } else {
+            f.write_str(&format!("Source: {}", self.event))
+        }
     }
 }
 
@@ -195,7 +219,7 @@ where
 #[serde(rename_all = "lowercase")]
 pub enum Action {
     Null,
-    InjectKey(Key),
+    InjectKey(EvdevEvent),
     Call(Macro),
 }
 
@@ -204,7 +228,7 @@ impl Display for Action {
         match self {
             Action::Null => f.write_str("<No action>"),
 
-            Action::InjectKey(key) => f.write_str(&format!("Key: {}", key)),
+            Action::InjectKey(key) => f.write_str(&format!("Event: {}", key)),
             Action::Call(call) => f.write_str(&format!("Call: {}", call)),
         }
     }
@@ -220,6 +244,19 @@ impl Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         //f.write_str(&format!("Key idx:{}", self.key_index))
         f.write_str(&format!("{}", self.key_index))
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct EvdevEvent {
+    pub event: u32,
+}
+
+impl Display for EvdevEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        //f.write_str(&format!("Event:{}", self.key_index))
+        f.write_str(&format!("{}", util::evdev_event_code_to_string(self.event)))
     }
 }
 

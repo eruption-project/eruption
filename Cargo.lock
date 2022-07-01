@@ -1267,6 +1267,7 @@ dependencies = [
  "pretty_assertions",
  "pretty_env_logger",
  "prettytable-rs",
+ "regex",
  "rust-embed",
  "serde",
  "serde_json",

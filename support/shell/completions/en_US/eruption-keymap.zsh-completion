@@ -100,6 +100,12 @@ _arguments "${_arguments_options[@]}" \
 ':lua-path:' \
 && ret=0
 ;;
+(list-events)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
 (compile)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -132,6 +138,7 @@ _eruption-keymap_commands() {
 'description:Show or set the description of the specified keymap' \
 'show:Show some information about a keymap' \
 'list-macros:Show a list of available macros' \
+'list-events:Show a list of available Linux EVDEV events' \
 'compile:Compile a keymap to Lua code and make it available to Eruption' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -172,6 +179,11 @@ _eruption-keymap__mapping__help_commands() {
 _eruption-keymap__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap list commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__list-events_commands] )) ||
+_eruption-keymap__list-events_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap list-events commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__list-macros_commands] )) ||
 _eruption-keymap__list-macros_commands() {

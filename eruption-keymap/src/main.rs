@@ -21,6 +21,7 @@ use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use colored::*;
+use evdev_rs::enums::{EventCode, EV_KEY};
 use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -44,14 +45,14 @@ use walkdir::WalkDir;
 use crate::{
     backends::Backend,
     backends::{lua::LuaBackend, native::NativeBackend},
-    lua_file::LuaFile,
+    lua_introspection::LuaSyntaxIntrospection,
     mapping::KeyMappingTable,
 };
 
 // mod assistants;
 mod backends;
 mod constants;
-mod lua_file;
+mod lua_introspection;
 mod mapping;
 mod messages;
 mod parsers;
@@ -159,6 +160,10 @@ pub enum Subcommands {
     /// Show a list of available macros
     // #[clap(about(LUA_ABOUT.as_str()))]
     ListMacros { lua_path: PathBuf },
+
+    /// Show a list of available Linux EVDEV events
+    // #[clap(about(LUA_ABOUT.as_str()))]
+    ListEvents,
 
     /// Compile a keymap to Lua code and make it available to Eruption
     #[clap(about(COMPILE_ABOUT.as_str()))]
@@ -477,18 +482,37 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::ListMacros { lua_path } => {
             let path = if lua_path.components().count() > 1 {
-                lua_path
+                lua_path.clone()
             } else {
-                PathBuf::from(constants::DEFAULT_SCRIPT_DIR).join(lua_path)
+                PathBuf::from(constants::DEFAULT_SCRIPT_DIR)
+                    .join("lib/macros/")
+                    .join(lua_path.clone())
             };
 
             println!("Functions in Lua file: {}\n", &path.display().bold());
 
-            let lua_file = LuaFile::new_from_file(&path)?;
+            let lua_file = LuaSyntaxIntrospection::new_from_file(&path)?;
 
             for function in lua_file.functions() {
-                println!("function {}(...)", function.name());
+                println!("{}", function.name());
             }
+        }
+
+        Subcommands::ListEvents => {
+            let event = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
+
+            let mut tab = Table::new();
+            tab.add_row(row!('#', "Symbol", "Code"));
+
+            for (index, code) in event.iter().enumerate() {
+                tab.add_row(Row::new(vec![
+                    Cell::new(&format!("{}", index + 1)),
+                    Cell::new(&format!("{}", code.to_string())),
+                    Cell::new(&format!("{}", util::evdev_key_event_to_int(code))),
+                ]));
+            }
+
+            tab.printstd();
         }
 
         Subcommands::Completions { shell } => {

@@ -17,12 +17,13 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-Action = { SOI ~ Null | Call | Key ~ EOI }
+Action = { SOI ~ Null | Call | Event ~ EOI }
 
 Null = { "null" }
 
 Call = { "call:" ~ function }
-Key = { "key:" ~ char+ }
+Event = { "event:" ~ char+ }
 
 function = { char+ }
 char = { ASCII_ALPHANUMERIC | "_" }
+num = { '0'..'9' }

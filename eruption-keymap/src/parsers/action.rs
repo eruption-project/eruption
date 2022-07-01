@@ -21,7 +21,7 @@ use eyre::eyre;
 use pest::Parser;
 use pest_derive::Parser;
 
-use crate::mapping::*;
+use crate::{mapping::*, util};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -36,9 +36,16 @@ pub fn parse(action: &str) -> Result<Action> {
 
     for pair in pairs.into_inner() {
         match pair.as_rule() {
-            Rule::Key => {
-                let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Action::InjectKey(Key { key_index }));
+            Rule::Event => {
+                let text = pair.into_inner().as_str();
+
+                if let Some(code) = util::evdev_event_code_from_string(text) {
+                    let event = code as u32;
+                    result = Some(Action::InjectKey(EvdevEvent { event }));
+                } else {
+                    let event = text.parse::<u32>()?;
+                    result = Some(Action::InjectKey(EvdevEvent { event }));
+                }
             }
 
             Rule::Call => {

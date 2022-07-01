@@ -159,7 +159,7 @@ impl super::Backend for LuaBackend {
                             writeln!(
                                 &mut text,
                                 "MOUSE_HID_REMAPPING_TABLE[{}] = {}",
-                                key.key_index, dest.key_index
+                                key.key_index, dest.event
                             )?;
                         }
 
@@ -184,7 +184,7 @@ impl super::Backend for LuaBackend {
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_REMAPPING_TABLE[{}][{}] = {}",
-                                    layer, key.key_index, dest.key_index
+                                    layer, key.key_index, dest.event
                                 )?;
                             }
                         }
@@ -225,7 +225,7 @@ impl super::Backend for LuaBackend {
                             writeln!(
                                 &mut text,
                                 "REMAPPING_TABLE[{}] = {}",
-                                key.key_index, dest.key_index
+                                key.key_index, dest.event
                             )?;
                         }
 
