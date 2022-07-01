@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::dbus_client::Message;
+use crate::{dbus_client::Message, sensors::PROCESS_SENSOR_FAILED};
 
 #[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
@@ -59,6 +59,7 @@ mod constants;
 mod dbus_client;
 mod dbus_interface;
 
+mod logger;
 #[cfg(feature = "sensor-procmon")]
 mod procmon;
 mod sensors;
@@ -824,14 +825,16 @@ pub fn run_main_loop(
 
         #[cfg(feature = "sensor-procmon")]
         {
-            sel = sel.recv(sysevents_rx, |event| {
-                if let Ok(event) = event {
-                    process_system_event(&event)
-                        .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
-                } else {
-                    error!("{}", event.as_ref().unwrap_err());
-                }
-            });
+            if !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst) {
+                sel = sel.recv(sysevents_rx, |event| {
+                    if let Ok(event) = event {
+                        process_system_event(&event)
+                            .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
+                    } else {
+                        error!("{}", event.as_ref().unwrap_err());
+                    }
+                });
+            }
         }
 
         let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
@@ -977,12 +980,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } && daemon {
         // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
+        logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
     } else {
         // initialize logging to syslog
         let mut errors_present = false;
