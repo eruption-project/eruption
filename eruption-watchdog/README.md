@@ -35,7 +35,7 @@ along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright (c) 2019-2022, The Eruption Development Team
 
-eruption-watchdog 0.0.1
+eruption-watchdog 0.0.2
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 A watchdog daemon for Eruption
 

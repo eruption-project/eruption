@@ -7,7 +7,7 @@ Additionally the `eruption-audio-proxy` can play back sound effects, triggered b
 ### eruption-audio-proxy
 
 ```shell
-eruption-audio-proxy 0.0.9
+eruption-audio-proxy 0.0.10
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

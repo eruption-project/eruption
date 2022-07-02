@@ -41,6 +41,7 @@ use std::{
 use syslog::Facility;
 
 mod constants;
+mod logger;
 mod util;
 
 #[derive(RustEmbed)]
@@ -205,12 +206,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     if unsafe { libc::isatty(0) != 0 } {
         // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
+        logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
 
         // print a license header, except if we are generating shell completions
         if !env::args().any(|a| a.eq_ignore_ascii_case("completions"))

@@ -37,6 +37,7 @@ use std::{
 };
 
 mod constants;
+mod logger;
 mod util;
 
 #[allow(unused)]
@@ -194,13 +195,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         print_header();
     }
 
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    }
+    // initialize logging on console
+    logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
 
     // start the thread deadlock detector
     #[cfg(debug_assertions)]

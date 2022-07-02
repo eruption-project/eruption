@@ -46,7 +46,7 @@ use crate::error_log::ErrorType;
 mod constants;
 mod dbus_client;
 mod device;
-mod error_log;
+mod logger;
 mod manifest;
 mod preferences;
 mod profiles;
@@ -402,7 +402,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                             model.foreach(|model, _path, iter| {
                                 let file = model.value(iter, 2).get::<String>().unwrap();
                                 let file = PathBuf::from(file).to_string_lossy().to_string();
-                                
+
                                 if *profile == file {
                                     // found a match
                                     combo_box.set_active_iter(Some(&iter));
@@ -577,13 +577,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         print_header();
     }
 
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    }
+    // initialize logging on console
+    logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
 
     let application = Application::new(
         Some("org.eruption.eruption-gui"),

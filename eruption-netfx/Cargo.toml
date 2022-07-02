@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-netfx"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "A Network FX protocol client for Eruption"
