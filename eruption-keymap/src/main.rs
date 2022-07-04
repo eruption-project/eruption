@@ -33,6 +33,7 @@ use parking_lot::Mutex;
 use prettytable::{cell, row, Cell, Row, Table};
 use rust_embed::RustEmbed;
 use std::{
+    collections::BTreeMap,
     env,
     path::{Path, PathBuf},
     sync::{
@@ -46,12 +47,14 @@ use crate::{
     backends::Backend,
     backends::{lua::LuaBackend, native::NativeBackend},
     lua_introspection::LuaSyntaxIntrospection,
-    mapping::KeyMappingTable,
+    mapping::{KeyMappingTable, Rule},
 };
 
 // mod assistants;
 mod backends;
 mod constants;
+mod dbus_client;
+mod device;
 mod lua_introspection;
 mod mapping;
 mod messages;
@@ -149,25 +152,35 @@ pub enum Subcommands {
     /// Show or set the description of the specified keymap
     #[clap(about(DESCRIPTION_ABOUT.as_str()))]
     Description {
+        #[clap(required = false, short, long, default_value = "default.keymap")]
         keymap: PathBuf,
         description: Option<String>,
     },
 
     /// Show some information about a keymap
     #[clap(about(SHOW_ABOUT.as_str()))]
-    Show { keymap: PathBuf },
+    Show {
+        #[clap(required = false, short, long, default_value = "default.keymap")]
+        keymap: PathBuf,
+    },
 
     /// Show a list of available macros
     // #[clap(about(LUA_ABOUT.as_str()))]
-    ListMacros { lua_path: PathBuf },
+    Macros {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_path: PathBuf,
+    },
 
     /// Show a list of available Linux EVDEV events
     // #[clap(about(LUA_ABOUT.as_str()))]
-    ListEvents,
+    Events,
 
     /// Compile a keymap to Lua code and make it available to Eruption
     #[clap(about(COMPILE_ABOUT.as_str()))]
-    Compile { keymap: PathBuf },
+    Compile {
+        #[clap(required = false, short, long, default_value = "default.keymap")]
+        keymap: PathBuf,
+    },
 
     /// Generate shell completions
     Completions {
@@ -182,11 +195,26 @@ pub enum MappingSubcommands {
     /// Add a mapping for `source` that executes `action`
     #[clap(about(MAPPING_ADD_ABOUT.as_str()))]
     Add {
+        /// Specify the device to add the rule for
+        #[clap(required = false, short, long, default_value = "0")]
+        device: String,
+
+        /// Specify the enabled status of the newly added rule
+        #[clap(required = false, short, long, default_value = "true")]
+        enabled: bool,
+
+        /// Specify a description for a rule
+        #[clap(required = false, long, default_value = "")]
+        description: String,
+
         /// Specify a list of layers
         #[clap(required = false, short, long)]
         layers: Vec<usize>,
 
+        /// The filename of the keymap
+        #[clap(required = false, short, long, default_value = "default.keymap")]
         keymap: PathBuf,
+
         source: String,
         action: String,
     },
@@ -194,11 +222,50 @@ pub enum MappingSubcommands {
     /// Remove the mapping for `source`
     #[clap(about(MAPPING_REMOVE_ABOUT.as_str()))]
     Remove {
+        /// Specify the device to remove the mapping from
+        #[clap(required = false, short, long, default_value = "0")]
+        device: String,
+
         /// Specify a list of layers
         //#[clap(required = false, short, long)]
         //layers: Vec<usize>,
+
+        #[clap(required = false, short, long, default_value = "default.keymap")]
         keymap: PathBuf,
-        source: String,
+
+        index: usize,
+    },
+
+    /// Enable a single key mapping
+    Enable {
+        /// Specify the device
+        #[clap(required = false, short, long, default_value = "0")]
+        device: String,
+
+        /// Specify a list of layers
+        //#[clap(required = false, short, long)]
+        //layers: Vec<usize>,
+
+        #[clap(required = false, short, long, default_value = "default.keymap")]
+        keymap: PathBuf,
+
+        index: usize,
+    },
+
+    /// Disable a single key mapping
+    Disable {
+        /// Specify the device
+        #[clap(required = false, short, long, default_value = "0")]
+        device: String,
+
+        /// Specify a list of layers
+        //#[clap(required = false, short, long)]
+        //layers: Vec<usize>,
+
+        #[clap(required = false, short, long, default_value = "default.keymap")]
+        keymap: PathBuf,
+
+        index: usize,
     },
 }
 
@@ -364,6 +431,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::Mapping { command } => match command {
             MappingSubcommands::Add {
+                device: _,
+                description,
+                enabled,
                 layers,
                 keymap,
                 source,
@@ -389,15 +459,18 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 let action = parsers::action::parse(&action)?;
 
-                table.insert(source, action);
+                let rule = Rule::new(action, &description, enabled);
+
+                table.insert(source, rule);
 
                 NativeBackend::new().write_to_file(&path, &table)?
             }
 
             MappingSubcommands::Remove {
+                device: _,
                 //layers,
                 keymap,
-                source,
+                index,
             } => {
                 let path = if keymap.components().count() > 1 {
                     keymap
@@ -407,8 +480,67 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 let mut table = NativeBackend::from_file(&path)?;
 
-                let source = parsers::source::parse(&source)?;
-                table.remove(&source);
+                // copy the data structure, except the item that is to be removed
+                let mut mappings = BTreeMap::new();
+                for (idx, (source, rule)) in table.mappings().iter().enumerate() {
+                    if idx == index - 1 {
+                        continue;
+                    }
+
+                    mappings.insert(source.clone(), rule.clone());
+                }
+
+                table.mappings = mappings;
+
+                NativeBackend::new().write_to_file(&path, &table)?
+            }
+
+            MappingSubcommands::Enable {
+                device: _,
+                //layers,
+                keymap,
+                index,
+            } => {
+                let path = if keymap.components().count() > 1 {
+                    keymap
+                } else {
+                    PathBuf::from(constants::DEFAULT_KEYMAP_DIR).join(keymap)
+                };
+
+                let mut table = NativeBackend::from_file(&path)?;
+
+                table
+                    .mappings_mut()
+                    .iter_mut()
+                    .nth(index - 1)
+                    .expect("Index out of bounds")
+                    .1
+                    .enabled = true;
+
+                NativeBackend::new().write_to_file(&path, &table)?
+            }
+
+            MappingSubcommands::Disable {
+                device: _,
+                //layers,
+                keymap,
+                index,
+            } => {
+                let path = if keymap.components().count() > 1 {
+                    keymap
+                } else {
+                    PathBuf::from(constants::DEFAULT_KEYMAP_DIR).join(keymap)
+                };
+
+                let mut table = NativeBackend::from_file(&path)?;
+
+                table
+                    .mappings_mut()
+                    .iter_mut()
+                    .nth(index - 1)
+                    .expect("Index out of bounds")
+                    .1
+                    .enabled = false;
 
                 NativeBackend::new().write_to_file(&path, &table)?
             }
@@ -450,13 +582,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!("Description: {}", table.description().bold());
 
             let mut tab = Table::new();
-            tab.add_row(row!('#', "Source", "Action"));
+            tab.add_row(row!('#', "Source", "Action", "Description", "Flags"));
 
             for (index, (source, action)) in table.mappings().iter().enumerate() {
                 tab.add_row(Row::new(vec![
                     Cell::new(&format!("{}", index + 1)),
                     Cell::new(&format!("{}", source)),
                     Cell::new(&format!("{}", action)),
+                    Cell::new(&format!("{}", action.description)),
+                    if action.enabled {
+                        Cell::new(&format!("{}", "Enabled"))
+                    } else {
+                        Cell::new(&format!("{}", "Disabled"))
+                    },
                 ]));
             }
 
@@ -480,7 +618,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!("Success");
         }
 
-        Subcommands::ListMacros { lua_path } => {
+        Subcommands::Macros { lua_path } => {
             let path = if lua_path.components().count() > 1 {
                 lua_path.clone()
             } else {
@@ -498,7 +636,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        Subcommands::ListEvents => {
+        Subcommands::Events => {
             let event = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
 
             let mut tab = Table::new();

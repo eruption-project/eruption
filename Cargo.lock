@@ -1248,6 +1248,8 @@ dependencies = [
  "color-eyre",
  "colored",
  "ctrlc",
+ "dbus",
+ "dbus-tokio",
  "evdev-rs",
  "eyre",
  "flume",

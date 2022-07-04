@@ -37,7 +37,7 @@ pub struct KeyMappingTable {
     pub metadata: TableMetadata,
 
     #[serde(with = "any_key_map")]
-    pub mappings: BTreeMap<Source, Action>,
+    pub mappings: BTreeMap<Source, Rule>,
 }
 
 #[allow(unused)]
@@ -65,11 +65,11 @@ impl KeyMappingTable {
         self.metadata.description = description.to_string();
     }
 
-    pub fn insert(&mut self, source: Source, action: Action) -> Option<Action> {
-        self.mappings.insert(source, action)
+    pub fn insert(&mut self, source: Source, rule: Rule) -> Option<Rule> {
+        self.mappings.insert(source, rule)
     }
 
-    pub fn remove(&mut self, source: &Source) -> Option<Action> {
+    pub fn remove(&mut self, source: &Source) -> Option<Rule> {
         self.mappings.remove(source)
     }
 
@@ -77,7 +77,7 @@ impl KeyMappingTable {
         &self.metadata
     }
 
-    pub fn mappings(&self) -> &BTreeMap<Source, Action> {
+    pub fn mappings(&self) -> &BTreeMap<Source, Rule> {
         &self.mappings
     }
 
@@ -85,7 +85,7 @@ impl KeyMappingTable {
         &mut self.metadata
     }
 
-    pub fn mappings_mut(&mut self) -> &mut BTreeMap<Source, Action> {
+    pub fn mappings_mut(&mut self) -> &mut BTreeMap<Source, Rule> {
         &mut self.mappings
     }
 }
@@ -130,7 +130,7 @@ impl Display for TableMetadata {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Source {
     pub event: Event,
@@ -197,7 +197,7 @@ impl Display for Source {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct LayerSet<T>(pub BTreeSet<T>)
 where
     T: Ord + PartialOrd;
@@ -215,7 +215,31 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct Rule {
+    pub description: String,
+    pub enabled: bool,
+    pub action: Action,
+}
+
+impl Rule {
+    pub fn new(action: Action, description: &str, enabled: bool) -> Self {
+        Self {
+            description: description.to_owned(),
+            enabled,
+            action,
+        }
+    }
+}
+
+impl Display for Rule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("Action: {}", self.action))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Action {
     Null,
@@ -234,7 +258,7 @@ impl Display for Action {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Key {
     pub key_index: usize,
@@ -247,7 +271,7 @@ impl Display for Key {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct EvdevEvent {
     pub event: u32,
@@ -260,7 +284,7 @@ impl Display for EvdevEvent {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub struct Macro {
     pub function_name: String,
@@ -272,7 +296,7 @@ impl Display for Macro {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Event {
     Null,
@@ -324,7 +348,7 @@ impl Display for Event {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
     Up,

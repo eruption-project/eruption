@@ -17,13 +17,28 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+#![allow(unused)]
+
 use std::io;
 
 use evdev_rs::enums::{int_to_ev_key, EventCode, EV_KEY};
 use io::Write;
 use maplit::hashmap;
 
+use crate::{
+    dbus_client::get_managed_devices,
+    device::{get_device_info, DeviceInfo},
+};
+
 #[allow(unused)]
+type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum UtilError {
+    #[error("Device not found")]
+    DeviceNotFound {},
+}
+
 pub fn get_input(prompt: &str) -> io::Result<String> {
     print!("{}", prompt);
     io::stdout().lock().flush()?;
@@ -32,6 +47,44 @@ pub fn get_input(prompt: &str) -> io::Result<String> {
     io::stdin().read_line(&mut input)?;
 
     Ok(input.trim().to_string())
+}
+
+fn get_device_info_from_index(device: u64) -> Option<&'static DeviceInfo> {
+    let mut base_index = 0;
+
+    let (keyboards, mice, misc) = get_managed_devices().expect("Could not get device information");
+
+    if !keyboards.is_empty() {
+        for (_index, dev) in keyboards.iter().enumerate() {
+            if base_index == device {
+                return get_device_info(dev.0, dev.1);
+            }
+
+            base_index += 1;
+        }
+    }
+
+    if !mice.is_empty() {
+        for (_index, dev) in mice.iter().enumerate() {
+            if base_index == device {
+                return get_device_info(dev.0, dev.1);
+            }
+
+            base_index += 1;
+        }
+    }
+
+    if !misc.is_empty() {
+        for (_index, dev) in misc.iter().enumerate() {
+            if base_index == device {
+                return get_device_info(dev.0, dev.1);
+            }
+
+            base_index += 1;
+        }
+    }
+
+    None
 }
 
 pub fn evdev_event_code_to_string(event: u32) -> String {

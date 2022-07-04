@@ -63,7 +63,7 @@ impl super::Backend for LuaBackend {
 --
 -- AUTO GENERATED LUA SOURCE CODE FILE, DO NOT EDIT MANUALLY
 --
--- Created by: `eruption-keymap compile {}`
+-- Created by: `eruption-keymap compile --keymap {}`
 -- Compiled at: {}
 
 ",
@@ -71,10 +71,10 @@ impl super::Backend for LuaBackend {
             Utc::now()
         )?;
 
-        for (index, (source, action)) in table.mappings().iter().enumerate() {
-            writeln!(&mut text, "-- {:?} -> {:?}", source, action)?;
+        for (index, (source, rule)) in table.mappings().iter().enumerate() {
+            writeln!(&mut text, "-- {:?} -> {:?}", source, rule)?;
 
-            match action {
+            match &rule.action {
                 Action::Null => {
                     messages::info!(
                         "Rule: {}: {}",
@@ -181,6 +181,10 @@ impl super::Backend for LuaBackend {
 
                         Event::EasyShiftKeyDown(key) => {
                             for layer in &source.layers.0 {
+                                if !rule.enabled {
+                                    write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                                }
+
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_REMAPPING_TABLE[{}][{}] = {}",
@@ -222,6 +226,10 @@ impl super::Backend for LuaBackend {
                         Event::EasyShiftMouseWheel(_direction) => {}
 
                         Event::SimpleKeyDown(key) => {
+                            if !rule.enabled {
+                                write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                            }
+
                             writeln!(
                                 &mut text,
                                 "REMAPPING_TABLE[{}] = {}",
@@ -335,6 +343,10 @@ impl super::Backend for LuaBackend {
 
                         Event::EasyShiftKeyDown(key) => {
                             for layer in &source.layers.0 {
+                                if !rule.enabled {
+                                    write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                                }
+
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MACRO_TABLE[{}][{}] = {}",
@@ -355,6 +367,10 @@ impl super::Backend for LuaBackend {
 
                         Event::EasyShiftMouseDown(key) => {
                             for layer in &source.layers.0 {
+                                if !rule.enabled {
+                                    write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                                }
+
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_DOWN_MACRO_TABLE[{}][{}] = {}",
@@ -365,6 +381,10 @@ impl super::Backend for LuaBackend {
 
                         Event::EasyShiftMouseUp(key) => {
                             for layer in &source.layers.0 {
+                                if !rule.enabled {
+                                    write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                                }
+
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_UP_MACRO_TABLE[{}][{}] = {}",
@@ -375,6 +395,10 @@ impl super::Backend for LuaBackend {
 
                         Event::EasyShiftMouseWheel(_direction) => {
                             for layer in &source.layers.0 {
+                                if !rule.enabled {
+                                    write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                                }
+
                                 writeln!(
                                     &mut text,
                                     "EASY_SHIFT_MOUSE_WHEEL_MACRO_TABLE[{}] = {}",
@@ -384,6 +408,10 @@ impl super::Backend for LuaBackend {
                         }
 
                         Event::SimpleKeyDown(key) => {
+                            if !rule.enabled {
+                                write!(&mut text, "-- ACTION IS DISABLED: ")?;
+                            }
+
                             writeln!(
                                 &mut text,
                                 "MACRO_TABLE[{}] = {}",
