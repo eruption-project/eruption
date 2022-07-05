@@ -16,3 +16,6 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
+
+#![allow(unused)]
+

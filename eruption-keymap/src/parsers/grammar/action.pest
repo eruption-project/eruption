@@ -25,5 +25,7 @@ Call = { "call:" ~ function }
 Event = { "event:" ~ char+ }
 
 function = { char+ }
+
 char = { ASCII_ALPHANUMERIC | "_" }
+
 num = { '0'..'9' }

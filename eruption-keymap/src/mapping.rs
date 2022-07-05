@@ -23,6 +23,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::{DateTime, Utc};
+use color_eyre::owo_colors::OwoColorize;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json_any_key::any_key_map;
@@ -262,12 +263,32 @@ impl Display for Action {
 #[serde(rename_all = "lowercase")]
 pub struct Key {
     pub key_index: usize,
+
+    /// The USB vendor ID of the device
+    pub usb_vid: u16,
+
+    /// The USB product ID of the device
+    pub usb_pid: u16,
+}
+
+impl Key {
+    pub fn new(key_index: usize, (usb_vid, usb_pid): (u16, u16)) -> Self {
+        Self {
+            key_index,
+            usb_vid,
+            usb_pid,
+        }
+    }
 }
 
 impl Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //f.write_str(&format!("Key idx:{}", self.key_index))
-        f.write_str(&format!("{}", self.key_index))
+        f.write_str(&format!(
+            "{} ({})",
+            util::key_index_to_symbol(self.key_index + 1, (self.usb_vid, self.usb_pid))
+                .unwrap_or_else(|| "<invalid symbol>".italic().to_string()),
+            self.key_index
+        ))
     }
 }
 

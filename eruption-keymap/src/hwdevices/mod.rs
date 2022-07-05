@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use evdev_rs::EV_KEY;
+use evdev_rs::enums::{EventCode, EV_KEY};
 
 pub mod corsair_strafe;
 pub mod generic_keyboard;
@@ -44,19 +44,47 @@ pub fn ev_key_to_index(ev_key: &EV_KEY, (usb_vid, usb_pid): (u16, u16)) -> Optio
         DeviceInfo { make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15, },
     */
 
-    match (usb_vid, usb_pid) {
-        (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Some(roccat_vulcan_1xx::EV_TO_INDEX_ISO[ev_key]),
+    let result = match (usb_vid, usb_pid) {
+        (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
+            Some(roccat_vulcan_1xx::EV_TO_INDEX_ISO[*ev_key as usize] as usize)
+        }
 
-        (0x1e7d, 0x30f7) => Some(roccat_vulcan_pro::EV_TO_INDEX_ISO[ev_key]),
+        (0x1e7d, 0x30f7) => Some(roccat_vulcan_pro::EV_TO_INDEX_ISO[*ev_key as usize] as usize),
 
-        (0x1e7d, 0x2fee) => Some(roccat_vulcan_tkl::EV_TO_INDEX_ISO[ev_key]),
+        (0x1e7d, 0x2fee) => Some(roccat_vulcan_tkl::EV_TO_INDEX_ISO[*ev_key as usize] as usize),
 
-        (0x1e7d, 0x311a) => Some(roccat_vulcan_pro_tkl::EV_TO_INDEX_ISO[ev_key]),
+        (0x1e7d, 0x311a) => Some(roccat_vulcan_pro_tkl::EV_TO_INDEX_ISO[*ev_key as usize] as usize),
 
-        (0x1e7d, 0x3124) => Some(roccat_magma::EV_TO_INDEX_ISO[ev_key]),
+        (0x1e7d, 0x3124) => Some(roccat_magma::EV_TO_INDEX_ISO[*ev_key as usize] as usize),
 
-        (0x1e7d, 0x1b151) => Some(corsair_strafe::EV_TO_INDEX_ISO[ev_key]),
+        (0x1e7d, 0x1b15) => Some(corsair_strafe::EV_TO_INDEX_ISO[*ev_key as usize] as usize),
 
         _ => None,
+    };
+
+    if let Some(result) = result {
+        if result == 0xff {
+            // filter out invalid results
+            None
+        } else {
+            Some(result)
+        }
+    } else {
+        None
     }
+}
+
+/// Map an index to a [EV_KEY] event
+pub fn index_to_ev_key(index: usize, (usb_vid, usb_pid): (u16, u16)) -> Option<EV_KEY> {
+    for event in EventCode::EV_KEY(EV_KEY::KEY_RESERVED).iter() {
+        if let EventCode::EV_KEY(event) = event {
+            if let Some(result) = ev_key_to_index(&event, (usb_vid, usb_pid)) {
+                if result == index - 2 {
+                    return Some(event);
+                }
+            }
+        }
+    }
+
+    None
 }

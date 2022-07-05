@@ -31,10 +31,10 @@ use lazy_static::lazy_static;
 
 #[derive(Debug, Clone)]
 pub struct DeviceInfo {
-    make: &'static str,
-    model: &'static str,
-    usb_vid: u16,
-    usb_pid: u16,
+    pub make: &'static str,
+    pub model: &'static str,
+    pub usb_vid: u16,
+    pub usb_pid: u16,
 }
 
 lazy_static! {

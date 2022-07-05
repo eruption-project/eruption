@@ -1,8 +1,8 @@
 /*
     This file is part of Eruption.
 
-    Eruption is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
+    Eruption is free software: &you can redistribute it and/or modify
+    it under the terms of &the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
@@ -17,43 +17,85 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use color_eyre::owo_colors::OwoColorize;
 use eyre::eyre;
 use pest::Parser;
 use pest_derive::Parser;
 
-use crate::mapping::*;
+use crate::{mapping::*, util};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum SourceError {
+    #[error("Invalid 'source' parameter")]
+    InvalidParameter {},
+
+    #[error("Invalid device")]
+    InvalidDevice {},
+    // #[error("Operation not supported")]
+    // OpNotSupported {},
+}
 
 #[derive(Parser)]
 #[grammar = "parsers/grammar/source.pest"]
 pub struct SourceParser;
 
-pub fn parse(source: &str) -> Result<Source> {
+pub fn parse(source: &str, device: usize) -> Result<Source> {
     let mut result = None;
+
+    let device_info =
+        util::get_device_info_from_index(device as u64).ok_or(SourceError::InvalidDevice {})?;
+    let (usb_vid, usb_pid) = (device_info.usb_vid, device_info.usb_pid);
+
+    println!(
+        "Selected device: {} {}",
+        device_info.make.bold(),
+        device_info.model.bold()
+    );
 
     let pairs = SourceParser::parse(Rule::Source, source)?.next().unwrap();
 
     for pair in pairs.into_inner() {
         match pair.as_rule() {
             Rule::EasyShiftKeyDown => {
-                let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::EasyShiftKeyDown(Key { key_index })));
+                let symbol = pair.into_inner().as_str();
+                let key_index = util::symbol_to_key_index(symbol, (usb_vid, usb_pid))
+                    .ok_or(SourceError::InvalidParameter {})?;
+
+                result = Some(Source::new(Event::EasyShiftKeyDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::EasyShiftKeyUp => {
-                let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::EasyShiftKeyUp(Key { key_index })));
+                let symbol = pair.into_inner().as_str();
+                let key_index = util::symbol_to_key_index(symbol, (usb_vid, usb_pid))
+                    .ok_or(SourceError::InvalidParameter {})?;
+
+                result = Some(Source::new(Event::EasyShiftKeyUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::EasyShiftMouseDown => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::EasyShiftMouseDown(Key { key_index })));
+
+                result = Some(Source::new(Event::EasyShiftMouseDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::EasyShiftMouseUp => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::EasyShiftMouseUp(Key { key_index })));
+
+                result = Some(Source::new(Event::EasyShiftMouseUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::EasyShiftMouseWheel => {
@@ -80,42 +122,72 @@ pub fn parse(source: &str) -> Result<Source> {
 
             Rule::HidKeyDown => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::HidKeyDown(Key { key_index })));
+                result = Some(Source::new(Event::HidKeyDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::HidKeyUp => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::HidKeyUp(Key { key_index })));
+                result = Some(Source::new(Event::HidKeyUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::HidMouseDown => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::HidMouseDown(Key { key_index })));
+                result = Some(Source::new(Event::HidMouseDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::HidMouseUp => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::HidMouseUp(Key { key_index })));
+                result = Some(Source::new(Event::HidMouseUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::SimpleKeyDown => {
-                let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::SimpleKeyDown(Key { key_index })));
+                let symbol = pair.into_inner().as_str();
+                let key_index = util::symbol_to_key_index(symbol, (usb_vid, usb_pid))
+                    .ok_or(SourceError::InvalidParameter {})?;
+
+                result = Some(Source::new(Event::SimpleKeyDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::SimpleKeyUp => {
-                let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::SimpleKeyUp(Key { key_index })));
+                let symbol = pair.into_inner().as_str();
+                let key_index = util::symbol_to_key_index(symbol, (usb_vid, usb_pid))
+                    .ok_or(SourceError::InvalidParameter {})?;
+
+                result = Some(Source::new(Event::SimpleKeyUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::SimpleMouseDown => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::SimpleMouseDown(Key { key_index })));
+                result = Some(Source::new(Event::SimpleMouseDown(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::SimpleMouseUp => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
-                result = Some(Source::new(Event::SimpleMouseUp(Key { key_index })));
+                result = Some(Source::new(Event::SimpleMouseUp(Key::new(
+                    key_index,
+                    (usb_vid, usb_pid),
+                ))));
             }
 
             Rule::SimpleMouseWheel => {

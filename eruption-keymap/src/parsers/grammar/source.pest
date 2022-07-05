@@ -53,6 +53,8 @@ HidKeyDown = { "" ~ "hid+key-down:" ~ char+ }
 HidMouseUp = { "" ~ "hid+mouse-up:" ~ num+ }
 HidMouseDown = { "" ~ "hid+mouse-down:" ~ num+ }
 
-char = { ASCII_ALPHANUMERIC }
+char = { ASCII_ALPHANUMERIC | "_" }
+
 direction = { "up" | "down" | "left" | "right" }
+
 num = { '0'..'9' }

@@ -1238,7 +1238,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-keymap"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -1261,6 +1261,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
+ "maplit",
  "mlua",
  "nix 0.24.1",
  "parking_lot",

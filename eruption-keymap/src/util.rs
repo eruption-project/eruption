@@ -28,6 +28,7 @@ use maplit::hashmap;
 use crate::{
     dbus_client::get_managed_devices,
     device::{get_device_info, DeviceInfo},
+    hwdevices,
 };
 
 #[allow(unused)]
@@ -35,6 +36,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum UtilError {
+    #[error("Invalid parameter")]
+    InvalidParameter {},
+
     #[error("Device not found")]
     DeviceNotFound {},
 }
@@ -49,7 +53,7 @@ pub fn get_input(prompt: &str) -> io::Result<String> {
     Ok(input.trim().to_string())
 }
 
-fn get_device_info_from_index(device: u64) -> Option<&'static DeviceInfo> {
+pub fn get_device_info_from_index(device: u64) -> Option<&'static DeviceInfo> {
     let mut base_index = 0;
 
     let (keyboards, mice, misc) = get_managed_devices().expect("Could not get device information");
@@ -1022,4 +1026,18 @@ pub fn evdev_key_event_to_int(event: EventCode) -> u32 {
 
         EventCode::EV_MAX => 0,
     }
+}
+
+pub fn symbol_to_key_index(symbol: &str, (usb_vid, usb_pid): (u16, u16)) -> Option<usize> {
+    if let Some(event) = evdev_event_code_from_string(&symbol.to_uppercase()) {
+        hwdevices::ev_key_to_index(&event, (usb_vid, usb_pid)).map(|e| e + 1)
+    } else {
+        symbol.parse::<usize>().ok()
+    }
+}
+
+pub fn key_index_to_symbol(index: usize, (usb_vid, usb_pid): (u16, u16)) -> Option<String> {
+    let ev_key = hwdevices::index_to_ev_key(index, (usb_vid, usb_pid))?;
+
+    Some(evdev_event_code_to_string(ev_key as u32))
 }

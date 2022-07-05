@@ -55,6 +55,7 @@ mod backends;
 mod constants;
 mod dbus_client;
 mod device;
+mod hwdevices;
 mod lua_introspection;
 mod mapping;
 mod messages;
@@ -431,7 +432,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::Mapping { command } => match command {
             MappingSubcommands::Add {
-                device: _,
+                device,
                 description,
                 enabled,
                 layers,
@@ -439,6 +440,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 source,
                 action,
             } => {
+                let device = device.parse::<usize>()?;
+
                 let path = if keymap.components().count() > 1 {
                     keymap
                 } else {
@@ -451,7 +454,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     KeyMappingTable::new()
                 };
 
-                let mut source = parsers::source::parse(&source)?;
+                let mut source = parsers::source::parse(&source, device)?;
                 if !layers.is_empty() {
                     source.get_layers_mut().clear();
                     source.get_layers_mut().extend(&layers);
@@ -589,7 +592,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     Cell::new(&format!("{}", index + 1)),
                     Cell::new(&format!("{}", source)),
                     Cell::new(&format!("{}", action)),
-                    Cell::new(&format!("{}", action.description)),
+                    if action.description.trim().is_empty() {
+                        Cell::new(&format!("{}", "N.a.".italic()))
+                    } else {
+                        Cell::new(&format!("{}", action.description))
+                    },
                     if action.enabled {
                         Cell::new(&format!("{}", "Enabled"))
                     } else {

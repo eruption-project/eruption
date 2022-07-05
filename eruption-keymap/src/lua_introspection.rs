@@ -111,7 +111,7 @@ pub mod syntax {
         pub fn new_from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
             let file_name = path.as_ref();
 
-            let regex = RegexBuilder::new(r"function\s+(?P<fn>.*)\s*\(\w*\)\n+")
+            let regex = RegexBuilder::new(r"function\s+(?P<fn>.*)\(\w*\)")
                 .case_insensitive(true)
                 .multi_line(true)
                 .build()?;
