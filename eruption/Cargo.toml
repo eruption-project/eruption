@@ -83,7 +83,7 @@ simdnoise = "3.1.6"
 #luajit-src = "210.3.2+resty1085a4d"
 #mlua = { version = "0.7.3", features = ["luajit52"] }
 mlua = { version = "0.8.1", features = ["lua54"] }
-sysinfo = "0.24.5"
+sysinfo = "0.24.6"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.1"
 rustfft = "6.0.1"
