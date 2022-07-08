@@ -5,17 +5,17 @@ complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "list" -d 'List all
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "mapping" -d 'Add or remove a single mapping entry'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "description" -d 'Show or set the description of the specified keymap'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "show" -d 'Show some information about a keymap'
-complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "macros" -d 'Show a list of available macros'
+complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "macros" -d 'Show a list of available macros in a Lua file'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "events" -d 'Show a list of available Linux EVDEV events'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "compile" -d 'Compile a keymap to Lua code and make it available to Eruption'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
 complete -c eruption-keymap -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from list" -s h -l help -d 'Print help information'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -s h -l help -d 'Print help information'
-complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "add" -d 'Add a mapping for `source` that executes `action`'
-complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "remove" -d 'Remove the mapping for `source`'
-complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "enable"
-complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "disable"
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "add" -d 'Add a mapping rule for `source` that executes `action`'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "remove" -d 'Remove the mapping rule for `source`'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "enable" -d 'Enable a mapping rule'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "disable" -d 'Disable a mapping rule'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and not __fish_seen_subcommand_from add; and not __fish_seen_subcommand_from remove; and not __fish_seen_subcommand_from enable; and not __fish_seen_subcommand_from disable; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from add" -s d -l device -d 'Specify the device to add the rule for' -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from add" -s e -l enabled -d 'Specify the enabled status of the newly added rule' -r
@@ -26,13 +26,19 @@ complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from remove" -s d -l device -d 'Specify the device to remove the mapping from' -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from remove" -s k -l keymap -d 'Specify a list of layers' -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from remove" -s h -l help -d 'Print help information'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from enable" -s d -l device -d 'Specify the device' -r
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from enable" -s k -l keymap -d 'Specify a list of layers' -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from enable" -s h -l help -d 'Print help information'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from disable" -s d -l device -d 'Specify the device' -r
+complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from disable" -s k -l keymap -d 'Specify a list of layers' -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from mapping; and __fish_seen_subcommand_from disable" -s h -l help -d 'Print help information'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from description" -s k -l keymap -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from description" -s h -l help -d 'Print help information'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from show" -s k -l keymap -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from show" -s h -l help -d 'Print help information'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from macros" -s l -l lua-path -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from macros" -s h -l help -d 'Print help information'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from events" -s h -l help -d 'Print help information'
+complete -c eruption-keymap -n "__fish_seen_subcommand_from compile" -s k -l keymap -r
 complete -c eruption-keymap -n "__fish_seen_subcommand_from compile" -s h -l help -d 'Print help information'
 complete -c eruption-keymap -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'

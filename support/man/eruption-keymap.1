@@ -1,20 +1,27 @@
 .\" Manpage for Eruption.
-.TH man 1 "July 2022" "0.0.1" "eruption-keymap man page"
+.TH man 1 "July 2022" "0.0.3" "eruption-keymap man page"
 .SH NAME
  eruption-keymap - A CLI keymap editor for Eruption
 .SH SYNOPSIS
 
  USAGE:
-    eruption-keymap [OPTIONS] <SUBCOMMAND>
+     eruption-keymap [OPTIONS] <SUBCOMMAND>
 
  OPTIONS:
-    -h, --help       Print help information
-    -v, --verbose    Verbose mode (-v, -vv, -vvv, etc.)
-    -V, --version    Print version information
+     -h, --help       Print help information
+     -v, --verbose    Verbose mode (-v, -vv, -vvv, etc.)
+     -V, --version    Print version information
 
  SUBCOMMANDS:
-    completions    Generate shell completions
-    help           Print this message or the help of the given subcommand(s)
+     compile        Compile a keymap to Lua code and make it available to Eruption
+     completions    Generate shell completions
+     description    Show or set the description of the specified keymap
+     events         Show a list of available Linux EVDEV events
+     help           Print this message or the help of the given subcommand(s)
+     list           List all available keymaps
+     macros         Show a list of available macros
+     mapping        Add or remove a single mapping entry
+     show           Show some information about a keymap
 
 
  .SH SEE ALSO

@@ -22,7 +22,7 @@ $ eruption-keymap
 
  Copyright (c) 2019-2022, The Eruption Development Team
 
-eruption-keymap 0.0.2
+eruption-keymap 0.0.3
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 A CLI keymap editor for Eruption
 

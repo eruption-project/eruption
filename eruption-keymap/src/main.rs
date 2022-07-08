@@ -75,6 +75,7 @@ lazy_static! {
 }
 
 #[allow(unused)]
+#[macro_export]
 macro_rules! tr {
     ($message_id:literal) => {{
         let loader = $crate::STATIC_LOADER.lock();
@@ -111,9 +112,13 @@ lazy_static! {
     static ref MAPPING_ABOUT: String = tr!("mapping-about");
     static ref DESCRIPTION_ABOUT: String = tr!("description-about");
     static ref SHOW_ABOUT: String = tr!("show-about");
+    static ref MACROS_ABOUT: String = tr!("macros-about");
+    static ref EVENTS_ABOUT: String = tr!("events-about");
     static ref COMPILE_ABOUT: String = tr!("compile-about");
     static ref MAPPING_ADD_ABOUT: String = tr!("mapping-add-about");
     static ref MAPPING_REMOVE_ABOUT: String = tr!("mapping-remove-about");
+    static ref MAPPING_ENABLE_ABOUT: String = tr!("mapping-enable-about");
+    static ref MAPPING_DISABLE_ABOUT: String = tr!("mapping-disable-about");
 }
 
 /// Supported command line arguments
@@ -165,15 +170,15 @@ pub enum Subcommands {
         keymap: PathBuf,
     },
 
-    /// Show a list of available macros
-    // #[clap(about(LUA_ABOUT.as_str()))]
+    /// Show a list of available macros in a Lua file
+    #[clap(about(MACROS_ABOUT.as_str()))]
     Macros {
         #[clap(required = false, short, long, default_value = "user-macros.lua")]
         lua_path: PathBuf,
     },
 
     /// Show a list of available Linux EVDEV events
-    // #[clap(about(LUA_ABOUT.as_str()))]
+    #[clap(about(EVENTS_ABOUT.as_str()))]
     Events,
 
     /// Compile a keymap to Lua code and make it available to Eruption
@@ -184,6 +189,7 @@ pub enum Subcommands {
     },
 
     /// Generate shell completions
+    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -193,7 +199,7 @@ pub enum Subcommands {
 /// Subcommands of the "mapping" command
 #[derive(Debug, clap::Parser)]
 pub enum MappingSubcommands {
-    /// Add a mapping for `source` that executes `action`
+    /// Add a mapping rule for `source` that executes `action`
     #[clap(about(MAPPING_ADD_ABOUT.as_str()))]
     Add {
         /// Specify the device to add the rule for
@@ -220,7 +226,7 @@ pub enum MappingSubcommands {
         action: String,
     },
 
-    /// Remove the mapping for `source`
+    /// Remove the mapping rule for `source`
     #[clap(about(MAPPING_REMOVE_ABOUT.as_str()))]
     Remove {
         /// Specify the device to remove the mapping from
@@ -237,7 +243,8 @@ pub enum MappingSubcommands {
         index: usize,
     },
 
-    /// Enable a single key mapping
+    /// Enable a key mapping rule
+    #[clap(about(MAPPING_ENABLE_ABOUT.as_str()))]
     Enable {
         /// Specify the device
         #[clap(required = false, short, long, default_value = "0")]
@@ -253,7 +260,8 @@ pub enum MappingSubcommands {
         index: usize,
     },
 
-    /// Disable a single key mapping
+    /// Disable a key mapping rule
+    #[clap(about(MAPPING_DISABLE_ABOUT.as_str()))]
     Disable {
         /// Specify the device
         #[clap(required = false, short, long, default_value = "0")]
@@ -287,24 +295,8 @@ pub enum CompletionsSubcommands {
 /// Print license information
 #[allow(dead_code)]
 fn print_header() {
-    println!(
-        r#"
- Eruption is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- Eruption is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
-
- Copyright (c) 2019-2022, The Eruption Development Team
-"#
-    );
+    println!("{}", tr!("license-header"));
+    println!();
 }
 
 #[cfg(debug_assertions)]
@@ -585,7 +577,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!("Description: {}", table.description().bold());
 
             let mut tab = Table::new();
-            tab.add_row(row!('#', "Source", "Action", "Description", "Flags"));
+            tab.add_row(row!(
+                '#',
+                tr!("source"),
+                tr!("action"),
+                tr!("description"),
+                tr!("flags")
+            ));
 
             for (index, (source, action)) in table.mappings().iter().enumerate() {
                 tab.add_row(Row::new(vec![
@@ -593,14 +591,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     Cell::new(&format!("{}", source)),
                     Cell::new(&format!("{}", action)),
                     if action.description.trim().is_empty() {
-                        Cell::new(&format!("{}", "N.a.".italic()))
+                        Cell::new(&format!("{}", tr!("n-a").italic()))
                     } else {
                         Cell::new(&format!("{}", action.description))
                     },
                     if action.enabled {
-                        Cell::new(&format!("{}", "Enabled"))
+                        Cell::new(&format!("{}", tr!("enabled")))
                     } else {
-                        Cell::new(&format!("{}", "Disabled"))
+                        Cell::new(&format!("{}", tr!("disabled")))
                     },
                 ]));
             }
@@ -615,14 +613,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 PathBuf::from(constants::DEFAULT_KEYMAP_DIR).join(keymap)
             };
 
-            println!("Compiling keymap {}", &path.display().bold());
+            println!("{} {}", tr!("compiling"), &path.display().bold());
 
             let table = NativeBackend::from_file(&path)?;
             path.set_extension("lua");
 
             LuaBackend::new().write_to_file(&path, &table)?;
 
-            println!("Success");
+            println!("{}", tr!("success"));
         }
 
         Subcommands::Macros { lua_path } => {
@@ -634,7 +632,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     .join(lua_path.clone())
             };
 
-            println!("Functions in Lua file: {}\n", &path.display().bold());
+            println!("{} {}\n", tr!("functions-in-file"), &path.display().bold());
 
             let lua_file = LuaSyntaxIntrospection::new_from_file(&path)?;
 
@@ -647,7 +645,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let event = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
 
             let mut tab = Table::new();
-            tab.add_row(row!('#', "Symbol", "Code"));
+            tab.add_row(row!('#', tr!("symbol"), tr!("code")));
 
             for (index, code) in event.iter().enumerate() {
                 tab.add_row(Row::new(vec![

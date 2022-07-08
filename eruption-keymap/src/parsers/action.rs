@@ -62,5 +62,5 @@ pub fn parse(action: &str) -> Result<Action> {
         }
     }
 
-    result.ok_or_else(|| eyre!("Parse error"))
+    result.ok_or_else(|| eyre!("Parse error in action expression"))
 }

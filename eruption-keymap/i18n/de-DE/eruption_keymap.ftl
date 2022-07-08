@@ -26,10 +26,36 @@ list-about = Listet alle verfügbaren Keymaps auf
 mapping-about = Hinzufügen oder entfernen eines Tasten Mappings
 description-about = Zeigt oder setzt die Beschreibung der Keymap
 show-about = Zeigt verfügbare Informationen über eine Keymap
-compile-about = Übersetzt eine Keymap zu Lua code und macht sie für Eruption verfügbar
+macros-about = Zeigt eine Liste der verfügbaren Makros in einer Lua Datei
+events-about = Zeigt eine Liste der verfügbaren Linux EVDEV Ereignisse
+compile-about = Übersetzt eine Keymap zu Lua Code und macht sie für Eruption verfügbar
 mapping-add-about = Ein Tasten Mapping von `source` nach `action` hinzufügen
 mapping-remove-about = Das Tasten Mapping von `source` entfernen
+mapping-enable-about = Aktiviert eine Mapping Regel
+mapping-disable-about = Deaktiviert eine Mapping Regel
 
+source = Quelle
+action = Aktion
+description = Beschreibung
+flags = Attribute
+
+enabled = Aktiviert
+disabled = Deaktiviert
+
+n-a = N.a.
+
+symbol = Symbol
+code = Code
+
+compiling = Übersetze Keymap: 
+
+success = Erfolgreich
+
+functions-in-file = Funktionen in Lua Datei: 
+
+action-not-implemented = Diese Aktion ist nicht implementiert
+action-disabled = Diese Aktion ist deaktiviert
+action-disabled-null = Diese Aktion ist deaktiviert: null
 
 license-header = Eruption ist freie Software. Sie können es unter den Bedingungen der
  GNU General Public License, wie von der Free Software Foundation

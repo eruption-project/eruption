@@ -120,6 +120,18 @@ pub fn parse(source: &str, device: usize) -> Result<Source> {
                 }
             }
 
+            Rule::EasyShiftMouseDpi => {
+                let direction = pair.into_inner().as_str();
+
+                match direction.to_ascii_lowercase().as_str() {
+                    "up" => result = Some(Source::new(Event::EasyShiftMouseDpi(Direction::Up))),
+
+                    "down" => result = Some(Source::new(Event::EasyShiftMouseDpi(Direction::Down))),
+
+                    _ => { /* do nothing, will result in parse error below */ }
+                }
+            }
+
             Rule::HidKeyDown => {
                 let key_index = pair.into_inner().as_str().parse::<usize>()?;
                 result = Some(Source::new(Event::HidKeyDown(Key::new(
@@ -208,6 +220,18 @@ pub fn parse(source: &str, device: usize) -> Result<Source> {
                 }
             }
 
+            Rule::SimpleMouseDpi => {
+                let direction = pair.into_inner().as_str();
+
+                match direction.to_ascii_lowercase().as_str() {
+                    "up" => result = Some(Source::new(Event::SimpleMouseDpi(Direction::Up))),
+
+                    "down" => result = Some(Source::new(Event::SimpleMouseDpi(Direction::Down))),
+
+                    _ => { /* do nothing, will result in parse error below */ }
+                }
+            }
+
             Rule::Null => result = Some(Source::new(Event::Null)),
 
             _ => {
@@ -217,5 +241,5 @@ pub fn parse(source: &str, device: usize) -> Result<Source> {
         }
     }
 
-    result.ok_or_else(|| eyre!("Parse error"))
+    result.ok_or_else(|| eyre!("Parse error in source expression"))
 }

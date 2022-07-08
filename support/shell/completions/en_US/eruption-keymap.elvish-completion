@@ -28,7 +28,7 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand mapping 'Add or remove a single mapping entry'
             cand description 'Show or set the description of the specified keymap'
             cand show 'Show some information about a keymap'
-            cand macros 'Show a list of available macros'
+            cand macros 'Show a list of available macros in a Lua file'
             cand events 'Show a list of available Linux EVDEV events'
             cand compile 'Compile a keymap to Lua code and make it available to Eruption'
             cand completions 'Generate shell completions'
@@ -41,10 +41,10 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
         &'eruption-keymap;mapping'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
-            cand add 'Add a mapping for `source` that executes `action`'
-            cand remove 'Remove the mapping for `source`'
-            cand enable 'enable'
-            cand disable 'disable'
+            cand add 'Add a mapping rule for `source` that executes `action`'
+            cand remove 'Remove the mapping rule for `source`'
+            cand enable 'Enable a mapping rule'
+            cand disable 'Disable a mapping rule'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-keymap;mapping;add'= {
@@ -69,10 +69,18 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-keymap;mapping;enable'= {
+            cand -d 'Specify the device'
+            cand --device 'Specify the device'
+            cand -k 'Specify a list of layers'
+            cand --keymap 'Specify a list of layers'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruption-keymap;mapping;disable'= {
+            cand -d 'Specify the device'
+            cand --device 'Specify the device'
+            cand -k 'Specify a list of layers'
+            cand --keymap 'Specify a list of layers'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
@@ -91,6 +99,8 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-keymap;macros'= {
+            cand -l 'l'
+            cand --lua-path 'lua-path'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
@@ -99,6 +109,8 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-keymap;compile'= {
+            cand -k 'k'
+            cand --keymap 'keymap'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }

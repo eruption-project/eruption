@@ -100,7 +100,17 @@ pub fn process_filesystem_event(
             REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
 
-        FileSystemEvent::ScriptChanged => {}
+        FileSystemEvent::ScriptChanged => {
+            events::notify_observers(events::Event::FileSystemEvent(fsevent.clone()))
+                .unwrap_or_else(|e| error!("Error during notification of observers: {}", e));
+
+            // dbus_api_tx
+            //     .send(DbusApiEvent::ScriptChanged)
+            //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+            // TODO: maybe make this more fine grained
+            REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+        }
     }
 
     Ok(())

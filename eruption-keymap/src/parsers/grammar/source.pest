@@ -23,11 +23,11 @@ Source = { SOI ~
 
 	   EasyShiftKeyUp | EasyShiftKeyDown |
 	   EasyShiftMouseUp | EasyShiftMouseDown |
- 	   EasyShiftMouseWheel |
+ 	   EasyShiftMouseWheel | EasyShiftMouseDpi |
 
 	   SimpleKeyUp | SimpleKeyDown |
 	   SimpleMouseUp | SimpleMouseDown |
- 	   SimpleMouseWheel |
+ 	   SimpleMouseWheel | SimpleMouseDpi |
 
 	   HidKeyUp | HidKeyDown |
 	   HidMouseUp | HidMouseDown
@@ -41,12 +41,14 @@ EasyShiftKeyDown = { "" ~ "es+key-down:" ~ char+ }
 EasyShiftMouseUp = { "" ~ "es+mouse-up:" ~ num+ }
 EasyShiftMouseDown = { "" ~ "es+mouse-down:" ~ num+ }
 EasyShiftMouseWheel = { "" ~ "es+mouse-wheel:" ~ direction }
+EasyShiftMouseDpi = { "" ~ "es+mouse-dpi:" ~ direction }
 
 SimpleKeyUp = { "" ~ "key-up:" ~ char+ }
 SimpleKeyDown = { "" ~ "key-down:" ~ char+ }
 SimpleMouseUp = { "" ~ "mouse-up:" ~ num+ }
 SimpleMouseDown = { "" ~ "mouse-down:" ~ num+ }
 SimpleMouseWheel = { "" ~ "mouse-wheel:" ~ direction }
+SimpleMouseDpi = { "" ~ "mouse-dpi:" ~ direction }
 
 HidKeyUp = { "" ~ "hid+key-up:" ~ char+ }
 HidKeyDown = { "" ~ "hid+key-down:" ~ char+ }

@@ -180,11 +180,13 @@ impl Display for Source {
             Event::EasyShiftMouseDown(_) => true,
             Event::EasyShiftMouseUp(_) => true,
             Event::EasyShiftMouseWheel(_) => true,
+            Event::EasyShiftMouseDpi(_) => true,
             Event::SimpleKeyDown(_) => false,
             Event::SimpleKeyUp(_) => false,
             Event::SimpleMouseDown(_) => false,
             Event::SimpleMouseUp(_) => false,
             Event::SimpleMouseWheel(_) => false,
+            Event::SimpleMouseDpi(_) => false,
         };
 
         if has_layers {
@@ -332,12 +334,14 @@ pub enum Event {
     EasyShiftMouseDown(Key),
     EasyShiftMouseUp(Key),
     EasyShiftMouseWheel(Direction),
+    EasyShiftMouseDpi(Direction),
 
     SimpleKeyDown(Key),
     SimpleKeyUp(Key),
     SimpleMouseDown(Key),
     SimpleMouseUp(Key),
     SimpleMouseWheel(Direction),
+    SimpleMouseDpi(Direction),
 }
 
 impl Display for Event {
@@ -357,6 +361,9 @@ impl Display for Event {
             Event::EasyShiftMouseWheel(direction) => {
                 f.write_str(&format!("es+mouse-wheel: {}", direction))
             }
+            Event::EasyShiftMouseDpi(direction) => {
+                f.write_str(&format!("es+mouse-dpi: {}", direction))
+            }
 
             Event::SimpleKeyDown(key) => f.write_str(&format!("key-down: {}", key)),
             Event::SimpleKeyUp(key) => f.write_str(&format!("key-up: {}", key)),
@@ -365,6 +372,7 @@ impl Display for Event {
             Event::SimpleMouseWheel(direction) => {
                 f.write_str(&format!("mouse-wheel: {}", direction))
             }
+            Event::SimpleMouseDpi(direction) => f.write_str(&format!("mouse-dpi: {}", direction)),
         }
     }
 }
@@ -376,6 +384,17 @@ pub enum Direction {
     Down,
     Left,
     Right,
+}
+
+impl Direction {
+    pub fn as_int(&self) -> i32 {
+        match self {
+            Direction::Up => 1,
+            Direction::Down => 2,
+            Direction::Left => 3,
+            Direction::Right => 4,
+        }
+    }
 }
 
 impl Display for Direction {
