@@ -132,9 +132,7 @@ impl DbusApi {
             .property::<u64, _>("ActiveSlot", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::ACTIVE_SLOT.load(Ordering::SeqCst) as u64;
                     i.append(result);
 
@@ -150,9 +148,7 @@ impl DbusApi {
             .property::<String, _>("ActiveProfile", ())
             .emits_changed(EmitsChangedSignal::Const)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::ACTIVE_PROFILE.lock();
 
                     result
@@ -174,9 +170,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     i.append(audio::ENABLE_SFX.load(Ordering::SeqCst));
 
                     Ok(())
@@ -185,8 +179,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false)
                 {
                     audio::ENABLE_SFX.store(i.read::<bool>()?, Ordering::SeqCst);
 
@@ -204,9 +197,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::BRIGHTNESS.load(Ordering::SeqCst) as i64;
                     i.append(result);
 
@@ -216,8 +207,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false)
                 {
                     crate::BRIGHTNESS.store(i.read::<i64>()? as isize, Ordering::SeqCst);
                     script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
@@ -236,9 +226,7 @@ impl DbusApi {
             .access(Access::Read)
             // .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
 
                     let device_status = device_status
@@ -580,10 +568,8 @@ impl DbusApi {
                             .add_p(brightness_property_clone)
                             .add_m(
                                 f.method("WriteFile", (), move |m| {
-                                    if perms::has_manage_permission_cached(
-                                        &m.msg.sender().unwrap(),
-                                    )
-                                    .unwrap_or(false)
+                                    if perms::has_manage_permission_cached(&m.msg.sender().unwrap())
+                                        .unwrap_or(false)
                                     {
                                         let (filename, data): (String, String) = m.msg.read2()?;
 
@@ -622,10 +608,8 @@ impl DbusApi {
                             )
                             .add_m(
                                 f.method("PingPrivileged", (), move |m| {
-                                    if perms::has_manage_permission_cached(
-                                        &m.msg.sender().unwrap(),
-                                    )
-                                    .unwrap_or(false)
+                                    if perms::has_manage_permission_cached(&m.msg.sender().unwrap())
+                                        .unwrap_or(false)
                                     {
                                         let s = true;
                                         Ok(vec![m.msg.method_return().append1(s)])

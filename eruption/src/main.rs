@@ -192,6 +192,9 @@ lazy_static! {
     /// Global "keyboard brightness" modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
+    /// Global "keyboard brightness" modifier
+    pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 
@@ -597,6 +600,8 @@ pub fn switch_profile(
                 // everything is fine, finally assign the globally active profile
                 debug!("Switch successful");
 
+                crate::BRIGHTNESS_FADER.store(constants::FADE_FRAMES as isize, Ordering::SeqCst);
+
                 *ACTIVE_PROFILE.lock() = Some(profile);
 
                 if notify {
@@ -998,6 +1003,11 @@ fn run_main_loop(
                 .unwrap_or_else(|e| {
                     error!("Send error: {}", e);
                 });
+        }
+
+        let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
+        if fader > 0 {
+            crate::BRIGHTNESS_FADER.store(fader - 1, Ordering::SeqCst);
         }
 
         // compute AFK time

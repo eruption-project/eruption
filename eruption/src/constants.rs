@@ -73,6 +73,9 @@ pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 /// Target frames per second
 pub const TARGET_FPS: u64 = 24;
 
+/// Fade in on profile switch for n frames
+pub const FADE_FRAMES: u64 = 32;
+
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = 144 + 36;
 

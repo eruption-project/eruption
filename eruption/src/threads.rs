@@ -758,7 +758,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // execute render "pipeline" now...
                             let mut drop_frame = false;
 
-                            // first, clear the canvas
+                            // first, start with a clear canvas
                             script::LED_MAP.write().copy_from_slice(
                                 &[RGBA {
                                     r: 0,
@@ -807,19 +807,21 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let uleds_led_map = uleds::LED_MAP.read();
                                 let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-                                for (idx, background) in script::LED_MAP.write().iter_mut().enumerate() {
-                                    let bg = &background;
-                                    let fg = uleds_led_map[idx];
+                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                    for (idx, background) in chunks.iter_mut().enumerate() {
+                                        let bg = &background;
+                                        let fg = uleds_led_map[idx];
 
-                                    #[rustfmt::skip]
+                                        #[rustfmt::skip]
                                         let color = RGBA {
-                                        r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        a: fg.a as u8,
-                                    };
+                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            a: fg.a as u8,
+                                        };
 
-                                    *background = color;
+                                        *background = color;
+                                    }
                                 }
                             }
 
@@ -828,19 +830,21 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let sdk_led_map = sdk_support::LED_MAP.read();
                                 let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-                                for (idx, background) in script::LED_MAP.write().iter_mut().enumerate() {
-                                    let bg = &background;
-                                    let fg = sdk_led_map[idx];
+                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                    for (idx, background) in chunks.iter_mut().enumerate() {
+                                        let bg = &background;
+                                        let fg = sdk_led_map[idx];
 
-                                    #[rustfmt::skip]
+                                        #[rustfmt::skip]
                                         let color = RGBA {
-                                        r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                        a: fg.a as u8,
-                                    };
+                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            a: fg.a as u8,
+                                        };
 
-                                    *background = color;
+                                        *background = color;
+                                    }
                                 }
                             }
 

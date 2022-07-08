@@ -812,9 +812,9 @@ impl KeyboardDeviceTrait for CorsairStrafe {
 
                         // convert RGB color to monochromatic value
                         // let color = 255
-                        //     - (((led_map[i].r as f64 * 0.29)
-                        //         + (led_map[i].g as f64 * 0.59)
-                        //         + (led_map[i].b as f64 * 0.114))
+                        //     - (((led_map[i].r as f32 * 0.29)
+                        //         + (led_map[i].g as f32 * 0.59)
+                        //         + (led_map[i].b as f32 * 0.114))
                         //         .round() as u8)
                         //         .clamp(0, 255);
 

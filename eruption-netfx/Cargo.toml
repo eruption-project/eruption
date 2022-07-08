@@ -51,7 +51,6 @@ memmap2 = "0.5.4"
 nix = "0.24.1"
 tempfile = "3.3.0"
 rayon = "1.5.3"
-packed_simd_2 = "0.3.8"
 jwalk = "0.6.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.19.2", features = ["full"] }
