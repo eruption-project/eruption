@@ -43,9 +43,12 @@ use std::{env, process};
 
 use util::RGBA;
 
+use crate::error_log::ErrorType;
+
 mod constants;
 mod dbus_client;
 mod device;
+mod error_log;
 mod manifest;
 mod preferences;
 mod profiles;
@@ -580,7 +583,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         Some(constants::DEFAULT_CONFIG_FILE),
     );
 
-    application.connect_handle_local_options(|_application, opts| {
+    application.connect_handle_local_options(|_app, opts| {
         // process configuration file
         let config_file = opts
             .lookup_value("configuration", None)
@@ -596,18 +599,50 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         let config = Config::builder()
             .add_source(config::File::new(&config_file, config::FileFormat::Toml))
             .build()
-            .unwrap_or_else(|e| {
+            .map_err(|e| {
                 log::error!("Could not parse configuration file: {}", e);
-                process::exit(4);
+                error_log::fatal_error(&format!("Could not parse configuration file: {}", e), 4);
             });
 
-        *CONFIG.lock() = Some(config);
+        *CONFIG.lock() = config.ok();
 
         // request default processing of command line arguments
         -1
     });
 
     application.connect_activate(move |app| {
+        // load the compiled resource bundle
+        let resources_bytes = include_bytes!("../resources/resources.gresource");
+        let resource_data = glib::Bytes::from(&resources_bytes[..]);
+        let res = gio::Resource::from_data(&resource_data).unwrap();
+
+        gio::resources_register(&res);
+
+        // process all errors that occurred in the meantime
+        for error in error_log::ERRORS.read().iter() {
+            let message = match error.error_type {
+                ErrorType::Fatal => "A fatal error occurred",
+            };
+
+            let secondary = &error.message;
+
+            let message_dialog = MessageDialogBuilder::new()
+                .destroy_with_parent(true)
+                .message_type(gtk::MessageType::Error)
+                .text(&message)
+                .secondary_text(&secondary)
+                .title("Error")
+                .buttons(gtk::ButtonsType::Ok)
+                .build();
+
+            message_dialog.run();
+            message_dialog.hide();
+
+            if error.error_type == ErrorType::Fatal {
+                process::exit(error.code);
+            }
+        }
+
         {
             // initialize global state
             let mut state = STATE.write();
@@ -615,12 +650,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             state.active_slot = util::get_active_slot().ok();
             state.active_profile = util::get_active_profile().ok();
         }
-
-        // load the compiled resource bundle
-        let resources_bytes = include_bytes!("../resources/resources.gresource");
-        let resource_data = glib::Bytes::from(&resources_bytes[..]);
-        let res = gio::Resource::from_data(&resource_data).unwrap();
-        gio::resources_register(&res);
 
         if let Err(e) = ui::main::initialize_main_window(app) {
             log::error!("Could not start the Eruption GUI: {}", e);
@@ -631,7 +660,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
             let message_dialog = MessageDialogBuilder::new()
                 .destroy_with_parent(true)
-                .decorated(true)
                 .message_type(gtk::MessageType::Error)
                 .text(&message)
                 .secondary_text(&secondary)
