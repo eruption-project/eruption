@@ -20,7 +20,7 @@
 // use async_macros::join;
 use clap::{Arg, Command};
 use config::Config;
-use flume::{bounded, unbounded, Receiver, Selector, Sender};
+use flume::{unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -191,6 +191,9 @@ lazy_static! {
 
     /// Global "keyboard brightness" modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
+
+    /// Global "keyboard brightness" modifier
+    pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
 
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
@@ -597,6 +600,8 @@ pub fn switch_profile(
                 // everything is fine, finally assign the globally active profile
                 debug!("Switch successful");
 
+                crate::BRIGHTNESS_FADER.store(constants::FADE_FRAMES as isize, Ordering::SeqCst);
+
                 *ACTIVE_PROFILE.lock() = Some(profile);
 
                 if notify {
@@ -1000,6 +1005,11 @@ fn run_main_loop(
                 });
         }
 
+        let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
+        if fader > 0 {
+            crate::BRIGHTNESS_FADER.store(fader - 1, Ordering::SeqCst);
+        }
+
         // compute AFK time
         let afk_timeout_secs = CONFIG
             .lock()
@@ -1162,7 +1172,7 @@ pub fn register_filesystem_watcher(
                 #[cfg(feature = "profiling")]
                 coz::thread_init();
 
-                match Hotwatch::new_with_custom_delay(Duration::from_millis(2000)) {
+                match Hotwatch::new_with_custom_delay(Duration::from_millis(1000)) {
                     Err(e) => error!("Could not initialize filesystem watcher: {}", e),
 
                     Ok(ref mut hotwatch) => {
@@ -1227,9 +1237,15 @@ pub fn register_filesystem_watcher(
 
                             hotwatch
                                 .watch(&script_dir, move |event: Event| {
-                                    info!("Script file or manifest changed: {:?}", event);
+                                    if let Event::Write(event) | Event::Create(event) |
+                                           Event::Remove(event) | Event::Rename(_, event) = event {
+                                        if event.extension().unwrap_or_default().to_string_lossy() == "lua" ||
+                                           event.extension().unwrap_or_default().to_string_lossy() == "manifest" {
+                                            info!("Script file, manifest or keymap changed: {:?}", event);
 
-                                    fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+                                        }
+                                    }
 
                                     Flow::Continue
                                 })
@@ -1706,7 +1722,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize the device I/O thread
                 info!("Initializing device I/O thread...");
-                let (dev_io_tx, dev_io_rx) = bounded(1);
+                let (dev_io_tx, dev_io_rx) = unbounded();
                 threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
                     error!("Could not spawn the render thread: {}", e);
                     panic!()

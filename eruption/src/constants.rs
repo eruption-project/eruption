@@ -28,6 +28,9 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 /// Default script directory
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
+/// Default script directory
+pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
+
 /// The `/run/eruption/` directory
 pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
 
@@ -72,6 +75,9 @@ pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
 /// Target frames per second
 pub const TARGET_FPS: u64 = 24;
+
+/// Fade in on profile switch for n frames
+pub const FADE_FRAMES: u64 = 32;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = 144 + 36;

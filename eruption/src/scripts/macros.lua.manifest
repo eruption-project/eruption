@@ -82,3 +82,9 @@ type = 'string'
 name = 'requires'
 description = 'Import macro definitions sub-module'
 default = 'macros/user-macros'
+
+[[config]]
+type = 'string'
+name = 'keymap'
+description = 'Import keymap definition'
+default = 'keymaps/default'

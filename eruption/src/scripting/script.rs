@@ -940,23 +940,28 @@ pub fn run_script(
                         Message::RealizeColorMap => {
                             if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
                                 LOCAL_LED_MAP.with(|foreground| {
-                                        for (idx, background) in LED_MAP.write().iter_mut().enumerate() {
+                                    let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+                                    let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
+
+                                    let brightness = (1.0 - (fader as f32 / constants::FADE_FRAMES as f32)) * brightness as f32;
+
+                                    for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                        for (idx, background) in chunks.iter_mut().enumerate() {
                                             let bg = &background;
                                             let fg = foreground.borrow()[idx];
 
-                                            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
-
                                             #[rustfmt::skip]
                                             let color = RGBA {
-                                                r: ((((fg.a as f64) * fg.r as f64 + (255 - fg.a) as f64 * bg.r as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                                g: ((((fg.a as f64) * fg.g as f64 + (255 - fg.a) as f64 * bg.g as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
-                                                b: ((((fg.a as f64) * fg.b as f64 + (255 - fg.a) as f64 * bg.b as f64).abs() * brightness as f64 / 100.0) as u32 >> 8) as u8,
+                                                r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                                g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                                b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                                 a: fg.a as u8,
                                             };
 
                                             *background = color;
                                         }
-                                    });
+                                    }
+                                });
                             }
 
                             // signal readiness / notify the main thread that we are done

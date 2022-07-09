@@ -42,7 +42,7 @@ int nl_connect()
     nl_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
     if (nl_sock == -1)
     {
-        perror("socket");
+        // perror("socket");
         return -1;
     }
 
@@ -53,7 +53,7 @@ int nl_connect()
     rc = bind(nl_sock, (struct sockaddr *)&sa_nl, sizeof(sa_nl));
     if (rc == -1)
     {
-        perror("bind");
+        // perror("bind");
         close(nl_sock);
         return -1;
     }
@@ -91,7 +91,7 @@ int set_proc_ev_listen(int nl_sock, bool enable)
     rc = send(nl_sock, &nlcn_msg, sizeof(nlcn_msg), 0);
     if (rc == -1)
     {
-        perror("netlink send");
+        // perror("netlink send");
         return -1;
     }
 
@@ -130,7 +130,7 @@ int handle_proc_ev(int nl_sock, struct Event *event)
     }
     else if (rc == -1)
     {
-        perror("netlink recv");
+        // perror("netlink recv");
         return -1;
     }
 

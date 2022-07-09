@@ -22,15 +22,26 @@ use crate::procmon::{self, ProcMon};
 use crate::{util, SystemEvent};
 use async_trait::async_trait;
 use flume::Sender;
+use lazy_static::lazy_static;
 use log::*;
+use std::sync::atomic::AtomicBool;
 use std::{sync::atomic::Ordering, thread};
 
 use crate::QUIT;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
+lazy_static! {
+    /// "Process sensor has failed" flag, most likely triggered by a
+    /// socket error on the Linux kernel netlink socket
+    pub static ref PROCESS_SENSOR_FAILED: AtomicBool = AtomicBool::new(false);
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum ProcessSensorError {
+    #[error("Socket error")]
+    SocketError,
+
     #[error("Operation not supported")]
     NotSupported,
 }
@@ -97,6 +108,13 @@ impl ProcessSensor {
                                 .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
                         }
 
+                        procmon::EventType::SocketError => {
+                            log::error!("Error while receiving from Linux kernel netlink socket");
+
+                            PROCESS_SENSOR_FAILED.store(true, Ordering::SeqCst);
+                            break Err(ProcessSensorError::SocketError {}.into());
+                        }
+
                         _ => { /* ignore others */ }
                     }
                 }
@@ -140,7 +158,7 @@ rules add exec gnome-calc.* 2
     }
 
     fn is_failed(&self) -> bool {
-        false
+        PROCESS_SENSOR_FAILED.load(Ordering::SeqCst)
     }
 
     fn set_failed(&mut self, _failed: bool) {

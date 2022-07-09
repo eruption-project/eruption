@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap::{Parser, IntoApp};
+use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use color_eyre::Help;
 use colored::*;

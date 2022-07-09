@@ -124,7 +124,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__add)
-            opts="-h --version --help <RULE>..."
+            opts="-h --help <RULE>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -138,7 +138,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__disable)
-            opts="-h --version --help <RULE_INDEX>"
+            opts="-h --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -152,7 +152,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__enable)
-            opts="-h --version --help <RULE_INDEX>"
+            opts="-h --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -166,7 +166,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__help)
-            opts="-h --version --help <SUBCOMMAND>..."
+            opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -180,7 +180,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__list)
-            opts="-h --version --help"
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -194,7 +194,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__remove)
-            opts="-h --version --help <RULE_INDEX>"
+            opts="-h --help <RULE_INDEX>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

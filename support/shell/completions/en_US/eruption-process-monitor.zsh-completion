@@ -54,14 +54,12 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (enable)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':rule-index:' \
@@ -69,7 +67,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (disable)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':rule-index:' \
@@ -77,7 +74,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (add)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '*::rule:' \
@@ -85,7 +81,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':rule-index:' \
@@ -93,9 +88,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;

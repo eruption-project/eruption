@@ -70,7 +70,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -78,7 +77,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (flash)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':device:' \
@@ -86,9 +84,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'--version[Print version information]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '*::subcommand -- The subcommand whose help message to display:' \
 && ret=0
 ;;
