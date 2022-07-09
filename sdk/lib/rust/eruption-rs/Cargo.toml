@@ -24,21 +24,21 @@ edition = "2021"
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.14"
-thiserror = "1.0.30"
-eyre = "0.6.7"
+log = "0.4.17"
+thiserror = "1.0.31"
+eyre = "0.6.8"
 color-eyre = "0.6.1"
-libc = "0.2.120"
-nix = "0.23.1"
+libc = "0.2.126"
+nix = "0.24.1"
 futures = "0.3.21"
-parking_lot = { version = "0.12.0", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 crossbeam = "0.8.1"
-serde = "1.0.136"
+serde = "1.0.138"
 bincode = "2.0.0-rc.1"
-prost = "0.9.0"
-prost-types = "0.9.0"
+prost = "0.10.4"
+prost-types = "0.10.1"
 socket2 = { version = "0.4.4", features = ["all"] }
 
 
 [build-dependencies]
-prost-build = "0.9.0"
+prost-build = "0.10.4"
