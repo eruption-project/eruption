@@ -83,6 +83,10 @@ if not status then
     require("macros/failsafe-macros")
 end
 
+-- import keymap definitions sub-modules
+local status, message = pcall(require, keymap)
+if not status then error("Error loading the keymap definition: " .. message) end
+
 -- global state variables --
 ticks = 0
 color_map = {}

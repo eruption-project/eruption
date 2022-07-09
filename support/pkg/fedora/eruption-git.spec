@@ -6,7 +6,7 @@
 
 Name:    eruption-git
 Version: 0.1.23
-Release: 4.%{shortcommit}
+Release: 5.%{shortcommit}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPLv3+
@@ -74,6 +74,7 @@ cargo build --all --release --verbose --features=sourceview
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/macros
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
+%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/keymaps
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
 %{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/misc
@@ -95,12 +96,14 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-hwutil.8 %{buildro
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/process-monitor.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-keymap.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-audio-proxy.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-process-monitor.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-debug-tool.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-debug-tool
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-cmd.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-cmd
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-hwutil.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-hwutil
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-keymap.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-keymap
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-netfx.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-netfx
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-audio-proxy.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-audio-proxy
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-process-monitor.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-process-monitor
@@ -108,6 +111,7 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruptio
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-debug-tool.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-debug-tool.fish
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-cmd.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-cmd.fish
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-hwutil.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-hwutil.fish
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-keymap.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-keymap.fish
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-netfx.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-netfx.fish
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-audio-proxy.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-audio-proxy.fish
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-process-monitor.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-process-monitor.fish
@@ -115,6 +119,7 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruptio
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-debug-tool.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-cmd.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-cmd
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-hwutil.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-hwutil
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-keymap.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-keymap
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-netfx.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-netfx
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-audio-proxy.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-audio-proxy
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruption-process-monitor.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-process-monitor
@@ -217,6 +222,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption %
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-cmd %{buildroot}%{_bindir}/eruption-cmd
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hwutil %{buildroot}%{_bindir}/eruption-hwutil
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-keymap %{buildroot}%{_bindir}/eruption-keymap
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
@@ -246,6 +252,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %doc %{_mandir}/man8/eruption-cmd.8.gz
 %doc %{_mandir}/man8/eruption-hwutil.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
+%doc %{_mandir}/man1/eruption-keymap.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
 %doc %{_mandir}/man1/eruption-audio-proxy.1.gz
 %doc %{_mandir}/man1/eruption-process-monitor.1.gz
@@ -263,6 +270,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_bindir}/eruptionctl
 %{_bindir}/eruption-cmd
 %{_bindir}/eruption-hwutil
+%{_bindir}/eruption-keymap
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-util
 %{_bindir}/eruption-debug-tool
@@ -284,6 +292,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd
 %{_datarootdir}/bash-completion/completions/eruption-hwutil
+%{_datarootdir}/bash-completion/completions/eruption-keymap
 %{_datarootdir}/bash-completion/completions/eruption-netfx
 %{_datarootdir}/bash-completion/completions/eruption-audio-proxy
 %{_datarootdir}/bash-completion/completions/eruption-process-monitor
@@ -291,6 +300,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_datarootdir}/fish/completions/eruption-debug-tool.fish
 %{_datarootdir}/fish/completions/eruption-cmd.fish
 %{_datarootdir}/fish/completions/eruption-hwutil.fish
+%{_datarootdir}/fish/completions/eruption-keymap.fish
 %{_datarootdir}/fish/completions/eruption-netfx.fish
 %{_datarootdir}/fish/completions/eruption-audio-proxy.fish
 %{_datarootdir}/fish/completions/eruption-process-monitor.fish
@@ -298,6 +308,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 %{_datarootdir}/zsh/site-functions/_eruption-cmd
 %{_datarootdir}/zsh/site-functions/_eruption-hwutil
+%{_datarootdir}/zsh/site-functions/_eruption-keymap
 %{_datarootdir}/zsh/site-functions/_eruption-netfx
 %{_datarootdir}/zsh/site-functions/_eruption-audio-proxy
 %{_datarootdir}/zsh/site-functions/_eruption-process-monitor

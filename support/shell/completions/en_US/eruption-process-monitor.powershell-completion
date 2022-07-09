@@ -52,39 +52,31 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -Scri
             break
         }
         'eruption-process-monitor;rules;list' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;rules;enable' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;rules;disable' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;rules;add' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;rules;remove' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;rules;help' {
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruption-process-monitor;completions' {

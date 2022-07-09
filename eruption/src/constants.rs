@@ -28,6 +28,9 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 /// Default script directory
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
+/// Default script directory
+pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
+
 /// The `/run/eruption/` directory
 pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
 

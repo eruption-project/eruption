@@ -1172,7 +1172,7 @@ pub fn register_filesystem_watcher(
                 #[cfg(feature = "profiling")]
                 coz::thread_init();
 
-                match Hotwatch::new_with_custom_delay(Duration::from_millis(2000)) {
+                match Hotwatch::new_with_custom_delay(Duration::from_millis(1000)) {
                     Err(e) => error!("Could not initialize filesystem watcher: {}", e),
 
                     Ok(ref mut hotwatch) => {
@@ -1237,9 +1237,15 @@ pub fn register_filesystem_watcher(
 
                             hotwatch
                                 .watch(&script_dir, move |event: Event| {
-                                    info!("Script file or manifest changed: {:?}", event);
+                                    if let Event::Write(event) | Event::Create(event) |
+                                           Event::Remove(event) | Event::Rename(_, event) = event {
+                                        if event.extension().unwrap_or_default().to_string_lossy() == "lua" ||
+                                           event.extension().unwrap_or_default().to_string_lossy() == "manifest" {
+                                            info!("Script file, manifest or keymap changed: {:?}", event);
 
-                                    fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();
+                                        }
+                                    }
 
                                     Flow::Continue
                                 })

@@ -47,19 +47,14 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;config;brightness'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;config;soundfx'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;config;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;devices'= {
             cand -h 'Print help information'
@@ -77,59 +72,46 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;devices;list'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;info'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;status'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;brightness'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;profile'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;dpi'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;rate'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;debounce'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;distance'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;angle-snapping'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;status'= {
             cand -h 'Print help information'
@@ -139,19 +121,14 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;status;profile'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;status;slot'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;status;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;switch'= {
             cand -h 'Print help information'
@@ -161,19 +138,14 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;switch;profile'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;switch;slot'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;switch;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;profiles'= {
             cand -h 'Print help information'
@@ -184,24 +156,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;profiles;info'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;profiles;edit'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;profiles;list'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;profiles;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;names'= {
             cand -h 'Print help information'
@@ -212,24 +178,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;names;list'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;names;set'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;names;set-all'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;names;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;scripts'= {
             cand -h 'Print help information'
@@ -240,24 +200,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;scripts;info'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;scripts;edit'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;scripts;list'= {
-            cand --version 'Print version information'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruptionctl;scripts;help'= {
-            cand --version 'Print version information'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
         }
         &'eruptionctl;param'= {
             cand -h 'Print help information'
