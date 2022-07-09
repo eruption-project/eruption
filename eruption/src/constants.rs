@@ -87,6 +87,9 @@ pub const CANVAS_HEIGHT: usize = 32;
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 
+/// Fade in on profile switch for n frames
+pub const FADE_FRAMES: u64 = 32;
+
 /// The capacity of the buffer used for receiving audio samples as well as control messages
 pub const NET_BUFFER_CAPACITY: usize = 4096 * 16;
 

@@ -195,6 +195,9 @@ lazy_static! {
     /// Global brightness modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
+    /// Fade in on profile switch
+    pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+
     /// Canvas post-processing parameters
     pub static ref CANVAS_HSL: Arc<Mutex<(f64, f64, f64)>> = Arc::new(Mutex::new((0.0, 0.0, 0.0)));
 

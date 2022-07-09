@@ -46,6 +46,7 @@ use crate::error_log::ErrorType;
 mod constants;
 mod dbus_client;
 mod device;
+mod error_log;
 mod logger;
 mod manifest;
 mod preferences;
