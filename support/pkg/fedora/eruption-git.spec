@@ -6,7 +6,7 @@
 
 Name:    eruption-git
 Version: 0.1.23
-Release: 5.%{shortcommit}
+Release: 6.%{shortcommit}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPLv3+
@@ -386,6 +386,8 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/lib/keymaps/README
+%{_datarootdir}/%{ShortName}/scripts/lib/keymaps/default.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/generic_keyboard.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_tkl.lua
