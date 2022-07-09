@@ -8,7 +8,7 @@ Environment=RUST_LOG=warn
 ExecStart=/usr/bin/eruption-hotplug-helper hotplug
 PIDFile=/run/eruption-hotplug-helper.pid
 Type=exec
-Restart=no
+#Restart=no
 #ProtectHome=yes
 #ProtectSystem=full
 #ProtectKernelTunables=yes
