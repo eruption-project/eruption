@@ -91,7 +91,7 @@ uuid = { version = "1.1.2", features = ["serde", "v4"] }
 dbus = "0.9.5"
 dbus-tree = "0.9.2"
 paste = "1.0.7"
-bitvec = "1.0.0"
+bitvec = "1.0.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"
 bytes = "1.1.0"

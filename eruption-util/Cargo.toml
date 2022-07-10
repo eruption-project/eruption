@@ -52,7 +52,7 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" 
 udev = "0.6.3"
 evdev-rs = "0.5.0"
 lazy_static = "1.4.0"
-bitvec = "1.0.0"
+bitvec = "1.0.1"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.0"

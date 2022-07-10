@@ -53,7 +53,7 @@ toml = "0.5.9"
 thiserror = "1.0.31"
 eyre = "0.6.8"
 color-eyre = "0.6.1"
-bitvec = "1.0.0"
+bitvec = "1.0.1"
 byteorder = "1.4.3"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 hexdump = "0.1.1"
