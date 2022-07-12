@@ -29,30 +29,28 @@ const BORDER: (f64, f64) = (32.0, 32.0);
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
-pub struct RoccatKonePureUltra {
+pub struct RoccatKoneXtd {
     pub device: u64,
     pub pixbuf: Pixbuf,
 }
 
-impl RoccatKonePureUltra {
+impl RoccatKoneXtd {
     pub fn new(device: u64) -> Self {
-        RoccatKonePureUltra {
+        RoccatKoneXtd {
             device,
-            pixbuf: Pixbuf::from_resource(
-                "/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png",
-            )
-            .unwrap(),
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/roccat-kone-xtd.png")
+                .unwrap(),
         }
     }
 }
 
-impl Mouse for RoccatKonePureUltra {
+impl Mouse for RoccatKoneXtd {
     fn get_device(&self) -> u64 {
         self.device
     }
 
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Kone Pure Ultra")
+        ("ROCCAT", "Kone XTD")
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {

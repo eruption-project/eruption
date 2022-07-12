@@ -24,9 +24,15 @@ mod null_mouse;
 mod roccat_burst_pro;
 mod roccat_kain_100;
 mod roccat_kain_2xx;
+mod roccat_kone_aimo;
+mod roccat_kone_aimo_remastered;
 mod roccat_kone_pro_air;
 mod roccat_kone_pure_ultra;
 mod roccat_kone_xp;
+mod roccat_kone_xtd;
+mod roccat_kova_2016;
+mod roccat_kova_aimo;
+mod roccat_nyth;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -46,6 +52,9 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
         Some(device) => match device {
             // ROCCAT Kone XP
             (0x1e7d, 0x2c8b) => Ok(Box::new(roccat_kone_xp::RoccatKoneXp::new(device_handle))),
+
+            // ROCCAT Kone XTD
+            (0x1e7d, 0x2e22) => Ok(Box::new(roccat_kone_xtd::RoccatKoneXtd::new(device_handle))),
 
             // ROCCAT Kone Pure Ultra
             (0x1e7d, 0x2dd2) => Ok(Box::new(roccat_kone_pure_ultra::RoccatKonePureUltra::new(
@@ -68,6 +77,31 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
             // ROCCAT Kain 2xx
             (0x1e7d, 0x2d5f) | (0x1e7d, 0x2d60) => {
                 Ok(Box::new(roccat_kain_2xx::RoccatKain2xx::new(device_handle)))
+            }
+
+            // ROCCAT Kone Aimo
+            (0x1e7d, 0x2e27) => Ok(Box::new(roccat_kone_aimo::RoccatKoneAimo::new(
+                device_handle,
+            ))),
+
+            // ROCCAT Kone Aimo Remastered
+            (0x1e7d, 0x2e2c) => Ok(Box::new(
+                roccat_kone_aimo_remastered::RoccatKoneAimoRemastered::new(device_handle),
+            )),
+
+            // ROCCAT Kova 2016
+            (0x1e7d, 0x2cee) | (0x1e7d, 0x2cef) | (0x1e7d, 0x2cf0) => Ok(Box::new(
+                roccat_kova_2016::RoccatKova2016::new(device_handle),
+            )),
+
+            // ROCCAT Kova Aimo
+            (0x1e7d, 0x2cf1) | (0x1e7d, 0x2cf3) => Ok(Box::new(
+                roccat_kova_aimo::RoccatKovaAimo::new(device_handle),
+            )),
+
+            // ROCCAT Nyth
+            (0x1e7d, 0x2e7c) | (0x1e7d, 0x2e7d) => {
+                Ok(Box::new(roccat_nyth::RoccatNyth::new(device_handle)))
             }
 
             _ => Ok(Box::new(generic_mouse::GenericMouse::new(device_handle))),

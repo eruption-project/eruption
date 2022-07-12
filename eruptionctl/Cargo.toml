@@ -40,7 +40,7 @@ console = "0.15.0"
 log = "0.4.17"
 libc = "0.2.126"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.138", features = ["derive"] }
+serde = { version = "1.0.139", features = ["derive"] }
 serde_json = "1.0.82"
 tokio = { version = "1.19.2", features = ["full"] }
 #tracing = "0.1.26"
@@ -54,7 +54,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.1"
 comfy-table = "6.0.0"
 paste = "1.0.7"
-dbus = "0.9.5"
+dbus = "0.9.6"
 dbus-tokio = "0.7.5"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
