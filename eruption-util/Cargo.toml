@@ -46,7 +46,7 @@ tokio = { version = "1.19.2", features = ["full"] }
 flume = "0.10.13"
 thiserror = "1.0.31"
 eyre = "0.6.8"
-color-eyre = "0.6.1"
+color-eyre = "0.6.2"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 udev = "0.6.3"

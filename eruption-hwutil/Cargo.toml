@@ -52,7 +52,7 @@ config = "0.13.1"
 toml = "0.5.9"
 thiserror = "1.0.31"
 eyre = "0.6.8"
-color-eyre = "0.6.1"
+color-eyre = "0.6.2"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
