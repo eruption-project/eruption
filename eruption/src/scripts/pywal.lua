@@ -17,9 +17,28 @@
 --
 -- global array that stores each key's current color
 --
-json = require 'lunajson'
-file = io.open(os.getenv('HOME') .. '/.cache/wal/colors.json','r') -- Path to colors: $XDG_CACHE_HOME/wal/colors.json
+json = require "lunajson"
+
+file = io.open(os.getenv("HOME") .. "/.cache/wal/colors.json","r") -- Path to colors: $XDG_CACHE_HOME/wal/colors.json
 jsonstr = file:read("*a") -- copy text to string
 file:close()
-colorsstr = json.decode(jsonstr)
--- get color using "colorsstr['colors']['color#']" where "#" is an integar from 0 to 15
+colorsstr = json.decode(jsonstr) -- get color using "colorsstr["colors"]["color#"]" where "#" is an integar from 0 to 15
+
+-- global state variables --
+color_map = {}
+ticks = 0
+
+-- event handler functions --
+function on_startup()
+    for i = 1, get_canvas_size() do color_map[i] = 0x00000000 end
+    submit_color_map(color_map)
+end
+
+function on_tick(delta)
+    if not animate_gradient then return end
+    ticks = ticks + delta
+
+    --TODO: cycle between colors in the palette
+
+    submit_color_map(color_map)
+end
