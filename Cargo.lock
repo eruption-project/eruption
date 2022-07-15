@@ -1397,7 +1397,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.17"
+version = "0.0.18"
 dependencies = [
  "cfg-if 1.0.0",
  "clap",
@@ -1407,6 +1407,7 @@ dependencies = [
  "comfy-table",
  "config",
  "console",
+ "csscolorparser",
  "ctrlc",
  "dbus",
  "dbus-tokio",

@@ -54,6 +54,7 @@ mod util;
 mod hwdevices;
 use hwdevices::{KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent};
 
+mod color_scheme;
 mod constants;
 mod dbus_interface;
 mod events;
@@ -68,8 +69,11 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-use crate::hwdevices::{DeviceStatus, MaturityLevel, RGBA};
 use crate::plugins::{sdk_support, uleds};
+use crate::{
+    color_scheme::ColorScheme,
+    hwdevices::{DeviceStatus, MaturityLevel, RGBA},
+};
 
 use crate::threads::DbusApiEvent;
 #[cfg(feature = "mimalloc_allocator")]
@@ -152,6 +156,10 @@ lazy_static! {
 
     /// The current "pipeline" of scripts
     pub static ref ACTIVE_SCRIPTS: Arc<Mutex<Vec<Manifest>>> = Arc::new(Mutex::new(vec![]));
+
+    /// Named color schemes, for use in e.g. gradients
+    pub static ref NAMED_COLOR_SCHEMES: Arc<RwLock<HashMap<String, ColorScheme>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));

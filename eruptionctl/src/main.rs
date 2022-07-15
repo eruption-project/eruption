@@ -42,9 +42,12 @@ use rust_embed::RustEmbed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
-use std::{env, thread};
+use std::{env, fs, thread};
 use std::{process, sync::Arc};
 
+use crate::color_scheme::{ColorScheme, PywalColorScheme};
+
+mod color_scheme;
 mod constants;
 mod dbus_client;
 mod device;
@@ -98,6 +101,7 @@ lazy_static! {
     static ref ABOUT: String = tr!("about");
     static ref VERBOSE_ABOUT: String = tr!("verbose-about");
     static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+    static ref COLORSCHEME_ABOUT: String = tr!("color-scheme-about");
     static ref CONFIG_ABOUT: String = tr!("config-about");
     static ref DEVICES_ABOUT: String = tr!("devices-about");
     static ref STATUS_ABOUT: String = tr!("status-about");
@@ -139,6 +143,12 @@ pub enum Subcommands {
     Config {
         #[clap(subcommand)]
         command: ConfigSubcommands,
+    },
+
+    #[clap(about(COLORSCHEME_ABOUT.as_str()))]
+    ColorScheme {
+        #[clap(subcommand)]
+        command: ColorSchemeSubcommands,
     },
 
     #[clap(about(DEVICES_ABOUT.as_str()))]
@@ -199,6 +209,39 @@ pub enum ConfigSubcommands {
 
     /// Get or set the state of SoundFX
     Soundfx { enable: Option<bool> },
+}
+
+/// Sub-commands of the "colorscheme" command
+#[derive(Debug, clap::Parser)]
+pub enum ColorSchemeSubcommands {
+    /*
+
+    /// Add a new named color scheme
+    Add { name: String, colors: Vec<String> },
+
+    /// List all color schemes known to Eruption
+    List {},
+
+    /// Remove a color scheme by name
+    Remove { name: String },
+
+    */
+    /// Import a color scheme from a file, e.g.: like the Pywal configuration
+    Import {
+        #[clap(subcommand)]
+        command: ColorSchemeImportSubcommands,
+    },
+}
+
+/// Sub-commands of the "colorscheme" command
+#[derive(Debug, clap::Parser)]
+pub enum ColorSchemeImportSubcommands {
+    /*
+       /// Import from a file
+       From { file_name: PathBuf },
+    */
+    /// Import an existing Pywal color scheme
+    Pywal { file_name: Option<PathBuf> },
 }
 
 /// Sub-commands of the "devices" command
@@ -711,6 +754,53 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     );
                 }
             }
+        },
+
+        // configuration related sub-commands
+        Subcommands::ColorScheme { command } => match command {
+            /*
+
+            ColorSchemeSubcommands::List {} => todo!(),
+
+            ColorSchemeSubcommands::Add { name: _, colors: _ } => todo!(),
+
+            ColorSchemeSubcommands::Remove { name: _ } => todo!(),
+
+            */
+            ColorSchemeSubcommands::Import { command } => match command {
+                /*
+                ColorSchemeImportSubcommands::From { file_name } => {
+                    println!(
+                        "Importing color scheme from: {}",
+                        file_name.display().to_string().bold()
+                    );
+
+                    println!("This feature is not implemented yet!",);
+                }
+                */
+                ColorSchemeImportSubcommands::Pywal { file_name } => {
+                    let file_name = if let Some(path) = file_name {
+                        path
+                    } else {
+                        PathBuf::from(format!(
+                            "/home/{}/.cache/wal/colors.json",
+                            env::var("LOGNAME")?
+                        ))
+                    };
+
+                    println!(
+                        "Importing Pywal color scheme from: {}",
+                        file_name.display().to_string().bold()
+                    );
+
+                    let json_data = fs::read_to_string(&file_name)?;
+                    let pywal_color_scheme: PywalColorScheme = serde_json::from_str(&json_data)?;
+
+                    let color_scheme = ColorScheme::try_from(pywal_color_scheme)?;
+
+                    dbus_client::set_color_scheme("system", &color_scheme)?;
+                }
+            },
         },
 
         // device specific sub-commands
