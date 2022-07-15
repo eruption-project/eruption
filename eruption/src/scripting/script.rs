@@ -441,7 +441,7 @@ mod callbacks {
     pub(crate) fn parse_color(val: &str) -> Result<u32> {
         match csscolorparser::parse(val) {
             Ok(color) => {
-                let (r, g, b, a) = color.rgba_u8();
+                let (r, g, b, a) = color.to_linear_rgba_u8();
 
                 Ok(rgba_to_color(r, g, b, a))
             }
@@ -547,7 +547,7 @@ mod callbacks {
 
             if let Some(gradient) = m.get(&handle) {
                 let color = gradient.at(pos);
-                let (r, g, b, a) = color.rgba_u8();
+                let (r, g, b, a) = color.to_linear_rgba_u8();
 
                 Ok(rgba_to_color(r, g, b, a))
             } else {

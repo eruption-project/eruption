@@ -44,7 +44,7 @@ walkdir = "2.3.2"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.139", features = ["derive"] }
 serde_json = "1.0.82"
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.0", features = ["full"] }
 #tracing = "0.1.29"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.3.2"
@@ -85,4 +85,4 @@ icecream = "0.1.0"
 pretty_assertions = "1.2.1"
 
 [dev-dependencies]
-tokio = { version = "1.19.2", features = ["test-util"] }
+tokio = { version = "1.20.0", features = ["test-util"] }

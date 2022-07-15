@@ -57,10 +57,10 @@ color-eyre = "0.6.2"
 toml = "0.5.9"
 serde = { version = "1.0.139", features = ["derive"] }
 serde_json = "1.0.82"
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.0", features = ["full"] }
 socket2 = { version = "0.4.4", features = ["all"] }
 ctrlc = { version = "3.2.2", features = ["termination"] }
-clap = "3.2.10"
+clap = "3.2.12"
 hotwatch = "0.4.6"
 config = "0.13.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -72,7 +72,7 @@ itertools = "0.10.3"
 rayon = "1.5.3"
 lazy_static = "1.4.0"
 rand = "0.8.5"
-csscolorparser = "0.6.0"
+csscolorparser = "0.6.1"
 colorgrad = "0.6.0"
 palette = "0.6.0"
 nalgebra = "0.31.0"
@@ -108,7 +108,7 @@ icecream = "0.1.0"
 [dev-dependencies]
 pretty_assertions = "1.2.1"
 thiserror = "1.0.31"
-tokio = { version = "1.19.2", features = ["test-util"] }
+tokio = { version = "1.20.0", features = ["test-util"] }
 
 [build-dependencies]
 prost-build = "0.10.4"
