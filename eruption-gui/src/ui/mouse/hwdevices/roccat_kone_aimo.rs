@@ -105,7 +105,7 @@ impl Mouse for RoccatKoneAimo {
             color.r as f64 / 255.0,
             color.g as f64 / 255.0,
             color.b as f64 / 255.0,
-            0.0
+            0.0,
         );
 
         // saturate and lighten color somewhat
