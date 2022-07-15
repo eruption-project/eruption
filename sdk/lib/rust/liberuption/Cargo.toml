@@ -38,7 +38,7 @@ cfg-if = "1.0.0"
 log = "0.4.17"
 thiserror = "1.0.31"
 eyre = "0.6.8"
-color-eyre = "0.6.1"
+color-eyre = "0.6.2"
 lazy_static = "1.4.0"
 #i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
 #rust-embed = "6.2.0"

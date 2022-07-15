@@ -53,14 +53,14 @@ syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
 thiserror = "1.0.31"
 eyre = "0.6.8"
-color-eyre = "0.6.1"
+color-eyre = "0.6.2"
 toml = "0.5.9"
-serde = { version = "1.0.138", features = ["derive"] }
+serde = { version = "1.0.139", features = ["derive"] }
 serde_json = "1.0.82"
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.0", features = ["full"] }
 socket2 = { version = "0.4.4", features = ["all"] }
 ctrlc = { version = "3.2.2", features = ["termination"] }
-clap = "3.2.8"
+clap = "3.2.12"
 hotwatch = "0.4.6"
 config = "0.13.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -72,7 +72,7 @@ itertools = "0.10.3"
 rayon = "1.5.3"
 lazy_static = "1.4.0"
 rand = "0.8.5"
-csscolorparser = "0.6.0"
+csscolorparser = "0.6.1"
 colorgrad = "0.6.0"
 palette = "0.6.0"
 nalgebra = "0.31.0"
@@ -88,7 +88,7 @@ procinfo = "0.4.2"
 bincode = "2.0.0-rc.1"
 rustfft = "6.0.1"
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
-dbus = "0.9.5"
+dbus = "0.9.6"
 dbus-tree = "0.9.2"
 paste = "1.0.7"
 bitvec = "1.0.1"
@@ -108,7 +108,7 @@ icecream = "0.1.0"
 [dev-dependencies]
 pretty_assertions = "1.2.1"
 thiserror = "1.0.31"
-tokio = { version = "1.19.2", features = ["test-util"] }
+tokio = { version = "1.20.0", features = ["test-util"] }
 
 [build-dependencies]
 prost-build = "0.10.4"

@@ -17,55 +17,56 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Shade, Srgba};
 
 use super::{Mouse, Rectangle};
 
-const BORDER: (f64, f64) = (32.0, 32.0);
-
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
-pub struct RoccatKonePureUltra {
+pub struct RoccatKova2016 {
     pub device: u64,
     pub pixbuf: Pixbuf,
 }
 
-impl RoccatKonePureUltra {
+impl RoccatKova2016 {
     pub fn new(device: u64) -> Self {
-        RoccatKonePureUltra {
+        RoccatKova2016 {
             device,
-            pixbuf: Pixbuf::from_resource(
-                "/org/eruption/eruption-gui/img/roccat-kone-pure-ultra.png",
-            )
-            .unwrap(),
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui/img/generic-mouse.png")
+                .unwrap(),
         }
     }
 }
 
-impl Mouse for RoccatKonePureUltra {
+impl Mouse for RoccatKova2016 {
     fn get_device(&self) -> u64 {
         self.device
     }
 
     fn get_make_and_model(&self) -> (&'static str, &'static str) {
-        ("ROCCAT", "Kone Pure Ultra")
+        ("ROCCAT", "Kova 2016")
     }
 
     fn draw_mouse(&self, da: &gtk::DrawingArea, context: &cairo::Context) -> super::Result<()> {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
+        let scale_factor = 1.0;
+
+        // let pixbuf = &self.pixbuf;
+
+        // paint the schematic drawing
+        // context.scale(scale_factor, scale_factor);
+        // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
+        // context.paint()?;
+
         let led_colors = crate::COLOR_MAP.lock();
 
-        let pixbuf = &self.pixbuf;
-
-        let scale_factor = (height / pixbuf.height() as f64) * 0.85;
-
-        for i in 144..(144 + 1) {
+        // paint all cells in the "mouse zone" of the canvas
+        for i in 144..(144 + 36) {
             self.paint_cell(
                 i - 144,
                 &led_colors[i],
@@ -76,28 +77,23 @@ impl Mouse for RoccatKonePureUltra {
             )?;
         }
 
-        // paint the image
-        context.scale(scale_factor, scale_factor);
-        context.set_source_pixbuf(pixbuf, width / 2.0 + BORDER.0, BORDER.1);
-        context.paint()?;
-
         Ok(())
     }
 
     fn paint_cell(
         &self,
-        _cell_index: usize,
+        cell_index: usize,
         color: &crate::util::RGBA,
         cr: &cairo::Context,
         width: f64,
-        height: f64,
-        scale_factor: f64,
+        _height: f64,
+        _scale_factor: f64,
     ) -> Result<()> {
         let cell_def = Rectangle {
-            x: ((width / 2.0) + 120.0 + BORDER.0 * scale_factor) * scale_factor,
-            y: ((height / 2.0) + BORDER.1 * scale_factor) + (162.0 * scale_factor),
-            width: 135.0 * scale_factor,
-            height: 90.0 * scale_factor,
+            x: (width / 2.0 - 100.0) + (cell_index % 6 * 45) as f64,
+            y: (cell_index / 6 * 45) as f64,
+            width: 43.0,
+            height: 43.0,
         };
 
         // compute scaling factor

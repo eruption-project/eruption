@@ -26,7 +26,7 @@ use crate::{manifest::Manifest, util};
 use glib::clone;
 use glib::IsA;
 use gtk::builders::{
-    AdjustmentBuilder, BoxBuilder, ButtonBuilder, ColorChooserWidgetBuilder, EntryBuilder,
+    AdjustmentBuilder, BoxBuilder, ButtonBuilder, ColorButtonBuilder, EntryBuilder,
     ExpanderBuilder, FrameBuilder, LabelBuilder, MessageDialogBuilder, ScaleBuilder,
     ScrolledWindowBuilder, SwitchBuilder, TreeViewColumnBuilder,
 };
@@ -460,16 +460,18 @@ macro_rules! declare_config_widget_color {
 
                 // color chooser widget
                 let rgba = util::color_to_gdk_rgba(value);
-                let chooser = ColorChooserWidgetBuilder::new()
+                let chooser = ColorButtonBuilder::new()
                     .rgba(&rgba)
                     .use_alpha(true)
-                    .show_editor(false)
+                    .show_editor(true)
                     .build();
 
                 row2.pack_start(&chooser, false, true, 8);
 
-                chooser.connect_color_activated(clone!(@strong callback => move |_c, color| {
-                    let value = util::gdk_rgba_to_color(color);
+                chooser.connect_color_set(clone!(@strong callback => move |c| {
+                    let color = c.rgba();
+                    let value = util::gdk_rgba_to_color(&color);
+
                     callback(value);
                 }));
 
@@ -762,8 +764,7 @@ fn create_config_editor(
                     } => profile
                         .get_default_string(&script.name, name)
                         .or_else(|| Some(default.clone()))
-                        .unwrap()
-                        ,
+                        .unwrap(),
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
             };

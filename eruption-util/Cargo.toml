@@ -30,7 +30,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "3.2.8", features = ["derive"] }
+clap =  { version = "3.2.12", features = ["derive"] }
 clap_complete = "3.2.3"
 ctrlc = { version = "3.2.2", features = ["termination"] }
 colored = "2.0.0"
@@ -39,14 +39,14 @@ pretty_env_logger = "0.4.0"
 libc = "0.2.126"
 nix = "0.24.1"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.0", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
 flume = "0.10.13"
 thiserror = "1.0.31"
 eyre = "0.6.8"
-color-eyre = "0.6.1"
+color-eyre = "0.6.2"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
 udev = "0.6.3"
@@ -61,4 +61,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-tokio = { version = "1.19.2", features = ["test-util"] }
+tokio = { version = "1.20.0", features = ["test-util"] }

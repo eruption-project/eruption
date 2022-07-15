@@ -21,6 +21,9 @@ use clap::{IntoApp, Parser};
 use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use colored::*;
+use comfy_table::{
+    modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, Cell, ContentArrangement, Table,
+};
 use evdev_rs::enums::{EventCode, EV_KEY};
 use flume::unbounded;
 use i18n_embed::{
@@ -30,7 +33,6 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
-use prettytable::{cell, row, Cell, Row, Table};
 use rust_embed::RustEmbed;
 use std::{
     collections::BTreeMap,
@@ -577,33 +579,41 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!("Description: {}", table.description().bold());
 
             let mut tab = Table::new();
-            tab.add_row(row!(
-                '#',
-                tr!("source"),
-                tr!("action"),
-                tr!("description"),
-                tr!("flags")
-            ));
+            tab.load_preset(UTF8_FULL)
+                .apply_modifier(UTF8_ROUND_CORNERS)
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                // .set_width(40)
+                .set_header(vec![
+                    "#",
+                    &tr!("source"),
+                    &tr!("action"),
+                    &tr!("description"),
+                    &tr!("flags"),
+                ]);
 
             for (index, (source, action)) in table.mappings().iter().enumerate() {
-                tab.add_row(Row::new(vec![
+                let description = if action.description.trim().is_empty() {
+                    Cell::new(&format!("{}", tr!("n-a").italic()))
+                } else {
+                    Cell::new(&format!("{}", action.description))
+                };
+
+                let enabled = if action.enabled {
+                    Cell::new(&format!("{}", tr!("enabled")))
+                } else {
+                    Cell::new(&format!("{}", tr!("disabled")))
+                };
+
+                tab.add_row(vec![
                     Cell::new(&format!("{}", index + 1)),
                     Cell::new(&format!("{}", source)),
                     Cell::new(&format!("{}", action)),
-                    if action.description.trim().is_empty() {
-                        Cell::new(&format!("{}", tr!("n-a").italic()))
-                    } else {
-                        Cell::new(&format!("{}", action.description))
-                    },
-                    if action.enabled {
-                        Cell::new(&format!("{}", tr!("enabled")))
-                    } else {
-                        Cell::new(&format!("{}", tr!("disabled")))
-                    },
-                ]));
+                    description,
+                    enabled,
+                ]);
             }
 
-            tab.printstd();
+            println!("{}", tab);
         }
 
         Subcommands::Compile { keymap } => {
@@ -645,17 +655,21 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let event = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
 
             let mut tab = Table::new();
-            tab.add_row(row!('#', tr!("symbol"), tr!("code")));
+            tab.load_preset(UTF8_FULL)
+                .apply_modifier(UTF8_ROUND_CORNERS)
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                // .set_width(40)
+                .set_header(vec![&tr!("symbol"), &tr!("code")]);
 
             for (index, code) in event.iter().enumerate() {
-                tab.add_row(Row::new(vec![
+                tab.add_row(vec![
                     Cell::new(&format!("{}", index + 1)),
                     Cell::new(&format!("{}", code.to_string())),
                     Cell::new(&format!("{}", util::evdev_key_event_to_int(code))),
-                ]));
+                ]);
             }
 
-            tab.printstd();
+            println!("{}", tab);
         }
 
         Subcommands::Completions { shell } => {
