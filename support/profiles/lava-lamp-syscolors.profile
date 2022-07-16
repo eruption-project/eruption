@@ -48,8 +48,8 @@ default = 150.0
 [[config."Lava Lamp"]]
 type = 'float'
 name = 'coord_scale'
-value = 3.14159
-default = 3.14159
+value = 5.5
+default = 5.5
 
 [[config.Shockwave]]
 type = 'color'

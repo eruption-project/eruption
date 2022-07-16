@@ -81,6 +81,21 @@ pub fn get_managed_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u
     Ok(result)
 }
 
+pub fn get_color_schemes() -> Result<Vec<String>> {
+    use self::config::OrgEruptionConfig;
+
+    let conn = Connection::new_system()?;
+    let config_proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/config",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = config_proxy.get_color_schemes()?;
+
+    Ok(result)
+}
+
 pub fn set_color_scheme(name: &str, color_scheme: &ColorScheme) -> Result<()> {
     use self::config::OrgEruptionConfig;
 
@@ -103,6 +118,21 @@ pub fn set_color_scheme(name: &str, color_scheme: &ColorScheme) -> Result<()> {
     }
 
     let _result = proxy.set_color_scheme(name, data)?;
+
+    Ok(())
+}
+
+pub fn remove_color_scheme(name: &str) -> Result<()> {
+    use self::config::OrgEruptionConfig;
+
+    let conn = Connection::new_system()?;
+    let config_proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/config",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let _result = config_proxy.remove_color_scheme(&name)?;
 
     Ok(())
 }
@@ -526,8 +556,10 @@ mod config {
     use dbus::blocking;
 
     pub trait OrgEruptionConfig {
+        fn get_color_schemes(&self) -> Result<Vec<String>, dbus::Error>;
         fn ping(&self) -> Result<bool, dbus::Error>;
         fn ping_privileged(&self) -> Result<bool, dbus::Error>;
+        fn remove_color_scheme(&self, name: &str) -> Result<bool, dbus::Error>;
         fn set_color_scheme(&self, name: &str, data: Vec<u8>) -> Result<bool, dbus::Error>;
         fn write_file(&self, filename: &str, data: &str) -> Result<bool, dbus::Error>;
         fn brightness(&self) -> Result<i64, dbus::Error>;
@@ -563,6 +595,11 @@ mod config {
     impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgEruptionConfig
         for blocking::Proxy<'a, C>
     {
+        fn get_color_schemes(&self) -> Result<Vec<String>, dbus::Error> {
+            self.method_call("org.eruption.Config", "GetColorSchemes", ())
+                .and_then(|r: (Vec<String>,)| Ok(r.0))
+        }
+
         fn ping(&self) -> Result<bool, dbus::Error> {
             self.method_call("org.eruption.Config", "Ping", ())
                 .and_then(|r: (bool,)| Ok(r.0))
@@ -570,6 +607,11 @@ mod config {
 
         fn ping_privileged(&self) -> Result<bool, dbus::Error> {
             self.method_call("org.eruption.Config", "PingPrivileged", ())
+                .and_then(|r: (bool,)| Ok(r.0))
+        }
+
+        fn remove_color_scheme(&self, name: &str) -> Result<bool, dbus::Error> {
+            self.method_call("org.eruption.Config", "RemoveColorScheme", (name,))
                 .and_then(|r: (bool,)| Ok(r.0))
         }
 

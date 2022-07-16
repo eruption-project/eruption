@@ -12,14 +12,17 @@ _eruptionctl() {
             "$1")
                 cmd="eruptionctl"
                 ;;
+            add)
+                cmd+="__add"
+                ;;
             angle-snapping)
                 cmd+="__angle__snapping"
                 ;;
             brightness)
                 cmd+="__brightness"
                 ;;
-            color-scheme)
-                cmd+="__color__scheme"
+            color-schemes)
+                cmd+="__color__schemes"
                 ;;
             completions)
                 cmd+="__completions"
@@ -72,6 +75,9 @@ _eruptionctl() {
             rate)
                 cmd+="__rate"
                 ;;
+            remove)
+                cmd+="__remove"
+                ;;
             scripts)
                 cmd+="__scripts"
                 ;;
@@ -100,7 +106,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts="-h -V -v -r -c --help --version --verbose --repeat --config config color-scheme devices status switch profiles names scripts param completions help"
+            opts="-h -V -v -r -c --help --version --verbose --repeat --config config color-schemes devices status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -121,8 +127,8 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__color__scheme)
-            opts="-h --help import help"
+        eruptionctl__color__schemes)
+            opts="-h --help list add remove import help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -135,7 +141,21 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__color__scheme__help)
+        eruptionctl__color__schemes__add)
+            opts="-h --help <NAME> <COLORS>..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__color__schemes__help)
             opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -149,7 +169,7 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__color__scheme__import)
+        eruptionctl__color__schemes__import)
             opts="-h --help pywal help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -163,7 +183,7 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__color__scheme__import__help)
+        eruptionctl__color__schemes__import__help)
             opts="<SUBCOMMAND>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -177,9 +197,37 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__color__scheme__import__pywal)
+        eruptionctl__color__schemes__import__pywal)
             opts="-h --help <FILE_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__color__schemes__list)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__color__schemes__remove)
+            opts="-h --help <NAME>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

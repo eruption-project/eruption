@@ -101,7 +101,7 @@ lazy_static! {
     static ref ABOUT: String = tr!("about");
     static ref VERBOSE_ABOUT: String = tr!("verbose-about");
     static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
-    static ref COLORSCHEME_ABOUT: String = tr!("color-scheme-about");
+    static ref COLOR_SCHEME_ABOUT: String = tr!("color-scheme-about");
     static ref CONFIG_ABOUT: String = tr!("config-about");
     static ref DEVICES_ABOUT: String = tr!("devices-about");
     static ref STATUS_ABOUT: String = tr!("status-about");
@@ -145,10 +145,10 @@ pub enum Subcommands {
         command: ConfigSubcommands,
     },
 
-    #[clap(about(COLORSCHEME_ABOUT.as_str()))]
-    ColorScheme {
+    #[clap(about(COLOR_SCHEME_ABOUT.as_str()))]
+    ColorSchemes {
         #[clap(subcommand)]
-        command: ColorSchemeSubcommands,
+        command: ColorSchemesSubcommands,
     },
 
     #[clap(about(DEVICES_ABOUT.as_str()))]
@@ -211,21 +211,18 @@ pub enum ConfigSubcommands {
     Soundfx { enable: Option<bool> },
 }
 
-/// Sub-commands of the "colorscheme" command
+/// Sub-commands of the "color-schemes" command
 #[derive(Debug, clap::Parser)]
-pub enum ColorSchemeSubcommands {
-    /*
+pub enum ColorSchemesSubcommands {
+    /// List all color schemes known to Eruption
+    List {},
 
     /// Add a new named color scheme
     Add { name: String, colors: Vec<String> },
 
-    /// List all color schemes known to Eruption
-    List {},
-
     /// Remove a color scheme by name
     Remove { name: String },
 
-    */
     /// Import a color scheme from a file, e.g.: like the Pywal configuration
     Import {
         #[clap(subcommand)]
@@ -236,10 +233,6 @@ pub enum ColorSchemeSubcommands {
 /// Sub-commands of the "colorscheme" command
 #[derive(Debug, clap::Parser)]
 pub enum ColorSchemeImportSubcommands {
-    /*
-       /// Import from a file
-       From { file_name: PathBuf },
-    */
     /// Import an existing Pywal color scheme
     Pywal { file_name: Option<PathBuf> },
 }
@@ -756,28 +749,43 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
         },
 
-        // configuration related sub-commands
-        Subcommands::ColorScheme { command } => match command {
-            /*
+        // color-schemes related sub-commands
+        Subcommands::ColorSchemes { command } => match command {
+            ColorSchemesSubcommands::List {} => {
+                let color_schemes = dbus_client::get_color_schemes()?;
 
-            ColorSchemeSubcommands::List {} => todo!(),
+                println!("Registered color schemes:\n");
 
-            ColorSchemeSubcommands::Add { name: _, colors: _ } => todo!(),
-
-            ColorSchemeSubcommands::Remove { name: _ } => todo!(),
-
-            */
-            ColorSchemeSubcommands::Import { command } => match command {
-                /*
-                ColorSchemeImportSubcommands::From { file_name } => {
-                    println!(
-                        "Importing color scheme from: {}",
-                        file_name.display().to_string().bold()
-                    );
-
-                    println!("This feature is not implemented yet!",);
+                for color_scheme in color_schemes {
+                    println!("{}", color_scheme.bold());
                 }
-                */
+
+                println!("\nSupported stock gradients:\n");
+
+                println!("system");
+                println!("rainbow-smooth");
+                println!("sinebow-smooth");
+                println!("spectral-smooth");
+                println!("rainbow-sharp");
+                println!("sinebow-sharp");
+                println!("spectral-sharp");
+            }
+
+            ColorSchemesSubcommands::Add { name, colors } => {
+                println!("Importing color scheme from commandline");
+
+                let color_scheme = ColorScheme::try_from(colors)?;
+
+                dbus_client::set_color_scheme(&name, &color_scheme)?;
+            }
+
+            ColorSchemesSubcommands::Remove { name } => {
+                println!("Removing color scheme: {}", name.bold());
+
+                dbus_client::remove_color_scheme(&name)?;
+            }
+
+            ColorSchemesSubcommands::Import { command } => match command {
                 ColorSchemeImportSubcommands::Pywal { file_name } => {
                     let file_name = if let Some(path) = file_name {
                         path

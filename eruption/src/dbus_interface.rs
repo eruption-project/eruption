@@ -621,6 +621,26 @@ impl DbusApi {
                                 .outarg::<bool, _>("status"),
                             )
                             .add_m(
+                                f.method("GetColorSchemes", (), move |m| {
+                                    if perms::has_monitor_permission_cached(
+                                        &m.msg.sender().unwrap(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let color_schemes: Vec<String> = crate::NAMED_COLOR_SCHEMES
+                                            .read()
+                                            .keys()
+                                            .cloned()
+                                            .collect();
+
+                                        Ok(vec![m.msg.method_return().append1(color_schemes)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<Vec<String>, _>("color_schemes"),
+                            )
+                            .add_m(
                                 f.method("SetColorScheme", (), move |m| {
                                     if perms::has_settings_permission_cached(
                                         &m.msg.sender().unwrap(),
@@ -655,6 +675,28 @@ impl DbusApi {
                                 })
                                 .inarg::<String, _>("name")
                                 .inarg::<Vec<u8>, _>("data")
+                                .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("RemoveColorScheme", (), move |m| {
+                                    if perms::has_settings_permission_cached(
+                                        &m.msg.sender().unwrap(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let name: String = m.msg.read1()?;
+
+                                        crate::NAMED_COLOR_SCHEMES.write().remove(&name);
+
+                                        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+
+                                        let s = true;
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<String, _>("name")
                                 .outarg::<bool, _>("status"),
                             ),
                     ),
