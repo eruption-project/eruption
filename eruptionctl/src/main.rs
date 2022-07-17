@@ -234,7 +234,14 @@ pub enum ColorSchemesSubcommands {
 #[derive(Debug, clap::Parser)]
 pub enum ColorSchemeImportSubcommands {
     /// Import an existing Pywal color scheme
-    Pywal { file_name: Option<PathBuf> },
+    Pywal {
+        /// Optionally specify the file name to the pywal color scheme
+        file_name: Option<PathBuf>,
+
+        /// Optimize palette
+        #[clap(required = false, short, long, default_value = "false")]
+        optimize: bool,
+    },
 }
 
 /// Sub-commands of the "devices" command
@@ -754,13 +761,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             ColorSchemesSubcommands::List {} => {
                 let color_schemes = dbus_client::get_color_schemes()?;
 
-                println!("Registered color schemes:\n");
+                println!("Color schemes:\n");
 
                 for color_scheme in color_schemes {
                     println!("{}", color_scheme.bold());
                 }
 
-                println!("\nSupported stock gradients:\n");
+                println!("\nStock gradients:\n");
 
                 println!("system");
                 println!("rainbow-smooth");
@@ -774,19 +781,32 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             ColorSchemesSubcommands::Add { name, colors } => {
                 println!("Importing color scheme from commandline");
 
-                let color_scheme = ColorScheme::try_from(colors)?;
+                if colors.len() % 4 != 0 {
+                    eprintln!(
+                        "Invalid number of parameters specified, please use the 'RGBA' format"
+                    );
+                } else {
+                    let color_scheme = ColorScheme::try_from(colors)?;
 
-                dbus_client::set_color_scheme(&name, &color_scheme)?;
+                    dbus_client::set_color_scheme(&name, &color_scheme)?;
+                }
             }
 
             ColorSchemesSubcommands::Remove { name } => {
                 println!("Removing color scheme: {}", name.bold());
 
-                dbus_client::remove_color_scheme(&name)?;
+                let result = dbus_client::remove_color_scheme(&name)?;
+
+                if !result {
+                    eprintln!("The specified color scheme does not exist");
+                }
             }
 
             ColorSchemesSubcommands::Import { command } => match command {
-                ColorSchemeImportSubcommands::Pywal { file_name } => {
+                ColorSchemeImportSubcommands::Pywal {
+                    file_name,
+                    optimize,
+                } => {
                     let file_name = if let Some(path) = file_name {
                         path
                     } else {
@@ -802,7 +822,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     );
 
                     let json_data = fs::read_to_string(&file_name)?;
-                    let pywal_color_scheme: PywalColorScheme = serde_json::from_str(&json_data)?;
+                    let mut pywal_color_scheme: PywalColorScheme =
+                        serde_json::from_str(&json_data)?;
+
+                    if optimize {
+                        pywal_color_scheme.optimize();
+                    }
 
                     let color_scheme = ColorScheme::try_from(pywal_color_scheme)?;
 

@@ -37,7 +37,7 @@ Selected device: ROCCAT Kone Pure Ultra (1)
 ```shell
 $ eruptionctl
 
-eruptionctl 0.0.20
+eruptionctl 0.0.21
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

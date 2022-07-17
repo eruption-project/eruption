@@ -649,26 +649,36 @@ impl DbusApi {
                                     {
                                         let (name, data): (String, Vec<u8>) = m.msg.read2()?;
 
-                                        let mut color_schemes = crate::NAMED_COLOR_SCHEMES.write();
-                                        let mut colors = Vec::new();
+                                        if name.chars().take(1).all(char::is_numeric)
+                                            || !name.chars().all(|c| {
+                                                c == '_' || char::is_ascii_alphanumeric(&c)
+                                            })
+                                        {
+                                            Err(MethodErr::failed("Invalid identifier name"))
+                                        } else {
+                                            let mut color_schemes =
+                                                crate::NAMED_COLOR_SCHEMES.write();
+                                            let mut colors = Vec::new();
 
-                                        for chunk in data.chunks(4) {
-                                            let r = chunk[0];
-                                            let g = chunk[1];
-                                            let b = chunk[2];
-                                            let a = chunk[3];
+                                            for chunk in data.chunks(4) {
+                                                let r = chunk[0];
+                                                let g = chunk[1];
+                                                let b = chunk[2];
+                                                let a = chunk[3];
 
-                                            let color = Color::from_linear_rgba8(r, g, b, a);
+                                                let color = Color::from_linear_rgba8(r, g, b, a);
 
-                                            colors.push(color);
+                                                colors.push(color);
+                                            }
+
+                                            color_schemes.insert(name, ColorScheme { colors });
+
+                                            crate::REQUEST_PROFILE_RELOAD
+                                                .store(true, Ordering::SeqCst);
+
+                                            let s = true;
+                                            Ok(vec![m.msg.method_return().append1(s)])
                                         }
-
-                                        color_schemes.insert(name, ColorScheme { colors });
-
-                                        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-
-                                        let s = true;
-                                        Ok(vec![m.msg.method_return().append1(s)])
                                     } else {
                                         Err(MethodErr::failed("Authentication failed"))
                                     }
@@ -686,11 +696,16 @@ impl DbusApi {
                                     {
                                         let name: String = m.msg.read1()?;
 
-                                        crate::NAMED_COLOR_SCHEMES.write().remove(&name);
+                                        let s = crate::NAMED_COLOR_SCHEMES
+                                            .write()
+                                            .remove(&name)
+                                            .is_some();
 
-                                        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+                                        if s {
+                                            crate::REQUEST_PROFILE_RELOAD
+                                                .store(true, Ordering::SeqCst);
+                                        }
 
-                                        let s = true;
                                         Ok(vec![m.msg.method_return().append1(s)])
                                     } else {
                                         Err(MethodErr::failed("Authentication failed"))

@@ -98,6 +98,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;color-schemes;import;pywal' {
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Optimize palette')
+            [CompletionResult]::new('--optimize', 'optimize', [CompletionResultType]::ParameterName, 'Optimize palette')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
