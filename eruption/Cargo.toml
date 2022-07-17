@@ -73,7 +73,7 @@ rayon = "1.5.3"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 colorgrad = "0.6.0"
-csscolorparser = "0.6.1"
+csscolorparser = { version = "0.6.1", features = ["serde"] }
 palette = "0.6.0"
 nalgebra = "0.31.0"
 noise = "0.7.0"

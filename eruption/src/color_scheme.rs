@@ -47,7 +47,7 @@ pub trait ColorSchemeExt {
     fn color_rgba_at(&self, index: usize) -> Result<Color>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ColorScheme {
     pub colors: Vec<Color>,
 }
@@ -95,7 +95,8 @@ impl TryFrom<PywalColorScheme> for ColorScheme {
         let count = value.num_colors();
         let mut colors = Vec::new();
 
-        for index in 0..count {
+        // ignore the first element (don't use the darkest/lightest one)
+        for index in 1..count {
             let color = value.color_rgba_at(index)?;
 
             colors.push(color);
@@ -105,7 +106,7 @@ impl TryFrom<PywalColorScheme> for ColorScheme {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub struct PywalColorScheme {
     pub wallpaper: PathBuf,
@@ -147,7 +148,7 @@ impl ColorSchemeExt for PywalColorScheme {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub struct PaletteSpecial {
     pub background: String,
@@ -155,7 +156,7 @@ pub struct PaletteSpecial {
     pub cursor: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub struct Palette16 {
     pub color0: String,

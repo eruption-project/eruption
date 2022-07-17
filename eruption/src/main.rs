@@ -1553,6 +1553,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     state::init_global_runtime_state()
         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
 
+    // restore saved color-schemes
+    state::load_color_schemes()
+        .unwrap_or_else(|e| warn!("Could not restore previously saved color-schemes: {}", e));
+
     // enable the mouse
     let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
 
@@ -1809,6 +1813,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 info!("Saving global runtime state...");
                 state::save_runtime_state()
                     .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
+
+                // save color-schemes
+                state::save_color_schemes()
+                    .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
 
                 // close all managed devices
                 info!("Closing all devices now...");

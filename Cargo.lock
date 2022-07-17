@@ -684,6 +684,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80ab25764ba7edca4f546ee81e5471d04cb3143dfdc28f19168a8b58d3a2c8af"
 dependencies = [
  "phf 0.10.1",
+ "serde",
 ]
 
 [[package]]
@@ -1397,7 +1398,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.19"
+version = "0.0.20"
 dependencies = [
  "cfg-if 1.0.0",
  "clap",

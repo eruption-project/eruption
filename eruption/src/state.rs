@@ -28,8 +28,9 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::constants;
+use crate::color_scheme::ColorScheme;
 use crate::plugins::audio;
+use crate::{constants, util};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -308,4 +309,24 @@ fn perform_sanity_checks() {
     if !(0..=3).contains(&active_slot) {
         warn!("Configuration value is outside of the valid range: active_slot");
     }
+}
+
+pub fn save_color_schemes() -> Result<()> {
+    let file_name = PathBuf::from(&constants::STATE_DIR).join("color-schemes.state");
+
+    let data = toml::to_string_pretty(&*crate::NAMED_COLOR_SCHEMES.read())?;
+    util::write_file(&file_name, &data)?;
+
+    Ok(())
+}
+
+pub fn load_color_schemes() -> Result<()> {
+    let file_name = PathBuf::from(&constants::STATE_DIR).join("color-schemes.state");
+
+    let data = fs::read_to_string(&file_name)?;
+    let color_schemes: HashMap<String, ColorScheme> = toml::from_str(&data)?;
+
+    *crate::NAMED_COLOR_SCHEMES.write() = color_schemes;
+
+    Ok(())
 }

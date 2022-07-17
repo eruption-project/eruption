@@ -528,7 +528,7 @@ mod callbacks {
                     if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
                         colorgrad::CustomGradient::new()
                             // start at index 1, ignore the darkest/black part of the palette
-                            .colors(&color_scheme.colors[1..])
+                            .colors(&color_scheme.colors)
                             .build()?
                     } else {
                         // use sinebow gradient as a fallback
