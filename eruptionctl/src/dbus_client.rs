@@ -122,7 +122,7 @@ pub fn set_color_scheme(name: &str, color_scheme: &ColorScheme) -> Result<()> {
     Ok(())
 }
 
-pub fn remove_color_scheme(name: &str) -> Result<()> {
+pub fn remove_color_scheme(name: &str) -> Result<bool> {
     use self::config::OrgEruptionConfig;
 
     let conn = Connection::new_system()?;
@@ -132,9 +132,9 @@ pub fn remove_color_scheme(name: &str) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let _result = config_proxy.remove_color_scheme(&name)?;
+    let result = config_proxy.remove_color_scheme(&name)?;
 
-    Ok(())
+    Ok(result)
 }
 
 mod slot {

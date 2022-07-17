@@ -122,9 +122,11 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (pywal)
 _arguments "${_arguments_options[@]}" \
+'-o+[Optimize palette]: : ' \
+'--optimize=[Optimize palette]: : ' \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'::file-name:' \
+'::file-name -- Optionally specify the file name to the pywal color scheme:' \
 && ret=0
 ;;
 (help)

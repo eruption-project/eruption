@@ -198,12 +198,20 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__color__schemes__import__pywal)
-            opts="-h --help <FILE_NAME>"
+            opts="-o -h --optimize --help <FILE_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --optimize)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -o)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

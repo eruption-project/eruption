@@ -95,8 +95,7 @@ impl TryFrom<PywalColorScheme> for ColorScheme {
         let count = value.num_colors();
         let mut colors = Vec::new();
 
-        // ignore the first element (don't use the darkest/lightest one)
-        for index in 1..count {
+        for index in 0..count {
             let color = value.color_rgba_at(index)?;
 
             colors.push(color);
@@ -114,6 +113,14 @@ pub struct PywalColorScheme {
 
     pub special: PaletteSpecial,
     pub colors: Palette16,
+}
+
+impl PywalColorScheme {
+    /// Optimize the palette, remove outlier colors
+    pub fn optimize(&mut self) {
+        self.colors.color0 = self.colors.color1.clone();
+        self.colors.color8 = self.colors.color9.clone();
+    }
 }
 
 impl ColorSchemeExt for PywalColorScheme {
