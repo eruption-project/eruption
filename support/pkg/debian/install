@@ -106,6 +106,7 @@ support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/heatmap-errors.profile var/lib/eruption/profiles
 support/profiles/lava-lamp.profile var/lib/eruption/profiles
 support/profiles/lava-lamp-pastel.profile var/lib/eruption/profiles
+support/profiles/lava-lamp-syscolors.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
 support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles

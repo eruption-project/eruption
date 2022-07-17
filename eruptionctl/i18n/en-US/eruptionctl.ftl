@@ -23,6 +23,7 @@ verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
 completions-about = Generate shell completions
 
 config-about = Configuration related sub-commands
+color-scheme-about = Define, import or delete a named color scheme
 devices-about = Get or set some device specific configuration parameters
 status-about = Shows the currently active profile or slot
 switch-about = Switch to a different profile or slot

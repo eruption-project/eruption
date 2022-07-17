@@ -71,6 +71,80 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(color-schemes)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__color-schemes_commands" \
+"*::: :->color-schemes" \
+&& ret=0
+
+    case $state in
+    (color-schemes)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':name:' \
+'*::colors:' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':name:' \
+&& ret=0
+;;
+(import)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__color-schemes__import_commands" \
+"*::: :->import" \
+&& ret=0
+
+    case $state in
+    (import)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-import-command-$line[1]:"
+        case $line[1] in
+            (pywal)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::file-name:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'*::subcommand -- The subcommand whose help message to display:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'*::subcommand -- The subcommand whose help message to display:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (devices)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -402,6 +476,7 @@ esac
 _eruptionctl_commands() {
     local commands; commands=(
 'config:Configuration related sub-commands' \
+'color-schemes:Define, import or delete a named color scheme' \
 'devices:Get or set some device specific configuration parameters' \
 'status:Shows the currently active profile or slot' \
 'switch:Switch to a different profile or slot' \
@@ -413,6 +488,11 @@ _eruptionctl_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl commands' commands "$@"
+}
+(( $+functions[_eruptionctl__color-schemes__add_commands] )) ||
+_eruptionctl__color-schemes__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes add commands' commands "$@"
 }
 (( $+functions[_eruptionctl__devices__angle-snapping_commands] )) ||
 _eruptionctl__devices__angle-snapping_commands() {
@@ -428,6 +508,17 @@ _eruptionctl__config__brightness_commands() {
 _eruptionctl__devices__brightness_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl devices brightness commands' commands "$@"
+}
+(( $+functions[_eruptionctl__color-schemes_commands] )) ||
+_eruptionctl__color-schemes_commands() {
+    local commands; commands=(
+'list:List all color schemes known to Eruption' \
+'add:Add a new named color scheme' \
+'remove:Remove a color scheme by name' \
+'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl color-schemes commands' commands "$@"
 }
 (( $+functions[_eruptionctl__completions_commands] )) ||
 _eruptionctl__completions_commands() {
@@ -485,6 +576,16 @@ _eruptionctl__scripts__edit_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts edit commands' commands "$@"
 }
+(( $+functions[_eruptionctl__color-schemes__help_commands] )) ||
+_eruptionctl__color-schemes__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__color-schemes__import__help_commands] )) ||
+_eruptionctl__color-schemes__import__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes import help commands' commands "$@"
+}
 (( $+functions[_eruptionctl__config__help_commands] )) ||
 _eruptionctl__config__help_commands() {
     local commands; commands=()
@@ -525,6 +626,14 @@ _eruptionctl__switch__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl switch help commands' commands "$@"
 }
+(( $+functions[_eruptionctl__color-schemes__import_commands] )) ||
+_eruptionctl__color-schemes__import_commands() {
+    local commands; commands=(
+'pywal:Import an existing Pywal color scheme' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl color-schemes import commands' commands "$@"
+}
 (( $+functions[_eruptionctl__devices__info_commands] )) ||
 _eruptionctl__devices__info_commands() {
     local commands; commands=()
@@ -539,6 +648,11 @@ _eruptionctl__profiles__info_commands() {
 _eruptionctl__scripts__info_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts info commands' commands "$@"
+}
+(( $+functions[_eruptionctl__color-schemes__list_commands] )) ||
+_eruptionctl__color-schemes__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes list commands' commands "$@"
 }
 (( $+functions[_eruptionctl__devices__list_commands] )) ||
 _eruptionctl__devices__list_commands() {
@@ -600,10 +714,20 @@ _eruptionctl__profiles_commands() {
     )
     _describe -t commands 'eruptionctl profiles commands' commands "$@"
 }
+(( $+functions[_eruptionctl__color-schemes__import__pywal_commands] )) ||
+_eruptionctl__color-schemes__import__pywal_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes import pywal commands' commands "$@"
+}
 (( $+functions[_eruptionctl__devices__rate_commands] )) ||
 _eruptionctl__devices__rate_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl devices rate commands' commands "$@"
+}
+(( $+functions[_eruptionctl__color-schemes__remove_commands] )) ||
+_eruptionctl__color-schemes__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl color-schemes remove commands' commands "$@"
 }
 (( $+functions[_eruptionctl__scripts_commands] )) ||
 _eruptionctl__scripts_commands() {

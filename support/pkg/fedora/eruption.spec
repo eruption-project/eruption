@@ -162,6 +162,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/heatmap.profile
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/lava-lamp.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/lava-lamp-pastel.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/lava-lamp-syscolors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/netfx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
@@ -336,6 +337,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_sharedstatedir}/%{ShortName}/profiles/heatmap-errors.profile
 %{_sharedstatedir}/%{ShortName}/profiles/lava-lamp.profile
 %{_sharedstatedir}/%{ShortName}/profiles/lava-lamp-pastel.profile
+%{_sharedstatedir}/%{ShortName}/profiles/lava-lamp-syscolors.profile
 %{_sharedstatedir}/%{ShortName}/profiles/matrix.profile
 %{_sharedstatedir}/%{ShortName}/profiles/netfx.profile
 %{_sharedstatedir}/%{ShortName}/profiles/batique.profile

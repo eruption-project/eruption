@@ -54,6 +54,7 @@ mod util;
 mod hwdevices;
 use hwdevices::{KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent};
 
+mod color_scheme;
 mod constants;
 mod dbus_interface;
 mod events;
@@ -68,8 +69,11 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-use crate::hwdevices::{DeviceStatus, MaturityLevel, RGBA};
 use crate::plugins::{sdk_support, uleds};
+use crate::{
+    color_scheme::ColorScheme,
+    hwdevices::{DeviceStatus, MaturityLevel, RGBA},
+};
 
 use crate::threads::DbusApiEvent;
 #[cfg(feature = "mimalloc_allocator")]
@@ -152,6 +156,10 @@ lazy_static! {
 
     /// The current "pipeline" of scripts
     pub static ref ACTIVE_SCRIPTS: Arc<Mutex<Vec<Manifest>>> = Arc::new(Mutex::new(vec![]));
+
+    /// Named color schemes, for use in e.g. gradients
+    pub static ref NAMED_COLOR_SCHEMES: Arc<RwLock<HashMap<String, ColorScheme>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
@@ -1545,6 +1553,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     state::init_global_runtime_state()
         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
 
+    // restore saved color-schemes
+    state::load_color_schemes()
+        .unwrap_or_else(|e| warn!("Could not restore previously saved color-schemes: {}", e));
+
     // enable the mouse
     let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
 
@@ -1801,6 +1813,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 info!("Saving global runtime state...");
                 state::save_runtime_state()
                     .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
+
+                // save color-schemes
+                state::save_color_schemes()
+                    .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
 
                 // close all managed devices
                 info!("Closing all devices now...");
