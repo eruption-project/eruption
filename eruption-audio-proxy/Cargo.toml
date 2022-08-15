@@ -30,24 +30,24 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "3.2.12", features = ["derive"] }
-clap_complete = "3.2.3"
-serde = { version = "1.0.139", features = ["derive"] }
+clap =  { version = "3.2.17", features = ["derive"] }
+clap_complete = "3.2.4"
+serde = { version = "1.0.143", features = ["derive"] }
 lazy_static = "1.4.0"
-flume = "0.10.13"
+flume = "0.10.14"
 log = "0.4.17"
 syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
-libc = "0.2.126"
-nix = "0.24.1"
+libc = "0.2.131"
+nix = "0.25.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-tokio = { version = "1.20.0", features = ["full"] }
+tokio = { version = "1.20.1", features = ["full"] }
 socket2 = { version = "0.4.4", features = ["all"] }
-ctrlc = { version = "3.2.2", features = ["termination"] }
+ctrlc = { version = "3.2.3", features = ["termination"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
-thiserror = "1.0.31"
+thiserror = "1.0.32"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hound = "3.4.0"
@@ -59,9 +59,9 @@ rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = 
 # dbus = "0.9.3"
 # dbus-tree = "0.9.1"
 byteorder = "1.4.3"
-bytes = "1.1.0"
-prost = "0.10.4"
-prost-types = "0.10.1"
+bytes = "1.2.1"
+prost = "0.11.0"
+prost-types = "0.11.1"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.0"
@@ -71,7 +71,7 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-tokio = { version = "1.20.0", features = ["test-util"] }
+tokio = { version = "1.20.1", features = ["test-util"] }
 
 [build-dependencies]
-prost-build = "0.10.4"
+prost-build = "0.11.1"

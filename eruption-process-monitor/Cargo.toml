@@ -39,34 +39,34 @@ sensor-mutter = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.56"
+async-trait = "0.1.57"
 byteorder = "1.4.3"
-clap =  { version = "3.2.12", features = ["derive"] }
-clap_complete = "3.2.3"
-ctrlc = { version = "3.2.2", features = ["termination"] }
-config = "0.13.1"
+clap =  { version = "3.2.17", features = ["derive"] }
+clap_complete = "3.2.4"
+ctrlc = { version = "3.2.3", features = ["termination"] }
+config = "0.13.2"
 dbus = "0.9.6"
 dbus-tokio = "0.7.5"
 dbus-tree = "0.9.2"
-dyn-clone = "1.0.7"
+dyn-clone = "1.0.9"
 dyn-clonable = "0.9.0"
 indexmap = "1.9.1"
 log = "0.4.17"
 syslog = "6.0.1"
-libc = "0.2.126"
-nix = "0.24.1"
+libc = "0.2.131"
+nix = "0.25.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 regex = "1.6.0"
-serde = { version = "1.0.139", features = ["derive"] }
-serde_json = "1.0.82"
-tokio = { version = "1.20.0", features = ["full"] }
+serde = { version = "1.0.143", features = ["derive"] }
+serde_json = "1.0.83"
+tokio = { version = "1.20.1", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
-flume = "0.10.13"
+flume = "0.10.14"
 toml = "0.5.9"
-thiserror = "1.0.31"
+thiserror = "1.0.32"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hotwatch = "0.4.6"
@@ -82,4 +82,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-tokio = { version = "1.20.0", features = ["test-util"] }
+tokio = { version = "1.20.1", features = ["test-util"] }

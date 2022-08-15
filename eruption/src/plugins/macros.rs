@@ -95,231 +95,218 @@ impl MacrosPlugin {
         dev.set_version(0x01);
 
         // configure allowed events
-        dev.enable(&EventType::EV_KEY).unwrap();
-        dev.enable(&EventType::EV_MSC).unwrap();
+        dev.enable(EventType::EV_KEY).unwrap();
+        dev.enable(EventType::EV_MSC).unwrap();
 
-        dev.enable(&EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
-        dev.enable(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
+        dev.enable(EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
+        dev.enable(EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
 
         // enable FN-F5 - FN-F8
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FILE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HOMEPAGE))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MAIL)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_FILE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HOMEPAGE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_MAIL)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
 
         // enable media keys
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PREVIOUSSONG))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PREVIOUSSONG))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_STOPCD)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PLAYPAUSE))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_STOPCD)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PLAYPAUSE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_NEXTSONG))
-            .unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_NEXTSONG)).unwrap();
 
         // Enable all supported keys; this is used to mirror the hardware device
         // to the virtual keyboard, so that the hardware device can be disabled.
 
         // Generated via `sudo evtest`
         // Supported events:
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_ESC)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_1)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_2)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_3)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_4)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_5)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_6)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_7)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_8)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_9)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_0)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MINUS)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_EQUAL)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_BACKSPACE))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_ESC)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_1)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_2)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_3)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_4)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_5)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_6)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_7)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_8)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_9)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_0)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_MINUS)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_EQUAL)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_BACKSPACE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_TAB)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_Q)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_W)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_E)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_R)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_T)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_Y)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_U)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_I)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_O)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_P)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFTBRACE))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_TAB)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_Q)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_W)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_E)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_R)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_T)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_Y)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_U)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_I)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_O)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_P)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFTBRACE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHTBRACE))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHTBRACE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_ENTER)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFTCTRL))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_ENTER)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFTCTRL)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_A)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_S)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_D)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_G)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_H)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_J)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_K)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_L)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SEMICOLON))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_A)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_S)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_D)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_G)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_H)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_J)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_K)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_L)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SEMICOLON))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_APOSTROPHE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_APOSTROPHE))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_GRAVE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFTSHIFT))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_GRAVE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFTSHIFT))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_BACKSLASH))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_BACKSLASH))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_Z)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_X)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_C)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_V)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_B)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_N)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_M)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_COMMA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_DOT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SLASH)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHTSHIFT))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_Z)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_X)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_C)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_V)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_B)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_N)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_M)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_COMMA)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_DOT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SLASH)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHTSHIFT))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPASTERISK))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPASTERISK))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFTALT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SPACE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_CAPSLOCK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F1)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F2)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F3)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F4)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F5)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F6)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F7)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F8)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F9)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F10)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_NUMLOCK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SCROLLLOCK))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFTALT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SPACE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CAPSLOCK))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP7)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP8)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP9)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPMINUS)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP4)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP5)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP6)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPPLUS)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP1)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP2)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP3)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KP0)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPDOT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_ZENKAKUHANKAKU))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F1)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F2)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F3)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F4)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F5)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F6)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F7)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F8)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F9)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F10)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_NUMLOCK)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SCROLLLOCK))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_102ND)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F11)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F12)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RO)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KATAKANA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HIRAGANA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HENKAN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KATAKANAHIRAGANA))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP7)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP8)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP9)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPMINUS)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP4)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP5)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP6)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPPLUS)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP1)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP2)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP3)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KP0)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPDOT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_ZENKAKUHANKAKU))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_MUHENKAN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPJPCOMMA))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_102ND)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F11)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F12)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RO)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KATAKANA))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPENTER)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHTCTRL))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HIRAGANA))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPSLASH)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SYSRQ)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHTALT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HOME)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_UP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PAGEUP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_END)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_DOWN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PAGEDOWN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_INSERT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_DELETE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_MUTE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_VOLUMEDOWN))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HENKAN)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KATAKANAHIRAGANA))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_VOLUMEUP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_POWER)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPEQUAL)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PAUSE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPCOMMA)).unwrap();
+        //dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HANGUEL)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HANJA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_YEN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_LEFTMETA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_RIGHTMETA))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MUHENKAN))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_COMPOSE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_STOP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_AGAIN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PROPS)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_UNDO)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_FRONT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_COPY)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_OPEN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PASTE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_FIND)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_CUT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_HELP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SLEEP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_WWW)).unwrap();
+        //dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SCREENLOCK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_BACK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_FORWARD)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_EJECTCD)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_NEXTSONG)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PLAYPAUSE))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPJPCOMMA))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_PREVIOUSSONG))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPENTER)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHTCTRL))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_STOPCD)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_REFRESH)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_EDIT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SCROLLUP)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_SCROLLDOWN))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPSLASH)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SYSRQ)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHTALT))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPLEFTPAREN))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HOME)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_UP)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PAGEUP)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_END)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_DOWN)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PAGEDOWN))
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_KPRIGHTPAREN))
             .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_INSERT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_DELETE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_MUTE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_VOLUMEDOWN))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_VOLUMEUP))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_POWER)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPEQUAL)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PAUSE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPCOMMA)).unwrap();
-        //dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HANGUEL)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HANJA)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_YEN)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_LEFTMETA))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_RIGHTMETA))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_COMPOSE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_STOP)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_AGAIN)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PROPS)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_UNDO)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FRONT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_COPY)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_OPEN)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PASTE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FIND)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CUT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_HELP)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_CALC)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SLEEP)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_WWW)).unwrap();
-        //dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SCREENLOCK)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_BACK)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FORWARD)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_EJECTCD)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_NEXTSONG))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PLAYPAUSE))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_PREVIOUSSONG))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_STOPCD)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_REFRESH)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_EDIT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SCROLLUP))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_SCROLLDOWN))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPLEFTPAREN))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_KPRIGHTPAREN))
-            .unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F13)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F14)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F15)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F16)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F17)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F18)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F19)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F20)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F21)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F22)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F23)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_F24)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F13)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F14)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F15)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F16)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F17)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F18)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F19)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F20)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F21)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F22)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F23)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_F24)).unwrap();
 
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_FN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_FN)).unwrap();
 
-        dev.enable(&EventCode::EV_KEY(EV_KEY::KEY_UNKNOWN)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::KEY_UNKNOWN)).unwrap();
 
         match UInputDevice::create_from_device(&dev) {
             Ok(device) => {
@@ -343,47 +330,47 @@ impl MacrosPlugin {
         dev.set_version(0x01);
 
         // configure allowed events
-        dev.enable(&EventType::EV_KEY).unwrap();
-        dev.enable(&EventType::EV_REL).unwrap();
-        dev.enable(&EventType::EV_MSC).unwrap();
+        dev.enable(EventType::EV_KEY).unwrap();
+        dev.enable(EventType::EV_REL).unwrap();
+        dev.enable(EventType::EV_MSC).unwrap();
 
-        dev.enable(&EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
-        dev.enable(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
+        dev.enable(EventCode::EV_MSC(EV_MSC::MSC_SCAN)).unwrap();
+        dev.enable(EventCode::EV_SYN(EV_SYN::SYN_REPORT)).unwrap();
 
         // Enable all supported buttons; this is used to mirror the hardware device
         // to the virtual mouse, so that the hardware device can be disabled.
 
         // Supported events:
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_X)).unwrap();
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_Y)).unwrap();
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_Z)).unwrap();
+        dev.enable(EventCode::EV_REL(EV_REL::REL_X)).unwrap();
+        dev.enable(EventCode::EV_REL(EV_REL::REL_Y)).unwrap();
+        dev.enable(EventCode::EV_REL(EV_REL::REL_Z)).unwrap();
 
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_LEFT)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_MIDDLE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_RIGHT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_LEFT)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_MIDDLE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_RIGHT)).unwrap();
 
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_0)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_1)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_2)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_3)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_4)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_5)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_6)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_7)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_8)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_9)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_0)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_1)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_2)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_3)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_4)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_5)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_6)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_7)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_8)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_9)).unwrap();
 
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_EXTRA)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_SIDE)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_FORWARD)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_BACK)).unwrap();
-        dev.enable(&EventCode::EV_KEY(EV_KEY::BTN_TASK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_EXTRA)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_SIDE)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_FORWARD)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_BACK)).unwrap();
+        dev.enable(EventCode::EV_KEY(EV_KEY::BTN_TASK)).unwrap();
 
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_WHEEL)).unwrap();
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_HWHEEL)).unwrap();
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_WHEEL_HI_RES))
+        dev.enable(EventCode::EV_REL(EV_REL::REL_WHEEL)).unwrap();
+        dev.enable(EventCode::EV_REL(EV_REL::REL_HWHEEL)).unwrap();
+        dev.enable(EventCode::EV_REL(EV_REL::REL_WHEEL_HI_RES))
             .unwrap();
-        dev.enable(&EventCode::EV_REL(EV_REL::REL_HWHEEL_HI_RES))
+        dev.enable(EventCode::EV_REL(EV_REL::REL_HWHEEL_HI_RES))
             .unwrap();
 
         match UInputDevice::create_from_device(&dev) {
