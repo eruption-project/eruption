@@ -2,8 +2,8 @@
 %global ShortName eruption
 
 Name:    eruption
-Version: 0.1.23
-Release: 4%{?dist}
+Version: 0.2.0
+Release: 0%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPLv3+
@@ -13,6 +13,8 @@ Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v%{Version}
 BuildRoot: %{_tmppath}/%{name}-build
 
 BuildRequires: cargo
+BuildRequires: cmake
+BuildRequires: protobuf-devel
 BuildRequires: systemd-devel
 BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
@@ -22,15 +24,15 @@ BuildRequires: pulseaudio-libs-devel
 BuildRequires: lua-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
-#BuildRequires: gtk3-devel
-#BuildRequires: gtksourceview3-devel
+BuildRequires: gtk3-devel
+BuildRequires: gtksourceview4-devel
 
 Requires: systemd
 Requires: dbus
 Requires: hidapi
 Requires: libevdev
-Requires: luajit
-#Requires: gtksourceview3
+Requires: lua
+Requires: gtksourceview4
 
 Recommends: lua-socket-compat
 
