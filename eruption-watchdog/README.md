@@ -5,7 +5,7 @@ in case it should hang. The watchdog daemon may be especially useful during the 
 with unstable drivers.
 
 > NOTE:
-> Since version `0.1.24`, Eruption supports using systemd as a software watchdog.
+> Since version `0.2.0`, Eruption supports using systemd as a software watchdog.
 > Running the `eruption-watchdog` daemon is therefore not necessary when the `eruption` process is managed through
 > systemd!
 
