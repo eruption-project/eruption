@@ -4,18 +4,19 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.0| __New Release__                                                                                                                                                                                                                                                     |
-| 0.2.0| Add support for named color-schemes |
-| 0.2.0| Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
-| 0.2.0| Add new profile `Lava Lamp (System palette)` that makes use of imported color-schemes |
-| 0.2.0| Modify Lua script `batique.lua` to support imported color-schemes |
-| 0.2.0| Update the project description, add the new website: https://eruption-project.org/                                                                                                                                                                                  |
-| 0.2.0| Implement support for a systemd-based software watchdog and add a watchdog daemon for development purposes                                                                                                                                                          |
-| 0.2.0| Add experimental support for `ROCCAT Kone Pro` series mice                                                                                                                                                                                                          |
-| 0.2.0| Add experimental support for `ROCCAT Kone Pro Air` series mice                                                                                                                                                                                                      |
-| 0.2.0| Add experimental support for `ROCCAT Kone XP` series mice                                                                                                                                                                                                           |
-| 0.2.0| Add experimental support for `ROCCAT Kain 100 AIMO` series mice                                                                                                                                                                                                     |
-| 0.2.0| Add new companion utility `eruption-keymap` that allows to define simple and complex macro mappings |
+| 0.2.0 | __New Release__                                                                                                                                                                                                                                                     |
+| 0.2.0 | Add support for named color-schemes |
+| 0.2.0 | Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
+| 0.2.0 | Add new profile `Lava Lamp (System palette)` that makes use of imported color-schemes |
+| 0.2.0 | Modify Lua script `batique.lua` to support imported color-schemes |
+| 0.2.0 | Update the project description, add the new website: https://eruption-project.org/                                                                                                                                                                                  |
+| 0.2.0 | Implement support for a systemd-based software watchdog and add a watchdog daemon for development purposes                                                                                                                                                          |
+| 0.2.0 | Add experimental support for `ROCCAT Kone Pro` series mice                                                                                                                                                                                                          |
+| 0.2.0 | Add experimental support for `ROCCAT Kone Pro Air` series mice                                                                                                                                                                                                      |
+| 0.2.0 | Add experimental support for `ROCCAT Kone XP` series mice                                                                                                                                                                                                           |
+| 0.2.0 | Add experimental support for `ROCCAT Kain 100 AIMO` series mice                                                                                                                                                                                                     |
+| 0.2.0 | Add new companion utility `eruption-keymap` that allows to define simple and complex macro mappings |
+| 0.2.0 | Update all dependencies to their latest revisions |
 | 0.1.23 | __New Release__                                                                                                                                                                                                                                                     |
 | 0.1.23 | Implement emergency exit of Eruption using Easy Shift+ + BACKSPACE key                                                                                                                                                                                              |
 | 0.1.23 | Implement full support for Wayland based graphics stacks (Add support for `NetworkFX Ambient Effect`)                                                                                                                                                               |
