@@ -42,9 +42,12 @@ use rust_embed::RustEmbed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
-use std::{env, thread};
+use std::{env, fs, thread};
 use std::{process, sync::Arc};
 
+use crate::color_scheme::{ColorScheme, PywalColorScheme};
+
+mod color_scheme;
 mod constants;
 mod dbus_client;
 mod device;
@@ -98,6 +101,7 @@ lazy_static! {
     static ref ABOUT: String = tr!("about");
     static ref VERBOSE_ABOUT: String = tr!("verbose-about");
     static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
+    static ref COLOR_SCHEME_ABOUT: String = tr!("color-scheme-about");
     static ref CONFIG_ABOUT: String = tr!("config-about");
     static ref DEVICES_ABOUT: String = tr!("devices-about");
     static ref STATUS_ABOUT: String = tr!("status-about");
@@ -139,6 +143,12 @@ pub enum Subcommands {
     Config {
         #[clap(subcommand)]
         command: ConfigSubcommands,
+    },
+
+    #[clap(about(COLOR_SCHEME_ABOUT.as_str()))]
+    ColorSchemes {
+        #[clap(subcommand)]
+        command: ColorSchemesSubcommands,
     },
 
     #[clap(about(DEVICES_ABOUT.as_str()))]
@@ -199,6 +209,39 @@ pub enum ConfigSubcommands {
 
     /// Get or set the state of SoundFX
     Soundfx { enable: Option<bool> },
+}
+
+/// Sub-commands of the "color-schemes" command
+#[derive(Debug, clap::Parser)]
+pub enum ColorSchemesSubcommands {
+    /// List all color schemes known to Eruption
+    List {},
+
+    /// Add a new named color scheme
+    Add { name: String, colors: Vec<String> },
+
+    /// Remove a color scheme by name
+    Remove { name: String },
+
+    /// Import a color scheme from a file, e.g.: like the Pywal configuration
+    Import {
+        #[clap(subcommand)]
+        command: ColorSchemeImportSubcommands,
+    },
+}
+
+/// Sub-commands of the "colorscheme" command
+#[derive(Debug, clap::Parser)]
+pub enum ColorSchemeImportSubcommands {
+    /// Import an existing Pywal color scheme
+    Pywal {
+        /// Optionally specify the file name to the pywal color scheme
+        file_name: Option<PathBuf>,
+
+        /// Optimize palette
+        #[clap(required = false, short, long, default_value = "false")]
+        optimize: bool,
+    },
 }
 
 /// Sub-commands of the "devices" command
@@ -711,6 +754,86 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     );
                 }
             }
+        },
+
+        // color-schemes related sub-commands
+        Subcommands::ColorSchemes { command } => match command {
+            ColorSchemesSubcommands::List {} => {
+                let color_schemes = dbus_client::get_color_schemes()?;
+
+                println!("Color schemes:\n");
+
+                for color_scheme in color_schemes {
+                    println!("{}", color_scheme.bold());
+                }
+
+                println!("\nStock gradients:\n");
+
+                println!("system");
+                println!("rainbow-smooth");
+                println!("sinebow-smooth");
+                println!("spectral-smooth");
+                println!("rainbow-sharp");
+                println!("sinebow-sharp");
+                println!("spectral-sharp");
+            }
+
+            ColorSchemesSubcommands::Add { name, colors } => {
+                println!("Importing color scheme from commandline");
+
+                if colors.len() % 4 != 0 {
+                    eprintln!(
+                        "Invalid number of parameters specified, please use the 'RGBA' format"
+                    );
+                } else {
+                    let color_scheme = ColorScheme::try_from(colors)?;
+
+                    dbus_client::set_color_scheme(&name, &color_scheme)?;
+                }
+            }
+
+            ColorSchemesSubcommands::Remove { name } => {
+                println!("Removing color scheme: {}", name.bold());
+
+                let result = dbus_client::remove_color_scheme(&name)?;
+
+                if !result {
+                    eprintln!("The specified color scheme does not exist");
+                }
+            }
+
+            ColorSchemesSubcommands::Import { command } => match command {
+                ColorSchemeImportSubcommands::Pywal {
+                    file_name,
+                    optimize,
+                } => {
+                    let file_name = if let Some(path) = file_name {
+                        path
+                    } else {
+                        PathBuf::from(format!(
+                            "/home/{}/.cache/wal/colors.json",
+                            env::var("LOGNAME")?
+                        ))
+                    };
+
+                    println!(
+                        "Importing Pywal color scheme from: {}",
+                        file_name.display().to_string().bold()
+                    );
+
+                    let json_data = fs::read_to_string(&file_name)?;
+                    let mut pywal_color_scheme: PywalColorScheme =
+                        serde_json::from_str(&json_data)?;
+
+                    if optimize {
+                        pywal_color_scheme.optimize();
+                    }
+
+                    let color_scheme = ColorScheme::try_from(pywal_color_scheme)?;
+
+                    dbus_client::set_color_scheme("system", &color_scheme)?;
+                }
+            },
         },
 
         // device specific sub-commands

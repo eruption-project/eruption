@@ -441,7 +441,7 @@ mod callbacks {
     pub(crate) fn parse_color(val: &str) -> Result<u32> {
         match csscolorparser::parse(val) {
             Ok(color) => {
-                let (r, g, b, a) = color.rgba_u8();
+                let (r, g, b, a) = color.to_linear_rgba_u8();
 
                 Ok(rgba_to_color(r, g, b, a))
             }
@@ -519,10 +519,49 @@ mod callbacks {
                 Ok(idx)
             }),
 
-            _ => {
-                error!("Could not parse value, not a valid stock-gradient");
+            // special handling for the "system" palette
+            "system" => super::ALLOCATED_GRADIENTS.with(|f| {
+                let mut m = f.borrow_mut();
+                let idx = m.len() + 1;
 
-                Err(CallbacksError::ParseParamError {}.into())
+                let gradient =
+                    if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
+                        colorgrad::CustomGradient::new()
+                            // start at index 1, ignore the darkest/black part of the palette
+                            .colors(&color_scheme.colors)
+                            .build()?
+                    } else {
+                        // use sinebow gradient as a fallback
+                        colorgrad::sinebow()
+                    };
+
+                m.insert(idx, gradient);
+
+                Ok(idx)
+            }),
+
+            _ => {
+                if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
+                    // Create a gradient from the named color scheme
+                    super::ALLOCATED_GRADIENTS.with(|f| {
+                        let mut m = f.borrow_mut();
+                        let idx = m.len() + 1;
+
+                        let gradient = colorgrad::CustomGradient::new()
+                            .colors(&color_scheme.colors)
+                            .build()?;
+
+                        m.insert(idx, gradient);
+
+                        Ok(idx)
+                    })
+                } else {
+                    error!(
+                        "Could not parse value, not a valid stock-gradient or named color scheme"
+                    );
+
+                    Err(CallbacksError::ParseParamError {}.into())
+                }
             }
         }
     }
@@ -547,7 +586,7 @@ mod callbacks {
 
             if let Some(gradient) = m.get(&handle) {
                 let color = gradient.at(pos);
-                let (r, g, b, a) = color.rgba_u8();
+                let (r, g, b, a) = color.to_linear_rgba_u8();
 
                 Ok(rgba_to_color(r, g, b, a))
             } else {

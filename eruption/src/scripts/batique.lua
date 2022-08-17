@@ -22,6 +22,8 @@ require "debug"
 ticks = 0
 color_map = {}
 
+grad = gradient_from_name(stock_gradient)
+
 -- event handler functions --
 function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
@@ -39,11 +41,8 @@ function on_tick(delta)
             local val = super_simplex_noise((x / coord_scale),
                                             (y / coord_scale),
                                             ticks / time_scale)
-            val = lerp(0, 360, val)
 
-            color_map[i] = hsla_to_color((val / color_divisor) + color_offset,
-                                         color_saturation, color_lightness,
-                                         lerp(0, 255, opacity))
+            color_map[i] = gradient_color_at(grad, val)
         end
 
         submit_color_map(color_map)

@@ -3,13 +3,13 @@
 pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
-pkgver='0.1.23'
-pkgrel='2'
+pkgver='0.2.0'
+pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
-depends=('libevdev' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket')
-makedepends=('git' 'rust' 'pkgconf' 'protobuf' 'xorg-server-devel' 'libxrandr')
+depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'gtksourceview4')
+makedepends=('git' 'rust' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'gtk3')
 provides=('eruption')
 conflicts=('eruption-git' 'eruption-roccat-vulcan-git')
 replaces=('eruption-roccat-vulcan')
@@ -21,7 +21,7 @@ sha512sums=('c4ace48ae9b7fbbc7e85ba47f2c969983594cab09ebc069bc39caa27a4e7833042e
 build() {
     cd "$_pkgname-$pkgver"
 
-    CARGO_INCREMENTAL=0 cargo build --release
+    CARGO_INCREMENTAL=0 cargo build --all --release --features=sourceview
 }
 
 package() {
@@ -40,7 +40,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/share/applications"
     mkdir -p "$pkgdir/usr/share/icons/hicolor/64x64/apps"
-    #mkdir -p "$pkgdir/usr/share/eruption-gui/schemas"
+    mkdir -p "$pkgdir/usr/share/eruption-gui/schemas"
 
     mkdir -p "$pkgdir/var/lib/eruption/profiles"
 
@@ -80,11 +80,11 @@ package() {
     install -m 755 "target/release/eruption-hotplug-helper" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-audio-proxy" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
-    #install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"
 
-    #install -m 644 "support/assets/eruption-gui/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
-    #install -m 644 "support/assets/eruption-gui/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
-    #install -m 644 "eruption-gui/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui/schemas/"
+    install -m 644 "support/assets/eruption-gui/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
+    install -m 644 "support/assets/eruption-gui/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
+    install -m 644 "eruption-gui/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui/schemas/"
 
     install -m 755 "support/systemd/eruption-suspend.sh" "$pkgdir/usr/lib/systemd/system-sleep/eruption"
 
@@ -326,6 +326,7 @@ package() {
     install -m 644 "support/profiles/heatmap-errors.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/lava-lamp.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/lava-lamp-pastel.profile" "$pkgdir/var/lib/eruption/profiles/"
+    install -m 644 "support/profiles/lava-lamp-syscolors.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/matrix.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/netfx.profile" "$pkgdir/var/lib/eruption/profiles/"
     install -m 644 "support/profiles/batique.profile" "$pkgdir/var/lib/eruption/profiles/"

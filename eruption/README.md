@@ -20,7 +20,7 @@ Realtime RGB LED Driver for Linux
  You should have received a copy of the GNU General Public License
  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Eruption 0.1.24 () (release build)
+Eruption 0.2.0 () (release build)
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 

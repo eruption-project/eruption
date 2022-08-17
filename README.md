@@ -6,11 +6,11 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Eruption](#eruption)
+  - [Eruption - Realtime RGB LED Software for Linux](#eruption---realtime-rgb-led-software-for-linux)
     - [Gallery](#gallery)
-  - [Supported Devices](#supported-devices)
-    - [Keyboard Devices](#keyboard-devices)
-    - [Mouse Devices](#mouse-devices)
+  - [Device Compatibility](#device-compatibility)
+    - [Keyboards](#keyboards)
+    - [Mice](#mice)
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Important Information](#important-information)
   - [Design Overview](#design-overview)
@@ -50,33 +50,33 @@ A Linux user-mode input and RGB LED driver for keyboards, mice and other devices
 
 ### Keyboards
 
-- ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
-- ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
-- ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
-- ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
-- ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
-- Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
+- [x] ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
+- [x] ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
+- [ ] ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
+- [ ] ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
+- [ ] ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
+- [ ] Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
 ### Mice
 
-- ROCCAT Kone Pure Ultra (stable)
-- ROCCAT Burst Pro (as of version `0.1.20`, testing)
-- ROCCAT Kain 100 AIMO (as of version `0.1.24`, experimental)
-- ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
-- ROCCAT Kone XP (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Pro (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Pro Air (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Aimo (experimental)
-- ROCCAT Kone Aimo Remastered (experimental)
-- ROCCAT Kova AIMO (testing)
-- ROCCAT Kova 2016 (as of version `0.1.23`, testing)
-- ROCCAT Kone XTD (as of version `0.1.20`, experimental)
+- [x] ROCCAT Kone Pure Ultra (stable)
+- [x] ROCCAT Burst Pro (as of version `0.1.20`, testing)
+- [ ] ROCCAT Kain 100 AIMO (as of version `0.2.0`, experimental)
+- [x] ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
+- [ ] ROCCAT Kone XP (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Pro (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Pro Air (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Aimo (experimental)
+- [ ] ROCCAT Kone Aimo Remastered (experimental)
+- [ ] ROCCAT Kova AIMO (testing)
+- [ ] ROCCAT Kova 2016 (as of version `0.1.23`, testing)
+- [ ] ROCCAT Kone XTD (as of version `0.1.20`, experimental)
 
 ### Miscellaneous Devices
 
-- ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, testing)
-- ROCCAT Sense AIMO XXL (as of version `0.1.23`, stable)
-- Adalight/Custom serial LEDs (testing)
+- [x] ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, testing)
+- [x] ROCCAT Sense AIMO XXL (as of version `0.1.23`, stable)
+- [x] Adalight/Custom serial LEDs (testing)
 
 Please see [DEVICES.md](DEVICES.md) for further information
 

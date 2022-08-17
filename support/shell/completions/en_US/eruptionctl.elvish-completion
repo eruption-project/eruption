@@ -29,6 +29,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand -r 'Repeat output until ctrl+c is pressed'
             cand --repeat 'Repeat output until ctrl+c is pressed'
             cand config 'Configuration related sub-commands'
+            cand color-schemes 'Define, import or delete a named color scheme'
             cand devices 'Get or set some device specific configuration parameters'
             cand status 'Shows the currently active profile or slot'
             cand switch 'Switch to a different profile or slot'
@@ -55,6 +56,43 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;config;help'= {
+        }
+        &'eruptionctl;color-schemes'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;list'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;color-schemes;add'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;color-schemes;remove'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;color-schemes;import'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand pywal 'Import an existing Pywal color scheme'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;import;pywal'= {
+            cand -o 'Optimize palette'
+            cand --optimize 'Optimize palette'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;color-schemes;import;help'= {
+        }
+        &'eruptionctl;color-schemes;help'= {
         }
         &'eruptionctl;devices'= {
             cand -h 'Print help information'

@@ -99,10 +99,10 @@ impl Keyboard for RoccatVulcanProTKL {
             (led_colors[MUTE_BUTTON_INDEX].r as f64 / 255.0),
             (led_colors[MUTE_BUTTON_INDEX].g as f64 / 255.0),
             (led_colors[MUTE_BUTTON_INDEX].b as f64 / 255.0),
-            (led_colors[MUTE_BUTTON_INDEX].a as f64 / 255.0),
+            0.0,
         );
 
-        let black = (0.0, 0.0, 0.0, 1.0);
+        let black = (0.0, 0.0, 0.0, 0.0);
 
         rounded_rectangle(context, 537.0, 44.0, 20.0, 7.0, 2.0, &black, &color)?;
 
@@ -129,14 +129,13 @@ impl Keyboard for RoccatVulcanProTKL {
                 color.r as f64 / 255.0,
                 color.g as f64 / 255.0,
                 color.b as f64 / 255.0,
-                color.a as f64 / 255.0,
+                0.0,
             );
 
             // saturate and lighten color somewhat to use as the border color
             let border_color = Hsva::from_color(source_color);
             let border_color = Srgba::from_color(
-                border_color
-                    // .saturate(0.75)
+                border_color // .saturate(0.75)
                     .lighten(0.4),
             )
             .into_components();

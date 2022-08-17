@@ -17,10 +17,10 @@
 
 
 name = "Batique"
-description = "Compute Super Simplex Noise, mapped to the HSL color space"
-version = "0.0.6"
+description = "Compute Super Simplex Noise, mapped to a color-scheme"
+version = "0.1.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.4"
+min_supported_version = "0.2.0"
 tags = ['Background', 'Vendor', 'Noise']
 
 [[config]]
@@ -48,46 +48,6 @@ max = 1000.0
 default = 2.5
 
 [[config]]
-type = 'float'
-name = 'color_saturation'
-description = 'Saturation in the range 0.0 .. 1.0'
-min = 0.0
-max = 1.0
-default = 1.0
-
-[[config]]
-type = 'float'
-name = 'color_lightness'
-description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
-min = 0.0
-max = 1.0
-default = 0.5
-
-[[config]]
-type = 'float'
-name = 'color_divisor'
-description = 'Divide resulting hue angle by color_divisor. Final value will be mapped to the interval [0..360)'
-min = 0.0
-max = 360.0
-default = 1.0
-
-[[config]]
-type = 'float'
-name = 'color_offset'
-description = 'Offset resulting hue angle by color_offset. Final value will be mapped to the interval [0..360)'
-min = 0.0
-max = 360.0
-default = 0.0
-
-[[config]]
-type = 'float'
-name = 'opacity'
-description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
-min = 0.0
-max = 1.0
-default = 1.0
-
-[[config]]
 type = 'int'
 name = 'zone_start'
 description = 'Zone on the canvas to paint to (start index)'
@@ -102,3 +62,9 @@ description = 'Zone on the canvas to paint to (end index)'
 min = 0
 max = 144
 default = 180
+
+[[config]]
+type = 'string'
+name = 'stock_gradient'
+description = 'The gradient to use'
+default = "system"

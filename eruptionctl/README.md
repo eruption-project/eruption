@@ -37,7 +37,7 @@ Selected device: ROCCAT Kone Pure Ultra (1)
 ```shell
 $ eruptionctl
 
-eruptionctl 0.0.17
+eruptionctl 0.0.21
 
 X3n0m0rph59 <x3n0m0rph59@gmail.com>
 
@@ -55,6 +55,7 @@ OPTIONS:
     -c, --config <CONFIG>    Sets the configuration file to use
 
 SUBCOMMANDS:
+    color-schemes  Define, import or delete a named color scheme
     completions    Generate shell completions
     config         Configuration related sub-commands
     devices        Get or set some device specific configuration parameters
