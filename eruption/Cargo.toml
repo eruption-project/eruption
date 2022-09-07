@@ -55,7 +55,7 @@ thiserror = "1.0.32"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 toml = "0.5.9"
-serde = { version = "1.0.143", features = ["derive"] }
+serde = { version = "1.0.144", features = ["derive"] }
 serde_json = "1.0.83"
 tokio = { version = "1.20.1", features = ["full"] }
 socket2 = { version = "0.4.4", features = ["all"] }
@@ -83,7 +83,7 @@ simdnoise = "3.1.6"
 #luajit-src = "210.3.2+resty1085a4d"
 #mlua = { version = "0.7.3", features = ["luajit52"] }
 mlua = { version = "0.8.3", features = ["lua54"] }
-sysinfo = "0.25.2"
+sysinfo = "0.26.2"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.1"
 rustfft = "6.0.1"
