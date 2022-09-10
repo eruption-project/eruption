@@ -5,8 +5,8 @@
     - [Install build dependencies](#install-build-dependencies)
       - [On Arch-based distros](#on-arch-based-distros)
       - [On Fedora-based distros](#on-fedora-based-distros)
-      - [On Debian-based distros](#on-debian-based-distros)
       - [On OpenSuse-based distros](#on-opensuse-based-distros)
+      - [On Debian-based distros](#on-debian-based-distros)
     - [Clone the project and build the release binaries](#clone-the-project-and-build-the-release-binaries)
     - [Install Eruption](#install-eruption)
     - [Run Eruption](#run-eruption)
@@ -35,6 +35,7 @@ sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-de
 ```
 
 #### On OpenSuse-based distros
+
 ```shell
 sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel \
     libhidapi-devel lua54-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel
