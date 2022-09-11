@@ -23,14 +23,14 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 ```shell
 sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse lua lua-socket gtksourceview4
-sudo pacman -Sy xorg-server-devel libxrandr gtk3
+sudo pacman -Sy pkgconf cmake protobuf xorg-server-devel libxrandr gtk3
 ```
 
 #### On Fedora-based distros
 
 ```shell
 sudo dnf install cmake systemd dbus hidapi libevdev lua gtksourceview4 lua-socket-compat
-sudo dnf install systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
+sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
   pulseaudio-libs-devel lua-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel
 ```
 
@@ -44,7 +44,8 @@ sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-
 #### On Debian-based distros
 
 ```shell
-sudo apt install build-essential cmake libsystemd-dev libusb-1.0-0-dev libhidapi-dev \
+sudo apt install build-essential cmake protobuf-compiler libprotobuf-dev \
+  libsystemd-dev libusb-1.0-0-dev libhidapi-dev \
   libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.4-dev libx11-dev \
   libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev \
   libpango1.0-dev libcairo2-dev libgtksourceview-4-dev
