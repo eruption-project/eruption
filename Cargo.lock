@@ -2546,12 +2546,9 @@ dependencies = [
 
 [[package]]
 name = "lockfile"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0adecf427f5b6ac140a0d1c5bc9dd0eb81b6f462486b78402c0a689a317b55dc"
-dependencies = [
- "log",
-]
+checksum = "5be1cf190319c74ba3e45923624626ae2e43fe42ad7e60ff38ded81044c37630"
 
 [[package]]
 name = "log"
