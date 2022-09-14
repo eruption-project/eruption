@@ -20,7 +20,7 @@
 override_dh_auto_build:
 	export CARGO_HOME=".cargo"
 	export CARGO_TARGET_DIR="target/"
-	CARGO_INCREMENTAL=0 cargo build --release --verbose --frozen --offline
+	CARGO_INCREMENTAL=0 cargo build --all --release --verbose --frozen --offline --features=sourceview
 
 override_dh_auto_clean:
 	$(RM) -r target/
