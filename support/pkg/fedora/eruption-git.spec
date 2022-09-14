@@ -55,40 +55,40 @@ Realtime RGB LED Driver for Linux (git snapshot)
 cargo build --all --release --verbose --features=sourceview
 
 %install
-%{__mkdir_p} %{buildroot}%{_mandir}/man5
-%{__mkdir_p} %{buildroot}%{_mandir}/man8
-%{__mkdir_p} %{buildroot}%{_mandir}/man1
-%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{ShortName}
-%{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/system.d
-%{__mkdir_p} %{buildroot}%{_sysconfdir}/dbus-1/session.d
+%{__mkdir_p} %{buildroot}/%{_mandir}/man5
+%{__mkdir_p} %{buildroot}/%{_mandir}/man8
+%{__mkdir_p} %{buildroot}/%{_mandir}/man1
+%{__mkdir_p} %{buildroot}/%{_sysconfdir}/%{ShortName}
+%{__mkdir_p} %{buildroot}/%{_sysconfdir}/dbus-1/system.d
+%{__mkdir_p} %{buildroot}/%{_sysconfdir}/dbus-1/session.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
-%{__mkdir_p} %{buildroot}%{_datarootdir}/polkit-1/actions/
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/polkit-1/actions/
 %{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
-%{__mkdir_p} %{buildroot}%{_unitdir}
-%{__mkdir_p} %{buildroot}%{_presetdir}
-%{__mkdir_p} %{buildroot}%{_userunitdir}
-%{__mkdir_p} %{buildroot}%{_userpresetdir}
-%{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}
-%{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/macros
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/themes
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/keymaps
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/lib/hwdevices/misc
-%{__mkdir_p} %{buildroot}%{_libdir}/%{ShortName}/scripts/examples
-%{__mkdir_p} %{buildroot}%{_docdir}/%{ShortName}
-%{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/scalable/apps
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/sfx
-%{__mkdir_p} %{buildroot}%{_datarootdir}/%{ShortName}/i18n
-%{__mkdir_p} %{buildroot}%{_datarootdir}/applications/
-%{__mkdir_p} %{buildroot}%{_datarootdir}/icons/hicolor/64x64/apps/
-%{__mkdir_p} %{buildroot}%{_datarootdir}/eruption-gui/schemas
-%{__mkdir_p} %{buildroot}%{_datarootdir}/bash-completion/completions/
-%{__mkdir_p} %{buildroot}%{_datarootdir}/fish/completions/
-%{__mkdir_p} %{buildroot}%{_datarootdir}/zsh/site-functions/
+%{__mkdir_p} %{buildroot}/%{_unitdir}
+%{__mkdir_p} %{buildroot}/%{_presetdir}
+%{__mkdir_p} %{buildroot}/%{_userunitdir}
+%{__mkdir_p} %{buildroot}/%{_userpresetdir}
+%{__mkdir_p} %{buildroot}/%{_sharedstatedir}/%{ShortName}
+%{__mkdir_p} %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/macros
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/themes
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/keymaps
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/hwdevices/keyboards
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/hwdevices/mice
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/lib/hwdevices/misc
+%{__mkdir_p} %{buildroot}/%{_libdir}/%{ShortName}/scripts/examples
+%{__mkdir_p} %{buildroot}/%{_docdir}/%{ShortName}
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/icons/hicolor/scalable/apps
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/%{ShortName}/sfx
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/%{ShortName}/i18n
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/applications/
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/icons/hicolor/64x64/apps/
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/eruption-gui/schemas
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/bash-completion/completions/
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/fish/completions/
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/zsh/site-functions/
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption.8 %{buildroot}/%{_mandir}/man8/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/man/eruption-cmd.8 %{buildroot}/%{_mandir}/man8/
@@ -127,10 +127,10 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/shell/completions/en_US/eruptio
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/audio-proxy.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.control.conf %{buildroot}%{_sysconfdir}/dbus-1/system.d/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.process_monitor.conf %{buildroot}%{_sysconfdir}/dbus-1/session.d/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.control.conf %{buildroot}/%{_sysconfdir}/dbus-1/system.d/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.process_monitor.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/policykit/org.eruption.policy %{buildroot}%{_datarootdir}/polkit-1/actions/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/policykit/org.eruption.policy %{buildroot}/%{_datarootdir}/polkit-1/actions/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-audio-proxy.preset %{buildroot}/%{_userpresetdir}/50-eruption-audio-proxy.preset
@@ -139,79 +139,79 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-process-monito
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-process-monitor.service %{buildroot}/%{_userunitdir}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-hotplug-helper.preset %{buildroot}/%{_presetdir}/50-eruption-hotplug-helper.preset
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-hotplug-helper.service %{buildroot}/%{_unitdir}/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-blobby.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-blobby-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-5.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/default.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/checkerboard.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fx1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fx2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fireplace.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fireworks.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/flight-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/gaming.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/gradient-noise.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heartbeat-sysmon.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heatmap.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heatmap-errors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp-pastel.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp-syscolors.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/matrix.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/netfx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/batique.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/batique-mouse.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/blackout.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/blue-fx-swirl-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile1.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile3.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile4.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/psychedelic.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/twinkle.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/preset-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/preset-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/rainbow-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/red-fx.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/red-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/ripple-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/snake.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/solid-wave.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/solid.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/starcraft2.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/spectrum-analyzer.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/spectrum-analyzer-swirl.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/vu-meter.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-red-yellow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-blue-red-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-rainbow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-red-yellow-dim.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-simplex-rainbow.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-voronoi.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/turbulence.profile %{buildroot}%{_sharedstatedir}/%{ShortName}/profiles/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/typewriter1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
-ln -s phaser1.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-down.wav
-ln -s phaser2.wav %{buildroot}%{_datarootdir}/%{ShortName}/sfx/key-up.wav
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-blobby.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-blobby-swirl.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-1.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/animal-breathing-3.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-1.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-3.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-4.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/audio-visualization-5.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-1.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/domain-coloring-3.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/default.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/checkerboard.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fx1.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fx2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fireplace.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/fireworks.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/flight-perlin.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/gaming.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/gradient-noise.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heartbeat-sysmon.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heatmap.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/heatmap-errors.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp-pastel.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/lava-lamp-syscolors.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/matrix.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/netfx.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/batique.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/batique-mouse.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/blackout.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/blue-fx-swirl-perlin.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile1.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile3.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/profile4.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/psychedelic.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/twinkle.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/rainbow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/preset-red-yellow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/preset-blue-red.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/rainbow-wave.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/red-fx.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/red-wave.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/ripple-rainbow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/snake.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/solid-wave.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/solid.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/starcraft2.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/spectrum-analyzer.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/spectrum-analyzer-swirl.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/vu-meter.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-blue-red.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-rainbow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-red-yellow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-dim.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-blue-red-dim.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-rainbow-dim.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-perlin-red-yellow-dim.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-simplex-rainbow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-turbulence.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/swirl-voronoi.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/profiles/turbulence.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/typewriter1.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/typewriter1.wav
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/phaser1.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/phaser1.wav
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/sfx/phaser2.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/phaser2.wav
+ln -s phaser1.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/key-down.wav
+ln -s phaser2.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 
-cp -ra %{_builddir}/%{OrigName}-%{commit}/eruption/src/scripts %{buildroot}%{_datarootdir}/%{ShortName}/
+cp -ra %{_builddir}/%{OrigName}-%{commit}/eruption/src/scripts %{buildroot}/%{_datarootdir}/%{ShortName}/
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
@@ -219,18 +219,18 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui/eruption-gu
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
 cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
 
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption %{buildroot}%{_bindir}/eruption
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruptionctl %{buildroot}%{_bindir}/eruptionctl
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-cmd %{buildroot}%{_bindir}/eruption-cmd
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hwutil %{buildroot}%{_bindir}/eruption-hwutil
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-keymap %{buildroot}%{_bindir}/eruption-keymap
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-netfx %{buildroot}%{_bindir}/eruption-netfx
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-util %{buildroot}%{_bindir}/eruption-util
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-debug-tool %{buildroot}%{_bindir}/eruption-debug-tool
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hotplug-helper %{buildroot}%{_bindir}/eruption-hotplug-helper
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-audio-proxy %{buildroot}%{_bindir}/eruption-audio-proxy
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-process-monitor %{buildroot}%{_bindir}/eruption-process-monitor
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui %{buildroot}%{_bindir}/eruption-gui
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption %{buildroot}/%{_bindir}/eruption
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruptionctl %{buildroot}/%{_bindir}/eruptionctl
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-cmd %{buildroot}/%{_bindir}/eruption-cmd
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hwutil %{buildroot}/%{_bindir}/eruption-hwutil
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-keymap %{buildroot}/%{_bindir}/eruption-keymap
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-netfx %{buildroot}/%{_bindir}/eruption-netfx
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-util %{buildroot}/%{_bindir}/eruption-util
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-debug-tool %{buildroot}/%{_bindir}/eruption-debug-tool
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hotplug-helper %{buildroot}/%{_bindir}/eruption-hotplug-helper
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-audio-proxy %{buildroot}/%{_bindir}/eruption-audio-proxy
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-process-monitor %{buildroot}/%{_bindir}/eruption-process-monitor
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui %{buildroot}/%{_bindir}/eruption-gui
 
 %post
 %systemd_post eruption.service
