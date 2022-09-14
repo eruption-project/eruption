@@ -1,7 +1,7 @@
 %global OrigName eruption
 %global ShortName eruption
 
-%global commit 8cd99a429ad0050cce65f9df74fca586a794c505
+%global commit 000ab13a9033685296df912bbae01f745435f7fd
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:    eruption-git
