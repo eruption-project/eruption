@@ -16,6 +16,7 @@ BuildRequires: cargo
 BuildRequires: cmake
 BuildRequires: protobuf-devel
 BuildRequires: systemd-devel
+BuildRequires: systemd-rpm-macros
 BuildRequires: dbus-devel
 BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
