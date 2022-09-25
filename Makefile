@@ -31,6 +31,11 @@ build:
 
 	@echo ""
 	@echo "Now please run 'sudo make install' to install Eruption"
+	@echo ""
+	@echo "If Eruption is already running, stop it first.  Hints:"
+	@echo "systemctl --user stop eruption-audio-proxy.service"
+	@echo "systemctl --user stop eruption-process-monitor.service"
+	@echo "systemctl stop eruption.service"
 
 start:
 	@echo "Notifying system daemons about Eruption..."
