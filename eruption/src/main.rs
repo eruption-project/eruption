@@ -212,8 +212,11 @@ lazy_static! {
     /// Global "keyboard brightness" modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
-    /// Global "keyboard brightness" modifier
+    /// Global modifier when fading into a profile
     pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+
+    /// Global modifier to compare fading into a profile
+    pub static ref BRIGHTNESS_FADER_BASE: AtomicIsize = AtomicIsize::new(0);
 
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
@@ -606,7 +609,15 @@ pub fn switch_profile(
                 // everything is fine, finally assign the globally active profile
                 debug!("Switch successful");
 
-                crate::BRIGHTNESS_FADER.store(constants::FADE_FRAMES as isize, Ordering::SeqCst);
+                let fade_millis = crate::CONFIG
+                    .lock()
+                    .as_ref()
+                    .unwrap()
+                    .get_int("global.profile_fade_milliseconds")
+                    .unwrap_or(constants::FADE_MILLIS as i64);
+                let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
+                crate::BRIGHTNESS_FADER.store(fade_frames, Ordering::SeqCst);
+                crate::BRIGHTNESS_FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
                 *ACTIVE_PROFILE.lock() = Some(profile);
 
@@ -1017,7 +1028,7 @@ fn run_main_loop(
         }
 
         // compute AFK time
-        let afk_timeout_secs = CONFIG
+        let afk_timeout_secs = crate::CONFIG
             .lock()
             .as_ref()
             .unwrap()
