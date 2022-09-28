@@ -31,6 +31,9 @@ build:
 
 	@echo ""
 	@echo "Now please run 'sudo make install' to install Eruption"
+	@echo ""
+	@echo "If Eruption is already running, stop it first.  Consider:"
+	@echo "make stop && sudo make install && make start"
 
 start:
 	@echo "Notifying system daemons about Eruption..."

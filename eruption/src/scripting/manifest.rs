@@ -47,10 +47,6 @@ pub enum ManifestError {
     ParseParamError {},
 }
 
-fn default_id() -> usize {
-    0
-}
-
 fn default_script_file() -> PathBuf {
     "".into()
 }
@@ -217,8 +213,6 @@ impl GetAttr for ConfigParam {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
-    #[serde(default = "default_id")]
-    pub id: usize,
     #[serde(default = "default_script_file")]
     pub script_file: PathBuf,
 
@@ -238,7 +232,7 @@ impl std::cmp::PartialOrd for Manifest {
 }
 
 impl Manifest {
-    pub fn new(id: usize, script: &Path) -> Result<Self> {
+    pub fn new(script: &Path) -> Result<Self> {
         // parse manifest
         match fs::read_to_string(util::get_manifest_for(script)) {
             Ok(toml) => {
@@ -246,7 +240,6 @@ impl Manifest {
                 match toml::de::from_str::<Self>(&toml) {
                     Ok(mut result) => {
                         // fill in required fields, after parsing
-                        result.id = id;
                         result.script_file = script.to_path_buf();
 
                         Ok(result)
@@ -264,7 +257,7 @@ impl Manifest {
     }
 
     pub fn from(script: &Path) -> Result<Self> {
-        Self::new(default_id(), script)
+        Self::new(script)
     }
 }
 
@@ -305,8 +298,8 @@ pub fn get_scripts() -> Result<Vec<Manifest>> {
     let mut errors_present = false;
     let mut result: Vec<Manifest> = vec![];
 
-    for (id, script_file) in script_files.iter().enumerate() {
-        match Manifest::new(id, script_file) {
+    for script_file in &script_files {
+        match Manifest::new(script_file) {
             Ok(manifest) => {
                 result.push(manifest);
             }
@@ -340,11 +333,6 @@ pub fn get_scripts() -> Result<Vec<Manifest>> {
             result
         }
     });
-
-    // update ids
-    for (cntr, mut s) in result.iter_mut().enumerate() {
-        s.id = cntr;
-    }
 
     Ok(result)
 }

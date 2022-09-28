@@ -26,6 +26,7 @@ use std::process::Command;
 use crate::constants;
 use crate::manifest::{self, Manifest, ManifestError};
 use crate::profiles;
+use crate::Profile;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -33,6 +34,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum UtilError {
     #[error("File not found: {description}")]
     FileNotFound { description: String },
+
+    #[error("Profile error: {err}")]
+    ProfileError { err: eyre::Error },
 }
 
 pub fn get_profile_dirs() -> Vec<PathBuf> {
@@ -139,6 +143,25 @@ pub fn edit_file<P: AsRef<Path>>(file_name: P) -> Result<()> {
         .status()?;
 
     Ok(())
+}
+
+pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
+    let profile_path = PathBuf::from(&profile_name);
+    if profile_path.is_file() {
+        match Profile::from(&profile_path) {
+            Ok(profile) => Ok(profile),
+            Err(err) => Err(UtilError::ProfileError {err}.into())
+        }
+    } else {
+        let profiles = enumerate_profiles().unwrap_or_else(|_| vec![]);
+        let profile = profiles
+            .into_iter()
+            .find(|p| p.profile_file.to_string_lossy() == profile_name);
+        match profile {
+            Some(profile) => Ok(profile),
+            None => Err(UtilError::FileNotFound { description: profile_name.into() }.into())
+        }
+    }
 }
 
 pub fn match_profile_path<P: AsRef<Path>>(profile_file: &P) -> Result<PathBuf> {
