@@ -315,7 +315,7 @@ version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6358dedf60f4d9b8db43ad187391afe959746101346fe51bb978126bec61dfb"
 dependencies = [
- "clap",
+ "clap 3.2.22",
  "heck",
  "indexmap",
  "log",
@@ -379,29 +379,42 @@ checksum = "86447ad904c7fb335a790c9d7fe3d0d971dc523b8ccd1561a520de9a85302750"
 dependencies = [
  "atty",
  "bitflags",
- "clap_derive",
- "clap_lex",
+ "clap_lex 0.2.4",
  "indexmap",
- "once_cell",
  "strsim",
  "termcolor",
  "textwrap",
 ]
 
 [[package]]
-name = "clap_complete"
-version = "3.2.5"
+name = "clap"
+version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f7a2e0a962c45ce25afce14220bc24f9dade0a1787f185cecf96bfba7847cd8"
+checksum = "31c9484ccdc4cb8e7b117cbd0eb150c7c0f04464854e4679aeb50ef03b32d003"
 dependencies = [
- "clap",
+ "atty",
+ "bitflags",
+ "clap_derive",
+ "clap_lex 0.3.0",
+ "once_cell",
+ "strsim",
+ "termcolor",
+]
+
+[[package]]
+name = "clap_complete"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f04c8f8007e8a1813ba933df2d8fb50cad04e0d9e89a22d64485f25a6a6c35d8"
+dependencies = [
+ "clap 4.0.2",
 ]
 
 [[package]]
 name = "clap_derive"
-version = "3.2.18"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0c8bce528c4be4da13ea6fead8965e95b6073585a2f05204bd8f4119f82a65"
+checksum = "ca689d7434ce44517a12a89456b2be4d1ea1cafcd8f581978c03d45f5a5c12a7"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -415,6 +428,15 @@ name = "clap_lex"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
+dependencies = [
+ "os_str_bytes",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
 dependencies = [
  "os_str_bytes",
 ]
@@ -863,7 +885,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "color-eyre",
  "colorgrad",
  "config",
@@ -928,7 +950,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -967,7 +989,7 @@ name = "eruption-cmd"
 version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -997,7 +1019,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1083,7 +1105,7 @@ name = "eruption-hotplug-helper"
 version = "0.1.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "eruption-rs",
@@ -1112,7 +1134,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1151,7 +1173,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1198,7 +1220,7 @@ name = "eruption-netfx"
 version = "0.1.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1240,7 +1262,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "config",
@@ -1306,7 +1328,7 @@ version = "0.0.7"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1338,7 +1360,7 @@ name = "eruption-watchdog"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -1367,7 +1389,7 @@ name = "eruptionctl"
 version = "0.0.21"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2377,9 +2399,9 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "libc"
-version = "0.2.133"
+version = "0.2.134"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
+checksum = "329c933548736bc49fd575ee68c89e8be4d260064184389a5b77517cddd99ffb"
 
 [[package]]
 name = "libdbus-sys"
@@ -4008,7 +4030,7 @@ name = "simple"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap",
+ "clap 4.0.2",
  "color-eyre",
  "eruption-rs",
  "eyre",
