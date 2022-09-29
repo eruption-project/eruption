@@ -90,6 +90,18 @@ struct Localizations;
 lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+
+    pub static ref VERSION: String = {
+        format!(
+            "{} ({}) ({} build)",
+            env!("CARGO_PKG_VERSION"),
+            env!("ERUPTION_GIT_PKG_VERSION"),
+            if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            })
+        };
 }
 
 #[allow(unused)]
@@ -377,19 +389,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline() -> clap::ArgMatches {
     Command::new("Eruption")
-        .version(
-            format!(
-                "{} ({}) ({} build)",
-                env!("CARGO_PKG_VERSION"),
-                env!("ERUPTION_GIT_PKG_VERSION"),
-                if cfg!(debug_assertions) {
-                    "debug"
-                } else {
-                    "release"
-                }
-            )
-            .as_str(),
-        )
+        .version(VERSION.as_str())
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Realtime RGB LED Driver for Linux")
         .arg(
@@ -397,15 +397,13 @@ fn parse_commandline() -> clap::ArgMatches {
                 .short('c')
                 .long("config")
                 .value_name("FILE")
-                .help("Sets the configuration file to use")
-                .takes_value(true),
+                .help("Sets the configuration file to use"),
         )
         // .arg(
         //     Arg::new("completions")
         //         .long("completions")
         //         .value_name("SHELL")
-        //         .about("Generate shell completions")
-        //         .takes_value(true),
+        //         .about("Generate shell completions"),
         // )
         .get_matches()
 }
@@ -1516,11 +1514,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     // process configuration file
     let config_file = matches
-        .value_of("config")
-        .unwrap_or(constants::DEFAULT_CONFIG_FILE);
+        .get_one("config")
+        .unwrap_or(&constants::DEFAULT_CONFIG_FILE.to_string())
+        .to_string();
 
     let config = Config::builder()
-        .add_source(config::File::new(config_file, config::FileFormat::Toml))
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
             log::error!("Could not parse configuration file: {}", e);
