@@ -17,7 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use colored::*;
@@ -132,7 +133,7 @@ lazy_static! {
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(help(VERBOSE_ABOUT.as_str()), short, long, parse(from_occurrences))]
+    #[clap(help(VERBOSE_ABOUT.as_str()), short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     #[clap(subcommand)]

@@ -17,7 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use colored::*;
 use flume::unbounded;
@@ -130,7 +131,7 @@ pub enum MainError {
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     #[clap(subcommand)]
@@ -167,7 +168,7 @@ pub enum Subcommands {
         device: usize,
 
         /// ID of the USB HID report
-        #[clap(parse(try_from_str = util::parse_report_id))]
+        #[clap(value_parser = util::parse_report_id)]
         report_id: u8,
 
         /// Length in bytes to read
@@ -189,7 +190,7 @@ pub enum Subcommands {
         device: usize,
 
         /// ID of the USB HID report
-        #[clap(parse(try_from_str = util::parse_report_id))]
+        #[clap(value_parser = util::parse_report_id)]
         report_id: u8,
 
         /// Length in bytes to read

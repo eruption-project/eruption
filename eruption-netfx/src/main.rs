@@ -17,7 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use colored::Colorize;
 use i18n_embed::{
@@ -85,7 +86,7 @@ pub enum MainError {
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     /// The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"
