@@ -877,7 +877,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "async-trait",
  "bincode",
@@ -944,7 +944,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "bincode",
  "byteorder",
@@ -986,7 +986,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-cmd"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.4",
@@ -1014,7 +1014,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.19"
+version = "0.0.20"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -1050,7 +1050,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "byteorder",
  "cairo-rs",
@@ -1102,7 +1102,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.4",
@@ -1129,7 +1129,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.13"
+version = "0.0.14"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -1168,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-keymap"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -1217,7 +1217,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-netfx"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.4",
@@ -1257,7 +1257,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.16"
+version = "0.0.17"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -1324,7 +1324,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-util"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -1357,7 +1357,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-watchdog"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.4",
@@ -1386,7 +1386,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.21"
+version = "0.0.22"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.4",

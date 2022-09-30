@@ -16,4 +16,4 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-msrv = "1.58"  # MSRV
+msrv = "1.64"  # MSRV
