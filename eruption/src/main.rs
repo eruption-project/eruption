@@ -214,10 +214,10 @@ lazy_static! {
 
     /// Global modifier when fading into a profile
     pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
-    
+
     /// Global modifier to compare fading into a profile
     pub static ref BRIGHTNESS_FADER_BASE: AtomicIsize = AtomicIsize::new(0);
-    
+
     /// AFK timer
     pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
 

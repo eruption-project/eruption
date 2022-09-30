@@ -980,7 +980,7 @@ pub fn run_script(
                             if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
                                 LOCAL_LED_MAP.with(|foreground| {
                                     let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
-                                    
+
                                     let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
                                     let fader_base = crate::BRIGHTNESS_FADER_BASE.load(Ordering::SeqCst);
 
@@ -989,7 +989,7 @@ pub fn run_script(
                                     } else {
                                         brightness as f32
                                     };
-                                    
+
                                     for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
                                         for (idx, background) in chunks.iter_mut().enumerate() {
                                             let bg = &background;
