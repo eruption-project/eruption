@@ -7,23 +7,20 @@ Additionally the `eruption-audio-proxy` can play back sound effects, triggered b
 ### eruption-audio-proxy
 
 ```shell
-eruption-audio-proxy 0.0.9
-
-X3n0m0rph59 <x3n0m0rph59@gmail.com>
+$ eruption-audio-proxy --help
 
 Audio proxy daemon for the Eruption Linux user-mode driver
 
-USAGE:
-    eruption-audio-proxy [OPTIONS] <SUBCOMMAND>
+Usage: eruption-audio-proxy [OPTIONS] <COMMAND>
 
-OPTIONS:
-    -c, --config <CONFIG>    Sets the configuration file to use
-    -h, --help               Print help information
-    -v, --verbose            Verbose mode (-v, -vv, -vvv, etc.)
-    -V, --version            Print version information
+Commands:
+  daemon       Run in background
+  completions  Generate shell completions
+  help         Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    completions    Generate shell completions
-    daemon         Run in background
-    help           Print this message or the help of the given subcommand(s)
+Options:
+  -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)
+  -c, --config <CONFIG>  Sets the configuration file to use
+  -h, --help             Print help information
+  -V, --version          Print version information
 ```

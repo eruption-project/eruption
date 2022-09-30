@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-util"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "A CLI developer support utility for the Eruption Linux user-mode driver"

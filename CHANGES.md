@@ -4,6 +4,8 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.0 | __New Release__                                                                                                                                                                                                                                                     |
+| 0.3.0 | Bump MSRV to `1.64` |
 | 0.2.0 | __New Release__                                                                                                                                                                                                                                                     |
 | 0.2.0 | Add support for named color-schemes |
 | 0.2.0 | Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
