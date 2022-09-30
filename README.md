@@ -85,8 +85,14 @@ Please see [DEVICES.md](DEVICES.md) for further information
 > **Experimental** drivers are `disabled` in the default configuration!
 >
 > To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
+>
 > ```toml
 > driver_maturity_level = "experimental"
+> ```
+> After that, please restart the eruption daemon
+>
+> ```shell
+> sudo systemctl restart eruption.service
 > ```
 
 ## Important Information
@@ -129,7 +135,7 @@ that performs an alpha blending step on each 'color map' before it finally gets 
 
 ### Systems Architecture
 
-Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running 
+Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running
 as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
 to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
 usage. Both of these session daemons run as the respective logged-in user.
@@ -230,11 +236,12 @@ systemctl --user enable --now eruption-audio-proxy.service
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
+
 ```shell
 eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
 
-Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber. 
+Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
@@ -285,6 +292,7 @@ To remove a rule, please run the following command:
 ```shell
 eruption-process-monitor rules remove 1
 ```
+
 > This will remove the rule for the window named `Skype` from the ruleset.
 
 ---
