@@ -6,6 +6,7 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __New Release__ |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fade when switching profiles. Thanks to `Phen-ro` for implementing this! |
+| 0.3.0 | Improve the way we handle parameters of `*.profile` files. Thanks to `Phen-ro` for implementing this! |
 | 0.3.0 | Update all dependencies to their latest releases |
 | 0.3.0 | New theme for the eruption CLI tools (help) output, provided by Clap v4 |
 | 0.3.0 | Bump MSRV to rustc `1.64` |
