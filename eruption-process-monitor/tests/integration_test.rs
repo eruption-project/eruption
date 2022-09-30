@@ -24,7 +24,7 @@ fn test_eruption_process_monitor_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-process-monitor"));
 
     let output = Command::new(&command)
-        .args(&["-V"])
+        .args(["-V"])
         .output()
         .expect("Failed to execute the test");
 

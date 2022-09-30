@@ -94,7 +94,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
 
     log::info!("Writing to file: {}", &path.display());
 
-    fs::write(&path, &data).map_err(|e| UtilError::FileWriteError {
+    fs::write(path, data).map_err(|e| UtilError::FileWriteError {
         description: format!("{}", e),
         source: e,
     })?;
@@ -143,7 +143,7 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
     .into());
 
     'DIR_LOOP: for dir in get_script_dirs().iter() {
-        let script_path = dir.join(&script_file);
+        let script_path = dir.join(script_file);
 
         if let Ok(metadata) = fs::metadata(&script_path) {
             if metadata.is_file() {

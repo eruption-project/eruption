@@ -28,7 +28,8 @@ use crate::sensors::WaylandSensorData;
 #[cfg(feature = "sensor-x11")]
 use crate::sensors::X11SensorData;
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use config::Config;
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
@@ -265,7 +266,7 @@ pub enum SystemEvent {
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     /// Sets the configuration file to use

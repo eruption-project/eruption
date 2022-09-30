@@ -17,7 +17,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use color_eyre::owo_colors::OwoColorize;
 use colored::*;
@@ -132,7 +133,7 @@ lazy_static! {
 )]
 pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(help(VERBOSE_ABOUT.as_str()), short, long, parse(from_occurrences))]
+    #[clap(help(VERBOSE_ABOUT.as_str()), short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     #[clap(subcommand)]
@@ -404,7 +405,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         Subcommands::List {} => {
             let path = Path::new(constants::DEFAULT_KEYMAP_DIR);
 
-            for entry in WalkDir::new(&path).follow_links(true).sort_by_file_name() {
+            for entry in WalkDir::new(path).follow_links(true).sort_by_file_name() {
                 let entry = entry?;
 
                 // skip directories and the README file
@@ -595,7 +596,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 let description = if action.description.trim().is_empty() {
                     Cell::new(&format!("{}", tr!("n-a").italic()))
                 } else {
-                    Cell::new(&format!("{}", action.description))
+                    Cell::new(&action.description.to_string())
                 };
 
                 let enabled = if action.enabled {
@@ -635,11 +636,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::Macros { lua_path } => {
             let path = if lua_path.components().count() > 1 {
-                lua_path.clone()
+                lua_path
             } else {
                 PathBuf::from(constants::DEFAULT_SCRIPT_DIR)
                     .join("lib/macros/")
-                    .join(lua_path.clone())
+                    .join(lua_path)
             };
 
             println!("{} {}\n", tr!("functions-in-file"), &path.display().bold());
@@ -664,7 +665,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             for (index, code) in event.iter().enumerate() {
                 tab.add_row(vec![
                     Cell::new(&format!("{}", index + 1)),
-                    Cell::new(&format!("{}", code.to_string())),
+                    Cell::new(&format!("{}", code)),
                     Cell::new(&format!("{}", util::evdev_key_event_to_int(code))),
                 ]);
             }

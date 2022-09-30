@@ -140,12 +140,12 @@ pub mod syntax {
         type IteratorItem = LuaFunctionIter;
 
         fn functions(&self) -> LuaFunctionIter {
-            let result = LuaFunctionIter {
+            
+
+            LuaFunctionIter {
                 index: 0,
                 functions: self.functions.clone(),
-            };
-
-            result
+            }
         }
     }
 
@@ -249,12 +249,12 @@ pub mod interpreter {
         type IteratorItem = LuaFunctionIter;
 
         fn functions(&self) -> LuaFunctionIter {
-            let result = LuaFunctionIter {
+            
+
+            LuaFunctionIter {
                 lua: Arc::clone(&self.lua),
                 index: 0,
-            };
-
-            result
+            }
         }
     }
 

@@ -11,13 +11,13 @@ target/release/eruption-debug-tool usr/bin
 target/release/eruption-hotplug-helper usr/bin
 target/release/eruption-audio-proxy usr/bin
 target/release/eruption-process-monitor usr/bin
-#target/release/eruption-gui usr/bin
+target/release/eruption-gui usr/bin
 
 support/systemd/eruption-suspend.sh => usr/lib/systemd/system-sleep/eruption
 
-#support/assets/eruption-gui/eruption-gui.desktop usr/share/applications
-#support/assets/eruption-gui/eruption-gui.png usr/share/icons/hicolor/64x64/apps
-#eruption-gui/schemas/gschemas.compiled usr/share/eruption-gui/schemas
+support/assets/eruption-gui/eruption-gui.desktop usr/share/applications
+support/assets/eruption-gui/eruption-gui.png usr/share/icons/hicolor/64x64/apps
+eruption-gui/schemas/gschemas.compiled usr/share/eruption-gui/schemas
 
 support/config/eruption.conf etc/eruption
 support/config/audio-proxy.conf etc/eruption
@@ -106,6 +106,7 @@ support/profiles/heatmap.profile var/lib/eruption/profiles
 support/profiles/heatmap-errors.profile var/lib/eruption/profiles
 support/profiles/lava-lamp.profile var/lib/eruption/profiles
 support/profiles/lava-lamp-pastel.profile var/lib/eruption/profiles
+support/profiles/lava-lamp-syscolors.profile var/lib/eruption/profiles
 support/profiles/matrix.profile var/lib/eruption/profiles
 support/profiles/netfx.profile var/lib/eruption/profiles
 support/profiles/batique.profile var/lib/eruption/profiles

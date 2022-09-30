@@ -3,11 +3,11 @@
 ACTION=="add|change", ATTRS{name}=="Eruption Virtual Keyboard", SYMLINK+="input/by-id/eruption-virtual-keyboard"
 ACTION=="add|change", ATTRS{name}=="Eruption Virtual Mouse", SYMLINK+="input/by-id/eruption-virtual-mouse"
 
-
 ACTION=="change", GOTO="eruption_end"
 ACTION=="remove", GOTO="eruption_end"
 
 # check for presence of lock file
+
 TEST=="/run/lock/eruption-hotplug-helper.lock", GOTO="eruption_end"
 
 

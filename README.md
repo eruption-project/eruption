@@ -6,13 +6,14 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Eruption](#eruption)
+  - [Eruption - Realtime RGB LED Software for Linux](#eruption---realtime-rgb-led-software-for-linux)
     - [Gallery](#gallery)
-  - [Supported Devices](#supported-devices)
-    - [Keyboard Devices](#keyboard-devices)
-    - [Mouse Devices](#mouse-devices)
+  - [Device Compatibility](#device-compatibility)
+    - [Keyboards](#keyboards)
+    - [Mice](#mice)
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Important Information](#important-information)
+    - [Troubleshooting](#troubleshooting)
   - [Design Overview](#design-overview)
     - [Introduction](#introduction)
     - [Systems Architecture](#systems-architecture)
@@ -50,33 +51,33 @@ A Linux user-mode input and RGB LED driver for keyboards, mice and other devices
 
 ### Keyboards
 
-- ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
-- ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
-- ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
-- ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
-- ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
-- Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
+- [x] ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
+- [x] ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
+- [ ] ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
+- [ ] ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
+- [ ] ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
+- [ ] Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
 ### Mice
 
-- ROCCAT Kone Pure Ultra (stable)
-- ROCCAT Burst Pro (as of version `0.1.20`, testing)
-- ROCCAT Kain 100 AIMO (as of version `0.1.24`, experimental)
-- ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
-- ROCCAT Kone XP (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Pro (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Pro Air (work-in-progress, as of version `0.1.24`, experimental)
-- ROCCAT Kone Aimo (experimental)
-- ROCCAT Kone Aimo Remastered (experimental)
-- ROCCAT Kova AIMO (testing)
-- ROCCAT Kova 2016 (as of version `0.1.23`, testing)
-- ROCCAT Kone XTD (as of version `0.1.20`, experimental)
+- [x] ROCCAT Kone Pure Ultra (stable)
+- [x] ROCCAT Burst Pro (as of version `0.1.20`, testing)
+- [ ] ROCCAT Kain 100 AIMO (as of version `0.2.0`, experimental)
+- [x] ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
+- [ ] ROCCAT Kone XP (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Pro (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Pro Air (work-in-progress, as of version `0.2.0`, experimental)
+- [ ] ROCCAT Kone Aimo (experimental)
+- [ ] ROCCAT Kone Aimo Remastered (experimental)
+- [ ] ROCCAT Kova AIMO (testing)
+- [ ] ROCCAT Kova 2016 (as of version `0.1.23`, testing)
+- [ ] ROCCAT Kone XTD (as of version `0.1.20`, experimental)
 
 ### Miscellaneous Devices
 
-- ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, testing)
-- ROCCAT Sense AIMO XXL (as of version `0.1.23`, stable)
-- Adalight/Custom serial LEDs (testing)
+- [x] ROCCAT/Turtle Beach Elo 7.1 Air Wireless Headset (work-in-progress, as of version `0.1.23`, testing)
+- [x] ROCCAT Sense AIMO XXL (as of version `0.1.23`, stable)
+- [x] Adalight/Custom serial LEDs (testing)
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
@@ -85,13 +86,26 @@ Please see [DEVICES.md](DEVICES.md) for further information
 > **Experimental** drivers are `disabled` in the default configuration!
 >
 > To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
+>
 > ```toml
 > driver_maturity_level = "experimental"
+> ```
+> After that, please restart the eruption daemon
+>
+> ```shell
+> sudo systemctl restart eruption.service
 > ```
 
 ## Important Information
 
 This project is still in an early stage of development, and thus may contain some possibly serious bugs.
+
+For a more mature RGB lighting solution please also consider the following alternatives:
+
+https://openrgb.org/ \
+https://gitlab.com/CalcProgrammer1/OpenRGB
+
+### Troubleshooting
 
 If you ever need to forcefully disable the Eruption daemon you may do so by adding
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
@@ -129,7 +143,7 @@ that performs an alpha blending step on each 'color map' before it finally gets 
 
 ### Systems Architecture
 
-Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running 
+Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running
 as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
 to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
 usage. Both of these session daemons run as the respective logged-in user.
@@ -230,11 +244,12 @@ systemctl --user enable --now eruption-audio-proxy.service
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
+
 ```shell
 eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
 
-Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber. 
+Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
@@ -285,6 +300,7 @@ To remove a rule, please run the following command:
 ```shell
 eruption-process-monitor rules remove 1
 ```
+
 > This will remove the rule for the window named `Skype` from the ruleset.
 
 ---

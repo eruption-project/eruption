@@ -622,7 +622,7 @@ pub fn get_profile_files_from(profile_dirs: &[PathBuf]) -> Result<Vec<PathBuf>> 
     let mut result = vec![];
 
     for profile_path in profile_dirs {
-        if let Ok(paths) = fs::read_dir(&profile_path) {
+        if let Ok(paths) = fs::read_dir(profile_path) {
             let mut profile_paths = paths
                 .map(|p| p.unwrap().path())
                 .filter(|p| {

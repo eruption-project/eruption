@@ -306,7 +306,7 @@ impl SdkSupportPlugin {
 
         // create, bind and store the control socket
         let listener = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
-        let address = SockAddr::unix(&constants::CONTROL_SOCKET_NAME)?;
+        let address = SockAddr::unix(constants::CONTROL_SOCKET_NAME)?;
         listener.bind(&address)?;
 
         // set permissions of the control socket, allow only root

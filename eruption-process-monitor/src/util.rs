@@ -63,14 +63,14 @@ pub fn tilde_expand(path: &str) -> Result<PathBuf> {
 pub fn create_dir<P: AsRef<Path>>(path: &P) -> io::Result<()> {
     let path = path.as_ref();
 
-    fs::create_dir_all(&path)
+    fs::create_dir_all(path)
 }
 
 pub fn create_rules_file_if_not_exists<P: AsRef<Path>>(path: &P) -> io::Result<()> {
     let path = path.as_ref();
 
-    if fs::metadata(&path).is_err() {
-        fs::write(&path, "[]")?;
+    if fs::metadata(path).is_err() {
+        fs::write(path, "[]")?;
     }
 
     Ok(())

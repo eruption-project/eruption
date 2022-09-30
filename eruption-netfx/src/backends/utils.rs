@@ -70,7 +70,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice)
 
     let filename = filename.as_ref();
 
-    let img = image::open(&filename)?;
+    let img = image::open(filename)?;
     let img = img.resize_exact(
         constants::CANVAS_WIDTH as u32,
         constants::CANVAS_HEIGHT as u32,

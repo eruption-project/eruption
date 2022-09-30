@@ -25,7 +25,7 @@ color_map = {}
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- calculate batique effect
+    -- calculate fbm effect
     if ticks % animation_delay == 0 then
         for i = 0, canvas_size - 1 do
             local x = i % canvas_width

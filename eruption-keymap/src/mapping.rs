@@ -303,7 +303,7 @@ pub struct EvdevEvent {
 impl Display for EvdevEvent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         //f.write_str(&format!("Event:{}", self.key_index))
-        f.write_str(&format!("{}", util::evdev_event_code_to_string(self.event)))
+        f.write_str(&util::evdev_event_code_to_string(self.event))
     }
 }
 

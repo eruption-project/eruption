@@ -279,7 +279,7 @@ pub fn get_script_files_from(script_dirs: &[PathBuf]) -> Result<Vec<PathBuf>> {
     let mut result = vec![];
 
     for script_path in script_dirs {
-        if let Ok(paths) = fs::read_dir(&script_path) {
+        if let Ok(paths) = fs::read_dir(script_path) {
             let mut script_paths = paths
                 .map(|p| p.unwrap().path())
                 .filter(|p| {

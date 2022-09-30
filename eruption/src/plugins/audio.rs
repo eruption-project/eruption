@@ -345,7 +345,7 @@ mod backends {
 
             // create, bind and store audio socket
             let listener = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
-            let address = SockAddr::unix(&constants::AUDIO_SOCKET_NAME)?;
+            let address = SockAddr::unix(constants::AUDIO_SOCKET_NAME)?;
             listener.bind(&address)?;
 
             // widen permissions of audio socket, so that all users may connect to it

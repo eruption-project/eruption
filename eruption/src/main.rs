@@ -54,6 +54,7 @@ mod util;
 mod hwdevices;
 use hwdevices::{KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent};
 
+mod color_scheme;
 mod constants;
 mod dbus_interface;
 mod events;
@@ -68,8 +69,11 @@ use profiles::Profile;
 use scripting::manifest::Manifest;
 use scripting::script;
 
-use crate::hwdevices::{DeviceStatus, MaturityLevel, RGBA};
 use crate::plugins::{sdk_support, uleds};
+use crate::{
+    color_scheme::ColorScheme,
+    hwdevices::{DeviceStatus, MaturityLevel, RGBA},
+};
 
 use crate::threads::DbusApiEvent;
 #[cfg(feature = "mimalloc_allocator")]
@@ -86,6 +90,18 @@ struct Localizations;
 lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+
+    pub static ref VERSION: String = {
+        format!(
+            "{} ({}) ({} build)",
+            env!("CARGO_PKG_VERSION"),
+            env!("ERUPTION_GIT_PKG_VERSION"),
+            if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            })
+        };
 }
 
 #[allow(unused)]
@@ -153,6 +169,10 @@ lazy_static! {
     /// The current "pipeline" of scripts
     pub static ref ACTIVE_SCRIPTS: Arc<Mutex<Vec<Manifest>>> = Arc::new(Mutex::new(vec![]));
 
+    /// Named color schemes, for use in e.g. gradients
+    pub static ref NAMED_COLOR_SCHEMES: Arc<RwLock<HashMap<String, ColorScheme>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
 
@@ -197,6 +217,9 @@ lazy_static! {
 
     /// Fade in on profile switch
     pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+
+    /// Global modifier to compare fading into a profile
+    pub static ref BRIGHTNESS_FADER_BASE: AtomicIsize = AtomicIsize::new(0);
 
     /// Canvas post-processing parameters
     pub static ref CANVAS_HSL: Arc<Mutex<(f64, f64, f64)>> = Arc::new(Mutex::new((0.0, 0.0, 0.0)));
@@ -372,19 +395,7 @@ fn print_header() {
 /// Process commandline options
 fn parse_commandline() -> clap::ArgMatches {
     Command::new("Eruption")
-        .version(
-            format!(
-                "{} ({}) ({} build)",
-                env!("CARGO_PKG_VERSION"),
-                env!("ERUPTION_GIT_PKG_VERSION"),
-                if cfg!(debug_assertions) {
-                    "debug"
-                } else {
-                    "release"
-                }
-            )
-            .as_str(),
-        )
+        .version(VERSION.as_str())
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Realtime RGB LED Driver for Linux")
         .arg(
@@ -392,15 +403,13 @@ fn parse_commandline() -> clap::ArgMatches {
                 .short('c')
                 .long("config")
                 .value_name("FILE")
-                .help("Sets the configuration file to use")
-                .takes_value(true),
+                .help("Sets the configuration file to use"),
         )
         // .arg(
         //     Arg::new("completions")
         //         .long("completions")
         //         .value_name("SHELL")
-        //         .about("Generate shell completions")
-        //         .takes_value(true),
+        //         .about("Generate shell completions"),
         // )
         .get_matches()
 }
@@ -425,7 +434,7 @@ pub fn switch_profile(
         // now spawn a new set of Lua VMs, with scripts from the failsafe profile
         for (thread_idx, script_file) in profile.active_scripts.iter().enumerate() {
             // TODO: use path from config
-            let script_path = script_dir.join(&script_file);
+            let script_path = script_dir.join(script_file);
 
             let (lua_tx, lua_rx) = unbounded();
             threads::spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), None)
@@ -606,7 +615,15 @@ pub fn switch_profile(
                 // everything is fine, finally assign the globally active profile
                 debug!("Switch successful");
 
-                crate::BRIGHTNESS_FADER.store(constants::FADE_FRAMES as isize, Ordering::SeqCst);
+                let fade_millis = crate::CONFIG
+                    .lock()
+                    .as_ref()
+                    .unwrap()
+                    .get_int("global.profile_fade_milliseconds")
+                    .unwrap_or(constants::FADE_MILLIS as i64);
+                let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
+                crate::BRIGHTNESS_FADER.store(fade_frames, Ordering::SeqCst);
+                crate::BRIGHTNESS_FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
                 *ACTIVE_PROFILE.lock() = Some(profile);
 
@@ -1048,7 +1065,7 @@ fn run_main_loop(
         }
 
         // compute AFK time
-        let afk_timeout_secs = CONFIG
+        let afk_timeout_secs = crate::CONFIG
             .lock()
             .as_ref()
             .unwrap()
@@ -1546,11 +1563,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     // process configuration file
     let config_file = matches
-        .value_of("config")
-        .unwrap_or(constants::DEFAULT_CONFIG_FILE);
+        .get_one("config")
+        .unwrap_or(&constants::DEFAULT_CONFIG_FILE.to_string())
+        .to_string();
 
     let config = Config::builder()
-        .add_source(config::File::new(config_file, config::FileFormat::Toml))
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
             log::error!("Could not parse configuration file: {}", e);
@@ -1593,6 +1611,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     info!("Loading saved state...");
     state::init_global_runtime_state()
         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
+    // restore saved color-schemes
+    state::load_color_schemes()
+        .unwrap_or_else(|e| warn!("Could not restore previously saved color-schemes: {}", e));
 
     // enable the mouse
     let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
@@ -1850,6 +1872,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 info!("Saving global runtime state...");
                 state::save_runtime_state()
                     .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
+
+                // save color-schemes
+                state::save_color_schemes()
+                    .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
 
                 // close all managed devices
                 info!("Closing all devices now...");

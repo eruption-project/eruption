@@ -15,12 +15,12 @@ _eruption-keymap() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '-V[Print version information]' \
 '--version[Print version information]' \
-'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 ":: :_eruption-keymap_commands" \
 "*::: :->eruption-keymap" \
 && ret=0
@@ -54,13 +54,13 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-d+[Specify the device to add the rule for]:DEVICE: ' \
 '--device=[Specify the device to add the rule for]:DEVICE: ' \
-'-e+[Specify the enabled status of the newly added rule]: : ' \
-'--enabled=[Specify the enabled status of the newly added rule]: : ' \
 '--description=[Specify a description for a rule]:DESCRIPTION: ' \
 '*-l+[Specify a list of layers]:LAYERS: ' \
 '*--layers=[Specify a list of layers]:LAYERS: ' \
-'-k+[The filename of the keymap]:KEYMAP: ' \
-'--keymap=[The filename of the keymap]:KEYMAP: ' \
+'-k+[The filename of the keymap]:KEYMAP:_files' \
+'--keymap=[The filename of the keymap]:KEYMAP:_files' \
+'-e[Specify the enabled status of the newly added rule]' \
+'--enabled[Specify the enabled status of the newly added rule]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':source:' \
@@ -71,8 +71,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-d+[Specify the device to remove the mapping from]:DEVICE: ' \
 '--device=[Specify the device to remove the mapping from]:DEVICE: ' \
-'-k+[Specify a list of layers]:KEYMAP: ' \
-'--keymap=[Specify a list of layers]:KEYMAP: ' \
+'-k+[Specify a list of layers]:KEYMAP:_files' \
+'--keymap=[Specify a list of layers]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':index:' \
@@ -82,8 +82,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-d+[Specify the device]:DEVICE: ' \
 '--device=[Specify the device]:DEVICE: ' \
-'-k+[Specify a list of layers]:KEYMAP: ' \
-'--keymap=[Specify a list of layers]:KEYMAP: ' \
+'-k+[Specify a list of layers]:KEYMAP:_files' \
+'--keymap=[Specify a list of layers]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':index:' \
@@ -93,8 +93,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-d+[Specify the device]:DEVICE: ' \
 '--device=[Specify the device]:DEVICE: ' \
-'-k+[Specify a list of layers]:KEYMAP: ' \
-'--keymap=[Specify a list of layers]:KEYMAP: ' \
+'-k+[Specify a list of layers]:KEYMAP:_files' \
+'--keymap=[Specify a list of layers]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':index:' \
@@ -102,8 +102,39 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'*::subcommand -- The subcommand whose help message to display:' \
+":: :_eruption-keymap__mapping__help_commands" \
+"*::: :->help" \
 && ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-keymap-mapping-help-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
         esac
     ;;
@@ -111,8 +142,8 @@ esac
 ;;
 (description)
 _arguments "${_arguments_options[@]}" \
-'-k+[]:KEYMAP: ' \
-'--keymap=[]:KEYMAP: ' \
+'-k+[]:KEYMAP:_files' \
+'--keymap=[]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '::description:' \
@@ -120,16 +151,16 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (show)
 _arguments "${_arguments_options[@]}" \
-'-k+[]:KEYMAP: ' \
-'--keymap=[]:KEYMAP: ' \
+'-k+[]:KEYMAP:_files' \
+'--keymap=[]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
 ;;
 (macros)
 _arguments "${_arguments_options[@]}" \
-'-l+[]:LUA_PATH: ' \
-'--lua-path=[]:LUA_PATH: ' \
+'-l+[]:LUA_PATH:_files' \
+'--lua-path=[]:LUA_PATH:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
@@ -142,8 +173,8 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (compile)
 _arguments "${_arguments_options[@]}" \
-'-k+[]:KEYMAP: ' \
-'--keymap=[]:KEYMAP: ' \
+'-k+[]:KEYMAP:_files' \
+'--keymap=[]:KEYMAP:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 && ret=0
@@ -152,13 +183,88 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-':shell:' \
+':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'*::subcommand -- The subcommand whose help message to display:' \
+":: :_eruption-keymap__help_commands" \
+"*::: :->help" \
 && ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-keymap-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(mapping)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-keymap__help__mapping_commands" \
+"*::: :->mapping" \
+&& ret=0
+
+    case $state in
+    (mapping)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-keymap-help-mapping-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(description)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(macros)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(events)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(compile)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
         esac
     ;;
@@ -180,60 +286,156 @@ _eruption-keymap_commands() {
     )
     _describe -t commands 'eruption-keymap commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__mapping__add_commands] )) ||
+_eruption-keymap__help__mapping__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help mapping add commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__mapping__add_commands] )) ||
 _eruption-keymap__mapping__add_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap mapping add commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__mapping__help__add_commands] )) ||
+_eruption-keymap__mapping__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap mapping help add commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__compile_commands] )) ||
 _eruption-keymap__compile_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap compile commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__compile_commands] )) ||
+_eruption-keymap__help__compile_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help compile commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__completions_commands] )) ||
 _eruption-keymap__completions_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap completions commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__completions_commands] )) ||
+_eruption-keymap__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help completions commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__description_commands] )) ||
 _eruption-keymap__description_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap description commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__description_commands] )) ||
+_eruption-keymap__help__description_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help description commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__mapping__disable_commands] )) ||
+_eruption-keymap__help__mapping__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help mapping disable commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__mapping__disable_commands] )) ||
 _eruption-keymap__mapping__disable_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap mapping disable commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__mapping__help__disable_commands] )) ||
+_eruption-keymap__mapping__help__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap mapping help disable commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__mapping__enable_commands] )) ||
+_eruption-keymap__help__mapping__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help mapping enable commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__mapping__enable_commands] )) ||
 _eruption-keymap__mapping__enable_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap mapping enable commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__mapping__help__enable_commands] )) ||
+_eruption-keymap__mapping__help__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap mapping help enable commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__events_commands] )) ||
 _eruption-keymap__events_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap events commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__events_commands] )) ||
+_eruption-keymap__help__events_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help events commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__help_commands] )) ||
 _eruption-keymap__help_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'list:List all available keymaps' \
+'mapping:Add or remove a single mapping entry' \
+'description:Show or set the description of the specified keymap' \
+'show:Show some information about a keymap' \
+'macros:Show a list of available macros in a Lua file' \
+'events:Show a list of available Linux EVDEV events' \
+'compile:Compile a keymap to Lua code and make it available to Eruption' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
     _describe -t commands 'eruption-keymap help commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__help_commands] )) ||
+_eruption-keymap__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help help commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__mapping__help_commands] )) ||
 _eruption-keymap__mapping__help_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'add:Add a mapping rule for `source` that executes `action`' \
+'remove:Remove the mapping rule for `source`' \
+'enable:Enable a mapping rule' \
+'disable:Disable a mapping rule' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
     _describe -t commands 'eruption-keymap mapping help commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__mapping__help__help_commands] )) ||
+_eruption-keymap__mapping__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap mapping help help commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__list_commands] )) ||
+_eruption-keymap__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help list commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__list_commands] )) ||
 _eruption-keymap__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap list commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__macros_commands] )) ||
+_eruption-keymap__help__macros_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help macros commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__macros_commands] )) ||
 _eruption-keymap__macros_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap macros commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__mapping_commands] )) ||
+_eruption-keymap__help__mapping_commands() {
+    local commands; commands=(
+'add:Add a mapping rule for `source` that executes `action`' \
+'remove:Remove the mapping rule for `source`' \
+'enable:Enable a mapping rule' \
+'disable:Disable a mapping rule' \
+    )
+    _describe -t commands 'eruption-keymap help mapping commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__mapping_commands] )) ||
 _eruption-keymap__mapping_commands() {
@@ -246,10 +448,25 @@ _eruption-keymap__mapping_commands() {
     )
     _describe -t commands 'eruption-keymap mapping commands' commands "$@"
 }
+(( $+functions[_eruption-keymap__help__mapping__remove_commands] )) ||
+_eruption-keymap__help__mapping__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help mapping remove commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__mapping__help__remove_commands] )) ||
+_eruption-keymap__mapping__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap mapping help remove commands' commands "$@"
+}
 (( $+functions[_eruption-keymap__mapping__remove_commands] )) ||
 _eruption-keymap__mapping__remove_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-keymap mapping remove commands' commands "$@"
+}
+(( $+functions[_eruption-keymap__help__show_commands] )) ||
+_eruption-keymap__help__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-keymap help show commands' commands "$@"
 }
 (( $+functions[_eruption-keymap__show_commands] )) ||
 _eruption-keymap__show_commands() {

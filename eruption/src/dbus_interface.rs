@@ -17,6 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use colorgrad::Color;
 use dbus::{ffidisp::BusType, ffidisp::Connection, ffidisp::NameFlag, message::SignalArgs};
 use dbus_tree::{
     Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
@@ -27,7 +28,7 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::scripting::manifest::ParseConfig;
+use crate::{color_scheme::ColorScheme, scripting::manifest::ParseConfig};
 use crate::{constants, plugins};
 use crate::{hwdevices, profiles};
 use crate::{plugins::audio, scripting::manifest};
@@ -745,6 +746,100 @@ impl DbusApi {
                                     }
                                 })
                                 .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("GetColorSchemes", (), move |m| {
+                                    if perms::has_monitor_permission_cached(
+                                        &m.msg.sender().unwrap(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let color_schemes: Vec<String> = crate::NAMED_COLOR_SCHEMES
+                                            .read()
+                                            .keys()
+                                            .cloned()
+                                            .collect();
+
+                                        Ok(vec![m.msg.method_return().append1(color_schemes)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .outarg::<Vec<String>, _>("color_schemes"),
+                            )
+                            .add_m(
+                                f.method("SetColorScheme", (), move |m| {
+                                    if perms::has_settings_permission_cached(
+                                        &m.msg.sender().unwrap(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let (name, data): (String, Vec<u8>) = m.msg.read2()?;
+
+                                        if name.chars().take(1).all(char::is_numeric)
+                                            || !name.chars().all(|c| {
+                                                c == '_' || char::is_ascii_alphanumeric(&c)
+                                            })
+                                        {
+                                            Err(MethodErr::failed("Invalid identifier name"))
+                                        } else {
+                                            let mut color_schemes =
+                                                crate::NAMED_COLOR_SCHEMES.write();
+                                            let mut colors = Vec::new();
+
+                                            for chunk in data.chunks(4) {
+                                                let r = chunk[0];
+                                                let g = chunk[1];
+                                                let b = chunk[2];
+                                                let a = chunk[3];
+
+                                                let color = Color::from_linear_rgba8(r, g, b, a);
+
+                                                colors.push(color);
+                                            }
+
+                                            color_schemes.insert(name, ColorScheme { colors });
+
+                                            crate::REQUEST_PROFILE_RELOAD
+                                                .store(true, Ordering::SeqCst);
+
+                                            let s = true;
+                                            Ok(vec![m.msg.method_return().append1(s)])
+                                        }
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<String, _>("name")
+                                .inarg::<Vec<u8>, _>("data")
+                                .outarg::<bool, _>("status"),
+                            )
+                            .add_m(
+                                f.method("RemoveColorScheme", (), move |m| {
+                                    if perms::has_settings_permission_cached(
+                                        &m.msg.sender().unwrap(),
+                                    )
+                                    .unwrap_or(false)
+                                    {
+                                        let name: String = m.msg.read1()?;
+
+                                        let s = crate::NAMED_COLOR_SCHEMES
+                                            .write()
+                                            .remove(&name)
+                                            .is_some();
+
+                                        if s {
+                                            crate::REQUEST_PROFILE_RELOAD
+                                                .store(true, Ordering::SeqCst);
+                                        }
+
+                                        Ok(vec![m.msg.method_return().append1(s)])
+                                    } else {
+                                        Err(MethodErr::failed("Authentication failed"))
+                                    }
+                                })
+                                .inarg::<String, _>("name")
+                                .outarg::<bool, _>("status"),
                             ),
                     ),
             )
@@ -989,7 +1084,7 @@ impl DbusApi {
                     ),
             );
 
-        tree.set_registered(&*c_clone, true)
+        tree.set_registered(&c_clone, true)
             .unwrap_or_else(|e| error!("Could not register the tree: {}", e));
         c_clone.add_handler(tree);
 

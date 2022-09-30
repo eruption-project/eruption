@@ -24,6 +24,7 @@ completions-about = Shell Definitionen für Autovervollständigung erzeugen
 
 canvas-about = Nachbearbeitungs-Filter für die globale Leinwand konfigurieren
 config-about = Laufzeit Konfiguration des Eruption Daemons bearbeiten
+color-scheme-about = Ein Farbschema definieren, importieren oder löschen
 devices-about = Gerätespezifische Konfiguration bearbeiten
 status-about = Zeigt das aktuell aktive Profil oder den Slot
 switch-about = Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln

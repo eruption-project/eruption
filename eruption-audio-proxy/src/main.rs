@@ -29,7 +29,8 @@ use std::sync::{
 use std::time::{Duration, Instant};
 use std::{env, thread};
 
-use clap::{IntoApp, Parser};
+use clap::CommandFactory;
+use clap::Parser;
 use clap_complete::Shell;
 use flume::{unbounded, Receiver};
 use i18n_embed::{
@@ -145,7 +146,7 @@ pub struct Options {
         help(VERBOSE_ABOUT.as_str()),
         short,
         long,
-        parse(from_occurrences)
+        action = clap::ArgAction::Count
     )]
     verbose: u8,
 
@@ -191,7 +192,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
         debug!("Connecting to the Eruption audio proxy socket...");
 
         let socket = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
-        let address = SockAddr::unix(&constants::AUDIO_SOCKET_NAME)?;
+        let address = SockAddr::unix(constants::AUDIO_SOCKET_NAME)?;
 
         match socket.connect(&address) {
             Ok(()) => {

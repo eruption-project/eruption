@@ -19,7 +19,6 @@
 
 #![allow(unused)]
 
-
 /// Map evdev event codes to key indices, for ISO variant
 #[rustfmt::skip]
 pub const EV_TO_INDEX_ISO: [u8; 0x2ff + 1] = [

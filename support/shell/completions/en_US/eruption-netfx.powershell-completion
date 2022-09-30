@@ -21,12 +21,12 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-netfx' -ScriptBlock {
 
     $completions = @(switch ($command) {
         'eruption-netfx' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('ping', 'ping', [CompletionResultType]::ParameterValue, 'Ping the server')
             [CompletionResult]::new('command', 'command', [CompletionResultType]::ParameterValue, 'Send Network FX raw protocol commands to the server')
             [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
@@ -67,6 +67,34 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-netfx' -ScriptBlock {
             break
         }
         'eruption-netfx;help' {
+            [CompletionResult]::new('ping', 'ping', [CompletionResultType]::ParameterValue, 'Ping the server')
+            [CompletionResult]::new('command', 'command', [CompletionResultType]::ParameterValue, 'Send Network FX raw protocol commands to the server')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-netfx;help;ping' {
+            break
+        }
+        'eruption-netfx;help;command' {
+            break
+        }
+        'eruption-netfx;help;image' {
+            break
+        }
+        'eruption-netfx;help;animation' {
+            break
+        }
+        'eruption-netfx;help;ambient' {
+            break
+        }
+        'eruption-netfx;help;completions' {
+            break
+        }
+        'eruption-netfx;help;help' {
             break
         }
     })
