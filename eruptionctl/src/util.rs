@@ -26,7 +26,7 @@ use std::process::Command;
 use crate::constants;
 use crate::manifest::{self, Manifest, ManifestError};
 use crate::profiles;
-use crate::Profile;
+use crate::profiles::Profile;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -150,7 +150,7 @@ pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
     if profile_path.is_file() {
         match Profile::from(&profile_path) {
             Ok(profile) => Ok(profile),
-            Err(err) => Err(UtilError::ProfileError {err}.into())
+            Err(err) => Err(UtilError::ProfileError { err }.into()),
         }
     } else {
         let profiles = enumerate_profiles().unwrap_or_else(|_| vec![]);
@@ -159,7 +159,10 @@ pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
             .find(|p| p.profile_file.to_string_lossy() == profile_name);
         match profile {
             Some(profile) => Ok(profile),
-            None => Err(UtilError::FileNotFound { description: profile_name.into() }.into())
+            None => Err(UtilError::FileNotFound {
+                description: profile_name.into(),
+            }
+            .into()),
         }
     }
 }
@@ -176,7 +179,7 @@ pub fn match_profile_path<P: AsRef<Path>>(profile_file: &P) -> Result<PathBuf> {
     .into());
 
     'DIR_LOOP: for dir in get_profile_dirs().iter() {
-        let profile_path = dir.join(&profile_file);
+        let profile_path = dir.join(profile_file);
 
         if let Ok(metadata) = fs::metadata(&profile_path) {
             if metadata.is_file() {
@@ -201,7 +204,7 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
     .into());
 
     'DIR_LOOP: for dir in get_script_dirs().iter() {
-        let script_path = dir.join(&script_file);
+        let script_path = dir.join(script_file);
 
         if let Ok(metadata) = fs::metadata(&script_path) {
             if metadata.is_file() {

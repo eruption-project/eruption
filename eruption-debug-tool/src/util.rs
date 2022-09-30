@@ -71,7 +71,7 @@ impl DeviceState {
 }
 
 pub fn is_eruption_daemon_running() -> bool {
-    let result = fs::read_to_string(&constants::PID_FILE);
+    let result = fs::read_to_string(constants::PID_FILE);
 
     // .map_err(|e| {
     //     eprintln!(
@@ -84,7 +84,7 @@ pub fn is_eruption_daemon_running() -> bool {
 }
 
 pub fn load_data_from_file<P: AsRef<Path>>(path: &P) -> Result<Vec<DeviceState>> {
-    let data = match fs::read_to_string(&path.as_ref()) {
+    let data = match fs::read_to_string(path.as_ref()) {
         Ok(data) => data,
         Err(_e) => "[]".to_string(),
     };
@@ -96,7 +96,7 @@ pub fn load_data_from_file<P: AsRef<Path>>(path: &P) -> Result<Vec<DeviceState>>
 
 pub fn save_data_to_file<P: AsRef<Path>>(path: &P, data: &[DeviceState]) -> Result<()> {
     let data = serde_json::to_string(&data)?;
-    fs::write(&path.as_ref(), &data)?;
+    fs::write(path.as_ref(), &data)?;
 
     Ok(())
 }

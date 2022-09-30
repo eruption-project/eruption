@@ -63,7 +63,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, device: &KeyboardDevice) 
 
     let filename = filename.as_ref();
 
-    let img = image::open(&filename)?;
+    let img = image::open(filename)?;
     let img = img.resize_exact(
         device.get_num_cols() as u32,
         device.get_num_rows() as u32,

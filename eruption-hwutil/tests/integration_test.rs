@@ -24,7 +24,7 @@ fn test_eruptionctl_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-hwutil"));
 
     let output = Command::new(&command)
-        .args(&["-V"])
+        .args(["-V"])
         .output()
         .expect("Failed to execute the test");
 

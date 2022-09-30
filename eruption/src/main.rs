@@ -428,7 +428,7 @@ pub fn switch_profile(
         // now spawn a new set of Lua VMs, with scripts from the failsafe profile
         for (thread_idx, script_file) in profile.active_scripts.iter().enumerate() {
             // TODO: use path from config
-            let script_path = script_dir.join(&script_file);
+            let script_path = script_dir.join(script_file);
 
             let (lua_tx, lua_rx) = unbounded();
             threads::spawn_lua_thread(thread_idx, lua_rx, script_path.clone(), None)
