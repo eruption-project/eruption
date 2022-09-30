@@ -388,9 +388,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.2"
+version = "4.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31c9484ccdc4cb8e7b117cbd0eb150c7c0f04464854e4679aeb50ef03b32d003"
+checksum = "7f78ad8e84aa8e8aa3e821857be40eb4b925ff232de430d4dd2ae6aa058cbd92"
 dependencies = [
  "atty",
  "bitflags",
@@ -403,11 +403,11 @@ dependencies = [
 
 [[package]]
 name = "clap_complete"
-version = "4.0.1"
+version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f04c8f8007e8a1813ba933df2d8fb50cad04e0d9e89a22d64485f25a6a6c35d8"
+checksum = "11cba7abac9b56dfe2f035098cdb3a43946f276e6db83b72c4e692343f9aab9a"
 dependencies = [
- "clap 4.0.2",
+ "clap 4.0.4",
 ]
 
 [[package]]
@@ -885,7 +885,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "color-eyre",
  "colorgrad",
  "config",
@@ -950,7 +950,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -989,7 +989,7 @@ name = "eruption-cmd"
 version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1019,7 +1019,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1105,7 +1105,7 @@ name = "eruption-hotplug-helper"
 version = "0.1.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "eruption-rs",
@@ -1134,7 +1134,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1173,7 +1173,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1220,7 +1220,7 @@ name = "eruption-netfx"
 version = "0.1.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1262,7 +1262,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "config",
@@ -1328,7 +1328,7 @@ version = "0.0.7"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1360,7 +1360,7 @@ name = "eruption-watchdog"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -1389,7 +1389,7 @@ name = "eruptionctl"
 version = "0.0.21"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -4029,7 +4029,7 @@ name = "simple"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.2",
+ "clap 4.0.4",
  "color-eyre",
  "eruption-rs",
  "eyre",
