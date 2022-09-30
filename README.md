@@ -13,6 +13,7 @@
     - [Mice](#mice)
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Important Information](#important-information)
+    - [Troubleshooting](#troubleshooting)
   - [Design Overview](#design-overview)
     - [Introduction](#introduction)
     - [Systems Architecture](#systems-architecture)
@@ -98,6 +99,13 @@ Please see [DEVICES.md](DEVICES.md) for further information
 ## Important Information
 
 This project is still in an early stage of development, and thus may contain some possibly serious bugs.
+
+For a more mature RGB lighting solution please also consider the following alternatives:
+
+https://openrgb.org/ \
+https://gitlab.com/CalcProgrammer1/OpenRGB
+
+### Troubleshooting
 
 If you ever need to forcefully disable the Eruption daemon you may do so by adding
 the following text snippet to the bootloader's (e.g. GRUB) kernel command line:
