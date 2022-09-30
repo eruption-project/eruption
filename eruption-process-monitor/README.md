@@ -26,31 +26,20 @@ $ eruption-process-monitor rules remove 5
 ### eruption-process-monitor
 
 ```shell
-$ eruption-process-monitor
-eruption-process-monitor 0.0.16
-
-X3n0m0rph59 <x3n0m0rph59@gmail.com>
-
+$ eruption-process-monitor --help
 A daemon to monitor and introspect system processes and events
 
-USAGE:
-    eruption-process-monitor [FLAGS] [OPTIONS] [ARGS] <SUBCOMMAND>
+Usage: eruption-process-monitor [OPTIONS] <COMMAND>
 
-ARGS:
-    <HOSTNAME>    
-    <PORT>        
+Commands:
+  daemon       Run in background and monitor running processes
+  rules        Rules related sub-commands
+  completions  Generate shell completions
+  help         Print this message or the help of the given subcommand(s)
 
-FLAGS:
-    -h, --help       Print help information
-    -v, --verbose    Verbose mode (-v, -vv, -vvv, etc.)
-    -V, --version    Print version information
-
-OPTIONS:
-    -c, --config <CONFIG>    Sets the configuration file to use
-
-SUBCOMMANDS:
-    completions    Generate shell completions
-    daemon         Run in background and monitor running processes
-    help           Print this message or the help of the given subcommand(s)
-    rules          Rules related sub-commands
+Options:
+  -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)
+  -c, --config <CONFIG>  Sets the configuration file to use
+  -h, --help             Print help information
+  -V, --version          Print version information
 ```
