@@ -23,14 +23,14 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl' {
             [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
             [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
             [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
@@ -63,6 +63,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;config;help' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config;help;brightness' {
+            break
+        }
+        'eruptionctl;config;help;soundfx' {
+            break
+        }
+        'eruptionctl;config;help;help' {
             break
         }
         'eruptionctl;color-schemes' {
@@ -105,9 +117,41 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;color-schemes;import;help' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;import;help;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;import;help;help' {
             break
         }
         'eruptionctl;color-schemes;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;help;list' {
+            break
+        }
+        'eruptionctl;color-schemes;help;add' {
+            break
+        }
+        'eruptionctl;color-schemes;help;remove' {
+            break
+        }
+        'eruptionctl;color-schemes;help;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;color-schemes;help;import;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;help;help' {
             break
         }
         'eruptionctl;devices' {
@@ -177,6 +221,50 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;devices;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the device specific brightness of the LEDs')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Get or set the current profile (applicable for some devices)')
+            [CompletionResult]::new('dpi', 'dpi', [CompletionResultType]::ParameterValue, 'Get or set the DPI parameter (applicable for some mice)')
+            [CompletionResult]::new('rate', 'rate', [CompletionResultType]::ParameterValue, 'Get or set the bus poll rate')
+            [CompletionResult]::new('debounce', 'debounce', [CompletionResultType]::ParameterValue, 'Get or set the debounce parameter (applicable for some mice)')
+            [CompletionResult]::new('distance', 'distance', [CompletionResultType]::ParameterValue, 'Get or set the DCU parameter (applicable for some mice)')
+            [CompletionResult]::new('angle-snapping', 'angle-snapping', [CompletionResultType]::ParameterValue, 'Get or set the angle-snapping parameter (applicable for some mice)')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;devices;help;list' {
+            break
+        }
+        'eruptionctl;devices;help;info' {
+            break
+        }
+        'eruptionctl;devices;help;status' {
+            break
+        }
+        'eruptionctl;devices;help;brightness' {
+            break
+        }
+        'eruptionctl;devices;help;profile' {
+            break
+        }
+        'eruptionctl;devices;help;dpi' {
+            break
+        }
+        'eruptionctl;devices;help;rate' {
+            break
+        }
+        'eruptionctl;devices;help;debounce' {
+            break
+        }
+        'eruptionctl;devices;help;distance' {
+            break
+        }
+        'eruptionctl;devices;help;angle-snapping' {
+            break
+        }
+        'eruptionctl;devices;help;help' {
             break
         }
         'eruptionctl;status' {
@@ -198,6 +286,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;status;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;help;profile' {
+            break
+        }
+        'eruptionctl;status;help;slot' {
+            break
+        }
+        'eruptionctl;status;help;help' {
             break
         }
         'eruptionctl;switch' {
@@ -219,6 +319,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;switch;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;switch;help;profile' {
+            break
+        }
+        'eruptionctl;switch;help;slot' {
+            break
+        }
+        'eruptionctl;switch;help;help' {
             break
         }
         'eruptionctl;profiles' {
@@ -246,6 +358,22 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;profiles;help' {
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available profiles')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;profiles;help;info' {
+            break
+        }
+        'eruptionctl;profiles;help;edit' {
+            break
+        }
+        'eruptionctl;profiles;help;list' {
+            break
+        }
+        'eruptionctl;profiles;help;help' {
             break
         }
         'eruptionctl;names' {
@@ -273,6 +401,22 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;names;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
+            [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;names;help;list' {
+            break
+        }
+        'eruptionctl;names;help;set' {
+            break
+        }
+        'eruptionctl;names;help;set-all' {
+            break
+        }
+        'eruptionctl;names;help;help' {
             break
         }
         'eruptionctl;scripts' {
@@ -300,6 +444,22 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;scripts;help' {
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a script')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available scripts')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;scripts;help;info' {
+            break
+        }
+        'eruptionctl;scripts;help;edit' {
+            break
+        }
+        'eruptionctl;scripts;help;list' {
+            break
+        }
+        'eruptionctl;scripts;help;help' {
             break
         }
         'eruptionctl;param' {
@@ -313,6 +473,170 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help' {
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
+            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
+            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
+            [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
+            [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
+            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
+            [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
+            [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;help;config' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            break
+        }
+        'eruptionctl;help;config;brightness' {
+            break
+        }
+        'eruptionctl;help;config;soundfx' {
+            break
+        }
+        'eruptionctl;help;color-schemes' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            break
+        }
+        'eruptionctl;help;color-schemes;list' {
+            break
+        }
+        'eruptionctl;help;color-schemes;add' {
+            break
+        }
+        'eruptionctl;help;color-schemes;remove' {
+            break
+        }
+        'eruptionctl;help;color-schemes;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;help;color-schemes;import;pywal' {
+            break
+        }
+        'eruptionctl;help;devices' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the device specific brightness of the LEDs')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Get or set the current profile (applicable for some devices)')
+            [CompletionResult]::new('dpi', 'dpi', [CompletionResultType]::ParameterValue, 'Get or set the DPI parameter (applicable for some mice)')
+            [CompletionResult]::new('rate', 'rate', [CompletionResultType]::ParameterValue, 'Get or set the bus poll rate')
+            [CompletionResult]::new('debounce', 'debounce', [CompletionResultType]::ParameterValue, 'Get or set the debounce parameter (applicable for some mice)')
+            [CompletionResult]::new('distance', 'distance', [CompletionResultType]::ParameterValue, 'Get or set the DCU parameter (applicable for some mice)')
+            [CompletionResult]::new('angle-snapping', 'angle-snapping', [CompletionResultType]::ParameterValue, 'Get or set the angle-snapping parameter (applicable for some mice)')
+            break
+        }
+        'eruptionctl;help;devices;list' {
+            break
+        }
+        'eruptionctl;help;devices;info' {
+            break
+        }
+        'eruptionctl;help;devices;status' {
+            break
+        }
+        'eruptionctl;help;devices;brightness' {
+            break
+        }
+        'eruptionctl;help;devices;profile' {
+            break
+        }
+        'eruptionctl;help;devices;dpi' {
+            break
+        }
+        'eruptionctl;help;devices;rate' {
+            break
+        }
+        'eruptionctl;help;devices;debounce' {
+            break
+        }
+        'eruptionctl;help;devices;distance' {
+            break
+        }
+        'eruptionctl;help;devices;angle-snapping' {
+            break
+        }
+        'eruptionctl;help;status' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            break
+        }
+        'eruptionctl;help;status;profile' {
+            break
+        }
+        'eruptionctl;help;status;slot' {
+            break
+        }
+        'eruptionctl;help;switch' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            break
+        }
+        'eruptionctl;help;switch;profile' {
+            break
+        }
+        'eruptionctl;help;switch;slot' {
+            break
+        }
+        'eruptionctl;help;profiles' {
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available profiles')
+            break
+        }
+        'eruptionctl;help;profiles;info' {
+            break
+        }
+        'eruptionctl;help;profiles;edit' {
+            break
+        }
+        'eruptionctl;help;profiles;list' {
+            break
+        }
+        'eruptionctl;help;names' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
+            [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
+            break
+        }
+        'eruptionctl;help;names;list' {
+            break
+        }
+        'eruptionctl;help;names;set' {
+            break
+        }
+        'eruptionctl;help;names;set-all' {
+            break
+        }
+        'eruptionctl;help;scripts' {
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a script')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available scripts')
+            break
+        }
+        'eruptionctl;help;scripts;info' {
+            break
+        }
+        'eruptionctl;help;scripts;edit' {
+            break
+        }
+        'eruptionctl;help;scripts;list' {
+            break
+        }
+        'eruptionctl;help;param' {
+            break
+        }
+        'eruptionctl;help;completions' {
+            break
+        }
+        'eruptionctl;help;help' {
             break
         }
     })

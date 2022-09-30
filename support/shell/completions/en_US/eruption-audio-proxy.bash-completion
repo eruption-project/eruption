@@ -8,18 +8,27 @@ _eruption-audio-proxy() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__audio__proxy"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__audio__proxy,completions)
+                cmd="eruption__audio__proxy__completions"
                 ;;
-            daemon)
-                cmd+="__daemon"
+            eruption__audio__proxy,daemon)
+                cmd="eruption__audio__proxy__daemon"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__audio__proxy,help)
+                cmd="eruption__audio__proxy__help"
+                ;;
+            eruption__audio__proxy__help,completions)
+                cmd="eruption__audio__proxy__help__completions"
+                ;;
+            eruption__audio__proxy__help,daemon)
+                cmd="eruption__audio__proxy__help__daemon"
+                ;;
+            eruption__audio__proxy__help,help)
+                cmd="eruption__audio__proxy__help__help"
                 ;;
             *)
                 ;;
@@ -28,7 +37,7 @@ _eruption-audio-proxy() {
 
     case "${cmd}" in
         eruption__audio__proxy)
-            opts="-h -V -v -c --help --version --verbose --config daemon completions help"
+            opts="-v -c -h -V --verbose --config --help --version daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -50,7 +59,7 @@ _eruption-audio-proxy() {
             return 0
             ;;
         eruption__audio__proxy__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -78,8 +87,50 @@ _eruption-audio-proxy() {
             return 0
             ;;
         eruption__audio__proxy__help)
-            opts="<SUBCOMMAND>..."
+            opts="daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__audio__proxy__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__audio__proxy__help__daemon)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__audio__proxy__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

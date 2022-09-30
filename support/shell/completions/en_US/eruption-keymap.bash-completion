@@ -8,48 +8,105 @@ _eruption-keymap() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__keymap"
                 ;;
-            add)
-                cmd+="__add"
+            eruption__keymap,compile)
+                cmd="eruption__keymap__compile"
                 ;;
-            compile)
-                cmd+="__compile"
+            eruption__keymap,completions)
+                cmd="eruption__keymap__completions"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__keymap,description)
+                cmd="eruption__keymap__description"
                 ;;
-            description)
-                cmd+="__description"
+            eruption__keymap,events)
+                cmd="eruption__keymap__events"
                 ;;
-            disable)
-                cmd+="__disable"
+            eruption__keymap,help)
+                cmd="eruption__keymap__help"
                 ;;
-            enable)
-                cmd+="__enable"
+            eruption__keymap,list)
+                cmd="eruption__keymap__list"
                 ;;
-            events)
-                cmd+="__events"
+            eruption__keymap,macros)
+                cmd="eruption__keymap__macros"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__keymap,mapping)
+                cmd="eruption__keymap__mapping"
                 ;;
-            list)
-                cmd+="__list"
+            eruption__keymap,show)
+                cmd="eruption__keymap__show"
                 ;;
-            macros)
-                cmd+="__macros"
+            eruption__keymap__help,compile)
+                cmd="eruption__keymap__help__compile"
                 ;;
-            mapping)
-                cmd+="__mapping"
+            eruption__keymap__help,completions)
+                cmd="eruption__keymap__help__completions"
                 ;;
-            remove)
-                cmd+="__remove"
+            eruption__keymap__help,description)
+                cmd="eruption__keymap__help__description"
                 ;;
-            show)
-                cmd+="__show"
+            eruption__keymap__help,events)
+                cmd="eruption__keymap__help__events"
+                ;;
+            eruption__keymap__help,help)
+                cmd="eruption__keymap__help__help"
+                ;;
+            eruption__keymap__help,list)
+                cmd="eruption__keymap__help__list"
+                ;;
+            eruption__keymap__help,macros)
+                cmd="eruption__keymap__help__macros"
+                ;;
+            eruption__keymap__help,mapping)
+                cmd="eruption__keymap__help__mapping"
+                ;;
+            eruption__keymap__help,show)
+                cmd="eruption__keymap__help__show"
+                ;;
+            eruption__keymap__help__mapping,add)
+                cmd="eruption__keymap__help__mapping__add"
+                ;;
+            eruption__keymap__help__mapping,disable)
+                cmd="eruption__keymap__help__mapping__disable"
+                ;;
+            eruption__keymap__help__mapping,enable)
+                cmd="eruption__keymap__help__mapping__enable"
+                ;;
+            eruption__keymap__help__mapping,remove)
+                cmd="eruption__keymap__help__mapping__remove"
+                ;;
+            eruption__keymap__mapping,add)
+                cmd="eruption__keymap__mapping__add"
+                ;;
+            eruption__keymap__mapping,disable)
+                cmd="eruption__keymap__mapping__disable"
+                ;;
+            eruption__keymap__mapping,enable)
+                cmd="eruption__keymap__mapping__enable"
+                ;;
+            eruption__keymap__mapping,help)
+                cmd="eruption__keymap__mapping__help"
+                ;;
+            eruption__keymap__mapping,remove)
+                cmd="eruption__keymap__mapping__remove"
+                ;;
+            eruption__keymap__mapping__help,add)
+                cmd="eruption__keymap__mapping__help__add"
+                ;;
+            eruption__keymap__mapping__help,disable)
+                cmd="eruption__keymap__mapping__help__disable"
+                ;;
+            eruption__keymap__mapping__help,enable)
+                cmd="eruption__keymap__mapping__help__enable"
+                ;;
+            eruption__keymap__mapping__help,help)
+                cmd="eruption__keymap__mapping__help__help"
+                ;;
+            eruption__keymap__mapping__help,remove)
+                cmd="eruption__keymap__mapping__help__remove"
                 ;;
             *)
                 ;;
@@ -58,7 +115,7 @@ _eruption-keymap() {
 
     case "${cmd}" in
         eruption__keymap)
-            opts="-h -V -v --help --version --verbose list mapping description show macros events compile completions help"
+            opts="-v -h -V --verbose --help --version list mapping description show macros events compile completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -94,7 +151,7 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -108,7 +165,7 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__description)
-            opts="-k -h --keymap --help <DESCRIPTION>"
+            opts="-k -h --keymap --help [DESCRIPTION]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -144,8 +201,190 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__help)
-            opts="<SUBCOMMAND>..."
+            opts="list mapping description show macros events compile completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__compile)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__description)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__events)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__macros)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__mapping)
+            opts="add remove enable disable"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__mapping__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__mapping__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__mapping__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__mapping__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__help__show)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -219,14 +458,6 @@ _eruption-keymap() {
                     return 0
                     ;;
                 -d)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --enabled)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -e)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -318,8 +549,78 @@ _eruption-keymap() {
             return 0
             ;;
         eruption__keymap__mapping__help)
-            opts="<SUBCOMMAND>..."
+            opts="add remove enable disable help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__mapping__help__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__mapping__help__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__mapping__help__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__mapping__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__keymap__mapping__help__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

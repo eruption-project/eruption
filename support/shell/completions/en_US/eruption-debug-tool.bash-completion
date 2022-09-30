@@ -8,48 +8,96 @@ _eruption-debug-tool() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__debug__tool"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__debug__tool,completions)
+                cmd="eruption__debug__tool__completions"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__debug__tool,help)
+                cmd="eruption__debug__tool__help"
                 ;;
-            list)
-                cmd+="__list"
+            eruption__debug__tool,list)
+                cmd="eruption__debug__tool__list"
                 ;;
-            read)
-                cmd+="__read"
+            eruption__debug__tool,read)
+                cmd="eruption__debug__tool__read"
                 ;;
-            read-raw)
-                cmd+="__read__raw"
+            eruption__debug__tool,read-raw)
+                cmd="eruption__debug__tool__read__raw"
                 ;;
-            report)
-                cmd+="__report"
+            eruption__debug__tool,report)
+                cmd="eruption__debug__tool__report"
                 ;;
-            reverse-crc8)
-                cmd+="__reverse__crc8"
+            eruption__debug__tool,run-tests)
+                cmd="eruption__debug__tool__run__tests"
                 ;;
-            run-tests)
-                cmd+="__run__tests"
+            eruption__debug__tool,state-diff)
+                cmd="eruption__debug__tool__state__diff"
                 ;;
-            state-diff)
-                cmd+="__state__diff"
+            eruption__debug__tool,trace)
+                cmd="eruption__debug__tool__trace"
                 ;;
-            trace)
-                cmd+="__trace"
+            eruption__debug__tool,utils)
+                cmd="eruption__debug__tool__utils"
                 ;;
-            utils)
-                cmd+="__utils"
+            eruption__debug__tool,write)
+                cmd="eruption__debug__tool__write"
                 ;;
-            write)
-                cmd+="__write"
+            eruption__debug__tool,write-raw)
+                cmd="eruption__debug__tool__write__raw"
                 ;;
-            write-raw)
-                cmd+="__write__raw"
+            eruption__debug__tool__help,completions)
+                cmd="eruption__debug__tool__help__completions"
+                ;;
+            eruption__debug__tool__help,help)
+                cmd="eruption__debug__tool__help__help"
+                ;;
+            eruption__debug__tool__help,list)
+                cmd="eruption__debug__tool__help__list"
+                ;;
+            eruption__debug__tool__help,read)
+                cmd="eruption__debug__tool__help__read"
+                ;;
+            eruption__debug__tool__help,read-raw)
+                cmd="eruption__debug__tool__help__read__raw"
+                ;;
+            eruption__debug__tool__help,report)
+                cmd="eruption__debug__tool__help__report"
+                ;;
+            eruption__debug__tool__help,run-tests)
+                cmd="eruption__debug__tool__help__run__tests"
+                ;;
+            eruption__debug__tool__help,state-diff)
+                cmd="eruption__debug__tool__help__state__diff"
+                ;;
+            eruption__debug__tool__help,trace)
+                cmd="eruption__debug__tool__help__trace"
+                ;;
+            eruption__debug__tool__help,utils)
+                cmd="eruption__debug__tool__help__utils"
+                ;;
+            eruption__debug__tool__help,write)
+                cmd="eruption__debug__tool__help__write"
+                ;;
+            eruption__debug__tool__help,write-raw)
+                cmd="eruption__debug__tool__help__write__raw"
+                ;;
+            eruption__debug__tool__help__utils,reverse-crc8)
+                cmd="eruption__debug__tool__help__utils__reverse__crc8"
+                ;;
+            eruption__debug__tool__utils,help)
+                cmd="eruption__debug__tool__utils__help"
+                ;;
+            eruption__debug__tool__utils,reverse-crc8)
+                cmd="eruption__debug__tool__utils__reverse__crc8"
+                ;;
+            eruption__debug__tool__utils__help,help)
+                cmd="eruption__debug__tool__utils__help__help"
+                ;;
+            eruption__debug__tool__utils__help,reverse-crc8)
+                cmd="eruption__debug__tool__utils__help__reverse__crc8"
                 ;;
             *)
                 ;;
@@ -58,7 +106,7 @@ _eruption-debug-tool() {
 
     case "${cmd}" in
         eruption__debug__tool)
-            opts="-h -V -v --help --version --verbose list report trace state-diff read write read-raw write-raw run-tests utils completions help"
+            opts="-v -h -V --verbose --help --version list report trace state-diff read write read-raw write-raw run-tests utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -72,7 +120,7 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -86,8 +134,190 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__help)
-            opts="<SUBCOMMAND>..."
+            opts="list report trace state-diff read write read-raw write-raw run-tests utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__read)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__read__raw)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__report)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__run__tests)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__state__diff)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__trace)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__utils)
+            opts="reverse-crc8"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__utils__reverse__crc8)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__write)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__write__raw)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -212,7 +442,7 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__utils__help)
-            opts="<SUBCOMMAND>..."
+            opts="reverse-crc8 help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -225,8 +455,36 @@ _eruption-debug-tool() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruption__debug__tool__utils__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__utils__help__reverse__crc8)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__debug__tool__utils__reverse__crc8)
-            opts="-h --help <DATA>..."
+            opts="-h --help [DATA]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

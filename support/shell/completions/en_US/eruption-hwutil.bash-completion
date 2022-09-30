@@ -8,33 +8,69 @@ _eruption-hwutil() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__hwutil"
                 ;;
-            blackout)
-                cmd+="__blackout"
+            eruption__hwutil,blackout)
+                cmd="eruption__hwutil__blackout"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__hwutil,completions)
+                cmd="eruption__hwutil__completions"
                 ;;
-            firmware)
-                cmd+="__firmware"
+            eruption__hwutil,firmware)
+                cmd="eruption__hwutil__firmware"
                 ;;
-            flash)
-                cmd+="__flash"
+            eruption__hwutil,help)
+                cmd="eruption__hwutil__help"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__hwutil,list)
+                cmd="eruption__hwutil__list"
                 ;;
-            info)
-                cmd+="__info"
+            eruption__hwutil,status)
+                cmd="eruption__hwutil__status"
                 ;;
-            list)
-                cmd+="__list"
+            eruption__hwutil__firmware,flash)
+                cmd="eruption__hwutil__firmware__flash"
                 ;;
-            status)
-                cmd+="__status"
+            eruption__hwutil__firmware,help)
+                cmd="eruption__hwutil__firmware__help"
+                ;;
+            eruption__hwutil__firmware,info)
+                cmd="eruption__hwutil__firmware__info"
+                ;;
+            eruption__hwutil__firmware__help,flash)
+                cmd="eruption__hwutil__firmware__help__flash"
+                ;;
+            eruption__hwutil__firmware__help,help)
+                cmd="eruption__hwutil__firmware__help__help"
+                ;;
+            eruption__hwutil__firmware__help,info)
+                cmd="eruption__hwutil__firmware__help__info"
+                ;;
+            eruption__hwutil__help,blackout)
+                cmd="eruption__hwutil__help__blackout"
+                ;;
+            eruption__hwutil__help,completions)
+                cmd="eruption__hwutil__help__completions"
+                ;;
+            eruption__hwutil__help,firmware)
+                cmd="eruption__hwutil__help__firmware"
+                ;;
+            eruption__hwutil__help,help)
+                cmd="eruption__hwutil__help__help"
+                ;;
+            eruption__hwutil__help,list)
+                cmd="eruption__hwutil__help__list"
+                ;;
+            eruption__hwutil__help,status)
+                cmd="eruption__hwutil__help__status"
+                ;;
+            eruption__hwutil__help__firmware,flash)
+                cmd="eruption__hwutil__help__firmware__flash"
+                ;;
+            eruption__hwutil__help__firmware,info)
+                cmd="eruption__hwutil__help__firmware__info"
                 ;;
             *)
                 ;;
@@ -43,7 +79,7 @@ _eruption-hwutil() {
 
     case "${cmd}" in
         eruption__hwutil)
-            opts="-h -V -v -r -c --help --version --verbose --repeat --config list status blackout firmware completions help"
+            opts="-v -r -c -h -V --verbose --repeat --config --help --version list status blackout firmware completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -79,7 +115,7 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -121,8 +157,50 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__firmware__help)
-            opts="<SUBCOMMAND>..."
+            opts="info flash help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__firmware__help__flash)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__firmware__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__firmware__help__info)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -149,8 +227,120 @@ _eruption-hwutil() {
             return 0
             ;;
         eruption__hwutil__help)
-            opts="<SUBCOMMAND>..."
+            opts="list status blackout firmware completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__blackout)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__firmware)
+            opts="info flash"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__firmware__flash)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__firmware__info)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__hwutil__help__status)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

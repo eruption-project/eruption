@@ -21,12 +21,12 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
 
     $completions = @(switch ($command) {
         'eruption-keymap' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available keymaps')
             [CompletionResult]::new('mapping', 'mapping', [CompletionResultType]::ParameterValue, 'Add or remove a single mapping entry')
             [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of the specified keymap')
@@ -56,13 +56,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
         'eruption-keymap;mapping;add' {
             [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Specify the device to add the rule for')
             [CompletionResult]::new('--device', 'device', [CompletionResultType]::ParameterName, 'Specify the device to add the rule for')
-            [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
-            [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
             [CompletionResult]::new('--description', 'description', [CompletionResultType]::ParameterName, 'Specify a description for a rule')
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'Specify a list of layers')
             [CompletionResult]::new('--layers', 'layers', [CompletionResultType]::ParameterName, 'Specify a list of layers')
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'The filename of the keymap')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'The filename of the keymap')
+            [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
+            [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
@@ -95,6 +95,26 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             break
         }
         'eruption-keymap;mapping;help' {
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a mapping rule for `source` that executes `action`')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove the mapping rule for `source`')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable a mapping rule')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable a mapping rule')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-keymap;mapping;help;add' {
+            break
+        }
+        'eruption-keymap;mapping;help;remove' {
+            break
+        }
+        'eruption-keymap;mapping;help;enable' {
+            break
+        }
+        'eruption-keymap;mapping;help;disable' {
+            break
+        }
+        'eruption-keymap;mapping;help;help' {
             break
         }
         'eruption-keymap;description' {
@@ -136,6 +156,58 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             break
         }
         'eruption-keymap;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available keymaps')
+            [CompletionResult]::new('mapping', 'mapping', [CompletionResultType]::ParameterValue, 'Add or remove a single mapping entry')
+            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of the specified keymap')
+            [CompletionResult]::new('show', 'show', [CompletionResultType]::ParameterValue, 'Show some information about a keymap')
+            [CompletionResult]::new('macros', 'macros', [CompletionResultType]::ParameterValue, 'Show a list of available macros in a Lua file')
+            [CompletionResult]::new('events', 'events', [CompletionResultType]::ParameterValue, 'Show a list of available Linux EVDEV events')
+            [CompletionResult]::new('compile', 'compile', [CompletionResultType]::ParameterValue, 'Compile a keymap to Lua code and make it available to Eruption')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-keymap;help;list' {
+            break
+        }
+        'eruption-keymap;help;mapping' {
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a mapping rule for `source` that executes `action`')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove the mapping rule for `source`')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable a mapping rule')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable a mapping rule')
+            break
+        }
+        'eruption-keymap;help;mapping;add' {
+            break
+        }
+        'eruption-keymap;help;mapping;remove' {
+            break
+        }
+        'eruption-keymap;help;mapping;enable' {
+            break
+        }
+        'eruption-keymap;help;mapping;disable' {
+            break
+        }
+        'eruption-keymap;help;description' {
+            break
+        }
+        'eruption-keymap;help;show' {
+            break
+        }
+        'eruption-keymap;help;macros' {
+            break
+        }
+        'eruption-keymap;help;events' {
+            break
+        }
+        'eruption-keymap;help;compile' {
+            break
+        }
+        'eruption-keymap;help;completions' {
+            break
+        }
+        'eruption-keymap;help;help' {
             break
         }
     })
