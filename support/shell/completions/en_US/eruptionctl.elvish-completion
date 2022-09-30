@@ -20,14 +20,14 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         &'eruptionctl'= {
             cand -c 'Sets the configuration file to use'
             cand --config 'Sets the configuration file to use'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand -r 'Repeat output until ctrl+c is pressed'
             cand --repeat 'Repeat output until ctrl+c is pressed'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
             cand config 'Configuration related sub-commands'
             cand color-schemes 'Define, import or delete a named color scheme'
             cand devices 'Get or set some device specific configuration parameters'
@@ -56,6 +56,15 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;config;help'= {
+            cand brightness 'Get or set the global brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;config;help;brightness'= {
+        }
+        &'eruptionctl;config;help;soundfx'= {
+        }
+        &'eruptionctl;config;help;help'= {
         }
         &'eruptionctl;color-schemes'= {
             cand -h 'Print help information'
@@ -91,8 +100,32 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;color-schemes;import;help'= {
+            cand pywal 'Import an existing Pywal color scheme'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;import;help;pywal'= {
+        }
+        &'eruptionctl;color-schemes;import;help;help'= {
         }
         &'eruptionctl;color-schemes;help'= {
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;help;list'= {
+        }
+        &'eruptionctl;color-schemes;help;add'= {
+        }
+        &'eruptionctl;color-schemes;help;remove'= {
+        }
+        &'eruptionctl;color-schemes;help;import'= {
+            cand pywal 'Import an existing Pywal color scheme'
+        }
+        &'eruptionctl;color-schemes;help;import;pywal'= {
+        }
+        &'eruptionctl;color-schemes;help;help'= {
         }
         &'eruptionctl;devices'= {
             cand -h 'Print help information'
@@ -150,6 +183,39 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;devices;help'= {
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+            cand profile 'Get or set the current profile (applicable for some devices)'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand rate 'Get or set the bus poll rate'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;devices;help;list'= {
+        }
+        &'eruptionctl;devices;help;info'= {
+        }
+        &'eruptionctl;devices;help;status'= {
+        }
+        &'eruptionctl;devices;help;brightness'= {
+        }
+        &'eruptionctl;devices;help;profile'= {
+        }
+        &'eruptionctl;devices;help;dpi'= {
+        }
+        &'eruptionctl;devices;help;rate'= {
+        }
+        &'eruptionctl;devices;help;debounce'= {
+        }
+        &'eruptionctl;devices;help;distance'= {
+        }
+        &'eruptionctl;devices;help;angle-snapping'= {
+        }
+        &'eruptionctl;devices;help;help'= {
         }
         &'eruptionctl;status'= {
             cand -h 'Print help information'
@@ -167,6 +233,15 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;status;help'= {
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;status;help;profile'= {
+        }
+        &'eruptionctl;status;help;slot'= {
+        }
+        &'eruptionctl;status;help;help'= {
         }
         &'eruptionctl;switch'= {
             cand -h 'Print help information'
@@ -184,6 +259,15 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;switch;help'= {
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;switch;help;profile'= {
+        }
+        &'eruptionctl;switch;help;slot'= {
+        }
+        &'eruptionctl;switch;help;help'= {
         }
         &'eruptionctl;profiles'= {
             cand -h 'Print help information'
@@ -206,6 +290,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;profiles;help'= {
+            cand info 'Show info about a profile'
+            cand edit 'Edit a profile'
+            cand list 'List available profiles'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;profiles;help;info'= {
+        }
+        &'eruptionctl;profiles;help;edit'= {
+        }
+        &'eruptionctl;profiles;help;list'= {
+        }
+        &'eruptionctl;profiles;help;help'= {
         }
         &'eruptionctl;names'= {
             cand -h 'Print help information'
@@ -228,6 +324,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;names;help'= {
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;names;help;list'= {
+        }
+        &'eruptionctl;names;help;set'= {
+        }
+        &'eruptionctl;names;help;set-all'= {
+        }
+        &'eruptionctl;names;help;help'= {
         }
         &'eruptionctl;scripts'= {
             cand -h 'Print help information'
@@ -250,6 +358,18 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;scripts;help'= {
+            cand info 'Show info about a script'
+            cand edit 'Edit a script'
+            cand list 'List available scripts'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;scripts;help;info'= {
+        }
+        &'eruptionctl;scripts;help;edit'= {
+        }
+        &'eruptionctl;scripts;help;list'= {
+        }
+        &'eruptionctl;scripts;help;help'= {
         }
         &'eruptionctl;param'= {
             cand -h 'Print help information'
@@ -260,6 +380,129 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help information'
         }
         &'eruptionctl;help'= {
+            cand config 'Configuration related sub-commands'
+            cand color-schemes 'Define, import or delete a named color scheme'
+            cand devices 'Get or set some device specific configuration parameters'
+            cand status 'Shows the currently active profile or slot'
+            cand switch 'Switch to a different profile or slot'
+            cand profiles 'Profile related sub-commands'
+            cand names 'Naming related commands such as renaming of profile slots'
+            cand scripts 'Script related sub-commands'
+            cand param 'Get or set script parameters on the currently active profile'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;help;config'= {
+            cand brightness 'Get or set the global brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+        }
+        &'eruptionctl;help;config;brightness'= {
+        }
+        &'eruptionctl;help;config;soundfx'= {
+        }
+        &'eruptionctl;help;color-schemes'= {
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+        }
+        &'eruptionctl;help;color-schemes;list'= {
+        }
+        &'eruptionctl;help;color-schemes;add'= {
+        }
+        &'eruptionctl;help;color-schemes;remove'= {
+        }
+        &'eruptionctl;help;color-schemes;import'= {
+            cand pywal 'Import an existing Pywal color scheme'
+        }
+        &'eruptionctl;help;color-schemes;import;pywal'= {
+        }
+        &'eruptionctl;help;devices'= {
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+            cand profile 'Get or set the current profile (applicable for some devices)'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand rate 'Get or set the bus poll rate'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+        }
+        &'eruptionctl;help;devices;list'= {
+        }
+        &'eruptionctl;help;devices;info'= {
+        }
+        &'eruptionctl;help;devices;status'= {
+        }
+        &'eruptionctl;help;devices;brightness'= {
+        }
+        &'eruptionctl;help;devices;profile'= {
+        }
+        &'eruptionctl;help;devices;dpi'= {
+        }
+        &'eruptionctl;help;devices;rate'= {
+        }
+        &'eruptionctl;help;devices;debounce'= {
+        }
+        &'eruptionctl;help;devices;distance'= {
+        }
+        &'eruptionctl;help;devices;angle-snapping'= {
+        }
+        &'eruptionctl;help;status'= {
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+        }
+        &'eruptionctl;help;status;profile'= {
+        }
+        &'eruptionctl;help;status;slot'= {
+        }
+        &'eruptionctl;help;switch'= {
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+        }
+        &'eruptionctl;help;switch;profile'= {
+        }
+        &'eruptionctl;help;switch;slot'= {
+        }
+        &'eruptionctl;help;profiles'= {
+            cand info 'Show info about a profile'
+            cand edit 'Edit a profile'
+            cand list 'List available profiles'
+        }
+        &'eruptionctl;help;profiles;info'= {
+        }
+        &'eruptionctl;help;profiles;edit'= {
+        }
+        &'eruptionctl;help;profiles;list'= {
+        }
+        &'eruptionctl;help;names'= {
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+        }
+        &'eruptionctl;help;names;list'= {
+        }
+        &'eruptionctl;help;names;set'= {
+        }
+        &'eruptionctl;help;names;set-all'= {
+        }
+        &'eruptionctl;help;scripts'= {
+            cand info 'Show info about a script'
+            cand edit 'Edit a script'
+            cand list 'List available scripts'
+        }
+        &'eruptionctl;help;scripts;info'= {
+        }
+        &'eruptionctl;help;scripts;edit'= {
+        }
+        &'eruptionctl;help;scripts;list'= {
+        }
+        &'eruptionctl;help;param'= {
+        }
+        &'eruptionctl;help;completions'= {
+        }
+        &'eruptionctl;help;help'= {
         }
     ]
     $completions[$command]

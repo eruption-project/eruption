@@ -8,15 +8,21 @@ _eruption-cmd() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__cmd"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__cmd,completions)
+                cmd="eruption__cmd__completions"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__cmd,help)
+                cmd="eruption__cmd__help"
+                ;;
+            eruption__cmd__help,completions)
+                cmd="eruption__cmd__help__completions"
+                ;;
+            eruption__cmd__help,help)
+                cmd="eruption__cmd__help__help"
                 ;;
             *)
                 ;;
@@ -25,7 +31,7 @@ _eruption-cmd() {
 
     case "${cmd}" in
         eruption__cmd)
-            opts="-h -V -v --help --version --verbose completions help"
+            opts="-v -h -V --verbose --help --version completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -39,7 +45,7 @@ _eruption-cmd() {
             return 0
             ;;
         eruption__cmd__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -53,8 +59,36 @@ _eruption-cmd() {
             return 0
             ;;
         eruption__cmd__help)
-            opts="<SUBCOMMAND>..."
+            opts="completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__cmd__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__cmd__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

@@ -17,12 +17,12 @@ _eruption-audio-proxy() {
     _arguments "${_arguments_options[@]}" \
 '-c+[Sets the configuration file to use]:CONFIG: ' \
 '--config=[Sets the configuration file to use]:CONFIG: ' \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '-V[Print version information]' \
 '--version[Print version information]' \
-'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 ":: :_eruption-audio-proxy_commands" \
 "*::: :->eruption-audio-proxy" \
 && ret=0
@@ -42,13 +42,36 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-':shell:' \
+':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'*::subcommand -- The subcommand whose help message to display:' \
+":: :_eruption-audio-proxy__help_commands" \
+"*::: :->help" \
 && ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-audio-proxy-help-command-$line[1]:"
+        case $line[1] in
+            (daemon)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
         esac
     ;;
@@ -69,15 +92,34 @@ _eruption-audio-proxy__completions_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-audio-proxy completions commands' commands "$@"
 }
+(( $+functions[_eruption-audio-proxy__help__completions_commands] )) ||
+_eruption-audio-proxy__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-audio-proxy help completions commands' commands "$@"
+}
 (( $+functions[_eruption-audio-proxy__daemon_commands] )) ||
 _eruption-audio-proxy__daemon_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-audio-proxy daemon commands' commands "$@"
 }
+(( $+functions[_eruption-audio-proxy__help__daemon_commands] )) ||
+_eruption-audio-proxy__help__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-audio-proxy help daemon commands' commands "$@"
+}
 (( $+functions[_eruption-audio-proxy__help_commands] )) ||
 _eruption-audio-proxy__help_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'daemon:Run in background' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
     _describe -t commands 'eruption-audio-proxy help commands' commands "$@"
+}
+(( $+functions[_eruption-audio-proxy__help__help_commands] )) ||
+_eruption-audio-proxy__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-audio-proxy help help commands' commands "$@"
 }
 
 _eruption-audio-proxy "$@"

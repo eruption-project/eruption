@@ -8,36 +8,84 @@ _eruption-process-monitor() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="eruption__process__monitor"
                 ;;
-            add)
-                cmd+="__add"
+            eruption__process__monitor,completions)
+                cmd="eruption__process__monitor__completions"
                 ;;
-            completions)
-                cmd+="__completions"
+            eruption__process__monitor,daemon)
+                cmd="eruption__process__monitor__daemon"
                 ;;
-            daemon)
-                cmd+="__daemon"
+            eruption__process__monitor,help)
+                cmd="eruption__process__monitor__help"
                 ;;
-            disable)
-                cmd+="__disable"
+            eruption__process__monitor,rules)
+                cmd="eruption__process__monitor__rules"
                 ;;
-            enable)
-                cmd+="__enable"
+            eruption__process__monitor__help,completions)
+                cmd="eruption__process__monitor__help__completions"
                 ;;
-            help)
-                cmd+="__help"
+            eruption__process__monitor__help,daemon)
+                cmd="eruption__process__monitor__help__daemon"
                 ;;
-            list)
-                cmd+="__list"
+            eruption__process__monitor__help,help)
+                cmd="eruption__process__monitor__help__help"
                 ;;
-            remove)
-                cmd+="__remove"
+            eruption__process__monitor__help,rules)
+                cmd="eruption__process__monitor__help__rules"
                 ;;
-            rules)
-                cmd+="__rules"
+            eruption__process__monitor__help__rules,add)
+                cmd="eruption__process__monitor__help__rules__add"
+                ;;
+            eruption__process__monitor__help__rules,disable)
+                cmd="eruption__process__monitor__help__rules__disable"
+                ;;
+            eruption__process__monitor__help__rules,enable)
+                cmd="eruption__process__monitor__help__rules__enable"
+                ;;
+            eruption__process__monitor__help__rules,list)
+                cmd="eruption__process__monitor__help__rules__list"
+                ;;
+            eruption__process__monitor__help__rules,remove)
+                cmd="eruption__process__monitor__help__rules__remove"
+                ;;
+            eruption__process__monitor__rules,add)
+                cmd="eruption__process__monitor__rules__add"
+                ;;
+            eruption__process__monitor__rules,disable)
+                cmd="eruption__process__monitor__rules__disable"
+                ;;
+            eruption__process__monitor__rules,enable)
+                cmd="eruption__process__monitor__rules__enable"
+                ;;
+            eruption__process__monitor__rules,help)
+                cmd="eruption__process__monitor__rules__help"
+                ;;
+            eruption__process__monitor__rules,list)
+                cmd="eruption__process__monitor__rules__list"
+                ;;
+            eruption__process__monitor__rules,remove)
+                cmd="eruption__process__monitor__rules__remove"
+                ;;
+            eruption__process__monitor__rules__help,add)
+                cmd="eruption__process__monitor__rules__help__add"
+                ;;
+            eruption__process__monitor__rules__help,disable)
+                cmd="eruption__process__monitor__rules__help__disable"
+                ;;
+            eruption__process__monitor__rules__help,enable)
+                cmd="eruption__process__monitor__rules__help__enable"
+                ;;
+            eruption__process__monitor__rules__help,help)
+                cmd="eruption__process__monitor__rules__help__help"
+                ;;
+            eruption__process__monitor__rules__help,list)
+                cmd="eruption__process__monitor__rules__help__list"
+                ;;
+            eruption__process__monitor__rules__help,remove)
+                cmd="eruption__process__monitor__rules__help__remove"
                 ;;
             *)
                 ;;
@@ -46,7 +94,7 @@ _eruption-process-monitor() {
 
     case "${cmd}" in
         eruption__process__monitor)
-            opts="-h -V -v -c --help --version --verbose --config daemon rules completions help"
+            opts="-v -c -h -V --verbose --config --help --version daemon rules completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -68,7 +116,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__completions)
-            opts="-h --help <SHELL>"
+            opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -96,8 +144,134 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__help)
-            opts="<SUBCOMMAND>..."
+            opts="daemon rules completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__completions)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__daemon)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules)
+            opts="list enable disable add remove"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__help__rules__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -124,7 +298,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__add)
-            opts="-h --help <RULE>..."
+            opts="-h --help [RULE]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -166,8 +340,92 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__help)
-            opts="<SUBCOMMAND>..."
+            opts="list enable disable add remove help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__process__monitor__rules__help__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

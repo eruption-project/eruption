@@ -18,12 +18,12 @@ set edit:completion:arg-completer[eruption-debug-tool] = {|@words|
     }
     var completions = [
         &'eruption-debug-tool'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand -h 'Print help information'
             cand --help 'Print help information'
             cand -V 'Print version information'
             cand --version 'Print version information'
-            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand list 'List available devices, use this first to find out the index of the device to use'
             cand report 'Generate a report for the specified device'
             cand trace 'Dump a trace of events originating from the specified device (May hang the device)'
@@ -84,12 +84,57 @@ set edit:completion:arg-completer[eruption-debug-tool] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-debug-tool;utils;help'= {
+            cand reverse-crc8 'Find CRC8 polynoms and init params by performing an exhaustive search'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-debug-tool;utils;help;reverse-crc8'= {
+        }
+        &'eruption-debug-tool;utils;help;help'= {
         }
         &'eruption-debug-tool;completions'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruption-debug-tool;help'= {
+            cand list 'List available devices, use this first to find out the index of the device to use'
+            cand report 'Generate a report for the specified device'
+            cand trace 'Dump a trace of events originating from the specified device (May hang the device)'
+            cand state-diff 'Read out the device state and show differences to previous state (May hang the device)'
+            cand read 'Read a single USB HID feature report from device'
+            cand write 'Send a single USB HID feature report to device (dangerous)'
+            cand read-raw 'Read data from device'
+            cand write-raw 'Send data to device (dangerous)'
+            cand run-tests 'Send a device specific init sequence and try to set colors'
+            cand utils 'Special utility functions, like searching for CRC polynoms and parameters'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-debug-tool;help;list'= {
+        }
+        &'eruption-debug-tool;help;report'= {
+        }
+        &'eruption-debug-tool;help;trace'= {
+        }
+        &'eruption-debug-tool;help;state-diff'= {
+        }
+        &'eruption-debug-tool;help;read'= {
+        }
+        &'eruption-debug-tool;help;write'= {
+        }
+        &'eruption-debug-tool;help;read-raw'= {
+        }
+        &'eruption-debug-tool;help;write-raw'= {
+        }
+        &'eruption-debug-tool;help;run-tests'= {
+        }
+        &'eruption-debug-tool;help;utils'= {
+            cand reverse-crc8 'Find CRC8 polynoms and init params by performing an exhaustive search'
+        }
+        &'eruption-debug-tool;help;utils;reverse-crc8'= {
+        }
+        &'eruption-debug-tool;help;completions'= {
+        }
+        &'eruption-debug-tool;help;help'= {
         }
     ]
     $completions[$command]
