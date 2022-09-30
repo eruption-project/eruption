@@ -957,7 +957,7 @@ impl DbusApi {
                     ),
             );
 
-        tree.set_registered(&*c_clone, true)
+        tree.set_registered(&c_clone, true)
             .unwrap_or_else(|e| error!("Could not register the tree: {}", e));
         c_clone.add_handler(tree);
 

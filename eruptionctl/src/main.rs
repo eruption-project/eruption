@@ -849,8 +849,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 if opts.verbose > 0 {
                     println!(
-                        "{}",
-                        r#"
+                        "
  Use the `eruptionctl devices list` sub-command to find out the index of the device that
  you want to operate on. All the other device-related commands require a device index.
 
@@ -865,7 +864,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     $ eruptionctl devices dpi 1
 
-"#
+"
                     );
                 }
 
@@ -1358,9 +1357,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 for config in config_params.iter() {
                                     // read param value
                                     let value = if config.get_value() == config.get_default() {
-                                        (&config.get_value()).to_string().normal()
+                                        config.get_value().to_string().normal()
                                     } else {
-                                        (&config.get_value()).to_string().bold()
+                                        config.get_value().to_string().bold()
                                     };
 
                                     println!(
@@ -1433,8 +1432,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             if scr.name == script {
                                 // set param value
                                 dbus_client::set_parameter(
-                                    &*profile.profile_file.to_string_lossy(),
-                                    &*scr.script_file.to_string_lossy(),
+                                    &profile.profile_file.to_string_lossy(),
+                                    &scr.script_file.to_string_lossy(),
                                     &parameter,
                                     &value,
                                 )?;
@@ -1476,8 +1475,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                                 // set param value
                                                 dbus_client::set_parameter(
-                                                    &*profile.profile_file.to_string_lossy(),
-                                                    &*script.script_file.to_string_lossy(),
+                                                    &profile.profile_file.to_string_lossy(),
+                                                    &script.script_file.to_string_lossy(),
                                                     &parameter,
                                                     value,
                                                 )?;
@@ -1575,7 +1574,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             "Switching to profile: {}",
                             profile_name.display().to_string().bold()
                         );
-                        switch_profile(&*profile_name.to_string_lossy())
+                        switch_profile(&profile_name.to_string_lossy())
                             .await
                             .wrap_err("Could not connect to the Eruption daemon")
                             .suggestion("Please verify that the Eruption daemon is running")?;

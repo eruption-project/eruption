@@ -191,7 +191,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
         debug!("Connecting to the Eruption audio proxy socket...");
 
         let socket = Socket::new(Domain::UNIX, Type::SEQPACKET, None)?;
-        let address = SockAddr::unix(&constants::AUDIO_SOCKET_NAME)?;
+        let address = SockAddr::unix(constants::AUDIO_SOCKET_NAME)?;
 
         match socket.connect(&address) {
             Ok(()) => {

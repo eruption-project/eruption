@@ -21,7 +21,7 @@ use std::{error::Error, process::Command};
 
 fn main() -> Result<(), Box<dyn Error + 'static>> {
     let output = Command::new("bash")
-        .args(&["-c", "../support/pkg/git-version.sh"])
+        .args(["-c", "../support/pkg/git-version.sh"])
         .output()
         .expect("Failed to execute command");
 

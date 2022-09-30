@@ -24,7 +24,7 @@ fn test_eruption_debug_tool_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-hotplug-helper"));
 
     let output = Command::new(&command)
-        .args(&["-V"])
+        .args(["-V"])
         .output()
         .expect("Failed to execute the test");
 

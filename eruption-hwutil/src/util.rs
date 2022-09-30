@@ -22,7 +22,7 @@ use std::fs;
 use crate::constants;
 
 pub fn is_eruption_daemon_running() -> bool {
-    let result = fs::read_to_string(&constants::PID_FILE);
+    let result = fs::read_to_string(constants::PID_FILE);
 
     // .map_err(|e| {
     //     eprintln!(

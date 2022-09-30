@@ -153,7 +153,7 @@ pub fn match_profile_path<P: AsRef<Path>>(profile_file: &P) -> Result<PathBuf> {
     .into());
 
     'DIR_LOOP: for dir in get_profile_dirs().iter() {
-        let profile_path = dir.join(&profile_file);
+        let profile_path = dir.join(profile_file);
 
         if let Ok(metadata) = fs::metadata(&profile_path) {
             if metadata.is_file() {
@@ -178,7 +178,7 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
     .into());
 
     'DIR_LOOP: for dir in get_script_dirs().iter() {
-        let script_path = dir.join(&script_file);
+        let script_path = dir.join(script_file);
 
         if let Ok(metadata) = fs::metadata(&script_path) {
             if metadata.is_file() {
