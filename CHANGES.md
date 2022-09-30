@@ -4,8 +4,11 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0 | __New Release__                                                                                                                                                                                                                                                     |
-| 0.3.0 | Bump MSRV to `1.64` |
+| 0.3.0 | __New Release__ |
+| 0.3.0 | Allow to configure the fade duration or to completely disable fade when switching profiles. Thanks to `Phen-ro` for implementing this! |
+| 0.3.0 | Update all dependencies to their latest releases |
+| 0.3.0 | New theme for the eruption CLI tools (help) output, provided by Clap v4 |
+| 0.3.0 | Bump MSRV to rustc `1.64` |
 | 0.2.0 | __New Release__                                                                                                                                                                                                                                                     |
 | 0.2.0 | Add support for named color-schemes |
 | 0.2.0 | Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
