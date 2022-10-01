@@ -65,7 +65,7 @@ pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
 /// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/rainbow-wave.profile";
+pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/rainbow-wave.profile";
 
 /// Notify the software watchdog every n milliseconds
 pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
