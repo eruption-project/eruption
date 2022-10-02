@@ -1,0 +1,64 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-macro] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-macro'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-macro'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+            cand record 'Show or set the description of a specified Lua function'
+            cand description 'Show or set the description of a specified Lua function'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-macro;record'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;description'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;completions'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;help'= {
+            cand record 'Show or set the description of a specified Lua function'
+            cand description 'Show or set the description of a specified Lua function'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-macro;help;record'= {
+        }
+        &'eruption-macro;help;description'= {
+        }
+        &'eruption-macro;help;completions'= {
+        }
+        &'eruption-macro;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

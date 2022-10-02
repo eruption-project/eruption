@@ -1216,6 +1216,55 @@ dependencies = [
 ]
 
 [[package]]
+name = "eruption-macro"
+version = "0.0.1"
+dependencies = [
+ "bitvec",
+ "cfg-if 1.0.0",
+ "chrono",
+ "clap 4.0.6",
+ "clap_complete",
+ "color-eyre",
+ "colored",
+ "comfy-table",
+ "ctrlc",
+ "dbus",
+ "dbus-tokio",
+ "evdev-rs",
+ "eyre",
+ "flume",
+ "hexdump",
+ "hidapi",
+ "i18n-embed",
+ "i18n-embed-fl",
+ "icecream",
+ "lazy_static",
+ "libc",
+ "log",
+ "maplit",
+ "mlua",
+ "nix 0.25.0",
+ "parking_lot",
+ "pest",
+ "pest_derive",
+ "pretty_assertions",
+ "pretty_env_logger",
+ "regex",
+ "rust-embed",
+ "serde",
+ "serde_json",
+ "serde_json_any_key",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "udev",
+ "unic-langid",
+ "walkdir",
+]
+
+[[package]]
 name = "eruption-netfx"
 version = "0.1.2"
 dependencies = [

@@ -39,6 +39,7 @@ do
     gen_completions "eruption-hwutil"
     gen_completions "eruption-debug-tool"
     # gen_completions "eruption-gui"
+    gen_completions "eruption-macro"
     gen_completions "eruption-keymap"
     gen_completions "eruption-netfx"
     gen_completions "eruption-audio-proxy"
