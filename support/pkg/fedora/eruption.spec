@@ -2,7 +2,7 @@
 %global ShortName eruption
 
 Name:    eruption
-Version: 0.2.0
+Version: 0.3.0
 Release: 0%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
@@ -95,6 +95,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-hwutil.8 %{
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/process-monitor.conf.5 %{buildroot}/%{_mandir}/man5/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruptionctl.1 %{buildroot}/%{_mandir}/man1/
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-macro.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-keymap.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-netfx.1 %{buildroot}/%{_mandir}/man1/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-audio-proxy.1 %{buildroot}/%{_mandir}/man1/
@@ -102,6 +103,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/man/eruption-process-mon
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-debug-tool.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-debug-tool
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-cmd.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-cmd
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-hwutil.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-hwutil
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-macro.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-macro
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-keymap.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-keymap
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-netfx.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-netfx
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-audio-proxy.bash-completion %{buildroot}/%{_datarootdir}/bash-completion/completions/eruption-audio-proxy
@@ -110,6 +112,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-debug-tool.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-debug-tool.fish
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-cmd.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-cmd.fish
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-hwutil.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-hwutil.fish
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-macro.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-macro.fish
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-keymap.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-keymap.fish
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-netfx.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-netfx.fish
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-audio-proxy.fish-completion %{buildroot}/%{_datarootdir}/fish/completions/eruption-audio-proxy.fish
@@ -118,6 +121,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-debug-tool.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-cmd.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-cmd
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-hwutil.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-hwutil
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-macro.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-macro
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-keymap.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-keymap
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-netfx.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-netfx
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/eruption-audio-proxy.zsh-completion %{buildroot}/%{_datarootdir}/zsh/site-functions/_eruption-audio-proxy
@@ -222,6 +226,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruptionctl %{buildroot}/%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-cmd %{buildroot}/%{_bindir}/eruption-cmd
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-hwutil %{buildroot}/%{_bindir}/eruption-hwutil
+install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-macro%{buildroot}/%{_bindir}/eruption-macro
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-keymap%{buildroot}/%{_bindir}/eruption-keymap
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-netfx %{buildroot}/%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-util %{buildroot}/%{_bindir}/eruption-util
@@ -252,6 +257,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %doc %{_mandir}/man8/eruption-cmd.8.gz
 %doc %{_mandir}/man8/eruption-hwutil.8.gz
 %doc %{_mandir}/man1/eruptionctl.1.gz
+%doc %{_mandir}/man1/eruption-macro.1.gz
 %doc %{_mandir}/man1/eruption-keymap.1.gz
 %doc %{_mandir}/man1/eruption-netfx.1.gz
 %doc %{_mandir}/man1/eruption-audio-proxy.1.gz
@@ -270,6 +276,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_bindir}/eruptionctl
 %{_bindir}/eruption-cmd
 %{_bindir}/eruption-hwutil
+%{_bindir}/eruption-macro
 %{_bindir}/eruption-keymap
 %{_bindir}/eruption-netfx
 %{_bindir}/eruption-util
@@ -292,6 +299,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd
 %{_datarootdir}/bash-completion/completions/eruption-hwutil
+%{_datarootdir}/bash-completion/completions/eruption-macro
 %{_datarootdir}/bash-completion/completions/eruption-keymap
 %{_datarootdir}/bash-completion/completions/eruption-netfx
 %{_datarootdir}/bash-completion/completions/eruption-audio-proxy
@@ -300,6 +308,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/fish/completions/eruption-debug-tool.fish
 %{_datarootdir}/fish/completions/eruption-cmd.fish
 %{_datarootdir}/fish/completions/eruption-hwutil.fish
+%{_datarootdir}/fish/completions/eruption-macro.fish
 %{_datarootdir}/fish/completions/eruption-keymap.fish
 %{_datarootdir}/fish/completions/eruption-netfx.fish
 %{_datarootdir}/fish/completions/eruption-audio-proxy.fish
@@ -308,6 +317,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/zsh/site-functions/_eruption-debug-tool
 %{_datarootdir}/zsh/site-functions/_eruption-cmd
 %{_datarootdir}/zsh/site-functions/_eruption-hwutil
+%{_datarootdir}/zsh/site-functions/_eruption-macro
 %{_datarootdir}/zsh/site-functions/_eruption-keymap
 %{_datarootdir}/zsh/site-functions/_eruption-netfx
 %{_datarootdir}/zsh/site-functions/_eruption-audio-proxy

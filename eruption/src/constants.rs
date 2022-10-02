@@ -29,6 +29,9 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
 /// Default script directory
+pub const DEFAULT_MACRO_DIR: &str = "/usr/share/eruption/scripts/lib/macros";
+
+/// Default script directory
 pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
 
 /// The `/run/eruption/` directory

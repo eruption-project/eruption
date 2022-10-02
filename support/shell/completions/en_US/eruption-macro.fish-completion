@@ -1,0 +1,16 @@
+complete -c eruption-macro -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
+complete -c eruption-macro -n "__fish_use_subcommand" -s h -l help -d 'Print help information'
+complete -c eruption-macro -n "__fish_use_subcommand" -s V -l version -d 'Print version information'
+complete -c eruption-macro -n "__fish_use_subcommand" -f -a "record" -d 'Show or set the description of a specified Lua function'
+complete -c eruption-macro -n "__fish_use_subcommand" -f -a "description" -d 'Show or set the description of a specified Lua function'
+complete -c eruption-macro -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
+complete -c eruption-macro -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c eruption-macro -n "__fish_seen_subcommand_from record" -s l -l lua-file -r -F
+complete -c eruption-macro -n "__fish_seen_subcommand_from record" -s h -l help -d 'Print help information'
+complete -c eruption-macro -n "__fish_seen_subcommand_from description" -s l -l lua-file -r -F
+complete -c eruption-macro -n "__fish_seen_subcommand_from description" -s h -l help -d 'Print help information'
+complete -c eruption-macro -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help information'
+complete -c eruption-macro -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from record; and not __fish_seen_subcommand_from description; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from help" -f -a "record" -d 'Show or set the description of a specified Lua function'
+complete -c eruption-macro -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from record; and not __fish_seen_subcommand_from description; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from help" -f -a "description" -d 'Show or set the description of a specified Lua function'
+complete -c eruption-macro -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from record; and not __fish_seen_subcommand_from description; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from help" -f -a "completions" -d 'Generate shell completions'
+complete -c eruption-macro -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from record; and not __fish_seen_subcommand_from description; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
