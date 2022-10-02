@@ -926,6 +926,7 @@ dependencies = [
  "rayon",
  "rust-embed",
  "rustfft",
+ "same-file",
  "serde",
  "serde_json",
  "serialport",

@@ -71,12 +71,6 @@ function on_quit()
     store_key_histogram(key_histogram_errors, "key_histogram_errors")
 end
 
-function on_apply_parameter(parameter, value)
-    local update_fn = load("" .. parameter .. " = " .. value)
-
-    update_fn()
-end
-
 function on_key_down(key_index)
     trace("Statistics: Key down: " .. key_index)
 

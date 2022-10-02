@@ -35,16 +35,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum ManifestError {
     #[error("Could not open file for reading")]
-    OpenError {},
+    OpenError,
 
     #[error("Could not parse manifest file")]
-    ParseError {},
+    ParseError,
 
     #[error("Could not enumerate script files")]
-    ScriptEnumerationError {},
+    ScriptEnumerationError,
 
     #[error("Could not parse a param value")]
-    ParseParamError {},
+    ParseParamError,
 }
 
 fn default_script_file() -> PathBuf {
@@ -93,86 +93,73 @@ pub trait ParseConfig {
 
 impl ParseConfig for Vec<ConfigParam> {
     fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam> {
-        for p in self.iter() {
-            match &p {
-                ConfigParam::Int { name, default, .. } => {
-                    if name == param {
-                        let value =
-                            i64::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
+        let config_param = self
+            .iter()
+            .find(|config_param| config_param.get_name() == param)
+            .ok_or(ManifestError::ParseParamError)?;
 
-                        return Ok(profiles::ConfigParam::Int {
-                            name: name.to_string(),
-                            value,
-                            default: *default,
-                        });
-                    }
-                }
+        match &config_param {
+            ConfigParam::Int { name, default, .. } => {
+                let value = i64::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
 
-                ConfigParam::Float { name, default, .. } => {
-                    if name == param {
-                        let value =
-                            f64::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
+                Ok(profiles::ConfigParam::Int {
+                    name: name.to_string(),
+                    value,
+                    default: *default,
+                })
+            }
 
-                        return Ok(profiles::ConfigParam::Float {
-                            name: name.to_string(),
-                            value,
-                            default: *default,
-                        });
-                    }
-                }
+            ConfigParam::Float { name, default, .. } => {
+                let value = f64::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
 
-                ConfigParam::Bool { name, default, .. } => {
-                    if name == param {
-                        let value =
-                            bool::from_str(val).map_err(|_e| ManifestError::ParseParamError {})?;
+                Ok(profiles::ConfigParam::Float {
+                    name: name.to_string(),
+                    value,
+                    default: *default,
+                })
+            }
 
-                        return Ok(profiles::ConfigParam::Bool {
-                            name: name.to_string(),
-                            value,
-                            default: *default,
-                        });
-                    }
-                }
+            ConfigParam::Bool { name, default, .. } => {
+                let value = bool::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
 
-                ConfigParam::String { name, default, .. } => {
-                    if name == param {
-                        let value = val.to_owned();
+                Ok(profiles::ConfigParam::Bool {
+                    name: name.to_string(),
+                    value,
+                    default: *default,
+                })
+            }
 
-                        return Ok(profiles::ConfigParam::String {
-                            name: name.to_string(),
-                            value,
-                            default: default.to_owned(),
-                        });
-                    }
-                }
+            ConfigParam::String { name, default, .. } => {
+                let value = val.to_owned();
 
-                ConfigParam::Color { name, default, .. } => {
-                    if name == param {
-                        if &val[0..1] == "#" {
-                            let value = u32::from_str_radix(&val[1..], 16)
-                                .map_err(|_e| ManifestError::ParseParamError {})?;
+                Ok(profiles::ConfigParam::String {
+                    name: name.to_string(),
+                    value,
+                    default: default.to_owned(),
+                })
+            }
 
-                            return Ok(profiles::ConfigParam::Color {
-                                name: name.to_string(),
-                                value,
-                                default: *default,
-                            });
-                        } else {
-                            let value = u32::from_str(val)
-                                .map_err(|_e| ManifestError::ParseParamError {})?;
+            ConfigParam::Color { name, default, .. } => {
+                if &val[0..1] == "#" {
+                    let value = u32::from_str_radix(&val[1..], 16)
+                        .map_err(|_e| ManifestError::ParseParamError)?;
 
-                            return Ok(profiles::ConfigParam::Color {
-                                name: name.to_string(),
-                                value,
-                                default: *default,
-                            });
-                        }
-                    }
+                    Ok(profiles::ConfigParam::Color {
+                        name: name.to_string(),
+                        value,
+                        default: *default,
+                    })
+                } else {
+                    let value = u32::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
+
+                    Ok(profiles::ConfigParam::Color {
+                        name: name.to_string(),
+                        value,
+                        default: *default,
+                    })
                 }
             }
         }
-
-        Err(ManifestError::ParseParamError {}.into())
     }
 }
 
