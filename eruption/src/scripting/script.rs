@@ -35,13 +35,15 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::vec::Vec;
 
-use crate::constants;
-use crate::hwdevices::KeyboardHidEvent;
-use crate::hwdevices::MouseHidEvent;
-use crate::hwdevices::RGBA;
-use crate::plugin_manager;
-use crate::profiles::Profile;
-use crate::scripting::manifest::{ConfigParam, Manifest};
+use crate::{
+    constants,
+    hwdevices::KeyboardHidEvent,
+    hwdevices::MouseHidEvent,
+    hwdevices::RGBA,
+    plugin_manager,
+    profiles::{self, FindConfig, Profile},
+    scripting::manifest::{self, Manifest},
+};
 
 use crate::ACTIVE_SCRIPTS;
 
@@ -75,8 +77,7 @@ pub enum Message {
     RealizeColorMap,
 
     SetParameter {
-        param_name: String,
-        value: String,
+        parameter_value: ParameterValue,
     },
 }
 
@@ -137,6 +138,91 @@ impl std::error::Error for UnknownError {}
 impl fmt::Display for UnknownError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Unknown error occurred")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct ParameterValue {
+    name: String,
+    value: TypedValue,
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub enum TypedValue {
+    Int(i64),
+    Float(f64),
+    Bool(bool),
+    String(String),
+    Color(u32),
+}
+
+impl ParameterValue {
+    fn get_value_string(&self) -> String {
+        match &self.value {
+            TypedValue::Int(value) => format!("{}", value),
+            TypedValue::Float(value) => format!("{}", value),
+            TypedValue::Bool(value) => format!("{}", value),
+            TypedValue::String(value) => format!("{}", value),
+            TypedValue::Color(value) => format!("#{:06x}", value),
+        }
+    }
+}
+
+pub trait ToParameterValue {
+    fn to_parameter_value(&self) -> ParameterValue;
+}
+
+impl ToParameterValue for profiles::ConfigParam {
+    fn to_parameter_value(&self) -> ParameterValue {
+        match &self {
+            profiles::ConfigParam::Int { name, value, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Int(*value),
+            },
+            profiles::ConfigParam::Float { name, value, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Float(*value),
+            },
+            profiles::ConfigParam::Bool { name, value, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Bool(*value),
+            },
+            profiles::ConfigParam::String { name, value, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::String(value.to_string()),
+            },
+            profiles::ConfigParam::Color { name, value, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Color(*value),
+            },
+        }
+    }
+}
+
+impl ToParameterValue for manifest::ConfigParam {
+    fn to_parameter_value(&self) -> ParameterValue {
+        match &self {
+            manifest::ConfigParam::Int { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Int(*default),
+            },
+            manifest::ConfigParam::Float { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Float(*default),
+            },
+            manifest::ConfigParam::Bool { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Bool(*default),
+            },
+            manifest::ConfigParam::String { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::String(default.to_string()),
+            },
+            manifest::ConfigParam::Color { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Color(*default),
+            },
+        }
     }
 }
 
@@ -1367,47 +1453,45 @@ pub fn run_script(
                             }
                         }
 
-                        Message::SetParameter { param_name, value } => {
-                            let mut errors_present = false;
+                        Message::SetParameter { parameter_value } => {
+                            let set = set_config_param(&lua_ctx, &parameter_value);
+                            match set {
+                                Ok(_) => {
+                                    debug!(
+                                        "Lua script {}: Successfully applied parameter",
+                                        file.to_string_lossy(),
+                                    );
 
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_apply_parameter")
-                            {
-                                // the script declared an "on_apply_parameter" function
-                                handler
-                                    .call::<_, ()>((param_name, value))
-                                    .unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error in file {}: {}\n\t{:?}",
-                                            file.to_string_lossy(),
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    })
-                            } else {
-                                // no special handling available in the script, so we just inject the parameter
-                                lua_ctx
-                                    .load(&format!("{} = {}", param_name, value))
-                                    .exec()
-                                    .unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error in file {}: {}\n\t{:?}",
-                                            file.to_string_lossy(),
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    });
-                            }
-
-                            if errors_present {
-                                error!("Lua script {}: Could not apply parameter", file.display());
-                            } else {
-                                debug!(
-                                    "Lua script {}: Successfully applied parameter",
-                                    file.display()
-                                );
+                                    if let Ok(handler) =
+                                        lua_ctx.globals().get::<_, Function>("on_apply_parameter")
+                                    {
+                                        // the script declared an "on_apply_parameter" function
+                                        let called = handler.call::<_, ()>((
+                                            &*parameter_value.name,
+                                            &*parameter_value.get_value_string(),
+                                        ));
+                                        match called {
+                                            Ok(()) => debug!(
+                                                    "Lua script {}: Successfully called on_apply_parameter",
+                                                    file.to_string_lossy(),
+                                                ),
+                                            Err(e) => error!(
+                                                "Lua error in file {}: {}\n\t{:?}",
+                                                file.to_string_lossy(),
+                                                e,
+                                                e.source().unwrap_or(&UnknownError {})
+                                            ),
+                                        };
+                                    }
+                                }
+                                Err(e) => {
+                                    error!(
+                                        "Could not set parameter in {}: {}\n\t{:?}",
+                                        file.to_string_lossy(),
+                                        e,
+                                        e.source().unwrap_or(&UnknownError {})
+                                    );
+                                }
                             }
                         }
                     }
@@ -1777,94 +1861,44 @@ fn register_script_config(
 ) -> mlua::Result<()> {
     let script_name = &manifest.name;
 
-    let globals = lua_ctx.globals();
     if let Some(config) = &manifest.config {
         for param in config.iter() {
             debug!("Applying parameter {:?}", param);
 
-            match param {
-                ConfigParam::Int { name, default, .. } => {
-                    if let Some(profile) = profile {
-                        if let Some(val) = profile.get_int_value(script_name, name) {
-                            globals.raw_set::<&str, i64>(name, *val)?;
-                        } else {
-                            debug!("Parameter is undefined, using defaults from script manifest");
-
-                            globals.raw_set::<&str, i64>(name, *default)?;
-                        }
-                    } else {
-                        warn!("Active profile is undefined, using config parameters from script manifest");
-
-                        globals.raw_set::<&str, i64>(name, *default)?;
-                    }
+            let parameter_value = param.to_parameter_value(); // config default
+            let parameter_value = match profile {
+                Some(profile) => profile
+                    .config
+                    .as_ref()
+                    .and_then(|c| c.get(script_name))
+                    .and_then(|v| v.find_config_param(&parameter_value.name))
+                    .and_then(|cp| Some(cp.to_parameter_value()))
+                    .unwrap_or_else(|| {
+                        debug!("Parameter is undefined, using defaults from script manifest");
+                        parameter_value
+                    }),
+                None => {
+                    warn!(
+                        "Active profile is undefined, using config parameters from script manifest"
+                    );
+                    parameter_value
                 }
+            };
 
-                ConfigParam::Float { name, default, .. } => {
-                    if let Some(profile) = profile {
-                        if let Some(val) = profile.get_float_value(script_name, name) {
-                            globals.raw_set::<&str, f64>(name, *val)?;
-                        } else {
-                            debug!("Parameter is undefined, using defaults from script manifest");
-
-                            globals.raw_set::<&str, f64>(name, *default)?;
-                        }
-                    } else {
-                        warn!("Active profile is undefined, using config parameters from script manifest");
-
-                        globals.raw_set::<&str, f64>(name, *default)?;
-                    }
-                }
-
-                ConfigParam::Bool { name, default, .. } => {
-                    if let Some(profile) = profile {
-                        if let Some(val) = profile.get_bool_value(script_name, name) {
-                            globals.raw_set::<&str, bool>(name, *val)?;
-                        } else {
-                            debug!("Parameter is undefined, using defaults from script manifest");
-
-                            globals.raw_set::<&str, bool>(name, *default)?;
-                        }
-                    } else {
-                        warn!("Active profile is undefined, using config parameters from script manifest");
-
-                        globals.raw_set::<&str, bool>(name, *default)?;
-                    }
-                }
-
-                ConfigParam::String { name, default, .. } => {
-                    if let Some(profile) = profile {
-                        if let Some(val) = profile.get_string_value(script_name, name) {
-                            globals.raw_set::<&str, &str>(name, val)?;
-                        } else {
-                            debug!("Parameter is undefined, using defaults from script manifest");
-
-                            globals.raw_set::<&str, &str>(name, default)?;
-                        }
-                    } else {
-                        warn!("Active profile is undefined, using config parameters from script manifest");
-
-                        globals.raw_set::<&str, &str>(name, default)?;
-                    }
-                }
-
-                ConfigParam::Color { name, default, .. } => {
-                    if let Some(profile) = profile {
-                        if let Some(val) = profile.get_color_value(script_name, name) {
-                            globals.raw_set::<&str, u32>(name, *val)?;
-                        } else {
-                            debug!("Parameter is undefined, using defaults from script manifest");
-
-                            globals.raw_set::<&str, u32>(name, *default)?;
-                        }
-                    } else {
-                        warn!("Active profile is undefined, using config parameters from script manifest");
-
-                        globals.raw_set::<&str, u32>(name, *default)?;
-                    }
-                }
-            }
+            set_config_param(lua_ctx, &parameter_value)?;
         }
     }
 
     Ok(())
+}
+
+fn set_config_param(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
+    let globals = lua_ctx.globals();
+    match &param.value {
+        TypedValue::Int(value) => globals.raw_set::<&str, i64>(&param.name, *value),
+        TypedValue::Float(value) => globals.raw_set::<&str, f64>(&param.name, *value),
+        TypedValue::Bool(value) => globals.raw_set::<&str, bool>(&param.name, *value),
+        TypedValue::String(value) => globals.raw_set::<&str, &str>(&param.name, value),
+        TypedValue::Color(value) => globals.raw_set::<&str, u32>(&param.name, *value),
+    }
 }

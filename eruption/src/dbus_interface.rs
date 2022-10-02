@@ -24,15 +24,19 @@ use dbus_tree::{
 };
 use flume::Sender;
 use log::*;
+use same_file::is_same_file;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::{color_scheme::ColorScheme, scripting::manifest::ParseConfig};
-use crate::{constants, plugins};
-use crate::{hwdevices, profiles};
-use crate::{plugins::audio, scripting::manifest};
-use crate::{profiles::FindConfig, script};
+use crate::{
+    color_scheme::ColorScheme,
+    constants, hwdevices,
+    plugins::{self, audio},
+    profiles::{self, FindConfig},
+    script::{self, ToParameterValue},
+    scripting::{manifest, manifest::ParseConfig},
+};
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -1166,12 +1170,41 @@ fn apply_parameter(
     let profile_path = PathBuf::from(&profile_file);
     let script_path = PathBuf::from(&script_file);
 
+    let manifest = manifest::Manifest::from(&script_path)?;
+    let config_param = manifest
+        .config
+        .unwrap_or_default()
+        .parse_config_param(param_name, value)?;
+
+    let mut need_to_reload_profile = true;
+    {
+        if let Some(active_profile) = &*crate::ACTIVE_PROFILE.lock() {
+            if is_same_file(&active_profile.profile_file, &profile_path).unwrap_or(false) {
+                let lua_txs = crate::LUA_TXS.read();
+                let lua_tx = lua_txs
+                    .iter()
+                    .find(|&lua_tx| lua_tx.script_file == script_path);
+
+                if let Some(lua_tx) = lua_tx {
+                    let sent = lua_tx.send(script::Message::SetParameter {
+                        parameter_value: config_param.to_parameter_value(),
+                    });
+
+                    match sent {
+                        Ok(()) => need_to_reload_profile = false,
+                        Err(_) => {
+                            eprintln!("Could not update parameter via DBUS.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // modify persistent profile state
     match profiles::Profile::from(&profile_path) {
         Ok(mut profile) => {
             assert!(profile.config.is_some());
-
-            let manifest = manifest::Manifest::from(&script_path)?;
 
             let profile_config = profile.config.as_mut().unwrap();
             let profile_config = profile_config
@@ -1183,16 +1216,12 @@ fn apply_parameter(
                 profile_config.retain(|elem| elem != param);
             }
 
-            profile_config.push(
-                manifest
-                    .config
-                    .unwrap_or_default()
-                    .parse_config_param(param_name, value)?,
-            );
-
+            profile_config.push(config_param);
             profile.save_params()?;
 
-            crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+            if need_to_reload_profile {
+                crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+            }
         }
 
         Err(e) => {
