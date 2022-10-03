@@ -76,7 +76,7 @@ colorgrad = "0.6.1"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 palette = "0.6.1"
 nalgebra = "0.31.1"
-noise = "0.7.0"
+noise = "0.8.0"
 simdnoise = "3.1.6"
 #lua-src = "544.0.1"
 #mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
