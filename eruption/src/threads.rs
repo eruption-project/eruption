@@ -21,17 +21,18 @@ use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
 use log::{debug, error, info, trace, warn};
+use std::collections::HashMap;
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
 use crate::{
-    constants, dbus_interface, hwdevices, macros, plugins, script, sdk_support, uleds, util,
-    DeviceAction, EvdevError, KeyboardDevice, MainError, MouseDevice, Profile,
-    COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES, LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA,
-    SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
+    constants, dbus_interface, hwdevices, macros, plugins, script,
+    scripting::script::ParameterValue, sdk_support, uleds, DeviceAction, EvdevError,
+    KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
+    LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
 };
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -660,48 +661,35 @@ pub fn spawn_misc_input_thread(
 pub fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
-    script_path: PathBuf,
-    profile: Option<Profile>,
+    script_file: &Path,
+    parameter_values: &[ParameterValue],
 ) -> Result<()> {
-    info!("Loading Lua script: {}", &script_path.display());
-
-    let result = util::is_file_accessible(&script_path);
-    if let Err(result) = result {
-        error!(
-            "Script file {} is not accessible: {}",
-            script_path.display(),
-            result
-        );
-
-        return Err(MainError::ScriptExecError {}.into());
-    }
-
-    let result = util::is_file_accessible(util::get_manifest_for(&script_path));
-    if let Err(result) = result {
-        error!(
-            "Manifest file for script {} is not accessible: {}",
-            script_path.display(),
-            result
-        );
-
-        return Err(MainError::ScriptExecError {}.into());
-    }
+    info!("Loading Lua script: {}", script_file.display());
 
     let builder = thread::Builder::new().name(format!(
         "{}:{}",
         thread_idx,
-        script_path.file_name().unwrap().to_string_lossy(),
+        script_file.file_name().unwrap().to_string_lossy(),
     ));
+
+    let script_file = script_file.to_path_buf();
+    let mut parameter_values: HashMap<String, ParameterValue> = parameter_values
+        .iter()
+        .map(|pv| (pv.name.clone(), pv.clone()))
+        .collect();
 
     builder.spawn(move || -> Result<()> {
         #[cfg(feature = "profiling")]
         coz::thread_init();
 
-        #[allow(clippy::never_loop)]
         loop {
-            let result = script::run_script(script_path.clone(), profile, &lua_rx);
+            let result = script::run_script(&script_file, &mut parameter_values, &lua_rx);
 
             match result {
+                Ok(script::RunScriptResult::RestartScript) => {
+                    debug!("Restarting script {}", script_file.to_string_lossy());
+                }
+
                 Ok(script::RunScriptResult::TerminatedGracefully) => return Ok(()),
 
                 Ok(script::RunScriptResult::TerminatedWithErrors) => {
@@ -989,7 +977,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                         // calculate and log fps each second
                         if fps_timer.elapsed().as_millis() >= 1000 {
-                            debug!("FPS: {}", fps_counter);
+                            trace!("FPS: {}", fps_counter);
 
                             fps_timer = Instant::now();
                             fps_counter = 0;

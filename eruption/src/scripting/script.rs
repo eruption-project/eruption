@@ -17,35 +17,26 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use callbacks::CallbacksError;
 use flume::Receiver;
 use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
-use rand::Rng;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::vec::Vec;
 
 use crate::{
-    constants,
-    hwdevices::KeyboardHidEvent,
-    hwdevices::MouseHidEvent,
-    hwdevices::RGBA,
-    plugin_manager,
-    profiles::{self, FindConfig, Profile},
-    scripting::manifest::{self, Manifest},
+    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA, profiles,
+    scripting::callbacks, scripting::constants::*, scripting::manifest,
 };
-
-use crate::ACTIVE_SCRIPTS;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -123,11 +114,11 @@ pub enum ScriptingError {
     #[error("Could not read script file")]
     OpenError {},
 
-    #[error("Invalid or inaccessible manifest file")]
-    InaccessibleManifest {},
-
     #[error("Invalid value")]
     ValueError {},
+
+    #[error("Error invoking handler function")]
+    HandlerError {},
 }
 
 #[derive(Debug)]
@@ -143,8 +134,8 @@ impl fmt::Display for UnknownError {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ParameterValue {
-    name: String,
-    value: TypedValue,
+    pub name: String,
+    pub value: TypedValue,
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
@@ -226,701 +217,6 @@ impl ToParameterValue for manifest::ConfigParam {
     }
 }
 
-/// These functions are intended to be used from within Lua scripts
-mod callbacks {
-    use byteorder::{ByteOrder, LittleEndian};
-    use log::*;
-    use noise::{NoiseFn, Seedable};
-    use palette::convert::FromColor;
-    use palette::{Hsl, Srgb};
-    use std::convert::TryFrom;
-    use std::sync::atomic::Ordering;
-    use std::time::Duration;
-    use std::{cell::RefCell, thread};
-
-    use super::{LED_MAP, LOCAL_LED_MAP, LOCAL_LED_MAP_MODIFIED};
-
-    use crate::plugins::macros;
-    use crate::{constants, hwdevices::RGBA};
-
-    pub type Result<T> = std::result::Result<T, eyre::Error>;
-
-    #[derive(Debug, Clone, thiserror::Error)]
-    pub enum CallbacksError {
-        #[error("Invalid handle supplied")]
-        InvalidHandle {},
-
-        #[error("Could not parse param value")]
-        ParseParamError {},
-    }
-
-    fn seed() -> u32 {
-        use std::time::{SystemTime, UNIX_EPOCH};
-
-        let start = SystemTime::now();
-        let since_the_epoch = start
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-
-        since_the_epoch.as_millis() as u32
-    }
-
-    thread_local! {
-        pub static PERLIN_NOISE: RefCell<noise::Perlin> = {
-            let noise = noise::Perlin::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static BILLOW_NOISE: RefCell<noise::Billow> = {
-            let noise = noise::Billow::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static VORONOI_NOISE: RefCell<noise::Worley> = {
-            let noise = noise::Worley::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static RIDGED_MULTIFRACTAL_NOISE: RefCell<noise::RidgedMulti> = {
-            let noise = noise::RidgedMulti::new();
-
-            // noise.octaves = 6;
-            // noise.frequency = 2.0; // default: 1.0
-            // noise.lacunarity = std::f64::consts::PI * 2.0 / 3.0;
-            // noise.persistence = 1.0;
-            // noise.attenuation = 4.0; // default: 2.0
-
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static FBM_NOISE: RefCell<noise::Fbm> = {
-            let noise = noise::Fbm::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static OPEN_SIMPLEX_NOISE: RefCell<noise::OpenSimplex> = {
-            let noise = noise::OpenSimplex::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-
-        pub static SUPER_SIMPLEX_NOISE: RefCell<noise::SuperSimplex> = {
-            let noise = noise::SuperSimplex::new();
-            RefCell::new(noise.set_seed(seed()))
-        };
-    }
-
-    /// Log a message with severity level `trace`.
-    pub(crate) fn log_trace(x: &str) {
-        trace!("{}", x);
-    }
-
-    /// Log a message with severity level `debug`.
-    pub(crate) fn log_debug(x: &str) {
-        debug!("{}", x);
-    }
-
-    /// Log a message with severity level `info`.
-    pub(crate) fn log_info(x: &str) {
-        info!("{}", x);
-    }
-
-    /// Log a message with severity level `warn`.
-    pub(crate) fn log_warn(x: &str) {
-        warn!("{}", x);
-    }
-
-    /// Log a message with severity level `error`.
-    pub(crate) fn log_error(x: &str) {
-        error!("{}", x);
-    }
-
-    /// Delays the execution of the lua script by `millis` milliseconds.
-    pub(crate) fn delay(millis: u64) {
-        // TODO: This will totally block the Lua VM, so not very useful currently.
-        thread::sleep(Duration::from_millis(millis));
-    }
-
-    /// Returns the target framerate
-    pub(crate) fn get_target_fps() -> u64 {
-        constants::TARGET_FPS
-    }
-
-    /// Returns the Lua support scripts for all connected devices
-    pub(crate) fn get_support_script_files() -> Vec<String> {
-        let mut result = Vec::new();
-
-        for device in crate::KEYBOARD_DEVICES.read().iter() {
-            result.push(device.read().get_support_script_file());
-        }
-
-        for device in crate::MOUSE_DEVICES.read().iter() {
-            result.push(device.read().get_support_script_file());
-        }
-
-        for device in crate::MISC_DEVICES.read().iter() {
-            result.push(device.read().get_support_script_file());
-        }
-
-        result
-    }
-
-    /// Returns the number of "pixels" on the canvas
-    pub(crate) fn get_canvas_size() -> usize {
-        constants::CANVAS_SIZE
-    }
-
-    /// Returns the height of the canvas
-    pub(crate) fn get_canvas_height() -> usize {
-        constants::CANVAS_HEIGHT
-    }
-
-    /// Returns the width of the canvas
-    pub(crate) fn get_canvas_width() -> usize {
-        constants::CANVAS_WIDTH
-    }
-
-    /// Inject a key on the eruption virtual keyboard.
-    pub(crate) fn inject_key(ev_key: u32, down: bool) {
-        // calling inject_key(..) from Lua will drop the current input;
-        // the original key event from the hardware keyboard will not be
-        // mirrored on the virtual keyboard.
-        macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
-
-        macros::UINPUT_TX
-            .read()
-            .as_ref()
-            .unwrap()
-            .send(macros::Message::InjectKey { key: ev_key, down })
-            .unwrap();
-    }
-
-    /// Inject a button event on the eruption virtual mouse.
-    pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
-        // calling inject_mouse_button(..) from Lua will drop the current input;
-        // the original mouse event from the hardware mouse will not be
-        // mirrored on the virtual mouse.
-        macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
-
-        macros::UINPUT_TX
-            .read()
-            .as_ref()
-            .unwrap()
-            .send(macros::Message::InjectButtonEvent {
-                button: button_index,
-                down,
-            })
-            .unwrap();
-    }
-
-    /// Inject a mouse wheel scroll event on the eruption virtual mouse.
-    pub(crate) fn inject_mouse_wheel(direction: u32) {
-        // calling inject_mouse_wheel(..) from Lua will drop the current input;
-        // the original mouse event from the hardware mouse will not be
-        // mirrored on the virtual mouse.
-        macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
-
-        macros::UINPUT_TX
-            .read()
-            .as_ref()
-            .unwrap()
-            .send(macros::Message::InjectMouseWheelEvent { direction })
-            .unwrap();
-    }
-
-    /// Inject a key on the eruption virtual keyboard after sleeping for `millis` milliseconds.
-    pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
-        // calling inject_key(..) from Lua will drop the current input;
-        // the original key event from the hardware keyboard will not be
-        // mirrored on the virtual keyboard.
-        macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
-
-        thread::Builder::new()
-            .name("uinput/delayed".to_owned())
-            .spawn(move || {
-                thread::sleep(Duration::from_millis(millis));
-
-                macros::UINPUT_TX
-                    .read()
-                    .as_ref()
-                    .unwrap()
-                    .send(macros::Message::InjectKey { key: ev_key, down })
-                    .unwrap();
-            })
-            .unwrap();
-    }
-
-    // pub(crate) fn set_status_led(keyboard_device: &KeyboardDevice, led_id: u8, on: bool) {
-    //     keyboard_device
-    //         .read()
-    //         .set_status_led(LedKind::from_id(led_id).unwrap(), on)
-    //         .unwrap_or_else(|e| error!("{}", e));
-    // }
-
-    /// Get RGB components of a 32 bits color value.
-    pub(crate) fn color_to_rgb(c: u32) -> (u8, u8, u8) {
-        let r = u8::try_from((c >> 16) & 0xff).unwrap();
-        let g = u8::try_from((c >> 8) & 0xff).unwrap();
-        let b = u8::try_from(c & 0xff).unwrap();
-
-        (r, g, b)
-    }
-
-    /// Get RGB components of a 32 bits color value.
-    #[allow(clippy::many_single_char_names)]
-    pub(crate) fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
-        let a = u8::try_from((c >> 24) & 0xff).unwrap();
-        let r = u8::try_from((c >> 16) & 0xff).unwrap();
-        let g = u8::try_from((c >> 8) & 0xff).unwrap();
-        let b = u8::try_from(c & 0xff).unwrap();
-
-        (r, g, b, a)
-    }
-
-    /// Get HSL components of a 32 bits color value.
-    #[allow(clippy::many_single_char_names)]
-    pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
-        let (r, g, b) = color_to_rgb(c);
-        let rgb =
-            Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
-                .into_linear();
-
-        let (h, s, l) = Hsl::from_color(rgb).into_components();
-
-        (h.into(), s, l)
-    }
-
-    /// Convert RGB components to a 32 bits color value.
-    pub(crate) fn rgb_to_color(r: u8, g: u8, b: u8) -> u32 {
-        LittleEndian::read_u32(&[b, g, r, 255])
-    }
-
-    /// Convert RGBA components to a 32 bits color value.
-    pub(crate) fn rgba_to_color(r: u8, g: u8, b: u8, a: u8) -> u32 {
-        LittleEndian::read_u32(&[b, g, r, a])
-    }
-
-    /// Convert HSL components to a 32 bits color value.
-    pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
-        let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
-        let rgb = rgb.into_components();
-        rgba_to_color(
-            (rgb.0 * 255.0) as u8,
-            (rgb.1 * 255.0) as u8,
-            (rgb.2 * 255.0) as u8,
-            255,
-        )
-    }
-
-    /// Convert HSLA components to a 32 bits color value.
-    pub(crate) fn hsla_to_color(h: f64, s: f64, l: f64, a: u8) -> u32 {
-        let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
-        let rgb = rgb.into_components();
-        rgba_to_color(
-            (rgb.0 * 255.0) as u8,
-            (rgb.1 * 255.0) as u8,
-            (rgb.2 * 255.0) as u8,
-            a,
-        )
-    }
-
-    /// Convert a CSS color value to a 32 bits color value.
-    pub(crate) fn parse_color(val: &str) -> Result<u32> {
-        match csscolorparser::parse(val) {
-            Ok(color) => {
-                let (r, g, b, a) = color.to_linear_rgba_u8();
-
-                Ok(rgba_to_color(r, g, b, a))
-            }
-
-            Err(e) => {
-                error!(
-                    "Could not parse value, not a valid CSS color definition: {}",
-                    e
-                );
-                Err(CallbacksError::ParseParamError {}.into())
-            }
-        }
-    }
-
-    /// Convert a gradient name to an opaque handle, representing that gradient
-    pub(crate) fn gradient_from_name(val: &str) -> Result<usize> {
-        match val {
-            "rainbow-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::rainbow();
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            "sinebow-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::sinebow();
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            "spectral-smooth" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::spectral();
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            "rainbow-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::rainbow().sharp(5, 0.15);
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            "sinebow-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::sinebow().sharp(5, 0.15);
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            "spectral-sharp" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient = colorgrad::spectral().sharp(5, 0.15);
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            // special handling for the "system" palette
-            "system" => super::ALLOCATED_GRADIENTS.with(|f| {
-                let mut m = f.borrow_mut();
-                let idx = m.len() + 1;
-
-                let gradient =
-                    if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
-                        colorgrad::CustomGradient::new()
-                            // start at index 1, ignore the darkest/black part of the palette
-                            .colors(&color_scheme.colors)
-                            .build()?
-                    } else {
-                        // use sinebow gradient as a fallback
-                        colorgrad::sinebow()
-                    };
-
-                m.insert(idx, gradient);
-
-                Ok(idx)
-            }),
-
-            _ => {
-                if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
-                    // Create a gradient from the named color scheme
-                    super::ALLOCATED_GRADIENTS.with(|f| {
-                        let mut m = f.borrow_mut();
-                        let idx = m.len() + 1;
-
-                        let gradient = colorgrad::CustomGradient::new()
-                            .colors(&color_scheme.colors)
-                            .build()?;
-
-                        m.insert(idx, gradient);
-
-                        Ok(idx)
-                    })
-                } else {
-                    error!(
-                        "Could not parse value, not a valid stock-gradient or named color scheme"
-                    );
-
-                    Err(CallbacksError::ParseParamError {}.into())
-                }
-            }
-        }
-    }
-
-    /// De-allocates a gradient from an opaque handle, representing that gradient
-    pub(crate) fn gradient_destroy(handle: usize) -> Result<()> {
-        super::ALLOCATED_GRADIENTS.with(|f| {
-            let mut m = f.borrow_mut();
-
-            if m.remove(&handle).is_some() {
-                Ok(())
-            } else {
-                Err(CallbacksError::InvalidHandle {}.into())
-            }
-        })
-    }
-
-    /// Returns the color at the position `pos`
-    pub(crate) fn gradient_color_at(handle: usize, pos: f64) -> Result<u32> {
-        super::ALLOCATED_GRADIENTS.with(|f| {
-            let m = f.borrow();
-
-            if let Some(gradient) = m.get(&handle) {
-                let color = gradient.at(pos);
-                let (r, g, b, a) = color.to_linear_rgba_u8();
-
-                Ok(rgba_to_color(r, g, b, a))
-            } else {
-                Err(CallbacksError::InvalidHandle {}.into())
-            }
-        })
-    }
-
-    /// Generate a linear RGB color gradient from start to dest color,
-    /// where p must lie in the range from [0.0..1.0].
-    #[allow(clippy::many_single_char_names)]
-    pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
-        let sca: f64 = f64::from((start >> 24) & 0xff);
-        let scr: f64 = f64::from((start >> 16) & 0xff);
-        let scg: f64 = f64::from((start >> 8) & 0xff);
-        let scb: f64 = f64::from((start) & 0xff);
-
-        let dca: f64 = f64::from((dest >> 24) & 0xff);
-        let dcr: f64 = f64::from((dest >> 16) & 0xff);
-        let dcg: f64 = f64::from((dest >> 8) & 0xff);
-        let dcb: f64 = f64::from((dest) & 0xff);
-
-        let r: f64 = (scr as f64) + (((dcr - scr) as f64) * p);
-        let g: f64 = (scg as f64) + (((dcg - scg) as f64) * p);
-        let b: f64 = (scb as f64) + (((dcb - scb) as f64) * p);
-        let a: f64 = (sca as f64) + (((dca - sca) as f64) * p);
-
-        rgba_to_color(
-            r.round() as u8,
-            g.round() as u8,
-            b.round() as u8,
-            a.round() as u8,
-        )
-    }
-
-    /// Clamp the value `v` to the range [`min`..`max`]
-    #[inline]
-    pub(crate) fn clamp(v: f64, min: f64, max: f64) -> f64 {
-        let mut x = v;
-        if x < min {
-            x = min;
-        }
-        if x > max {
-            x = max;
-        }
-        x
-    }
-
-    /// Compute Gradient noise (SIMD)
-    pub(crate) fn gradient_noise_2d_simd(f1: f32, f2: f32) -> f32 {
-        simdnoise::NoiseBuilder::gradient_2d_offset(f1, 2, f2, 2).generate_scaled(0.0, 1.0)[0]
-    }
-
-    pub(crate) fn gradient_noise_3d_simd(f1: f32, f2: f32, f3: f32) -> f32 {
-        simdnoise::NoiseBuilder::gradient_3d_offset(f1, 2, f2, 2, f3, 2).generate_scaled(0.0, 1.0)
-            [0]
-    }
-
-    /// Compute Turbulence noise (SIMD)
-    pub(crate) fn turbulence_noise_2d_simd(f1: f32, f2: f32) -> f32 {
-        simdnoise::NoiseBuilder::turbulence_2d_offset(f1, 2, f2, 2).generate_scaled(0.0, 1.0)[0]
-    }
-
-    pub(crate) fn turbulence_noise_3d_simd(f1: f32, f2: f32, f3: f32) -> f32 {
-        simdnoise::NoiseBuilder::turbulence_3d_offset(f1, 2, f2, 2, f3, 2).generate_scaled(0.0, 1.0)
-            [0]
-    }
-
-    /// Compute Perlin noise
-    pub(crate) fn perlin_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        PERLIN_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Billow noise
-    pub(crate) fn billow_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        BILLOW_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Worley (Voronoi) noise
-    pub(crate) fn voronoi_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        VORONOI_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Fractal Brownian Motion noise
-    pub(crate) fn fractal_brownian_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        FBM_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Ridged Multifractal noise
-    pub(crate) fn ridged_multifractal_noise(f1: f64, f2: f64, f3: f64) -> f64 {
-        RIDGED_MULTIFRACTAL_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Open Simplex noise (2D)
-    pub(crate) fn open_simplex_noise_2d(f1: f64, f2: f64) -> f64 {
-        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2]))
-    }
-
-    /// Compute Open Simplex noise (3D)
-    pub(crate) fn open_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Open Simplex noise (4D)
-    pub(crate) fn open_simplex_noise_4d(f1: f64, f2: f64, f3: f64, f4: f64) -> f64 {
-        OPEN_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3, f4]))
-    }
-
-    /// Compute Super Simplex noise (3D)
-    pub(crate) fn super_simplex_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        SUPER_SIMPLEX_NOISE.with(|noise| noise.borrow().get([f1, f2, f3]))
-    }
-
-    /// Compute Checkerboard noise (3D)
-    pub(crate) fn checkerboard_noise_3d(f1: f64, f2: f64, f3: f64) -> f64 {
-        // no seed needed
-        let noise = noise::Checkerboard::new(0);
-        noise.get([f1, f2, f3]) / 2.0 + 0.5
-    }
-
-    use nalgebra as na;
-
-    pub(crate) fn rotate(map: &[u32], theta: f64, sizes: (usize, usize)) -> Vec<u32> {
-        let mut result = vec![0; map.len()];
-
-        let m_rot = na::Matrix3::new_rotation(theta);
-
-        for i in 0..map.len() {
-            let x = (i / sizes.0) as f64;
-            let y = (i / sizes.1) as f64;
-
-            let point = na::Vector2::new(x, y).to_homogeneous();
-            let t = m_rot * point;
-
-            let idx = (t.x * sizes.0 as f64 + t.y).round();
-            let idx = clamp(idx, 0 as f64, sizes.0 as f64 * sizes.1 as f64) as usize;
-
-            // println!("{} -> {}: {}", point, t, idx);
-
-            result[i] = map[idx];
-        }
-
-        result
-    }
-
-    #[test]
-    fn test_rotate() {
-        let data: Vec<_> = (1..=100_u32).collect();
-
-        let x_size = 10;
-        let y_size = 10;
-
-        let result = rotate(&data, 90.0 * std::f64::consts::PI / 180.0, (x_size, y_size));
-
-        for l in 0..y_size {
-            let s = l * y_size;
-            println!("{:2?}", &result[s..s + x_size]);
-        }
-
-        println!("{:2?}", &data);
-        println!("{:2?}", &result);
-    }
-
-    /// Get the number of keys of the managed device.
-    pub(crate) fn get_num_keys() -> usize {
-        // TODO: Return the number of keys of a specific device
-        let devices = crate::KEYBOARD_DEVICES.read();
-
-        if !devices.is_empty() {
-            let result = devices[0].read().get_num_keys();
-            result
-        } else {
-            constants::MAX_KEYS
-        }
-    }
-
-    /// Get state of all LEDs
-    pub(crate) fn get_color_map() -> Vec<u32> {
-        let global_led_map = LED_MAP.read();
-
-        let result = global_led_map
-            .iter()
-            .map(|v| {
-                ((v.r as u32).overflowing_shl(16).0
-                    + (v.g as u32).overflowing_shl(8).0
-                    + v.b as u32) as u32
-            })
-            .collect::<Vec<u32>>();
-
-        assert!(result.len() == constants::CANVAS_SIZE);
-
-        result
-    }
-
-    /// Submit LED color map for later realization, as soon as the
-    /// next frame is rendered
-    pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
-        // trace!("submit_color_map: {}/{}", map.len(), constants::CANVAS_SIZE);
-
-        // assert!(
-        //     map.len() == constants::CANVAS_SIZE,
-        //     format!(
-        //         "Assertion 'map.len() == constants::CANVAS_SIZE' failed: {} != {}",
-        //         map.len(),
-        //         constants::CANVAS_SIZE
-        //     )
-        // );
-
-        let mut led_map = [RGBA {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 0,
-        }; constants::CANVAS_SIZE];
-
-        let mut i = 0;
-        loop {
-            led_map[i] = RGBA {
-                a: u8::try_from((map[i] >> 24) & 0xff)?,
-                r: u8::try_from((map[i] >> 16) & 0xff)?,
-                g: u8::try_from((map[i] >> 8) & 0xff)?,
-                b: u8::try_from(map[i] & 0xff)?,
-            };
-
-            i += 1;
-            if i >= led_map.len() || i >= map.len() {
-                break;
-            }
-        }
-
-        LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
-        LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
-
-        super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-
-        Ok(())
-    }
-
-    pub(crate) fn get_brightness() -> isize {
-        crate::BRIGHTNESS.load(Ordering::SeqCst)
-    }
-
-    pub(crate) fn set_brightness(val: isize) {
-        crate::BRIGHTNESS.store(val, Ordering::SeqCst);
-        super::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-    }
-}
-
 /// Action requests for `run_script`
 pub enum RunScriptResult {
     /// Script terminated gracefully
@@ -928,571 +224,152 @@ pub enum RunScriptResult {
 
     /// Error abort
     TerminatedWithErrors,
-    // Currently running interpreter will be shut down, to execute another Lua script
-    //ReExecuteOtherScript(PathBuf),
+
+    // Currently running interpreter will be shut down and restarted
+    RestartScript,
+}
+
+/// Used to control the message processing loop of `run_script`
+pub enum RunningScriptResult {
+    Continue,
+    RestartScript,
+    TerminateGracefully,
+    TerminateWithErrors,
+}
+
+struct RunningScriptCallHelper<'lua> {
+    file_name: String,
+    lua_ctx: &'lua Lua,
+    lua_functions: HashMap<String, Option<Function<'lua>>>,
+    skip_on_tick: bool,
+    skip_on_mouse_move: bool,
+    skip_on_hid_event: bool,
+}
+
+enum RunningScriptCallHelperResult {
+    Successful,
+    NoHandler,
+}
+
+impl<'lua> RunningScriptCallHelper<'lua> {
+    fn new(file: &Path, lua_ctx: &'lua Lua) -> RunningScriptCallHelper<'lua> {
+        RunningScriptCallHelper {
+            file_name: file.to_string_lossy().to_string(),
+            lua_ctx: lua_ctx,
+            lua_functions: HashMap::new(),
+            skip_on_tick: false,
+            skip_on_mouse_move: false,
+            skip_on_hid_event: false,
+        }
+    }
+
+    fn call<Args: ToLuaMulti<'lua>>(
+        &mut self,
+        function_name: &str,
+        args: Args,
+    ) -> Result<RunningScriptCallHelperResult> {
+        match self.find_handler(function_name) {
+            Some(handler) => match handler.call::<Args, ()>(args) {
+                Ok(()) => Ok(RunningScriptCallHelperResult::Successful),
+                Err(e) => {
+                    let error = e.source().unwrap_or(&UnknownError {});
+                    error!("Lua error in file {}: {}\n\t{:?}", self.file_name, e, error);
+                    Err(ScriptingError::HandlerError {}.into())
+                }
+            },
+            None => Ok(RunningScriptCallHelperResult::NoHandler),
+        }
+    }
+
+    fn verify_handler_exists(&mut self, function_name: &str) -> bool {
+        self.find_handler(function_name).is_some()
+    }
+
+    fn find_handler(&mut self, function_name: &str) -> &Option<Function<'lua>> {
+        // Caching the handler functions like this removes the script's ability to dynamically reassign global
+        // functions (e.g., `_G['on_tick'] = ...`). But since that's an insane thing to do we'll go ahead and cache.
+        self.lua_functions
+            .entry(function_name.to_string())
+            .or_insert_with(|| {
+                let func = self
+                    .lua_ctx
+                    .globals()
+                    .get::<_, Function<'lua>>(function_name)
+                    .ok();
+                if func.is_none() {
+                    match function_name {
+                        // Special optimizations since they happen frequently.
+                        FUNCTION_ON_MOUSE_MOVE => self.skip_on_mouse_move = true,
+                        FUNCTION_ON_TICK => self.skip_on_tick = true,
+                        FUNCTION_ON_HID_EVENT => self.skip_on_hid_event = true,
+                        _ => (),
+                    }
+                }
+                func
+            })
+    }
 }
 
 /// Loads and runs a lua script.
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
-    file: PathBuf,
-    profile: Option<Profile>,
+    script_file: &Path,
+    parameter_values: &mut HashMap<String, ParameterValue>,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
-    match fs::read_to_string(file.clone()) {
+    match fs::read_to_string(script_file) {
         Ok(script) => {
             let lua_ctx =
                 unsafe { Lua::unsafe_new_with(mlua::StdLib::ALL, mlua::LuaOptions::default()) };
 
-            let manifest = Manifest::from(&file);
-            if let Err(error) = manifest {
-                error!(
-                    "Could not parse manifest file for script {}: {}",
-                    file.display(),
-                    error
-                );
+            // Prepare the Lua environment and eval the script
+            let prepared = register_support_globals(&lua_ctx)
+                .and_then(|()| register_support_funcs(&lua_ctx))
+                .and_then(|()| register_script_config(&lua_ctx, parameter_values.values()))
+                .and_then(|()| lua_ctx.load(&script).eval::<()>());
 
-                return Err(ScriptingError::InaccessibleManifest {}.into());
-            } else {
-                ACTIVE_SCRIPTS
-                    .lock()
-                    .push(manifest.as_ref().unwrap().clone());
-            }
-
-            let mut errors_present = false;
-
-            if register_support_globals(&lua_ctx).is_err() {
-                return Ok(RunScriptResult::TerminatedWithErrors);
-            }
-
-            if register_support_funcs(&lua_ctx).is_err() {
-                return Ok(RunScriptResult::TerminatedWithErrors);
-            }
-
-            if register_script_config(&lua_ctx, &manifest.unwrap(), &profile).is_err() {
-                return Ok(RunScriptResult::TerminatedWithErrors);
-            }
-
-            // start execution of the Lua script
-            lua_ctx.load(&script).eval::<()>().unwrap_or_else(|e| {
+            if let Err(e) = prepared {
                 error!(
                     "Lua error in file {}: {}\n\t{:?}",
-                    file.to_string_lossy(),
+                    script_file.to_string_lossy(),
                     e,
                     e.source().unwrap_or(&UnknownError {})
                 );
-                errors_present = true;
-            });
-
-            if errors_present {
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
 
-            // call startup event handler, if present
-            if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_startup") {
-                handler.call::<_, ()>(()).unwrap_or_else(|e| {
-                    error!(
-                        "Lua error in file {}: {}\n\t{:?}",
-                        file.to_string_lossy(),
-                        e,
-                        e.source().unwrap_or(&UnknownError {})
-                    );
-                    errors_present = true;
-                });
-            }
+            let mut call_helper = RunningScriptCallHelper::new(script_file, &lua_ctx);
 
-            if errors_present {
+            if call_helper.call(FUNCTION_ON_STARTUP, ()).is_err() {
                 return Ok(RunScriptResult::TerminatedWithErrors);
             }
-
-            // reduce CPU load by caching the event handler status
-            let mut has_tick_handler = true;
-            let mut has_mouse_move_handler = true;
 
             loop {
                 if let Ok(msg) = rx.recv() {
-                    match msg {
-                        Message::Quit(param) => {
-                            let mut errors_present = false;
+                    if let Message::SetParameter { parameter_value } = &msg {
+                        // Save the new value for next time
+                        parameter_values
+                            .insert(parameter_value.name.clone(), parameter_value.clone());
+                    }
 
-                            if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_QUIT.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
+                    match process_message(&mut call_helper, msg) {
+                        Ok(RunningScriptResult::Continue) => (),
+                        Ok(RunningScriptResult::TerminateGracefully) => {
+                            return Ok(RunScriptResult::TerminatedGracefully)
                         }
-
-                        Message::Tick(param) => {
-                            if has_tick_handler {
-                                let mut errors_present = false;
-
-                                if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_tick")
-                                {
-                                    handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error in file {}: {}\n\t{:?}",
-                                            file.to_string_lossy(),
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    })
-                                } else {
-                                    has_tick_handler = false;
-                                }
-
-                                if errors_present {
-                                    return Ok(RunScriptResult::TerminatedWithErrors);
-                                }
-                            }
+                        Ok(RunningScriptResult::TerminateWithErrors) => {
+                            return Ok(RunScriptResult::TerminatedWithErrors)
                         }
-
-                        Message::RealizeColorMap => {
-                            if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
-                                LOCAL_LED_MAP.with(|foreground| {
-                                    let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
-
-                                    let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
-                                    let fader_base = crate::BRIGHTNESS_FADER_BASE.load(Ordering::SeqCst);
-
-                                    let brightness = if fader_base > 0 && fader > 0 {
-                                        (1.0 - (fader as f32 / fader_base as f32)) * brightness as f32
-                                    } else {
-                                        brightness as f32
-                                    };
-
-                                    for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                        for (idx, background) in chunks.iter_mut().enumerate() {
-                                            let bg = &background;
-                                            let fg = foreground.borrow()[idx];
-
-                                            #[rustfmt::skip]
-                                            let color = RGBA {
-                                                r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                                g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                                b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                                a: fg.a as u8,
-                                            };
-
-                                            *background = color;
-                                        }
-                                    }
-                                });
-                            }
-
-                            // signal readiness / notify the main thread that we are done
-                            let val = { *crate::COLOR_MAPS_READY_CONDITION.0.lock() };
-
-                            let val = val.checked_sub(1).unwrap_or_else(|| {
-                                warn!("Incorrect state in locking code detected");
-                                0
-                            });
-
-                            *crate::COLOR_MAPS_READY_CONDITION.0.lock() = val;
-
-                            crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
+                        Ok(RunningScriptResult::RestartScript) => {
+                            return Ok(RunScriptResult::RestartScript)
                         }
-
-                        Message::KeyDown(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_down")
-                            {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::KeyUp(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_key_up") {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::KeyboardHidEvent(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_hid_event")
-                            {
-                                let arg1: u8;
-                                let event_type: u32 = match param {
-                                    KeyboardHidEvent::KeyUp { code } => {
-                                        arg1 = crate::KEYBOARD_DEVICES.read()[0]
-                                            .read()
-                                            .hid_event_code_to_report(&code);
-                                        1
-                                    }
-
-                                    KeyboardHidEvent::KeyDown { code } => {
-                                        arg1 = crate::KEYBOARD_DEVICES.read()[0]
-                                            .read()
-                                            .hid_event_code_to_report(&code);
-                                        2
-                                    }
-
-                                    KeyboardHidEvent::MuteDown => {
-                                        arg1 = 1;
-                                        3
-                                    }
-
-                                    KeyboardHidEvent::MuteUp => {
-                                        arg1 = 0;
-                                        3
-                                    }
-
-                                    KeyboardHidEvent::VolumeDown => {
-                                        arg1 = 1;
-                                        4
-                                    }
-
-                                    KeyboardHidEvent::VolumeUp => {
-                                        arg1 = 0;
-                                        4
-                                    }
-
-                                    KeyboardHidEvent::BrightnessDown => {
-                                        arg1 = 1;
-                                        5
-                                    }
-
-                                    KeyboardHidEvent::BrightnessUp => {
-                                        arg1 = 0;
-                                        5
-                                    }
-
-                                    KeyboardHidEvent::SetBrightness(val) => {
-                                        arg1 = val;
-                                        6
-                                    }
-
-                                    KeyboardHidEvent::NextSlot => {
-                                        arg1 = 1;
-                                        7
-                                    }
-
-                                    KeyboardHidEvent::PreviousSlot => {
-                                        arg1 = 0;
-                                        7
-                                    }
-
-                                    _ => {
-                                        arg1 = 0;
-                                        0
-                                    }
-                                };
-
-                                handler
-                                    .call::<_, ()>((event_type, arg1))
-                                    .unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error in file {}: {}\n\t{:?}",
-                                            file.to_string_lossy(),
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::MouseHidEvent(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_mouse_hid_event")
-                            {
-                                let arg1: u8;
-                                let event_type: u32 = match param {
-                                    MouseHidEvent::DpiChange(dpi_slot) => {
-                                        arg1 = dpi_slot;
-                                        1
-                                    }
-
-                                    MouseHidEvent::ButtonDown(index) => {
-                                        arg1 = index + 1;
-                                        2
-                                    }
-
-                                    MouseHidEvent::ButtonUp(index) => {
-                                        arg1 = index + 1;
-                                        3
-                                    }
-
-                                    _ => {
-                                        arg1 = 0;
-                                        0
-                                    }
-                                };
-
-                                handler
-                                    .call::<_, ()>((event_type, arg1))
-                                    .unwrap_or_else(|e| {
-                                        error!(
-                                            "Lua error in file {}: {}\n\t{:?}",
-                                            file.to_string_lossy(),
-                                            e,
-                                            e.source().unwrap_or(&UnknownError {})
-                                        );
-                                        errors_present = true;
-                                    });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::MouseButtonDown(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_mouse_button_down")
-                            {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::MouseButtonUp(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_mouse_button_up")
-                            {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::MouseMove(rel_x, rel_y, rel_z) => {
-                            if has_mouse_move_handler {
-                                let mut errors_present = false;
-
-                                if let Ok(handler) =
-                                    lua_ctx.globals().get::<_, Function>("on_mouse_move")
-                                {
-                                    handler.call::<_, ()>((rel_x, rel_y, rel_z)).unwrap_or_else(
-                                        |e| {
-                                            error!(
-                                                "Lua error in file {}: {}\n\t{:?}",
-                                                file.to_string_lossy(),
-                                                e,
-                                                e.source().unwrap_or(&UnknownError {})
-                                            );
-                                            errors_present = true;
-                                        },
-                                    );
-                                } else {
-                                    has_mouse_move_handler = false;
-                                }
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        Message::MouseWheelEvent(param) => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) =
-                                lua_ctx.globals().get::<_, Function>("on_mouse_wheel")
-                            {
-                                handler.call::<_, ()>(param).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.display(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                });
-                            }
-
-                            let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
-                            *val = val.saturating_sub(1);
-
-                            crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
-
-                            if errors_present {
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            }
-                        }
-
-                        //Message::LoadScript(script_path) => {
-                        //return Ok(RunScriptResult::ReExecuteOtherScript(script_path))
-                        //}
-
-                        // Message::Abort => {
-                        //     error!("Lua script {} terminated with errors", file.display());
-                        //     return Ok(RunScriptResult::TerminatedWithErrors);
-                        // }
-                        Message::Unload => {
-                            let mut errors_present = false;
-
-                            if let Ok(handler) = lua_ctx.globals().get::<_, Function>("on_quit") {
-                                handler.call::<_, ()>(()).unwrap_or_else(|e| {
-                                    error!(
-                                        "Lua error in file {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                    errors_present = true;
-                                })
-                            }
-
-                            if errors_present {
-                                error!("Lua script {} terminated with errors", file.display());
-                                return Ok(RunScriptResult::TerminatedWithErrors);
-                            } else {
-                                debug!("Lua script {} terminated gracefully", file.display());
-                                return Ok(RunScriptResult::TerminatedGracefully);
-                            }
-                        }
-
-                        Message::SetParameter { parameter_value } => {
-                            let set = set_config_param(&lua_ctx, &parameter_value);
-                            match set {
-                                Ok(_) => {
-                                    debug!(
-                                        "Lua script {}: Successfully applied parameter",
-                                        file.to_string_lossy(),
-                                    );
-
-                                    if let Ok(handler) =
-                                        lua_ctx.globals().get::<_, Function>("on_apply_parameter")
-                                    {
-                                        // the script declared an "on_apply_parameter" function
-                                        let called = handler.call::<_, ()>((
-                                            &*parameter_value.name,
-                                            &*parameter_value.get_value_string(),
-                                        ));
-                                        match called {
-                                            Ok(()) => debug!(
-                                                    "Lua script {}: Successfully called on_apply_parameter",
-                                                    file.to_string_lossy(),
-                                                ),
-                                            Err(e) => error!(
-                                                "Lua error in file {}: {}\n\t{:?}",
-                                                file.to_string_lossy(),
-                                                e,
-                                                e.source().unwrap_or(&UnknownError {})
-                                            ),
-                                        };
-                                    }
-                                }
-                                Err(e) => {
-                                    error!(
-                                        "Could not set parameter in {}: {}\n\t{:?}",
-                                        file.to_string_lossy(),
-                                        e,
-                                        e.source().unwrap_or(&UnknownError {})
-                                    );
-                                }
-                            }
+                        Err(e) => {
+                            let error = e.source().unwrap_or(&UnknownError {});
+                            error!(
+                                "Unexpected lua error in file {}: {}\n\t{:?}",
+                                call_helper.file_name, e, error
+                            );
+                            return Ok(RunScriptResult::TerminatedWithErrors);
                         }
                     }
                 }
@@ -1534,359 +411,16 @@ fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
 }
 
 fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
-    let globals = lua_ctx.globals();
-
-    // logging
-    let trace = lua_ctx.create_function(|_, msg: String| {
-        callbacks::log_trace(&msg);
-        Ok(())
-    })?;
-    globals.set("trace", trace)?;
-
-    let debug = lua_ctx.create_function(|_, msg: String| {
-        callbacks::log_debug(&msg);
-        Ok(())
-    })?;
-    globals.set("debug", debug)?;
-
-    let info = lua_ctx.create_function(|_, msg: String| {
-        callbacks::log_info(&msg);
-        Ok(())
-    })?;
-    globals.set("info", info)?;
-
-    let warn = lua_ctx.create_function(|_, msg: String| {
-        callbacks::log_warn(&msg);
-        Ok(())
-    })?;
-    globals.set("warn", warn)?;
-
-    let error = lua_ctx.create_function(|_, msg: String| {
-        callbacks::log_error(&msg);
-        Ok(())
-    })?;
-    globals.set("error", error)?;
-
-    let delay = lua_ctx.create_function(|_, millis: u64| {
-        callbacks::delay(millis);
-        Ok(())
-    })?;
-    globals.set("delay", delay)?;
-
-    // eruption engine status
-    let get_target_fps = lua_ctx.create_function(|_, ()| Ok(callbacks::get_target_fps()))?;
-    globals.set("get_target_fps", get_target_fps)?;
-
-    let get_support_script_files =
-        lua_ctx.create_function(|_, ()| Ok(callbacks::get_support_script_files()))?;
-    globals.set("get_support_script_files", get_support_script_files)?;
-
-    // canvas related functions
-    let get_canvas_size = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_size()))?;
-    globals.set("get_canvas_size", get_canvas_size)?;
-
-    let get_canvas_width = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_width()))?;
-    globals.set("get_canvas_width", get_canvas_width)?;
-
-    let get_canvas_height = lua_ctx.create_function(|_, ()| Ok(callbacks::get_canvas_height()))?;
-    globals.set("get_canvas_height", get_canvas_height)?;
-
-    // math library
-    let max = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.max(f2)))?;
-    globals.set("max", max)?;
-
-    let min = lua_ctx.create_function(|_, (f1, f2): (f64, f64)| Ok(f1.min(f2)))?;
-    globals.set("min", min)?;
-
-    let clamp = lua_ctx
-        .create_function(|_, (val, f1, f2): (f64, f64, f64)| Ok(callbacks::clamp(val, f1, f2)))?;
-    globals.set("clamp", clamp)?;
-
-    let abs = lua_ctx.create_function(|_, f: f64| Ok(f.abs()))?;
-    globals.set("abs", abs)?;
-
-    let sin = lua_ctx.create_function(|_, a: f64| Ok(a.sin()))?;
-    globals.set("sin", sin)?;
-
-    let cos = lua_ctx.create_function(|_, a: f64| Ok(a.cos()))?;
-    globals.set("cos", cos)?;
-
-    let pow = lua_ctx.create_function(|_, (val, p): (f64, f64)| Ok(val.powf(p)))?;
-    globals.set("pow", pow)?;
-
-    let sqrt = lua_ctx.create_function(|_, f: f64| Ok(f.sqrt()))?;
-    globals.set("sqrt", sqrt)?;
-
-    let asin = lua_ctx.create_function(|_, a: f64| Ok(a.asin()))?;
-    globals.set("asin", asin)?;
-
-    let atan2 = lua_ctx.create_function(|_, (y, x): (f64, f64)| Ok(y.atan2(x)))?;
-    globals.set("atan2", atan2)?;
-
-    let ceil = lua_ctx.create_function(|_, f: f64| Ok(f.ceil()))?;
-    globals.set("ceil", ceil)?;
-
-    let floor = lua_ctx.create_function(|_, f: f64| Ok(f.floor()))?;
-    globals.set("floor", floor)?;
-
-    let round = lua_ctx.create_function(|_, f: f64| Ok(f.round()))?;
-    globals.set("round", round)?;
-
-    let rand = lua_ctx.create_function(|_, (l, h): (i64, i64)| {
-        if h - l > 0 {
-            Ok(rand::thread_rng().gen_range(l..h))
-        } else {
-            Ok(0)
-        }
-    })?;
-    globals.set("rand", rand)?;
-
-    let trunc = lua_ctx.create_function(|_, f: f64| Ok(f.trunc() as i64))?;
-    globals.set("trunc", trunc)?;
-
-    // let lerp = lua_ctx.create_function(|_, (a0, a1, w): (f64, f64, f64)| Ok((1.0 - w) * a0 + w * a1))?; // precise version
-    let lerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| Ok(v0 + t * (v1 - v0)))?;
-    globals.set("lerp", lerp)?;
-
-    let invlerp = lua_ctx.create_function(|_, (v0, v1, t): (f64, f64, f64)| {
-        Ok(callbacks::clamp((t - v0) / (v0 - v1), 0.0, 1.0))
-    })?;
-    globals.set("invlerp", invlerp)?;
-
-    let range = lua_ctx.create_function(|_, (v0, v1, v2, v3, t): (f64, f64, f64, f64, f64)| {
-        Ok(v2 + callbacks::clamp((t - v0) / (v1 - v0), 0.0, 1.0) * (v3 - v2))
-    })?;
-    globals.set("range", range)?;
-
-    // keyboard state and macros
-    let inject_key = lua_ctx.create_function(|_, (ev_key, down): (u32, bool)| {
-        callbacks::inject_key(ev_key, down);
-        Ok(())
-    })?;
-    globals.set("inject_key", inject_key)?;
-
-    let inject_key_with_delay =
-        lua_ctx.create_function(|_, (ev_key, down, millis): (u32, bool, u64)| {
-            callbacks::inject_key_with_delay(ev_key, down, millis);
-            Ok(())
-        })?;
-    globals.set("inject_key_with_delay", inject_key_with_delay)?;
-
-    // mouse state and macros
-    let inject_mouse_button = lua_ctx.create_function(|_, (button_index, down): (u32, bool)| {
-        callbacks::inject_mouse_button(button_index, down);
-        Ok(())
-    })?;
-    globals.set("inject_mouse_button", inject_mouse_button)?;
-
-    let inject_mouse_wheel = lua_ctx.create_function(|_, direction: u32| {
-        callbacks::inject_mouse_wheel(direction);
-        Ok(())
-    })?;
-    globals.set("inject_mouse_wheel", inject_mouse_wheel)?;
-
-    // color handling
-    let color_to_rgb = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgb(c)))?;
-    globals.set("color_to_rgb", color_to_rgb)?;
-
-    let color_to_rgba = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_rgba(c)))?;
-    globals.set("color_to_rgba", color_to_rgba)?;
-
-    let color_to_hsl = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_hsl(c)))?;
-    globals.set("color_to_hsl", color_to_hsl)?;
-
-    let rgb_to_color = lua_ctx
-        .create_function(|_, (r, g, b): (u8, u8, u8)| Ok(callbacks::rgb_to_color(r, g, b)))?;
-    globals.set("rgb_to_color", rgb_to_color)?;
-
-    let rgba_to_color = lua_ctx.create_function(|_, (r, g, b, a): (u8, u8, u8, u8)| {
-        Ok(callbacks::rgba_to_color(r, g, b, a))
-    })?;
-    globals.set("rgba_to_color", rgba_to_color)?;
-
-    let hsl_to_color = lua_ctx
-        .create_function(|_, (h, s, l): (f64, f64, f64)| Ok(callbacks::hsl_to_color(h, s, l)))?;
-    globals.set("hsl_to_color", hsl_to_color)?;
-
-    let hsla_to_color = lua_ctx.create_function(|_, (h, s, l, a): (f64, f64, f64, u8)| {
-        Ok(callbacks::hsla_to_color(h, s, l, a))
-    })?;
-    globals.set("hsla_to_color", hsla_to_color)?;
-
-    let parse_color = lua_ctx.create_function(|_, val: String| {
-        callbacks::parse_color(&val)
-            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
-    })?;
-    globals.set("parse_color", parse_color)?;
-
-    let gradient_from_name = lua_ctx.create_function(|_, name: String| {
-        callbacks::gradient_from_name(&name)
-            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
-    })?;
-    globals.set("gradient_from_name", gradient_from_name)?;
-
-    let gradient_destroy = lua_ctx.create_function(|_, handle: usize| {
-        callbacks::gradient_destroy(handle)
-            .map_err(|_e| LuaError::ExternalError(Arc::new(CallbacksError::ParseParamError {})))
-    })?;
-    globals.set("gradient_destroy", gradient_destroy)?;
-
-    let gradient_color_at = lua_ctx.create_function(|_, (handle, pos): (usize, f64)| {
-        Ok(callbacks::gradient_color_at(handle, pos).unwrap_or(0))
-    })?;
-    globals.set("gradient_color_at", gradient_color_at)?;
-
-    let linear_gradient = lua_ctx.create_function(|_, (start, dest, p): (u32, u32, f64)| {
-        Ok(callbacks::linear_gradient(start, dest, p))
-    })?;
-    globals.set("linear_gradient", linear_gradient)?;
-
-    // noise utilities
-
-    // fast implementations (SIMD)
-    let gradient_noise_2d = lua_ctx
-        .create_function(|_, (f1, f2): (f32, f32)| Ok(callbacks::gradient_noise_2d_simd(f1, f2)))?;
-    globals.set("gradient_noise_2d", gradient_noise_2d)?;
-
-    let gradient_noise_3d = lua_ctx.create_function(|_, (f1, f2, f3): (f32, f32, f32)| {
-        Ok(callbacks::gradient_noise_3d_simd(f1, f2, f3))
-    })?;
-    globals.set("gradient_noise_3d", gradient_noise_3d)?;
-
-    let turbulence_noise_2d = lua_ctx.create_function(|_, (f1, f2): (f32, f32)| {
-        Ok(callbacks::turbulence_noise_2d_simd(f1, f2))
-    })?;
-    globals.set("turbulence_noise_2d", turbulence_noise_2d)?;
-
-    let turbulence_noise_3d = lua_ctx.create_function(|_, (f1, f2, f3): (f32, f32, f32)| {
-        Ok(callbacks::turbulence_noise_3d_simd(f1, f2, f3))
-    })?;
-    globals.set("turbulence_noise_3d", turbulence_noise_3d)?;
-
-    // slow implementations (without use of SIMD)
-    let perlin_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::perlin_noise(f1, f2, f3))
-    })?;
-    globals.set("perlin_noise", perlin_noise)?;
-
-    let billow_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::billow_noise(f1, f2, f3))
-    })?;
-    globals.set("billow_noise", billow_noise)?;
-
-    let voronoi_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::voronoi_noise(f1, f2, f3))
-    })?;
-    globals.set("voronoi_noise", voronoi_noise)?;
-
-    let fractal_brownian_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::fractal_brownian_noise(f1, f2, f3))
-    })?;
-    globals.set("fractal_brownian_noise", fractal_brownian_noise)?;
-
-    let ridged_multifractal_noise =
-        lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-            Ok(callbacks::ridged_multifractal_noise(f1, f2, f3))
-        })?;
-    globals.set("ridged_multifractal_noise", ridged_multifractal_noise)?;
-
-    let open_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::open_simplex_noise_3d(f1, f2, f3))
-    })?;
-    globals.set("open_simplex_noise", open_simplex_noise)?;
-
-    let open_simplex_noise_2d = lua_ctx
-        .create_function(|_, (f1, f2): (f64, f64)| Ok(callbacks::open_simplex_noise_2d(f1, f2)))?;
-    globals.set("open_simplex_noise_2d", open_simplex_noise_2d)?;
-
-    let open_simplex_noise_4d =
-        lua_ctx.create_function(|_, (f1, f2, f3, f4): (f64, f64, f64, f64)| {
-            Ok(callbacks::open_simplex_noise_4d(f1, f2, f3, f4))
-        })?;
-    globals.set("open_simplex_noise_4d", open_simplex_noise_4d)?;
-
-    let super_simplex_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::super_simplex_noise_3d(f1, f2, f3))
-    })?;
-    globals.set("super_simplex_noise", super_simplex_noise)?;
-
-    let checkerboard_noise = lua_ctx.create_function(|_, (f1, f2, f3): (f64, f64, f64)| {
-        Ok(callbacks::checkerboard_noise_3d(f1, f2, f3))
-    })?;
-    globals.set("checkerboard_noise", checkerboard_noise)?;
-
-    // transformation utilities
-    let rotate = lua_ctx.create_function(|_, (map, theta): (Vec<u32>, f64)| {
-        Ok(callbacks::rotate(&map, theta, (22, 6)))
-    })?;
-    globals.set("rotate", rotate)?;
-
-    // device related
-    let get_num_keys = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_num_keys()))?;
-    globals.set("get_num_keys", get_num_keys)?;
-
-    let get_color_map = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_color_map()))?;
-    globals.set("get_color_map", get_color_map)?;
-
-    let submit_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
-        callbacks::submit_color_map(&map)
-            .map_err(|_e| LuaError::ExternalError(Arc::new(ScriptingError::ValueError {})))
-    })?;
-    globals.set("submit_color_map", submit_color_map)?;
-
-    let get_brightness = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_brightness()))?;
-    globals.set("get_brightness", get_brightness)?;
-
-    let set_brightness = lua_ctx.create_function(move |_, val: isize| {
-        callbacks::set_brightness(val);
-        Ok(())
-    })?;
-    globals.set("set_brightness", set_brightness)?;
-
-    // finally, register Lua functions supplied by eruption plugins
-    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
-    let plugins = plugin_manager.get_plugins();
-
-    for plugin in plugins.iter() {
-        plugin.register_lua_funcs(lua_ctx).unwrap();
-    }
-
-    Ok(())
+    callbacks::register_support_funcs(lua_ctx)
 }
 
-fn register_script_config(
-    lua_ctx: &Lua,
-    manifest: &Manifest,
-    profile: &Option<Profile>,
-) -> mlua::Result<()> {
-    let script_name = &manifest.name;
-
-    if let Some(config) = &manifest.config {
-        for param in config.iter() {
-            debug!("Applying parameter {:?}", param);
-
-            let parameter_value = param.to_parameter_value(); // config default
-            let parameter_value = match profile {
-                Some(profile) => profile
-                    .config
-                    .as_ref()
-                    .and_then(|c| c.get(script_name))
-                    .and_then(|v| v.find_config_param(&parameter_value.name))
-                    .and_then(|cp| Some(cp.to_parameter_value()))
-                    .unwrap_or_else(|| {
-                        debug!("Parameter is undefined, using defaults from script manifest");
-                        parameter_value
-                    }),
-                None => {
-                    warn!(
-                        "Active profile is undefined, using config parameters from script manifest"
-                    );
-                    parameter_value
-                }
-            };
-
-            set_config_param(lua_ctx, &parameter_value)?;
-        }
+fn register_script_config<'a, I>(lua_ctx: &Lua, parameter_values: I) -> mlua::Result<()>
+where
+    I: Iterator<Item = &'a ParameterValue>,
+{
+    for parameter_value in parameter_values {
+        debug!("Applying parameter {:?}", parameter_value);
+        set_config_param(lua_ctx, parameter_value)?;
     }
 
     Ok(())
@@ -1900,5 +434,316 @@ fn set_config_param(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
         TypedValue::Bool(value) => globals.raw_set::<&str, bool>(&param.name, *value),
         TypedValue::String(value) => globals.raw_set::<&str, &str>(&param.name, value),
         TypedValue::Color(value) => globals.raw_set::<&str, u32>(&param.name, *value),
+    }
+}
+
+fn process_message(
+    call_helper: &mut RunningScriptCallHelper,
+    msg: Message,
+) -> Result<RunningScriptResult> {
+    match msg {
+        Message::Quit(param) => on_quit(call_helper, param),
+        Message::Tick(param) => on_tick(call_helper, param),
+        Message::RealizeColorMap => realize_color_map(),
+        Message::KeyDown(param) => on_key_down(call_helper, param),
+        Message::KeyUp(param) => on_key_up(call_helper, param),
+        Message::KeyboardHidEvent(param) => on_keyboard_hid_event(call_helper, param),
+        Message::MouseHidEvent(param) => on_mouse_hid_event(call_helper, param),
+        Message::MouseButtonDown(param) => on_mouse_button_down(call_helper, param),
+        Message::MouseButtonUp(param) => on_mouse_button_up(call_helper, param),
+        Message::MouseMove(rel_x, rel_y, rel_z) => on_mouse_move(call_helper, rel_x, rel_y, rel_z),
+        Message::MouseWheelEvent(param) => on_mouse_wheel_event(call_helper, param),
+        Message::Unload => on_unload(call_helper),
+        Message::SetParameter { parameter_value } => on_set_parameter(call_helper, parameter_value),
+    }
+}
+
+fn continue_if_ok(
+    call_result: Result<RunningScriptCallHelperResult>,
+) -> Result<RunningScriptResult> {
+    match call_result {
+        Ok(_r) => Ok(RunningScriptResult::Continue),
+        Err(_e) => Ok(RunningScriptResult::TerminateWithErrors),
+    }
+}
+
+fn on_quit(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_QUIT, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_QUIT.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_tick(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<RunningScriptResult> {
+    let called = if call_helper.skip_on_tick {
+        Ok(RunningScriptCallHelperResult::NoHandler)
+    } else {
+        call_helper.call(FUNCTION_ON_TICK, param)
+    };
+
+    continue_if_ok(called)
+}
+
+fn realize_color_map() -> Result<RunningScriptResult> {
+    if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
+        LOCAL_LED_MAP.with(|foreground| {
+            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
+            let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
+            let fader_base = crate::BRIGHTNESS_FADER_BASE.load(Ordering::SeqCst);
+
+            let brightness = if fader_base > 0 && fader > 0 {
+                (1.0 - (fader as f32 / fader_base as f32)) * brightness as f32
+            } else {
+                brightness as f32
+            };
+
+            for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                for (idx, background) in chunks.iter_mut().enumerate() {
+                    let bg = &background;
+                    let fg = foreground.borrow()[idx];
+
+                    #[rustfmt::skip]
+                    let color = RGBA {
+                        r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                        g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                        b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                        a: fg.a as u8,
+                    };
+
+                    *background = color;
+                }
+            }
+        });
+    }
+
+    // signal readiness / notify the main thread that we are done
+    let val = { *crate::COLOR_MAPS_READY_CONDITION.0.lock() };
+
+    let val = val.checked_sub(1).unwrap_or_else(|| {
+        warn!("Incorrect state in locking code detected");
+        0
+    });
+
+    *crate::COLOR_MAPS_READY_CONDITION.0.lock() = val;
+
+    crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
+
+    Ok(RunningScriptResult::Continue)
+}
+
+fn on_key_down(
+    call_helper: &mut RunningScriptCallHelper,
+    param: u8,
+) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_KEY_DOWN, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_key_up(call_helper: &mut RunningScriptCallHelper, param: u8) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_KEY_UP, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_keyboard_hid_event(
+    call_helper: &mut RunningScriptCallHelper,
+    param: KeyboardHidEvent,
+) -> Result<RunningScriptResult> {
+    let called = if call_helper.skip_on_hid_event {
+        // (Don't read the keyboard state if the script doesn't use it.)
+        Ok(RunningScriptCallHelperResult::NoHandler)
+    } else {
+        let call_args: (u8, u32) = match param {
+            KeyboardHidEvent::KeyUp { code } => (
+                crate::KEYBOARD_DEVICES.read()[0]
+                    .read()
+                    .hid_event_code_to_report(&code),
+                1,
+            ),
+            KeyboardHidEvent::KeyDown { code } => (
+                crate::KEYBOARD_DEVICES.read()[0]
+                    .read()
+                    .hid_event_code_to_report(&code),
+                2,
+            ),
+            KeyboardHidEvent::MuteDown => (1, 3),
+            KeyboardHidEvent::MuteUp => (0, 3),
+            KeyboardHidEvent::VolumeDown => (1, 4),
+            KeyboardHidEvent::VolumeUp => (0, 4),
+            KeyboardHidEvent::BrightnessDown => (1, 5),
+            KeyboardHidEvent::BrightnessUp => (0, 5),
+            KeyboardHidEvent::SetBrightness(val) => (val, 6),
+            KeyboardHidEvent::NextSlot => (1, 7),
+            KeyboardHidEvent::PreviousSlot => (0, 5),
+            _ => (0, 0),
+        };
+
+        call_helper.call(FUNCTION_ON_HID_EVENT, call_args)
+    };
+
+    let mut val = crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_mouse_hid_event(
+    call_helper: &mut RunningScriptCallHelper,
+    param: MouseHidEvent,
+) -> Result<RunningScriptResult> {
+    let call_args: (u8, u32) = match param {
+        MouseHidEvent::DpiChange(dpi_slot) => (dpi_slot, 1),
+        MouseHidEvent::ButtonDown(index) => (index + 1, 2),
+        MouseHidEvent::ButtonUp(index) => (index + 1, 3),
+        _ => (0, 0),
+    };
+    let called = call_helper.call(FUNCTION_ON_MOUSE_HID_EVENT, call_args);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_mouse_button_down(
+    call_helper: &mut RunningScriptCallHelper,
+    param: u8,
+) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_MOUSE_BUTTON_DOWN, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_mouse_button_up(
+    call_helper: &mut RunningScriptCallHelper,
+    param: u8,
+) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_MOUSE_BUTTON_UP, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_mouse_move(
+    call_helper: &mut RunningScriptCallHelper,
+    rel_x: i32,
+    rel_y: i32,
+    rel_z: i32,
+) -> Result<RunningScriptResult> {
+    let called = if call_helper.skip_on_mouse_move {
+        Ok(RunningScriptCallHelperResult::NoHandler)
+    } else {
+        call_helper.call(FUNCTION_ON_MOUSE_MOVE, (rel_x, rel_y, rel_z))
+    };
+
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_mouse_wheel_event(
+    call_helper: &mut RunningScriptCallHelper,
+    param: u8,
+) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_MOUSE_WHEEL, param);
+
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+    *val = val.saturating_sub(1);
+
+    crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_unload(call_helper: &mut RunningScriptCallHelper) -> Result<RunningScriptResult> {
+    let called = call_helper.call(FUNCTION_ON_QUIT, ());
+    match called {
+        Ok(_) => {
+            debug!("Lua script {} terminated gracefully", call_helper.file_name);
+            Ok(RunningScriptResult::TerminateGracefully)
+        }
+        Err(_) => {
+            error!(
+                "Lua script {} terminated with errors",
+                call_helper.file_name
+            );
+            Ok(RunningScriptResult::TerminateWithErrors)
+        }
+    }
+}
+
+fn on_set_parameter(
+    call_helper: &mut RunningScriptCallHelper,
+    parameter_value: ParameterValue,
+) -> Result<RunningScriptResult> {
+    if !call_helper.verify_handler_exists(FUNCTION_ON_APPLY_PARAMETER) {
+        debug!(
+            "Lua script {}: No {} function present.  Restarting script.",
+            &call_helper.file_name, FUNCTION_ON_APPLY_PARAMETER,
+        );
+
+        // Before we restart, call on_quit to let the script know.
+        // No need to decrement UPCALL_COMPLETED_ON_QUIT, since the message channel will still be active for the next Lua VM.
+        let called_on_quit = call_helper.call(FUNCTION_ON_QUIT, 0);
+        match called_on_quit {
+            Ok(_r) => Ok(RunningScriptResult::RestartScript),
+            Err(_e) => Ok(RunningScriptResult::TerminateWithErrors),
+        }
+    } else {
+        let set = set_config_param(&call_helper.lua_ctx, &parameter_value);
+        match set {
+            Ok(_) => {
+                debug!(
+                    "Lua script {}: Successfully applied parameter",
+                    &call_helper.file_name,
+                );
+
+                let call_args = (&*parameter_value.name, &*parameter_value.get_value_string());
+                let called = call_helper.call(FUNCTION_ON_APPLY_PARAMETER, call_args);
+                if let Ok(_) = called {
+                    // (the handler must exist, as we already verified it before updating Lua's global table)
+                    debug!(
+                        "Lua script {}: Successfully called {}",
+                        &call_helper.file_name, FUNCTION_ON_APPLY_PARAMETER,
+                    );
+                    Ok(RunningScriptResult::Continue)
+                } else {
+                    Ok(RunningScriptResult::TerminateWithErrors)
+                }
+            }
+            Err(_) => Ok(RunningScriptResult::TerminateWithErrors),
+        }
     }
 }

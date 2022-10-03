@@ -221,13 +221,14 @@ impl std::cmp::PartialOrd for Manifest {
 impl Manifest {
     pub fn new(script: &Path) -> Result<Self> {
         // parse manifest
-        match fs::read_to_string(util::get_manifest_for(script)) {
+        let script = script.canonicalize().unwrap();
+        match fs::read_to_string(util::get_manifest_for(&script)) {
             Ok(toml) => {
                 // parse manifest
                 match toml::de::from_str::<Self>(&toml) {
                     Ok(mut result) => {
                         // fill in required fields, after parsing
-                        result.script_file = script.to_path_buf();
+                        result.script_file = script;
 
                         Ok(result)
                     }

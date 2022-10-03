@@ -78,7 +78,12 @@ install:
 
 	@mkdir -p "/etc/eruption"
 	@mkdir -p "$(TARGET_DIR)/share/doc/eruption"
-	@mkdir -p $(TARGET_DIR)/share/eruption/scripts/{lib/{macros,keymaps,themes,hwdevices/{keyboards,mice}},examples}
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/macros"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/keymaps"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/themes"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/keyboards"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/mice"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
 	@mkdir -p "$(TARGET_DIR)/share/applications"
 	@mkdir -p "$(TARGET_DIR)/share/icons/hicolor/64x64/apps"
 	@mkdir -p "$(TARGET_DIR)/share/eruption-gui/schemas"

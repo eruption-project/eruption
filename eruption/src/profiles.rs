@@ -343,7 +343,10 @@ impl Profile {
             name: "Failsafe mode".to_string(),
             description: "Failsafe mode virtual profile".to_string(),
             profile_file: PathBuf::from("failsafe.profile"),
-            active_scripts: vec![PathBuf::from("lib/failsafe.lua")],
+            // force hardcoded directory for failsafe scripts
+            active_scripts: vec![PathBuf::from(
+                "/usr/share/eruption/scripts/lib/failsafe.lua",
+            )],
             ..Default::default()
         }
     }

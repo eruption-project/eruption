@@ -1176,30 +1176,7 @@ fn apply_parameter(
         .unwrap_or_default()
         .parse_config_param(param_name, value)?;
 
-    let mut need_to_reload_profile = true;
-    {
-        if let Some(active_profile) = &*crate::ACTIVE_PROFILE.lock() {
-            if is_same_file(&active_profile.profile_file, &profile_path).unwrap_or(false) {
-                let lua_txs = crate::LUA_TXS.read();
-                let lua_tx = lua_txs
-                    .iter()
-                    .find(|&lua_tx| lua_tx.script_file == script_path);
-
-                if let Some(lua_tx) = lua_tx {
-                    let sent = lua_tx.send(script::Message::SetParameter {
-                        parameter_value: config_param.to_parameter_value(),
-                    });
-
-                    match sent {
-                        Ok(()) => need_to_reload_profile = false,
-                        Err(_) => {
-                            eprintln!("Could not update parameter via DBUS.");
-                        }
-                    }
-                }
-            }
-        }
-    }
+    let parameter_value = config_param.to_parameter_value();
 
     // modify persistent profile state
     match profiles::Profile::from(&profile_path) {
@@ -1218,15 +1195,37 @@ fn apply_parameter(
 
             profile_config.push(config_param);
             profile.save_params()?;
-
-            if need_to_reload_profile {
-                crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-            }
         }
 
         Err(e) => {
             error!("Could not update profile state: {}", e);
         }
+    }
+
+    let mut need_to_reload_profile = true;
+    {
+        if let Some(active_profile) = &*crate::ACTIVE_PROFILE.lock() {
+            if is_same_file(&active_profile.profile_file, &profile_path).unwrap_or(false) {
+                let lua_txs = crate::LUA_TXS.read();
+                let lua_tx = lua_txs
+                    .iter()
+                    .find(|&lua_tx| lua_tx.script_file == script_path);
+
+                if let Some(lua_tx) = lua_tx {
+                    let sent = lua_tx.send(script::Message::SetParameter { parameter_value });
+                    match sent {
+                        Ok(()) => need_to_reload_profile = false,
+                        Err(_) => {
+                            eprintln!("Could not update parameter from D-Bus request.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if need_to_reload_profile {
+        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
     }
 
     Ok(())

@@ -17,5 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+pub mod callbacks;
+pub mod constants;
 pub mod manifest;
 pub mod script;
