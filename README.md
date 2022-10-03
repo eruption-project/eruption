@@ -41,6 +41,8 @@
 
 A Linux user-mode input and RGB LED driver for keyboards, mice and other devices
 
+For a list of recent news and noteworthy changes, please refer to [CHANGES.md](CHANGES.md)
+
 ### Image and Video Gallery
 
 [![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](<https://www.youtube.com/watch?v=ig_71zg14nQ>)

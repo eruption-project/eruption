@@ -17,7 +17,7 @@ Table of new and noteworthy changes:
 | 0.2.0 | Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
 | 0.2.0 | Add new profile `Lava Lamp (System palette)` that makes use of imported color-schemes |
 | 0.2.0 | Modify Lua script `batique.lua` to support imported color-schemes |
-| 0.2.0 | Update the project description, add the new website: https://eruption-project.org/                                                                                                                                                                                  |
+| 0.2.0 | Update the project description, add the new website: <https://eruption-project.org/>                                                                                                                                                                                  |
 | 0.2.0 | Implement support for a systemd-based software watchdog and add a watchdog daemon for development purposes                                                                                                                                                          |
 | 0.2.0 | Add experimental support for `ROCCAT Kone Pro` series mice                                                                                                                                                                                                          |
 | 0.2.0 | Add experimental support for `ROCCAT Kone Pro Air` series mice                                                                                                                                                                                                      |
