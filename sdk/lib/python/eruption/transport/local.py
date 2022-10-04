@@ -20,7 +20,7 @@ import socket
 import google.protobuf
 import google.protobuf.internal.encoder as GoogleProtobufEncoder
 
-from eruption.transport.sdk_support_pb2 import Request, Response, RequestType
+from eruption.transport.sdk_support_pb2 import Request, Response
 
 SOCKET_ADDRESS = "/run/eruption/control.sock"
 MAX_BUF = 4096
@@ -46,7 +46,8 @@ class LocalTransport:
 
     def get_server_status(self):
         """Get status of a running Eruption instance"""
-        request = Request(request_type=RequestType.STATUS)
+        request = Request()
+        request.status.SetInParent()
 
         buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
         buf += request.SerializeToString()
@@ -56,11 +57,59 @@ class LocalTransport:
         response = Response()
         response.ParseFromString(recv_buf[1:])
 
-        return {"server": str(response.data, 'utf-8')}
+        return {"server": response.status.description}
+
+    def get_active_profile(self):
+        """Get the file path of the active profile"""
+        request = Request()
+        request.active_profile.SetInParent()
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        return response.active_profile.profile_file
+
+    def switch_profile(self, profile_file):
+        """Switches the active profile to one given in the file path"""
+        request = Request()
+        request.switch_profile.profile_file = profile_file
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        return response.switch_profile.switched
+
+    def set_parameters(self, profile_file, script_file, **parameters):
+        """Update parameter values for the given profile and script"""
+
+        request = Request()
+        request.set_parameters.profile_file = profile_file
+        request.set_parameters.script_file = script_file
+        for name, value in parameters.items():
+            request.set_parameters.parameter_values[name] = str(value)
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        return response
 
     def submit_canvas(self, canvas):
         """Submit the canvas to Eruption for realization"""
-        request = Request(request_type=RequestType.SET_CANVAS)
 
         color_bytes = []
         for color in canvas.data:
@@ -69,7 +118,8 @@ class LocalTransport:
             color_bytes.append(color.data[2])
             color_bytes.append(color.data[3])
 
-        request.data = bytes(color_bytes)
+        request = Request()
+        request.set_canvas.canvas = bytes(color_bytes)
 
         buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
         buf += request.SerializeToString()
@@ -83,13 +133,13 @@ class LocalTransport:
 
     def notify_device_hotplug(self, hotplug_info):
         """Notify Eruption about a device hotplug event"""
-        request = Request(request_type=RequestType.NOTIFY_HOTPLUG)
-
+        
         data_bytes = []
         data_bytes.append(hotplug_info.usb_vid)
         data_bytes.append(hotplug_info.usb_pid)
 
-        request.data = bytes(data_bytes)
+        request = Request()
+        request.hotplug_request.payload = bytes(data_bytes)
 
         buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
         buf += request.SerializeToString()

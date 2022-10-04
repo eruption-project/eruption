@@ -406,15 +406,30 @@ fn parse_commandline() -> clap::ArgMatches {
         .get_matches()
 }
 
+pub fn switch_profile_please(profile_file: Option<&Path>) -> Result<SwitchProfileResult> {
+    let dbus_api_tx = crate::DBUS_API_TX.lock();
+    let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+    switch_profile(profile_file, dbus_api_tx, true)
+}
+
+#[derive(PartialEq)]
+pub enum SwitchProfileResult {
+    Switched,
+    InvalidProfile,
+    FallbackToFailsafe,
+}
+
 /// Switches the currently active profile to the profile file `profile_file`
-/// Returns Ok(true) if the new profile has been activated or the old profile was kept,
-/// otherwise returns Ok(false) when we entered failsafe mode. If an error occurred during
-/// switching to failsafe mode, we return an Err() to signal a fatal error
+/// Returns Ok(Switched) if the new profile has been activated, Ok(InvalidProfile)
+/// if the old profile was kept, or else Ok(FallbackToFailsafe) when we entered
+/// failsafe mode. If an error occurred during switching to failsafe mode, we
+/// return an Err() to signal a fatal error
 pub fn switch_profile(
     profile_file: Option<&Path>,
     dbus_api_tx: &Sender<DbusApiEvent>,
     notify: bool,
-) -> Result<bool> {
+) -> Result<SwitchProfileResult> {
     fn switch_to_failsafe_profile(dbus_api_tx: &Sender<DbusApiEvent>, notify: bool) -> Result<()> {
         let mut errors_present = false;
 
@@ -495,7 +510,7 @@ pub fn switch_profile(
 
         debug!("Successfully entered failsafe mode");
 
-        Ok(false)
+        Ok(SwitchProfileResult::FallbackToFailsafe)
     } else {
         // we require profile_file to be set in this branch
         let profile_file = if let Some(profile_file) = profile_file {
@@ -509,136 +524,144 @@ pub fn switch_profile(
 
         let profile = profiles::Profile::from(profile_file);
 
-        if let Ok(profile) = profile {
-            let mut errors_present = false;
+        match profile {
+            Ok(profile) => {
+                let mut errors_present = false;
 
-            let mut manifests: Vec<Manifest> = vec![];
-            for script_file in profile.active_scripts.iter() {
-                let manifest = load_manifest_or_emit_error_messages(&script_file);
-                if let Ok(manifest) = manifest {
-                    manifests.push(manifest);
-                } else {
-                    // the profile to switch to refers to invalid script files, so we need to refuse to
-                    // switch profiles and simply keep the current one, or load a failsafe profile if we
-                    // do not have a currently active profile, like e.g. during startup
-                    if crate::ACTIVE_PROFILE.lock().is_none() {
-                        error!("An error occurred during switching of profiles, loading failsafe profile now");
-                        switch_to_failsafe_profile(dbus_api_tx, notify)?;
-
-                        return Ok(false);
+                let mut manifests: Vec<Manifest> = vec![];
+                for script_file in profile.active_scripts.iter() {
+                    let manifest = load_manifest_or_emit_error_messages(&script_file);
+                    if let Ok(manifest) = manifest {
+                        manifests.push(manifest);
                     } else {
-                        error!(
-                            "Invalid profile: {}, refusing to switch profiles",
-                            profile_file.display()
-                        );
+                        // the profile to switch to refers to invalid script files, so we need to refuse to
+                        // switch profiles and simply keep the current one, or load a failsafe profile if we
+                        // do not have a currently active profile, like e.g. during startup
+                        if crate::ACTIVE_PROFILE.lock().is_none() {
+                            error!("An error occurred during switching of profiles, loading failsafe profile now");
+                            switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
-                        return Ok(true);
+                            return Ok(SwitchProfileResult::FallbackToFailsafe);
+                        } else {
+                            error!(
+                                "Invalid profile: {}, refusing to switch profiles",
+                                profile_file.display()
+                            );
+
+                            return Ok(SwitchProfileResult::InvalidProfile);
+                        }
                     }
                 }
-            }
 
-            // now request termination of all Lua VMs
+                // now request termination of all Lua VMs
 
-            for lua_tx in LUA_TXS.read().iter() {
-                if !lua_tx.is_failed {
-                    lua_tx
-                        .send(script::Message::Unload)
-                        .unwrap_or_else(|e| error!("Could not send an event to a Lua VM: {}", e));
-                } else {
-                    warn!("Skipping unload of a failed tx");
-                }
-            }
-
-            // be safe and clear any leftover channels
-            LUA_TXS.write().clear();
-
-            // we passed the point of no return, from here on we can't just go back
-            // but need to switch to failsafe mode when we encounter any critical errors
-
-            let mut num_vms = 0; // only valid if no errors occurred
-
-            // now spawn a new set of Lua VMs, with scripts from the new profile
-            for (thread_idx, manifest) in manifests.iter().enumerate() {
-                let script_file = manifest.script_file.clone();
-                let parameter_values = merge_parameters(manifest, &profile);
-
-                let (lua_tx, lua_rx) = unbounded();
-                if let Err(e) =
-                    threads::spawn_lua_thread(thread_idx, lua_rx, &script_file, &parameter_values)
-                {
-                    errors_present = true;
-
-                    error!("Could not spawn a thread: {}", e);
-                }
-
-                let mut tx = LuaTx::new(script_file, lua_tx);
-
-                if !errors_present {
-                    num_vms += 1;
-                } else {
-                    tx.is_failed = true;
-                }
-
-                LUA_TXS.write().push(tx);
-            }
-
-            // it seems that at least one Lua VM failed during loading of the new profile,
-            // so we have to switch to failsafe mode to be safe
-            if errors_present || num_vms == 0 {
-                error!(
-                    "An error occurred during switching of profiles, loading failsafe profile now"
-                );
-                switch_to_failsafe_profile(dbus_api_tx, notify)?;
-
-                Ok(false)
-            } else {
-                // everything is fine, finally assign the globally active profile
-                debug!("Switch successful");
-
-                let fade_millis = crate::CONFIG
-                    .lock()
-                    .as_ref()
-                    .unwrap()
-                    .get_int("global.profile_fade_milliseconds")
-                    .unwrap_or(constants::FADE_MILLIS as i64);
-                let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
-                crate::BRIGHTNESS_FADER.store(fade_frames, Ordering::SeqCst);
-                crate::BRIGHTNESS_FADER_BASE.store(fade_frames, Ordering::SeqCst);
-
-                *ACTIVE_PROFILE.lock() = Some(profile);
-
-                if notify {
-                    dbus_api_tx
-                        .send(DbusApiEvent::ActiveProfileChanged)
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending dbus API event: {}", e)
+                for lua_tx in LUA_TXS.read().iter() {
+                    if !lua_tx.is_failed {
+                        lua_tx.send(script::Message::Unload).unwrap_or_else(|e| {
+                            error!("Could not send an event to a Lua VM: {}", e)
                         });
+                    } else {
+                        warn!("Skipping unload of a failed tx");
+                    }
                 }
 
-                let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-                let mut slot_profiles = SLOT_PROFILES.lock();
-                slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
+                // be safe and clear any leftover channels
+                LUA_TXS.write().clear();
 
-                Ok(true)
+                // we passed the point of no return, from here on we can't just go back
+                // but need to switch to failsafe mode when we encounter any critical errors
+
+                let mut num_vms = 0; // only valid if no errors occurred
+
+                // now spawn a new set of Lua VMs, with scripts from the new profile
+                for (thread_idx, manifest) in manifests.iter().enumerate() {
+                    let script_file = manifest.script_file.clone();
+                    let parameter_values = merge_parameters(manifest, &profile);
+
+                    let (lua_tx, lua_rx) = unbounded();
+                    if let Err(e) = threads::spawn_lua_thread(
+                        thread_idx,
+                        lua_rx,
+                        &script_file,
+                        &parameter_values,
+                    ) {
+                        errors_present = true;
+
+                        error!("Could not spawn a thread: {}", e);
+                    }
+
+                    let mut tx = LuaTx::new(script_file, lua_tx);
+
+                    if !errors_present {
+                        num_vms += 1;
+                    } else {
+                        tx.is_failed = true;
+                    }
+
+                    LUA_TXS.write().push(tx);
+                }
+
+                // it seems that at least one Lua VM failed during loading of the new profile,
+                // so we have to switch to failsafe mode to be safe
+                if errors_present || num_vms == 0 {
+                    error!(
+                        "An error occurred during switching of profiles, loading failsafe profile now"
+                    );
+                    switch_to_failsafe_profile(dbus_api_tx, notify)?;
+
+                    Ok(SwitchProfileResult::FallbackToFailsafe)
+                } else {
+                    // everything is fine, finally assign the globally active profile
+                    debug!("Switch successful");
+
+                    let fade_millis = crate::CONFIG
+                        .lock()
+                        .as_ref()
+                        .unwrap()
+                        .get_int("global.profile_fade_milliseconds")
+                        .unwrap_or(constants::FADE_MILLIS as i64);
+                    let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
+                    crate::BRIGHTNESS_FADER.store(fade_frames, Ordering::SeqCst);
+                    crate::BRIGHTNESS_FADER_BASE.store(fade_frames, Ordering::SeqCst);
+
+                    *ACTIVE_PROFILE.lock() = Some(profile);
+
+                    if notify {
+                        dbus_api_tx
+                            .send(DbusApiEvent::ActiveProfileChanged)
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending dbus API event: {}", e)
+                            });
+                    }
+
+                    let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
+                    let mut slot_profiles = SLOT_PROFILES.lock();
+                    slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
+
+                    Ok(SwitchProfileResult::Switched)
+                }
             }
-        } else {
-            // the profile file to switch to is corrupted, so we need to refuse to switch profiles
-            // and simply keep the current one, or load a failsafe profile if we do not have a
-            // currently active profile, like e.g. during startup of the daemon
-            if crate::ACTIVE_PROFILE.lock().is_none() {
-                error!(
-                    "An error occurred during switching of profiles, loading failsafe profile now"
-                );
-                switch_to_failsafe_profile(dbus_api_tx, notify)?;
+            Err(e) => {
+                // the profile file to switch to is corrupted, so we need to refuse to switch profiles
+                // and simply keep the current one, or load a failsafe profile if we do not have a
+                // currently active profile, like e.g. during startup of the daemon
+                if crate::ACTIVE_PROFILE.lock().is_none() {
+                    error!(
+                        "An error occurred during switching of profiles, loading failsafe profile now. {}",
+                        e
+                    );
+                    switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
-                Ok(false)
-            } else {
-                error!(
-                    "Invalid profile: {}, refusing to switch profiles",
-                    profile_file.display()
-                );
+                    Ok(SwitchProfileResult::FallbackToFailsafe)
+                } else {
+                    error!(
+                        "Invalid profile: {}, refusing to switch profiles. {}",
+                        profile_file.display(),
+                        e
+                    );
 
-                Ok(true)
+                    Ok(SwitchProfileResult::InvalidProfile)
+                }
             }
         }
     }
@@ -701,7 +724,7 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
     match &manifest.config {
         Some(manifest_config) => {
             if profile_config.is_none() {
-                warn!("Active profile is undefined, using config parameters from script manifest");
+                warn!("Active profile does not have {} config. Using config parameters from script manifest.", &manifest.name);
             }
 
             manifest_config
@@ -713,7 +736,7 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
                             .find_config_param(&parameter_value.name)
                             .and_then(|cp| Some(cp.to_parameter_value()))
                             .unwrap_or_else(|| {
-                                debug!("Parameter {} is undefined, using defaults from script manifest", parameter_value.name);
+                                debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);
                                 parameter_value
                             }),
                         None => parameter_value,

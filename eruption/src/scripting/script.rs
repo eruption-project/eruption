@@ -67,8 +67,8 @@ pub enum Message {
     /// blend LOCAL_LED_MAP with LED_MAP ("realize" the color map)
     RealizeColorMap,
 
-    SetParameter {
-        parameter_value: ParameterValue,
+    SetParameters {
+        parameter_values: Vec<ParameterValue>,
     },
 }
 
@@ -325,7 +325,7 @@ pub fn run_script(
             // Prepare the Lua environment and eval the script
             let prepared = register_support_globals(&lua_ctx)
                 .and_then(|()| register_support_funcs(&lua_ctx))
-                .and_then(|()| register_script_config(&lua_ctx, parameter_values.values()))
+                .and_then(|()| set_parameter_values(&lua_ctx, parameter_values.values()))
                 .and_then(|()| lua_ctx.load(&script).eval::<()>());
 
             if let Err(e) = prepared {
@@ -346,10 +346,14 @@ pub fn run_script(
 
             loop {
                 if let Ok(msg) = rx.recv() {
-                    if let Message::SetParameter { parameter_value } = &msg {
+                    if let Message::SetParameters {
+                        parameter_values: new_parameter_values,
+                    } = &msg
+                    {
                         // Save the new value for next time
-                        parameter_values
-                            .insert(parameter_value.name.clone(), parameter_value.clone());
+                        new_parameter_values.iter().for_each(|pv| {
+                            parameter_values.insert(pv.name.clone(), pv.clone());
+                        });
                     }
 
                     match process_message(&mut call_helper, msg) {
@@ -414,19 +418,23 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     callbacks::register_support_funcs(lua_ctx)
 }
 
-fn register_script_config<'a, I>(lua_ctx: &Lua, parameter_values: I) -> mlua::Result<()>
+fn set_parameter_values<'a, I>(lua_ctx: &Lua, parameter_values: I) -> mlua::Result<()>
 where
     I: Iterator<Item = &'a ParameterValue>,
 {
     for parameter_value in parameter_values {
-        debug!("Applying parameter {:?}", parameter_value);
-        set_config_param(lua_ctx, parameter_value)?;
+        debug!(
+            "Applying parameter {:?} = {}",
+            parameter_value.name,
+            parameter_value.get_value_string()
+        );
+        set_parameter_value(lua_ctx, parameter_value)?;
     }
 
     Ok(())
 }
 
-fn set_config_param(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
+fn set_parameter_value(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
     match &param.value {
         TypedValue::Int(value) => globals.raw_set::<&str, i64>(&param.name, *value),
@@ -454,7 +462,9 @@ fn process_message(
         Message::MouseMove(rel_x, rel_y, rel_z) => on_mouse_move(call_helper, rel_x, rel_y, rel_z),
         Message::MouseWheelEvent(param) => on_mouse_wheel_event(call_helper, param),
         Message::Unload => on_unload(call_helper),
-        Message::SetParameter { parameter_value } => on_set_parameter(call_helper, parameter_value),
+        Message::SetParameters { parameter_values } => {
+            on_apply_parameters(call_helper, parameter_values)
+        }
     }
 }
 
@@ -704,9 +714,9 @@ fn on_unload(call_helper: &mut RunningScriptCallHelper) -> Result<RunningScriptR
     }
 }
 
-fn on_set_parameter(
+fn on_apply_parameters(
     call_helper: &mut RunningScriptCallHelper,
-    parameter_value: ParameterValue,
+    parameter_values: Vec<ParameterValue>,
 ) -> Result<RunningScriptResult> {
     if !call_helper.verify_handler_exists(FUNCTION_ON_APPLY_PARAMETER) {
         debug!(
@@ -722,7 +732,7 @@ fn on_set_parameter(
             Err(_e) => Ok(RunningScriptResult::TerminateWithErrors),
         }
     } else {
-        let set = set_config_param(&call_helper.lua_ctx, &parameter_value);
+        let set = set_parameter_values(&call_helper.lua_ctx, parameter_values.iter());
         match set {
             Ok(_) => {
                 debug!(
@@ -730,7 +740,10 @@ fn on_set_parameter(
                     &call_helper.file_name,
                 );
 
-                let call_args = (&*parameter_value.name, &*parameter_value.get_value_string());
+                let call_args: Vec<String> = parameter_values
+                    .iter()
+                    .map(|pv| pv.name.to_string())
+                    .collect();
                 let called = call_helper.call(FUNCTION_ON_APPLY_PARAMETER, call_args);
                 if let Ok(_) = called {
                     // (the handler must exist, as we already verified it before updating Lua's global table)

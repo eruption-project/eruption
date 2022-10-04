@@ -328,11 +328,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 
@@ -373,11 +379,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 

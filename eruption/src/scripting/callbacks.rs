@@ -26,6 +26,7 @@ use palette::convert::FromColor;
 use palette::{Hsl, Srgb};
 use rand::Rng;
 use std::convert::TryFrom;
+use std::fmt::Write;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
@@ -140,6 +141,34 @@ pub(crate) fn log_error(x: &str) {
 pub(crate) fn delay(millis: u64) {
     // TODO: This will totally block the Lua VM, so not very useful currently.
     thread::sleep(Duration::from_millis(millis));
+}
+
+pub(crate) fn stringify(mut string: &mut String, value: mlua::Value) -> Option<()> {
+    match value {
+        LuaValue::Nil => write!(&mut string, "{}", "nil"),
+        LuaValue::Boolean(b) => write!(string, "{}", b),
+        LuaValue::LightUserData(lud) => write!(string, "[lightuserdata, {:?}]", lud),
+        LuaValue::Integer(i) => write!(string, "{}", i),
+        LuaValue::Number(f) => write!(string, "{}", f),
+        LuaValue::String(s) => write!(string, "{}", s.to_string_lossy()),
+        LuaValue::Function(f) => write!(string, "[function, {:?}]", f.info()),
+        LuaValue::Thread(t) => write!(string, "[thread, {:?}]", t.status()),
+        LuaValue::UserData(ud) => write!(string, "[userdata, {:?}]", ud),
+        LuaValue::Error(e) => write!(string, "{}", e),
+        LuaValue::Table(t) => {
+            write!(string, "{{ ").unwrap();
+            for pair in t.pairs::<mlua::Value, mlua::Value>() {
+                // (Fingers crossed that the user doesn't cyclically nest tables.)
+                let (key, value) = pair.unwrap();
+                stringify(string, key)?;
+                write!(string, " = ").unwrap();
+                stringify(string, value)?;
+                write!(string, ", ").unwrap();
+            }
+            write!(string, "}}")
+        }
+    }
+    .ok()
 }
 
 /// Returns the target framerate
@@ -754,6 +783,13 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
         Ok(())
     })?;
     globals.set("delay", delay)?;
+
+    let stringify = lua_ctx.create_function(|_, value: mlua::Value| {
+        let mut s = String::new();
+        stringify(&mut s, value);
+        Ok(s)
+    })?;
+    globals.set("stringify", stringify)?;
 
     // eruption engine status
     let get_target_fps = lua_ctx.create_function(|_, ()| Ok(callbacks::get_target_fps()))?;

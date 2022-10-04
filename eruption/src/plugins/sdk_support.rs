@@ -20,7 +20,7 @@
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
-    SDK_SUPPORT_ACTIVE,
+    SwitchProfileResult, SDK_SUPPORT_ACTIVE,
 };
 use flume::unbounded;
 use lazy_static::lazy_static;
@@ -30,21 +30,23 @@ use nix::poll::{poll, PollFd, PollFlags};
 use nix::unistd::unlink;
 use parking_lot::{Mutex, RwLock};
 use prost::Message;
-use protocol::request::Payload as RequestPayload;
-use protocol::response::Payload as ResponsePayload;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::io::AsRawFd;
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs, thread};
 
-use crate::hwdevices::RGBA;
-use crate::plugins::{self, Plugin};
+use crate::{
+    hwdevices::RGBA,
+    plugins::{self, Plugin},
+    scripting::parameters,
+};
 
 pub mod protocol {
     include!(concat!(env!("OUT_DIR"), "/sdk_support.rs"));
@@ -393,6 +395,12 @@ impl SdkSupportPlugin {
                                 let mut tmp =
                                     [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
                                 match socket.recv(&mut tmp) {
+                                    Err(e) => {
+                                        error!("Socket receive failed: {}", e);
+
+                                        break 'EVENT_LOOP;
+                                    }
+
                                     Ok(0) => {
                                         debug!("Eruption SDK client disconnected");
 
@@ -411,168 +419,316 @@ impl SdkSupportPlugin {
                                         let result = protocol::Request::decode_length_delimited(
                                             &mut Cursor::new(&tmp),
                                         );
-                                        match result {
-                                            Ok(request) => match request.request_type() {
-                                                protocol::RequestType::Status => {
-                                                    trace!("Get Status");
-
-                                                    let mut response =
-                                                        protocol::Response::default();
-                                                    response.set_response_type(
-                                                        protocol::RequestType::Status,
-                                                    );
-
-                                                    let tmp = "Eruption";
-                                                    response.payload = Some(ResponsePayload::Data(
-                                                        tmp.as_bytes().to_vec(),
-                                                    ));
-
-                                                    let mut buf = Vec::new();
-                                                    response.encode_length_delimited(&mut buf)?;
-
-                                                    // send data
-                                                    match socket.send(&buf) {
-                                                        Ok(_n) => {}
-
-                                                        Err(_e) => {
-                                                            return Err(SdkPluginError::PluginError {
-                                                                description: "Lost connection to Eruption SDK client".to_owned(),
-                                                            }
-                                                                .into());
-                                                        }
-                                                    }
-                                                }
-
-                                                protocol::RequestType::SetCanvas => {
-                                                    trace!("Set canvas");
-
-                                                    let RequestPayload::Data(payload_map) =
-                                                        request.payload.unwrap();
-
-                                                    let mut led_map = [RGBA {
-                                                        r: 0,
-                                                        g: 0,
-                                                        b: 0,
-                                                        a: 0,
-                                                    };
-                                                        constants::CANVAS_SIZE];
-
-                                                    let mut i = 0;
-                                                    let mut cntr = 0;
-
-                                                    loop {
-                                                        led_map[cntr] = RGBA {
-                                                            r: payload_map[i],
-                                                            g: payload_map[i + 1],
-                                                            b: payload_map[i + 2],
-                                                            a: payload_map[i + 3],
-                                                        };
-
-                                                        i += 4;
-                                                        cntr += 1;
-
-                                                        if cntr >= led_map.len()
-                                                            || i >= payload_map.len()
-                                                        {
-                                                            break;
-                                                        }
-                                                    }
-
-                                                    LED_MAP.write().copy_from_slice(&led_map);
-
-                                                    SDK_SUPPORT_ACTIVE
-                                                        .store(true, Ordering::SeqCst);
-
-                                                    script::FRAME_GENERATION_COUNTER
-                                                        .fetch_add(1, Ordering::SeqCst);
-
-                                                    let mut response =
-                                                        protocol::Response::default();
-                                                    response.set_response_type(
-                                                        protocol::RequestType::Noop,
-                                                    );
-
-                                                    let mut buf = Vec::new();
-                                                    response.encode_length_delimited(&mut buf)?;
-
-                                                    // send data
-                                                    match socket.send(&buf) {
-                                                        Ok(_n) => {}
-
-                                                        Err(_e) => {
-                                                            return Err(SdkPluginError::PluginError {
-                                                                description: "Lost connection to Eruption SDK client".to_owned(),
-                                                            }
-                                                                .into());
-                                                        }
-                                                    }
-                                                }
-
-                                                protocol::RequestType::NotifyHotplug => {
-                                                    trace!("Notify hotplug");
-
-                                                    let RequestPayload::Data(payload_hotplug_info) =
-                                                        request.payload.unwrap();
-
-                                                    let config = bincode::config::standard();
-                                                    let hotplug_info: HotplugInfo =
-                                                        bincode::decode_from_slice(
-                                                            &payload_hotplug_info,
-                                                            config,
-                                                        )?
-                                                        .0;
-
-                                                    info!("Hotplug event received, trying to claim newly added devices now...");
-
-                                                    claim_hotplugged_devices(&hotplug_info)?;
-
-                                                    // we need to terminate and then re-enter the main loop to update all global state
-                                                    crate::REENTER_MAIN_LOOP
-                                                        .store(true, Ordering::SeqCst);
-
-                                                    let mut response =
-                                                        protocol::Response::default();
-                                                    response.set_response_type(
-                                                        protocol::RequestType::Noop,
-                                                    );
-
-                                                    let mut buf = Vec::new();
-                                                    response.encode_length_delimited(&mut buf)?;
-
-                                                    // send data
-                                                    match socket.send(&buf) {
-                                                        Ok(_n) => {}
-
-                                                        Err(_e) => {
-                                                            return Err(SdkPluginError::PluginError {
-                                                                description: "Lost connection to Eruption SDK client".to_owned(),
-                                                            }
-                                                                .into());
-                                                        }
-                                                    }
-                                                }
-
-                                                protocol::RequestType::Noop => {
-                                                    /* Do nothing */
-
-                                                    trace!("NOOP");
-                                                }
-                                            },
-
+                                        let request = match result {
+                                            Ok(request) => request,
                                             Err(e) => {
                                                 error!("Protocol error: {}", e);
+                                                return Err(SdkPluginError::PluginError {
+                                                    description:
+                                                        "Lost connection to Eruption SDK client"
+                                                            .to_owned(),
+                                                }
+                                                .into());
+                                            }
+                                        };
 
-                                                // break 'EVENT_LOOP;
+                                        match request.request_message {
+                                            Some(protocol::request::RequestMessage::Noop(
+                                                _message,
+                                            )) => {
+                                                /* Do nothing */
+
+                                                trace!("NOOP");
+                                            }
+
+                                            Some(protocol::request::RequestMessage::Status(
+                                                _message,
+                                            )) => {
+                                                trace!("Get Status");
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::Status(
+                                                            protocol::StatusResponse {
+                                                                description: "Eruption".to_string(),
+                                                            },
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            Some(
+                                                protocol::request::RequestMessage::ActiveProfile(
+                                                    _message,
+                                                ),
+                                            ) => {
+                                                trace!("Get Active Profile");
+
+                                                let profile_file = {
+                                                    let active_profile =
+                                                        &*crate::ACTIVE_PROFILE.lock();
+                                                    match active_profile {
+                                                        Some(active_profile) => active_profile
+                                                            .profile_file
+                                                            .to_string_lossy()
+                                                            .to_string(),
+                                                        None => "Unknown".to_string(),
+                                                    }
+                                                };
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::ActiveProfile(
+                                                            protocol::ActiveProfileResponse {
+                                                                profile_file
+                                                            },
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            Some(
+                                                protocol::request::RequestMessage::SwitchProfile(
+                                                    message,
+                                                ),
+                                            ) => {
+                                                trace!("Switch Profile");
+
+                                                let profile_file =
+                                                    PathBuf::from(message.profile_file);
+                                                let switched = crate::switch_profile_please(Some(
+                                                    &profile_file,
+                                                ))?;
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::SwitchProfile(
+                                                            protocol::SwitchProfileResponse {
+                                                                switched: switched == SwitchProfileResult::Switched
+                                                            },
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            Some(
+                                                protocol::request::RequestMessage::SetParameters(
+                                                    message,
+                                                ),
+                                            ) => {
+                                                let parameter_values: Vec<
+                                                    parameters::UntypedParameterValue,
+                                                > = message
+                                                    .parameter_values
+                                                    .iter()
+                                                    .map(|map| parameters::UntypedParameterValue {
+                                                        name: map.0.to_string(),
+                                                        value: map.1.to_string(),
+                                                    })
+                                                    .collect();
+                                                parameters::apply_parameters(
+                                                    &message.profile_file,
+                                                    &message.script_file,
+                                                    &parameter_values,
+                                                )?;
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::SetParameters(
+                                                            protocol::SetParametersResponse {},
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            Some(protocol::request::RequestMessage::SetCanvas(
+                                                message,
+                                            )) => {
+                                                trace!("Set canvas");
+
+                                                let payload_map = message.canvas;
+
+                                                let mut led_map = [RGBA {
+                                                    r: 0,
+                                                    g: 0,
+                                                    b: 0,
+                                                    a: 0,
+                                                };
+                                                    constants::CANVAS_SIZE];
+
+                                                let mut i = 0;
+                                                let mut cntr = 0;
+
+                                                loop {
+                                                    led_map[cntr] = RGBA {
+                                                        r: payload_map[i],
+                                                        g: payload_map[i + 1],
+                                                        b: payload_map[i + 2],
+                                                        a: payload_map[i + 3],
+                                                    };
+
+                                                    i += 4;
+                                                    cntr += 1;
+
+                                                    if cntr >= led_map.len()
+                                                        || i >= payload_map.len()
+                                                    {
+                                                        break;
+                                                    }
+                                                }
+
+                                                LED_MAP.write().copy_from_slice(&led_map);
+
+                                                SDK_SUPPORT_ACTIVE.store(true, Ordering::SeqCst);
+
+                                                script::FRAME_GENERATION_COUNTER
+                                                    .fetch_add(1, Ordering::SeqCst);
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::SetCanvas(
+                                                            protocol::SetCanvasResponse {},
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            Some(
+                                                protocol::request::RequestMessage::NotifyHotplug(
+                                                    message,
+                                                ),
+                                            ) => {
+                                                trace!("Notify hotplug");
+
+                                                let payload_hotplug_info = message.payload;
+
+                                                let config = bincode::config::standard();
+                                                let hotplug_info: HotplugInfo =
+                                                    bincode::decode_from_slice(
+                                                        &payload_hotplug_info,
+                                                        config,
+                                                    )?
+                                                    .0;
+
+                                                info!("Hotplug event received, trying to claim newly added devices now...");
+
+                                                claim_hotplugged_devices(&hotplug_info)?;
+
+                                                // we need to terminate and then re-enter the main loop to update all global state
+                                                crate::REENTER_MAIN_LOOP
+                                                    .store(true, Ordering::SeqCst);
+
+                                                let response = protocol::Response {
+                                                    response_message: Some(
+                                                        protocol::response::ResponseMessage::NotifyHotplug(
+                                                            protocol::NotifyHotplugResponse {},
+                                                        ),
+                                                    ),
+                                                };
+
+                                                let mut buf = Vec::new();
+                                                response.encode_length_delimited(&mut buf)?;
+
+                                                // send data
+                                                match socket.send(&buf) {
+                                                    Ok(_n) => {}
+
+                                                    Err(_e) => {
+                                                        return Err(SdkPluginError::PluginError {
+                                                            description: "Lost connection to Eruption SDK client".to_owned(),
+                                                        }
+                                                            .into());
+                                                    }
+                                                }
+                                            }
+
+                                            None => {
+                                                // not sure how this can happen
+                                                error!(
+                                                    "Protocol error: No message in message payload"
+                                                );
+                                                return Err(SdkPluginError::PluginError {
+                                                    description: "No message is message payload"
+                                                        .to_owned(),
+                                                }
+                                                .into());
                                             }
                                         }
-                                    }
-
-                                    Err(_e) => {
-                                        return Err(SdkPluginError::PluginError {
-                                            description: "Lost connection to Eruption SDK client"
-                                                .to_owned(),
-                                        }
-                                        .into());
                                     }
                                 }
                             }

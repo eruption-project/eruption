@@ -24,11 +24,11 @@ use crate::{util, Result};
 use eyre::eyre;
 use parking_lot::Mutex;
 use prost::Message;
-use protocol::request::Payload as RequestPayload;
-use protocol::response::Payload as ResponsePayload;
 use socket2::{Domain, SockAddr, Socket, Type};
+use std::collections::HashMap;
 use std::io::{Cursor, Write};
 use std::mem::MaybeUninit;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub mod protocol {
@@ -71,8 +71,11 @@ impl Transport for LocalTransport {
     }
 
     fn get_server_status(&self) -> Result<ServerStatus> {
-        let mut request = protocol::Request::default();
-        request.set_request_type(protocol::RequestType::Status);
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::Status(
+                protocol::StatusRequest {},
+            )),
+        };
 
         let mut buf = Vec::new();
         request.encode_length_delimited(&mut buf)?;
@@ -91,11 +94,15 @@ impl Transport for LocalTransport {
                         let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
                         let result =
                             protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
-                        let ResponsePayload::Data(payload) = result.payload.unwrap();
-
-                        Ok(ServerStatus {
-                            server: String::from_utf8_lossy(&payload).to_string(),
-                        })
+                        if let Some(protocol::response::ResponseMessage::Status(status_response)) =
+                            result.response_message
+                        {
+                            Ok(ServerStatus {
+                                server: status_response.description.to_string(),
+                            })
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
                     }
 
                     Err(_e) => Err(eyre!("Lost connection to Eruption")),
@@ -106,17 +113,12 @@ impl Transport for LocalTransport {
         }
     }
 
-    fn submit_canvas(&self, canvas: &Canvas) -> Result<()> {
-        let mut request = protocol::Request::default();
-        request.set_request_type(protocol::RequestType::SetCanvas);
-
-        let bytes: Vec<u8> = canvas
-            .data
-            .iter()
-            .flat_map(|c| vec![c.r(), c.g(), c.b(), c.a()])
-            .collect();
-
-        request.payload = Some(RequestPayload::Data(bytes));
+    fn get_active_profile(&self) -> Result<PathBuf> {
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::ActiveProfile(
+                protocol::ActiveProfileRequest {},
+            )),
+        };
 
         let mut buf = Vec::new();
         request.encode_length_delimited(&mut buf)?;
@@ -133,10 +135,159 @@ impl Transport for LocalTransport {
 
                     Ok(_n) => {
                         let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
-                        let _result =
+                        let result =
                             protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+                        if let Some(protocol::response::ResponseMessage::ActiveProfile(
+                            active_profile_response,
+                        )) = result.response_message
+                        {
+                            Ok(PathBuf::from(&active_profile_response.profile_file))
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
+                    }
 
-                        Ok(())
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
+
+    fn switch_profile(&self, profile_file: &Path) -> Result<bool> {
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::SwitchProfile(
+                protocol::SwitchProfileRequest {
+                    profile_file: profile_file.to_string_lossy().to_string(),
+                },
+            )),
+        };
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.lock();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+                        if let Some(protocol::response::ResponseMessage::SwitchProfile(
+                            switch_profile_response,
+                        )) = result.response_message
+                        {
+                            Ok(switch_profile_response.switched)
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
+                    }
+
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
+
+    fn set_parameters(
+        &self,
+        profile_file: &Path,
+        script_file: &Path,
+        parameter_values: HashMap<String, String>,
+    ) -> Result<()> {
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::SetParameters(
+                protocol::SetParametersRequest {
+                    profile_file: profile_file.to_string_lossy().to_string(),
+                    script_file: script_file.to_string_lossy().to_string(),
+                    parameter_values: parameter_values,
+                },
+            )),
+        };
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.lock();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+                        if let Some(protocol::response::ResponseMessage::SetParameters(
+                            _set_parameters_response,
+                        )) = result.response_message
+                        {
+                            Ok(())
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
+                    }
+
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
+
+    fn submit_canvas(&self, canvas: &Canvas) -> Result<()> {
+        let bytes: Vec<u8> = canvas
+            .data
+            .iter()
+            .flat_map(|c| vec![c.r(), c.g(), c.b(), c.a()])
+            .collect();
+
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::SetCanvas(
+                protocol::SetCanvasRequest { canvas: bytes },
+            )),
+        };
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.lock();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+                        if let Some(protocol::response::ResponseMessage::SetCanvas(
+                            _set_canvas_response,
+                        )) = result.response_message
+                        {
+                            Ok(())
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
                     }
 
                     Err(_e) => Err(eyre!("Lost connection to Eruption")),
@@ -148,13 +299,14 @@ impl Transport for LocalTransport {
     }
 
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
-        let mut request = protocol::Request::default();
-        request.set_request_type(protocol::RequestType::NotifyHotplug);
-
         let config = bincode::config::standard();
         let bytes: Vec<u8> = bincode::encode_to_vec(&hotplug_info, config).unwrap();
 
-        request.payload = Some(RequestPayload::Data(bytes));
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::NotifyHotplug(
+                protocol::NotifyHotplugRequest { payload: bytes },
+            )),
+        };
 
         let mut buf = Vec::new();
         request.encode_length_delimited(&mut buf)?;

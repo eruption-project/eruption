@@ -33,7 +33,7 @@ function on_startup(config)
     submit_color_map(color_map)
 end
 
-function on_apply_parameter(parameter, value)
+function on_apply_parameter(parameters)
     -- update state
     on_startup(nil)
 end

@@ -96,11 +96,19 @@ impl ParseConfig for Vec<ConfigParam> {
         let config_param = self
             .iter()
             .find(|config_param| config_param.get_name() == param)
-            .ok_or(ManifestError::ParseParamError)?;
+            .ok_or_else(|| {
+                warn!("Unknown configuration parameter \"{}\"", param);
+                ManifestError::ParseParamError
+            })?;
+
+        fn parse_param_error(param_type: &str, val: &str) -> ManifestError {
+            error!("Could not parse {} value \"{}\"", param_type, val);
+            ManifestError::ParseParamError
+        }
 
         match &config_param {
             ConfigParam::Int { name, default, .. } => {
-                let value = i64::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
+                let value = i64::from_str(val).map_err(|_e| parse_param_error("int", val))?;
 
                 Ok(profiles::ConfigParam::Int {
                     name: name.to_string(),
@@ -110,7 +118,7 @@ impl ParseConfig for Vec<ConfigParam> {
             }
 
             ConfigParam::Float { name, default, .. } => {
-                let value = f64::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
+                let value = f64::from_str(val).map_err(|_e| parse_param_error("float", val))?;
 
                 Ok(profiles::ConfigParam::Float {
                     name: name.to_string(),
@@ -120,7 +128,8 @@ impl ParseConfig for Vec<ConfigParam> {
             }
 
             ConfigParam::Bool { name, default, .. } => {
-                let value = bool::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
+                let value = bool::from_str(&val.to_string().to_lowercase())
+                    .map_err(|_e| parse_param_error("bool", val))?;
 
                 Ok(profiles::ConfigParam::Bool {
                     name: name.to_string(),
@@ -142,7 +151,7 @@ impl ParseConfig for Vec<ConfigParam> {
             ConfigParam::Color { name, default, .. } => {
                 if &val[0..1] == "#" {
                     let value = u32::from_str_radix(&val[1..], 16)
-                        .map_err(|_e| ManifestError::ParseParamError)?;
+                        .map_err(|_e| parse_param_error("color from hex", val))?;
 
                     Ok(profiles::ConfigParam::Color {
                         name: name.to_string(),
@@ -150,7 +159,8 @@ impl ParseConfig for Vec<ConfigParam> {
                         default: *default,
                     })
                 } else {
-                    let value = u32::from_str(val).map_err(|_e| ManifestError::ParseParamError)?;
+                    let value = u32::from_str(val)
+                        .map_err(|_e| parse_param_error("color from int", val))?;
 
                     Ok(profiles::ConfigParam::Color {
                         name: name.to_string(),
@@ -221,7 +231,10 @@ impl std::cmp::PartialOrd for Manifest {
 impl Manifest {
     pub fn new(script: &Path) -> Result<Self> {
         // parse manifest
-        let script = script.canonicalize().unwrap();
+        let script = match script.canonicalize() {
+            Ok(script) => script,
+            Err(_e) => return Err(ManifestError::OpenError {}.into()),
+        };
         match fs::read_to_string(util::get_manifest_for(&script)) {
             Ok(toml) => {
                 // parse manifest

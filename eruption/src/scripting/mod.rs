@@ -20,4 +20,5 @@
 pub mod callbacks;
 pub mod constants;
 pub mod manifest;
+pub mod parameters;
 pub mod script;
