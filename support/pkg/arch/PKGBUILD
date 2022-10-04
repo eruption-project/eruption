@@ -13,7 +13,7 @@ makedepends=('git' 'rust' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libx
 provides=('eruption')
 conflicts=('eruption-git' 'eruption-roccat-vulcan-git')
 replaces=('eruption-roccat-vulcan')
-backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/audio-proxy.conf)
+backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/audio-proxy.conf usr/share/eruption/scripts/lib/keymaps/default.keymap)
 install='eruption.install'
 source=("${_pkgname}-${pkgver}.tar.gz::${url}/archive/releases/v${pkgver}/v${pkgver}.tar.gz")
 sha512sums=('c4ace48ae9b7fbbc7e85ba47f2c969983594cab09ebc069bc39caa27a4e7833042e50a6d523aec18b5dedd1005be0de0aa4719bc3c9e6acafd04cd8a6f514c8a')
@@ -269,6 +269,7 @@ package() {
     install -m 644 "eruption/src/scripts/lib/queue.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/utilities.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
     install -m 644 "eruption/src/scripts/lib/declarations.lua" "$pkgdir/usr/share/eruption/scripts/lib/"
+    install -m 644 "eruption/src/scripts/lib/keymaps/default.keymap" "$pkgdir/usr/share/eruption/scripts/lib/keymaps/"
     install -m 644 "eruption/src/scripts/lib/keymaps/default.lua" "$pkgdir/usr/share/eruption/scripts/lib/keymaps/"
     install -m 644 "eruption/src/scripts/lib/themes/default.lua" "$pkgdir/usr/share/eruption/scripts/lib/themes/"
     install -m 644 "eruption/src/scripts/lib/themes/gaming.lua" "$pkgdir/usr/share/eruption/scripts/lib/themes/"
