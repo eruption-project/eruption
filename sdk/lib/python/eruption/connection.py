@@ -61,6 +61,30 @@ class Connection:
         result = self._con.get_server_status()
         return result
 
+    def get_active_profile(self):
+        """Get the file path of the active profile"""
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.get_active_profile()
+        return result
+
+    def switch_profile(self, profile_file):
+        """Switches the active profile to one given in the file path"""
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.switch_profile(profile_file)
+        return result
+
+    def set_parameters(self, profile_file, script_file, **parameters):
+        """Set parameters for the given profile's script"""
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.set_parameters(profile_file, script_file, **parameters)
+        return result
+
     def submit_canvas(self, canvas, *args, **kwargs):
         """Submit the canvas to Eruption for realization"""
         if not self.is_connected():

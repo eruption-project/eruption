@@ -1350,7 +1350,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 .iter()
                 .map(|script_file| match script_file.is_file() {
                     true => Some(script_file.to_owned()),
-                    false => match util::match_script_file(&script_file) {
+                    false => match util::match_script_file(script_file) {
                         Ok(script_file) => Some(script_file),
                         Err(err) => {
                             eprintln!("Could not find script {}. {}", script_file.display(), err);
@@ -1358,7 +1358,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         }
                     },
                 })
-                .filter_map(|script_file| script_file)
+                .flatten()
                 .map(|script_file| match Manifest::new(&script_file) {
                     Ok(manifest) => Some(manifest),
                     Err(err) => {
@@ -1370,7 +1370,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         None
                     }
                 })
-                .filter_map(|manifest| manifest)
+                .flatten()
                 .collect();
 
             // determine mode of operation
@@ -1396,9 +1396,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         for config in config_params.iter() {
                             // read param value
                             let value = if config.get_value() == config.get_default() {
-                                (&config.get_value()).to_string().normal()
+                                config.get_value().to_string().normal()
                             } else {
-                                (&config.get_value()).to_string().bold()
+                                config.get_value().to_string().bold()
                             };
 
                             println!(

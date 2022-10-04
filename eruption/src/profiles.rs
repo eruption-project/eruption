@@ -328,11 +328,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 
@@ -343,7 +349,10 @@ impl Profile {
             name: "Failsafe mode".to_string(),
             description: "Failsafe mode virtual profile".to_string(),
             profile_file: PathBuf::from("failsafe.profile"),
-            active_scripts: vec![PathBuf::from("lib/failsafe.lua")],
+            // force hardcoded directory for failsafe scripts
+            active_scripts: vec![PathBuf::from(
+                "/usr/share/eruption/scripts/lib/failsafe.lua",
+            )],
             ..Default::default()
         }
     }
@@ -370,11 +379,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 

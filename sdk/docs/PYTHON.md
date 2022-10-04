@@ -12,7 +12,9 @@ This is the documentation of the Python 3 SDK for Eruption
     - [Example Code](#example-code)
       - [Imports](#imports)
       - [Establishing a Connection](#establishing-a-connection)
-      - [The Canvas](#the-canvas)
+      - [Switching Profiles](#switching-profiles)
+      - [Updating Parameters](#updating-parameters)
+      - [Controlling the Canvas](#controlling-the-canvas)
       - [Terminating the Connection](#terminating-the-connection)
       - [Full Code Listing](#full-code-listing)
 
@@ -68,8 +70,31 @@ local transport (UNIX domain socket)
         status = connection.get_server_status()
         print(status)
 ```
+#### Switching Profiles
 
-#### The Canvas
+The current active profile file can be queried using `get_active_profile()` and set using `switch_profile()`.
+
+```python
+    print("Currently using", connection.get_active_profile())
+```
+
+```python
+    # Use the profile's full file path
+    connection.switch_profile("/var/lib/eruption/profiles/solid.profile")
+```
+
+#### Updating Parameters
+
+One or more script parameters can be set using `set_parameters()`.  Pass in the full file
+path of the profile and the script, then any parameters you want to update.
+
+```python
+    profile_file = "/var/lib/eruption/profiles/solid.profile"
+    script_file = "/usr/share/eruption/scripts/solid.lua"
+    connection.set_parameters(profile_file, script_file, color_background="#ff3f00ff", opacity=0.9)
+```
+
+#### Controlling the Canvas
 
 Using the canvas with the Color class
 
