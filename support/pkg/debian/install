@@ -264,6 +264,8 @@ eruption/src/scripts/lib/easing.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/queue.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/utilities.lua usr/share/eruption/scripts/lib
 eruption/src/scripts/lib/declarations.lua usr/share/eruption/scripts/lib
+eruption/src/scripts/lib/keymaps/default.keymap usr/share/eruption/scripts/lib/keymaps/
+eruption/src/scripts/lib/keymaps/default.lua usr/share/eruption/scripts/lib/keymaps/
 eruption/src/scripts/lib/themes/default.lua usr/share/eruption/scripts/lib/themes
 eruption/src/scripts/lib/themes/gaming.lua usr/share/eruption/scripts/lib/themes
 eruption/src/scripts/lib/macros/examples.lua usr/share/eruption/scripts/lib/macros

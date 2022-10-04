@@ -397,6 +397,9 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/%{ShortName}/scripts/lib/declarations.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/failsafe.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/lib/keymaps/README
+%config %{_datarootdir}/%{ShortName}/scripts/lib/keymaps/default.keymap
+%config %{_datarootdir}/%{ShortName}/scripts/lib/keymaps/default.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/generic_keyboard.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_1xx.lua
 %{_datarootdir}/%{ShortName}/scripts/lib/hwdevices/keyboards/roccat_vulcan_tkl.lua

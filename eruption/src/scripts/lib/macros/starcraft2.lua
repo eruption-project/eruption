@@ -215,7 +215,7 @@ EASY_SHIFT_REMAPPING_TABLE[4][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[5][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 EASY_SHIFT_REMAPPING_TABLE[6][MODIFIER_KEY_INDEX] = MODIFIER_KEY_EV_CODE
 
-EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("ESC")] = 113 -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
+-- EASY_SHIFT_REMAPPING_TABLE[1][key_name_to_index("ESC")] = 113 -- Remap: ESC => MUTE (audio), while Easy Shift+ is activated
 
 -- assign macros to keys on the Easy Shift+ layer
 EASY_SHIFT_MACRO_TABLE[1][key_name_to_index("1")] = macro_select_idle_scvs --

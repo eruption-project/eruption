@@ -21,7 +21,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 use log::*;
 use mlua::prelude::*;
-use noise::{NoiseFn, Seedable};
+use noise::NoiseFn;
 use palette::convert::FromColor;
 use palette::{Hsl, Srgb};
 use rand::Rng;
@@ -61,31 +61,32 @@ fn seed() -> u32 {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
+    let since_the_epoch = start.duration_since(UNIX_EPOCH).unwrap_or_default();
 
     since_the_epoch.as_millis() as u32
 }
 
 thread_local! {
     pub static PERLIN_NOISE: RefCell<noise::Perlin> = {
-        let noise = noise::Perlin::new();
-        RefCell::new(noise.set_seed(seed()))
+        let noise = noise::Perlin::new(seed());
+
+        RefCell::new(noise)
     };
 
-    pub static BILLOW_NOISE: RefCell<noise::Billow> = {
-        let noise = noise::Billow::new();
-        RefCell::new(noise.set_seed(seed()))
+    pub static BILLOW_NOISE: RefCell<noise::Billow<noise::Perlin>> = {
+        let noise = noise::Billow::new(seed());
+
+        RefCell::new(noise)
     };
 
     pub static VORONOI_NOISE: RefCell<noise::Worley> = {
-        let noise = noise::Worley::new();
-        RefCell::new(noise.set_seed(seed()))
+        let noise = noise::Worley::new(seed());
+
+        RefCell::new(noise)
     };
 
-    pub static RIDGED_MULTIFRACTAL_NOISE: RefCell<noise::RidgedMulti> = {
-        let noise = noise::RidgedMulti::new();
+    pub static RIDGED_MULTIFRACTAL_NOISE: RefCell<noise::RidgedMulti<noise::Perlin>> = {
+        let noise = noise::RidgedMulti::new(seed());
 
         // noise.octaves = 6;
         // noise.frequency = 2.0; // default: 1.0
@@ -93,22 +94,25 @@ thread_local! {
         // noise.persistence = 1.0;
         // noise.attenuation = 4.0; // default: 2.0
 
-        RefCell::new(noise.set_seed(seed()))
+        RefCell::new(noise)
     };
 
-    pub static FBM_NOISE: RefCell<noise::Fbm> = {
-        let noise = noise::Fbm::new();
-        RefCell::new(noise.set_seed(seed()))
+    pub static FBM_NOISE: RefCell<noise::Fbm<noise::Perlin>> = {
+        let noise = noise::Fbm::new(seed());
+
+        RefCell::new(noise)
     };
 
     pub static OPEN_SIMPLEX_NOISE: RefCell<noise::OpenSimplex> = {
-        let noise = noise::OpenSimplex::new();
-        RefCell::new(noise.set_seed(seed()))
+        let noise = noise::OpenSimplex::new(seed());
+
+        RefCell::new(noise)
     };
 
     pub static SUPER_SIMPLEX_NOISE: RefCell<noise::SuperSimplex> = {
-        let noise = noise::SuperSimplex::new();
-        RefCell::new(noise.set_seed(seed()))
+        let noise = noise::SuperSimplex::new(seed());
+
+        RefCell::new(noise)
     };
 }
 

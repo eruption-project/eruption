@@ -60,7 +60,7 @@ serde_json = "1.0.85"
 tokio = { version = "1.21.2", features = ["full"] }
 socket2 = { version = "0.4.7", features = ["all"] }
 ctrlc = { version = "3.2.3", features = ["termination"] }
-clap = "4.0.6"
+clap = "4.0.9"
 hotwatch = "0.4.6"
 config = "0.13.2"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
@@ -76,7 +76,7 @@ colorgrad = "0.6.1"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 palette = "0.6.1"
 nalgebra = "0.31.1"
-noise = "0.7.0"
+noise = "0.8.0"
 simdnoise = "3.1.6"
 #lua-src = "544.0.1"
 #mlua = { version = "0.7.3", features = ["lua54", "vendored"] }

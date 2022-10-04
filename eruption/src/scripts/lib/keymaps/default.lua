@@ -17,4 +17,4 @@
 --
 -- AUTO GENERATED LUA SOURCE CODE FILE, DO NOT EDIT MANUALLY
 --
--- This file will be managed by `eruption-keymap compile --keymap default.keymap`
+-- This file will be managed by `sudo eruption-keymap compile --keymap default.keymap`
