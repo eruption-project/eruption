@@ -342,5 +342,7 @@ Please find a list of frequently asked questions and their respective answers at
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are always welcome!
+Please find information on how to contribute at [CONTRIBUTING.md](CONTRIBUTING.md)
+
 Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.
