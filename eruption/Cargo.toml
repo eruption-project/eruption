@@ -85,7 +85,7 @@ simdnoise = "3.1.6"
 mlua = { version = "0.8.3", features = ["lua54"] }
 sysinfo = "0.26.4"
 procinfo = "0.4.2"
-bincode = "2.0.0-rc.1"
+bincode = "2.0.0-rc.2"
 rustfft = "6.0.1"
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
 dbus = "0.9.6"
