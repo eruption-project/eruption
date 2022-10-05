@@ -620,9 +620,9 @@ fn on_mouse_hid_event(
     param: MouseHidEvent,
 ) -> Result<RunningScriptResult> {
     let call_args: (u8, u32) = match param {
-        MouseHidEvent::DpiChange(dpi_slot) => (dpi_slot, 1),
-        MouseHidEvent::ButtonDown(index) => (index + 1, 2),
-        MouseHidEvent::ButtonUp(index) => (index + 1, 3),
+        MouseHidEvent::DpiChange(dpi_slot) => (1, dpi_slot as u32),
+        MouseHidEvent::ButtonDown(index) => (2, (index + 1) as u32),
+        MouseHidEvent::ButtonUp(index) => (3, (index + 1) as u32),
         _ => (0, 0),
     };
     let called = call_helper.call(FUNCTION_ON_MOUSE_HID_EVENT, call_args);
