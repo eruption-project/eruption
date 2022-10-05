@@ -723,7 +723,7 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
     match &manifest.config {
         Some(manifest_config) => {
             if profile_config.is_none() {
-                warn!("Active profile does not have {} config. Using config parameters from script manifest.", &manifest.name);
+                debug!("Active profile does not have {} config. Using config parameters from script manifest.", &manifest.name);
             }
 
             manifest_config
