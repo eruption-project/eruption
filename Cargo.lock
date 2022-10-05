@@ -39,12 +39,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
-name = "adler32"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
-
-[[package]]
 name = "ahash"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -165,7 +159,7 @@ dependencies = [
  "cc",
  "cfg-if 1.0.0",
  "libc",
- "miniz_oxide 0.5.4",
+ "miniz_oxide",
  "object",
  "rustc-demangle",
 ]
@@ -178,18 +172,19 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
 name = "bincode"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f609ceb2c41b0d0277314a789ef0e7eb14593d5485f7c67320bed3924ebb1b33"
+checksum = "7bb50c5a2ef4b9b1e7ae73e3a73b52ea24b20312d629f9c4df28260b7ad2c3c4"
 dependencies = [
  "bincode_derive",
+ "serde",
 ]
 
 [[package]]
 name = "bincode_derive"
-version = "2.0.0-rc.1"
+version = "2.0.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "913287a8f3e00db4c7ae1b87e9b9b8cebd6b89217eaadfc281fa5c897da35dc3"
+checksum = "0a45a23389446d2dd25dc8e73a7a3b3c43522b630cac068927f0649d43d719d2"
 dependencies = [
  "virtue",
 ]
@@ -388,9 +383,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.4"
+version = "4.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f78ad8e84aa8e8aa3e821857be40eb4b925ff232de430d4dd2ae6aa058cbd92"
+checksum = "30607dd93c420c6f1f80b544be522a0238a7db35e6a12968d28910983fee0df0"
 dependencies = [
  "atty",
  "bitflags",
@@ -407,14 +402,14 @@ version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11cba7abac9b56dfe2f035098cdb3a43946f276e6db83b72c4e692343f9aab9a"
 dependencies = [
- "clap 4.0.4",
+ "clap 4.0.9",
 ]
 
 [[package]]
 name = "clap_derive"
-version = "4.0.1"
+version = "4.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca689d7434ce44517a12a89456b2be4d1ea1cafcd8f581978c03d45f5a5c12a7"
+checksum = "a4a307492e1a34939f79d3b6b9650bd2b971513cd775436bf2b78defeb5af00b"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -768,16 +763,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deflate"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73770f8e1fe7d64df17ca66ad28994a0a623ea497fa69486e14984e715c5d174"
-dependencies = [
- "adler32",
- "byteorder",
-]
-
-[[package]]
 name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -885,7 +870,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "color-eyre",
  "colorgrad",
  "config",
@@ -926,6 +911,7 @@ dependencies = [
  "rayon",
  "rust-embed",
  "rustfft",
+ "same-file",
  "serde",
  "serde_json",
  "serialport",
@@ -944,13 +930,13 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "bincode",
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -986,10 +972,10 @@ dependencies = [
 
 [[package]]
 name = "eruption-cmd"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1014,12 +1000,12 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.20"
+version = "0.0.21"
 dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1102,10 +1088,10 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "eruption-rs",
@@ -1129,12 +1115,12 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1168,12 +1154,61 @@ dependencies = [
 
 [[package]]
 name = "eruption-keymap"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.4",
+ "clap 4.0.9",
+ "clap_complete",
+ "color-eyre",
+ "colored",
+ "comfy-table",
+ "ctrlc",
+ "dbus",
+ "dbus-tokio",
+ "evdev-rs",
+ "eyre",
+ "flume",
+ "hexdump",
+ "hidapi",
+ "i18n-embed",
+ "i18n-embed-fl",
+ "icecream",
+ "lazy_static",
+ "libc",
+ "log",
+ "maplit",
+ "mlua",
+ "nix 0.25.0",
+ "parking_lot",
+ "pest",
+ "pest_derive",
+ "pretty_assertions",
+ "pretty_env_logger",
+ "regex",
+ "rust-embed",
+ "serde",
+ "serde_json",
+ "serde_json_any_key",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "udev",
+ "unic-langid",
+ "walkdir",
+]
+
+[[package]]
+name = "eruption-macro"
+version = "0.0.2"
+dependencies = [
+ "bitvec",
+ "cfg-if 1.0.0",
+ "chrono",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1220,7 +1255,7 @@ name = "eruption-netfx"
 version = "0.2.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1231,7 +1266,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
- "image 0.24.4",
+ "image",
  "jwalk",
  "lazy_static",
  "libc",
@@ -1257,12 +1292,12 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.17"
+version = "0.0.18"
 dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "config",
@@ -1324,11 +1359,11 @@ dependencies = [
 
 [[package]]
 name = "eruption-util"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1357,10 +1392,10 @@ dependencies = [
 
 [[package]]
 name = "eruption-watchdog"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -1386,10 +1421,10 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.22"
+version = "0.0.25"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1412,6 +1447,7 @@ dependencies = [
  "paste 1.0.9",
  "pretty_assertions",
  "rust-embed",
+ "same-file",
  "serde",
  "serde_json",
  "thiserror",
@@ -1454,7 +1490,7 @@ dependencies = [
  "flume",
  "half",
  "lebe",
- "miniz_oxide 0.5.4",
+ "miniz_oxide",
  "smallvec",
  "threadpool",
 ]
@@ -1522,7 +1558,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f82b0f4c27ad9f8bfd1f3208d882da2b09c301bc1c828fd3a00d0216d2fbbff6"
 dependencies = [
  "crc32fast",
- "miniz_oxide 0.5.4",
+ "miniz_oxide",
 ]
 
 [[package]]
@@ -2179,25 +2215,6 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.23.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24ffcb7e7244a9bf19d35bf2883b9c080c4ced3c07a9895572178cdb8f13f6a1"
-dependencies = [
- "bytemuck",
- "byteorder",
- "color_quant",
- "gif",
- "jpeg-decoder 0.1.22",
- "num-iter",
- "num-rational 0.3.2",
- "num-traits",
- "png 0.16.8",
- "scoped_threadpool",
- "tiff 0.6.1",
-]
-
-[[package]]
-name = "image"
 version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd8e4fb07cf672b1642304e731ef8a6a4c7891d67bb4fd4f5ce58cd6ed86803c"
@@ -2207,12 +2224,12 @@ dependencies = [
  "color_quant",
  "exr",
  "gif",
- "jpeg-decoder 0.2.6",
- "num-rational 0.4.1",
+ "jpeg-decoder",
+ "num-rational",
  "num-traits",
- "png 0.17.6",
+ "png",
  "scoped_threadpool",
- "tiff 0.7.3",
+ "tiff",
 ]
 
 [[package]]
@@ -2319,15 +2336,6 @@ name = "itoa"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
-
-[[package]]
-name = "jpeg-decoder"
-version = "0.1.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "229d53d58899083193af11e15917b5640cd40b29ff475a1fe4ef725deb02d0f2"
-dependencies = [
- "rayon",
-]
 
 [[package]]
 name = "jpeg-decoder"
@@ -2659,25 +2667,6 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "791daaae1ed6889560f8c4359194f56648355540573244a5448a83ba1ecc7435"
-dependencies = [
- "adler32",
-]
-
-[[package]]
-name = "miniz_oxide"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
-dependencies = [
- "adler",
- "autocfg",
-]
-
-[[package]]
-name = "miniz_oxide"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96590ba8f175222643a85693f33d26e9c8a015f599c216509b1a6894af675d34"
@@ -2770,7 +2759,7 @@ dependencies = [
  "matrixmultiply",
  "nalgebra-macros",
  "num-complex",
- "num-rational 0.4.1",
+ "num-rational",
  "num-traits",
  "simba",
  "typenum",
@@ -2835,11 +2824,11 @@ dependencies = [
 
 [[package]]
 name = "noise"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82051dd6745d5184c6efb7bc8be14892a7f6d4f3ad6dbf754d1c7d7d5fe24b43"
+checksum = "f121e5cd8ee316affb422eababc6cd61fc22ba37cf4cb6d486166fdc058c9307"
 dependencies = [
- "image 0.23.14",
+ "num-traits",
  "rand 0.7.3",
  "rand_xorshift",
 ]
@@ -2914,28 +2903,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
 dependencies = [
  "autocfg",
- "num-traits",
-]
-
-[[package]]
-name = "num-iter"
-version = "0.1.43"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
-dependencies = [
- "autocfg",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
-name = "num-rational"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
-dependencies = [
- "autocfg",
- "num-integer",
  "num-traits",
 ]
 
@@ -3188,9 +3155,9 @@ checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
 
 [[package]]
 name = "pest"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb779fcf4bb850fbbb0edc96ff6cf34fd90c4b1a112ce042653280d9a7364048"
+checksum = "dbc7bc69c062e492337d74d59b120c274fd3d261b6bf6d3207d499b4b379c41a"
 dependencies = [
  "thiserror",
  "ucd-trie",
@@ -3198,9 +3165,9 @@ dependencies = [
 
 [[package]]
 name = "pest_derive"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "502b62a6d0245378b04ffe0a7fb4f4419a4815fce813bd8a0ec89a56e07d67b1"
+checksum = "60b75706b9642ebcb34dab3bc7750f811609a0eb1dd8b88c2d15bf628c1c65b2"
 dependencies = [
  "pest",
  "pest_generator",
@@ -3208,9 +3175,9 @@ dependencies = [
 
 [[package]]
 name = "pest_generator"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "451e629bf49b750254da26132f1a5a9d11fd8a95a3df51d15c4abd1ba154cb6c"
+checksum = "f4f9272122f5979a6511a749af9db9bfc810393f63119970d7085fed1c4ea0db"
 dependencies = [
  "pest",
  "pest_meta",
@@ -3221,9 +3188,9 @@ dependencies = [
 
 [[package]]
 name = "pest_meta"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcec162c71c45e269dfc3fc2916eaeb97feab22993a21bcce4721d08cd7801a6"
+checksum = "4c8717927f9b79515e565a64fe46c38b8cd0427e64c40680b14a7365ab09ac8d"
 dependencies = [
  "once_cell",
  "pest",
@@ -3322,18 +3289,6 @@ checksum = "1df8c4ec4b0627e53bdf214615ad287367e482558cf84b109250b37464dc03ae"
 
 [[package]]
 name = "png"
-version = "0.16.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c3287920cb847dee3de33d301c463fba14dda99db24214ddf93f83d3021f4c6"
-dependencies = [
- "bitflags",
- "crc32fast",
- "deflate",
- "miniz_oxide 0.3.7",
-]
-
-[[package]]
-name = "png"
 version = "0.17.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f0e7f4c94ec26ff209cee506314212639d6c91b80afb82984819fafce9df01c"
@@ -3341,7 +3296,7 @@ dependencies = [
  "bitflags",
  "crc32fast",
  "flate2",
- "miniz_oxide 0.5.4",
+ "miniz_oxide",
 ]
 
 [[package]]
@@ -4029,7 +3984,7 @@ name = "simple"
 version = "0.0.1"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.4",
+ "clap 4.0.9",
  "color-eyre",
  "eruption-rs",
  "eyre",
@@ -4068,9 +4023,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
+checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
 name = "smithay-client-toolkit"
@@ -4214,7 +4169,7 @@ dependencies = [
  "hostname",
  "libc",
  "log",
- "time 0.3.14",
+ "time 0.3.15",
 ]
 
 [[package]]
@@ -4341,23 +4296,12 @@ dependencies = [
 
 [[package]]
 name = "tiff"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a53f4706d65497df0c4349241deddf35f84cee19c87ed86ea8ca590f4464437"
-dependencies = [
- "jpeg-decoder 0.1.22",
- "miniz_oxide 0.4.4",
- "weezl",
-]
-
-[[package]]
-name = "tiff"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7259662e32d1e219321eb309d5f9d898b779769d81b76e762c07c8e5d38fcb65"
 dependencies = [
  "flate2",
- "jpeg-decoder 0.2.6",
+ "jpeg-decoder",
  "weezl",
 ]
 
@@ -4374,9 +4318,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.14"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c3f9a28b618c3a6b9251b6908e9c99e04b9e5c02e6581ccbb67d59c34ef7f9b"
+checksum = "d634a985c4d4238ec39cacaed2e7ae552fbd3c476b552c1deac3021b7d7eaf0c"
 dependencies = [
  "itoa",
  "libc",
@@ -4622,9 +4566,9 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "virtue"
-version = "0.0.7"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "757cfbfe0d17ee6f22fe97e536d463047d451b47cf9d11e2b7d1398b0ef274dd"
+checksum = "7b60dcd6a64dd45abf9bd426970c9843726da7fc08f44cd6fcebf68c21220a63"
 
 [[package]]
 name = "walkdir"

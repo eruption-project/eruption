@@ -18,24 +18,60 @@
 syntax = "proto3";
 package sdk_support;
 
-enum RequestType {
-  NOOP = 0;
-  STATUS = 1;
-  SET_CANVAS = 2;
-  NOTIFY_HOTPLUG = 3;
-}
-
 message Request {
-  RequestType request_type = 1;
-
-  oneof Payload { bytes data = 2; }
+  oneof request_message {
+    NoopRequest noop = 1;
+    StatusRequest status = 2;
+    ActiveProfileRequest active_profile = 3;
+    SwitchProfileRequest switch_profile = 4;
+    SetParametersRequest set_parameters = 5;
+    SetCanvasRequest set_canvas = 6;
+    NotifyHotplugRequest notify_hotplug = 7;
+  }
 }
 
+message NoopRequest { }
+message StatusRequest { }
+message ActiveProfileRequest { }
+message SwitchProfileRequest {
+  string profile_file = 1;
+}
+message SetParametersRequest {
+  string profile_file = 1;
+  string script_file = 2;
+  map<string, string> parameter_values = 3;
+}
+
+message SetCanvasRequest {
+  bytes canvas = 1;
+}
+message NotifyHotplugRequest {
+  bytes payload = 1;
+}
 message Response {
-  RequestType response_type = 1;
-
-  oneof Payload { bytes data = 2; }
+  oneof response_message {
+    StatusResponse status = 1;
+    ActiveProfileResponse active_profile = 2;
+    SwitchProfileResponse switch_profile = 3;
+    SetParametersResponse set_parameters = 4;
+    SetCanvasResponse set_canvas = 5;
+    NotifyHotplugResponse notify_hotplug = 6;
+  }
 }
+
+// No response to NoopRequest - it's a NOOP
+message StatusResponse {
+  string description = 1;
+}
+message ActiveProfileResponse {
+  string profile_file = 1;
+}
+message SwitchProfileResponse {
+  bool switched = 1;
+}
+message SetParametersResponse { }
+message SetCanvasResponse { }
+message NotifyHotplugResponse { }
 
 // Service definition
 service SdkSupport { rpc Sdk(Request) returns (Response); }

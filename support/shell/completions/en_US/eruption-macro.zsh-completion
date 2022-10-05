@@ -1,0 +1,152 @@
+#compdef eruption-macro
+
+autoload -U is-at-least
+
+_eruption-macro() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+":: :_eruption-macro_commands" \
+"*::: :->eruption-macro" \
+&& ret=0
+    case $state in
+    (eruption-macro)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-macro-command-$line[1]:"
+        case $line[1] in
+            (record)
+_arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':function_name:' \
+'::description:' \
+&& ret=0
+;;
+(description)
+_arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::description:' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':shell:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-macro__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-macro-help-command-$line[1]:"
+        case $line[1] in
+            (record)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(description)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-macro_commands] )) ||
+_eruption-macro_commands() {
+    local commands; commands=(
+'record:Show or set the description of a specified Lua function' \
+'description:Show or set the description of a specified Lua function' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-macro commands' commands "$@"
+}
+(( $+functions[_eruption-macro__completions_commands] )) ||
+_eruption-macro__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro completions commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__completions_commands] )) ||
+_eruption-macro__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help completions commands' commands "$@"
+}
+(( $+functions[_eruption-macro__description_commands] )) ||
+_eruption-macro__description_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro description commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__description_commands] )) ||
+_eruption-macro__help__description_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help description commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help_commands] )) ||
+_eruption-macro__help_commands() {
+    local commands; commands=(
+'record:Show or set the description of a specified Lua function' \
+'description:Show or set the description of a specified Lua function' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-macro help commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__help_commands] )) ||
+_eruption-macro__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help help commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__record_commands] )) ||
+_eruption-macro__help__record_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help record commands' commands "$@"
+}
+(( $+functions[_eruption-macro__record_commands] )) ||
+_eruption-macro__record_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro record commands' commands "$@"
+}
+
+_eruption-macro "$@"

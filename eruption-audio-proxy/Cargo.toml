@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-audio-proxy"
-version = "0.0.11"
+version = "0.0.12"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "Audio proxy daemon for the Eruption Linux user-mode driver"
@@ -30,7 +30,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.4", features = ["derive"] }
+clap =  { version = "4.0.9", features = ["derive"] }
 clap_complete = "4.0.2"
 serde = { version = "1.0.145", features = ["derive"] }
 lazy_static = "1.4.0"
@@ -51,7 +51,7 @@ thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hound = "3.5.0"
-bincode = "2.0.0-rc.1"
+bincode = "2.0.0-rc.2"
 rayon = "1.5.3"
 libpulse-binding = { version = "2.26.0", default-features = false }
 libpulse-simple-binding = { version = "2.25.0", default-features = false }

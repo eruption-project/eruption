@@ -17,6 +17,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+
 use crate::canvas::Canvas;
 use crate::hardware::HotplugInfo;
 use crate::Result;
@@ -29,6 +32,14 @@ pub trait Transport {
     fn disconnect(&mut self) -> Result<()>;
 
     fn get_server_status(&self) -> Result<ServerStatus>;
+    fn get_active_profile(&self) -> Result<PathBuf>;
+    fn switch_profile(&self, profile_file: &Path) -> Result<bool>;
+    fn set_parameters(
+        &self,
+        profile_file: &Path,
+        script_file: &Path,
+        parameter_values: HashMap<String, String>,
+    ) -> Result<()>;
     fn submit_canvas(&self, canvas: &Canvas) -> Result<()>;
 
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()>;

@@ -7,7 +7,7 @@
 
 - [Table of Contents](#table-of-contents)
   - [Eruption - Realtime RGB LED Software for Linux](#eruption---realtime-rgb-led-software-for-linux)
-    - [Gallery](#gallery)
+    - [Image and Video Gallery](#image-and-video-gallery)
   - [Device Compatibility](#device-compatibility)
     - [Keyboards](#keyboards)
     - [Mice](#mice)
@@ -41,9 +41,17 @@
 
 A Linux user-mode input and RGB LED driver for keyboards, mice and other devices
 
-### Gallery
+For a list of recent news and noteworthy changes, please refer to [CHANGES.md](CHANGES.md)
 
-[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
+### Image and Video Gallery
+
+[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](<https://www.youtube.com/watch?v=ig_71zg14nQ>)
+
+![Eruption GUI screenshot](<docs/assets/screenshot-01.png>)
+
+![Eruption GUI screenshot](<docs/assets/screenshot-02.png>)
+
+![Eruption GUI screenshot](<docs/assets/screenshot-03.png>)
 
 ---
 
@@ -90,6 +98,7 @@ Please see [DEVICES.md](DEVICES.md) for further information
 > ```toml
 > driver_maturity_level = "experimental"
 > ```
+>
 > After that, please restart the eruption daemon
 >
 > ```shell
@@ -102,8 +111,8 @@ This project is still in an early stage of development, and thus may contain som
 
 For a more mature RGB lighting solution please also consider the following alternatives:
 
-https://openrgb.org/ \
-https://gitlab.com/CalcProgrammer1/OpenRGB
+**OpenRGB** - <https://openrgb.org/>\
+<https://gitlab.com/CalcProgrammer1/OpenRGB>
 
 ### Troubleshooting
 
@@ -333,5 +342,7 @@ Please find a list of frequently asked questions and their respective answers at
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are always welcome!
+Please find information on how to contribute at [CONTRIBUTING.md](CONTRIBUTING.md)
+
 Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.

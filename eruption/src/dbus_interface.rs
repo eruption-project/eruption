@@ -28,11 +28,13 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::{color_scheme::ColorScheme, scripting::manifest::ParseConfig};
-use crate::{constants, plugins};
-use crate::{hwdevices, profiles};
-use crate::{plugins::audio, scripting::manifest};
-use crate::{profiles::FindConfig, script};
+use crate::{
+    color_scheme::ColorScheme,
+    constants, hwdevices,
+    plugins::{self, audio},
+    profiles, script,
+    scripting::parameters,
+};
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]
@@ -1346,44 +1348,14 @@ fn apply_parameter(
     param_name: &str,
     value: &str,
 ) -> Result<()> {
-    let profile_path = PathBuf::from(&profile_file);
-    let script_path = PathBuf::from(&script_file);
-
-    // modify persistent profile state
-    match profiles::Profile::from(&profile_path) {
-        Ok(mut profile) => {
-            assert!(profile.config.is_some());
-
-            let manifest = manifest::Manifest::from(&script_path)?;
-
-            let profile_config = profile.config.as_mut().unwrap();
-            let profile_config = profile_config
-                .entry(manifest.name)
-                .or_insert_with(std::vec::Vec::new);
-
-            if let Some(param) = profile_config.clone().find_config_param(param_name) {
-                // param already exists, remove the existing one first
-                profile_config.retain(|elem| elem != param);
-            }
-
-            profile_config.push(
-                manifest
-                    .config
-                    .unwrap_or_default()
-                    .parse_config_param(param_name, value)?,
-            );
-
-            profile.save_params()?;
-
-            crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-        }
-
-        Err(e) => {
-            error!("Could not update profile state: {}", e);
-        }
-    }
-
-    Ok(())
+    parameters::apply_parameters(
+        profile_file,
+        script_file,
+        &vec![parameters::UntypedParameterValue {
+            name: param_name.to_string(),
+            value: value.to_string(),
+        }],
+    )
 }
 
 /// Query the device specific status from the global status store

@@ -237,7 +237,9 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                     KeyboardHidEvent::KeyDown { code } => {
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
-                            KEY_STATES.write()[index as usize] = true;
+                            {
+                                KEY_STATES.write()[index as usize] = true;
+                            }
 
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
                                 LUA_TXS.read().len() - FAILED_TXS.read().len();
@@ -286,7 +288,9 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                     KeyboardHidEvent::KeyUp { code } => {
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
-                            KEY_STATES.write()[index as usize] = false;
+                            {
+                                KEY_STATES.write()[index as usize] = false;
+                            }
 
                             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
                                 LUA_TXS.read().len() - FAILED_TXS.read().len();

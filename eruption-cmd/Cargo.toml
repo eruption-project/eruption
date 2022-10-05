@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-cmd"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
 edition = "2021"
 description = "A CLI utility for the Eruption Linux user-mode driver SDK"
@@ -30,7 +30,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.4", features = ["derive"] }
+clap =  { version = "4.0.9", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"

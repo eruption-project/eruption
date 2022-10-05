@@ -1,23 +1,22 @@
 .\" Manpage for Eruption.
-.TH man 1 "Jun 2022" "0.0.15" "eruption-process-monitor man page"
+.TH man 1 "Oct 2022" "0.0.18" "eruption-process-monitor man page"
 .SH NAME
  eruption-process-monitor - A daemon to monitor and introspect system processes and events
 .SH SYNOPSIS
 
- USAGE:
-    eruption-process-monitor [OPTIONS] [ARGS] <SUBCOMMAND>
+Usage: eruption-process-monitor [OPTIONS] <COMMAND>
 
- OPTIONS:
-    -c, --config <CONFIG>    Sets the configuration file to use
-    -h, --help               Print help information
-    -v, --verbose            Verbose mode (-v, -vv, -vvv, etc.)
-    -V, --version            Print version information
+Commands:
+  daemon       Run in background and monitor running processes
+  rules        Rules related sub-commands
+  completions  Generate shell completions
+  help         Print this message or the help of the given subcommand(s)
 
- SUBCOMMANDS:
-    completions    Generate shell completions
-    daemon         Run in background and monitor running processes
-    help           Print this message or the help of the given subcommand(s)
-    rules          Rules related sub-commands
+Options:
+  -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)
+  -c, --config <CONFIG>  Sets the configuration file to use
+  -h, --help             Print help information
+  -V, --version          Print version information
 
 
 .SH SEE ALSO

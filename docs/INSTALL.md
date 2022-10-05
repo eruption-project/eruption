@@ -77,6 +77,7 @@ Finally, if you want to use one of the audio visualizer profiles, then please se
 using `pavucontrol`.
 
 Switch to a profile that utilizes the audio API of Eruption:
+
 ```shell
 eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```

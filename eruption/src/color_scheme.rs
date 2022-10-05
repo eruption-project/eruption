@@ -21,7 +21,6 @@
 
 use std::path::PathBuf;
 
-
 use csscolorparser::Color;
 use serde::{Deserialize, Serialize};
 

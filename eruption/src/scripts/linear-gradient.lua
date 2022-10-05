@@ -37,11 +37,7 @@ function on_startup(config)
     end
 end
 
-function on_apply_parameter(parameter, value)
-    local update_fn = load("" .. parameter .. " = " .. value)
-
-    update_fn()
-
+function on_apply_parameter(parameters)
     -- update state
     on_startup(nil)
 end

@@ -29,6 +29,9 @@ pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
 /// Default script directory
+pub const DEFAULT_MACRO_DIR: &str = "/usr/share/eruption/scripts/lib/macros";
+
+/// Default script directory
 pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
 
 /// The `/run/eruption/` directory
@@ -65,7 +68,7 @@ pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
 /// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/rainbow-wave.profile";
+pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/rainbow-wave.profile";
 
 /// Notify the software watchdog every n milliseconds
 pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
@@ -94,7 +97,7 @@ pub const FADE_MILLIS: u64 = 1333;
 pub const NET_BUFFER_CAPACITY: usize = 4096 * 16;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 25;
 
 /// Max number of events that will be processed in each iteration of the main loop
 pub const MAX_EVENTS_PER_ITERATION: u64 = 128;
@@ -103,7 +106,7 @@ pub const MAX_EVENTS_PER_ITERATION: u64 = 128;
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
 
 /// Amount of time that has to pass before we retry sending a command to the LED control device
-pub const DEVICE_SETTLE_MILLIS: u64 = 25;
+pub const DEVICE_SETTLE_MILLIS: u64 = 15;
 
 /// Update sensors every n seconds
 /// It is recommended to use a prime number value here

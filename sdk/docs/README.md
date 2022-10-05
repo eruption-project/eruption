@@ -23,4 +23,4 @@ A: It is suitable for controlling Eruption from other software
 
 ### Q: What can be done with the Eruption SDK?
 
-A: The SDK can be used to override the colors on the color map
+A: The SDK can be used to switch profiles, update parameters, and override the colors on the color map

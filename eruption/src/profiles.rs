@@ -170,6 +170,21 @@ pub struct Profile {
     pub config: Option<HashMap<String, Vec<ConfigParam>>>,
 }
 
+pub trait FindConfig {
+    fn find_config_param(&self, param: &str) -> Option<&ConfigParam>;
+    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam>;
+}
+
+impl FindConfig for Vec<ConfigParam> {
+    fn find_config_param(&self, param: &str) -> Option<&ConfigParam> {
+        self.iter().find(|p| p.get_name() == param)
+    }
+
+    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam> {
+        self.iter_mut().find(|p| p.get_name() == param)
+    }
+}
+
 macro_rules! get_default_value {
     ($t:ident, $tval:ty, $rval:ty) => {
         paste! {
@@ -202,100 +217,8 @@ macro_rules! get_default_value {
     };
 }
 
-impl Profile {
-    // instantiate default value getters
-    get_default_value!(int, ConfigParam::Int, i64);
-    get_default_value!(float, ConfigParam::Float, f64);
-    get_default_value!(bool, ConfigParam::Bool, bool);
-    get_default_value!(string, ConfigParam::String, String);
-    get_default_value!(color, ConfigParam::Color, u32);
-}
-
-pub trait FindConfig {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam>;
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam>;
-}
-
-impl FindConfig for Vec<ConfigParam> {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam> {
-        for p in self.iter() {
-            match p {
-                ConfigParam::Int { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Float { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Bool { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::String { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Color { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-            }
-        }
-
-        None
-    }
-
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam> {
-        for p in self.iter_mut() {
-            match p {
-                ConfigParam::Int { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Float { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Bool { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::String { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-
-                ConfigParam::Color { name, .. } => {
-                    if name == param {
-                        return Some(p);
-                    }
-                }
-            }
-        }
-
-        None
-    }
-}
-
 macro_rules! get_config_value {
-    ($t:ident, $tval:ty, $pval:ty) => {
+    ($t:ident, $pval:ty, $tval:ty) => {
         paste::item! {
             pub fn [<get_ $t _value>](&self, script_name: &str, name: &str) -> Option<&$tval> {
                 if let Some(config) = &self.config {
@@ -338,7 +261,7 @@ macro_rules! get_config_value {
 }
 
 macro_rules! set_config_value {
-    ($t:ident, $tval:ty, $pval:ty) => {
+    ($t:ident, $pval:ty, $tval:ty) => {
         paste::item! {
             pub fn [<set_ $t _value>](&mut self, script_name: &str, name: &str, val: &$tval) -> Result<()> {
                 if let Some(ref mut config) = self.config {
@@ -405,11 +328,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 
@@ -420,7 +349,10 @@ impl Profile {
             name: "Failsafe mode".to_string(),
             description: "Failsafe mode virtual profile".to_string(),
             profile_file: PathBuf::from("failsafe.profile"),
-            active_scripts: vec![PathBuf::from("lib/failsafe.lua")],
+            // force hardcoded directory for failsafe scripts
+            active_scripts: vec![PathBuf::from(
+                "/usr/share/eruption/scripts/lib/failsafe.lua",
+            )],
             ..Default::default()
         }
     }
@@ -447,11 +379,17 @@ impl Profile {
                         Ok(result)
                     }
 
-                    Err(_e) => Err(ProfileError::ParseError {}.into()),
+                    Err(e) => {
+                        error!("Error parsing profile file. {}", e);
+                        Err(ProfileError::ParseError {}.into())
+                    }
                 }
             }
 
-            Err(_e) => Err(ProfileError::OpenError {}.into()),
+            Err(e) => {
+                error!("Error opening profile file. {}", e);
+                Err(ProfileError::OpenError {}.into())
+            }
         }
     }
 
@@ -514,20 +452,25 @@ impl Profile {
         Ok(())
     }
 
-    get_config_value!(int, i64, ConfigParam::Int);
-    set_config_value!(int, i64, ConfigParam::Int);
+    get_default_value!(int, ConfigParam::Int, i64);
+    get_config_value!(int, ConfigParam::Int, i64);
+    set_config_value!(int, ConfigParam::Int, i64);
 
-    get_config_value!(float, f64, ConfigParam::Float);
-    set_config_value!(float, f64, ConfigParam::Float);
+    get_default_value!(float, ConfigParam::Float, f64);
+    get_config_value!(float, ConfigParam::Float, f64);
+    set_config_value!(float, ConfigParam::Float, f64);
 
-    get_config_value!(bool, bool, ConfigParam::Bool);
-    set_config_value!(bool, bool, ConfigParam::Bool);
+    get_default_value!(bool, ConfigParam::Bool, bool);
+    get_config_value!(bool, ConfigParam::Bool, bool);
+    set_config_value!(bool, ConfigParam::Bool, bool);
 
-    get_config_value!(string, str, ConfigParam::String);
-    set_config_value!(string, str, ConfigParam::String);
+    get_default_value!(string, ConfigParam::String, String);
+    get_config_value!(string, ConfigParam::String, str);
+    set_config_value!(string, ConfigParam::String, str);
 
-    get_config_value!(color, u32, ConfigParam::Color);
-    set_config_value!(color, u32, ConfigParam::Color);
+    get_default_value!(color, ConfigParam::Color, u32);
+    get_config_value!(color, ConfigParam::Color, u32);
+    set_config_value!(color, ConfigParam::Color, u32);
 }
 
 impl Default for Profile {

@@ -32,11 +32,7 @@ function on_startup(config)
     submit_color_map(color_map)
 end
 
-function on_apply_parameter(parameter, value)
-    local update_fn = load("" .. parameter .. " = " .. value)
-
-    update_fn()
-
+function on_apply_parameter(parameters)
     -- update state
     for i = 1, canvas_size do
         r, g, b, alpha = color_to_rgba(color_background)
