@@ -448,6 +448,10 @@ impl RoccatVulcan1xx {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
+            // DEBUG: Does this help KVM switches to not fail to init the device?
+            // sleep for a short while
+            thread::sleep(Duration::from_millis(25));
+
             loop {
                 let mut buf: [u8; 4] = [0; 4];
                 buf[0] = 0x04;
@@ -466,8 +470,6 @@ impl RoccatVulcan1xx {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(70));
             }
         }
     }
