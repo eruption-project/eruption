@@ -1421,7 +1421,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.0.24"
+version = "0.0.25"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.9",
