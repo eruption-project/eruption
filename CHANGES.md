@@ -5,13 +5,14 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __Next Release__ |
-| 0.3.0 | Fix a locking issue that leads to excessive jitter/input lag |
+| 0.3.0 | Fix a locking issue that lead to excessive jitter/input lag |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |
+| 0.3.0 | Improve the `Eruption SDK`: Add APIs for switching profiles and for modifying configuration parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fading when switching profiles. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Improve the way we handle parameters of `*.profile` files. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Update all dependencies to their latest releases |
 | 0.3.0 | New theme for the eruption CLI tools (`--help`) output, provided by Clap v4 |
-| 0.3.0 | Bump MSRV to latest stable rustc `1.64` |
+| 0.3.0 | Bump MSRV to latest stable Rust `1.64` |
 | 0.2.0 | __New Release__                                                                                                                                                                                                                                                     |
 | 0.2.0 | Add support for named color-schemes |
 | 0.2.0 | Add support for importing `pywal` generated color-schemes via `eruptionctl color-schemes import pywal` |
