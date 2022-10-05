@@ -22,9 +22,11 @@ session daemon, and assign a device monitor to listen on, e.g. by using `pavucon
 ```shell
 systemctl --user enable --now eruption-audio-proxy.service
 ```
+
 > NOTE: Please _do not use `sudo`_ in front of the command since it has to act on the session instance of systemd
 
 Next, switch to a profile that utilizes the audio API of Eruption:
+
 ```shell
 eruptionctl switch profile spectrum-analyzer-swirl.profile
 ```
