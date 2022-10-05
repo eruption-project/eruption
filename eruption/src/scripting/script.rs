@@ -581,26 +581,26 @@ fn on_keyboard_hid_event(
     } else {
         let call_args: (u8, u32) = match param {
             KeyboardHidEvent::KeyUp { code } => (
+                1,
                 crate::KEYBOARD_DEVICES.read()[0]
                     .read()
-                    .hid_event_code_to_report(&code),
-                1,
+                    .hid_event_code_to_report(&code) as u32,
             ),
             KeyboardHidEvent::KeyDown { code } => (
+                2,
                 crate::KEYBOARD_DEVICES.read()[0]
                     .read()
-                    .hid_event_code_to_report(&code),
-                2,
+                    .hid_event_code_to_report(&code) as u32,
             ),
-            KeyboardHidEvent::MuteDown => (1, 3),
-            KeyboardHidEvent::MuteUp => (0, 3),
-            KeyboardHidEvent::VolumeDown => (1, 4),
-            KeyboardHidEvent::VolumeUp => (0, 4),
-            KeyboardHidEvent::BrightnessDown => (1, 5),
-            KeyboardHidEvent::BrightnessUp => (0, 5),
-            KeyboardHidEvent::SetBrightness(val) => (val, 6),
-            KeyboardHidEvent::NextSlot => (1, 7),
-            KeyboardHidEvent::PreviousSlot => (0, 5),
+            KeyboardHidEvent::MuteDown => (3, 1),
+            KeyboardHidEvent::MuteUp => (3, 0),
+            KeyboardHidEvent::VolumeDown => (4, 1),
+            KeyboardHidEvent::VolumeUp => (4, 0),
+            KeyboardHidEvent::BrightnessDown => (5, 1),
+            KeyboardHidEvent::BrightnessUp => (5, 0),
+            KeyboardHidEvent::SetBrightness(val) => (6, val as u32),
+            KeyboardHidEvent::NextSlot => (7, 1),
+            KeyboardHidEvent::PreviousSlot => (5, 0),
             _ => (0, 0),
         };
 
