@@ -101,8 +101,8 @@ lazy_static! {
     // static ref MACROS_ABOUT: String = tr!("macros-about");
     // static ref EVENTS_ABOUT: String = tr!("events-about");
     // static ref COMPILE_ABOUT: String = tr!("compile-about");
-    // static ref MAPPING_ADD_ABOUT: String = tr!("mapping-add-about");
-    // static ref MAPPING_REMOVE_ABOUT: String = tr!("mapping-remove-about");
+    static ref MACRO_ADD_ABOUT: String = tr!("macro-add-about");
+    static ref MACRO_REMOVE_ABOUT: String = tr!("macro-remove-about");
     // static ref MAPPING_ENABLE_ABOUT: String = tr!("mapping-enable-about");
     // static ref MAPPING_DISABLE_ABOUT: String = tr!("mapping-disable-about");
 }
@@ -130,12 +130,30 @@ pub enum Subcommands {
     //#[clap(about(ASSISTANT_ABOUT.as_str()))]
     //Assistant { keymap: PathBuf },
 
+    /// Add a mapping rule for `source` that executes `action`
+    #[clap(about(MACRO_ADD_ABOUT.as_str()))]
+    Add {
+        /// Specify the enabled status of the newly added rule
+        #[clap(required = false, short, long, default_value = "true")]
+        enabled: bool,
+
+        /// Specify a description for a rule
+        #[clap(required = false, long, default_value = "")]
+        description: String,
+
+        macro_code: String,
+    },
+
+    /// Remove the mapping rule for `source`
+    #[clap(about(MACRO_REMOVE_ABOUT.as_str()))]
+    Remove { index: usize },
+
     /// Record a key sequence and save it as a Lua function
     #[clap(about(RECORD_ABOUT.as_str()))]
     Record {
-        #[clap(required = false, short, long, default_value = "user-macros.lua")]
-        lua_file: PathBuf,
-        function_name: String,
+        // #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        // lua_file: PathBuf,
+        macro_name: String,
         description: Option<String>,
     },
 
@@ -277,12 +295,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!();
         } */
         Subcommands::Record {
-            lua_file: _,
-            function_name: _,
+            macro_name: _,
             description: _,
         } => {
             todo!()
         }
+
+        Subcommands::Add {
+            enabled: _,
+            description: _,
+            macro_code: _,
+        } => todo!(),
+
+        Subcommands::Remove { index: _ } => todo!(),
 
         Subcommands::Description {
             lua_file,
