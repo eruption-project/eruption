@@ -442,8 +442,8 @@ Author: X3n0m0rph59
                             </child>
                             <child>
                               <object class="GtkBox">
-                                <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="no-show-all">True</property>
                                 <property name="margin-top">16</property>
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">8</property>
