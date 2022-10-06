@@ -289,7 +289,6 @@ refer to the developer documentation [LIBRARY.md](./LIBRARY.md)
 
 Eruption `0.1.17` added a new daemon called `eruption-process-monitor`, which allows for dynamic switching of profiles and slots using a rule matching engine.
 
-
 ## Contributing
 
 Contributions are welcome!

@@ -27,15 +27,28 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified Lua function')
-            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified Lua function')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Ein Makro hinzufügen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Ein Makro entfernen')
+            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Record a key sequence and save it as a macro')
+            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified macro')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
+        'eruption-macro;add' {
+            [CompletionResult]::new('--description', 'description', [CompletionResultType]::ParameterName, 'Specify a description for a rule')
+            [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
+            [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruption-macro;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
         'eruption-macro;record' {
-            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
-            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
@@ -53,10 +66,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
             break
         }
         'eruption-macro;help' {
-            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified Lua function')
-            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified Lua function')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Ein Makro hinzufügen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Ein Makro entfernen')
+            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Record a key sequence and save it as a macro')
+            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of a specified macro')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-macro;help;add' {
+            break
+        }
+        'eruption-macro;help;remove' {
             break
         }
         'eruption-macro;help;record' {

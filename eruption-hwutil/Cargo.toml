@@ -32,7 +32,7 @@ resolver = "2"
 cfg-if = "1.0.0"
 flume = "0.10.14"
 lazy_static = "1.4.0"
-clap =  { version = "4.0.9", features = ["derive"] }
+clap =  { version = "4.0.10", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"
@@ -55,7 +55,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
 hexdump = "0.1.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"

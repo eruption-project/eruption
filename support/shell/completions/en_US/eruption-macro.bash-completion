@@ -12,6 +12,9 @@ _eruption-macro() {
             ",$1")
                 cmd="eruption__macro"
                 ;;
+            eruption__macro,add)
+                cmd="eruption__macro__add"
+                ;;
             eruption__macro,completions)
                 cmd="eruption__macro__completions"
                 ;;
@@ -23,6 +26,12 @@ _eruption-macro() {
                 ;;
             eruption__macro,record)
                 cmd="eruption__macro__record"
+                ;;
+            eruption__macro,remove)
+                cmd="eruption__macro__remove"
+                ;;
+            eruption__macro__help,add)
+                cmd="eruption__macro__help__add"
                 ;;
             eruption__macro__help,completions)
                 cmd="eruption__macro__help__completions"
@@ -36,6 +45,9 @@ _eruption-macro() {
             eruption__macro__help,record)
                 cmd="eruption__macro__help__record"
                 ;;
+            eruption__macro__help,remove)
+                cmd="eruption__macro__help__remove"
+                ;;
             *)
                 ;;
         esac
@@ -43,12 +55,30 @@ _eruption-macro() {
 
     case "${cmd}" in
         eruption__macro)
-            opts="-v -h -V --verbose --help --version record description completions help"
+            opts="-v -h -V --verbose --help --version add remove record description completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__macro__add)
+            opts="-e -h --enabled --description --help <MACRO_CODE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --description)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -93,8 +123,22 @@ _eruption-macro() {
             return 0
             ;;
         eruption__macro__help)
-            opts="record description completions help"
+            opts="add remove record description completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__macro__help__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -162,21 +206,41 @@ _eruption-macro() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruption__macro__help__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruption__macro__record)
-            opts="-l -h --lua-file --help <FUNCTION_NAME> [DESCRIPTION]"
+            opts="-h --help <MACRO_NAME> [DESCRIPTION]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --lua-file)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
+                *)
+                    COMPREPLY=()
                     ;;
-                -l)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__macro__remove)
+            opts="-h --help <INDEX>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;

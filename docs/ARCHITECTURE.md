@@ -4,9 +4,6 @@
   - [Design Overview](#design-overview)
     - [Introduction](#introduction)
     - [Systems Architecture](#systems-architecture)
-  -[Design Overview](#design-overview)
-    -[Introduction](#introduction)
-    -[Systems Architecture](#systems-architecture)
 
 ## Design Overview
 

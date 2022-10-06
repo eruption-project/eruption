@@ -20,9 +20,12 @@
 
 about = Ein Makro Werkzeug für Eruption
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
-record-about = Zeichnet eine Tastensequenz auf und speichert sie als Lua funktion
-description-about = Zeigt oder setzt die Beschreibung der Lua Funktion
+record-about = Zeichnet eine Tastensequenz auf und speichert sie als Makro
+compile-about = Übersetzt alle Makros zu Lua Code und macht sie für Eruption verfügbar
+description-about = Zeigt oder setzt die Beschreibung eines Makros
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
+macro-add-about =  Add a macro
+macro-remove-about = Remove a macro
 
 action-not-implemented = Diese Aktion ist nicht implementiert
 action-disabled = Diese Aktion ist deaktiviert

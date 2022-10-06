@@ -690,9 +690,10 @@ impl SdkSupportPlugin {
 
                                                 claim_hotplugged_devices(&hotplug_info)?;
 
-                                                // we need to terminate and then re-enter the main loop to update all global state
-                                                crate::REENTER_MAIN_LOOP
-                                                    .store(true, Ordering::SeqCst);
+                                                // this is required for hotplug to work correctly in case we didn't transfer
+                                                // data to the device for an extended period of time
+                                                script::FRAME_GENERATION_COUNTER
+                                                    .fetch_add(1, Ordering::SeqCst);
 
                                                 let response = protocol::Response {
                                                     response_message: Some(
