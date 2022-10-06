@@ -48,7 +48,7 @@ thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master" }
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
 udev = "0.6.3"
 evdev-rs = "0.6.0"
 lazy_static = "1.4.0"

@@ -448,8 +448,7 @@ impl RoccatVulcan1xx {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // DEBUG: Does this help KVM switches to not fail to init the device?
-            // sleep for a short while
+            // This helps slow USB HUBs and KVM switches to not fail to init the device
             thread::sleep(Duration::from_millis(25));
 
             loop {
