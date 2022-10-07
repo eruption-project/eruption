@@ -828,7 +828,7 @@ fn run_main_loop(
             sel = sel.recv(rx, mapper);
         }
 
-        for (index, rx) in mouse_rxs.iter().enumerate() {
+        for rx in mouse_rxs.iter() {
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
@@ -838,11 +838,6 @@ fn run_main_loop(
                         "Could not process a mouse event: {}",
                         event.as_ref().unwrap_err()
                     );
-
-                    FAILED_TXS.write().insert(index);
-
-                    // remove failed devices
-                    REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                 }
             };
 
