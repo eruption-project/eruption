@@ -24,9 +24,9 @@ use dbus_tree::{
 };
 use flume::Sender;
 use log::*;
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use std::{path::PathBuf, thread, time::Duration};
 
 use crate::{
     color_scheme::ColorScheme,
@@ -1019,14 +1019,6 @@ impl DbusApi {
                 &[(device_info.0, device_info.1, removed)],
             ))
             .map_err(|_| error!("D-Bus error during send call"));
-
-        // this is required for hotplug to work correctly in case we didn't transfer
-        // data to the device for an extended period of time
-        script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-        thread::sleep(Duration::from_millis(120));
-
-        // we need to terminate and then re-enter the main loop to update all global state
-        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
         Ok(())
     }

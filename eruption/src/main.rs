@@ -1053,6 +1053,11 @@ fn run_main_loop(
                     .send(DbusApiEvent::DeviceStatusChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
             }
+
+            // use 'device status poll' code to detect failed/disconnected devices as well,
+            // by forcing a write to the device. This is required for hotplug to work correctly in
+            // case we didn't transfer data to the device for an extended period of time
+            script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
         }
 
         // now, process events from all available sources...
@@ -1139,8 +1144,8 @@ fn run_main_loop(
                 1000 / constants::TARGET_FPS
             );
         } /* else if elapsed_after_sleep < 5_u128 {
-              debug!("Short loop detected");
-              debug!(
+              warn!("Short loop detected");
+              warn!(
                   "Loop took: {} milliseconds, goal: {}",
                   elapsed_after_sleep,
                   1000 / constants::TARGET_FPS
