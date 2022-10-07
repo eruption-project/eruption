@@ -149,7 +149,7 @@ pub(crate) fn delay(millis: u64) {
 
 pub(crate) fn stringify(mut string: &mut String, value: mlua::Value) -> Option<()> {
     match value {
-        LuaValue::Nil => write!(&mut string, "{}", "nil"),
+        LuaValue::Nil => write!(&mut string, "nil"),
         LuaValue::Boolean(b) => write!(string, "{}", b),
         LuaValue::LightUserData(lud) => write!(string, "[lightuserdata, {:?}]", lud),
         LuaValue::Integer(i) => write!(string, "{}", i),

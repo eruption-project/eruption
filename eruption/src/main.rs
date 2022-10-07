@@ -412,7 +412,7 @@ pub fn switch_profile_please(profile_file: Option<&Path>) -> Result<SwitchProfil
     switch_profile(profile_file, dbus_api_tx, true)
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum SwitchProfileResult {
     Switched,
     InvalidProfile,
@@ -529,7 +529,7 @@ pub fn switch_profile(
 
                 let mut manifests: Vec<Manifest> = vec![];
                 for script_file in profile.active_scripts.iter() {
-                    let manifest = load_manifest_or_emit_error_messages(&script_file);
+                    let manifest = load_manifest_or_emit_error_messages(script_file);
                     if let Ok(manifest) = manifest {
                         manifests.push(manifest);
                     } else {
@@ -711,7 +711,7 @@ fn load_manifest_or_emit_error_messages(script_file: &PathBuf) -> Result<Manifes
                 script_path.display(),
                 error
             );
-            return Err(MainError::ScriptExecError {}.into());
+            Err(MainError::ScriptExecError {}.into())
         }
         Ok(manifest) => Ok(manifest),
     }
@@ -732,8 +732,7 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
                     let parameter_value = param.to_parameter_value(); // config default
                     match profile_config {
                         Some(profile_config) => profile_config
-                            .find_config_param(&parameter_value.name)
-                            .and_then(|cp| Some(cp.to_parameter_value()))
+                            .find_config_param(&parameter_value.name).map(|cp| cp.to_parameter_value())
                             .unwrap_or_else(|| {
                                 debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);
                                 parameter_value

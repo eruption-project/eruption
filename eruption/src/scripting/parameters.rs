@@ -86,14 +86,13 @@ pub fn apply_parameters(
                 .parse_config_param(&pv.name, &pv.value)
                 .map(|cp| cp.to_parameter_value())
         })
-        .map(|pv| match pv {
+        .filter_map(|pv| match pv {
             Ok(pv) => Some(pv),
             Err(e) => {
                 error!("Bad parameter: {}", e);
                 None
             }
         })
-        .flatten()
         .collect();
 
     let mut need_to_reload_profile = true;

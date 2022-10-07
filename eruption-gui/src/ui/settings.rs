@@ -236,9 +236,9 @@ fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
 
     let status = Command::new("/usr/bin/systemctl")
         // .stdout(Stdio::null())
-        .arg(&user_or_system)
-        .arg(&action)
-        .arg(&unit_file)
+        .arg(user_or_system)
+        .arg(action)
+        .arg(unit_file)
         .status()?;
 
     let exit_code = status.code().unwrap_or(0);
@@ -273,9 +273,9 @@ fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .arg(&user_or_system)
+        .arg(user_or_system)
         .arg("is-failed")
-        .arg(&unit_file)
+        .arg(unit_file)
         .spawn()?;
 
     let _status = status.wait()?;

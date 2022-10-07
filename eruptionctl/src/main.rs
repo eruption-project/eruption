@@ -1348,7 +1348,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             let scripts: Vec<Manifest> = profile
                 .active_scripts
                 .iter()
-                .map(|script_file| match script_file.is_file() {
+                .filter_map(|script_file| match script_file.is_file() {
                     true => Some(script_file.to_owned()),
                     false => match util::match_script_file(script_file) {
                         Ok(script_file) => Some(script_file),
@@ -1358,8 +1358,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         }
                     },
                 })
-                .flatten()
-                .map(|script_file| match Manifest::new(&script_file) {
+                .filter_map(|script_file| match Manifest::new(&script_file) {
                     Ok(manifest) => Some(manifest),
                     Err(err) => {
                         eprintln!(
@@ -1370,7 +1369,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         None
                     }
                 })
-                .flatten()
                 .collect();
 
             // determine mode of operation
@@ -1457,8 +1455,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     // set param value
                     dbus_client::set_parameter(
-                        &*profile.profile_file.to_string_lossy(),
-                        &*script.script_file.to_string_lossy(),
+                        &profile.profile_file.to_string_lossy(),
+                        &script.script_file.to_string_lossy(),
                         &parameter,
                         &value,
                     )?;

@@ -153,7 +153,7 @@ impl ParameterValue {
             TypedValue::Int(value) => format!("{}", value),
             TypedValue::Float(value) => format!("{}", value),
             TypedValue::Bool(value) => format!("{}", value),
-            TypedValue::String(value) => format!("{}", value),
+            TypedValue::String(value) => value.to_string(),
             TypedValue::Color(value) => format!("#{:06x}", value),
         }
     }
@@ -255,7 +255,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
     fn new(file: &Path, lua_ctx: &'lua Lua) -> RunningScriptCallHelper<'lua> {
         RunningScriptCallHelper {
             file_name: file.to_string_lossy().to_string(),
-            lua_ctx: lua_ctx,
+            lua_ctx,
             lua_functions: HashMap::new(),
             skip_on_tick: false,
             skip_on_mouse_move: false,
@@ -732,7 +732,7 @@ fn on_apply_parameters(
             Err(_e) => Ok(RunningScriptResult::TerminateWithErrors),
         }
     } else {
-        let set = set_parameter_values(&call_helper.lua_ctx, parameter_values.iter());
+        let set = set_parameter_values(call_helper.lua_ctx, parameter_values.iter());
         match set {
             Ok(_) => {
                 debug!(

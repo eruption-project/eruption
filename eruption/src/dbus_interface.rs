@@ -1168,7 +1168,7 @@ fn apply_parameter(
     parameters::apply_parameters(
         profile_file,
         script_file,
-        &vec![parameters::UntypedParameterValue {
+        &[parameters::UntypedParameterValue {
             name: param_name.to_string(),
             value: value.to_string(),
         }],

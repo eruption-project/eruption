@@ -90,16 +90,14 @@ pub fn color_to_gdk_rgba(c: u32) -> gdk::RGBA {
     let alpha = u8::try_from((c >> 24) & 0xff).unwrap();
     let red = u8::try_from((c >> 16) & 0xff).unwrap();
     let green = u8::try_from((c >> 8) & 0xff).unwrap();
-    let blue = u8::try_from((c >> 0) & 0xff).unwrap();
+    let blue = u8::try_from(c & 0xff).unwrap();
 
-    let result = gdk::RGBA::new(
+    gdk::RGBA::new(
         red as f64 / 255.0,
         green as f64 / 255.0,
         blue as f64 / 255.0,
         alpha as f64 / 255.0,
-    );
-
-    result
+    )
 }
 
 /// Switch the currently active profile
@@ -506,7 +504,7 @@ pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
             .arg(&model)
             .arg(&host_name)
             .arg(&format!("{}", port_number))
-            .arg(&"ambient")
+            .arg("ambient")
             .spawn()?;
 
         *NETFX_PROCESS_HANDLE.lock() = Some(handle);
