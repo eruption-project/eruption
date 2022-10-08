@@ -815,7 +815,19 @@ fn run_main_loop(
                 if let Ok(Some(event)) = event {
                     // TODO: support multiple keyboards
                     events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
-                        .unwrap_or_else(|e| error!("Could not process a keyboard event: {}", e));
+                        .unwrap_or_else(|e| {
+                            error!(
+                                "Could not process a keyboard event: {}. Trying to close the device now...",
+                                e
+                            );
+
+                            (*crate::KEYBOARD_DEVICES.read()[0])
+                                .write()
+                                .as_device_mut()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
+                        });
                 } else {
                     error!(
                         "Could not process a keyboard event: {}",
@@ -831,7 +843,16 @@ fn run_main_loop(
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
-                        .unwrap_or_else(|e| error!("Could not process a mouse event: {}", e));
+                        .unwrap_or_else(|e| {
+                            error!("Could not process a mouse event: {}. Trying to close the device now...", e);
+
+                            (*crate::MOUSE_DEVICES.read()[0])
+                                .write()
+                                .as_device_mut()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
+                        });
                 } else {
                     error!(
                         "Could not process a mouse event: {}",
