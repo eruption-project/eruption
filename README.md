@@ -111,12 +111,19 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
-This project is still in an early stage of development, and thus may contain some possibly serious bugs.
+This project is still in the early stages of development, and thus may contain some possibly serious bugs.
 
 For a more mature RGB lighting solution please also consider the following alternatives:
 
-**OpenRGB** - <https://openrgb.org/>\
+**OpenRGB** - OPEN SOURCE RGB LIGHTING CONTROL THAT DOESN'T DEPEND ON MANUFACTURER SOFTWARE \
+<https://openrgb.org/>\
 <https://gitlab.com/CalcProgrammer1/OpenRGB>
+
+For configuring gaming mice you may want to consider:
+
+**libratbag/piper** -
+libratbag A DBus daemon to configure input devices, mainly gaming mice
+<https://github.com/libratbag>
 
 ### Troubleshooting
 
