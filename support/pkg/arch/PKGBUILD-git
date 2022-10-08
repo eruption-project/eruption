@@ -26,7 +26,7 @@ pkgver() {
 build() {
     cd "$_pkgname"
 
-    CARGO_INCREMENTAL=0 cargo build --all --release --features=sourceview
+    CARGO_INCREMENTAL=0 cargo build --release
 }
 
 package() {

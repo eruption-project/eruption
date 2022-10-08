@@ -20,7 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use eruption_rs::connection::{Connection, ConnectionType};
+use eruption_sdk::connection::{Connection, ConnectionType};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,

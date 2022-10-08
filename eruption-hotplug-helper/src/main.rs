@@ -20,7 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use eruption_rs::{
+use eruption_sdk::{
     connection::{Connection, ConnectionType},
     hardware::HotplugInfo,
 };

@@ -19,14 +19,16 @@
 [package]
 name = "eruption-macro"
 version = "0.0.3"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A CLI macro utility for Eruption"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
-license = "GPLv3+"
+keywords = ["eruption", "linux", "led", "driver"]
+categories = ["hardware-support"]
+license = "GPL-3.0"
 readme = "README.md"
-resolver = "2"
+#resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
@@ -41,9 +43,9 @@ libc = "0.2.134"
 nix = "0.25.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.21.2", features = ["full"] }
-tracing = "0.1.36"
+tracing = "0.1.37"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.3.15"
+tracing-subscriber = "0.3.16"
 flume = "0.10.14"
 thiserror = "1.0.37"
 eyre = "0.6.8"
