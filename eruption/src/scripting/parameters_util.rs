@@ -25,7 +25,7 @@ use crate::{
     profiles::{self, FindConfig},
     script::{self},
     scripting::manifest::{self, ParseConfig},
-    scripting::parameters::{ParameterValue, UntypedParameterValue},
+    scripting::parameters::{PlainParameter, UntypedParameter},
 };
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -33,7 +33,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub fn apply_parameters(
     profile_file: &str,
     script_file: &str,
-    parameter_values: &[UntypedParameterValue],
+    parameter_values: &[UntypedParameter],
 ) -> Result<()> {
     let profile_path = PathBuf::from(&profile_file);
     let script_path = PathBuf::from(&script_file);
@@ -73,7 +73,7 @@ pub fn apply_parameters(
         }
     }
 
-    let parameter_values: Vec<ParameterValue> = parameter_values
+    let parameter_values: Vec<PlainParameter> = parameter_values
         .iter()
         .map(|pv| manifest_config.parse_config_param(&pv.name, &pv.value))
         .filter_map(|pv| match pv {
@@ -83,9 +83,9 @@ pub fn apply_parameters(
                 None
             }
         })
-        .map(|ppv| ParameterValue {
+        .map(|ppv| PlainParameter {
             name: ppv.name.to_owned(),
-            value: ppv.value.to_owned(),
+            value: ppv.value,
         })
         .collect();
 

@@ -38,7 +38,7 @@ use crate::{
     scripting::callbacks, scripting::constants::*,
 };
 
-use super::parameters::ParameterValue;
+use super::parameters::PlainParameter;
 use super::parameters::TypedValue;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -71,7 +71,7 @@ pub enum Message {
     RealizeColorMap,
 
     SetParameters {
-        parameter_values: Vec<ParameterValue>,
+        parameter_values: Vec<PlainParameter>,
     },
 }
 
@@ -232,7 +232,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     script_file: &Path,
-    parameter_values: &mut HashMap<String, ParameterValue>,
+    parameter_values: &mut HashMap<String, PlainParameter>,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(script_file) {
@@ -338,7 +338,7 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
 
 fn set_parameter_values<'a, I>(lua_ctx: &Lua, parameter_values: I) -> mlua::Result<()>
 where
-    I: Iterator<Item = &'a ParameterValue>,
+    I: Iterator<Item = &'a PlainParameter>,
 {
     for parameter_value in parameter_values {
         debug!(
@@ -351,7 +351,7 @@ where
     Ok(())
 }
 
-fn set_parameter_value(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
+fn set_parameter_value(lua_ctx: &Lua, param: &PlainParameter) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
     match &param.value {
         TypedValue::Int(value) => globals.raw_set::<&str, i64>(&param.name, *value),
@@ -633,7 +633,7 @@ fn on_unload(call_helper: &mut RunningScriptCallHelper) -> Result<RunningScriptR
 
 fn on_apply_parameters(
     call_helper: &mut RunningScriptCallHelper,
-    parameter_values: Vec<ParameterValue>,
+    parameter_values: Vec<PlainParameter>,
 ) -> Result<RunningScriptResult> {
     if !call_helper.verify_handler_exists(FUNCTION_ON_APPLY_PARAMETER) {
         debug!(
@@ -662,7 +662,7 @@ fn on_apply_parameters(
                     .map(|pv| pv.name.to_string())
                     .collect();
                 let called = call_helper.call(FUNCTION_ON_APPLY_PARAMETER, call_args);
-                if let Ok(_) = called {
+                if called.is_ok() {
                     // (the handler must exist, as we already verified it before updating Lua's global table)
                     debug!(
                         "Lua script {}: Successfully called {}",

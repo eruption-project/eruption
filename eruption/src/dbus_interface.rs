@@ -1169,7 +1169,7 @@ fn apply_parameter(
     parameters_util::apply_parameters(
         profile_file,
         script_file,
-        &[parameters::UntypedParameterValue {
+        &[parameters::UntypedParameter {
             name: param_name.to_string(),
             value: value.to_string(),
         }],

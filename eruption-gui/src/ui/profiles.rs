@@ -17,13 +17,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use crate::scripting::parameters::{ManifestValue, TypedValue};
 use crate::{dbus_client, profiles::FindConfig};
-use crate::{
-    profiles::Profile,
-    scripting::manifest::{self, Manifest},
-    scripting::parameters,
-    util,
-};
+use crate::{profiles::Profile, scripting::manifest::Manifest, scripting::parameters, util};
 use glib::clone;
 use glib::IsA;
 use gtk::builders::{
@@ -588,8 +584,8 @@ declare_config_widget_switch!(bool);
 fn create_config_editor(
     profile: &Profile,
     script: &Manifest,
-    param: &manifest::ConfigParam,
-    value: &Option<&parameters::ProfileParameter>,
+    manifest_parameter: &parameters::ManifestParameter,
+    profile_parameter: &Option<&parameters::ProfileParameter>,
 ) -> Result<Frame> {
     fn parameter_changed<T>(profile: &Profile, script: &Manifest, name: &str, value: T)
     where
@@ -618,236 +614,79 @@ fn create_config_editor(
         // .label_xalign(0.0085)
         .build();
 
-    match &param {
-        manifest::ConfigParam::Int {
-            name,
-            description,
-            min,
-            max,
-            default,
-        } => {
-            let value = if let Some(value) = value {
-                match value {
-                    parameters::ProfileParameter {
-                        value: parameters::TypedValue::Int(value),
-                        ..
-                    } => *value,
+    let name = &manifest_parameter.name;
+    let description = &manifest_parameter.description;
+    let profile_value_or_default = match profile_parameter {
+        Some(profile_parameter) => profile_parameter.value.to_owned(),
+        None => manifest_parameter.get_default(),
+    };
 
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            } else {
-                match param {
-                    manifest::ConfigParam::Int {
-                        name: _, default, ..
-                    } => profile
-                        .get_default_int(&script.name, name)
-                        .unwrap_or(*default),
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            };
-
-            let default = profile
-                .get_default_int(&script.name, name)
-                .unwrap_or(*default);
-
-            let widget = build_config_widget_i64(
+    let widget = match (profile_value_or_default, &manifest_parameter.manifest) {
+        (TypedValue::Int(value), ManifestValue::Int { min, max, default }) => {
+            build_config_widget_i64(
                 name,
                 description,
-                default,
+                *default,
                 *min,
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, value);
                 }),
-            )?;
-
-            outer.add(&widget);
+            )
         }
-
-        manifest::ConfigParam::Float {
-            name,
-            description,
-            min,
-            max,
-            default,
-        } => {
-            let value = if let Some(value) = value {
-                match value {
-                    parameters::ProfileParameter {
-                        value: parameters::TypedValue::Float(value),
-                        ..
-                    } => *value,
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            } else {
-                match param {
-                    manifest::ConfigParam::Float {
-                        name: _, default, ..
-                    } => profile
-                        .get_default_float(&script.name, name)
-                        .unwrap_or(*default),
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            };
-
-            let default = profile
-                .get_default_float(&script.name, name)
-                .unwrap_or(*default);
-
-            let widget = build_config_widget_f64(
+        (TypedValue::Float(value), ManifestValue::Float { min, max, default }) => {
+            build_config_widget_f64(
                 name,
                 description,
-                default,
+                *default,
                 *min,
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, value);
                 }),
-            )?;
-
-            outer.add(&widget);
+            )
         }
-
-        manifest::ConfigParam::Bool {
-            name,
-            description,
-            default,
-        } => {
-            let value = if let Some(value) = value {
-                match value {
-                    parameters::ProfileParameter {
-                        value: parameters::TypedValue::Bool(value),
-                        ..
-                    } => *value,
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            } else {
-                match param {
-                    manifest::ConfigParam::Bool {
-                        name: _, default, ..
-                    } => profile
-                        .get_default_bool(&script.name, name)
-                        .unwrap_or(*default),
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            };
-
-            let default = profile
-                .get_default_bool(&script.name, name)
-                .unwrap_or(*default);
-
-            let widget = build_config_widget_switch_bool(
+        (TypedValue::Bool(value), ManifestValue::Bool { default }) => {
+            build_config_widget_switch_bool(
                 name,
                 description,
-                default,
+                *default,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, value);
                 }),
-            )?;
-
-            outer.add(&widget);
+            )
         }
-
-        manifest::ConfigParam::String {
-            name,
-            description,
-            default,
-        } => {
-            let value = if let Some(value) = *value {
-                match value {
-                    parameters::ProfileParameter {
-                        value: parameters::TypedValue::String(value),
-                        ..
-                    } => value.clone(),
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            } else {
-                match param {
-                    manifest::ConfigParam::String {
-                        name: _, default, ..
-                    } => profile
-                        .get_default_string(&script.name, name)
-                        .or_else(|| Some(default.clone()))
-                        .unwrap(),
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            };
-
-            let default = profile
-                .get_default_string(&script.name, name)
-                .or_else(|| Some(default.clone()))
-                .unwrap();
-
-            let widget = build_config_widget_input_string(
+        (TypedValue::String(value), ManifestValue::String { default }) => {
+            build_config_widget_input_string(
                 name,
                 description,
-                default,
+                default.to_owned(),
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, &value);
                 }),
-            )?;
-
-            outer.add(&widget);
+            )
         }
-
-        manifest::ConfigParam::Color {
-            name,
-            description,
-            min,
-            max,
-            default,
-        } => {
-            let value = if let Some(value) = value {
-                match value {
-                    parameters::ProfileParameter {
-                        value: parameters::TypedValue::Color(value),
-                        ..
-                    } => *value,
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            } else {
-                match param {
-                    manifest::ConfigParam::Color {
-                        name: _, default, ..
-                    } => profile
-                        .get_default_color(&script.name, name)
-                        .unwrap_or(*default),
-
-                    _ => return Err(ProfilesError::TypeMismatch {}.into()),
-                }
-            };
-
-            let default = profile
-                .get_default_color(&script.name, name)
-                .unwrap_or(*default);
-
-            let widget = build_config_widget_color_u32(
+        (TypedValue::Color(value), ManifestValue::Color { min, max, default }) => {
+            build_config_widget_color_u32(
                 name,
                 description,
-                default,
+                *default,
                 *min,
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
                     parameter_changed(&profile, &script, &name, value);
                 }),
-            )?;
-
-            outer.add(&widget);
+            )
         }
-    }
+        _ => return Err(ProfilesError::TypeMismatch {}.into()),
+    };
 
+    outer.add(&widget?);
     Ok(outer)
 }
 
@@ -906,17 +745,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
         if let Some(params) = &manifest.config {
             for param in params {
-                let name = match &param {
-                    manifest::ConfigParam::Int { name, .. } => name,
-
-                    manifest::ConfigParam::Float { name, .. } => name,
-
-                    manifest::ConfigParam::Bool { name, .. } => name,
-
-                    manifest::ConfigParam::String { name, .. } => name,
-
-                    manifest::ConfigParam::Color { name, .. } => name,
-                };
+                let name = &param.name;
 
                 let value = if let Some(ref values) = profile.config {
                     match values.get(name) {

@@ -563,11 +563,11 @@ impl SdkSupportPlugin {
                                                 ),
                                             ) => {
                                                 let parameter_values: Vec<
-                                                    parameters::UntypedParameterValue,
+                                                    parameters::UntypedParameter,
                                                 > = message
                                                     .parameter_values
                                                     .iter()
-                                                    .map(|map| parameters::UntypedParameterValue {
+                                                    .map(|map| parameters::UntypedParameter {
                                                         name: map.0.to_string(),
                                                         value: map.1.to_string(),
                                                     })

@@ -72,7 +72,7 @@ use crate::{
     profiles::FindConfig,
     profiles::Profile,
     scripting::manifest::Manifest,
-    scripting::parameters::{ParameterValue, ToParameterValue},
+    scripting::parameters::{PlainParameter, ToParameterValue},
     scripting::script,
 };
 
@@ -717,7 +717,7 @@ fn load_manifest_or_emit_error_messages(script_file: &PathBuf) -> Result<Manifes
     }
 }
 
-fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValue> {
+fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<PlainParameter> {
     let profile_config = profile.config.as_ref().and_then(|c| c.get(&manifest.name));
 
     match &manifest.config {

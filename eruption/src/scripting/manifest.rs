@@ -26,7 +26,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use super::parameters::{ProfileParameter, ToManifestParameter, TypedValue};
+use super::parameters::{ManifestParameter, ProfileParameter, TypedValue};
+use crate::scripting::parameters::ManifestValue;
 use crate::util;
 use crate::util::get_script_dirs;
 
@@ -51,51 +52,15 @@ fn default_script_file() -> PathBuf {
     "".into()
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
-#[serde(tag = "type", rename_all = "lowercase")]
-pub enum ConfigParam {
-    Int {
-        name: String,
-        description: String,
-        min: Option<i64>,
-        max: Option<i64>,
-        default: i64,
-    },
-    Float {
-        name: String,
-        description: String,
-        min: Option<f64>,
-        max: Option<f64>,
-        default: f64,
-    },
-    Bool {
-        name: String,
-        description: String,
-        default: bool,
-    },
-    String {
-        name: String,
-        description: String,
-        default: String,
-    },
-    Color {
-        name: String,
-        description: String,
-        min: Option<u32>,
-        max: Option<u32>,
-        default: u32,
-    },
-}
-
 pub trait ParseConfig {
     fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter>;
 }
 
-impl ParseConfig for Vec<ConfigParam> {
+impl ParseConfig for Vec<ManifestParameter> {
     fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter> {
         let config_param = self
             .iter()
-            .find(|config_param| config_param.get_name() == param)
+            .find(|config_param| config_param.name == param)
             .ok_or_else(|| {
                 warn!("Unknown configuration parameter \"{}\"", param);
                 ManifestError::ParseParamError
@@ -106,105 +71,38 @@ impl ParseConfig for Vec<ConfigParam> {
             ManifestError::ParseParamError
         }
 
-        match &config_param {
-            ConfigParam::Int { name, .. } => {
-                let value = i64::from_str(val).map_err(|_e| parse_param_error("int", val))?;
-
-                Ok(ProfileParameter {
-                    name: name.to_string(),
-                    value: TypedValue::Int(value),
-                    manifest: Some(config_param.to_manifest_parameter().manifest),
-                })
+        let value = match &config_param.manifest {
+            ManifestValue::Int { .. } => {
+                TypedValue::Int(i64::from_str(val).map_err(|_e| parse_param_error("int", val))?)
             }
-
-            ConfigParam::Float { name, .. } => {
-                let value = f64::from_str(val).map_err(|_e| parse_param_error("float", val))?;
-
-                Ok(ProfileParameter {
-                    name: name.to_string(),
-                    value: TypedValue::Float(value),
-                    manifest: Some(config_param.to_manifest_parameter().manifest),
-                })
+            ManifestValue::Float { .. } => {
+                TypedValue::Float(f64::from_str(val).map_err(|_e| parse_param_error("float", val))?)
             }
-
-            ConfigParam::Bool { name, .. } => {
-                let value = bool::from_str(&val.to_string().to_lowercase())
-                    .map_err(|_e| parse_param_error("bool", val))?;
-
-                Ok(ProfileParameter {
-                    name: name.to_string(),
-                    value: TypedValue::Bool(value),
-                    manifest: Some(config_param.to_manifest_parameter().manifest),
-                })
-            }
-
-            ConfigParam::String { name, .. } => {
-                let value = val.to_owned();
-
-                Ok(ProfileParameter {
-                    name: name.to_string(),
-                    value: TypedValue::String(value),
-                    manifest: Some(config_param.to_manifest_parameter().manifest),
-                })
-            }
-
-            ConfigParam::Color { name, .. } => {
+            ManifestValue::Bool { .. } => TypedValue::Bool(
+                bool::from_str(&val.to_string().to_lowercase())
+                    .map_err(|_e| parse_param_error("bool", val))?,
+            ),
+            ManifestValue::String { .. } => TypedValue::String(val.to_owned()),
+            ManifestValue::Color { .. } => {
                 if &val[0..1] == "#" {
-                    let value = u32::from_str_radix(&val[1..], 16)
-                        .map_err(|_e| parse_param_error("color from hex", val))?;
-
-                    Ok(ProfileParameter {
-                        name: name.to_string(),
-                        value: TypedValue::Color(value),
-                        manifest: Some(config_param.to_manifest_parameter().manifest),
-                    })
+                    TypedValue::Color(
+                        u32::from_str_radix(&val[1..], 16)
+                            .map_err(|_e| parse_param_error("color from hex", val))?,
+                    )
                 } else {
-                    let value = u32::from_str(val)
-                        .map_err(|_e| parse_param_error("color from int", val))?;
-
-                    Ok(ProfileParameter {
-                        name: name.to_string(),
-                        value: TypedValue::Color(value),
-                        manifest: Some(config_param.to_manifest_parameter().manifest),
-                    })
+                    TypedValue::Color(
+                        u32::from_str(val)
+                            .map_err(|_e| parse_param_error("color from int", val))?,
+                    )
                 }
             }
-        }
-    }
-}
+        };
 
-pub trait GetAttr {
-    fn get_name(&self) -> &String;
-    fn get_default(&self) -> String;
-}
-
-impl GetAttr for ConfigParam {
-    fn get_name(&self) -> &String {
-        match self {
-            ConfigParam::Int { ref name, .. } => name,
-
-            ConfigParam::Float { ref name, .. } => name,
-
-            ConfigParam::Bool { ref name, .. } => name,
-
-            ConfigParam::String { ref name, .. } => name,
-
-            ConfigParam::Color { ref name, .. } => name,
-        }
-    }
-
-    fn get_default(&self) -> String {
-        match self {
-            ConfigParam::Int { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Float { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Bool { ref default, .. } => format!("{}", default),
-
-            ConfigParam::String { ref default, .. } => default.to_owned(),
-
-            ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
-        }
+        Ok(ProfileParameter {
+            name: config_param.name.to_owned(),
+            value,
+            manifest: Some(config_param.manifest.to_owned()),
+        })
     }
 }
 
@@ -219,7 +117,7 @@ pub struct Manifest {
     pub author: String,
     pub min_supported_version: String,
     pub tags: Option<Vec<ScriptTag>>,
-    pub config: Option<Vec<ConfigParam>>,
+    pub config: Option<Vec<ManifestParameter>>,
 }
 
 impl std::cmp::PartialOrd for Manifest {

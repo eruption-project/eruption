@@ -20,8 +20,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-use super::manifest;
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(tag = "type", content = "value", rename_all = "lowercase")]
 pub enum TypedValue {
@@ -32,53 +30,16 @@ pub enum TypedValue {
     Color(u32),
 }
 
-impl fmt::Display for TypedValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self {
-            TypedValue::Int(value) => write!(f, "{}", value),
-            TypedValue::Float(value) => write!(f, "{}", value),
-            TypedValue::Bool(value) => write!(f, "{}", value),
-            TypedValue::String(value) => write!(f, "{}", value),
-            TypedValue::Color(value) => write!(f, "#{:06x}", value),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct UntypedParameterValue { // Rename to "UntypedParameter"?
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct UntypedParameter {
     pub name: String,
     pub value: String,
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct ParameterValue { // Rename to "PlainParameter"?
+pub struct PlainParameter {
     pub name: String,
     pub value: TypedValue,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
-#[serde(rename_all = "lowercase")]
-pub struct ProfileParameter {
-    pub name: String,
-    #[serde(flatten)]
-    pub value: TypedValue,
-    #[serde(skip)]
-    pub manifest: Option<ManifestValue>,
-}
-
-impl ProfileParameter {
-    pub fn get_default(&self) -> Option<TypedValue> {
-        Some(self.manifest.as_ref()?.get_default())
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
-#[serde(rename_all = "lowercase")]
-pub struct ManifestParameter {
-    pub name: String,
-    pub description: String,
-    #[serde(flatten)]
-    pub manifest: ManifestValue,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
@@ -107,6 +68,37 @@ pub enum ManifestValue {
     },
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct ManifestParameter {
+    pub name: String,
+    pub description: String,
+    #[serde(flatten)]
+    pub manifest: ManifestValue,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct ProfileParameter {
+    pub name: String,
+    #[serde(flatten)]
+    pub value: TypedValue,
+    #[serde(skip)]
+    pub manifest: Option<ManifestValue>,
+}
+
+impl fmt::Display for TypedValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            TypedValue::Int(value) => write!(f, "{}", value),
+            TypedValue::Float(value) => write!(f, "{}", value),
+            TypedValue::Bool(value) => write!(f, "{}", value),
+            TypedValue::String(value) => write!(f, "{}", value),
+            TypedValue::Color(value) => write!(f, "#{:06x}", value),
+        }
+    }
+}
+
 impl ManifestValue {
     pub fn get_default(&self) -> TypedValue {
         match &self {
@@ -119,120 +111,36 @@ impl ManifestValue {
     }
 }
 
+impl ManifestParameter {
+    pub fn get_default(&self) -> TypedValue {
+        self.manifest.get_default()
+    }
+}
+
+impl ProfileParameter {
+    pub fn get_default(&self) -> Option<TypedValue> {
+        Some(self.manifest.as_ref()?.get_default())
+    }
+}
+
 pub trait ToParameterValue {
-    fn to_parameter_value(&self) -> ParameterValue;
+    fn to_parameter_value(&self) -> PlainParameter;
 }
 
 impl ToParameterValue for ProfileParameter {
-    fn to_parameter_value(&self) -> ParameterValue {
-        ParameterValue {
+    fn to_parameter_value(&self) -> PlainParameter {
+        PlainParameter {
             name: self.name.to_owned(),
             value: self.value.to_owned(),
         }
     }
 }
 
-impl ToParameterValue for manifest::ConfigParam {
-    fn to_parameter_value(&self) -> ParameterValue {
-        match &self {
-            manifest::ConfigParam::Int { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Int(default.to_owned()),
-            },
-            manifest::ConfigParam::Float { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Float(default.to_owned()),
-            },
-            manifest::ConfigParam::Bool { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Bool(default.to_owned()),
-            },
-            manifest::ConfigParam::String { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::String(default.to_owned()),
-            },
-            manifest::ConfigParam::Color { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Color(default.to_owned()),
-            },
-        }
-    }
-}
-
-pub trait ToManifestParameter {
-    fn to_manifest_parameter(&self) -> ManifestParameter;
-}
-
-impl ToManifestParameter for manifest::ConfigParam {
-    fn to_manifest_parameter(&self) -> ManifestParameter {
-        match &self {
-            manifest::ConfigParam::Int {
-                name,
-                description,
-                default,
-                min,
-                max,
-            } => ManifestParameter {
-                name: name.to_owned(),
-                description: description.to_owned(),
-                manifest: ManifestValue::Int {
-                    default: default.to_owned(),
-                    min: min.to_owned(),
-                    max: max.to_owned(),
-                },
-            },
-            manifest::ConfigParam::Float {
-                name,
-                description,
-                default,
-                min,
-                max,
-            } => ManifestParameter {
-                name: name.to_owned(),
-                description: description.to_owned(),
-                manifest: ManifestValue::Float {
-                    default: default.to_owned(),
-                    min: min.to_owned(),
-                    max: max.to_owned(),
-                },
-            },
-            manifest::ConfigParam::Bool {
-                name,
-                description,
-                default,
-            } => ManifestParameter {
-                name: name.to_owned(),
-                description: description.to_owned(),
-                manifest: ManifestValue::Bool {
-                    default: default.to_owned(),
-                },
-            },
-            manifest::ConfigParam::String {
-                name,
-                description,
-                default,
-            } => ManifestParameter {
-                name: name.to_owned(),
-                description: description.to_owned(),
-                manifest: ManifestValue::String {
-                    default: default.to_owned(),
-                },
-            },
-            manifest::ConfigParam::Color {
-                name,
-                description,
-                default,
-                min,
-                max,
-            } => ManifestParameter {
-                name: name.to_owned(),
-                description: description.to_owned(),
-                manifest: ManifestValue::Color {
-                    default: default.to_owned(),
-                    min: min.to_owned(),
-                    max: max.to_owned(),
-                },
-            },
+impl ToParameterValue for ManifestParameter {
+    fn to_parameter_value(&self) -> PlainParameter {
+        PlainParameter {
+            name: self.name.to_owned(),
+            value: self.manifest.get_default(),
         }
     }
 }

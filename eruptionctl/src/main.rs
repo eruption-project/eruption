@@ -39,7 +39,6 @@ use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use same_file::is_same_file;
-use scripting::manifest::GetAttr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
@@ -1434,14 +1433,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     for script in &scripts {
                         if let Some(config_params) = script.config.as_ref() {
                             for config in config_params.iter() {
-                                // read param defaults
-                                let value = config.get_default();
-
                                 println!(
                                     "\"{}\" {} (default: {})",
                                     &script.name,
-                                    &config.get_name(),
-                                    &value,
+                                    &config.name,
+                                    &config.get_default(),
                                 );
                             }
                         }
@@ -1516,12 +1512,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         let what = script.config.unwrap_or_default();
                         let config_param = what
                             .iter()
-                            .find(|config_param| config_param.get_name() == &parameter);
+                            .find(|config_param| config_param.name == parameter);
                         match config_param {
                             Some(config_param) => println!(
                                 "\"{}\" {}; default: {}",
                                 &script.name,
-                                &config_param.get_name().bold(),
+                                &config_param.name.bold(),
                                 &config_param.get_default()
                             ),
                             None => println!("No parameter found."),
@@ -1535,7 +1531,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         println!(
                             "\"{}\" {}; default: {}",
                             &script.name,
-                            &param.get_name().bold(),
+                            &param.name.bold(),
                             &param.get_default()
                         );
                     }
