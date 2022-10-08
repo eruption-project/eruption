@@ -969,7 +969,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-cmd"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.10",
@@ -1334,7 +1334,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-sdk"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "bincode",
  "bytes",

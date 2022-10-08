@@ -27,7 +27,7 @@ Please add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-eruption-sdk = "0.0.4"
+eruption-sdk = "0.0.5"
 ```
 
 ## MSRV
@@ -45,7 +45,7 @@ use std::time::Duration;
 
 const EXAMPLE_NAME: &str = "Simple Rust Example #1";
 
-fn main() -> Result<(), eyre::Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "Welcome to the Eruption SDK!\nYou are running the \"{}\" \
         from the Eruption SDK version {}\n",

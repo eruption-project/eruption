@@ -52,7 +52,7 @@ cpp_compat = true
 # A list of lines to add verbatim after the includes block
 after_includes = """
 
-#define ERUPTION_SDK_VERSION 0.0.4
+#define ERUPTION_SDK_VERSION 0.0.5
 """
 
 braces = "SameLine"
