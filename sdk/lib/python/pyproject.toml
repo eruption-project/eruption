@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eruption-sdk"
+version = "0.0.9"
+authors = [
+  { name="X3n0m0rph59", email="x3n0m0rph59@gmail.com" },
+]
+description = "Provides an interface to the Eruption Realtime RGB LED Driver for Linux"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+    "Intended Audience :: Developers",
+]
+keywords = ["eruption", "linux", "led", "driver", "sdk"]
+dependencies = [
+    "protobuf <= 3.20",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/X3n0m0rph59/eruption"
+"Bug Tracker" = "https://github.com/X3n0m0rph59/eruption/issues"

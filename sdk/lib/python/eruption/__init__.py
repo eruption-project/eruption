@@ -21,4 +21,4 @@ from eruption.color import Color
 from eruption.connection import Connection
 
 SDK_NAME = "Eruption SDK"
-SDK_VERSION = "0.0.5"
+SDK_VERSION = "0.0.9"
