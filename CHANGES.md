@@ -9,9 +9,10 @@ Table of new and noteworthy changes:
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |
-| 0.3.0 | Improve the `Eruption SDK`: Rename package to `eruption-sdk` and publish on <https://crates.io/crates/eruption-sdk> |
-| 0.3.0 | Improve the `Eruption SDK`: Add APIs for switching profiles and for modifying configuration parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fading when switching profiles. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | `Eruption SDK`: Add APIs for switching profiles and for modifying configuration parameters. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | `Eruption SDK`: Improve the Python 3 SDK and publish on <https://pypi.org/project/eruption-sdk/> |
+| 0.3.0 | `Eruption SDK`: Rename Rust package to `eruption-sdk` and publish on <https://crates.io/crates/eruption-sdk> |
 | 0.3.0 | Improve the way we handle parameters of `*.profile` files. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Update all dependencies to their latest releases |
 | 0.3.0 | New theme for the eruption CLI tools (`--help`) output, provided by Clap v4 |

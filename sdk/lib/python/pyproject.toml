@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eruption-sdk"
-version = "0.0.9"
+version = "0.0.10"
 authors = [
   { name="X3n0m0rph59", email="x3n0m0rph59@gmail.com" },
 ]

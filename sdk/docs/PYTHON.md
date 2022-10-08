@@ -26,6 +26,7 @@ First you need to set up the required environment:
 
  * Create a virtual environment (venv)
  * Install the dependencies
+   * Eruption Python 3 SDK
    * Google Protocol Buffers
  * Run an example application to test the installation
    * `simple.py` located in `sdk/examples/python/`
@@ -42,7 +43,7 @@ source venv/bin/activate
 Now install the dependencies
 
 ```shell
-pip install protobuf
+pip install eruption-sdk
 ```
 
 ### Example Code
@@ -70,6 +71,7 @@ local transport (UNIX domain socket)
         status = connection.get_server_status()
         print(status)
 ```
+
 #### Switching Profiles
 
 The current active profile file can be queried using `get_active_profile()` and set using `switch_profile()`.

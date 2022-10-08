@@ -26,6 +26,7 @@ First you need to set up the required environment:
 
  * Create a virtual environment (venv)
  * Install the dependencies
+   * Eruption Python 3 SDK
    * Google Protocol Buffers
  * Run an example application to test the installation
    * `simple.py` located in `sdk/examples/python/`
