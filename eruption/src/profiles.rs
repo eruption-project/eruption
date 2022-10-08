@@ -21,13 +21,14 @@
 
 use crate::constants;
 use log::*;
-use paste::paste;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::{collections::HashMap, ffi::OsStr};
 use uuid::Uuid;
+
+use crate::scripting::parameters::{ProfileParameter, TypedValue};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -53,91 +54,6 @@ pub enum ProfileError {
 
     #[error("Could not parse a param value")]
     ParseParamError {},
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
-#[serde(tag = "type", rename_all = "lowercase")]
-pub enum ConfigParam {
-    Int {
-        name: String,
-        value: i64,
-        #[serde(default)]
-        default: i64,
-    },
-    Float {
-        name: String,
-        value: f64,
-        #[serde(default)]
-        default: f64,
-    },
-    Bool {
-        name: String,
-        value: bool,
-        #[serde(default)]
-        default: bool,
-    },
-    String {
-        name: String,
-        value: String,
-        #[serde(default)]
-        default: String,
-    },
-    Color {
-        name: String,
-        value: u32,
-        #[serde(default)]
-        default: u32,
-    },
-}
-
-pub trait GetAttr {
-    fn get_name(&self) -> &String;
-    fn get_value(&self) -> String;
-    fn get_default(&self) -> String;
-}
-
-impl GetAttr for ConfigParam {
-    fn get_name(&self) -> &String {
-        match self {
-            ConfigParam::Int { ref name, .. } => name,
-
-            ConfigParam::Float { ref name, .. } => name,
-
-            ConfigParam::Bool { ref name, .. } => name,
-
-            ConfigParam::String { ref name, .. } => name,
-
-            ConfigParam::Color { ref name, .. } => name,
-        }
-    }
-
-    fn get_value(&self) -> String {
-        match self {
-            ConfigParam::Int { ref value, .. } => format!("{}", value),
-
-            ConfigParam::Float { ref value, .. } => format!("{}", value),
-
-            ConfigParam::Bool { ref value, .. } => format!("{}", value),
-
-            ConfigParam::String { ref value, .. } => value.to_owned(),
-
-            ConfigParam::Color { ref value, .. } => format!("#{:06x}", value),
-        }
-    }
-
-    fn get_default(&self) -> String {
-        match self {
-            ConfigParam::Int { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Float { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Bool { ref default, .. } => format!("{}", default),
-
-            ConfigParam::String { ref default, .. } => default.to_owned(),
-
-            ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
-        }
-    }
 }
 
 fn default_id() -> Uuid {
@@ -167,49 +83,30 @@ pub struct Profile {
     #[serde(default = "default_script_file")]
     pub active_scripts: Vec<PathBuf>,
 
-    pub config: Option<HashMap<String, Vec<ConfigParam>>>,
+    pub config: Option<HashMap<String, Vec<ProfileParameter>>>,
 }
 
 pub trait FindConfig {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam>;
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam>;
+    fn find_config_param(&self, param: &str) -> Option<&ProfileParameter>;
+    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ProfileParameter>;
 }
 
-impl FindConfig for Vec<ConfigParam> {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam> {
-        self.iter().find(|p| p.get_name() == param)
+impl FindConfig for Vec<ProfileParameter> {
+    fn find_config_param(&self, param: &str) -> Option<&ProfileParameter> {
+        self.iter().find(|p| p.name == param)
     }
 
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam> {
-        self.iter_mut().find(|p| p.get_name() == param)
+    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ProfileParameter> {
+        self.iter_mut().find(|p| p.name == param)
     }
 }
 
 macro_rules! get_default_value {
     ($t:ident, $tval:ty, $rval:ty) => {
-        paste! {
+        paste::item! {
             pub fn [<get_default_ $t>] (&self, script_name: &str, name: &str) -> Option<$rval> {
-                match self.config.as_ref() {
-                    Some(config) =>
-                        match config.get(&script_name.to_owned()) {
-                        Some(script_config) =>
-                            match script_config.find_config_param(&name) {
-                                Some(p) => match p {
-                                    $tval {
-                                        name: _,
-                                        value: _,
-                                        default,
-                                    } => Some(default.clone()),
-
-                                    _ => None,
-                                },
-
-                                _ => None,
-                            },
-
-                        _ => None,
-                    }
-
+                match self.get_parameter_default(script_name, name) {
+                    Some($tval(value)) => Some(value.to_owned()),
                     _ => None,
                 }
             }
@@ -225,7 +122,7 @@ macro_rules! get_config_value {
                     if let Some(cfg) = config.get(script_name) {
                         match cfg.find_config_param(name) {
                             Some(param) => match param {
-                                $pval { value, .. } =>
+                                ProfileParameter { value: $pval(value), .. } =>
                                 {
                                     debug!("Using value from .profile file for config param '{}' (value: '{}') [5]",  name, value);
 
@@ -268,7 +165,7 @@ macro_rules! set_config_value {
                     if let Some(ref mut cfg) = config.get_mut(script_name) {
                         match cfg.find_config_param_mut(name) {
                             Some(ref mut param) => match param {
-                                $pval { ref mut value, .. } => {
+                                ProfileParameter { value: $pval(ref mut value), .. } => {
                                     *value = val.to_owned();
                                     Ok(())
                                 }
@@ -279,10 +176,10 @@ macro_rules! set_config_value {
                             },
 
                             _ => {
-                                cfg.push($pval {
+                                cfg.push(ProfileParameter {
                                     name: name.to_string(),
-                                    value: val.to_owned(),
-                                    default: val.to_owned(),
+                                    value: $pval(val.to_owned()),
+                                    manifest: None
                                 });
                                 Ok(())
                             }
@@ -290,10 +187,10 @@ macro_rules! set_config_value {
                     } else {
                         config.insert(
                             script_name.into(),
-                            vec![$pval {
+                            vec![ProfileParameter {
                                 name: name.to_string(),
-                                value: val.to_owned(),
-                                default: val.to_owned(),
+                                value: $pval(val.to_owned()),
+                                manifest: None
                             }],
                         );
 
@@ -434,7 +331,7 @@ impl Profile {
         let path = self.profile_file.with_extension("profile.state");
         let json_string = fs::read_to_string(&path)?;
 
-        let map: HashMap<String, Vec<ConfigParam>> = serde_json::from_str(&json_string)?;
+        let map: HashMap<String, Vec<ProfileParameter>> = serde_json::from_str(&json_string)?;
 
         self.config = Some(map);
 
@@ -452,25 +349,38 @@ impl Profile {
         Ok(())
     }
 
-    get_default_value!(int, ConfigParam::Int, i64);
-    get_config_value!(int, ConfigParam::Int, i64);
-    set_config_value!(int, ConfigParam::Int, i64);
+    fn get_parameter_default(&self, script_name: &str, parameter_name: &str) -> Option<TypedValue> {
+        Some(
+            self.config
+                .as_ref()?
+                .get(&script_name.to_string())?
+                .iter()
+                .find(|p| p.name == parameter_name)?
+                .manifest
+                .as_ref()?
+                .get_default(),
+        )
+    }
 
-    get_default_value!(float, ConfigParam::Float, f64);
-    get_config_value!(float, ConfigParam::Float, f64);
-    set_config_value!(float, ConfigParam::Float, f64);
+    get_default_value!(int, TypedValue::Int, i64);
+    get_config_value!(int, TypedValue::Int, i64);
+    set_config_value!(int, TypedValue::Int, i64);
 
-    get_default_value!(bool, ConfigParam::Bool, bool);
-    get_config_value!(bool, ConfigParam::Bool, bool);
-    set_config_value!(bool, ConfigParam::Bool, bool);
+    get_default_value!(float, TypedValue::Float, f64);
+    get_config_value!(float, TypedValue::Float, f64);
+    set_config_value!(float, TypedValue::Float, f64);
 
-    get_default_value!(string, ConfigParam::String, String);
-    get_config_value!(string, ConfigParam::String, str);
-    set_config_value!(string, ConfigParam::String, str);
+    get_default_value!(bool, TypedValue::Bool, bool);
+    get_config_value!(bool, TypedValue::Bool, bool);
+    set_config_value!(bool, TypedValue::Bool, bool);
 
-    get_default_value!(color, ConfigParam::Color, u32);
-    get_config_value!(color, ConfigParam::Color, u32);
-    set_config_value!(color, ConfigParam::Color, u32);
+    get_default_value!(string, TypedValue::String, String);
+    get_config_value!(string, TypedValue::String, str);
+    set_config_value!(string, TypedValue::String, str);
+
+    get_default_value!(color, TypedValue::Color, u32);
+    get_config_value!(color, TypedValue::Color, u32);
+    set_config_value!(color, TypedValue::Color, u32);
 }
 
 impl Default for Profile {
@@ -631,6 +541,8 @@ mod tests {
 
     use uuid::Uuid;
 
+    use crate::scripting::parameters::{ProfileParameter, TypedValue};
+
     use super::FindConfig;
 
     #[test]
@@ -722,11 +634,11 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            param,
-            &super::ConfigParam::Color {
+            *param,
+            ProfileParameter {
                 name: String::from("color_step_shockwave"),
-                value: 0x05010000,
-                default: Default::default(),
+                value: TypedValue::Color(0x05010000),
+                manifest: None
             }
         );
 
@@ -735,11 +647,11 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            param,
-            &super::ConfigParam::Bool {
+            *param,
+            ProfileParameter {
                 name: String::from("mouse_events"),
-                value: true,
-                default: Default::default(),
+                value: TypedValue::Bool(true),
+                manifest: None
             }
         );
 

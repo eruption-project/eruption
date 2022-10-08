@@ -34,9 +34,12 @@ use std::sync::Arc;
 use std::vec::Vec;
 
 use crate::{
-    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA, profiles,
-    scripting::callbacks, scripting::constants::*, scripting::manifest,
+    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
+    scripting::callbacks, scripting::constants::*,
 };
+
+use super::parameters::ParameterValue;
+use super::parameters::TypedValue;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -129,91 +132,6 @@ impl std::error::Error for UnknownError {}
 impl fmt::Display for UnknownError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Unknown error occurred")
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct ParameterValue {
-    pub name: String,
-    pub value: TypedValue,
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub enum TypedValue {
-    Int(i64),
-    Float(f64),
-    Bool(bool),
-    String(String),
-    Color(u32),
-}
-
-impl ParameterValue {
-    fn get_value_string(&self) -> String {
-        match &self.value {
-            TypedValue::Int(value) => format!("{}", value),
-            TypedValue::Float(value) => format!("{}", value),
-            TypedValue::Bool(value) => format!("{}", value),
-            TypedValue::String(value) => value.to_string(),
-            TypedValue::Color(value) => format!("#{:06x}", value),
-        }
-    }
-}
-
-pub trait ToParameterValue {
-    fn to_parameter_value(&self) -> ParameterValue;
-}
-
-impl ToParameterValue for profiles::ConfigParam {
-    fn to_parameter_value(&self) -> ParameterValue {
-        match &self {
-            profiles::ConfigParam::Int { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Int(*value),
-            },
-            profiles::ConfigParam::Float { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Float(*value),
-            },
-            profiles::ConfigParam::Bool { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Bool(*value),
-            },
-            profiles::ConfigParam::String { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::String(value.to_string()),
-            },
-            profiles::ConfigParam::Color { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Color(*value),
-            },
-        }
-    }
-}
-
-impl ToParameterValue for manifest::ConfigParam {
-    fn to_parameter_value(&self) -> ParameterValue {
-        match &self {
-            manifest::ConfigParam::Int { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Int(*default),
-            },
-            manifest::ConfigParam::Float { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Float(*default),
-            },
-            manifest::ConfigParam::Bool { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Bool(*default),
-            },
-            manifest::ConfigParam::String { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::String(default.to_string()),
-            },
-            manifest::ConfigParam::Color { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Color(*default),
-            },
-        }
     }
 }
 
@@ -424,9 +342,8 @@ where
 {
     for parameter_value in parameter_values {
         debug!(
-            "Applying parameter {:?} = {}",
-            parameter_value.name,
-            parameter_value.get_value_string()
+            "Applying parameter {} = {}",
+            &parameter_value.name, &parameter_value.value
         );
         set_parameter_value(lua_ctx, parameter_value)?;
     }

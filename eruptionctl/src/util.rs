@@ -24,9 +24,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::constants;
-use crate::manifest::{self, Manifest, ManifestError};
 use crate::profiles;
 use crate::profiles::Profile;
+use crate::scripting::manifest::{self, Manifest, ManifestError};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

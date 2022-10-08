@@ -20,7 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use color_eyre::Help;
+use color_eyre::{owo_colors, Help};
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
@@ -36,11 +36,10 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use manifest::GetAttr;
 use parking_lot::Mutex;
-use profiles::GetAttr as GetAttrProfile;
 use rust_embed::RustEmbed;
 use same_file::is_same_file;
+use scripting::manifest::GetAttr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
@@ -48,14 +47,14 @@ use std::{env, fs, thread};
 use std::{process, sync::Arc};
 
 use crate::color_scheme::{ColorScheme, PywalColorScheme};
-use crate::manifest::Manifest;
+use crate::scripting::manifest::Manifest;
 
 mod color_scheme;
 mod constants;
 mod dbus_client;
 mod device;
-mod manifest;
 mod profiles;
+mod scripting;
 mod util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -1404,20 +1403,25 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     if let Some(config_params) = config_params {
                         for config in config_params.iter() {
-                            // read param value
-                            let value = if config.get_value() == config.get_default() {
-                                config.get_value().to_string().normal()
-                            } else {
-                                config.get_value().to_string().bold()
-                            };
+                            let default_value = config.get_default();
 
-                            println!(
-                                "\"{}\" {}: {} (default: {})",
-                                &script.name,
-                                &config.get_name(),
-                                &value,
-                                &config.get_default(),
-                            );
+                            if let Some(default_value) = default_value {
+                                let value_string: ColoredString = if config.value == default_value {
+                                    config.value.to_string().normal()
+                                } else {
+                                    config.value.to_string().bold()
+                                };
+
+                                println!(
+                                    "\"{}\" {}: {} (default: {})",
+                                    &script.name, &config.name, &value_string, &default_value,
+                                );
+                            } else {
+                                println!(
+                                    "\"{}\" {}: {}",
+                                    &script.name, &config.name, &config.value,
+                                );
+                            }
                         }
                     }
                 }
@@ -1485,7 +1489,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     if let Some(config) = config.get(&script.name) {
                         let config_param = config
                             .iter()
-                            .find(|config_param| config_param.get_name() == &parameter);
+                            .find(|config_param| config_param.name == parameter);
                         if let Some(config_param) = config_param {
                             println!(
                                 "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
@@ -1499,8 +1503,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             println!(
                                 "\"{}\" {} {}",
                                 &script.name,
-                                &config_param.get_name(),
-                                &config_param.get_value().bold(),
+                                &config_param.name,
+                                owo_colors::OwoColorize::bold(&config_param.value)
                             );
 
                             found_parameter = true;

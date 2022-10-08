@@ -46,6 +46,7 @@ use crate::{
     hwdevices::RGBA,
     plugins::{self, Plugin},
     scripting::parameters,
+    scripting::parameters_util,
 };
 
 pub mod protocol {
@@ -571,7 +572,7 @@ impl SdkSupportPlugin {
                                                         value: map.1.to_string(),
                                                     })
                                                     .collect();
-                                                parameters::apply_parameters(
+                                                parameters_util::apply_parameters(
                                                     &message.profile_file,
                                                     &message.script_file,
                                                     &parameter_values,

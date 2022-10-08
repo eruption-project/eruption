@@ -34,6 +34,7 @@ use crate::{
     plugins::{self, audio},
     profiles, script,
     scripting::parameters,
+    scripting::parameters_util,
 };
 
 /// D-Bus messages and signals that are processed by the main thread
@@ -1165,7 +1166,7 @@ fn apply_parameter(
     param_name: &str,
     value: &str,
 ) -> Result<()> {
-    parameters::apply_parameters(
+    parameters_util::apply_parameters(
         profile_file,
         script_file,
         &[parameters::UntypedParameterValue {

@@ -19,10 +19,11 @@
 
 use crate::{dbus_client, profiles::FindConfig};
 use crate::{
-    manifest,
-    profiles::{self, Profile},
+    profiles::Profile,
+    scripting::manifest::{self, Manifest},
+    scripting::parameters,
+    util,
 };
-use crate::{manifest::Manifest, util};
 use glib::clone;
 use glib::IsA;
 use gtk::builders::{
@@ -588,7 +589,7 @@ fn create_config_editor(
     profile: &Profile,
     script: &Manifest,
     param: &manifest::ConfigParam,
-    value: &Option<&profiles::ConfigParam>,
+    value: &Option<&parameters::ProfileParameter>,
 ) -> Result<Frame> {
     fn parameter_changed<T>(profile: &Profile, script: &Manifest, name: &str, value: T)
     where
@@ -627,7 +628,10 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Int { name: _, value, .. } => *value,
+                    parameters::ProfileParameter {
+                        value: parameters::TypedValue::Int(value),
+                        ..
+                    } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -671,7 +675,10 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Float { name: _, value, .. } => *value,
+                    parameters::ProfileParameter {
+                        value: parameters::TypedValue::Float(value),
+                        ..
+                    } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -713,7 +720,10 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Bool { name: _, value, .. } => *value,
+                    parameters::ProfileParameter {
+                        value: parameters::TypedValue::Bool(value),
+                        ..
+                    } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -753,7 +763,10 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = *value {
                 match value {
-                    profiles::ConfigParam::String { name: _, value, .. } => value.clone(),
+                    parameters::ProfileParameter {
+                        value: parameters::TypedValue::String(value),
+                        ..
+                    } => value.clone(),
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }
@@ -796,7 +809,10 @@ fn create_config_editor(
         } => {
             let value = if let Some(value) = value {
                 match value {
-                    profiles::ConfigParam::Color { name: _, value, .. } => *value,
+                    parameters::ProfileParameter {
+                        value: parameters::TypedValue::Color(value),
+                        ..
+                    } => *value,
 
                     _ => return Err(ProfilesError::TypeMismatch {}.into()),
                 }

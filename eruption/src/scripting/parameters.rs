@@ -17,109 +17,222 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use log::*;
-use same_file::is_same_file;
-use std::{path::PathBuf, sync::atomic::Ordering};
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
-use crate::{
-    profiles::{self, FindConfig},
-    script::{self, ToParameterValue},
-    scripting::{manifest, manifest::ParseConfig},
-};
+use super::manifest;
 
-use super::script::ParameterValue;
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(tag = "type", content = "value", rename_all = "lowercase")]
+pub enum TypedValue {
+    Int(i64),
+    Float(f64),
+    Bool(bool),
+    String(String),
+    Color(u32),
+}
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+impl fmt::Display for TypedValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            TypedValue::Int(value) => write!(f, "{}", value),
+            TypedValue::Float(value) => write!(f, "{}", value),
+            TypedValue::Bool(value) => write!(f, "{}", value),
+            TypedValue::String(value) => write!(f, "{}", value),
+            TypedValue::Color(value) => write!(f, "#{:06x}", value),
+        }
+    }
+}
 
-pub struct UntypedParameterValue {
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct UntypedParameterValue { // Rename to "UntypedParameter"?
     pub name: String,
     pub value: String,
 }
 
-pub fn apply_parameters(
-    profile_file: &str,
-    script_file: &str,
-    parameter_values: &[UntypedParameterValue],
-) -> Result<()> {
-    let profile_path = PathBuf::from(&profile_file);
-    let script_path = PathBuf::from(&script_file);
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct ParameterValue { // Rename to "PlainParameter"?
+    pub name: String,
+    pub value: TypedValue,
+}
 
-    let manifest = manifest::Manifest::from(&script_path)?;
-    let config_params = manifest.config.unwrap_or_default();
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct ProfileParameter {
+    pub name: String,
+    #[serde(flatten)]
+    pub value: TypedValue,
+    #[serde(skip)]
+    pub manifest: Option<ManifestValue>,
+}
 
-    // modify persistent profile state
-    match profiles::Profile::from(&profile_path) {
-        Ok(mut profile) => {
-            assert!(profile.config.is_some());
-
-            let profile_config = profile.config.as_mut().unwrap();
-            let profile_config = profile_config
-                .entry(manifest.name)
-                .or_insert_with(std::vec::Vec::new);
-
-            for parameter_value in parameter_values {
-                let config_param = config_params
-                    .parse_config_param(&parameter_value.name, &parameter_value.value)?;
-
-                if let Some(param) = profile_config
-                    .clone()
-                    .find_config_param(&parameter_value.name)
-                {
-                    // param already exists, remove the existing one first
-                    profile_config.retain(|elem| elem != param);
-                }
-
-                profile_config.push(config_param);
-            }
-            profile.save_params()?;
-        }
-
-        Err(e) => {
-            error!("Could not update profile state: {}", e);
-        }
+impl ProfileParameter {
+    pub fn get_default(&self) -> Option<TypedValue> {
+        Some(self.manifest.as_ref()?.get_default())
     }
+}
 
-    let parameter_values: Vec<ParameterValue> = parameter_values
-        .iter()
-        .map(|pv| {
-            config_params
-                .parse_config_param(&pv.name, &pv.value)
-                .map(|cp| cp.to_parameter_value())
-        })
-        .filter_map(|pv| match pv {
-            Ok(pv) => Some(pv),
-            Err(e) => {
-                error!("Bad parameter: {}", e);
-                None
-            }
-        })
-        .collect();
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub struct ManifestParameter {
+    pub name: String,
+    pub description: String,
+    #[serde(flatten)]
+    pub manifest: ManifestValue,
+}
 
-    let mut need_to_reload_profile = true;
-    {
-        if let Some(active_profile) = &*crate::ACTIVE_PROFILE.lock() {
-            if is_same_file(&active_profile.profile_file, &profile_path).unwrap_or(false) {
-                let lua_txs = crate::LUA_TXS.read();
-                let lua_tx = lua_txs
-                    .iter()
-                    .find(|&lua_tx| lua_tx.script_file == script_path);
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum ManifestValue {
+    Int {
+        default: i64,
+        min: Option<i64>,
+        max: Option<i64>,
+    },
+    Float {
+        default: f64,
+        min: Option<f64>,
+        max: Option<f64>,
+    },
+    Bool {
+        default: bool,
+    },
+    String {
+        default: String,
+    },
+    Color {
+        default: u32,
+        min: Option<u32>,
+        max: Option<u32>,
+    },
+}
 
-                if let Some(lua_tx) = lua_tx {
-                    let sent = lua_tx.send(script::Message::SetParameters { parameter_values });
-                    match sent {
-                        Ok(()) => need_to_reload_profile = false,
-                        Err(_) => {
-                            eprintln!("Could not update parameter from D-Bus request.");
-                        }
-                    }
-                }
-            }
+impl ManifestValue {
+    pub fn get_default(&self) -> TypedValue {
+        match &self {
+            Self::Int { default, .. } => TypedValue::Int(default.to_owned()),
+            Self::Float { default, .. } => TypedValue::Float(default.to_owned()),
+            Self::Bool { default, .. } => TypedValue::Bool(default.to_owned()),
+            Self::String { default, .. } => TypedValue::String(default.to_owned()),
+            Self::Color { default, .. } => TypedValue::Color(default.to_owned()),
         }
     }
+}
 
-    if need_to_reload_profile {
-        crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
+pub trait ToParameterValue {
+    fn to_parameter_value(&self) -> ParameterValue;
+}
+
+impl ToParameterValue for ProfileParameter {
+    fn to_parameter_value(&self) -> ParameterValue {
+        ParameterValue {
+            name: self.name.to_owned(),
+            value: self.value.to_owned(),
+        }
     }
+}
 
-    Ok(())
+impl ToParameterValue for manifest::ConfigParam {
+    fn to_parameter_value(&self) -> ParameterValue {
+        match &self {
+            manifest::ConfigParam::Int { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Int(default.to_owned()),
+            },
+            manifest::ConfigParam::Float { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Float(default.to_owned()),
+            },
+            manifest::ConfigParam::Bool { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Bool(default.to_owned()),
+            },
+            manifest::ConfigParam::String { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::String(default.to_owned()),
+            },
+            manifest::ConfigParam::Color { name, default, .. } => ParameterValue {
+                name: name.to_string(),
+                value: TypedValue::Color(default.to_owned()),
+            },
+        }
+    }
+}
+
+pub trait ToManifestParameter {
+    fn to_manifest_parameter(&self) -> ManifestParameter;
+}
+
+impl ToManifestParameter for manifest::ConfigParam {
+    fn to_manifest_parameter(&self) -> ManifestParameter {
+        match &self {
+            manifest::ConfigParam::Int {
+                name,
+                description,
+                default,
+                min,
+                max,
+            } => ManifestParameter {
+                name: name.to_owned(),
+                description: description.to_owned(),
+                manifest: ManifestValue::Int {
+                    default: default.to_owned(),
+                    min: min.to_owned(),
+                    max: max.to_owned(),
+                },
+            },
+            manifest::ConfigParam::Float {
+                name,
+                description,
+                default,
+                min,
+                max,
+            } => ManifestParameter {
+                name: name.to_owned(),
+                description: description.to_owned(),
+                manifest: ManifestValue::Float {
+                    default: default.to_owned(),
+                    min: min.to_owned(),
+                    max: max.to_owned(),
+                },
+            },
+            manifest::ConfigParam::Bool {
+                name,
+                description,
+                default,
+            } => ManifestParameter {
+                name: name.to_owned(),
+                description: description.to_owned(),
+                manifest: ManifestValue::Bool {
+                    default: default.to_owned(),
+                },
+            },
+            manifest::ConfigParam::String {
+                name,
+                description,
+                default,
+            } => ManifestParameter {
+                name: name.to_owned(),
+                description: description.to_owned(),
+                manifest: ManifestValue::String {
+                    default: default.to_owned(),
+                },
+            },
+            manifest::ConfigParam::Color {
+                name,
+                description,
+                default,
+                min,
+                max,
+            } => ManifestParameter {
+                name: name.to_owned(),
+                description: description.to_owned(),
+                manifest: ManifestValue::Color {
+                    default: default.to_owned(),
+                    min: min.to_owned(),
+                    max: max.to_owned(),
+                },
+            },
+        }
+    }
 }

@@ -72,8 +72,8 @@ use crate::{
     profiles::FindConfig,
     profiles::Profile,
     scripting::manifest::Manifest,
-    scripting::script::ToParameterValue,
-    scripting::script::{self, ParameterValue},
+    scripting::parameters::{ParameterValue, ToParameterValue},
+    scripting::script,
 };
 
 use crate::threads::DbusApiEvent;
@@ -732,7 +732,8 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
                     let parameter_value = param.to_parameter_value(); // config default
                     match profile_config {
                         Some(profile_config) => profile_config
-                            .find_config_param(&parameter_value.name).map(|cp| cp.to_parameter_value())
+                            .find_config_param(&parameter_value.name)
+                            .map(|profile_parameter| profile_parameter.to_parameter_value())
                             .unwrap_or_else(|| {
                                 debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);
                                 parameter_value

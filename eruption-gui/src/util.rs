@@ -18,13 +18,13 @@
 */
 
 // use crate::manifest;
-use crate::{constants, dbus_client, manifest, preferences, profiles};
+use crate::{constants, dbus_client, preferences, profiles, scripting::manifest};
 use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 // use manifest::Manifest;
 // use std::fs;
-use crate::manifest::ManifestError;
+use crate::scripting::manifest::ManifestError;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use std::collections::HashMap;

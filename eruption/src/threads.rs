@@ -30,7 +30,7 @@ use std::time::{Duration, Instant};
 
 use crate::{
     constants, dbus_interface, hwdevices, macros, plugins, script,
-    scripting::script::ParameterValue, sdk_support, uleds, DeviceAction, EvdevError,
+    scripting::parameters::ParameterValue, sdk_support, uleds, DeviceAction, EvdevError,
     KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
     LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
 };

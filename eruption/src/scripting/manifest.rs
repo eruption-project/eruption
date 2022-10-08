@@ -26,7 +26,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use crate::profiles;
+use super::parameters::{ProfileParameter, ToManifestParameter, TypedValue};
 use crate::util;
 use crate::util::get_script_dirs;
 
@@ -88,11 +88,11 @@ pub enum ConfigParam {
 }
 
 pub trait ParseConfig {
-    fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam>;
+    fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter>;
 }
 
 impl ParseConfig for Vec<ConfigParam> {
-    fn parse_config_param(&self, param: &str, val: &str) -> Result<profiles::ConfigParam> {
+    fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter> {
         let config_param = self
             .iter()
             .find(|config_param| config_param.get_name() == param)
@@ -107,65 +107,65 @@ impl ParseConfig for Vec<ConfigParam> {
         }
 
         match &config_param {
-            ConfigParam::Int { name, default, .. } => {
+            ConfigParam::Int { name, .. } => {
                 let value = i64::from_str(val).map_err(|_e| parse_param_error("int", val))?;
 
-                Ok(profiles::ConfigParam::Int {
+                Ok(ProfileParameter {
                     name: name.to_string(),
-                    value,
-                    default: *default,
+                    value: TypedValue::Int(value),
+                    manifest: Some(config_param.to_manifest_parameter().manifest),
                 })
             }
 
-            ConfigParam::Float { name, default, .. } => {
+            ConfigParam::Float { name, .. } => {
                 let value = f64::from_str(val).map_err(|_e| parse_param_error("float", val))?;
 
-                Ok(profiles::ConfigParam::Float {
+                Ok(ProfileParameter {
                     name: name.to_string(),
-                    value,
-                    default: *default,
+                    value: TypedValue::Float(value),
+                    manifest: Some(config_param.to_manifest_parameter().manifest),
                 })
             }
 
-            ConfigParam::Bool { name, default, .. } => {
+            ConfigParam::Bool { name, .. } => {
                 let value = bool::from_str(&val.to_string().to_lowercase())
                     .map_err(|_e| parse_param_error("bool", val))?;
 
-                Ok(profiles::ConfigParam::Bool {
+                Ok(ProfileParameter {
                     name: name.to_string(),
-                    value,
-                    default: *default,
+                    value: TypedValue::Bool(value),
+                    manifest: Some(config_param.to_manifest_parameter().manifest),
                 })
             }
 
-            ConfigParam::String { name, default, .. } => {
+            ConfigParam::String { name, .. } => {
                 let value = val.to_owned();
 
-                Ok(profiles::ConfigParam::String {
+                Ok(ProfileParameter {
                     name: name.to_string(),
-                    value,
-                    default: default.to_owned(),
+                    value: TypedValue::String(value),
+                    manifest: Some(config_param.to_manifest_parameter().manifest),
                 })
             }
 
-            ConfigParam::Color { name, default, .. } => {
+            ConfigParam::Color { name, .. } => {
                 if &val[0..1] == "#" {
                     let value = u32::from_str_radix(&val[1..], 16)
                         .map_err(|_e| parse_param_error("color from hex", val))?;
 
-                    Ok(profiles::ConfigParam::Color {
+                    Ok(ProfileParameter {
                         name: name.to_string(),
-                        value,
-                        default: *default,
+                        value: TypedValue::Color(value),
+                        manifest: Some(config_param.to_manifest_parameter().manifest),
                     })
                 } else {
                     let value = u32::from_str(val)
                         .map_err(|_e| parse_param_error("color from int", val))?;
 
-                    Ok(profiles::ConfigParam::Color {
+                    Ok(ProfileParameter {
                         name: name.to_string(),
-                        value,
-                        default: *default,
+                        value: TypedValue::Color(value),
+                        manifest: Some(config_param.to_manifest_parameter().manifest),
                     })
                 }
             }
