@@ -152,6 +152,8 @@ function on_hid_event(event_type, arg1)
         -- "FN" key event
         modifier_map[FN] = is_pressed
 
+        overlay_state = NO_OVERLAY
+
         debug("Macros: FN key event registered")
     elseif key_code == EASY_SHIFT_KEY then
         -- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
