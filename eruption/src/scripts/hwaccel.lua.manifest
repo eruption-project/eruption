@@ -1,0 +1,38 @@
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
+
+
+name = "Hardware Acceleration"
+description = "Hardware accelerated effects using shader programs"
+version = "0.0.1"
+author = "The Eruption Development Team"
+min_supported_version = "0.3.0"
+tags = ['Effect', 'Vendor']
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
+default = 0.5
+
+[[config]]
+type = 'string'
+name = 'shader_program'
+description = 'Import shader program file'
+default = 'shaders/example.glsl'

@@ -1386,6 +1386,7 @@ pub fn register_filesystem_watcher(
     Ok(())
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -1423,6 +1424,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 /// open the control and LED devices of the keyboard
 pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
@@ -1587,9 +1589,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     let matches = parse_commandline();
 

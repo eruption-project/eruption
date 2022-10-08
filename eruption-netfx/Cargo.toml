@@ -54,7 +54,7 @@ nix = "0.25.0"
 tempfile = "3.3.0"
 rayon = "1.5.3"
 jwalk = "0.6.0"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.21.2", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"

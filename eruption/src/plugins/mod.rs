@@ -19,6 +19,7 @@
 
 pub mod animal;
 pub mod audio;
+pub mod hwaccel;
 pub mod introspection;
 pub mod keyboard;
 pub mod macros;
@@ -33,6 +34,7 @@ pub mod uleds;
 
 pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
+pub use hwaccel::HwAccelerationPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
 pub use macros::MacrosPlugin;
@@ -109,6 +111,10 @@ pub fn register_plugins() -> Result<()> {
 
     let _ = plugin_manager
         .register_plugin(Box::new(AudioPlugin::new()))
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
+        .register_plugin(Box::new(HwAccelerationPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     // Additional plugins

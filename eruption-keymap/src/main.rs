@@ -302,6 +302,7 @@ fn print_header() {
     println!();
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -334,6 +335,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
@@ -363,9 +365,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     // register ctrl-c handler
     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();

@@ -43,7 +43,7 @@ cfg-if = "1.0.0"
 #flume = { version = "0.10.12", features = ["async", "eventual-fairness"]}
 flume = { version = "0.10.14", features = ["async"] }
 futures = "0.3.24"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 async-trait = "0.1.57"
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"
@@ -105,6 +105,8 @@ rust-embed = "6.4.1"
 unic-langid = "0.9.0"
 icecream = "0.1.0"
 same-file = "1"
+vulkano = "0.31.1"
+
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

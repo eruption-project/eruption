@@ -39,7 +39,7 @@ syslog = "6.0.1"
 lazy_static = "1.4.0"
 pretty_env_logger = "0.4.0"
 libc = "0.2.134"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.21.2", features = ["full"] }
 #tracing = "0.1.26"
 #tracing-futures = "0.2.5"

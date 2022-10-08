@@ -40,7 +40,7 @@ color-eyre = "0.6.2"
 libc = "0.2.134"
 nix = "0.25.0"
 futures = "0.3.24"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 flume = "0.10.14"
 serde = "1.0.145"
 bincode = "2.0.0-rc.2"
