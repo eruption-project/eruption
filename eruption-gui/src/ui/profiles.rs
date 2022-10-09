@@ -712,7 +712,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
         .homogeneous(false)
         .build();
 
-    let profile = Profile::from(profile.as_ref())?;
+    let profile = Profile::load_fully(profile.as_ref())?;
 
     let label = LabelBuilder::new()
         .label(&profile.name)
@@ -725,12 +725,14 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
     container.pack_start(&label, false, false, 8);
 
-    for f in &profile.active_scripts {
-        let manifest = Manifest::from(&util::match_script_file(f)?)?;
-
+    for manifest in profile.manifests.values() {
         let expander = ExpanderBuilder::new()
             .border_width(8)
-            .label(&format!("{} ({})", &manifest.name, &f.display()))
+            .label(&format!(
+                "{} ({})",
+                &manifest.name,
+                &manifest.script_file.display()
+            ))
             .build();
 
         let expander_frame = FrameBuilder::new()
@@ -748,14 +750,12 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
         container.pack_start(&expander, false, false, 8);
 
-        if let Some(params) = &manifest.config {
-            let profile_script_parameters = profile.config.get_parameters(&manifest.name);
-            for param in params {
-                let value = profile_script_parameters.and_then(|p| p.get_parameter(&param.name));
+        let profile_script_parameters = profile.config.get_parameters(&manifest.name);
+        for param in manifest.config.iter() {
+            let value = profile_script_parameters.and_then(|p| p.get_parameter(&param.name));
 
-                let child = create_config_editor(&profile, &manifest, param, &value)?;
-                expander_container.pack_start(&child, false, true, 0);
-            }
+            let child = create_config_editor(&profile, &manifest, param, &value)?;
+            expander_container.pack_start(&child, false, true, 0);
         }
     }
 
@@ -968,7 +968,7 @@ cfg_if::cfg_if! {
             for p in util::enumerate_profiles()? {
                 if p.profile_file == profile.as_ref() {
                     for f in &p.active_scripts {
-                        let abs_path = util::match_script_file(f)?;
+                        let abs_path = util::match_script_path(f)?;
 
                         let source_code = std::fs::read_to_string(&abs_path)?;
 
@@ -1117,7 +1117,7 @@ cfg_if::cfg_if! {
             for p in util::enumerate_profiles()? {
                 if p.profile_file == profile.as_ref() {
                     for f in p.active_scripts {
-                        let abs_path = util::match_script_file(&f)?;
+                        let abs_path = util::match_script_path(&f)?;
 
                         let source_code = std::fs::read_to_string(&abs_path)?;
 

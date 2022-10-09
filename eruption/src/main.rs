@@ -70,8 +70,6 @@ use crate::{
     plugins::macros,
     plugins::{sdk_support, uleds},
     profiles::Profile,
-    scripting::manifest::Manifest,
-    scripting::parameters::{PlainParameter, ToParameterValue},
     scripting::script,
 };
 
@@ -431,30 +429,20 @@ pub fn switch_profile(
     fn switch_to_failsafe_profile(dbus_api_tx: &Sender<DbusApiEvent>, notify: bool) -> Result<()> {
         let mut errors_present = false;
 
-        let profile = profiles::get_fail_safe_profile();
+        let profile = Profile::new_fail_safe();
 
-        // now spawn a new set of Lua VMs, with scripts from the failsafe profile
-        for (thread_idx, script_file) in profile.active_scripts.iter().enumerate() {
-            let manifest = load_manifest_or_emit_error_messages(script_file);
-            let manifest = match manifest {
-                Ok(manifest) => manifest,
-                Err(_) => {
-                    errors_present = true;
-                    continue;
-                }
-            };
-            let script_file = manifest.script_file.clone();
-            let parameter_values = merge_parameters(&manifest, &profile);
-
+        // spawn a new set of Lua VMs, with scripts from the failsafe profile
+        for (thread_idx, manifest) in profile.manifests.values().enumerate() {
             let (lua_tx, lua_rx) = unbounded();
-            threads::spawn_lua_thread(thread_idx, lua_rx, &script_file, &parameter_values)
+            let parameters = &manifest.get_merged_parameters(&profile);
+            threads::spawn_lua_thread(thread_idx, lua_rx, &manifest.script_file, parameters)
                 .unwrap_or_else(|e| {
                     errors_present = true;
 
                     error!("Could not spawn a thread: {}", e);
                 });
 
-            let mut tx = LuaTx::new(script_file, lua_tx);
+            let mut tx = LuaTx::new(manifest.script_file.to_owned(), lua_tx);
 
             if errors_present {
                 tx.is_failed = true
@@ -520,39 +508,13 @@ pub fn switch_profile(
 
         info!("Switching to profile: {}", &profile_file.display());
 
-        let profile = profiles::Profile::from(profile_file);
+        let profile = profiles::Profile::load_fully(profile_file);
 
         match profile {
             Ok(profile) => {
                 let mut errors_present = false;
 
-                let mut manifests: Vec<Manifest> = vec![];
-                for script_file in profile.active_scripts.iter() {
-                    let manifest = load_manifest_or_emit_error_messages(script_file);
-                    if let Ok(manifest) = manifest {
-                        manifests.push(manifest);
-                    } else {
-                        // the profile to switch to refers to invalid script files, so we need to refuse to
-                        // switch profiles and simply keep the current one, or load a failsafe profile if we
-                        // do not have a currently active profile, like e.g. during startup
-                        if crate::ACTIVE_PROFILE.lock().is_none() {
-                            error!("An error occurred during switching of profiles, loading failsafe profile now");
-                            switch_to_failsafe_profile(dbus_api_tx, notify)?;
-
-                            return Ok(SwitchProfileResult::FallbackToFailsafe);
-                        } else {
-                            error!(
-                                "Invalid profile: {}, refusing to switch profiles",
-                                profile_file.display()
-                            );
-
-                            return Ok(SwitchProfileResult::InvalidProfile);
-                        }
-                    }
-                }
-
-                // now request termination of all Lua VMs
-
+                // request termination of all Lua VMs
                 for lua_tx in LUA_TXS.read().iter() {
                     if !lua_tx.is_failed {
                         lua_tx.send(script::Message::Unload).unwrap_or_else(|e| {
@@ -572,23 +534,20 @@ pub fn switch_profile(
                 let mut num_vms = 0; // only valid if no errors occurred
 
                 // now spawn a new set of Lua VMs, with scripts from the new profile
-                for (thread_idx, manifest) in manifests.iter().enumerate() {
-                    let script_file = manifest.script_file.clone();
-                    let parameter_values = merge_parameters(manifest, &profile);
-
+                for (thread_idx, manifest) in profile.manifests.values().enumerate() {
                     let (lua_tx, lua_rx) = unbounded();
                     if let Err(e) = threads::spawn_lua_thread(
                         thread_idx,
                         lua_rx,
-                        &script_file,
-                        &parameter_values,
+                        &manifest.script_file,
+                        &manifest.get_merged_parameters(&profile),
                     ) {
                         errors_present = true;
 
                         error!("Could not spawn a thread: {}", e);
                     }
 
-                    let mut tx = LuaTx::new(script_file, lua_tx);
+                    let mut tx = LuaTx::new(manifest.script_file.to_owned(), lua_tx);
 
                     if !errors_present {
                         num_vms += 1;
@@ -662,87 +621,6 @@ pub fn switch_profile(
                 }
             }
         }
-    }
-}
-
-fn load_manifest_or_emit_error_messages(script_file: &PathBuf) -> Result<Manifest> {
-    let script_path = util::match_script_path(&script_file);
-
-    let script_path = match script_path {
-        Ok(script_path) => script_path,
-        Err(error) => {
-            error!(
-                "Script file {} cannot be found: {}",
-                script_file.display(),
-                error
-            );
-            return Err(MainError::ScriptExecError {}.into());
-        }
-    };
-
-    let result = util::is_file_accessible(&script_path);
-    if let Err(result) = result {
-        error!(
-            "Script file {} is not accessible: {}",
-            script_path.display(),
-            result
-        );
-
-        return Err(MainError::ScriptExecError {}.into());
-    }
-
-    let result = util::is_file_accessible(util::get_manifest_for(&script_path));
-    if let Err(result) = result {
-        error!(
-            "Manifest file for script {} is not accessible: {}",
-            script_path.display(),
-            result
-        );
-
-        return Err(MainError::ScriptExecError {}.into());
-    }
-
-    let manifest = Manifest::from(&script_path);
-    match manifest {
-        Err(error) => {
-            error!(
-                "Could not parse manifest file for script {}: {}",
-                script_path.display(),
-                error
-            );
-            Err(MainError::ScriptExecError {}.into())
-        }
-        Ok(manifest) => Ok(manifest),
-    }
-}
-
-fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<PlainParameter> {
-    let profile_script_parameters = profile.config.get_parameters(&manifest.name);
-
-    match &manifest.config {
-        Some(manifest_config) => {
-            if profile_script_parameters.is_none() {
-                debug!("Active profile does not have {} config. Using config parameters from script manifest.", &manifest.name);
-            }
-
-            manifest_config
-                .iter()
-                .map(|param| {
-                    let parameter_value = param.to_parameter_value(); // config default
-                    match profile_script_parameters {
-                        Some(profile_script_parameters) => profile_script_parameters
-                            .get_parameter(&parameter_value.name)
-                            .map(|profile_parameter| profile_parameter.to_parameter_value())
-                            .unwrap_or_else(|| {
-                                debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);
-                                parameter_value
-                            }),
-                        None => parameter_value,
-                    }
-                })
-                .collect()
-        }
-        None => vec![],
     }
 }
 

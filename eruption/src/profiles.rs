@@ -28,6 +28,7 @@ use std::path::{Path, PathBuf};
 use std::{collections::HashMap, ffi::OsStr};
 use uuid::Uuid;
 
+use crate::scripting::manifest::Manifest;
 use crate::scripting::parameters::{
     ProfileConfiguration, ProfileParameter, ProfileScriptParameters, TypedValue,
 };
@@ -76,7 +77,7 @@ pub struct Profile {
     pub id: Uuid,
 
     #[serde(default = "default_profile_file")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub profile_file: PathBuf,
 
     pub name: String,
@@ -86,6 +87,9 @@ pub struct Profile {
     pub active_scripts: Vec<PathBuf>,
     #[serde(default)]
     pub config: ProfileConfiguration,
+
+    #[serde(skip)]
+    pub manifests: HashMap<String, Manifest>,
 }
 
 macro_rules! get_default_value {
@@ -147,37 +151,9 @@ macro_rules! set_config_value {
 }
 
 impl Profile {
-    pub fn new(profile_file: &Path) -> Result<Self> {
-        // parse manifest
-        match fs::read_to_string(profile_file) {
-            Ok(toml) => {
-                // parse profile
-                match toml::de::from_str::<Self>(&toml) {
-                    Ok(mut result) => {
-                        // fill in required fields, after parsing
-                        result.id = Uuid::new_v4();
-                        result.profile_file = profile_file.to_path_buf();
-
-                        Ok(result)
-                    }
-
-                    Err(e) => {
-                        error!("Error parsing profile file. {}", e);
-                        Err(ProfileError::ParseError {}.into())
-                    }
-                }
-            }
-
-            Err(e) => {
-                error!("Error opening profile file. {}", e);
-                Err(ProfileError::OpenError {}.into())
-            }
-        }
-    }
-
     /// Returns a failsafe profile that will work in almost all cases
     pub fn new_fail_safe() -> Self {
-        Self {
+        let mut profile = Self {
             id: Uuid::new_v4(),
             name: "Failsafe mode".to_string(),
             description: "Failsafe mode virtual profile".to_string(),
@@ -186,38 +162,100 @@ impl Profile {
             active_scripts: vec![PathBuf::from(
                 "/usr/share/eruption/scripts/lib/failsafe.lua",
             )],
-            ..Default::default()
+            config: ProfileConfiguration::new(),
+            manifests: HashMap::new(),
+        };
+
+        if let Err(err) = profile.load_manifests() {
+            error!("Could not open failsafe script. {}", err);
+        } else {
+            profile.merge_parameters();
         }
+
+        profile
     }
 
-    pub fn from(profile_file: &Path) -> Result<Self> {
-        // parse manifest
+    pub fn load_fully(profile_file: &Path) -> Result<Self> {
+        // Deserialize the profile file
+        let mut profile = Self::load_file_and_state_only(profile_file)?;
+
+        // Load script manifests
+        profile.load_manifests()?;
+
+        // Apply manifest information to profile parameters
+        profile.merge_parameters();
+
+        Ok(profile)
+    }
+
+    pub fn load_file_and_state_only(profile_file: &Path) -> Result<Self> {
+        // Deserialize the profile file
+        let mut profile = Self::load_file_only(profile_file)?;
+
+        // Load persisted profile state from disk, but ignore errors
+        if let Err(e) = profile.load_params() {
+            trace!("Error loading profile state from disk: {}", e);
+        }
+
+        Ok(profile)
+    }
+
+    // Just load the profile file itself, no state, no manifests.
+    pub fn load_file_only(profile_file: &Path) -> Result<Self> {
         match fs::read_to_string(profile_file) {
-            Ok(toml) => {
-                // parse profile
-                match toml::de::from_str::<Self>(&toml) {
-                    Ok(mut result) => {
-                        // fill in required fields, after parsing
-                        result.profile_file = profile_file.to_path_buf();
-
-                        // load persisted profile state from disk, but ignore errors
-                        let _ = result
-                            .load_params()
-                            .map_err(|e| trace!("Error loading profile state from disk: {}", e));
-
-                        Ok(result)
-                    }
-
-                    Err(e) => {
-                        error!("Error parsing profile file. {}", e);
-                        Err(ProfileError::ParseError {}.into())
-                    }
+            Ok(toml) => match toml::de::from_str::<Self>(&toml) {
+                Ok(mut result) => {
+                    result.profile_file = profile_file.to_path_buf();
+                    Ok(result)
                 }
-            }
-
+                Err(e) => {
+                    error!("Error parsing profile file. {}", e);
+                    Err(ProfileError::ParseError {}.into())
+                }
+            },
             Err(e) => {
                 error!("Error opening profile file. {}", e);
                 Err(ProfileError::OpenError {}.into())
+            }
+        }
+    }
+
+    fn load_manifests(&mut self) -> Result<()> {
+        for script_file in self.active_scripts.iter() {
+            let manifest = Manifest::load(script_file);
+            match manifest {
+                Ok(manifest) => {
+                    self.manifests.insert(manifest.name.to_owned(), manifest);
+                }
+                Err(err) => {
+                    error!(
+                        "Could not load script {} for profile {}: {}",
+                        script_file.display(),
+                        self.profile_file.display(),
+                        err
+                    );
+                    println!(
+                        "Could not load script {} for profile {}: {}",
+                        script_file.display(),
+                        self.profile_file.display(),
+                        err
+                    );
+                    return Err(ProfileError::OpenError {}.into());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn merge_parameters(&mut self) {
+        for manifest in self.manifests.values() {
+            let profile_script_parameters = self.config.get_parameters_mut(&manifest.name);
+            for manifest_parameter in manifest.config.iter() {
+                let profile_parameter =
+                    profile_script_parameters.get_parameter_mut(&manifest_parameter.name);
+                if let Some(profile_parameter) = profile_parameter {
+                    profile_parameter.manifest = Some(manifest_parameter.manifest.to_owned())
+                }
             }
         }
     }
@@ -227,7 +265,7 @@ impl Profile {
 
         if let Ok(profile_files) = get_profile_files() {
             'PROFILE_LOOP: for profile_file in profile_files.iter() {
-                match Profile::from(profile_file) {
+                match Profile::load_file_and_state_only(profile_file) {
                     Ok(profile) => {
                         if profile.id == uuid {
                             result = Ok(profile);
@@ -320,6 +358,7 @@ impl Default for Profile {
             description: "Auto-generated profile".into(),
             active_scripts: vec![PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT)],
             config: ProfileConfiguration::new(),
+            manifests: HashMap::new(),
         }
     }
 }
@@ -367,7 +406,7 @@ pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     });
 
     for profile_file in profile_files.iter() {
-        match Profile::from(profile_file) {
+        match Profile::load_file_and_state_only(profile_file) {
             Ok(profile) => {
                 result.push(profile);
             }
@@ -428,7 +467,7 @@ pub fn find_path_by_uuid_from(uuid: Uuid, profile_dirs: &Vec<PathBuf>) -> Option
     let mut result = None;
 
     'PROFILE_LOOP: for profile_file in profile_files.iter() {
-        match Profile::from(profile_file) {
+        match Profile::load_file_and_state_only(profile_file) {
             Ok(profile) => {
                 if profile.id == uuid {
                     result = Some(profile_file.to_path_buf());
@@ -464,7 +503,7 @@ mod tests {
 
     use uuid::Uuid;
 
-    use crate::scripting::parameters::{ProfileParameter, TypedValue};
+    use crate::scripting::parameters::{ManifestValue, ProfileParameter, TypedValue};
 
     #[test]
     fn enum_profile_files() -> super::Result<()> {
@@ -526,7 +565,7 @@ mod tests {
             super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
                 .unwrap();
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.id, uuid);
         assert_eq!(profile.name, "Organic FX");
@@ -539,7 +578,7 @@ mod tests {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path = path.join("../support/tests/assets/test2.profile");
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.name, "Test 2");
         assert!(profile.config.is_empty());
@@ -552,7 +591,7 @@ mod tests {
         let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let profile_path = path.join("../support/tests/assets/test3.profile");
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.name, "Test 3");
         assert!(!profile.config.is_empty());
@@ -568,6 +607,102 @@ mod tests {
     }
 
     #[test]
+    fn load_profile_with_state() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path = path.join("../support/tests/assets/with_state.profile");
+
+        let profile = super::Profile::load_file_and_state_only(&profile_path)?;
+
+        assert_eq!(profile.name, "With State");
+        assert!(!profile.config.is_empty());
+
+        let color_background = profile
+            .config
+            .get_parameter("Solid Color", "color_background");
+        assert!(color_background.is_some());
+
+        let color_background = color_background.unwrap();
+        assert_eq!(color_background.value, TypedValue::Color(0xff654321_u32));
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_with_manifest() -> super::Result<()> {
+        let assets_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("../support/tests/assets");
+
+        let profile_path = assets_path.join("manifest_test.profile").canonicalize()?;
+
+        let config = config::Config::builder()
+            .set_override(
+                "global.script_dirs",
+                vec![assets_path.to_string_lossy().to_string()],
+            )?
+            .build()
+            .unwrap();
+
+        *crate::CONFIG.lock() = Some(config.clone());
+
+        let profile = super::Profile::load_fully(&profile_path);
+        let profile = match profile {
+            Ok(profile) => profile,
+            Err(err) => {
+                assert!(
+                    false,
+                    "Profile {} was not loaded: {}",
+                    profile_path.display(),
+                    err
+                );
+                return Err(err.into());
+            }
+        };
+
+        assert_eq!(profile.name, "Manifest Test");
+        assert!(
+            !profile.config.is_empty(),
+            "Profile config should not be empty"
+        );
+
+        let some_integer = profile
+            .config
+            .get_parameter("Manifest Test", "some_integer");
+        assert!(some_integer.is_some(), "some_integer should not be None");
+
+        let some_integer = some_integer.unwrap();
+        assert_eq!(
+            some_integer.value,
+            TypedValue::Int(9876),
+            "some_integer.value should be 9876 instead of {:?}",
+            some_integer.value
+        );
+
+        let default = some_integer.get_default();
+        assert!(default.is_some(), "default should not be None");
+
+        let default = default.unwrap();
+        assert_eq!(default, TypedValue::Int(7));
+
+        let manifest_value = some_integer.manifest.as_ref();
+        assert!(
+            manifest_value.is_some(),
+            "manifest_value should not be None"
+        );
+
+        let manifest_value = manifest_value.unwrap();
+        match manifest_value {
+            ManifestValue::Int {
+                default: 7,
+                min: Some(-1),
+                max: Some(9999),
+            } => {}
+            _ => assert!(false, "Wrong manifest_value: {:?}", manifest_value),
+        }
+
+        Ok(())
+    }
+
+    #[test]
     fn test_profile_parameters() -> super::Result<()> {
         let uuid = Uuid::from_str("5dc62fa6-e965-45cb-a0da-e87d29713093").unwrap();
 
@@ -576,7 +711,7 @@ mod tests {
             super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
                 .unwrap();
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.id, uuid);
         assert_eq!(profile.name, "Organic FX");

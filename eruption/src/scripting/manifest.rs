@@ -24,10 +24,9 @@ use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
-use super::parameters::{ManifestParameter, ProfileParameter, TypedValue};
-use crate::scripting::parameters::ManifestValue;
+use crate::profiles::Profile;
+use crate::scripting::parameters::{ManifestConfiguration, PlainParameter, ToPlainParameter};
 use crate::util;
 use crate::util::get_script_dirs;
 
@@ -52,60 +51,6 @@ fn default_script_file() -> PathBuf {
     "".into()
 }
 
-pub trait ParseConfig {
-    fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter>;
-}
-
-impl ParseConfig for Vec<ManifestParameter> {
-    fn parse_config_param(&self, param: &str, val: &str) -> Result<ProfileParameter> {
-        let config_param = self
-            .iter()
-            .find(|config_param| config_param.name == param)
-            .ok_or_else(|| {
-                warn!("Unknown configuration parameter \"{}\"", param);
-                ManifestError::ParseParamError
-            })?;
-
-        fn parse_param_error(param_type: &str, val: &str) -> ManifestError {
-            error!("Could not parse {} value \"{}\"", param_type, val);
-            ManifestError::ParseParamError
-        }
-
-        let value = match &config_param.manifest {
-            ManifestValue::Int { .. } => {
-                TypedValue::Int(i64::from_str(val).map_err(|_e| parse_param_error("int", val))?)
-            }
-            ManifestValue::Float { .. } => {
-                TypedValue::Float(f64::from_str(val).map_err(|_e| parse_param_error("float", val))?)
-            }
-            ManifestValue::Bool { .. } => TypedValue::Bool(
-                bool::from_str(&val.to_string().to_lowercase())
-                    .map_err(|_e| parse_param_error("bool", val))?,
-            ),
-            ManifestValue::String { .. } => TypedValue::String(val.to_owned()),
-            ManifestValue::Color { .. } => {
-                if &val[0..1] == "#" {
-                    TypedValue::Color(
-                        u32::from_str_radix(&val[1..], 16)
-                            .map_err(|_e| parse_param_error("color from hex", val))?,
-                    )
-                } else {
-                    TypedValue::Color(
-                        u32::from_str(val)
-                            .map_err(|_e| parse_param_error("color from int", val))?,
-                    )
-                }
-            }
-        };
-
-        Ok(ProfileParameter {
-            name: config_param.name.to_owned(),
-            value,
-            manifest: Some(config_param.manifest.to_owned()),
-        })
-    }
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
     #[serde(default = "default_script_file")]
@@ -117,7 +62,8 @@ pub struct Manifest {
     pub author: String,
     pub min_supported_version: String,
     pub tags: Option<Vec<ScriptTag>>,
-    pub config: Option<Vec<ManifestParameter>>,
+    #[serde(default)]
+    pub config: ManifestConfiguration,
 }
 
 impl std::cmp::PartialOrd for Manifest {
@@ -127,25 +73,23 @@ impl std::cmp::PartialOrd for Manifest {
 }
 
 impl Manifest {
-    pub fn new(script: &Path) -> Result<Self> {
-        // parse manifest
-        let script = match script.canonicalize() {
-            Ok(script) => script,
-            Err(_e) => return Err(ManifestError::OpenError {}.into()),
-        };
-        match fs::read_to_string(util::get_manifest_for(&script)) {
+    pub fn load(script_path: &Path) -> Result<Self> {
+        let (script_path, manifest_path) = verify_script_and_manifest_paths(script_path)?;
+
+        match fs::read_to_string(&manifest_path) {
             Ok(toml) => {
                 // parse manifest
                 match toml::de::from_str::<Self>(&toml) {
                     Ok(mut result) => {
                         // fill in required fields, after parsing
-                        result.script_file = script;
+                        result.script_file = script_path;
 
                         Ok(result)
                     }
 
                     Err(e) => {
                         error!("{}", e);
+                        println!("{}", e);
                         Err(ManifestError::ParseError {}.into())
                     }
                 }
@@ -155,9 +99,95 @@ impl Manifest {
         }
     }
 
-    pub fn from(script: &Path) -> Result<Self> {
-        Self::new(script)
+    pub fn get_merged_parameters(&self, profile: &Profile) -> Vec<PlainParameter> {
+        let profile_script_parameters = profile.config.get_parameters(&self.name);
+        if let Some(profile_script_parameters) = profile_script_parameters {
+            self.config
+                .iter()
+                .map(|manifest_parameter| {
+                    match profile_script_parameters.get_parameter(&manifest_parameter.name) {
+                        Some(profile_parameter) => profile_parameter.to_plain_parameter(),
+                        None => {
+                            debug!(
+                                "Parameter {} is undefined. Using defaults from script manifest.",
+                                manifest_parameter.name
+                            );
+                            manifest_parameter.to_plain_parameter()
+                        }
+                    }
+                })
+                .collect()
+        } else {
+            debug!("Active profile does not have {} config. Using config parameters from script manifest.", &self.name);
+            self.config.iter().map(|p| p.to_plain_parameter()).collect()
+        }
     }
+}
+
+fn verify_script_and_manifest_paths(script_path: &Path) -> Result<(PathBuf, PathBuf)> {
+    let script_path = if script_path.exists() {
+        script_path.to_owned()
+    } else {
+        match util::match_script_path(&script_path) {
+            Ok(script_path) => script_path,
+            Err(error) => {
+                error!(
+                    "Script file {} cannot be found: {}",
+                    script_path.display(),
+                    error
+                );
+                return Err(ManifestError::OpenError {}.into());
+            }
+        }
+    };
+
+    let manifest_path = util::get_manifest_for(&script_path);
+
+    let script_path = match script_path.canonicalize() {
+        Ok(script_path) => script_path,
+        Err(err) => {
+            error!(
+                "Script file path {} could not be canonicalized: {}",
+                script_path.display(),
+                err
+            );
+            return Err(ManifestError::OpenError {}.into());
+        }
+    };
+
+    let manifest_path = match manifest_path.canonicalize() {
+        Ok(manifest_path) => manifest_path,
+        Err(err) => {
+            error!(
+                "Manifest file path {} could not be canonicalized: {}",
+                manifest_path.display(),
+                err
+            );
+            return Err(ManifestError::OpenError {}.into());
+        }
+    };
+
+    if let Err(err) = util::demand_file_is_accessible(&script_path) {
+        error!(
+            "Script file {} is not accessible: {}",
+            script_path.display(),
+            err
+        );
+
+        return Err(ManifestError::OpenError {}.into());
+    }
+
+    if let Err(err) = util::demand_file_is_accessible(&manifest_path) {
+        error!(
+            "Manifest file for script {} is not accessible: {}",
+            script_path.display(),
+            err
+        );
+
+        return Err(ManifestError::OpenError {}.into());
+    }
+
+    Ok((script_path, manifest_path))
 }
 
 /// Get a `Vec` of `PathBufs` of available script files in the directory `script_path`.
@@ -198,7 +228,7 @@ pub fn get_scripts() -> Result<Vec<Manifest>> {
     let mut result: Vec<Manifest> = vec![];
 
     for script_file in &script_files {
-        match Manifest::new(script_file) {
+        match Manifest::load(script_file) {
             Ok(manifest) => {
                 result.push(manifest);
             }

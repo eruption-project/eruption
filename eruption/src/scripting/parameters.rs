@@ -23,6 +23,7 @@ use serde::{
 use std::collections::hash_map::{self, Entry};
 use std::collections::{BTreeMap, HashMap};
 use std::fmt;
+use std::marker::PhantomData;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 #[serde(tag = "type", content = "value", rename_all = "lowercase")]
@@ -128,12 +129,12 @@ impl ProfileParameter {
     }
 }
 
-pub trait ToParameterValue {
-    fn to_parameter_value(&self) -> PlainParameter;
+pub trait ToPlainParameter {
+    fn to_plain_parameter(&self) -> PlainParameter;
 }
 
-impl ToParameterValue for ProfileParameter {
-    fn to_parameter_value(&self) -> PlainParameter {
+impl ToPlainParameter for ProfileParameter {
+    fn to_plain_parameter(&self) -> PlainParameter {
         PlainParameter {
             name: self.name.to_owned(),
             value: self.value.to_owned(),
@@ -141,8 +142,8 @@ impl ToParameterValue for ProfileParameter {
     }
 }
 
-impl ToParameterValue for ManifestParameter {
-    fn to_parameter_value(&self) -> PlainParameter {
+impl ToPlainParameter for ManifestParameter {
+    fn to_plain_parameter(&self) -> PlainParameter {
         PlainParameter {
             name: self.name.to_owned(),
             value: self.manifest.get_default(),
@@ -152,12 +153,13 @@ impl ToParameterValue for ManifestParameter {
 
 // Parameter containers
 
-#[derive(Default, Deserialize, Clone, PartialEq)] // Serialize implemented below
-pub struct ManifestConfiguration(HashMap<String, ManifestParameter>);
-#[derive(Default, Deserialize, Clone, PartialEq)] // Serialize implemented below
-pub struct ProfileConfiguration(HashMap<String, ProfileScriptParameters>);
 #[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
-pub struct ProfileScriptParameters(HashMap<String, ProfileParameter>);
+pub struct ManifestConfiguration(HashMap<String, ManifestParameter>); // key is parameter name
+
+#[derive(Default, Deserialize, Clone, PartialEq)] // Serialize implemented below
+pub struct ProfileConfiguration(HashMap<String, ProfileScriptParameters>); // key is manifest name
+#[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
+pub struct ProfileScriptParameters(HashMap<String, ProfileParameter>); // key is parameter name
 
 #[allow(dead_code)]
 impl ManifestConfiguration {
@@ -172,11 +174,9 @@ impl ManifestConfiguration {
     pub fn get_parameter(&self, parameter_name: &str) -> Option<&ManifestParameter> {
         self.0.get(parameter_name)
     }
-}
 
-impl fmt::Debug for ManifestConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+    pub fn iter(&self) -> hash_map::Values<String, ManifestParameter> {
+        self.0.values()
     }
 }
 
@@ -198,11 +198,9 @@ impl ProfileConfiguration {
                 v.insert(parameters);
             }
         };
-        //self.get_parameters_mut(script_name).set_parameter(parameter);
     }
 
     pub fn get_parameters_mut(&mut self, script_name: &str) -> &mut ProfileScriptParameters {
-        //TODO(Ro): figure out how to do this using entry()
         if !self.0.contains_key(script_name) {
             let parameters = ProfileScriptParameters::new();
             self.0.insert(script_name.to_owned(), parameters);
@@ -237,18 +235,6 @@ impl ProfileConfiguration {
     }
 }
 
-impl fmt::Debug for ProfileConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl From<HashMap<String, ProfileScriptParameters>> for ProfileConfiguration {
-    fn from(map: HashMap<String, ProfileScriptParameters>) -> Self {
-        Self(map)
-    }
-}
-
 #[allow(dead_code)]
 impl ProfileScriptParameters {
     fn new() -> Self {
@@ -272,9 +258,45 @@ impl ProfileScriptParameters {
     }
 }
 
+impl fmt::Debug for ManifestConfiguration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Debug for ProfileConfiguration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl fmt::Debug for ProfileScriptParameters {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl From<HashMap<String, ManifestParameter>> for ManifestConfiguration {
+    fn from(map: HashMap<String, ManifestParameter>) -> Self {
+        Self(map)
+    }
+}
+
+impl From<HashMap<String, ProfileScriptParameters>> for ProfileConfiguration {
+    fn from(map: HashMap<String, ProfileScriptParameters>) -> Self {
+        Self(map)
+    }
+}
+
+impl From<HashMap<String, ProfileParameter>> for ProfileScriptParameters {
+    fn from(map: HashMap<String, ProfileParameter>) -> Self {
+        Self(map)
+    }
+}
+
+impl<const N: usize> From<[ManifestParameter; N]> for ManifestConfiguration {
+    fn from(arr: [ManifestParameter; N]) -> Self {
+        Self(arr.into_iter().map(|p| (p.name.to_owned(), p)).collect())
     }
 }
 
@@ -290,21 +312,21 @@ impl<const N: usize> From<[ProfileParameter; N]> for ProfileScriptParameters {
     }
 }
 
-/// Sorts by key (script name) before serializing
+// Serializes as a list.  The key is the parameter name which is also present in the parameter struct
 impl Serialize for ManifestConfiguration {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut map = serializer.serialize_map(Some(self.0.len()))?;
+        let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
 
         let mut sorted = BTreeMap::new();
         sorted.extend(&self.0);
 
-        for entry in sorted {
-            map.serialize_entry(entry.0, entry.1)?;
+        for param in sorted.values() {
+            seq.serialize_element(param)?;
         }
-        map.end()
+        seq.end()
     }
 }
 
@@ -344,22 +366,73 @@ impl Serialize for ProfileScriptParameters {
     }
 }
 
+impl<'de> Deserialize<'de> for ManifestConfiguration {
+    fn deserialize<D>(deserializer: D) -> Result<ManifestConfiguration, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let visitor = MapAsListVisitor::<'de, ManifestConfiguration, ManifestParameter>::new();
+        deserializer.deserialize_seq(visitor)
+    }
+}
+
 impl<'de> Deserialize<'de> for ProfileScriptParameters {
     fn deserialize<D>(deserializer: D) -> Result<ProfileScriptParameters, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_seq(ProfileScriptParametersVisitor {})
+        let visitor = MapAsListVisitor::<'de, ProfileScriptParameters, ProfileParameter>::new();
+        deserializer.deserialize_seq(visitor)
     }
 }
 
-struct ProfileScriptParametersVisitor;
+trait GetStringKey {
+    fn get_key(&self) -> String;
+}
 
-impl<'de> de::Visitor<'de> for ProfileScriptParametersVisitor {
-    type Value = ProfileScriptParameters;
+impl GetStringKey for ManifestParameter {
+    fn get_key(&self) -> String {
+        self.name.to_owned()
+    }
+}
+
+impl GetStringKey for ProfileParameter {
+    fn get_key(&self) -> String {
+        self.name.to_owned()
+    }
+}
+
+struct MapAsListVisitor<'de, Parent, Child>
+where
+    Parent: From<HashMap<String, Child>>,
+    Child: GetStringKey + Deserialize<'de>,
+{
+    parent: PhantomData<Parent>,
+    child: PhantomData<&'de Child>,
+}
+
+impl<'de, Parent, Child> MapAsListVisitor<'de, Parent, Child>
+where
+    Parent: From<HashMap<String, Child>>,
+    Child: GetStringKey + Deserialize<'de>,
+{
+    fn new() -> MapAsListVisitor<'de, Parent, Child> {
+        MapAsListVisitor {
+            parent: PhantomData,
+            child: PhantomData,
+        }
+    }
+}
+
+impl<'de, Parent, Child> de::Visitor<'de> for MapAsListVisitor<'de, Parent, Child>
+where
+    Parent: From<HashMap<String, Child>>,
+    Child: GetStringKey + Deserialize<'de>,
+{
+    type Value = Parent;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("sequence of ProfileParameters")
+        formatter.write_str("sequence of parameters")
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -368,11 +441,11 @@ impl<'de> de::Visitor<'de> for ProfileScriptParametersVisitor {
     {
         let mut map = HashMap::with_capacity(seq.size_hint().unwrap_or(0));
 
-        while let Some(param) = seq.next_element::<ProfileParameter>()? {
-            map.insert(param.name.to_owned(), param);
+        while let Some(param) = seq.next_element::<Child>()? {
+            map.insert(param.get_key(), param);
         }
 
-        Ok(ProfileScriptParameters(map))
+        Ok(Parent::from(map))
     }
 }
 
@@ -381,16 +454,24 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use std::error::Error;
 
-    use super::{ProfileConfiguration, ProfileParameter, TypedValue};
+    use super::{
+        ManifestConfiguration, ManifestParameter, ManifestValue, ProfileConfiguration,
+        ProfileParameter, TypedValue,
+    };
 
     #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct TestContainer {
+    struct ProfileTestContainer {
         config: ProfileConfiguration,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct ManifestTestContainer {
+        config: ManifestConfiguration,
     }
 
     #[test]
     fn profile_configuration_serialization_and_deserialization() -> Result<(), Box<dyn Error>> {
-        let test_container = TestContainer {
+        let test_container = ProfileTestContainer {
             config: [
                 (
                     "First Manifest".to_string(),
@@ -443,8 +524,55 @@ value = 64
             .trim()
         );
 
-        let de_test_container = toml::de::from_str::<TestContainer>(&toml)?;
-        println!("{}", toml);
+        let de_test_container = toml::de::from_str::<ProfileTestContainer>(&toml)?;
+        assert_eq!(test_container, de_test_container);
+
+        Ok(())
+    }
+
+    #[test]
+    fn manifest_configuration_serialization_and_deserialization() -> Result<(), Box<dyn Error>> {
+        let test_container = ManifestTestContainer {
+            config: [
+                ManifestParameter {
+                    name: "parameter_one".to_string(),
+                    description: "a boolean parameter".to_string(),
+                    manifest: ManifestValue::Bool { default: true },
+                },
+                ManifestParameter {
+                    name: "parameter_two".to_string(),
+                    description: "a floatation parameter".to_string(),
+                    manifest: ManifestValue::Float {
+                        default: 1.23,
+                        min: Some(0.0),
+                        max: None,
+                    },
+                },
+            ]
+            .into(),
+        };
+
+        let toml = toml::ser::to_string(&test_container)?;
+        assert_eq!(
+            toml.trim(),
+            r#"
+[[config]]
+name = "parameter_one"
+description = "a boolean parameter"
+type = "bool"
+default = true
+
+[[config]]
+name = "parameter_two"
+description = "a floatation parameter"
+type = "float"
+default = 1.23
+min = 0.0
+        "#
+            .trim()
+        );
+
+        let de_test_container = toml::de::from_str::<ManifestTestContainer>(&toml)?;
         assert_eq!(test_container, de_test_container);
 
         Ok(())
