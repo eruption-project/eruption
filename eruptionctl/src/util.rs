@@ -24,9 +24,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::constants;
-use crate::manifest::{self, Manifest, ManifestError};
 use crate::profiles;
 use crate::profiles::Profile;
+use crate::scripting::manifest::{self, Manifest, ManifestError};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -34,6 +34,16 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum UtilError {
     #[error("File not found: {description}")]
     FileNotFound { description: String },
+
+    #[error("Read failed: {description}")]
+    FileReadError {
+        #[source]
+        source: std::io::Error,
+        description: String,
+    },
+
+    #[error("Not a file")]
+    NotAFile {},
 
     #[error("Profile error: {err}")]
     ProfileError { err: eyre::Error },
@@ -131,8 +141,49 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
     manifest_path
 }
 
-pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
-    fs::read_to_string(p)
+pub fn demand_file_is_accessible<P: AsRef<Path>>(p: P) -> Result<()> {
+    // Does the path exist?
+    let path = match fs::canonicalize(p) {
+        Ok(path) => path,
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not find file".to_owned(),
+            }
+            .into())
+        }
+    };
+
+    // Is the metadata readable?
+    let metadata = match fs::metadata(&path) {
+        Ok(metadata) => metadata,
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not read metadata".to_owned(),
+            }
+            .into())
+        }
+    };
+
+    // Is the path a regular file?  (Symlinks will have been canonicalized to regular files.)
+    if !metadata.is_file() {
+        return Err(UtilError::NotAFile {}.into());
+    }
+
+    // Is the file readable?
+    match fs::File::open(&path) {
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not open file".to_owned(),
+            }
+            .into())
+        }
+        _ => {}
+    };
+
+    Ok(())
 }
 
 pub fn edit_file<P: AsRef<Path>>(file_name: P) -> Result<()> {
@@ -148,7 +199,7 @@ pub fn edit_file<P: AsRef<Path>>(file_name: P) -> Result<()> {
 pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
     let profile_path = PathBuf::from(&profile_name);
     if profile_path.is_file() {
-        match Profile::from(&profile_path) {
+        match Profile::load_file_and_state_only(&profile_path) {
             Ok(profile) => Ok(profile),
             Err(err) => Err(UtilError::ProfileError { err }.into()),
         }

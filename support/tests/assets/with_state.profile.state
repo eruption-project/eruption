@@ -1,0 +1,10 @@
+{
+  "Solid Color": [
+    {
+      "type": "color",
+      "name": "color_background",
+      "value": 4284826401,
+      "default": 4294905872
+    }
+  ]
+}

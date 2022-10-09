@@ -21,13 +21,17 @@
 
 use crate::constants;
 use log::*;
-use paste::paste;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::{collections::HashMap, ffi::OsStr};
 use uuid::Uuid;
+
+use crate::scripting::manifest::Manifest;
+use crate::scripting::parameters::{
+    ProfileConfiguration, ProfileParameter, ProfileScriptParameters, TypedValue,
+};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -55,91 +59,6 @@ pub enum ProfileError {
     ParseParamError {},
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
-#[serde(tag = "type", rename_all = "lowercase")]
-pub enum ConfigParam {
-    Int {
-        name: String,
-        value: i64,
-        #[serde(default)]
-        default: i64,
-    },
-    Float {
-        name: String,
-        value: f64,
-        #[serde(default)]
-        default: f64,
-    },
-    Bool {
-        name: String,
-        value: bool,
-        #[serde(default)]
-        default: bool,
-    },
-    String {
-        name: String,
-        value: String,
-        #[serde(default)]
-        default: String,
-    },
-    Color {
-        name: String,
-        value: u32,
-        #[serde(default)]
-        default: u32,
-    },
-}
-
-pub trait GetAttr {
-    fn get_name(&self) -> &String;
-    fn get_value(&self) -> String;
-    fn get_default(&self) -> String;
-}
-
-impl GetAttr for ConfigParam {
-    fn get_name(&self) -> &String {
-        match self {
-            ConfigParam::Int { ref name, .. } => name,
-
-            ConfigParam::Float { ref name, .. } => name,
-
-            ConfigParam::Bool { ref name, .. } => name,
-
-            ConfigParam::String { ref name, .. } => name,
-
-            ConfigParam::Color { ref name, .. } => name,
-        }
-    }
-
-    fn get_value(&self) -> String {
-        match self {
-            ConfigParam::Int { ref value, .. } => format!("{}", value),
-
-            ConfigParam::Float { ref value, .. } => format!("{}", value),
-
-            ConfigParam::Bool { ref value, .. } => format!("{}", value),
-
-            ConfigParam::String { ref value, .. } => value.to_owned(),
-
-            ConfigParam::Color { ref value, .. } => format!("#{:06x}", value),
-        }
-    }
-
-    fn get_default(&self) -> String {
-        match self {
-            ConfigParam::Int { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Float { ref default, .. } => format!("{}", default),
-
-            ConfigParam::Bool { ref default, .. } => format!("{}", default),
-
-            ConfigParam::String { ref default, .. } => default.to_owned(),
-
-            ConfigParam::Color { ref default, .. } => format!("#{:06x}", default),
-        }
-    }
-}
-
 fn default_id() -> Uuid {
     Uuid::new_v4()
 }
@@ -158,7 +77,7 @@ pub struct Profile {
     pub id: Uuid,
 
     #[serde(default = "default_profile_file")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub profile_file: PathBuf,
 
     pub name: String,
@@ -166,50 +85,19 @@ pub struct Profile {
 
     #[serde(default = "default_script_file")]
     pub active_scripts: Vec<PathBuf>,
+    #[serde(default)]
+    pub config: ProfileConfiguration,
 
-    pub config: Option<HashMap<String, Vec<ConfigParam>>>,
-}
-
-pub trait FindConfig {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam>;
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam>;
-}
-
-impl FindConfig for Vec<ConfigParam> {
-    fn find_config_param(&self, param: &str) -> Option<&ConfigParam> {
-        self.iter().find(|p| p.get_name() == param)
-    }
-
-    fn find_config_param_mut(&mut self, param: &str) -> Option<&mut ConfigParam> {
-        self.iter_mut().find(|p| p.get_name() == param)
-    }
+    #[serde(skip)]
+    pub manifests: HashMap<String, Manifest>,
 }
 
 macro_rules! get_default_value {
     ($t:ident, $tval:ty, $rval:ty) => {
-        paste! {
-            pub fn [<get_default_ $t>] (&self, script_name: &str, name: &str) -> Option<$rval> {
-                match self.config.as_ref() {
-                    Some(config) =>
-                        match config.get(&script_name.to_owned()) {
-                        Some(script_config) =>
-                            match script_config.find_config_param(&name) {
-                                Some(p) => match p {
-                                    $tval {
-                                        name: _,
-                                        value: _,
-                                        default,
-                                    } => Some(default.clone()),
-
-                                    _ => None,
-                                },
-
-                                _ => None,
-                            },
-
-                        _ => None,
-                    }
-
+        paste::item! {
+            pub fn [<get_default_ $t>] (&self, script_name: &str, parameter_name: &str) -> Option<$rval> {
+                match self.get_parameter_default(script_name, parameter_name) {
+                    Some($tval(value)) => Some(value.to_owned()),
                     _ => None,
                 }
             }
@@ -220,40 +108,17 @@ macro_rules! get_default_value {
 macro_rules! get_config_value {
     ($t:ident, $pval:ty, $tval:ty) => {
         paste::item! {
-            pub fn [<get_ $t _value>](&self, script_name: &str, name: &str) -> Option<&$tval> {
-                if let Some(config) = &self.config {
-                    if let Some(cfg) = config.get(script_name) {
-                        match cfg.find_config_param(name) {
-                            Some(param) => match param {
-                                $pval { value, .. } =>
-                                {
-                                    debug!("Using value from .profile file for config param '{}' (value: '{}') [5]",  name, value);
-
-                                    Some(value)
-                                }
-
-                                _ => {
-                                    debug!("Using default value for config param '{}' [4]", name);
-
-                                    None
-                                }
-                            },
-
-                            None => {
-                                debug!("Using default value for config param '{}' [3]", name);
-
-                                None
-                            }
-                        }
-                    } else {
-                        debug!("Using default value for config param [2]");
-
+            pub fn [<get_ $t _value>](&self, script_name: &str, parameter_name: &str) -> Option<&$tval> {
+                match self.config.get_parameter(script_name, parameter_name) {
+                    Some(ProfileParameter { value: $pval(value), .. } ) => Some(value),
+                    None => {
+                        debug!("Using default value for config param");
+                        None
+                    },
+                    _ => {
+                        debug!("Invalid data type");
                         None
                     }
-                } else {
-                    debug!("Using default value for config param [1]");
-
-                    None
                 }
             }
         }
@@ -263,44 +128,20 @@ macro_rules! get_config_value {
 macro_rules! set_config_value {
     ($t:ident, $pval:ty, $tval:ty) => {
         paste::item! {
-            pub fn [<set_ $t _value>](&mut self, script_name: &str, name: &str, val: &$tval) -> Result<()> {
-                if let Some(ref mut config) = self.config {
-                    if let Some(ref mut cfg) = config.get_mut(script_name) {
-                        match cfg.find_config_param_mut(name) {
-                            Some(ref mut param) => match param {
-                                $pval { ref mut value, .. } => {
-                                    *value = val.to_owned();
-                                    Ok(())
-                                }
-
-                                _ => Err(ProfileError::SetValueError {
-                                    msg: "Invalid data type".into(),
-                                }.into()),
-                            },
-
-                            _ => {
-                                cfg.push($pval {
-                                    name: name.to_string(),
-                                    value: val.to_owned(),
-                                    default: val.to_owned(),
-                                });
+            pub fn [<set_ $t _value>](&mut self, script_name: &str, parameter_name: &str, val: &$tval) -> Result<()> {
+                match self.config.get_parameter_mut(script_name, parameter_name) {
+                    Some(ref mut profile_parameter) => {
+                        match profile_parameter.value {
+                            $pval(_) => {
+                                profile_parameter.value = $pval(val.to_owned());
                                 Ok(())
                             }
+                            _ => Err(ProfileError::SetValueError {
+                                msg: "Invalid data type".into(),
+                            }.into()),
                         }
-                    } else {
-                        config.insert(
-                            script_name.into(),
-                            vec![$pval {
-                                name: name.to_string(),
-                                value: val.to_owned(),
-                                default: val.to_owned(),
-                            }],
-                        );
-
-                        Ok(())
                     }
-                } else {
-                    Err(ProfileError::SetValueError {
+                    _ => Err(ProfileError::SetValueError {
                         msg: "Could not get config".into(),
                     }.into())
                 }
@@ -310,41 +151,9 @@ macro_rules! set_config_value {
 }
 
 impl Profile {
-    pub fn new(profile_file: &Path) -> Result<Self> {
-        // parse manifest
-        match fs::read_to_string(profile_file) {
-            Ok(toml) => {
-                // parse profile
-                match toml::de::from_str::<Self>(&toml) {
-                    Ok(mut result) => {
-                        // fill in required fields, after parsing
-                        result.id = Uuid::new_v4();
-                        result.profile_file = profile_file.to_path_buf();
-
-                        if result.config.is_none() {
-                            result.config = Some(HashMap::new());
-                        }
-
-                        Ok(result)
-                    }
-
-                    Err(e) => {
-                        error!("Error parsing profile file. {}", e);
-                        Err(ProfileError::ParseError {}.into())
-                    }
-                }
-            }
-
-            Err(e) => {
-                error!("Error opening profile file. {}", e);
-                Err(ProfileError::OpenError {}.into())
-            }
-        }
-    }
-
     /// Returns a failsafe profile that will work in almost all cases
     pub fn new_fail_safe() -> Self {
-        Self {
+        let mut profile = Self {
             id: Uuid::new_v4(),
             name: "Failsafe mode".to_string(),
             description: "Failsafe mode virtual profile".to_string(),
@@ -353,42 +162,100 @@ impl Profile {
             active_scripts: vec![PathBuf::from(
                 "/usr/share/eruption/scripts/lib/failsafe.lua",
             )],
-            ..Default::default()
+            config: ProfileConfiguration::new(),
+            manifests: HashMap::new(),
+        };
+
+        if let Err(err) = profile.load_manifests() {
+            error!("Could not open failsafe script. {}", err);
+        } else {
+            profile.merge_parameters();
         }
+
+        profile
     }
 
-    pub fn from(profile_file: &Path) -> Result<Self> {
-        // parse manifest
+    pub fn load_fully(profile_file: &Path) -> Result<Self> {
+        // Deserialize the profile file
+        let mut profile = Self::load_file_and_state_only(profile_file)?;
+
+        // Load script manifests
+        profile.load_manifests()?;
+
+        // Apply manifest information to profile parameters
+        profile.merge_parameters();
+
+        Ok(profile)
+    }
+
+    pub fn load_file_and_state_only(profile_file: &Path) -> Result<Self> {
+        // Deserialize the profile file
+        let mut profile = Self::load_file_only(profile_file)?;
+
+        // Load persisted profile state from disk, but ignore errors
+        if let Err(e) = profile.load_params() {
+            trace!("Error loading profile state from disk: {}", e);
+        }
+
+        Ok(profile)
+    }
+
+    // Just load the profile file itself, no state, no manifests.
+    pub fn load_file_only(profile_file: &Path) -> Result<Self> {
         match fs::read_to_string(profile_file) {
-            Ok(toml) => {
-                // parse profile
-                match toml::de::from_str::<Self>(&toml) {
-                    Ok(mut result) => {
-                        // fill in required fields, after parsing
-                        result.profile_file = profile_file.to_path_buf();
-
-                        // load persisted profile state from disk, but ignore errors
-                        let _ = result
-                            .load_params()
-                            .map_err(|e| trace!("Error loading profile state from disk: {}", e));
-
-                        if result.config.is_none() {
-                            result.config = Some(HashMap::new());
-                        }
-
-                        Ok(result)
-                    }
-
-                    Err(e) => {
-                        error!("Error parsing profile file. {}", e);
-                        Err(ProfileError::ParseError {}.into())
-                    }
+            Ok(toml) => match toml::de::from_str::<Self>(&toml) {
+                Ok(mut result) => {
+                    result.profile_file = profile_file.to_path_buf();
+                    Ok(result)
                 }
-            }
-
+                Err(e) => {
+                    error!("Error parsing profile file. {}", e);
+                    Err(ProfileError::ParseError {}.into())
+                }
+            },
             Err(e) => {
                 error!("Error opening profile file. {}", e);
                 Err(ProfileError::OpenError {}.into())
+            }
+        }
+    }
+
+    fn load_manifests(&mut self) -> Result<()> {
+        for script_file in self.active_scripts.iter() {
+            let manifest = Manifest::load(script_file);
+            match manifest {
+                Ok(manifest) => {
+                    self.manifests.insert(manifest.name.to_owned(), manifest);
+                }
+                Err(err) => {
+                    error!(
+                        "Could not load script {} for profile {}: {}",
+                        script_file.display(),
+                        self.profile_file.display(),
+                        err
+                    );
+                    println!(
+                        "Could not load script {} for profile {}: {}",
+                        script_file.display(),
+                        self.profile_file.display(),
+                        err
+                    );
+                    return Err(ProfileError::OpenError {}.into());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn merge_parameters(&mut self) {
+        for manifest in self.manifests.values() {
+            let profile_script_parameters = self.config.get_parameters_mut(&manifest.name);
+            for manifest_parameter in manifest.config.iter() {
+                let profile_parameter =
+                    profile_script_parameters.get_parameter_mut(&manifest_parameter.name);
+                if let Some(profile_parameter) = profile_parameter {
+                    profile_parameter.manifest = Some(manifest_parameter.manifest.to_owned())
+                }
             }
         }
     }
@@ -398,7 +265,7 @@ impl Profile {
 
         if let Ok(profile_files) = get_profile_files() {
             'PROFILE_LOOP: for profile_file in profile_files.iter() {
-                match Profile::from(profile_file) {
+                match Profile::load_file_and_state_only(profile_file) {
                     Ok(profile) => {
                         if profile.id == uuid {
                             result = Ok(profile);
@@ -434,16 +301,16 @@ impl Profile {
         let path = self.profile_file.with_extension("profile.state");
         let json_string = fs::read_to_string(&path)?;
 
-        let map: HashMap<String, Vec<ConfigParam>> = serde_json::from_str(&json_string)?;
+        let map: HashMap<String, ProfileScriptParameters> = serde_json::from_str(&json_string)?;
 
-        self.config = Some(map);
+        self.config = ProfileConfiguration::from(map);
 
         Ok(())
     }
 
     pub fn save_params(&self) -> Result<()> {
-        if let Some(ref config) = self.config {
-            let json_string = serde_json::to_string_pretty(&config)?;
+        if !self.config.is_empty() {
+            let json_string = serde_json::to_string_pretty(&self.config)?;
             let path = self.profile_file.with_extension("profile.state");
 
             fs::write(&path, json_string)?;
@@ -452,25 +319,31 @@ impl Profile {
         Ok(())
     }
 
-    get_default_value!(int, ConfigParam::Int, i64);
-    get_config_value!(int, ConfigParam::Int, i64);
-    set_config_value!(int, ConfigParam::Int, i64);
+    fn get_parameter_default(&self, script_name: &str, parameter_name: &str) -> Option<TypedValue> {
+        self.config
+            .get_parameter(script_name, parameter_name)?
+            .get_default()
+    }
 
-    get_default_value!(float, ConfigParam::Float, f64);
-    get_config_value!(float, ConfigParam::Float, f64);
-    set_config_value!(float, ConfigParam::Float, f64);
+    get_default_value!(int, TypedValue::Int, i64);
+    get_config_value!(int, TypedValue::Int, i64);
+    set_config_value!(int, TypedValue::Int, i64);
 
-    get_default_value!(bool, ConfigParam::Bool, bool);
-    get_config_value!(bool, ConfigParam::Bool, bool);
-    set_config_value!(bool, ConfigParam::Bool, bool);
+    get_default_value!(float, TypedValue::Float, f64);
+    get_config_value!(float, TypedValue::Float, f64);
+    set_config_value!(float, TypedValue::Float, f64);
 
-    get_default_value!(string, ConfigParam::String, String);
-    get_config_value!(string, ConfigParam::String, str);
-    set_config_value!(string, ConfigParam::String, str);
+    get_default_value!(bool, TypedValue::Bool, bool);
+    get_config_value!(bool, TypedValue::Bool, bool);
+    set_config_value!(bool, TypedValue::Bool, bool);
 
-    get_default_value!(color, ConfigParam::Color, u32);
-    get_config_value!(color, ConfigParam::Color, u32);
-    set_config_value!(color, ConfigParam::Color, u32);
+    get_default_value!(string, TypedValue::String, String);
+    get_config_value!(string, TypedValue::String, str);
+    set_config_value!(string, TypedValue::String, str);
+
+    get_default_value!(color, TypedValue::Color, u32);
+    get_config_value!(color, TypedValue::Color, u32);
+    set_config_value!(color, TypedValue::Color, u32);
 }
 
 impl Default for Profile {
@@ -478,15 +351,14 @@ impl Default for Profile {
         let profile_file =
             Path::new(constants::DEFAULT_PROFILE_DIR).join(Path::new("default.profile"));
 
-        let config = Some(HashMap::new());
-
         Self {
             id: default_id(),
             profile_file,
             name: "Default".into(),
             description: "Auto-generated profile".into(),
             active_scripts: vec![PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT)],
-            config,
+            config: ProfileConfiguration::new(),
+            manifests: HashMap::new(),
         }
     }
 }
@@ -534,7 +406,7 @@ pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     });
 
     for profile_file in profile_files.iter() {
-        match Profile::from(profile_file) {
+        match Profile::load_file_and_state_only(profile_file) {
             Ok(profile) => {
                 result.push(profile);
             }
@@ -595,7 +467,7 @@ pub fn find_path_by_uuid_from(uuid: Uuid, profile_dirs: &Vec<PathBuf>) -> Option
     let mut result = None;
 
     'PROFILE_LOOP: for profile_file in profile_files.iter() {
-        match Profile::from(profile_file) {
+        match Profile::load_file_and_state_only(profile_file) {
             Ok(profile) => {
                 if profile.id == uuid {
                     result = Some(profile_file.to_path_buf());
@@ -631,7 +503,7 @@ mod tests {
 
     use uuid::Uuid;
 
-    use super::FindConfig;
+    use crate::scripting::parameters::{ManifestValue, ProfileParameter, TypedValue};
 
     #[test]
     fn enum_profile_files() -> super::Result<()> {
@@ -693,10 +565,139 @@ mod tests {
             super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
                 .unwrap();
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.id, uuid);
         assert_eq!(profile.name, "Organic FX");
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_with_no_parameters() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path = path.join("../support/tests/assets/test2.profile");
+
+        let profile = super::Profile::load_file_only(&profile_path)?;
+
+        assert_eq!(profile.name, "Test 2");
+        assert!(profile.config.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_with_parameters() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path = path.join("../support/tests/assets/test3.profile");
+
+        let profile = super::Profile::load_file_only(&profile_path)?;
+
+        assert_eq!(profile.name, "Test 3");
+        assert!(!profile.config.is_empty());
+
+        let opacity_param = profile.config.get_parameter("Raindrops", "opacity");
+        assert!(opacity_param.is_some());
+
+        let opacity_param = opacity_param.unwrap();
+        assert_eq!(opacity_param.name, "opacity");
+        assert_eq!(opacity_param.value, TypedValue::Float(0.75));
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_with_state() -> super::Result<()> {
+        let path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        let profile_path = path.join("../support/tests/assets/with_state.profile");
+
+        let profile = super::Profile::load_file_and_state_only(&profile_path)?;
+
+        assert_eq!(profile.name, "With State");
+        assert!(!profile.config.is_empty());
+
+        let color_background = profile
+            .config
+            .get_parameter("Solid Color", "color_background");
+        assert!(color_background.is_some());
+
+        let color_background = color_background.unwrap();
+        assert_eq!(color_background.value, TypedValue::Color(0xff654321_u32));
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_profile_with_manifest() -> super::Result<()> {
+        let assets_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("../support/tests/assets");
+
+        let profile_path = assets_path.join("manifest_test.profile").canonicalize()?;
+
+        let config = config::Config::builder()
+            .set_override(
+                "global.script_dirs",
+                vec![assets_path.to_string_lossy().to_string()],
+            )?
+            .build()
+            .unwrap();
+
+        *crate::CONFIG.lock() = Some(config.clone());
+
+        let profile = super::Profile::load_fully(&profile_path);
+        let profile = match profile {
+            Ok(profile) => profile,
+            Err(err) => {
+                assert!(
+                    false,
+                    "Profile {} was not loaded: {}",
+                    profile_path.display(),
+                    err
+                );
+                return Err(err.into());
+            }
+        };
+
+        assert_eq!(profile.name, "Manifest Test");
+        assert!(
+            !profile.config.is_empty(),
+            "Profile config should not be empty"
+        );
+
+        let some_integer = profile
+            .config
+            .get_parameter("Manifest Test", "some_integer");
+        assert!(some_integer.is_some(), "some_integer should not be None");
+
+        let some_integer = some_integer.unwrap();
+        assert_eq!(
+            some_integer.value,
+            TypedValue::Int(9876),
+            "some_integer.value should be 9876 instead of {:?}",
+            some_integer.value
+        );
+
+        let default = some_integer.get_default();
+        assert!(default.is_some(), "default should not be None");
+
+        let default = default.unwrap();
+        assert_eq!(default, TypedValue::Int(7));
+
+        let manifest_value = some_integer.manifest.as_ref();
+        assert!(
+            manifest_value.is_some(),
+            "manifest_value should not be None"
+        );
+
+        let manifest_value = manifest_value.unwrap();
+        match manifest_value {
+            ManifestValue::Int {
+                default: 7,
+                min: Some(-1),
+                max: Some(9999),
+            } => {}
+            _ => assert!(false, "Wrong manifest_value: {:?}", manifest_value),
+        }
 
         Ok(())
     }
@@ -710,36 +711,34 @@ mod tests {
             super::find_path_by_uuid_from(uuid, &vec![path.join("../support/tests/assets/")])
                 .unwrap();
 
-        let profile = super::Profile::from(&profile_path)?;
+        let profile = super::Profile::load_file_only(&profile_path)?;
 
         assert_eq!(profile.id, uuid);
         assert_eq!(profile.name, "Organic FX");
 
-        let config = profile.config.unwrap();
+        let config = profile.config;
 
-        let param = config["Shockwave"]
-            .find_config_param("color_step_shockwave")
+        let param = config
+            .get_parameter("Shockwave", "color_step_shockwave")
             .unwrap();
 
         assert_eq!(
-            param,
-            &super::ConfigParam::Color {
+            *param,
+            ProfileParameter {
                 name: String::from("color_step_shockwave"),
-                value: 0x05010000,
-                default: Default::default(),
+                value: TypedValue::Color(0x05010000),
+                manifest: None
             }
         );
 
-        let param = config["Shockwave"]
-            .find_config_param("mouse_events")
-            .unwrap();
+        let param = config.get_parameter("Shockwave", "mouse_events").unwrap();
 
         assert_eq!(
-            param,
-            &super::ConfigParam::Bool {
+            *param,
+            ProfileParameter {
                 name: String::from("mouse_events"),
-                value: true,
-                default: Default::default(),
+                value: TypedValue::Bool(true),
+                manifest: None
             }
         );
 

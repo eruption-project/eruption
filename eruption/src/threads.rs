@@ -30,7 +30,7 @@ use std::time::{Duration, Instant};
 
 use crate::{
     constants, dbus_interface, hwdevices, macros, plugins, script,
-    scripting::script::ParameterValue, sdk_support, uleds, DeviceAction, EvdevError,
+    scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
     KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
     LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
 };
@@ -694,7 +694,7 @@ pub fn spawn_lua_thread(
     thread_idx: usize,
     lua_rx: Receiver<script::Message>,
     script_file: &Path,
-    parameter_values: &[ParameterValue],
+    parameters: &[PlainParameter],
 ) -> Result<()> {
     info!("Loading Lua script: {}", script_file.display());
 
@@ -705,7 +705,7 @@ pub fn spawn_lua_thread(
     ));
 
     let script_file = script_file.to_path_buf();
-    let mut parameter_values: HashMap<String, ParameterValue> = parameter_values
+    let mut parameter_values: HashMap<String, PlainParameter> = parameters
         .iter()
         .map(|pv| (pv.name.clone(), pv.clone()))
         .collect();
