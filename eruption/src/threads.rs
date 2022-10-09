@@ -902,7 +902,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 
@@ -940,7 +940,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 
@@ -978,7 +978,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 
