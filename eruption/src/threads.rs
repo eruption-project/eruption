@@ -189,7 +189,14 @@ pub fn spawn_keyboard_input_thread(
                         }
 
                         kbd_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a keyboard event to the main thread: {}", e)
+                            error!("Could not send a keyboard event to the main thread: {}", e);
+
+                            // try to recover from an invalid state
+                            keyboard_device.write().close_all().unwrap_or_else(|e| {
+                                warn!("Could not close the device: {}", e);
+                            });
+
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
@@ -358,7 +365,14 @@ pub fn spawn_mouse_input_thread(
                         }
 
                         mouse_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a mouse event to the main thread: {}", e)
+                            error!("Could not send a mouse event to the main thread: {}", e);
+
+                            // try to recover from an invalid state
+                            mouse_device.write().close_all().unwrap_or_else(|e| {
+                                warn!("Could not close the device: {}", e);
+                            });
+
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
