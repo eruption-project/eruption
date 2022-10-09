@@ -17,9 +17,14 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::scripting::parameters::{ManifestValue, TypedValue};
-use crate::{dbus_client, profiles::FindConfig};
-use crate::{profiles::Profile, scripting::manifest::Manifest, scripting::parameters, util};
+use crate::{
+    dbus_client,
+    profiles::Profile,
+    scripting::manifest::Manifest,
+    scripting::parameters::{self, ManifestValue, TypedValue},
+    util,
+};
+
 use glib::clone;
 use glib::IsA;
 use gtk::builders::{
@@ -744,18 +749,9 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
         container.pack_start(&expander, false, false, 8);
 
         if let Some(params) = &manifest.config {
+            let profile_script_parameters = profile.config.get_parameters(&manifest.name);
             for param in params {
-                let name = &param.name;
-
-                let value = if let Some(ref values) = profile.config {
-                    match values.get(name) {
-                        Some(e) => e.find_config_param(name),
-
-                        None => None,
-                    }
-                } else {
-                    None
-                };
+                let value = profile_script_parameters.and_then(|p| p.get_parameter(&param.name));
 
                 let child = create_config_editor(&profile, &manifest, param, &value)?;
                 expander_container.pack_start(&child, false, true, 0);

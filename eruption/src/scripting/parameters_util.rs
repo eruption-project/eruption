@@ -22,8 +22,7 @@ use same_file::is_same_file;
 use std::{path::PathBuf, sync::atomic::Ordering};
 
 use crate::{
-    profiles::{self, FindConfig},
-    script::{self},
+    profiles, script,
     scripting::manifest::{self, ParseConfig},
     scripting::parameters::{PlainParameter, UntypedParameter},
 };
@@ -44,26 +43,13 @@ pub fn apply_parameters(
     // modify persistent profile state
     match profiles::Profile::from(&profile_path) {
         Ok(mut profile) => {
-            assert!(profile.config.is_some());
-
-            let profile_config = profile.config.as_mut().unwrap();
-            let profile_config = profile_config
-                .entry(manifest.name)
-                .or_insert_with(std::vec::Vec::new);
+            let profile_script_parameter = profile.config.get_parameters_mut(&manifest.name);
 
             for parameter_value in parameter_values {
                 let manifest_param = manifest_config
                     .parse_config_param(&parameter_value.name, &parameter_value.value)?;
 
-                if let Some(param) = profile_config
-                    .clone()
-                    .find_config_param(&parameter_value.name)
-                {
-                    // param already exists, remove the existing one first
-                    profile_config.retain(|elem| elem != param);
-                }
-
-                profile_config.push(manifest_param);
+                profile_script_parameter.set_parameter(manifest_param);
             }
             profile.save_params()?;
         }

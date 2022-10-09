@@ -69,7 +69,6 @@ use crate::{
     hwdevices::{DeviceStatus, MaturityLevel, RGBA},
     plugins::macros,
     plugins::{sdk_support, uleds},
-    profiles::FindConfig,
     profiles::Profile,
     scripting::manifest::Manifest,
     scripting::parameters::{PlainParameter, ToParameterValue},
@@ -718,11 +717,11 @@ fn load_manifest_or_emit_error_messages(script_file: &PathBuf) -> Result<Manifes
 }
 
 fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<PlainParameter> {
-    let profile_config = profile.config.as_ref().and_then(|c| c.get(&manifest.name));
+    let profile_script_parameters = profile.config.get_parameters(&manifest.name);
 
     match &manifest.config {
         Some(manifest_config) => {
-            if profile_config.is_none() {
+            if profile_script_parameters.is_none() {
                 debug!("Active profile does not have {} config. Using config parameters from script manifest.", &manifest.name);
             }
 
@@ -730,9 +729,9 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<PlainParamete
                 .iter()
                 .map(|param| {
                     let parameter_value = param.to_parameter_value(); // config default
-                    match profile_config {
-                        Some(profile_config) => profile_config
-                            .find_config_param(&parameter_value.name)
+                    match profile_script_parameters {
+                        Some(profile_script_parameters) => profile_script_parameters
+                            .get_parameter(&parameter_value.name)
                             .map(|profile_parameter| profile_parameter.to_parameter_value())
                             .unwrap_or_else(|| {
                                 debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);

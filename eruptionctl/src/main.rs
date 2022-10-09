@@ -1249,14 +1249,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             ProfilesSubcommands::Info { profile_name } => {
                 match util::match_profile_by_name(&profile_name) {
                     Ok(profile) => {
-                        let empty = HashMap::new();
                         println!(
                             "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n\n{:#?}",
                             profile.name,
                             profile.id,
                             profile.description,
                             profile.active_scripts,
-                            profile.config.as_ref().unwrap_or(&empty),
+                            profile.config,
                         );
                     }
                     Err(err) => eprintln!("{}", err),
@@ -1394,14 +1393,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 println!("Profile parameters:\n");
 
-                let empty = HashMap::new();
-
                 for script in &scripts {
-                    let config = profile.config.as_ref().unwrap_or(&empty);
-                    let config_params = config.get(&script.name);
+                    let profile_script_parameters = profile.config.get_parameters(&script.name);
 
-                    if let Some(config_params) = config_params {
-                        for config in config_params.iter() {
+                    if let Some(profile_script_parameters) = profile_script_parameters {
+                        for config in profile_script_parameters.iter() {
                             let default_value = config.get_default();
 
                             if let Some(default_value) = default_value {
@@ -1479,32 +1475,23 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     let mut found_parameter = false;
 
-                    let empty = HashMap::new();
-                    let config = profile.config.as_ref().unwrap_or(&empty);
+                    if let Some(profile_parameter) =
+                        profile.config.get_parameter(&script.name, &parameter)
+                    {
+                        println!(
+                            "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                            profile.name, profile.id, profile.description, profile.active_scripts,
+                        );
 
-                    if let Some(config) = config.get(&script.name) {
-                        let config_param = config
-                            .iter()
-                            .find(|config_param| config_param.name == parameter);
-                        if let Some(config_param) = config_param {
-                            println!(
-                                "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                                profile.name,
-                                profile.id,
-                                profile.description,
-                                profile.active_scripts,
-                            );
+                        // read param value
+                        println!(
+                            "\"{}\" {} {}",
+                            &script.name,
+                            &profile_parameter.name,
+                            owo_colors::OwoColorize::bold(&profile_parameter.value)
+                        );
 
-                            // read param value
-                            println!(
-                                "\"{}\" {} {}",
-                                &script.name,
-                                &config_param.name,
-                                owo_colors::OwoColorize::bold(&config_param.value)
-                            );
-
-                            found_parameter = true;
-                        }
+                        found_parameter = true;
                     }
 
                     // Not all script manifest parameters need be listed in the profile
