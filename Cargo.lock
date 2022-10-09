@@ -1254,7 +1254,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-macro"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",

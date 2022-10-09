@@ -20,6 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
+use color_eyre::owo_colors::OwoColorize;
 use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -29,6 +30,7 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
+use std::path::Path;
 use std::{
     env,
     path::PathBuf,
@@ -37,6 +39,7 @@ use std::{
         Arc,
     },
 };
+use walkdir::WalkDir;
 
 // mod assistants;
 mod constants;
@@ -95,16 +98,16 @@ lazy_static! {
     static ref RECORD_ABOUT: String = tr!("record-about");
     static ref DESCRIPTION_ABOUT: String = tr!("description-about");
     // static ref ASSISTANT_ABOUT: String = tr!("assistant-about");
-    // static ref LIST_ABOUT: String = tr!("list-about");
+    static ref LIST_ABOUT: String = tr!("list-about");
     // static ref MAPPING_ABOUT: String = tr!("mapping-about");
     // static ref SHOW_ABOUT: String = tr!("show-about");
     // static ref MACROS_ABOUT: String = tr!("macros-about");
     // static ref EVENTS_ABOUT: String = tr!("events-about");
-    // static ref COMPILE_ABOUT: String = tr!("compile-about");
-    static ref MACRO_ADD_ABOUT: String = tr!("macro-add-about");
+    static ref COMPILE_ABOUT: String = tr!("compile-about");
+    static ref MACRO_CREATE_ABOUT: String = tr!("macro-create-about");
     static ref MACRO_REMOVE_ABOUT: String = tr!("macro-remove-about");
-    // static ref MAPPING_ENABLE_ABOUT: String = tr!("mapping-enable-about");
-    // static ref MAPPING_DISABLE_ABOUT: String = tr!("mapping-disable-about");
+    static ref MACRO_ENABLE_ABOUT: String = tr!("macro-enable-about");
+    static ref MACRO_DISABLE_ABOUT: String = tr!("macro-disable-about");
 }
 
 /// Supported command line arguments
@@ -126,43 +129,70 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
+    /// List all available macros
+    #[clap(about(LIST_ABOUT.as_str()), display_order = 0)]
+    List,
+
+    /// Record a key sequence and save it as a Lua function
+    #[clap(about(RECORD_ABOUT.as_str()), display_order = 1)]
+    Record {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_file: PathBuf,
+
+        macro_name: String,
+
+        description: Option<String>,
+    },
+
     /// Run an assistant that guides you through creating one or more key mappings
     //#[clap(about(ASSISTANT_ABOUT.as_str()))]
     //Assistant { keymap: PathBuf },
 
-    /// Add a mapping rule for `source` that executes `action`
-    #[clap(about(MACRO_ADD_ABOUT.as_str()))]
-    Add {
-        /// Specify the enabled status of the newly added rule
+    #[clap(about(MACRO_CREATE_ABOUT.as_str()))]
+    Create {
+        /// Specify the enabled status of the newly added macro
         #[clap(required = false, short, long, default_value = "true")]
         enabled: bool,
 
-        /// Specify a description for a rule
+        /// Specify a description for a macro
         #[clap(required = false, long, default_value = "")]
         description: String,
 
         macro_code: String,
     },
 
-    /// Remove the mapping rule for `source`
     #[clap(about(MACRO_REMOVE_ABOUT.as_str()))]
     Remove { index: usize },
 
-    /// Record a key sequence and save it as a Lua function
-    #[clap(about(RECORD_ABOUT.as_str()))]
-    Record {
-        // #[clap(required = false, short, long, default_value = "user-macros.lua")]
-        // lua_file: PathBuf,
-        macro_name: String,
-        description: Option<String>,
+    #[clap(about(MACRO_ENABLE_ABOUT.as_str()))]
+    Enable {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_file: PathBuf,
+
+        index: usize,
     },
 
-    /// Show or set the description of the specified keymap
+    #[clap(about(MACRO_DISABLE_ABOUT.as_str()))]
+    Disable {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_file: PathBuf,
+
+        index: usize,
+    },
+
     #[clap(about(DESCRIPTION_ABOUT.as_str()))]
     Description {
         #[clap(required = false, short, long, default_value = "user-macros.lua")]
         lua_file: PathBuf,
+
         description: Option<String>,
+    },
+
+    /// Compile macros to Lua code and make them available to Eruption
+    #[clap(about(COMPILE_ABOUT.as_str()))]
+    Compile {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_file: PathBuf,
     },
 
     /// Generate shell completions
@@ -194,6 +224,7 @@ fn print_header() {
     println!();
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -226,6 +257,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
@@ -255,9 +287,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     // register ctrl-c handler
     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
@@ -272,6 +304,29 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     let opts = Options::parse();
     match opts.command {
+        Subcommands::List {} => {
+            let path = Path::new(constants::DEFAULT_SCRIPT_DIR);
+
+            for entry in WalkDir::new(path).follow_links(true).sort_by_file_name() {
+                let entry = entry?;
+
+                // skip directories and the README file
+                if !entry.path().is_file() || entry.path().ends_with("README") {
+                    continue;
+                }
+
+                if entry
+                    .path()
+                    .extension()
+                    .iter()
+                    .any(|e| e.eq_ignore_ascii_case("lua.meta"))
+                {
+                    // let table = NativeBackend::from_file(entry.path())?;
+                    // println!("{}: {}", entry.path().display(), table.description().bold());
+                }
+            }
+        }
+
         /* Subcommands::Assistant { keymap: _ } => {
             let mut assistants = assistants::register_assistants();
 
@@ -295,19 +350,30 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             println!();
         } */
         Subcommands::Record {
+            lua_file: _,
             macro_name: _,
             description: _,
         } => {
             todo!()
         }
 
-        Subcommands::Add {
+        Subcommands::Create {
             enabled: _,
             description: _,
             macro_code: _,
         } => todo!(),
 
         Subcommands::Remove { index: _ } => todo!(),
+
+        Subcommands::Enable {
+            lua_file: _,
+            index: _,
+        } => todo!(),
+
+        Subcommands::Disable {
+            lua_file: _,
+            index: _,
+        } => todo!(),
 
         Subcommands::Description {
             lua_file,
@@ -322,6 +388,23 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             if let Some(_description) = description {
             } else {
             }
+        }
+
+        Subcommands::Compile { lua_file } => {
+            let path = if lua_file.components().count() > 1 {
+                lua_file
+            } else {
+                PathBuf::from(constants::DEFAULT_SCRIPT_DIR).join(lua_file)
+            };
+
+            println!("{} {}", tr!("compiling"), &path.display().bold());
+
+            // let table = NativeBackend::from_file(&path)?;
+            // path.set_extension("lua");
+
+            // LuaBackend::new().write_to_file(&path, &table)?;
+
+            println!("{}", tr!("success"));
         }
 
         Subcommands::Completions { shell } => {
