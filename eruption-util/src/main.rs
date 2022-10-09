@@ -1645,7 +1645,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     }; 144];
 
                                     // set highlighted LEDs
-                                    led_map[i as usize] = RGBA {
+                                    led_map[i] = RGBA {
                                         r: 255,
                                         g: 0,
                                         b: 0,

@@ -1020,7 +1020,7 @@ pub fn evdev_key_event_to_int(event: EventCode) -> u32 {
         EventCode::EV_UNK {
             event_type: _,
             event_code,
-        } => event_code as u32,
+        } => event_code,
 
         EventCode::EV_MAX => 0,
     }

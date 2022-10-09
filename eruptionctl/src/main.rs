@@ -522,7 +522,7 @@ pub async fn get_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16
 pub async fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
     let (status,): (String,) = dbus_system_bus("/org/eruption/devices")
         .await?
-        .method_call("org.eruption.Device", "GetDeviceStatus", (device as u64,))
+        .method_call("org.eruption.Device", "GetDeviceStatus", (device,))
         .await?;
 
     let result: HashMap<String, String> = serde_json::from_str(&status)?;
@@ -620,7 +620,7 @@ pub async fn get_brightness() -> Result<i64> {
 
 /// Set the current brightness value
 pub async fn set_brightness(brightness: i64) -> Result<()> {
-    let arg = Box::new(brightness as i64);
+    let arg = Box::new(brightness);
 
     dbus_system_bus("/org/eruption/config")
         .await?
@@ -642,7 +642,7 @@ pub async fn get_canvas_hue() -> Result<f64> {
 
 /// Set the current canvas hue value
 pub async fn set_canvas_hue(value: f64) -> Result<()> {
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     dbus_system_bus("/org/eruption/canvas")
         .await?
@@ -664,7 +664,7 @@ pub async fn get_canvas_saturation() -> Result<f64> {
 
 /// Set the current canvas saturation value
 pub async fn set_canvas_saturation(value: f64) -> Result<()> {
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     dbus_system_bus("/org/eruption/canvas")
         .await?
@@ -686,7 +686,7 @@ pub async fn get_canvas_lightness() -> Result<f64> {
 
 /// Set the current canvas lightness value
 pub async fn set_canvas_lightness(value: f64) -> Result<()> {
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     dbus_system_bus("/org/eruption/canvas")
         .await?

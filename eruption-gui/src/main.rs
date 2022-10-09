@@ -384,7 +384,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                                 if *profile == file {
                                     // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                                    combo_box.set_active_iter(Some(iter));
 
                                     true
                                 } else {
@@ -405,7 +405,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                                 if *profile == file {
                                     // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                                    combo_box.set_active_iter(Some(iter));
 
                                     true
                                 } else {
@@ -426,7 +426,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                                 if *profile == file {
                                     // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                                    combo_box.set_active_iter(Some(iter));
 
                                     true
                                 } else {
@@ -447,7 +447,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                                 if *profile == file {
                                     // found a match
-                                    combo_box.set_active_iter(Some(&iter));
+                                    combo_box.set_active_iter(Some(iter));
 
                                     true
                                 } else {
@@ -488,7 +488,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::ignore_next_dbus_events(1);
                 events::ignore_next_ui_events(1);
 
-                hue_scale.set_value(hue as f64);
+                hue_scale.set_value(hue);
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
@@ -503,7 +503,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::ignore_next_dbus_events(1);
                 events::ignore_next_ui_events(1);
 
-                saturation_scale.set_value(saturation as f64);
+                saturation_scale.set_value(saturation);
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();
@@ -517,7 +517,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::ignore_next_dbus_events(1);
                 events::ignore_next_ui_events(1);
 
-                lightness_scale.set_value(lightness as f64);
+                lightness_scale.set_value(lightness);
 
                 events::reenable_ui_events();
                 events::reenable_dbus_events();

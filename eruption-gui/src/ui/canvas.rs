@@ -72,25 +72,25 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         }),
     );
 
-    canvas_hue_scale.set_value(util::get_canvas_hue()? as f64);
-    canvas_saturation_scale.set_value(util::get_canvas_saturation()? as f64);
-    canvas_lightness_scale.set_value(util::get_canvas_lightness()? as f64);
+    canvas_hue_scale.set_value(util::get_canvas_hue()?);
+    canvas_saturation_scale.set_value(util::get_canvas_saturation()?);
+    canvas_lightness_scale.set_value(util::get_canvas_lightness()?);
 
     canvas_hue_scale.connect_value_changed(move |s| {
         if !events::shall_ignore_pending_ui_event() {
-            util::set_canvas_hue(s.value() as f64).unwrap();
+            util::set_canvas_hue(s.value()).unwrap();
         }
     });
 
     canvas_saturation_scale.connect_value_changed(move |s| {
         if !events::shall_ignore_pending_ui_event() {
-            util::set_canvas_saturation(s.value() as f64).unwrap();
+            util::set_canvas_saturation(s.value()).unwrap();
         }
     });
 
     canvas_lightness_scale.connect_value_changed(move |s| {
         if !events::shall_ignore_pending_ui_event() {
-            util::set_canvas_lightness(s.value() as f64).unwrap();
+            util::set_canvas_lightness(s.value()).unwrap();
         }
     });
 
@@ -163,7 +163,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     column.pack_start(&cell, false);
-    column.add_attribute(&cell, &"text", 0);
+    column.add_attribute(&cell, "text", 0);
 
     devices_tree_view.append_column(&column);
 
@@ -171,7 +171,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     column.pack_start(&cell, true);
-    column.add_attribute(&cell, &"text", 1);
+    column.add_attribute(&cell, "text", 1);
 
     devices_tree_view.append_column(&column);
 
@@ -179,7 +179,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     column.pack_start(&cell, false);
-    column.add_attribute(&cell, &"text", 2);
+    column.add_attribute(&cell, "text", 2);
 
     devices_tree_view.append_column(&column);
 
@@ -192,7 +192,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let saturation = canvas_saturation_scale.value();
         let lightness = canvas_lightness_scale.value();
 
-        if let Err(_e) = render_canvas(&da, (hue, saturation, lightness), &context) {
+        if let Err(_e) = render_canvas(da, (hue, saturation, lightness), context) {
             notification_box_global.show();
 
             // apparently we have lost the connection to the Eruption daemon
@@ -321,7 +321,7 @@ fn render_canvas(
 
     // paint all cells of the canvas
     for (i, color) in led_colors.iter().enumerate() {
-        paint_cell(i, &color, hsl, context, width, height, scale_factor)?;
+        paint_cell(i, color, hsl, context, width, height, scale_factor)?;
     }
 
     Ok(())

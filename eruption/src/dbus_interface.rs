@@ -247,7 +247,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::CANVAS_HSL.lock().0;
@@ -259,7 +259,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().0 = i.read::<f64>()?;
@@ -279,7 +279,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::CANVAS_HSL.lock().1;
@@ -291,7 +291,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().1 = i.read::<f64>()?;
@@ -311,7 +311,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     let result = crate::CANVAS_HSL.lock().2;
@@ -323,7 +323,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap().to_string())
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
                     .unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().2 = i.read::<f64>()?;
@@ -1182,7 +1182,7 @@ impl DbusApi {
             .send(self.hue_changed.emit(
                 &"/org/eruption/canvas".into(),
                 &"org.eruption.Canvas".into(),
-                &[hue as f64],
+                &[hue],
             ))
             .map_err(|_| error!("D-Bus error during send call"));
 
@@ -1199,7 +1199,7 @@ impl DbusApi {
             .send(self.saturation_changed.emit(
                 &"/org/eruption/canvas".into(),
                 &"org.eruption.Canvas".into(),
-                &[saturation as f64],
+                &[saturation],
             ))
             .map_err(|_| error!("D-Bus error during send call"));
 
@@ -1216,7 +1216,7 @@ impl DbusApi {
             .send(self.lightness_changed.emit(
                 &"/org/eruption/canvas".into(),
                 &"org.eruption.Canvas".into(),
-                &[lightness as f64],
+                &[lightness],
             ))
             .map_err(|_| error!("D-Bus error during send call"));
 

@@ -265,7 +265,7 @@ pub fn set_brightness(brightness: i64) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let arg = Box::new(brightness as i64);
+    let arg = Box::new(brightness);
 
     proxy.set("org.eruption.Config", "Brightness", arg)?;
 
@@ -295,7 +295,7 @@ pub fn set_canvas_hue(value: f64) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     proxy.set("org.eruption.Canvas", "Hue", arg)?;
 
@@ -325,7 +325,7 @@ pub fn set_canvas_saturation(value: f64) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     proxy.set("org.eruption.Canvas", "Saturation", arg)?;
 
@@ -355,7 +355,7 @@ pub fn set_canvas_lightness(value: f64) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let arg = Box::new(value as f64);
+    let arg = Box::new(value);
 
     proxy.set("org.eruption.Canvas", "Lightness", arg)?;
 

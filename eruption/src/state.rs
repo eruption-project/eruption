@@ -136,7 +136,7 @@ pub fn init_global_runtime_state() -> Result<()> {
             .as_ref()
             .unwrap()
             .get::<usize>("active_slot")
-            .unwrap() as usize,
+            .unwrap(),
         Ordering::SeqCst,
     );
 

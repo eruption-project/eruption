@@ -369,7 +369,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;
@@ -420,7 +420,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;
@@ -471,7 +471,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;

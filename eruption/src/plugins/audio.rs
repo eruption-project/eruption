@@ -550,7 +550,7 @@ mod backends {
                                                                         .iter()
                                                                         // normalize
                                                                         .map(|e| {
-                                                                            ((e.re as f32) * one_over_fft_len_sqrt)
+                                                                            (e.re * one_over_fft_len_sqrt)
                                                                                 .abs()
                                                                         })
                                                                         // apply Hamming window

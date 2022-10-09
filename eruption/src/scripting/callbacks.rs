@@ -526,10 +526,10 @@ pub(crate) fn linear_gradient(start: u32, dest: u32, p: f64) -> u32 {
     let dcg: f64 = f64::from((dest >> 8) & 0xff);
     let dcb: f64 = f64::from((dest) & 0xff);
 
-    let r: f64 = (scr as f64) + (((dcr - scr) as f64) * p);
-    let g: f64 = (scg as f64) + (((dcg - scg) as f64) * p);
-    let b: f64 = (scb as f64) + (((dcb - scb) as f64) * p);
-    let a: f64 = (sca as f64) + (((dca - sca) as f64) * p);
+    let r: f64 = scr + ((dcr - scr) * p);
+    let g: f64 = scg + ((dcg - scg) * p);
+    let b: f64 = scb + ((dcb - scb) * p);
+    let a: f64 = sca + ((dca - sca) * p);
 
     rgba_to_color(
         r.round() as u8,
@@ -685,8 +685,7 @@ pub(crate) fn get_color_map() -> Vec<u32> {
     let result = global_led_map
         .iter()
         .map(|v| {
-            ((v.r as u32).overflowing_shl(16).0 + (v.g as u32).overflowing_shl(8).0 + v.b as u32)
-                as u32
+            (v.r as u32).overflowing_shl(16).0 + (v.g as u32).overflowing_shl(8).0 + v.b as u32
         })
         .collect::<Vec<u32>>();
 
