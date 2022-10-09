@@ -418,7 +418,7 @@ pub fn switch_profile_please(profile_file: Option<&Path>) -> Result<SwitchProfil
     switch_profile(profile_file, dbus_api_tx, true)
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum SwitchProfileResult {
     Switched,
     InvalidProfile,
@@ -535,7 +535,7 @@ pub fn switch_profile(
 
                 let mut manifests: Vec<Manifest> = vec![];
                 for script_file in profile.active_scripts.iter() {
-                    let manifest = load_manifest_or_emit_error_messages(&script_file);
+                    let manifest = load_manifest_or_emit_error_messages(script_file);
                     if let Ok(manifest) = manifest {
                         manifests.push(manifest);
                     } else {
@@ -717,7 +717,7 @@ fn load_manifest_or_emit_error_messages(script_file: &PathBuf) -> Result<Manifes
                 script_path.display(),
                 error
             );
-            return Err(MainError::ScriptExecError {}.into());
+            Err(MainError::ScriptExecError {}.into())
         }
         Ok(manifest) => Ok(manifest),
     }
@@ -738,8 +738,7 @@ fn merge_parameters(manifest: &Manifest, profile: &Profile) -> Vec<ParameterValu
                     let parameter_value = param.to_parameter_value(); // config default
                     match profile_config {
                         Some(profile_config) => profile_config
-                            .find_config_param(&parameter_value.name)
-                            .and_then(|cp| Some(cp.to_parameter_value()))
+                            .find_config_param(&parameter_value.name).map(|cp| cp.to_parameter_value())
                             .unwrap_or_else(|| {
                                 debug!("Parameter {} is undefined. Using defaults from script manifest.", parameter_value.name);
                                 parameter_value
@@ -826,7 +825,19 @@ fn run_main_loop(
                 if let Ok(Some(event)) = event {
                     // TODO: support multiple keyboards
                     events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
-                        .unwrap_or_else(|e| error!("Could not process a keyboard event: {}", e));
+                        .unwrap_or_else(|e| {
+                            error!(
+                                "Could not process a keyboard event: {}. Trying to close the device now...",
+                                e
+                            );
+
+                            (*crate::KEYBOARD_DEVICES.read()[0])
+                                .write()
+                                .as_device_mut()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
+                        });
                 } else {
                     error!(
                         "Could not process a keyboard event: {}",
@@ -838,21 +849,25 @@ fn run_main_loop(
             sel = sel.recv(rx, mapper);
         }
 
-        for (index, rx) in mouse_rxs.iter().enumerate() {
+        for rx in mouse_rxs.iter() {
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
-                        .unwrap_or_else(|e| error!("Could not process a mouse event: {}", e));
+                        .unwrap_or_else(|e| {
+                            error!("Could not process a mouse event: {}. Trying to close the device now...", e);
+
+                            (*crate::MOUSE_DEVICES.read()[0])
+                                .write()
+                                .as_device_mut()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
+                        });
                 } else {
                     error!(
                         "Could not process a mouse event: {}",
                         event.as_ref().unwrap_err()
                     );
-
-                    FAILED_TXS.write().insert(index);
-
-                    // remove failed devices
-                    REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                 }
             };
 
@@ -1090,6 +1105,11 @@ fn run_main_loop(
                     .send(DbusApiEvent::DeviceStatusChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
             }
+
+            // use 'device status poll' code to detect failed/disconnected devices as well,
+            // by forcing a write to the device. This is required for hotplug to work correctly in
+            // case we didn't transfer data to the device for an extended period of time
+            script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
         }
 
         // now, process events from all available sources...
@@ -1176,8 +1196,8 @@ fn run_main_loop(
                 1000 / constants::TARGET_FPS
             );
         } /* else if elapsed_after_sleep < 5_u128 {
-              debug!("Short loop detected");
-              debug!(
+              warn!("Short loop detected");
+              warn!(
                   "Loop took: {} milliseconds, goal: {}",
                   elapsed_after_sleep,
                   1000 / constants::TARGET_FPS

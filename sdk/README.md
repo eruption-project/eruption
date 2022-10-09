@@ -19,7 +19,7 @@ The Eruption SDK currently supports the following programming languages and envi
 
 | Language | API/Module                                           | DOCS                             |
 | ---------| ---------------------------------------------------- | -------------------------------- |
-| Rust     | `eruption-rs` Rust crate                             | [docs/RUST.md](docs/RUST.md)     |
+| Rust     | `eruption-sdk` Rust crate                            | [docs/RUST.md](docs/RUST.md)     |
 | Python 3 | `eruption` Python 3 module                           | [docs/PYTHON.md](docs/PYTHON.md) |
 | C/C++    | `liberuption.so` C/C++ compatible dynamic library    | [docs/CPP.md](docs/CXX.md)       |
 | Shell    | `eruption-cmd` companion utility                     | [docs/SHELL.md](docs/SHELL.md)   |

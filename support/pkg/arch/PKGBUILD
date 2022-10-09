@@ -21,7 +21,7 @@ sha512sums=('c4ace48ae9b7fbbc7e85ba47f2c969983594cab09ebc069bc39caa27a4e7833042e
 build() {
     cd "$_pkgname-$pkgver"
 
-    CARGO_INCREMENTAL=0 cargo build --all --release --features=sourceview
+    CARGO_INCREMENTAL=0 cargo build --release
 }
 
 package() {

@@ -19,24 +19,26 @@
 [package]
 name = "eruptionctl"
 version = "0.0.25"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A CLI control utility for the Eruption Linux user-mode driver"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
-license = "GPLv3+"
+keywords = ["eruption", "linux", "led", "driver"]
+categories = ["hardware-support"]
+license = "GPL-3.0"
 readme = "README.md"
-resolver = "2"
+#resolver = "2"
 
 [dependencies]
 lazy_static = "1.4.0"
 flume = "0.10.14"
-clap =  { version = "4.0.10", features = ["derive"] }
+clap =  { version = "4.0.11", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.0"
-csscolorparser = "0.6.2"
+csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.2"
 log = "0.4.17"
 libc = "0.2.134"
@@ -48,7 +50,7 @@ tokio = { version = "1.21.2", features = ["full"] }
 #tracing-futures = "0.2.5"
 #tracing-subscriber = "0.2.20"
 config = "0.13.2"
-uuid = { version = "1.1.2", features = ["serde", "v4"] }
+uuid = { version = "1.2.1", features = ["serde", "v4"] }
 toml = "0.5.9"
 thiserror = "1.0.37"
 eyre = "0.6.8"

@@ -199,7 +199,14 @@ pub fn spawn_keyboard_input_thread(
                         }
 
                         kbd_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a keyboard event to the main thread: {}", e)
+                            error!("Could not send a keyboard event to the main thread: {}", e);
+
+                            // try to recover from an invalid state
+                            keyboard_device.write().close_all().unwrap_or_else(|e| {
+                                warn!("Could not close the device: {}", e);
+                            });
+
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
@@ -209,6 +216,12 @@ pub fn spawn_keyboard_input_thread(
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
                             warn!("Keyboard device went away: {}", e);
+
+                            keyboard_device
+                                .write()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -362,7 +375,14 @@ pub fn spawn_mouse_input_thread(
                         }
 
                         mouse_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a mouse event to the main thread: {}", e)
+                            error!("Could not send a mouse event to the main thread: {}", e);
+
+                            // try to recover from an invalid state
+                            mouse_device.write().close_all().unwrap_or_else(|e| {
+                                warn!("Could not close the device: {}", e);
+                            });
+
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
@@ -372,6 +392,12 @@ pub fn spawn_mouse_input_thread(
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
                             warn!("Mouse device went away: {}", e);
+
+                            mouse_device
+                                .write()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -553,7 +579,7 @@ pub fn spawn_mouse_input_thread(
 /// Spawns the misc devices input thread and executes it's main loop
 pub fn spawn_misc_input_thread(
     misc_tx: Sender<Option<evdev_rs::InputEvent>>,
-    _misc_device: crate::MiscDevice,
+    misc_device: crate::MiscDevice,
     device_index: usize,
     usb_vid: u16,
     usb_pid: u16,
@@ -643,6 +669,12 @@ pub fn spawn_misc_input_thread(
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
                             warn!("Misc device went away: {}", e);
+
+                            misc_device
+                                .write()
+                                .close_all()
+                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -926,7 +958,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 
@@ -964,7 +996,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 
@@ -1002,7 +1034,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             warn!("Could not query device status");
                                         }
                                     } else {
-                                        info!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
                                 }
 

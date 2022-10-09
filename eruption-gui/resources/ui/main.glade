@@ -18,7 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Author: X3n0m0rph59
+Authors:
+X3n0m0rph59
+The Eruption Development Team
 
 -->
 <interface>
@@ -26,7 +28,7 @@ Author: X3n0m0rph59
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Eruption -->
   <!-- interface-copyright 2019-2022 The Eruption Development Team -->
-  <!-- interface-authors X3n0m0rph59 -->
+  <!-- interface-authors X3n0m0rph59\nThe Eruption Development Team -->
   <object class="GtkAdjustment" id="adjustment_hue">
     <property name="upper">359</property>
     <property name="step-increment">1</property>

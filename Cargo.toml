@@ -21,17 +21,17 @@ members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "erup
     "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "eruption-gui", "eruption-cmd",
     "eruption-keymap", "eruption-macro", "eruption-watchdog", "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption",
     "sdk/examples/rust/simple"]
-default-members = ["eruption", "eruptionctl", "eruption-cmd", "eruption-hwutil", "eruption-netfx",
-    "eruption-debug-tool", "eruption-util", "eruption-hotplug-helper", "eruption-watchdog",
+default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool",
+    "eruption-util", "eruption-hotplug-helper", "eruption-gui", "eruption-cmd",
     "eruption-keymap", "eruption-macro", "eruption-audio-proxy", "eruption-process-monitor"]
-resolver = "2"
+#resolver = "2"
 
 [profile.dev]
 opt-level = 0
 debug = true
 rpath = false
 lto = false
-#strip = false
+strip = false
 debug-assertions = true
 overflow-checks = true
 codegen-units = 512
@@ -43,9 +43,9 @@ opt-level = 3
 debug = false
 rpath = false
 lto = true
-#strip = true
+strip = false
 debug-assertions = false
-overflow-checks = false
+overflow-checks = true
 codegen-units = 1
 incremental = false
 panic = 'abort'
@@ -56,7 +56,7 @@ opt-level = 0
 debug = true
 rpath = false
 lto = false
-#strip = false
+strip = false
 debug-assertions = true
 overflow-checks = true
 codegen-units = 512

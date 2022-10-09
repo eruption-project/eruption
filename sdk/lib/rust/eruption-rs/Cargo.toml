@@ -17,17 +17,19 @@
 
 
 [package]
-name = "eruption-rs"
-version = "0.0.3"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>"]
+name = "eruption-sdk"
+version = "0.0.5"
+build = "build.rs"
+authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
-description = "Eruption SDK"
+description = "Provides an interface to the Eruption Realtime RGB LED Driver for Linux"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
-license = "LGPLv3+"
+keywords = ["eruption", "linux", "led", "driver", "sdk"]
+categories = ["hardware-support"]
+license = "LGPL-3.0"
 readme = "README.md"
-resolver = "2"
-
+#resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
@@ -42,10 +44,10 @@ parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 flume = "0.10.14"
 serde = "1.0.145"
 bincode = "2.0.0-rc.2"
+bytes = "1.2.1"
 prost = "0.11.0"
 prost-types = "0.11.1"
 socket2 = { version = "0.4.7", features = ["all"] }
-
 
 [build-dependencies]
 prost-build = "0.11.1"

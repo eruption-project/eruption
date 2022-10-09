@@ -57,7 +57,7 @@ impl LocalTransport {
 
 impl Transport for LocalTransport {
     fn connect(&mut self) -> Result<()> {
-        let addr = SockAddr::unix(&SOCKET_ADDRESS)?;
+        let addr = SockAddr::unix(SOCKET_ADDRESS)?;
         self.socket.lock().connect(&addr)?;
 
         Ok(())
@@ -98,7 +98,7 @@ impl Transport for LocalTransport {
                             result.response_message
                         {
                             Ok(ServerStatus {
-                                server: status_response.description.to_string(),
+                                server: status_response.description,
                             })
                         } else {
                             Err(eyre!("Unexpected response"))
@@ -210,7 +210,7 @@ impl Transport for LocalTransport {
                 protocol::SetParametersRequest {
                     profile_file: profile_file.to_string_lossy().to_string(),
                     script_file: script_file.to_string_lossy().to_string(),
-                    parameter_values: parameter_values,
+                    parameter_values,
                 },
             )),
         };
@@ -300,7 +300,7 @@ impl Transport for LocalTransport {
 
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
         let config = bincode::config::standard();
-        let bytes: Vec<u8> = bincode::encode_to_vec(&hotplug_info, config).unwrap();
+        let bytes: Vec<u8> = bincode::encode_to_vec(hotplug_info, config).unwrap();
 
         let request = protocol::Request {
             request_message: Some(protocol::request::RequestMessage::NotifyHotplug(

@@ -1,22 +1,42 @@
-/*
-    This file is part of Eruption.
+# eruption-sdk
 
-    Eruption is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+![Stars](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
+![Stars](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
+![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
+![Stars](https://img.shields.io/crates/l/eruption-sdk?style=flat-square)
 
-    Eruption is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This crate provides an interface to the [Eruption Realtime RGB LED Driver](https://github.com/X3n0m0rph59/eruption) for Linux
 
-    You should have received a copy of the GNU General Public License
-    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+## Table of Contents
 
-    Copyright (c) 2019-2022, The Eruption Development Team
-*/
+- [eruption-sdk](#eruption-sdk)
+  - [Table of Contents](#table-of-contents)
+  - [License](#license)
+  - [Usage](#usage)
+  - [MSRV](#msrv)
+  - [Example Code](#example-code)
+  - [Support](#support)
 
+## License
+
+The Eruption SDK is licensed under the GNU LGPL-3.0 license
+
+## Usage
+
+Please add this to your `Cargo.toml`:
+
+```toml
+[dependencies]
+eruption-sdk = "0.0.5"
+```
+
+## MSRV
+
+Minimum Supported Rust Version: `Rust 1.64`
+
+## Example Code
+
+```rust
 use eruption_sdk::canvas::Canvas;
 use eruption_sdk::color::Color;
 use eruption_sdk::connection::{Connection, ConnectionType};
@@ -25,7 +45,7 @@ use std::time::Duration;
 
 const EXAMPLE_NAME: &str = "Simple Rust Example #1";
 
-fn main() -> Result<(), eyre::Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "Welcome to the Eruption SDK!\nYou are running the \"{}\" \
         from the Eruption SDK version {}\n",
@@ -76,3 +96,8 @@ fn main() -> Result<(), eyre::Error> {
 
     Ok(())
 }
+```
+
+## Support
+
+Support for the Eruption SDK is available on [GitHub](https://github.com/X3n0m0rph59/eruption/issues)

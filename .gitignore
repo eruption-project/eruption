@@ -9,6 +9,7 @@
 # python
 **/__pycache__/*
 venv/
+**/dist/*
 
 # c++
 *-build/

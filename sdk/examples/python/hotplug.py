@@ -17,7 +17,6 @@
 #
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
-from sqlite3 import connect
 import sys
 import time
 

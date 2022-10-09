@@ -232,7 +232,7 @@ pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
         //     file_name.to_string_lossy()
         // );
 
-        util::switch_profile(&*file_name.to_string_lossy())?;
+        util::switch_profile(&file_name.to_string_lossy())?;
     }
 
     Ok(())
@@ -252,7 +252,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
         util::switch_slot(slot_index)?;
         STATE.write().active_slot = Some(slot_index);
 
-        util::switch_profile(&*file_name.to_string_lossy())?;
+        util::switch_profile(&file_name.to_string_lossy())?;
     }
 
     Ok(())
@@ -640,8 +640,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             let message_dialog = MessageDialogBuilder::new()
                 .destroy_with_parent(true)
                 .message_type(gtk::MessageType::Error)
-                .text(&message)
-                .secondary_text(&secondary)
+                .text(message)
+                .secondary_text(secondary)
                 .title("Error")
                 .buttons(gtk::ButtonsType::Ok)
                 .build();

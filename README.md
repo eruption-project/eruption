@@ -1,7 +1,11 @@
 ![logo](docs/assets/eruption.jpg)
 
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
+![Stars](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
+
+![Stars](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
+![Stars](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
 
 # Table of Contents
 
@@ -107,12 +111,19 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
-This project is still in an early stage of development, and thus may contain some possibly serious bugs.
+This project is still in the early stages of development, and thus may contain some possibly serious bugs.
 
 For a more mature RGB lighting solution please also consider the following alternatives:
 
-**OpenRGB** - <https://openrgb.org/>\
+**OpenRGB** - OPEN SOURCE RGB LIGHTING CONTROL THAT DOESN'T DEPEND ON MANUFACTURER SOFTWARE \
+<https://openrgb.org/>\
 <https://gitlab.com/CalcProgrammer1/OpenRGB>
+
+For configuring gaming mice you may want to consider:
+
+**libratbag/piper** -
+libratbag A DBus daemon to configure input devices, mainly gaming mice
+<https://github.com/libratbag>
 
 ### Troubleshooting
 

@@ -28,12 +28,12 @@ fn main() {
     println!("cargo:rerun-if-changed=resources/ui");
 
     let _ = Command::new("sh")
-        .args(&["-c", "cd schemas && glib-compile-schemas ."])
+        .args(["-c", "cd schemas && glib-compile-schemas ."])
         .output()
         .expect("Failed to execute schema compiler");
 
     let _ = Command::new("sh")
-        .args(&["-c", "cd resources && glib-compile-resources resources.xml"])
+        .args(["-c", "cd resources && glib-compile-resources resources.xml"])
         .output()
         .expect("Failed to execute resource compiler");
 }

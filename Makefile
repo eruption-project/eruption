@@ -16,8 +16,7 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-BUILDFLAGS := --all --release --features=sourceview
-# BUILDFLAGS := --all --release
+BUILDFLAGS := --release
 
 TARGET_DIR := /usr
 SOURCE_DIR := target/release

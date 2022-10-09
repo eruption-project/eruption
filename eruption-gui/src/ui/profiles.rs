@@ -655,7 +655,7 @@ fn create_config_editor(
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
-                    parameter_changed(&profile, &script, &name, &value);
+                    parameter_changed(&profile, &script, &name, value);
                 }),
             )?;
 
@@ -699,7 +699,7 @@ fn create_config_editor(
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
-                    parameter_changed(&profile, &script, &name, &value);
+                    parameter_changed(&profile, &script, &name, value);
                 }),
             )?;
 
@@ -739,7 +739,7 @@ fn create_config_editor(
                 default,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
-                    parameter_changed(&profile, &script, &name, &value);
+                    parameter_changed(&profile, &script, &name, value);
                 }),
             )?;
 
@@ -824,7 +824,7 @@ fn create_config_editor(
                 *max,
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
-                    parameter_changed(&profile, &script, &name, &value);
+                    parameter_changed(&profile, &script, &name, value);
                 }),
             )?;
 
@@ -855,7 +855,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
     let profile = Profile::from(profile.as_ref())?;
 
     let label = LabelBuilder::new()
-        .label(&(&profile.name).to_string())
+        .label(&profile.name)
         .justify(Justification::Fill)
         .halign(Align::Start)
         .build();
@@ -1516,10 +1516,7 @@ pub fn update_profile_state(builder: &Builder) -> Result<()> {
     let model = profiles_treeview.model().unwrap();
 
     let state = crate::STATE.read();
-    let active_profile = state
-        .active_profile
-        .clone()
-        .unwrap_or_else(|| "".to_string());
+    let active_profile = state.active_profile.clone().unwrap_or_default();
 
     model.foreach(|model, path, iter| {
         let item = model.value(iter, 3).get::<String>().unwrap();
