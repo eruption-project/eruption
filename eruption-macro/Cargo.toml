@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-macro"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A CLI macro utility for Eruption"
