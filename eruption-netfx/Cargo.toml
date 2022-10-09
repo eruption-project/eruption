@@ -40,7 +40,7 @@ backend-x11 = ["x11", "x11rb"]
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.10", features = ["derive"] }
+clap =  { version = "4.0.11", features = ["derive"] }
 clap_complete = "4.0.2"
 colored = "2.0.0"
 log = "0.4.17"
