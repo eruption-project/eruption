@@ -26,10 +26,10 @@ effect_ttl = max_effect_ttl
 
 -- event handler functions --
 function on_startup(config)
-    local accel_info = query_hw_accel_info()
-    debug("HW accel status: " .. stringify(accel_info))
-
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
+
+    local accel_info = query_hw_accel_info()
+    info("Hwaccel status: " .. stringify(accel_info))
 end
 
 function on_key_down(key_index) effect_ttl = max_effect_ttl end

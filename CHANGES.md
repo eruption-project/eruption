@@ -5,10 +5,10 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __Next Release__ |
-| 0.3.0 | Add support for hardware accelerated effects using shader programs |
-| 0.3.0 | Add new script: `hwaccel.lua` |
-| 0.3.0 | Add new profiles using hardware accelerated effects: `shader-demo.profile`|
 | 0.3.0 | Fix a locking issue that lead to excessive jitter/input lag |
+| 0.3.0 | Add support for hardware accelerated rendering of effects using `WGSL` shader programs. Supported backends: `Vulkan`, `OpenGL`, `WebGPU` |
+| 0.3.0 | Add new script: `hwaccel.lua` that utilizes the newly added hardware acceleration features |
+| 0.3.0 | Add new profile using hardware accelerated effects: `shader-demo.profile` |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |

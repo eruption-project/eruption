@@ -29,7 +29,7 @@ keywords = ["eruption", "linux", "led", "driver", "sdk"]
 categories = ["hardware-support"]
 license = "LGPL-3.0"
 readme = "README.md"
-#resolver = "2"
+resolver = "2"
 
 [lib]
 name = "eruption"

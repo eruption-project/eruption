@@ -7,6 +7,7 @@
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
+    - [Hardware Accelerated Effects](#hardware-accelerated-effects)
     - [Network FX Protocol Specification](#network-fx-protocol-specification)
     - [Eruption Support Library Documentation](#eruption-support-library-documentation)
     - [File Format Specification](#file-format-specification)
@@ -49,6 +50,12 @@ Overview of the architecture of Eruption
 HowTo write Lua macros
 
 [MACROS.md](MACROS.md)
+
+### Hardware Accelerated Effects
+
+Hardware accelerated rendering of effects in Eruption
+
+[HWACCEL.md](HWACCEL.md)
 
 ### Network FX Protocol Specification
 

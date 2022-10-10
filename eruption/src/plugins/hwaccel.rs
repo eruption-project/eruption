@@ -20,13 +20,20 @@
 use lazy_static::lazy_static;
 // use log::*;
 use mlua::prelude::*;
-use std::any::Any;
+use parking_lot::RwLock;
+use pixels::wgpu::{PowerPreference, RequestAdapterOptions};
+use pixels::Pixels;
+use pixels::{raw_window_handle, PixelsBuilder};
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::{any::Any, sync::atomic::Ordering};
 
-use crate::plugins;
-use crate::plugins::Plugin;
+use crate::plugins::{self, Plugin};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+const WIDTH: u32 = 1024;
+const HEIGHT: u32 = 768;
 
 // #[derive(Debug, Fail)]
 // pub enum HwAccelerationPluginError {
@@ -34,9 +41,11 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnknownError { description: String },
 // }
 
-lazy_static! {}
+lazy_static! {
+    pub static ref PIXELS: Arc<RwLock<Option<Pixels>>> = Arc::new(RwLock::new(None));
+}
 
-/// A plugin that gives Lua scripts access to the systems sensor data
+/// A plugin that provides access to hardware acceleration APIs
 pub struct HwAccelerationPlugin {}
 
 impl HwAccelerationPlugin {
@@ -44,24 +53,61 @@ impl HwAccelerationPlugin {
         HwAccelerationPlugin {}
     }
 
+    pub fn initialize_hwaccel() -> Result<()> {
+        let window = Rwh;
+
+        let surface_texture = pixels::SurfaceTexture::new(WIDTH, HEIGHT, &window);
+
+        let mut pixels = PixelsBuilder::new(WIDTH, HEIGHT, surface_texture)
+            .request_adapter_options(RequestAdapterOptions {
+                power_preference: PowerPreference::HighPerformance,
+                force_fallback_adapter: false,
+                compatible_surface: None,
+            })
+            // .wgpu_backend(Backends::VULKAN)
+            // .enable_vsync(false)
+            .build()?;
+
+        // Set clear color to red.
+        // pixels.set_clear_color(Color::RED);
+
+        // let result = pixels.render();
+
+        // *PIXELS.write() = Some(pixels);
+
+        Ok(())
+    }
+
     pub fn query_hw_accel_info() -> HashMap<String, String> {
         let mut result = HashMap::new();
 
-        result.insert("backend".to_string(), "vulkan".to_string());
-        result.insert("acceleration".to_string(), "false".to_string());
+        if let Some(pixels) = &*PIXELS.read() {
+            let _features = pixels.device().features();
+
+            icecream::ice!(pixels.device());
+        } else {
+        }
+
+        if crate::EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
+            result.insert("backend".to_string(), "vulkan".to_string());
+            result.insert("hardware-acceleration".to_string(), "true".to_string());
+        } else {
+            result.insert("backend".to_string(), "disabled".to_string());
+            result.insert("hardware-acceleration".to_string(), "false".to_string());
+        }
 
         result
     }
 
-    pub fn compile_shader_program() -> Result<()> {
-        Ok(())
-    }
+    // pub fn compile_shader_program() -> Result<()> {
+    //     Ok(())
+    // }
 
-    pub fn set_uniform_value(_value: u32) {}
+    // pub fn set_uniform_value(_value: u32) {}
 
-    pub fn get_uniform_value() -> u32 {
-        0
-    }
+    // pub fn get_uniform_value() -> u32 {
+    //     0
+    // }
 }
 
 #[async_trait::async_trait]
@@ -71,10 +117,14 @@ impl Plugin for HwAccelerationPlugin {
     }
 
     fn get_description(&self) -> String {
-        "Hardware accelerated effects using shader programs".to_string()
+        "Hardware accelerated effects".to_string()
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
+        if crate::EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
+            Self::initialize_hwaccel()?;
+        }
+
         Ok(())
     }
 
@@ -98,5 +148,29 @@ impl Plugin for HwAccelerationPlugin {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+}
+
+pub struct Rwh;
+
+unsafe impl raw_window_handle::HasRawWindowHandle for Rwh {
+    fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
+        #[cfg(target_os = "macos")]
+        return raw_window_handle::RawWindowHandle::AppKit(raw_window_handle::AppKitHandle::empty());
+        #[cfg(any(
+            target_os = "linux",
+            target_os = "dragonfly",
+            target_os = "freebsd",
+            target_os = "netbsd",
+            target_os = "openbsd",
+        ))]
+        return raw_window_handle::RawWindowHandle::Xlib(
+            // raw_window_handle::WaylandHandle::empty(),
+            raw_window_handle::XlibHandle::empty(),
+        );
+        #[cfg(target_os = "windows")]
+        return raw_window_handle::RawWindowHandle::Win32(raw_window_handle::Win32Handle::empty());
+        #[cfg(target_os = "ios")]
+        return raw_window_handle::RawWindowHandle::UiKit(raw_window_handle::UiKitHandle::empty());
     }
 }
