@@ -24,7 +24,7 @@ use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::fs;
@@ -34,9 +34,12 @@ use std::sync::Arc;
 use std::vec::Vec;
 
 use crate::{
-    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA, profiles,
-    scripting::callbacks, scripting::constants::*, scripting::manifest,
+    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
+    scripting::callbacks, scripting::constants::*,
 };
+
+use super::parameters::PlainParameter;
+use super::parameters::TypedValue;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -68,7 +71,7 @@ pub enum Message {
     RealizeColorMap,
 
     SetParameters {
-        parameter_values: Vec<ParameterValue>,
+        parameter_values: Vec<PlainParameter>,
     },
 }
 
@@ -129,91 +132,6 @@ impl std::error::Error for UnknownError {}
 impl fmt::Display for UnknownError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Unknown error occurred")
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct ParameterValue {
-    pub name: String,
-    pub value: TypedValue,
-}
-
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub enum TypedValue {
-    Int(i64),
-    Float(f64),
-    Bool(bool),
-    String(String),
-    Color(u32),
-}
-
-impl ParameterValue {
-    fn get_value_string(&self) -> String {
-        match &self.value {
-            TypedValue::Int(value) => format!("{}", value),
-            TypedValue::Float(value) => format!("{}", value),
-            TypedValue::Bool(value) => format!("{}", value),
-            TypedValue::String(value) => value.to_string(),
-            TypedValue::Color(value) => format!("#{:06x}", value),
-        }
-    }
-}
-
-pub trait ToParameterValue {
-    fn to_parameter_value(&self) -> ParameterValue;
-}
-
-impl ToParameterValue for profiles::ConfigParam {
-    fn to_parameter_value(&self) -> ParameterValue {
-        match &self {
-            profiles::ConfigParam::Int { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Int(*value),
-            },
-            profiles::ConfigParam::Float { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Float(*value),
-            },
-            profiles::ConfigParam::Bool { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Bool(*value),
-            },
-            profiles::ConfigParam::String { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::String(value.to_string()),
-            },
-            profiles::ConfigParam::Color { name, value, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Color(*value),
-            },
-        }
-    }
-}
-
-impl ToParameterValue for manifest::ConfigParam {
-    fn to_parameter_value(&self) -> ParameterValue {
-        match &self {
-            manifest::ConfigParam::Int { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Int(*default),
-            },
-            manifest::ConfigParam::Float { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Float(*default),
-            },
-            manifest::ConfigParam::Bool { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Bool(*default),
-            },
-            manifest::ConfigParam::String { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::String(default.to_string()),
-            },
-            manifest::ConfigParam::Color { name, default, .. } => ParameterValue {
-                name: name.to_string(),
-                value: TypedValue::Color(*default),
-            },
-        }
     }
 }
 
@@ -314,7 +232,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     script_file: &Path,
-    parameter_values: &mut HashMap<String, ParameterValue>,
+    parameter_values: &mut BTreeMap<String, PlainParameter>,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(script_file) {
@@ -404,7 +322,7 @@ fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
 
     lua_ctx.load(&path_spec).exec().unwrap();
 
-    let mut config: HashMap<&str, &str> = HashMap::new();
+    let mut config: BTreeMap<&str, &str> = BTreeMap::new();
     config.insert("daemon_name", "eruption");
     config.insert("daemon_version", env!("CARGO_PKG_VERSION"));
     config.insert("api_level", env!("CARGO_PKG_VERSION"));
@@ -420,13 +338,12 @@ fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
 
 fn set_parameter_values<'a, I>(lua_ctx: &Lua, parameter_values: I) -> mlua::Result<()>
 where
-    I: Iterator<Item = &'a ParameterValue>,
+    I: Iterator<Item = &'a PlainParameter>,
 {
     for parameter_value in parameter_values {
         debug!(
-            "Applying parameter {:?} = {}",
-            parameter_value.name,
-            parameter_value.get_value_string()
+            "Applying parameter {} = {}",
+            &parameter_value.name, &parameter_value.value
         );
         set_parameter_value(lua_ctx, parameter_value)?;
     }
@@ -434,7 +351,7 @@ where
     Ok(())
 }
 
-fn set_parameter_value(lua_ctx: &Lua, param: &ParameterValue) -> mlua::Result<()> {
+fn set_parameter_value(lua_ctx: &Lua, param: &PlainParameter) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
     match &param.value {
         TypedValue::Int(value) => globals.raw_set::<&str, i64>(&param.name, *value),
@@ -716,7 +633,7 @@ fn on_unload(call_helper: &mut RunningScriptCallHelper) -> Result<RunningScriptR
 
 fn on_apply_parameters(
     call_helper: &mut RunningScriptCallHelper,
-    parameter_values: Vec<ParameterValue>,
+    parameter_values: Vec<PlainParameter>,
 ) -> Result<RunningScriptResult> {
     if !call_helper.verify_handler_exists(FUNCTION_ON_APPLY_PARAMETER) {
         debug!(
@@ -745,7 +662,7 @@ fn on_apply_parameters(
                     .map(|pv| pv.name.to_string())
                     .collect();
                 let called = call_helper.call(FUNCTION_ON_APPLY_PARAMETER, call_args);
-                if let Ok(_) = called {
+                if called.is_ok() {
                     // (the handler must exist, as we already verified it before updating Lua's global table)
                     debug!(
                         "Lua script {}: Successfully called {}",

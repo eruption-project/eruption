@@ -17,12 +17,11 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::path::{Path, PathBuf};
-use std::{fs, io};
-
 use nix::fcntl::{flock, open, FlockArg, OFlag};
 use nix::sys::stat::Mode;
 use nix::unistd::{ftruncate, getpid, write};
+use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use crate::constants;
 
@@ -32,6 +31,16 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum UtilError {
     #[error("File not found: {description}")]
     FileNotFound { description: String },
+
+    #[error("Read failed: {description}")]
+    FileReadError {
+        #[source]
+        source: io::Error,
+        description: String,
+    },
+
+    #[error("Not a file")]
+    NotAFile {},
 
     #[error("Write failed: {description}")]
     FileWriteError {
@@ -68,24 +77,53 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
     manifest_path
 }
 
-pub fn is_file_accessible<P: AsRef<Path>>(p: P) -> std::io::Result<String> {
-    fs::read_to_string(p)
-}
-
 pub fn file_exists<P: AsRef<Path>>(p: P) -> bool {
     p.as_ref().exists()
 }
 
-/// Checks whether a script file is readable
-#[allow(dead_code)]
-pub fn is_script_file_accessible(script_file: &Path) -> bool {
-    is_file_accessible(script_file).is_ok()
-}
+pub fn demand_file_is_accessible<P: AsRef<Path>>(p: P) -> Result<()> {
+    // Does the path exist?
+    let path = match fs::canonicalize(p) {
+        Ok(path) => path,
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not find file".to_owned(),
+            }
+            .into())
+        }
+    };
 
-/// Checks whether a script's manifest file is readable
-#[allow(dead_code)]
-pub fn is_manifest_file_accessible(script_file: &Path) -> bool {
-    fs::read_to_string(get_manifest_for(script_file)).is_ok()
+    // Is the metadata readable?
+    let metadata = match fs::metadata(&path) {
+        Ok(metadata) => metadata,
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not read metadata".to_owned(),
+            }
+            .into())
+        }
+    };
+
+    // Is the path a regular file?  (Symlinks will have been canonicalized to regular files.)
+    if !metadata.is_file() {
+        return Err(UtilError::NotAFile {}.into());
+    }
+
+    // Is the file readable?
+    match fs::File::open(&path) {
+        Err(e) => {
+            return Err(UtilError::FileReadError {
+                source: e,
+                description: "Could not open file".to_owned(),
+            }
+            .into())
+        }
+        _ => {}
+    };
+
+    Ok(())
 }
 
 /// write `data` to file `filename`
@@ -109,9 +147,13 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     let script_dirs = config
         .as_ref()
-        .unwrap()
-        .get::<Vec<String>>("global.script_dirs")
-        .unwrap_or_else(|_| vec![]);
+        .and_then(|c| {
+            Some(
+                c.get::<Vec<String>>("global.script_dirs")
+                    .unwrap_or_else(|_| vec![]),
+            )
+        })
+        .unwrap_or_else(|| vec![]);
 
     let mut script_dirs = script_dirs
         .iter()
@@ -134,24 +176,21 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
     let script_file = script_file.as_ref();
 
-    let mut result = Err(UtilError::FileNotFound {
+    for dir in get_script_dirs().iter() {
+        let script_path = dir.join(script_file);
+
+        if let Ok(metadata) = fs::metadata(&script_path) {
+            if metadata.is_file() {
+                return Ok(script_path);
+            }
+        }
+    }
+
+    Err(UtilError::FileNotFound {
         description: format!(
             "Could not find file in search path(s): {}",
             &script_file.display()
         ),
     }
-    .into());
-
-    'DIR_LOOP: for dir in get_script_dirs().iter() {
-        let script_path = dir.join(script_file);
-
-        if let Ok(metadata) = fs::metadata(&script_path) {
-            if metadata.is_file() {
-                result = Ok(script_path);
-                break 'DIR_LOOP;
-            }
-        }
-    }
-
-    result
+    .into())
 }

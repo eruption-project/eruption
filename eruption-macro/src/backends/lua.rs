@@ -63,7 +63,7 @@ impl super::Backend for LuaBackend {
 --
 -- AUTO GENERATED LUA SOURCE CODE FILE, DO NOT EDIT MANUALLY
 --
--- Created by: `eruption-keymap compile --keymap {}`
+-- Created by: `eruption-macro compile --keymap {}`
 -- Compiled at: {}
 
 ",

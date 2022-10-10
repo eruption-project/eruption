@@ -284,4 +284,7 @@ check:
 clean:
 	@cargo clean
 
-.PHONY: check clean all start stop install uninstall build
+test:
+	@cargo test
+
+.PHONY: check clean all start stop install uninstall build test

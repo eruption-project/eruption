@@ -48,10 +48,10 @@ mod dbus_client;
 mod device;
 mod error_log;
 mod logger;
-mod manifest;
 mod preferences;
 mod profiles;
 mod timers;
+mod scripting;
 mod ui;
 mod util;
 
