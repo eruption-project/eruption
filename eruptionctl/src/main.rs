@@ -20,7 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use color_eyre::Help;
+use color_eyre::{owo_colors, Help};
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
@@ -36,9 +36,7 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use manifest::GetAttr;
 use parking_lot::Mutex;
-use profiles::GetAttr as GetAttrProfile;
 use rust_embed::RustEmbed;
 use same_file::is_same_file;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -48,14 +46,14 @@ use std::{env, fs, thread};
 use std::{process, sync::Arc};
 
 use crate::color_scheme::{ColorScheme, PywalColorScheme};
-use crate::manifest::Manifest;
+use crate::scripting::manifest::Manifest;
 
 mod color_scheme;
 mod constants;
 mod dbus_client;
 mod device;
-mod manifest;
 mod profiles;
+mod scripting;
 mod util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -570,7 +568,7 @@ fn find_script_by_name(
 
     if load_script_if_file && script_path.is_some() {
         let script_path = script_path.clone()?;
-        if let Ok(script) = Manifest::new(&script_path) {
+        if let Ok(script) = Manifest::load(&script_path) {
             return Some(script);
         }
     }
@@ -1251,14 +1249,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             ProfilesSubcommands::Info { profile_name } => {
                 match util::match_profile_by_name(&profile_name) {
                     Ok(profile) => {
-                        let empty = HashMap::new();
                         println!(
                             "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n\n{:#?}",
                             profile.name,
                             profile.id,
                             profile.description,
                             profile.active_scripts,
-                            profile.config.as_ref().unwrap_or(&empty),
+                            profile.config,
                         );
                     }
                     Err(err) => eprintln!("{}", err),
@@ -1370,7 +1367,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         }
                     },
                 })
-                .filter_map(|script_file| match Manifest::new(&script_file) {
+                .filter_map(|script_file| match Manifest::load(&script_file) {
                     Ok(manifest) => Some(manifest),
                     Err(err) => {
                         eprintln!(
@@ -1396,28 +1393,34 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 println!("Profile parameters:\n");
 
-                let empty = HashMap::new();
-
                 for script in &scripts {
-                    let config = profile.config.as_ref().unwrap_or(&empty);
-                    let config_params = config.get(&script.name);
+                    let profile_script_parameters = profile.config.get_parameters(&script.name);
 
-                    if let Some(config_params) = config_params {
-                        for config in config_params.iter() {
-                            // read param value
-                            let value = if config.get_value() == config.get_default() {
-                                config.get_value().to_string().normal()
+                    if let Some(profile_script_parameters) = profile_script_parameters {
+                        for profile_parameter in profile_script_parameters.iter() {
+                            let default_value = profile_parameter.get_default();
+
+                            if let Some(default_value) = default_value {
+                                let value_string: ColoredString =
+                                    if profile_parameter.value == default_value {
+                                        profile_parameter.value.to_string().normal()
+                                    } else {
+                                        profile_parameter.value.to_string().bold()
+                                    };
+
+                                println!(
+                                    "\"{}\" {}: {} (default: {})",
+                                    &script.name,
+                                    &profile_parameter.name,
+                                    &value_string,
+                                    &default_value,
+                                );
                             } else {
-                                config.get_value().to_string().bold()
-                            };
-
-                            println!(
-                                "\"{}\" {}: {} (default: {})",
-                                &script.name,
-                                &config.get_name(),
-                                &value,
-                                &config.get_default(),
-                            );
+                                println!(
+                                    "\"{}\" {}: {}",
+                                    &script.name, &profile_parameter.name, &profile_parameter.value,
+                                );
+                            }
                         }
                     }
                 }
@@ -1428,18 +1431,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     println!("Available parameters:\n");
 
                     for script in &scripts {
-                        if let Some(config_params) = script.config.as_ref() {
-                            for config in config_params.iter() {
-                                // read param defaults
-                                let value = config.get_default();
-
-                                println!(
-                                    "\"{}\" {} (default: {})",
-                                    &script.name,
-                                    &config.get_name(),
-                                    &value,
-                                );
-                            }
+                        for manifest_parameter in script.config.iter() {
+                            println!(
+                                "\"{}\" {} (default: {})",
+                                &script.name,
+                                &manifest_parameter.name,
+                                &manifest_parameter.get_default(),
+                            );
                         }
 
                         println!();
@@ -1479,45 +1477,32 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     let mut found_parameter = false;
 
-                    let empty = HashMap::new();
-                    let config = profile.config.as_ref().unwrap_or(&empty);
+                    if let Some(profile_parameter) =
+                        profile.config.get_parameter(&script.name, &parameter)
+                    {
+                        println!(
+                            "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                            profile.name, profile.id, profile.description, profile.active_scripts,
+                        );
 
-                    if let Some(config) = config.get(&script.name) {
-                        let config_param = config
-                            .iter()
-                            .find(|config_param| config_param.get_name() == &parameter);
-                        if let Some(config_param) = config_param {
-                            println!(
-                                "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                                profile.name,
-                                profile.id,
-                                profile.description,
-                                profile.active_scripts,
-                            );
+                        // read param value
+                        println!(
+                            "\"{}\" {} {}",
+                            &script.name,
+                            &profile_parameter.name,
+                            owo_colors::OwoColorize::bold(&profile_parameter.value)
+                        );
 
-                            // read param value
-                            println!(
-                                "\"{}\" {} {}",
-                                &script.name,
-                                &config_param.get_name(),
-                                &config_param.get_value().bold(),
-                            );
-
-                            found_parameter = true;
-                        }
+                        found_parameter = true;
                     }
 
                     // Not all script manifest parameters need be listed in the profile
                     if !found_parameter {
-                        let what = script.config.unwrap_or_default();
-                        let config_param = what
-                            .iter()
-                            .find(|config_param| config_param.get_name() == &parameter);
-                        match config_param {
+                        match script.config.get_parameter(&parameter) {
                             Some(config_param) => println!(
                                 "\"{}\" {}; default: {}",
                                 &script.name,
-                                &config_param.get_name().bold(),
+                                &config_param.name.bold(),
                                 &config_param.get_default()
                             ),
                             None => println!("No parameter found."),
@@ -1527,11 +1512,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     // list parameters from the specified script
                     println!("Dumping all parameters from the specified script:\n");
 
-                    for param in script.config.unwrap_or_default() {
+                    for param in script.config.iter() {
                         println!(
                             "\"{}\" {}; default: {}",
                             &script.name,
-                            &param.get_name().bold(),
+                            &param.name.bold(),
                             &param.get_default()
                         );
                     }

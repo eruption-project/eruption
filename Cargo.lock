@@ -985,6 +985,7 @@ dependencies = [
  "hotwatch",
  "i18n-embed",
  "icecream",
+ "indexmap",
  "itertools 0.10.5",
  "lazy_static",
  "libc",
@@ -1158,6 +1159,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
+ "indexmap",
  "itertools 0.10.5",
  "lazy_static",
  "libc",
@@ -1538,6 +1540,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
+ "indexmap",
  "lazy_static",
  "libc",
  "log",
@@ -2373,6 +2376,7 @@ checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
 dependencies = [
  "autocfg",
  "hashbrown",
+ "serde",
 ]
 
 [[package]]

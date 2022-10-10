@@ -1,1 +1,0 @@
-../../eruption/src/scripting/manifest.rs

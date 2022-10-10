@@ -71,6 +71,7 @@ udev = "0.6.3"
 evdev-rs = "0.6.0"
 hexdump = "0.1.1"
 byteorder = "1.4.3"
+indexmap = { version = "1.9.1", features = ["serde"] }
 itertools = "0.10.5"
 rayon = "1.5.3"
 lazy_static = "1.4.0"
