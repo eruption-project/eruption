@@ -24,7 +24,7 @@ use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::fs;
@@ -232,7 +232,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
 /// Initializes a lua environment, loads the script and executes it
 pub fn run_script(
     script_file: &Path,
-    parameter_values: &mut HashMap<String, PlainParameter>,
+    parameter_values: &mut BTreeMap<String, PlainParameter>,
     rx: &Receiver<Message>,
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(script_file) {
@@ -322,7 +322,7 @@ fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
 
     lua_ctx.load(&path_spec).exec().unwrap();
 
-    let mut config: HashMap<&str, &str> = HashMap::new();
+    let mut config: BTreeMap<&str, &str> = BTreeMap::new();
     config.insert("daemon_name", "eruption");
     config.insert("daemon_version", env!("CARGO_PKG_VERSION"));
     config.insert("api_level", env!("CARGO_PKG_VERSION"));

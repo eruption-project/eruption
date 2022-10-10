@@ -21,7 +21,7 @@ use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
 use log::{debug, error, info, trace, warn};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -705,7 +705,7 @@ pub fn spawn_lua_thread(
     ));
 
     let script_file = script_file.to_path_buf();
-    let mut parameter_values: HashMap<String, PlainParameter> = parameters
+    let mut parameter_values: BTreeMap<String, PlainParameter> = parameters
         .iter()
         .map(|pv| (pv.name.clone(), pv.clone()))
         .collect();

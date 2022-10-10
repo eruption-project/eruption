@@ -20,8 +20,8 @@
 use serde::{
     de, ser::SerializeMap, ser::SerializeSeq, Deserialize, Deserializer, Serialize, Serializer,
 };
-use std::collections::hash_map::{self, Entry};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::btree_map::{self, Entry};
+use std::collections::BTreeMap;
 use std::fmt;
 use std::marker::PhantomData;
 
@@ -154,17 +154,17 @@ impl ToPlainParameter for ManifestParameter {
 // Parameter containers
 
 #[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
-pub struct ManifestConfiguration(HashMap<String, ManifestParameter>); // key is parameter name
+pub struct ManifestConfiguration(BTreeMap<String, ManifestParameter>); // key is parameter name
 
 #[derive(Default, Deserialize, Clone, PartialEq)] // Serialize implemented below
-pub struct ProfileConfiguration(HashMap<String, ProfileScriptParameters>); // key is manifest name
+pub struct ProfileConfiguration(BTreeMap<String, ProfileScriptParameters>); // key is manifest name
 #[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
-pub struct ProfileScriptParameters(HashMap<String, ProfileParameter>); // key is parameter name
+pub struct ProfileScriptParameters(BTreeMap<String, ProfileParameter>); // key is parameter name
 
 #[allow(dead_code)]
 impl ManifestConfiguration {
     pub fn new() -> Self {
-        Self(HashMap::new())
+        Self(BTreeMap::new())
     }
 
     pub fn set_parameter(&mut self, parameter: ManifestParameter) {
@@ -175,7 +175,7 @@ impl ManifestConfiguration {
         self.0.get(parameter_name)
     }
 
-    pub fn iter(&self) -> hash_map::Values<String, ManifestParameter> {
+    pub fn iter(&self) -> btree_map::Values<String, ManifestParameter> {
         self.0.values()
     }
 }
@@ -183,7 +183,7 @@ impl ManifestConfiguration {
 #[allow(dead_code)]
 impl ProfileConfiguration {
     pub fn new() -> Self {
-        Self(HashMap::new())
+        Self(BTreeMap::new())
     }
 
     pub fn set_parameter(&mut self, script_name: &str, parameter: ProfileParameter) {
@@ -238,7 +238,7 @@ impl ProfileConfiguration {
 #[allow(dead_code)]
 impl ProfileScriptParameters {
     fn new() -> Self {
-        Self(HashMap::new())
+        Self(BTreeMap::new())
     }
 
     pub fn set_parameter(&mut self, parameter: ProfileParameter) {
@@ -253,7 +253,7 @@ impl ProfileScriptParameters {
         self.0.get_mut(parameter_name)
     }
 
-    pub fn iter(&self) -> hash_map::Values<String, ProfileParameter> {
+    pub fn iter(&self) -> btree_map::Values<String, ProfileParameter> {
         self.0.values()
     }
 }
@@ -276,20 +276,20 @@ impl fmt::Debug for ProfileScriptParameters {
     }
 }
 
-impl From<HashMap<String, ManifestParameter>> for ManifestConfiguration {
-    fn from(map: HashMap<String, ManifestParameter>) -> Self {
+impl From<BTreeMap<String, ManifestParameter>> for ManifestConfiguration {
+    fn from(map: BTreeMap<String, ManifestParameter>) -> Self {
         Self(map)
     }
 }
 
-impl From<HashMap<String, ProfileScriptParameters>> for ProfileConfiguration {
-    fn from(map: HashMap<String, ProfileScriptParameters>) -> Self {
+impl From<BTreeMap<String, ProfileScriptParameters>> for ProfileConfiguration {
+    fn from(map: BTreeMap<String, ProfileScriptParameters>) -> Self {
         Self(map)
     }
 }
 
-impl From<HashMap<String, ProfileParameter>> for ProfileScriptParameters {
-    fn from(map: HashMap<String, ProfileParameter>) -> Self {
+impl From<BTreeMap<String, ProfileParameter>> for ProfileScriptParameters {
+    fn from(map: BTreeMap<String, ProfileParameter>) -> Self {
         Self(map)
     }
 }
@@ -302,7 +302,7 @@ impl<const N: usize> From<[ManifestParameter; N]> for ManifestConfiguration {
 
 impl<const N: usize> From<[(String, ProfileScriptParameters); N]> for ProfileConfiguration {
     fn from(arr: [(String, ProfileScriptParameters); N]) -> Self {
-        Self(HashMap::from(arr))
+        Self(BTreeMap::from(arr))
     }
 }
 
@@ -341,7 +341,7 @@ impl Serialize for ProfileConfiguration {
         let mut sorted = BTreeMap::new();
         sorted.extend(&self.0);
 
-        for entry in sorted {
+        for entry in sorted.iter() {
             map.serialize_entry(entry.0, entry.1)?;
         }
         map.end()
@@ -404,7 +404,7 @@ impl GetStringKey for ProfileParameter {
 
 struct MapAsListVisitor<'de, Parent, Child>
 where
-    Parent: From<HashMap<String, Child>>,
+    Parent: From<BTreeMap<String, Child>>,
     Child: GetStringKey + Deserialize<'de>,
 {
     parent: PhantomData<Parent>,
@@ -413,7 +413,7 @@ where
 
 impl<'de, Parent, Child> MapAsListVisitor<'de, Parent, Child>
 where
-    Parent: From<HashMap<String, Child>>,
+    Parent: From<BTreeMap<String, Child>>,
     Child: GetStringKey + Deserialize<'de>,
 {
     fn new() -> MapAsListVisitor<'de, Parent, Child> {
@@ -426,7 +426,7 @@ where
 
 impl<'de, Parent, Child> de::Visitor<'de> for MapAsListVisitor<'de, Parent, Child>
 where
-    Parent: From<HashMap<String, Child>>,
+    Parent: From<BTreeMap<String, Child>>,
     Child: GetStringKey + Deserialize<'de>,
 {
     type Value = Parent;
@@ -439,7 +439,7 @@ where
     where
         A: de::SeqAccess<'de>,
     {
-        let mut map = HashMap::with_capacity(seq.size_hint().unwrap_or(0));
+        let mut map = BTreeMap::new();
 
         while let Some(param) = seq.next_element::<Child>()? {
             map.insert(param.get_key(), param);

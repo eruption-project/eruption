@@ -20,12 +20,13 @@
 #![allow(dead_code)]
 
 use crate::constants;
+use indexmap::IndexMap;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::{collections::HashMap, ffi::OsStr};
+use std::{collections::BTreeMap, ffi::OsStr};
 use uuid::Uuid;
 
 use crate::scripting::manifest::Manifest;
@@ -89,7 +90,7 @@ pub struct Profile {
     pub config: ProfileConfiguration,
 
     #[serde(skip)]
-    pub manifests: HashMap<String, Manifest>,
+    pub manifests: IndexMap<String, Manifest>,
 }
 
 macro_rules! get_default_value {
@@ -163,7 +164,7 @@ impl Profile {
                 "/usr/share/eruption/scripts/lib/failsafe.lua",
             )],
             config: ProfileConfiguration::new(),
-            manifests: HashMap::new(),
+            manifests: IndexMap::new(),
         };
 
         if let Err(err) = profile.load_manifests() {
@@ -301,7 +302,7 @@ impl Profile {
         let path = self.profile_file.with_extension("profile.state");
         let json_string = fs::read_to_string(&path)?;
 
-        let map: HashMap<String, ProfileScriptParameters> = serde_json::from_str(&json_string)?;
+        let map: BTreeMap<String, ProfileScriptParameters> = serde_json::from_str(&json_string)?;
 
         self.config = ProfileConfiguration::from(map);
 
@@ -358,7 +359,7 @@ impl Default for Profile {
             description: "Auto-generated profile".into(),
             active_scripts: vec![PathBuf::from(constants::DEFAULT_EFFECT_SCRIPT)],
             config: ProfileConfiguration::new(),
-            manifests: HashMap::new(),
+            manifests: IndexMap::new(),
         }
     }
 }
