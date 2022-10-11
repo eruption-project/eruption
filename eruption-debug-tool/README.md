@@ -118,7 +118,30 @@ Setting LEDs from supplied map...
 ### eruption-debug-tool
 
 ```shell
-$ eruption-debug-tool --help
+$ eruption-debug-tool
+
+Eruption is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Eruption is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) 2019-2022, The Eruption Development Team
+
+
+ Please stop the Eruption daemon prior to running this tool:
+ $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
+
+ You can re-enable Eruption with this command afterwards:
+ $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
+ 
 A CLI utility to debug USB HID devices
 
 Usage: eruption-debug-tool [OPTIONS] <COMMAND>
@@ -141,4 +164,6 @@ Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
   -h, --help        Print help information
   -V, --version     Print version information
+
+
 ```
