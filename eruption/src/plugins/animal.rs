@@ -912,7 +912,7 @@ mod ternimal {
                 thickness += self.coefficients[4 * i + 1]
                     * (PI
                         * ((self.coefficients[4 * i + 2] * offset)
-                            + (self.coefficients[4 * i + 3] * (self.time as f64))
+                            + (self.coefficients[4 * i + 3] * self.time)
                             + self.coefficients[4 * i + 4]))
                         .sin();
             }

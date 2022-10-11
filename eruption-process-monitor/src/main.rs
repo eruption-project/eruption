@@ -633,19 +633,19 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
             let slot_proxy = conn.with_proxy(
                 "org.eruption",
                 "/org/eruption/slot",
-                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
             );
 
             let profile_proxy = conn.with_proxy(
                 "org.eruption",
                 "/org/eruption/profile",
-                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
             );
 
             let config_proxy = conn.with_proxy(
                 "org.eruption",
                 "/org/eruption/config",
-                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+                Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
             );
 
             let tx = dbus_event_tx.clone();

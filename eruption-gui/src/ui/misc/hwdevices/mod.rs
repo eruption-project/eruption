@@ -37,7 +37,7 @@ pub fn get_misc_devices(device_handle: u64) -> Result<Box<dyn MiscDevice>> {
 
     match dbus_client::get_managed_devices()?
         .2
-        .get(device_handle as usize - (devices.0.len() + devices.1.len()) as usize)
+        .get(device_handle as usize - (devices.0.len() + devices.1.len()))
     {
         Some(device) => match device {
             // ROCCAT/Turtle Beach Elo 7.1 Air
