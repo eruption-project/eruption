@@ -30,7 +30,6 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
-use std::path::Path;
 use std::{
     env,
     path::PathBuf,
@@ -39,7 +38,8 @@ use std::{
         Arc,
     },
 };
-use walkdir::WalkDir;
+
+use crate::lua_introspection::LuaSyntaxIntrospection;
 
 // mod assistants;
 mod constants;
@@ -101,7 +101,6 @@ lazy_static! {
     static ref LIST_ABOUT: String = tr!("list-about");
     // static ref MAPPING_ABOUT: String = tr!("mapping-about");
     // static ref SHOW_ABOUT: String = tr!("show-about");
-    // static ref MACROS_ABOUT: String = tr!("macros-about");
     // static ref EVENTS_ABOUT: String = tr!("events-about");
     static ref COMPILE_ABOUT: String = tr!("compile-about");
     static ref MACRO_CREATE_ABOUT: String = tr!("macro-create-about");
@@ -129,9 +128,12 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    /// List all available macros
+    /// Show a list of available macros in a Lua file
     #[clap(about(LIST_ABOUT.as_str()), display_order = 0)]
-    List,
+    List {
+        #[clap(required = false, short, long, default_value = "user-macros.lua")]
+        lua_path: PathBuf,
+    },
 
     /// Record a key sequence and save it as a Lua function
     #[clap(about(RECORD_ABOUT.as_str()), display_order = 1)]
@@ -304,29 +306,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     let opts = Options::parse();
     match opts.command {
-        Subcommands::List {} => {
-            let path = Path::new(constants::DEFAULT_SCRIPT_DIR);
-
-            for entry in WalkDir::new(path).follow_links(true).sort_by_file_name() {
-                let entry = entry?;
-
-                // skip directories and the README file
-                if !entry.path().is_file() || entry.path().ends_with("README") {
-                    continue;
-                }
-
-                if entry
-                    .path()
-                    .extension()
-                    .iter()
-                    .any(|e| e.eq_ignore_ascii_case("lua.meta"))
-                {
-                    // let table = NativeBackend::from_file(entry.path())?;
-                    // println!("{}: {}", entry.path().display(), table.description().bold());
-                }
-            }
-        }
-
         /* Subcommands::Assistant { keymap: _ } => {
             let mut assistants = assistants::register_assistants();
 
@@ -387,6 +366,24 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             if let Some(_description) = description {
             } else {
+            }
+        }
+
+        Subcommands::List { lua_path } => {
+            let path = if lua_path.components().count() > 1 {
+                lua_path
+            } else {
+                PathBuf::from(constants::DEFAULT_SCRIPT_DIR)
+                    .join("lib/macros/")
+                    .join(lua_path)
+            };
+
+            println!("{} {}\n", tr!("functions-in-file"), &path.display().bold());
+
+            let lua_file = LuaSyntaxIntrospection::new_from_file(&path)?;
+
+            for function in lua_file.functions() {
+                println!("{}", function.name());
             }
         }
 
