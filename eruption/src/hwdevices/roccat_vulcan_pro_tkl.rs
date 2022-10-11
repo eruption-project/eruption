@@ -26,7 +26,7 @@ use std::time::Duration;
 use std::{any::Any, mem::size_of};
 use std::{sync::Arc, thread};
 
-use crate::constants;
+use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice,
@@ -322,7 +322,7 @@ impl RoccatVulcanProTKL {
             //     }
             // }
 
-            thread::sleep(Duration::from_millis(70));
+            thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }

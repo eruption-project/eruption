@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
 
+use crate::constants::DEVICE_SETTLE_MILLIS;
 #[allow(unused)]
 use crate::{constants, eprintln_v, println_v};
 
@@ -302,7 +303,7 @@ impl DeviceTrait for RoccatKoneProAir {
                 Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
             }
 
-            thread::sleep(Duration::from_millis(70));
+            thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }
@@ -404,7 +405,7 @@ impl DeviceTrait for RoccatKoneProAir {
                     _ => { /* do nothing */ }
                 }
 
-                thread::sleep(Duration::from_millis(15));
+                thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
             }
 
             Ok(DeviceStatus(table))
