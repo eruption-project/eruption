@@ -374,9 +374,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.11"
+version = "4.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ed45cc2c62a3eff523e718d8576ba762c83a3146151093283ac62ae11933a73"
+checksum = "385007cbbed899260395a4107435fead4cad80684461b3cc78238bdcb0bad58f"
 dependencies = [
  "atty",
  "bitflags",
@@ -393,7 +393,7 @@ version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11cba7abac9b56dfe2f035098cdb3a43946f276e6db83b72c4e692343f9aab9a"
 dependencies = [
- "clap 4.0.11",
+ "clap 4.0.12",
 ]
 
 [[package]]
@@ -921,7 +921,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "color-eyre",
  "colorgrad",
  "config",
@@ -934,7 +934,6 @@ dependencies = [
  "evdev-rs",
  "eyre",
  "flume",
- "futures",
  "hexdump",
  "hidapi",
  "hotwatch",
@@ -984,17 +983,15 @@ dependencies = [
 name = "eruption-audio-proxy"
 version = "0.0.12"
 dependencies = [
- "bincode",
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "ctrlc",
  "eyre",
  "flume",
- "hexdump",
  "hound",
  "i18n-embed",
  "i18n-embed-fl",
@@ -1011,7 +1008,6 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
- "rayon",
  "rust-embed",
  "rust-pulsectl",
  "serde",
@@ -1027,7 +1023,7 @@ name = "eruption-cmd"
 version = "0.0.5"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1057,7 +1053,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1094,10 +1090,8 @@ dependencies = [
  "cairo-rs",
  "cfg-if 1.0.0",
  "color-eyre",
- "colored",
  "config",
  "dbus",
- "dbus-tokio",
  "eyre",
  "gdk",
  "gdk-pixbuf",
@@ -1114,11 +1108,9 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "indexmap",
- "itertools 0.10.5",
  "lazy_static",
  "libc",
  "log",
- "nix 0.25.0",
  "palette",
  "pango",
  "pangocairo",
@@ -1126,13 +1118,11 @@ dependencies = [
  "paste 1.0.9",
  "pretty_assertions",
  "pretty_env_logger",
- "rayon",
  "rust-embed",
  "serde",
  "serde_json",
  "sourceview4",
  "thiserror",
- "tokio",
  "toml",
  "unic-langid",
  "uuid",
@@ -1144,7 +1134,7 @@ name = "eruption-hotplug-helper"
 version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "eruption-sdk",
@@ -1173,7 +1163,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1209,22 +1199,18 @@ dependencies = [
 name = "eruption-keymap"
 version = "0.0.6"
 dependencies = [
- "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
  "comfy-table",
  "ctrlc",
  "dbus",
- "dbus-tokio",
  "evdev-rs",
  "eyre",
  "flume",
- "hexdump",
- "hidapi",
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
@@ -1249,7 +1235,6 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
- "udev",
  "unic-langid",
  "walkdir",
 ]
@@ -1261,7 +1246,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1308,7 +1293,7 @@ name = "eruption-netfx"
 version = "0.1.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1324,8 +1309,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "memmap2",
- "nix 0.25.0",
  "num-traits",
  "parking_lot",
  "pretty_assertions",
@@ -1350,13 +1333,12 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "config",
  "ctrlc",
  "dbus",
- "dbus-tokio",
  "dbus-tree",
  "dyn-clonable",
  "dyn-clone",
@@ -1397,11 +1379,8 @@ dependencies = [
  "cfg-if 1.0.0",
  "color-eyre",
  "eyre",
- "flume",
- "futures",
  "libc",
  "log",
- "nix 0.25.0",
  "parking_lot",
  "prost",
  "prost-build",
@@ -1417,7 +1396,7 @@ version = "0.0.9"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1449,7 +1428,7 @@ name = "eruption-watchdog"
 version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -1478,7 +1457,7 @@ name = "eruptionctl"
 version = "0.0.25"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1742,28 +1721,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
 
 [[package]]
-name = "futures"
-version = "0.3.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f21eda599937fba36daeb58a22e8f5cee2d14c4a17b5b7739c7c8e5e3b8230c"
-dependencies = [
- "futures-channel",
- "futures-core",
- "futures-executor",
- "futures-io",
- "futures-sink",
- "futures-task",
- "futures-util",
-]
-
-[[package]]
 name = "futures-channel"
 version = "0.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30bdd20c28fadd505d0fd6712cdfcb0d4b5648baf45faef7f852afb2399bb050"
 dependencies = [
  "futures-core",
- "futures-sink",
 ]
 
 [[package]]
@@ -1790,17 +1753,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbf4d2a7a308fd4578637c0b17c7e1c7ba127b8f6ba00b29f717e9655d85eb68"
 
 [[package]]
-name = "futures-macro"
-version = "0.3.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42cd15d1c7456c04dbdf7e88bcd69760d74f3a798d6444e16974b505b0e62f17"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "futures-sink"
 version = "0.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1818,13 +1770,8 @@ version = "0.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44fb6cb1be61cc1d2e43b262516aafcf63b241cffdb1d3fa115f91d9c7b09c90"
 dependencies = [
- "futures-channel",
  "futures-core",
- "futures-io",
- "futures-macro",
- "futures-sink",
  "futures-task",
- "memchr",
  "pin-project-lite",
  "pin-utils",
  "slab",
@@ -2476,9 +2423,9 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "libc"
-version = "0.2.134"
+version = "0.2.135"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "329c933548736bc49fd575ee68c89e8be4d260064184389a5b77517cddd99ffb"
+checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
 
 [[package]]
 name = "libdbus-sys"
@@ -2819,9 +2766,9 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10277581090f5cb7ecf814bc611152ce4db6dc8deffcaa08e24ed4c5197d9186"
+checksum = "86b8fdab73969938b10159fb7e4fee45e96f386baadd8eaa6150e3161f28dfe2"
 dependencies = [
  "bstr",
  "cc",
@@ -2839,9 +2786,9 @@ checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 
 [[package]]
 name = "nalgebra"
-version = "0.31.1"
+version = "0.31.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9e0a04ce089f9401aac565c740ed30c46291260f27d4911fdbaa6ca65fa3044"
+checksum = "da388c517f7c8540918d00f7aed9864c1ead01a14a0cc21513b171857119de12"
 dependencies = [
  "approx",
  "matrixmultiply",
@@ -3960,9 +3907,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.85"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e55a28e3aaef9d5ce0506d0a14dbba8054ddc7e499ef522dd8b26859ec9d4a44"
+checksum = "41feea4228a6f1cd09ec7a3593a682276702cd67b5273544757dae23c096f074"
 dependencies = [
  "itoa",
  "ryu",
@@ -4094,7 +4041,7 @@ name = "simple-example-01"
 version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.11",
+ "clap 4.0.12",
  "color-eyre",
  "eruption-sdk",
  "eyre",
