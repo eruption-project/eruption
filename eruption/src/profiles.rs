@@ -643,7 +643,7 @@ mod tests {
             .build()
             .unwrap();
 
-        *crate::CONFIG.lock() = Some(config.clone());
+        *crate::CONFIG.lock() = Some(config);
 
         let profile = super::Profile::load_fully(&profile_path);
         let profile = match profile {
@@ -655,7 +655,7 @@ mod tests {
                     profile_path.display(),
                     err
                 );
-                return Err(err.into());
+                return Err(err);
             }
         };
 

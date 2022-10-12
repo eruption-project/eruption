@@ -106,7 +106,7 @@ fn update_profile_and_state_file(
     let manifest = profile
         .manifests
         .values()
-        .find(|m| is_same_file(&m.script_file, &script_path));
+        .find(|m| is_same_file(&m.script_file, script_path));
     let manifest = match manifest {
         Some(manifest) => manifest,
         None => {

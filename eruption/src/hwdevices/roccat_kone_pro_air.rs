@@ -22,12 +22,13 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
 use log::*;
 use parking_lot::{Mutex, RwLock};
+use std::time::Duration;
 // use std::sync::atomic::Ordering;
-use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::{any::Any, thread};
 
-use crate::constants;
+use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
@@ -255,6 +256,8 @@ impl RoccatKoneProAir {
 
                 Err(_) => { /* do nothing */ }
             }
+
+            thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }
@@ -507,6 +510,7 @@ impl DeviceInfoTrait for RoccatKoneProAir {
             } */
 
             let result = super::DeviceInfo::new(0_i32);
+
             Ok(result)
         }
     }

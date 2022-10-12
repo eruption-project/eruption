@@ -20,7 +20,7 @@
 
 about = Ein Makro Werkzeug für Eruption
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
-list-about = Listet alle verfügbaren Makros auf
+list-about = Zeigt eine Liste der verfügbaren Makros in einer Lua Datei
 record-about = Zeichnet eine Tastensequenz auf und speichert sie als Makro
 compile-about = Übersetzt Makros zu Lua Code und macht sie für Eruption verfügbar
 description-about = Zeigt oder setzt die Beschreibung eines Makros
@@ -33,6 +33,8 @@ macro-disable-about = Ein vorhandenes Makro deaktivieren
 compiling = Übersetze Makros: 
 
 success = Erfolgreich
+
+functions-in-file = Funktionen in Lua Datei: 
 
 action-not-implemented = Diese Aktion ist nicht implementiert
 action-disabled = Diese Aktion ist deaktiviert

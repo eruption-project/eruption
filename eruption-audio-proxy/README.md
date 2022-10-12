@@ -7,7 +7,22 @@ Additionally the `eruption-audio-proxy` can play back sound effects, triggered b
 ### eruption-audio-proxy
 
 ```shell
-$ eruption-audio-proxy --help
+$ eruption-audio-proxy
+
+Eruption is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Eruption is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (c) 2019-2022, The Eruption Development Team
 
 Audio proxy daemon for the Eruption Linux user-mode driver
 
@@ -23,4 +38,5 @@ Options:
   -c, --config <CONFIG>  Sets the configuration file to use
   -h, --help             Print help information
   -V, --version          Print version information
+
 ```

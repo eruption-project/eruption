@@ -24,7 +24,7 @@ members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "erup
 default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool",
     "eruption-util", "eruption-hotplug-helper", "eruption-gui", "eruption-cmd",
     "eruption-keymap", "eruption-macro", "eruption-audio-proxy", "eruption-process-monitor"]
-#resolver = "2"
+resolver = "2"
 
 [profile.dev]
 opt-level = 0

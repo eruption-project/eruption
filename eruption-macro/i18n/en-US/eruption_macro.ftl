@@ -20,7 +20,7 @@
 
 about = A CLI macro utility for Eruption
 verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
-list-about = List all available macros
+list-about = Show a list of available macros in a Lua file
 record-about = Record a key sequence and save it as a macro
 compile-about = Compile macros to Lua code and make them available to Eruption
 description-about = Show or set the description of a specified macro
@@ -33,6 +33,8 @@ macro-disable-about = Disable an existing macro
 compiling = Compiling macros: 
 
 success = Success
+
+functions-in-file = Functions in Lua file: 
 
 action-not-implemented = This action is not implemented
 action-disabled = This action is disabled
