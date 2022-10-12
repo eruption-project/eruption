@@ -1,10 +1,14 @@
 .\" Manpage for Eruption.
 .TH man 1 "Oct 2022" "0.0.6" "eruption-keymap man page"
 .SH NAME
- eruption-keymap - A CLI keymap editor for Eruption
+  eruption-keymap - A CLI keymap editor for Eruption
 .SH SYNOPSIS
+.BR
 
-Usage: eruption-keymap [OPTIONS] <COMMAND>
+  Usage: eruption-keymap [OPTIONS] <COMMAND>
+
+.SH DESCRIPTION
+.BR
 
 Commands:
   list         List all available keymaps
@@ -21,6 +25,37 @@ Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
   -h, --help        Print help information
   -V, --version     Print version information
+
+.SH EXAMPLES
+.BR
+
+  eruption-keymap list
+
+  eruption-keymap show
+
+  sudo eruption-keymap mapping add key-up:KEY_A event:KEY_X
+
+  sudo eruption-keymap mapping add key-up:KEY_A call:easyshift_macro_1
+
+  sudo eruption-keymap mapping add es+key-up:KEY_A call:easyshift_macro_1
+  sudo eruption-keymap mapping add es+key-up:KEY_S call:easyshift_macro_2
+
+  eruption-keymap show
+  File: /usr/share/eruption/scripts/lib/keymaps/default.keymap
+  Description: Eruption default keymap
+  ╭───┬────────────────────────────────────────────────┬──────────────────────────────────────────┬─────────────┬──────────╮
+  │ # ┆ Source                                         ┆ Action                                   ┆ Description ┆ Flags    │
+  ╞═══╪════════════════════════════════════════════════╪══════════════════════════════════════════╪═════════════╪══════════╡
+  │ 1 ┆ Source: es+key-up: KEY_A (11) on layers: [ 1 ] ┆ Action: Call: function easyshift_macro_1 ┆ N.a.  ┆ Enabled  │
+  ├╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+  │ 2 ┆ Source: es+key-up: KEY_S (17) on layers: [ 1 ] ┆ Action: Call: function easyshift_macro_2 ┆ N.a.  ┆ Enabled  │
+  ├╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┤
+  │ 3 ┆ Source: key-up: KEY_A (11)                     ┆ Action: Call: function easyshift_macro_1 ┆ N.a.  ┆ Disabled │
+  ╰───┴────────────────────────────────────────────────┴──────────────────────────────────────────┴─────────────┴──────────╯
+
+  sudo eruption-keymap disable 3
+
+  sudo eruption-keymap compile
 
 
 .SH SEE ALSO
