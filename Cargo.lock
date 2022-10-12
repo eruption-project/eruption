@@ -1027,7 +1027,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "luajit-src",
  "mimalloc",
  "mlua",
  "nalgebra",
@@ -1305,7 +1304,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "luajit-src",
  "maplit",
  "mlua",
  "nix 0.25.0",
@@ -1354,7 +1352,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "luajit-src",
  "maplit",
  "mlua",
  "nix 0.25.0",
@@ -2830,6 +2827,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lua-src"
+version = "544.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "708ba3c844d5e9d38def4a09dd871c17c370f519b3c4b7261fbabe4a613a814c"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "luajit-src"
 version = "210.4.3+resty8384278"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3020,6 +3026,8 @@ checksum = "86b8fdab73969938b10159fb7e4fee45e96f386baadd8eaa6150e3161f28dfe2"
 dependencies = [
  "bstr",
  "cc",
+ "lua-src",
+ "luajit-src",
  "num-traits",
  "once_cell",
  "pkg-config",
