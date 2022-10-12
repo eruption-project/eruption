@@ -535,7 +535,7 @@ impl DeviceTrait for RoccatVulcan1xx {
     }
 
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
-        EV_TO_INDEX_ISO[((key as u8) as usize)] + 1
+        EV_TO_INDEX_ISO[((key as u8) as usize)].saturating_add(1)
     }
 
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
