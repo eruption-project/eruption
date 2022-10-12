@@ -40,7 +40,7 @@ backend-x11 = ["x11", "x11rb"]
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.12", features = ["derive"] }
+clap =  { version = "4.0.14", features = ["derive"] }
 clap_complete = "4.0.2"
 colored = "2.0.0"
 log = "0.4.17"
@@ -56,9 +56,9 @@ rayon = "1.5.3"
 jwalk = "0.6.0"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.21.2", features = ["full"] }
-#tracing = "0.1.26"
-#tracing-futures = "0.2.5"
-#tracing-subscriber = "0.2.20"
+# tracing = "0.1.26"
+# tracing-futures = "0.2.5"
+# tracing-subscriber = "0.2.20"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"

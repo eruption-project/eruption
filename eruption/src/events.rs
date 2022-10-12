@@ -238,7 +238,10 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                KEY_STATES.write()[index as usize] = true;
+                                KEY_STATES
+                                    .write()
+                                    .get_mut(index as usize)
+                                    .and_then(|v| Some(*v = true));
                             }
 
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
@@ -289,7 +292,10 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                KEY_STATES.write()[index as usize] = false;
+                                KEY_STATES
+                                    .write()
+                                    .get_mut(index as usize)
+                                    .and_then(|v| Some(*v = false));
                             }
 
                             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =

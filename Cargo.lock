@@ -410,9 +410,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.12"
+version = "4.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "385007cbbed899260395a4107435fead4cad80684461b3cc78238bdcb0bad58f"
+checksum = "6ea54a38e4bce14ff6931c72e5b3c43da7051df056913d4e7e1fcdb1c03df69d"
 dependencies = [
  "atty",
  "bitflags",
@@ -429,14 +429,14 @@ version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11cba7abac9b56dfe2f035098cdb3a43946f276e6db83b72c4e692343f9aab9a"
 dependencies = [
- "clap 4.0.12",
+ "clap 4.0.14",
 ]
 
 [[package]]
 name = "clap_derive"
-version = "4.0.10"
+version = "4.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db342ce9fda24fb191e2ed4e102055a4d381c1086a06630174cd8da8d5d917ce"
+checksum = "c42f169caba89a7d512b5418b09864543eeb4d497416c917d7137863bd2076ad"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -1003,7 +1003,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "color-eyre",
  "colorgrad",
  "config",
@@ -1067,17 +1067,15 @@ dependencies = [
 name = "eruption-audio-proxy"
 version = "0.0.12"
 dependencies = [
- "bincode",
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "ctrlc",
  "eyre",
  "flume",
- "hexdump",
  "hound",
  "i18n-embed",
  "i18n-embed-fl",
@@ -1094,7 +1092,6 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
- "rayon",
  "rust-embed",
  "rust-pulsectl",
  "serde",
@@ -1110,7 +1107,7 @@ name = "eruption-cmd"
 version = "0.0.5"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1140,7 +1137,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1177,10 +1174,8 @@ dependencies = [
  "cairo-rs",
  "cfg-if 1.0.0",
  "color-eyre",
- "colored",
  "config",
  "dbus",
- "dbus-tokio",
  "eyre",
  "gdk",
  "gdk-pixbuf",
@@ -1197,7 +1192,6 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "indexmap",
- "itertools 0.10.5",
  "lazy_static",
  "libc",
  "log",
@@ -1215,7 +1209,6 @@ dependencies = [
  "serde_json",
  "sourceview4",
  "thiserror",
- "tokio",
  "toml",
  "unic-langid",
  "uuid",
@@ -1227,7 +1220,7 @@ name = "eruption-hotplug-helper"
 version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "eruption-sdk",
@@ -1256,7 +1249,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1292,21 +1285,18 @@ dependencies = [
 name = "eruption-keymap"
 version = "0.0.6"
 dependencies = [
- "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
  "comfy-table",
  "ctrlc",
  "dbus",
- "dbus-tokio",
  "evdev-rs",
  "eyre",
  "flume",
- "hexdump",
  "hidapi",
  "i18n-embed",
  "i18n-embed-fl",
@@ -1332,7 +1322,6 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
- "udev",
  "unic-langid",
  "walkdir",
 ]
@@ -1344,7 +1333,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1391,7 +1380,7 @@ name = "eruption-netfx"
 version = "0.1.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1433,13 +1422,12 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "config",
  "ctrlc",
  "dbus",
- "dbus-tokio",
  "dbus-tree",
  "dyn-clonable",
  "dyn-clone",
@@ -1500,7 +1488,7 @@ version = "0.0.9"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -1532,7 +1520,7 @@ name = "eruption-watchdog"
 version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -1561,7 +1549,7 @@ name = "eruptionctl"
 version = "0.0.25"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -4362,7 +4350,7 @@ name = "simple-example-01"
 version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.0.12",
+ "clap 4.0.14",
  "color-eyre",
  "eruption-sdk",
  "eyre",

@@ -30,11 +30,29 @@ _eruption-macro() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruption-macro-command-$line[1]:"
         case $line[1] in
-            (add)
+            (list)
 _arguments "${_arguments_options[@]}" \
-'--description=[Specify a description for a rule]:DESCRIPTION: ' \
-'-e[Specify the enabled status of the newly added rule]' \
-'--enabled[Specify the enabled status of the newly added rule]' \
+'-l+[]:LUA_PATH:_files' \
+'--lua-path=[]:LUA_PATH:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(record)
+_arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':macro_name:' \
+'::description:' \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" \
+'--description=[Specify a description for a macro]:DESCRIPTION: ' \
+'-e[Specify the enabled status of the newly added macro]' \
+'--enabled[Specify the enabled status of the newly added macro]' \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':macro_code:' \
@@ -47,12 +65,22 @@ _arguments "${_arguments_options[@]}" \
 ':index:' \
 && ret=0
 ;;
-(record)
+(enable)
 _arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
 '-h[Print help information]' \
 '--help[Print help information]' \
-':macro_name:' \
-'::description:' \
+':index:' \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':index:' \
 && ret=0
 ;;
 (description)
@@ -62,6 +90,14 @@ _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
 '::description:' \
+&& ret=0
+;;
+(compile)
+_arguments "${_arguments_options[@]}" \
+'-l+[]:LUA_FILE:_files' \
+'--lua-file=[]:LUA_FILE:_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 && ret=0
 ;;
 (completions)
@@ -83,11 +119,7 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruption-macro-help-command-$line[1]:"
         case $line[1] in
-            (add)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(remove)
+            (list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -95,7 +127,27 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
+(create)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
 (description)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(compile)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -119,24 +171,28 @@ esac
 (( $+functions[_eruption-macro_commands] )) ||
 _eruption-macro_commands() {
     local commands; commands=(
-'add:Ein Makro hinzufügen' \
-'remove:Ein Makro entfernen' \
+'list:Show a list of available macros in a Lua file' \
 'record:Record a key sequence and save it as a macro' \
+'create:Create a new macro from a description' \
+'remove:Remove an existing macro' \
+'enable:Enable an existing macro' \
+'disable:Disable an existing macro' \
 'description:Show or set the description of a specified macro' \
+'compile:Compile macros to Lua code and make them available to Eruption' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruption-macro commands' commands "$@"
 }
-(( $+functions[_eruption-macro__add_commands] )) ||
-_eruption-macro__add_commands() {
+(( $+functions[_eruption-macro__compile_commands] )) ||
+_eruption-macro__compile_commands() {
     local commands; commands=()
-    _describe -t commands 'eruption-macro add commands' commands "$@"
+    _describe -t commands 'eruption-macro compile commands' commands "$@"
 }
-(( $+functions[_eruption-macro__help__add_commands] )) ||
-_eruption-macro__help__add_commands() {
+(( $+functions[_eruption-macro__help__compile_commands] )) ||
+_eruption-macro__help__compile_commands() {
     local commands; commands=()
-    _describe -t commands 'eruption-macro help add commands' commands "$@"
+    _describe -t commands 'eruption-macro help compile commands' commands "$@"
 }
 (( $+functions[_eruption-macro__completions_commands] )) ||
 _eruption-macro__completions_commands() {
@@ -148,6 +204,16 @@ _eruption-macro__help__completions_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-macro help completions commands' commands "$@"
 }
+(( $+functions[_eruption-macro__create_commands] )) ||
+_eruption-macro__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro create commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__create_commands] )) ||
+_eruption-macro__help__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help create commands' commands "$@"
+}
 (( $+functions[_eruption-macro__description_commands] )) ||
 _eruption-macro__description_commands() {
     local commands; commands=()
@@ -158,13 +224,37 @@ _eruption-macro__help__description_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-macro help description commands' commands "$@"
 }
+(( $+functions[_eruption-macro__disable_commands] )) ||
+_eruption-macro__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro disable commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__disable_commands] )) ||
+_eruption-macro__help__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help disable commands' commands "$@"
+}
+(( $+functions[_eruption-macro__enable_commands] )) ||
+_eruption-macro__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro enable commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__enable_commands] )) ||
+_eruption-macro__help__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help enable commands' commands "$@"
+}
 (( $+functions[_eruption-macro__help_commands] )) ||
 _eruption-macro__help_commands() {
     local commands; commands=(
-'add:Ein Makro hinzufügen' \
-'remove:Ein Makro entfernen' \
+'list:Show a list of available macros in a Lua file' \
 'record:Record a key sequence and save it as a macro' \
+'create:Create a new macro from a description' \
+'remove:Remove an existing macro' \
+'enable:Enable an existing macro' \
+'disable:Disable an existing macro' \
 'description:Show or set the description of a specified macro' \
+'compile:Compile macros to Lua code and make them available to Eruption' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -174,6 +264,16 @@ _eruption-macro__help_commands() {
 _eruption-macro__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-macro help help commands' commands "$@"
+}
+(( $+functions[_eruption-macro__help__list_commands] )) ||
+_eruption-macro__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro help list commands' commands "$@"
+}
+(( $+functions[_eruption-macro__list_commands] )) ||
+_eruption-macro__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-macro list commands' commands "$@"
 }
 (( $+functions[_eruption-macro__help__record_commands] )) ||
 _eruption-macro__help__record_commands() {

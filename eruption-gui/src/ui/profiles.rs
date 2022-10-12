@@ -754,7 +754,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
         for param in manifest.config.iter() {
             let value = profile_script_parameters.and_then(|p| p.get_parameter(&param.name));
 
-            let child = create_config_editor(&profile, &manifest, param, &value)?;
+            let child = create_config_editor(&profile, manifest, param, &value)?;
             expander_container.pack_start(&child, false, true, 0);
         }
     }

@@ -146,14 +146,9 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
     let config = crate::CONFIG.lock();
 
     let script_dirs = config
-        .as_ref()
-        .and_then(|c| {
-            Some(
-                c.get::<Vec<String>>("global.script_dirs")
-                    .unwrap_or_else(|_| vec![]),
-            )
-        })
-        .unwrap_or_else(|| vec![]);
+        .as_ref().map(|c| c.get::<Vec<String>>("global.script_dirs")
+                    .unwrap_or_else(|_| vec![]))
+        .unwrap_or_else(std::vec::Vec::new);
 
     let mut script_dirs = script_dirs
         .iter()

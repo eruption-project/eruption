@@ -722,23 +722,23 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                     //     _ => KeyboardHidEvent::Unknown,
                     // };
 
-                    // match event {
-                    //     KeyboardHidEvent::KeyDown { code } => {
-                    //         // update our internal representation of the keyboard state
-                    //         let index = self.hid_event_code_to_key_index(&code) as usize;
-                    //         crate::KEY_STATES.write()[index] = true;
-                    //     }
+                    /* match event {
+                        KeyboardHidEvent::KeyDown { code } => {
+                            // update our internal representation of the keyboard state
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.write()[index] = true;
+                        }
 
-                    //     KeyboardHidEvent::KeyUp { code } => {
-                    //         // update our internal representation of the keyboard state
-                    //         let index = self.hid_event_code_to_key_index(&code) as usize;
-                    //         crate::KEY_STATES.write()[index] = false;
-                    //     }
+                        KeyboardHidEvent::KeyUp { code } => {
+                            // update our internal representation of the keyboard state
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.write()[index] = false;
+                        }
 
-                    //     _ => { /* ignore other events */ }
-                    // }
+                        _ => { /* ignore other events */ }
+                    }
 
-                    // Ok(event)
+                    Ok(event) */
 
                     Ok(KeyboardHidEvent::Unknown)
                 }
@@ -749,7 +749,7 @@ impl KeyboardDeviceTrait for CorsairStrafe {
     }
 
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
-        EV_TO_INDEX_ISO[((key as u8) as usize)] + 1
+        EV_TO_INDEX_ISO[((key as u8) as usize)].saturating_add(1)
     }
 
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {

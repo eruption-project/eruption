@@ -40,7 +40,6 @@ profiling = ["coz"]
 mimalloc = { version = "0.1.29", optional = true, default-features = false }
 coz = { version = "0.1.3", optional = true }
 cfg-if = "1.0.0"
-#flume = { version = "0.10.12", features = ["async", "eventual-fairness"]}
 flume = { version = "0.10.14", features = ["async"] }
 futures = "0.3.24"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
@@ -63,7 +62,7 @@ serde_json = "1.0.86"
 tokio = { version = "1.21.2", features = ["full"] }
 socket2 = { version = "0.4.7", features = ["all"] }
 ctrlc = { version = "3.2.3", features = ["termination"] }
-clap = "4.0.12"
+clap = "4.0.14"
 hotwatch = "0.4.6"
 config = "0.13.2"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }

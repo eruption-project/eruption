@@ -184,7 +184,10 @@ pub fn spawn_keyboard_input_thread(
                             let index = keyboard_device.read().ev_key_to_key_index(*code) as usize;
 
                             {
-                                KEY_STATES.write()[index] = is_pressed;
+                                KEY_STATES
+                                    .write()
+                                    .get_mut(index)
+                                    .and_then(|v| Some(*v = is_pressed));
                             }
                         }
 
@@ -839,7 +842,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                             g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                             b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            a: fg.a as u8,
+                                            a: fg.a,
                                         };
 
                                         *background = color;
@@ -862,7 +865,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                             g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                             b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            a: fg.a as u8,
+                                            a: fg.a,
                                         };
 
                                         *background = color;

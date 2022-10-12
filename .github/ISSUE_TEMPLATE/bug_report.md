@@ -20,15 +20,15 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Logs**
-Please provide logs: `sudo journalctl -u eruption.service -b`
+Please provide full logs: `sudo journalctl -u eruption.service -b`
 
 **Screenshots (optional)**
 If applicable, add screenshots to help explain your problem.
 
 **Please complete the following information:**
 
- * Eruption version [e.g. 0.1.20]
- * Your device(s) (`sudo lsusb`)
+ * Eruption version [e.g. 0.3.0]
+ * List your device(s) (`sudo lsusb`)
 
 **Additional context**
 Add any other context about the problem here.

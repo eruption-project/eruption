@@ -24,17 +24,33 @@ set edit:completion:arg-completer[eruption-macro] = {|@words|
             cand --help 'Print help information'
             cand -V 'Print version information'
             cand --version 'Print version information'
-            cand add 'Ein Makro hinzufügen'
-            cand remove 'Ein Makro entfernen'
+            cand list 'Show a list of available macros in a Lua file'
             cand record 'Record a key sequence and save it as a macro'
+            cand create 'Create a new macro from a description'
+            cand remove 'Remove an existing macro'
+            cand enable 'Enable an existing macro'
+            cand disable 'Disable an existing macro'
             cand description 'Show or set the description of a specified macro'
+            cand compile 'Compile macros to Lua code and make them available to Eruption'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
-        &'eruption-macro;add'= {
-            cand --description 'Specify a description for a rule'
-            cand -e 'Specify the enabled status of the newly added rule'
-            cand --enabled 'Specify the enabled status of the newly added rule'
+        &'eruption-macro;list'= {
+            cand -l 'l'
+            cand --lua-path 'lua-path'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;record'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;create'= {
+            cand --description 'Specify a description for a macro'
+            cand -e 'Specify the enabled status of the newly added macro'
+            cand --enabled 'Specify the enabled status of the newly added macro'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
@@ -42,11 +58,25 @@ set edit:completion:arg-completer[eruption-macro] = {|@words|
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
-        &'eruption-macro;record'= {
+        &'eruption-macro;enable'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;disable'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
             cand -h 'Print help information'
             cand --help 'Print help information'
         }
         &'eruption-macro;description'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-macro;compile'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
             cand -h 'Print help information'
@@ -57,20 +87,32 @@ set edit:completion:arg-completer[eruption-macro] = {|@words|
             cand --help 'Print help information'
         }
         &'eruption-macro;help'= {
-            cand add 'Ein Makro hinzufügen'
-            cand remove 'Ein Makro entfernen'
+            cand list 'Show a list of available macros in a Lua file'
             cand record 'Record a key sequence and save it as a macro'
+            cand create 'Create a new macro from a description'
+            cand remove 'Remove an existing macro'
+            cand enable 'Enable an existing macro'
+            cand disable 'Disable an existing macro'
             cand description 'Show or set the description of a specified macro'
+            cand compile 'Compile macros to Lua code and make them available to Eruption'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
-        &'eruption-macro;help;add'= {
-        }
-        &'eruption-macro;help;remove'= {
+        &'eruption-macro;help;list'= {
         }
         &'eruption-macro;help;record'= {
         }
+        &'eruption-macro;help;create'= {
+        }
+        &'eruption-macro;help;remove'= {
+        }
+        &'eruption-macro;help;enable'= {
+        }
+        &'eruption-macro;help;disable'= {
+        }
         &'eruption-macro;help;description'= {
+        }
+        &'eruption-macro;help;compile'= {
         }
         &'eruption-macro;help;completions'= {
         }

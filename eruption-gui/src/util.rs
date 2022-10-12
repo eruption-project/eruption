@@ -278,7 +278,7 @@ pub fn set_brightness(brightness: i64) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let arg = Box::new(brightness as i64);
+    let arg = Box::new(brightness);
 
     proxy.set("org.eruption.Config", "Brightness", arg)?;
 

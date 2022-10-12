@@ -457,7 +457,7 @@ impl DeviceTrait for RoccatMagma {
     }
 
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
-        EV_TO_INDEX_ISO[((key as u8) as usize)] + 1
+        EV_TO_INDEX_ISO[((key as u8) as usize)].saturating_add(1)
     }
 
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
@@ -573,23 +573,23 @@ impl DeviceTrait for RoccatMagma {
                             0x01,
                             0x40,
                             // red
-                            zone1.r as u8,
-                            zone2.r as u8,
-                            zone3.r as u8,
-                            zone4.r as u8,
-                            zone5.r as u8,
+                            zone1.r,
+                            zone2.r,
+                            zone3.r,
+                            zone4.r,
+                            zone5.r,
                             // green
-                            zone1.g as u8,
-                            zone2.g as u8,
-                            zone3.g as u8,
-                            zone4.g as u8,
-                            zone5.g as u8,
+                            zone1.g,
+                            zone2.g,
+                            zone3.g,
+                            zone4.g,
+                            zone5.g,
                             // blue
-                            zone1.b as u8,
-                            zone2.b as u8,
-                            zone3.b as u8,
-                            zone4.b as u8,
-                            zone5.b as u8,
+                            zone1.b,
+                            zone2.b,
+                            zone3.b,
+                            zone4.b,
+                            zone5.b,
                             0x00,
                             0x00,
                             0x00,

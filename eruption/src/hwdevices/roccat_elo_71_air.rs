@@ -26,7 +26,7 @@ use std::time::Duration;
 use std::{any::Any, thread};
 use std::{mem::size_of, sync::Arc};
 
-use crate::constants;
+use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MiscDevice,
@@ -203,7 +203,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     }
 
-                    // thread::sleep(Duration::from_millis(10));
+                    // thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
                     // let mut buf: [u8; 64] = [0x00; 64];
                     // buf[0] = 0xa1;
@@ -237,7 +237,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(10));
+                    thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
                     let buf: [u8; 64] = [
                         0xff, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -256,7 +256,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(10));
+                    thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
                     let buf: [u8; 64] = [
                         0xff, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -275,7 +275,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     };
 
-                    thread::sleep(Duration::from_millis(10));
+                    thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
                     let buf: [u8; 64] = [
                         0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -322,8 +322,12 @@ impl RoccatElo71Air {
 
                     #[allow(clippy::if_same_then_else)]
                     if buf[1] == 0x00 || buf[0..5] == [0xe6, 0x06, 0x03, 0x00, 0x04] {
+                        thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
+
                         Ok(())
                     } else if buf[0..4] == [0xa1, 0x84, 0x06, 0x02] {
+                        thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
+
                         Ok(()) // directly after device reset
                     } else {
                         hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));

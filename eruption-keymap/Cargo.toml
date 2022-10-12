@@ -32,7 +32,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.12", features = ["derive"] }
+clap =  { version = "4.0.14", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"
@@ -50,7 +50,6 @@ flume = "0.10.14"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-hexdump = "0.1.1"
 chrono = { version = "0.4.22", features = ["serde"] }
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
 #lua-src = "544.0.1"
@@ -60,11 +59,8 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master",
 mlua = { version = "0.8.4", features = ["lua54"] }
 regex = "1.6.0"
 dbus = "0.9.6"
-dbus-tokio = "0.7.5"
-udev = "0.6.3"
 evdev-rs = "0.6.0"
 lazy_static = "1.4.0"
-bitvec = "1.0.1"
 walkdir = "2.3.2"
 maplit = "1.0.2"
 pest = "2.4.0"

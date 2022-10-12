@@ -47,7 +47,7 @@ pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
 
     match devices
         .1
-        .get(device_handle as usize - devices.0.len() as usize)
+        .get(device_handle as usize - devices.0.len())
     {
         Some(device) => match device {
             // ROCCAT Kone XP

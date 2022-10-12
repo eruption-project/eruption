@@ -54,7 +54,7 @@ pub fn switch_profile(name: &str) -> Result<()> {
     let proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/profile",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
     );
 
     let _result = proxy.switch_profile(name)?;
@@ -70,7 +70,7 @@ pub fn switch_slot(index: u64) -> Result<()> {
     let proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/slot",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
     );
 
     let _result = proxy.switch_slot(index)?;
@@ -85,7 +85,7 @@ pub fn get_active_profile() -> Result<String> {
     let proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/profile",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
     );
 
     let result = proxy.active_profile()?;
@@ -100,7 +100,7 @@ pub fn get_active_slot() -> Result<u64> {
     let proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/slot",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
     );
 
     let result = proxy.active_slot()?;
