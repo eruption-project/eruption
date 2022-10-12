@@ -184,7 +184,10 @@ pub fn spawn_keyboard_input_thread(
                             let index = keyboard_device.read().ev_key_to_key_index(*code) as usize;
 
                             {
-                                KEY_STATES.write()[index] = is_pressed;
+                                KEY_STATES
+                                    .write()
+                                    .get_mut(index)
+                                    .and_then(|v| Some(*v = is_pressed));
                             }
                         }
 
