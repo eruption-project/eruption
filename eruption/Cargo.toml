@@ -81,11 +81,11 @@ palette = "0.6.1"
 nalgebra = "0.31.2"
 noise = "0.8.1"
 simdnoise = "3.1.6"
-#lua-src = "544.0.1"
-#mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
-#luajit-src = "210.3.2+resty1085a4d"
-#mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.8.4", features = ["lua54"] }
+# lua-src = "544.0.1"
+# mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
+# mlua = { version = "0.8.4", features = ["lua54"] }
+luajit-src = "210.4.3"
+mlua = { version = "0.8.4", features = ["luajit52"] }
 sysinfo = "0.26.4"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.2"
