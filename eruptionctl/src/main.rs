@@ -20,7 +20,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use color_eyre::{owo_colors, Help};
+use color_eyre::Help;
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
@@ -46,7 +46,9 @@ use std::{env, fs, thread};
 use std::{process, sync::Arc};
 
 use crate::color_scheme::{ColorScheme, PywalColorScheme};
+use crate::profiles::Profile;
 use crate::scripting::manifest::Manifest;
+use crate::scripting::parameters::{ManifestParameter, ProfileParameter};
 
 mod color_scheme;
 mod constants;
@@ -1340,12 +1342,77 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             parameter,
             value,
         } => {
+            fn print_profile_header(profile: &Profile) {
+                println!(
+                    "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
+                    profile.name, profile.id, profile.description, profile.active_scripts,
+                );
+            }
+
+            fn print_script_parameters(
+                profile: &Profile,
+                manifest: &Manifest,
+                profile_parameters_only: bool,
+            ) {
+                let profile_script_parameters = profile.config.get_parameters(&manifest.name);
+                if profile_parameters_only && profile_script_parameters.is_none() {
+                    return;
+                }
+
+                for manifest_parameter in manifest.config.iter() {
+                    let profile_parameter = profile_script_parameters
+                        .and_then(|p| p.get_parameter(&manifest_parameter.name));
+                    match profile_parameter {
+                        Some(profile_parameter) => {
+                            print_profile_parameter(&manifest.name, profile_parameter);
+                        }
+                        None => {
+                            if profile_parameters_only {
+                                continue;
+                            }
+                            print_manifest_parameter(&manifest.name, manifest_parameter);
+                        }
+                    }
+                }
+            }
+
+            fn print_manifest_parameter(script_name: &str, parameter: &ManifestParameter) {
+                println!(
+                    "\"{}\" {}; default: {}",
+                    script_name,
+                    &parameter.name.bold(),
+                    &parameter.get_default(),
+                );
+            }
+
+            fn print_profile_parameter(script_name: &str, parameter: &ProfileParameter) {
+                let default_value = parameter.get_default();
+                if let Some(default_value) = default_value {
+                    let value_string: ColoredString = if parameter.value == default_value {
+                        parameter.value.to_string().normal()
+                    } else {
+                        parameter.value.to_string().bold()
+                    };
+
+                    println!(
+                        "\"{}\" {}: {} (default: {})",
+                        script_name, &parameter.name, &value_string, &default_value,
+                    );
+                } else {
+                    println!(
+                        "\"{}\" {}: {}",
+                        script_name, &parameter.name, &parameter.value,
+                    );
+                }
+            }
+
             let profile_name = get_active_profile().await.map_err(|e| {
                 eprintln!("Could not determine the currently active profile! Is the Eruption daemon running?");
                 e
             })?;
 
-            let profile = match util::match_profile_by_name(&profile_name) {
+            let profile = Profile::load_fully(&PathBuf::from(&profile_name));
+            let profile = match profile {
                 Ok(profile) => profile,
                 Err(err) => {
                     eprintln!("Could not load the current profile ({})", profile_name);
@@ -1354,99 +1421,35 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 }
             };
 
-            let scripts: Vec<Manifest> = profile
-                .active_scripts
-                .iter()
-                .filter_map(|script_file| match script_file.is_file() {
-                    true => Some(script_file.to_owned()),
-                    false => match util::match_script_file(script_file) {
-                        Ok(script_file) => Some(script_file),
-                        Err(err) => {
-                            eprintln!("Could not find script {}. {}", script_file.display(), err);
-                            None
-                        }
-                    },
-                })
-                .filter_map(|script_file| match Manifest::load(&script_file) {
-                    Ok(manifest) => Some(manifest),
-                    Err(err) => {
-                        eprintln!(
-                            "Could not process manifest file for script {}. {}",
-                            script_file.display(),
-                            err
-                        );
-                        None
-                    }
-                })
-                .collect();
-
             // determine mode of operation
             if script_name.is_none() && parameter.is_none() && value.is_none() {
                 // list parameters from all scripts in the currently active profile
+                print_profile_header(&profile);
 
-                println!(
-                    "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                    profile.name, profile.id, profile.description, profile.active_scripts,
-                );
-
-                // dump parameters set in .profile file
-
-                println!("Profile parameters:\n");
-
-                for script in &scripts {
-                    let profile_script_parameters = profile.config.get_parameters(&script.name);
-
-                    if let Some(profile_script_parameters) = profile_script_parameters {
-                        for profile_parameter in profile_script_parameters.iter() {
-                            let default_value = profile_parameter.get_default();
-
-                            if let Some(default_value) = default_value {
-                                let value_string: ColoredString =
-                                    if profile_parameter.value == default_value {
-                                        profile_parameter.value.to_string().normal()
-                                    } else {
-                                        profile_parameter.value.to_string().bold()
-                                    };
-
-                                println!(
-                                    "\"{}\" {}: {} (default: {})",
-                                    &script.name,
-                                    &profile_parameter.name,
-                                    &value_string,
-                                    &default_value,
-                                );
-                            } else {
-                                println!(
-                                    "\"{}\" {}: {}",
-                                    &script.name, &profile_parameter.name, &profile_parameter.value,
-                                );
-                            }
-                        }
+                if opts.verbose == 0 {
+                    // dump parameters set in .profile file
+                    println!("Profile parameters:\n");
+                    for manifest in profile.manifests.values() {
+                        print_script_parameters(&profile, &manifest, true);
                     }
-                }
-
-                if opts.verbose > 0 {
+                } else {
                     // dump all available parameters that could be set in the .profile file
-                    println!();
                     println!("Available parameters:\n");
-
-                    for script in &scripts {
-                        for manifest_parameter in script.config.iter() {
-                            println!(
-                                "\"{}\" {} (default: {})",
-                                &script.name,
-                                &manifest_parameter.name,
-                                &manifest_parameter.get_default(),
-                            );
-                        }
-
-                        println!();
+                    for manifest in profile.manifests.values() {
+                        print_script_parameters(&profile, &manifest, false);
                     }
                 }
             } else if let Some(script_name) = script_name {
-                let script = find_script_by_name(scripts, &script_name, false);
-                let script = match script {
-                    Some(script) => script,
+                // Get manifest by either its declared name or its script file
+                let manifest = profile.manifests.get(&script_name).or_else(|| {
+                    let script_path = PathBuf::from(&script_name);
+                    profile
+                        .manifests
+                        .values()
+                        .find(|m| is_same_file(&m.script_file, &script_path).unwrap_or(false))
+                });
+                let manifest = match manifest {
+                    Some(manifest) => manifest,
                     None => {
                         println!("Script not found.");
                         return Ok(());
@@ -1455,71 +1458,39 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 if let Some(value) = value {
                     // set a parameter from the specified script in the currently active profile
+                    print_profile_header(&profile);
 
                     let parameter = parameter.unwrap();
-
-                    println!(
-                        "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                        profile.name, profile.id, profile.description, profile.active_scripts,
-                    );
-
                     // set param value
                     dbus_client::set_parameter(
                         &profile.profile_file.to_string_lossy(),
-                        &script.script_file.to_string_lossy(),
+                        &manifest.script_file.to_string_lossy(),
                         &parameter,
                         &value,
                     )?;
 
-                    println!("\"{}\" {} {}", &script.name, &parameter, &value.bold());
+                    println!("\"{}\" {} {}", &manifest.name, &parameter, &value.bold());
                 } else if let Some(parameter) = parameter {
                     // list parameters from the specified script in the currently active profile
 
-                    let mut found_parameter = false;
-
-                    if let Some(profile_parameter) =
-                        profile.config.get_parameter(&script.name, &parameter)
-                    {
-                        println!(
-                            "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                            profile.name, profile.id, profile.description, profile.active_scripts,
-                        );
-
-                        // read param value
-                        println!(
-                            "\"{}\" {} {}",
-                            &script.name,
-                            &profile_parameter.name,
-                            owo_colors::OwoColorize::bold(&profile_parameter.value)
-                        );
-
-                        found_parameter = true;
-                    }
-
-                    // Not all script manifest parameters need be listed in the profile
-                    if !found_parameter {
-                        match script.config.get_parameter(&parameter) {
-                            Some(config_param) => println!(
-                                "\"{}\" {}; default: {}",
-                                &script.name,
-                                &config_param.name.bold(),
-                                &config_param.get_default()
-                            ),
+                    let profile_parameter =
+                        profile.config.get_parameter(&manifest.name, &parameter);
+                    if let Some(profile_parameter) = profile_parameter {
+                        print_profile_header(&profile);
+                        print_profile_parameter(&manifest.name, profile_parameter);
+                    } else {
+                        // Not all script manifest parameters need be listed in the profile
+                        match manifest.config.get_parameter(&parameter) {
+                            Some(manifest_param) => {
+                                print_manifest_parameter(&manifest.name, manifest_param)
+                            }
                             None => println!("No parameter found."),
                         }
                     }
                 } else {
                     // list parameters from the specified script
                     println!("Dumping all parameters from the specified script:\n");
-
-                    for param in script.config.iter() {
-                        println!(
-                            "\"{}\" {}; default: {}",
-                            &script.name,
-                            &param.name.bold(),
-                            &param.get_default()
-                        );
-                    }
+                    print_script_parameters(&profile, &manifest, false);
                 }
             } else {
                 println!("Nothing to do");

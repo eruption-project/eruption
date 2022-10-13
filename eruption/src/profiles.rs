@@ -22,11 +22,13 @@
 use crate::constants;
 use indexmap::IndexMap;
 use log::*;
+use nix;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
-use std::fs;
+use std::os::unix::prelude::{MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::{collections::BTreeMap, ffi::OsStr};
+use std::{fs, io};
 use uuid::Uuid;
 
 use crate::scripting::manifest::Manifest;
@@ -72,7 +74,7 @@ fn default_script_file() -> Vec<PathBuf> {
     vec![constants::DEFAULT_EFFECT_SCRIPT.into()]
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Profile {
     #[serde(default = "default_id")]
     pub id: Uuid,
@@ -235,12 +237,6 @@ impl Profile {
                         self.profile_file.display(),
                         err
                     );
-                    println!(
-                        "Could not load script {} for profile {}: {}",
-                        script_file.display(),
-                        self.profile_file.display(),
-                        err
-                    );
                     return Err(ProfileError::OpenError {}.into());
                 }
             }
@@ -300,9 +296,10 @@ impl Profile {
 
     pub fn load_params(&mut self) -> Result<()> {
         let path = self.profile_file.with_extension("profile.state");
-        let json_string = fs::read_to_string(&path)?;
+        let file = fs::File::open(path)?;
 
-        let map: BTreeMap<String, ProfileScriptParameters> = serde_json::from_str(&json_string)?;
+        let map: BTreeMap<String, ProfileScriptParameters> =
+            serde_json::from_reader(io::BufReader::new(file))?;
 
         self.config = ProfileConfiguration::from(map);
 
@@ -311,10 +308,37 @@ impl Profile {
 
     pub fn save_params(&self) -> Result<()> {
         if !self.config.is_empty() {
-            let json_string = serde_json::to_string_pretty(&self.config)?;
-            let path = self.profile_file.with_extension("profile.state");
+            let state_path = self.profile_file.with_extension("profile.state");
+            let profile_metadata = fs::metadata(&self.profile_file);
 
-            fs::write(&path, json_string)?;
+            let mut open_options = fs::OpenOptions::new();
+            open_options.create(true).write(true);
+            if let Ok(profile_metadata) = &profile_metadata {
+                open_options.mode(profile_metadata.mode()); // (only takes effect if the file is new)
+            }
+
+            let file = open_options.open(&state_path)?;
+
+            serde_json::to_writer_pretty(file, &self.config)?;
+
+            // Try to give the state file the same permissions and ownership as the profile file.
+            // This can be useful if the profile file is sitting under the user's home directory.
+            // Otherwise, the state file is owned by the eruption user, which is root by default.
+            if let Ok(profile_metadata) = &profile_metadata {
+                let try_mode = fs::set_permissions(&state_path, profile_metadata.permissions());
+                if try_mode.is_err() {
+                    debug!("Could not set permissions on {}", &state_path.display());
+                }
+
+                let try_chown = nix::unistd::chown(
+                    &state_path,
+                    Some(profile_metadata.uid().into()),
+                    Some(profile_metadata.gid().into()),
+                );
+                if try_chown.is_err() {
+                    debug!("Could not change ownership of {}", &state_path.display());
+                }
+            }
         }
 
         Ok(())
@@ -502,9 +526,12 @@ pub fn get_fail_safe_profile() -> Profile {
 mod tests {
     use std::{path::PathBuf, str::FromStr};
 
+    use indexmap::IndexMap;
     use uuid::Uuid;
 
     use crate::scripting::parameters::{ManifestValue, ProfileParameter, TypedValue};
+
+    use super::Profile;
 
     #[test]
     fn enum_profile_files() -> super::Result<()> {
@@ -742,6 +769,102 @@ mod tests {
                 manifest: None
             }
         );
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn verify_deserialization_and_serialization() -> super::Result<()> {
+        let lit_profile = Profile {
+            id: Uuid::from_str("9030f2e0-489d-11ed-b7bd-a306df98fead")?,
+            profile_file: PathBuf::from("test.profile"),
+            name: "Test profile".to_string(),
+            description: "Testing serialization".to_string(),
+            active_scripts: vec![
+                PathBuf::from("xyz"),
+                PathBuf::from("def"),
+                PathBuf::from("abc"),
+                PathBuf::from("123"),
+                PathBuf::from("ghi"),
+                PathBuf::from("789"),
+                PathBuf::from("jkl"),
+                PathBuf::from("456"),
+                PathBuf::from("mno"),
+                PathBuf::from("pqr"),
+            ],
+            config: [
+                (
+                    "123".to_string(),
+                    [ProfileParameter {
+                        name: "123_param".to_string(),
+                        value: TypedValue::Int(1),
+                        manifest: None,
+                    }]
+                    .into(),
+                ),
+                (
+                    "Xyz".to_string(),
+                    [ProfileParameter {
+                        name: "xyz_param".to_string(),
+                        value: TypedValue::Bool(true),
+                        manifest: None,
+                    }]
+                    .into(),
+                ),
+                (
+                    "Abc".to_string(),
+                    [ProfileParameter {
+                        name: "abc_param".to_string(),
+                        value: TypedValue::Int(3),
+                        manifest: None,
+                    }]
+                    .into(),
+                ),
+            ]
+            .into(),
+            manifests: IndexMap::new(),
+        };
+
+        let lit_toml = r#"
+id = '9030f2e0-489d-11ed-b7bd-a306df98fead'
+name = 'Test profile'
+description = 'Testing serialization'
+active_scripts = [
+    'xyz',
+    'def',
+    'abc',
+    '123',
+    'ghi',
+    '789',
+    'jkl',
+    '456',
+    'mno',
+    'pqr',
+]
+[[config.123]]
+name = '123_param'
+type = 'int'
+value = 1
+
+[[config.Abc]]
+name = 'abc_param'
+type = 'int'
+value = 3
+
+[[config.Xyz]]
+name = 'xyz_param'
+type = 'bool'
+value = true
+        "#;
+
+        let mut de_profile = toml::de::from_str::<Profile>(&lit_toml)?;
+        de_profile.profile_file = PathBuf::from("test.profile");
+
+        assert_eq!(lit_profile, de_profile);
+
+        let ser_toml = toml::ser::to_string_pretty(&lit_profile)?;
+
+        assert_eq!(lit_toml.trim(), ser_toml.trim());
 
         Ok(())
     }
