@@ -6,6 +6,8 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __Next Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter/input lag |
+| 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Improve compatibility with laptop docks |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
