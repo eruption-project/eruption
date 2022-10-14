@@ -18,7 +18,7 @@
 
 [package]
 name = "eruptionctl"
-version = "0.0.25"
+version = "0.1.0"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A CLI control utility for the Eruption Linux user-mode driver"
@@ -33,7 +33,7 @@ resolver = "2"
 [dependencies]
 lazy_static = "1.4.0"
 flume = "0.10.14"
-clap =  { version = "4.0.14", features = ["derive"] }
+clap =  { version = "4.0.15", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 cfg-if = "1.0.0"
@@ -42,7 +42,8 @@ csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.2"
 log = "0.4.17"
 libc = "0.2.135"
-parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
+nix = "0.25.0"
+parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.145", features = ["derive"] }
 serde_json = "1.0.86"
 indexmap = { version = "1.9.1", features = ["serde"] }
