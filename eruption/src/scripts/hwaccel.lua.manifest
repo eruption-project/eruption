@@ -17,7 +17,7 @@
 
 
 name = "Hardware Acceleration"
-description = "Hardware accelerated effects using shader programs"
+description = "Hardware accelerated effects using GLSL compute shader programs"
 version = "0.0.1"
 author = "The Eruption Development Team"
 min_supported_version = "0.3.0"
@@ -34,5 +34,5 @@ default = 0.5
 [[config]]
 type = 'string'
 name = 'shader_program'
-description = 'Import shader program file'
-default = 'shaders/example.glsl'
+description = 'GLSL compute shader program file'
+default = 'shaders/mandelbrot.comp.glsl'

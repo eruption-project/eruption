@@ -37,6 +37,13 @@ function n2(val, ret)
     end
 end
 
+-- convert a string value to its boolean representation
+function toboolean(str)
+    local bool = false
+    if str == "true" then bool = true end
+    return bool
+end
+
 -- converts a key name to a key index
 function key_name_to_index(name)
     if key_to_index ~= nil then

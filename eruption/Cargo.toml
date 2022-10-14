@@ -44,9 +44,9 @@ flume = { version = "0.10.14", features = ["async"] }
 futures = "0.3.24"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 async-trait = "0.1.57"
-#tracing = "0.1.26"
-#tracing-futures = "0.2.5"
-#tracing-subscriber = "0.2.20"
+# tracing = "0.1.26"
+# tracing-futures = "0.2.5"
+# tracing-subscriber = "0.2.20"
 libc = "0.2.135"
 nix = "0.25.0"
 systemd = "0.10.0"
@@ -101,8 +101,11 @@ rust-embed = "6.4.1"
 unic-langid = "0.9.0"
 icecream = "0.1.0"
 same-file = "1"
+vulkano = "0.31.1"
+vulkano-shaders = "0.31.1"
+vulkano-util = "0.31.0"
+shaderc = "0.8.0"
 bytemuck = "1.12.1"
-pixels = { git = "https://github.com/parasyte/pixels.git", branch = "main" }
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

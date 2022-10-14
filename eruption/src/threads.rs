@@ -795,7 +795,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // instruct Lua VMs to realize their color maps,
                             // e.g. to blend their local color maps with the canvas
-                            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+                            *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.read().len().saturating_sub(FAILED_TXS.read().len());
 
                             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
                                 // if this tx failed previously, then skip it completely

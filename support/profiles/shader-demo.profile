@@ -31,8 +31,8 @@ active_scripts = [
 [[config."Hardware Acceleration"]]
 type = 'string'
 name = 'shader_program'
-value = 'shaders/example.glsl'
-default = 'shaders/example.glsl'
+value = 'shaders/mandelbrot.comp.glsl'
+default = 'shaders/mandelbrot.comp.glsl'
 
 # dim a specific zone, e.g. if the mouse LEDs are too bright
 [[config."Dim Zone"]]

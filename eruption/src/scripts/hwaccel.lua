@@ -16,6 +16,7 @@
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -23,13 +24,16 @@ color_map = {}
 ticks = 0
 max_effect_ttl = target_fps * 8
 effect_ttl = max_effect_ttl
+bail_out = true
 
 -- event handler functions --
 function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
-    local accel_info = query_hw_accel_info()
-    info("Hwaccel status: " .. stringify(accel_info))
+    local accel_status = hwaccel_status()
+    debug("Hwaccel status: " .. stringify(accel_status))
+
+    bail_out = not toboolean(accel_status["acceleration-available"])
 end
 
 function on_key_down(key_index) effect_ttl = max_effect_ttl end
@@ -37,13 +41,16 @@ function on_key_down(key_index) effect_ttl = max_effect_ttl end
 function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
 function on_tick(delta)
+    if bail_out then return end
+
     ticks = ticks + delta
 
     if effect_ttl <= 0 then return end
 
     effect_ttl = effect_ttl - 1
 
-    -- color_map = color_map_from_render_surface()
+    hwaccel_tick(delta)
 
+    color_map = color_map_from_render_surface()
     submit_color_map(color_map)
 end

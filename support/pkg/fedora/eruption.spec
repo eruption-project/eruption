@@ -27,11 +27,16 @@ BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
 BuildRequires: gtk3-devel
 BuildRequires: gtksourceview4-devel
+BuildRequires: vulkan-devel
+BuildRequires: spirv-tools
+BuildRequires: shaderc
 
 Requires: systemd
 Requires: dbus
 Requires: hidapi
 Requires: libevdev
+Requires: spirv-tools
+Requires: shaderc
 Requires: lua
 Requires: gtksourceview4
 
