@@ -45,10 +45,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub fn get_mouse_device(device_handle: u64) -> Result<Box<dyn Mouse>> {
     let devices = dbus_client::get_managed_devices()?;
 
-    match devices
-        .1
-        .get(device_handle as usize - devices.0.len())
-    {
+    match devices.1.get(device_handle as usize - devices.0.len()) {
         Some(device) => match device {
             // ROCCAT Kone XP
             (0x1e7d, 0x2c8b) => Ok(Box::new(roccat_kone_xp::RoccatKoneXp::new(device_handle))),
