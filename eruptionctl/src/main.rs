@@ -24,7 +24,7 @@ use color_eyre::Help;
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
-use comfy_table::{Cell, CellAlignment, ContentArrangement, Table};
+use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
 use config::Config;
 use dbus::nonblock;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
@@ -48,7 +48,9 @@ use std::{process, sync::Arc};
 use crate::color_scheme::{ColorScheme, PywalColorScheme};
 use crate::profiles::Profile;
 use crate::scripting::manifest::Manifest;
-use crate::scripting::parameters::{ManifestParameter, ProfileParameter};
+use crate::scripting::parameters::{
+    ManifestParameter, ManifestValue, ProfileParameter, TypedValue,
+};
 
 mod color_scheme;
 mod constants;
@@ -1344,12 +1346,29 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         } => {
             fn print_profile_header(profile: &Profile) {
                 println!(
-                    "Profile:\t{} ({})\nDescription:\t{}\nScripts:\t{:?}\n",
-                    profile.name, profile.id, profile.description, profile.active_scripts,
+                    "{}:\t{} ({})\n{}:\t{}\n{}:\t{:?}\n",
+                    "Profile".bold(),
+                    profile.name,
+                    profile.id,
+                    "Description".bold(),
+                    profile.description,
+                    "Scripts".bold(),
+                    profile.active_scripts,
                 );
             }
 
-            fn print_script_parameters(
+            fn create_table() -> Table {
+                let mut table = Table::new();
+                table
+                    .load_preset(UTF8_FULL)
+                    .apply_modifier(UTF8_ROUND_CORNERS)
+                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_header(vec!["Script", "Parameter", "Default", "Profile Value"]);
+                table
+            }
+
+            fn add_script_parameters(
+                table: &mut Table,
                 profile: &Profile,
                 manifest: &Manifest,
                 profile_parameters_only: bool,
@@ -1364,46 +1383,84 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         .and_then(|p| p.get_parameter(&manifest_parameter.name));
                     match profile_parameter {
                         Some(profile_parameter) => {
-                            print_profile_parameter(&manifest.name, profile_parameter);
+                            table.add_row(profile_parameter_row(&manifest.name, profile_parameter));
                         }
                         None => {
                             if profile_parameters_only {
                                 continue;
                             }
-                            print_manifest_parameter(&manifest.name, manifest_parameter);
+                            table.add_row(manifest_parameter_row(
+                                &manifest.name,
+                                manifest_parameter,
+                            ));
                         }
                     }
                 }
             }
 
-            fn print_manifest_parameter(script_name: &str, parameter: &ManifestParameter) {
-                println!(
-                    "\"{}\" {}; default: {}",
-                    script_name,
-                    &parameter.name.bold(),
-                    &parameter.get_default(),
-                );
+            fn manifest_parameter_row(
+                script_name: &str,
+                parameter: &ManifestParameter,
+            ) -> Vec<Cell> {
+                vec![
+                    Cell::new(script_name),
+                    Cell::new(&parameter.name),
+                    get_value_cell(&parameter.get_default()),
+                    Cell::new("(use default)").add_attribute(Attribute::Italic),
+                ]
             }
 
-            fn print_profile_parameter(script_name: &str, parameter: &ProfileParameter) {
+            fn profile_parameter_row(script_name: &str, parameter: &ProfileParameter) -> Vec<Cell> {
                 let default_value = parameter.get_default();
                 if let Some(default_value) = default_value {
-                    let value_string: ColoredString = if parameter.value == default_value {
-                        parameter.value.to_string().normal()
+                    let value_attribute = if parameter.value == default_value {
+                        Attribute::NoBold
                     } else {
-                        parameter.value.to_string().bold()
+                        Attribute::Bold
                     };
-
-                    println!(
-                        "\"{}\" {}: {} (default: {})",
-                        script_name, &parameter.name, &value_string, &default_value,
-                    );
+                    vec![
+                        Cell::new(script_name),
+                        Cell::new(&parameter.name),
+                        get_value_cell(&default_value),
+                        get_value_cell(&parameter.value).add_attribute(value_attribute),
+                    ]
                 } else {
-                    println!(
-                        "\"{}\" {}: {}",
-                        script_name, &parameter.name, &parameter.value,
-                    );
+                    vec![
+                        Cell::new(script_name),
+                        Cell::new(&parameter.name),
+                        Cell::new(""),
+                        get_value_cell(&parameter.value),
+                    ]
                 }
+            }
+
+            fn get_value_cell(value: &TypedValue) -> Cell {
+                let mut cell = Cell::new(value);
+                if let TypedValue::Color(rgb) = value {
+                    cell = apply_rgb(cell, *rgb);
+                }
+                cell
+            }
+
+            fn apply_rgb(cell: Cell, rgb: u32) -> Cell {
+                let (r, g, b) = (
+                    (rgb >> 0o20 & 0xff),
+                    (rgb >> 0o10 & 0xff),
+                    (rgb >> 0o00 & 0xff),
+                );
+                // Magic numbers from https://stackoverflow.com/a/3943023/1991305
+                let fg = if (r * 299 + g * 587 + b * 114) > 128000 {
+                    comfy_table::Color::Black
+                } else {
+                    comfy_table::Color::White
+                };
+                let bg = comfy_table::Color::Rgb {
+                    r: r as u8,
+                    g: g as u8,
+                    b: b as u8,
+                };
+
+                cell.bg(bg).fg(fg)
             }
 
             let profile_name = get_active_profile().await.map_err(|e| {
@@ -1429,15 +1486,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 if opts.verbose == 0 {
                     // dump parameters set in .profile file
                     println!("Profile parameters:\n");
+                    let mut table = create_table();
                     for manifest in profile.manifests.values() {
-                        print_script_parameters(&profile, &manifest, true);
+                        add_script_parameters(&mut table, &profile, &manifest, true);
                     }
+                    println!("{table}");
                 } else {
                     // dump all available parameters that could be set in the .profile file
-                    println!("Available parameters:\n");
+                    println!("Available parameters:");
+                    let mut table = create_table();
                     for manifest in profile.manifests.values() {
-                        print_script_parameters(&profile, &manifest, false);
+                        add_script_parameters(&mut table, &profile, &manifest, false);
                     }
+                    println!("{table}");
                 }
             } else if let Some(script_name) = script_name {
                 // Get manifest by either its declared name or its script file
@@ -1460,37 +1521,70 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     // set a parameter from the specified script in the currently active profile
                     print_profile_header(&profile);
 
-                    let parameter = parameter.unwrap();
+                    let parameter_name = parameter.unwrap();
                     // set param value
                     dbus_client::set_parameter(
                         &profile.profile_file.to_string_lossy(),
                         &manifest.script_file.to_string_lossy(),
-                        &parameter,
+                        &parameter_name,
                         &value,
                     )?;
 
-                    println!("\"{}\" {} {}", &manifest.name, &parameter, &value.bold());
+                    let default = manifest
+                        .config
+                        .get_parameter(&parameter_name)
+                        .and_then(|p| Some(p.get_default()));
+                    let mut table = create_table();
+                    table.add_row(vec![
+                        Cell::new(&manifest.name),
+                        Cell::new(&parameter_name),
+                        match default {
+                            Some(default) => get_value_cell(&default),
+                            None => Cell::new(""),
+                        },
+                        Cell::new(&value).add_attribute(Attribute::Bold),
+                    ]);
+                    println!("{table}");
                 } else if let Some(parameter) = parameter {
                     // list parameters from the specified script in the currently active profile
+                    let warning_about_hash_because_i_always_forget =
+                        "\nNote: Remember to quote the value when changing color parameters. Unquoted, the '#' mark signifies a comment.";
 
                     let profile_parameter =
                         profile.config.get_parameter(&manifest.name, &parameter);
                     if let Some(profile_parameter) = profile_parameter {
                         print_profile_header(&profile);
-                        print_profile_parameter(&manifest.name, profile_parameter);
+                        let mut table = create_table();
+                        table.add_row(profile_parameter_row(&manifest.name, profile_parameter));
+                        println!("{table}");
+
+                        if let TypedValue::Color(_) = profile_parameter.value {
+                            println!("{}", warning_about_hash_because_i_always_forget);
+                        }
                     } else {
                         // Not all script manifest parameters need be listed in the profile
                         match manifest.config.get_parameter(&parameter) {
                             Some(manifest_param) => {
-                                print_manifest_parameter(&manifest.name, manifest_param)
+                                let mut table = create_table();
+                                table.add_row(manifest_parameter_row(
+                                    &manifest.name,
+                                    manifest_param,
+                                ));
+                                println!("{table}");
+
+                                if let ManifestValue::Color { .. } = manifest_param.manifest {
+                                    println!("{}", warning_about_hash_because_i_always_forget);
+                                }
                             }
                             None => println!("No parameter found."),
                         }
                     }
                 } else {
                     // list parameters from the specified script
-                    println!("Dumping all parameters from the specified script:\n");
-                    print_script_parameters(&profile, &manifest, false);
+                    println!("Listing all parameters from the specified script:");
+                    let mut table = create_table();
+                    add_script_parameters(&mut table, &profile, &manifest, false);
+                    println!("{table}");
                 }
             } else {
                 println!("Nothing to do");
