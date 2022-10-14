@@ -17,9 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use serde::{
-    de, ser::SerializeMap, ser::SerializeSeq, Deserialize, Deserializer, Serialize, Serializer,
-};
+use serde::{de, ser::SerializeSeq, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::btree_map::{self, Entry};
 use std::collections::BTreeMap;
 use std::fmt;
@@ -156,7 +154,7 @@ impl ToPlainParameter for ManifestParameter {
 #[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
 pub struct ManifestConfiguration(BTreeMap<String, ManifestParameter>); // key is parameter name
 
-#[derive(Default, Deserialize, Clone, PartialEq)] // Serialize implemented below
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileConfiguration(BTreeMap<String, ProfileScriptParameters>); // key is manifest name
 #[derive(Default, Clone, PartialEq)] // Serialize and Deserialize implemented below
 pub struct ProfileScriptParameters(BTreeMap<String, ProfileParameter>); // key is parameter name
@@ -168,7 +166,7 @@ impl ManifestConfiguration {
     }
 
     pub fn set_parameter(&mut self, parameter: ManifestParameter) {
-        self.0.insert(parameter.name.to_owned(), parameter);
+        self.0.insert(parameter.get_key(), parameter);
     }
 
     pub fn get_parameter(&self, parameter_name: &str) -> Option<&ManifestParameter> {
@@ -242,7 +240,7 @@ impl ProfileScriptParameters {
     }
 
     pub fn set_parameter(&mut self, parameter: ProfileParameter) {
-        self.0.insert(parameter.name.to_owned(), parameter);
+        self.0.insert(parameter.get_key(), parameter);
     }
 
     pub fn get_parameter(&self, parameter_name: &str) -> Option<&ProfileParameter> {
@@ -296,7 +294,7 @@ impl From<BTreeMap<String, ProfileParameter>> for ProfileScriptParameters {
 
 impl<const N: usize> From<[ManifestParameter; N]> for ManifestConfiguration {
     fn from(arr: [ManifestParameter; N]) -> Self {
-        Self(arr.into_iter().map(|p| (p.name.to_owned(), p)).collect())
+        Self(arr.into_iter().map(|p| (p.get_key(), p)).collect())
     }
 }
 
@@ -308,7 +306,7 @@ impl<const N: usize> From<[(String, ProfileScriptParameters); N]> for ProfileCon
 
 impl<const N: usize> From<[ProfileParameter; N]> for ProfileScriptParameters {
     fn from(arr: [ProfileParameter; N]) -> Self {
-        Self(arr.into_iter().map(|p| (p.name.to_owned(), p)).collect())
+        Self(arr.into_iter().map(|p| (p.get_key(), p)).collect())
     }
 }
 
@@ -320,31 +318,10 @@ impl Serialize for ManifestConfiguration {
     {
         let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
 
-        let mut sorted = BTreeMap::new();
-        sorted.extend(&self.0);
-
-        for param in sorted.values() {
+        for param in self.0.values() {
             seq.serialize_element(param)?;
         }
         seq.end()
-    }
-}
-
-/// Sorts by key (script name) before serializing
-impl Serialize for ProfileConfiguration {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut map = serializer.serialize_map(Some(self.0.len()))?;
-
-        let mut sorted = BTreeMap::new();
-        sorted.extend(&self.0);
-
-        for entry in sorted.iter() {
-            map.serialize_entry(entry.0, entry.1)?;
-        }
-        map.end()
     }
 }
 
@@ -356,10 +333,7 @@ impl Serialize for ProfileScriptParameters {
     {
         let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
 
-        let mut sorted = BTreeMap::new();
-        sorted.extend(&self.0);
-
-        for param in sorted.values() {
+        for param in self.0.values() {
             seq.serialize_element(param)?;
         }
         seq.end()

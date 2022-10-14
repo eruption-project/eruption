@@ -42,6 +42,7 @@ csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.2"
 log = "0.4.17"
 libc = "0.2.135"
+nix = "0.25.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.145", features = ["derive"] }
 serde_json = "1.0.86"
