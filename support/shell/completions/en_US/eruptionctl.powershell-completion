@@ -31,6 +31,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
             [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
@@ -42,6 +43,49 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;canvas' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('hue', 'hue', [CompletionResultType]::ParameterValue, 'Get or set the global ''hue'' adjustment during canvas post-processing')
+            [CompletionResult]::new('saturation', 'saturation', [CompletionResultType]::ParameterValue, 'Get or set the global ''saturation'' adjustment during canvas post-processing')
+            [CompletionResult]::new('lightness', 'lightness', [CompletionResultType]::ParameterValue, 'Get or set the global ''lightness'' adjustment during canvas post-processing')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;canvas;hue' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;canvas;saturation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;canvas;lightness' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;canvas;help' {
+            [CompletionResult]::new('hue', 'hue', [CompletionResultType]::ParameterValue, 'Get or set the global ''hue'' adjustment during canvas post-processing')
+            [CompletionResult]::new('saturation', 'saturation', [CompletionResultType]::ParameterValue, 'Get or set the global ''saturation'' adjustment during canvas post-processing')
+            [CompletionResult]::new('lightness', 'lightness', [CompletionResultType]::ParameterValue, 'Get or set the global ''lightness'' adjustment during canvas post-processing')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;canvas;help;hue' {
+            break
+        }
+        'eruptionctl;canvas;help;saturation' {
+            break
+        }
+        'eruptionctl;canvas;help;lightness' {
+            break
+        }
+        'eruptionctl;canvas;help;help' {
             break
         }
         'eruptionctl;config' {
@@ -473,6 +517,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help' {
+            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
             [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
@@ -484,6 +529,21 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;help;canvas' {
+            [CompletionResult]::new('hue', 'hue', [CompletionResultType]::ParameterValue, 'Get or set the global ''hue'' adjustment during canvas post-processing')
+            [CompletionResult]::new('saturation', 'saturation', [CompletionResultType]::ParameterValue, 'Get or set the global ''saturation'' adjustment during canvas post-processing')
+            [CompletionResult]::new('lightness', 'lightness', [CompletionResultType]::ParameterValue, 'Get or set the global ''lightness'' adjustment during canvas post-processing')
+            break
+        }
+        'eruptionctl;help;canvas;hue' {
+            break
+        }
+        'eruptionctl;help;canvas;saturation' {
+            break
+        }
+        'eruptionctl;help;canvas;lightness' {
             break
         }
         'eruptionctl;help;config' {

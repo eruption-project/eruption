@@ -12,6 +12,9 @@ _eruptionctl() {
             ",$1")
                 cmd="eruptionctl"
                 ;;
+            eruptionctl,canvas)
+                cmd="eruptionctl__canvas"
+                ;;
             eruptionctl,color-schemes)
                 cmd="eruptionctl__color__schemes"
                 ;;
@@ -44,6 +47,30 @@ _eruptionctl() {
                 ;;
             eruptionctl,switch)
                 cmd="eruptionctl__switch"
+                ;;
+            eruptionctl__canvas,help)
+                cmd="eruptionctl__canvas__help"
+                ;;
+            eruptionctl__canvas,hue)
+                cmd="eruptionctl__canvas__hue"
+                ;;
+            eruptionctl__canvas,lightness)
+                cmd="eruptionctl__canvas__lightness"
+                ;;
+            eruptionctl__canvas,saturation)
+                cmd="eruptionctl__canvas__saturation"
+                ;;
+            eruptionctl__canvas__help,help)
+                cmd="eruptionctl__canvas__help__help"
+                ;;
+            eruptionctl__canvas__help,hue)
+                cmd="eruptionctl__canvas__help__hue"
+                ;;
+            eruptionctl__canvas__help,lightness)
+                cmd="eruptionctl__canvas__help__lightness"
+                ;;
+            eruptionctl__canvas__help,saturation)
+                cmd="eruptionctl__canvas__help__saturation"
                 ;;
             eruptionctl__color__schemes,add)
                 cmd="eruptionctl__color__schemes__add"
@@ -174,6 +201,9 @@ _eruptionctl() {
             eruptionctl__devices__help,status)
                 cmd="eruptionctl__devices__help__status"
                 ;;
+            eruptionctl__help,canvas)
+                cmd="eruptionctl__help__canvas"
+                ;;
             eruptionctl__help,color-schemes)
                 cmd="eruptionctl__help__color__schemes"
                 ;;
@@ -206,6 +236,15 @@ _eruptionctl() {
                 ;;
             eruptionctl__help,switch)
                 cmd="eruptionctl__help__switch"
+                ;;
+            eruptionctl__help__canvas,hue)
+                cmd="eruptionctl__help__canvas__hue"
+                ;;
+            eruptionctl__help__canvas,lightness)
+                cmd="eruptionctl__help__canvas__lightness"
+                ;;
+            eruptionctl__help__canvas,saturation)
+                cmd="eruptionctl__help__canvas__saturation"
                 ;;
             eruptionctl__help__color__schemes,add)
                 cmd="eruptionctl__help__color__schemes__add"
@@ -412,7 +451,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts="-v -r -c -h -V --verbose --repeat --config --help --version config color-schemes devices status switch profiles names scripts param completions help"
+            opts="-v -r -c -h -V --verbose --repeat --config --help --version canvas config color-schemes devices status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -426,6 +465,132 @@ _eruptionctl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas)
+            opts="-h --help hue saturation lightness help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__help)
+            opts="hue saturation lightness help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__help__hue)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__help__lightness)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__help__saturation)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__hue)
+            opts="-h --help [HUE]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__lightness)
+            opts="-h --help [LIGHTNESS]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__canvas__saturation)
+            opts="-h --help [SATURATION]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -1092,8 +1257,64 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__help)
-            opts="config color-schemes devices status switch profiles names scripts param completions help"
+            opts="canvas config color-schemes devices status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__canvas)
+            opts="hue saturation lightness"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__canvas__hue)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__canvas__lightness)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__canvas__saturation)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

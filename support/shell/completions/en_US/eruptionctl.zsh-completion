@@ -34,7 +34,78 @@ _eruptionctl() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-command-$line[1]:"
         case $line[1] in
-            (config)
+            (canvas)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__canvas_commands" \
+"*::: :->canvas" \
+&& ret=0
+
+    case $state in
+    (canvas)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-canvas-command-$line[1]:"
+        case $line[1] in
+            (hue)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::hue:' \
+&& ret=0
+;;
+(saturation)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::saturation:' \
+&& ret=0
+;;
+(lightness)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::lightness:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__canvas__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-canvas-help-command-$line[1]:"
+        case $line[1] in
+            (hue)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(saturation)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(lightness)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(config)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
@@ -747,7 +818,35 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-help-command-$line[1]:"
         case $line[1] in
-            (config)
+            (canvas)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__canvas_commands" \
+"*::: :->canvas" \
+&& ret=0
+
+    case $state in
+    (canvas)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-canvas-command-$line[1]:"
+        case $line[1] in
+            (hue)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(saturation)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(lightness)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(config)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__config_commands" \
 "*::: :->config" \
@@ -1031,6 +1130,7 @@ esac
 (( $+functions[_eruptionctl_commands] )) ||
 _eruptionctl_commands() {
     local commands; commands=(
+'canvas:Configure post-processing filters of the global canvas' \
 'config:Configuration related sub-commands' \
 'color-schemes:Define, import or delete a named color scheme' \
 'devices:Get or set some device specific configuration parameters' \
@@ -1104,6 +1204,25 @@ _eruptionctl__help__config__brightness_commands() {
 _eruptionctl__help__devices__brightness_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help devices brightness commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas_commands] )) ||
+_eruptionctl__canvas_commands() {
+    local commands; commands=(
+'hue:Get or set the global '\''hue'\'' adjustment during canvas post-processing' \
+'saturation:Get or set the global '\''saturation'\'' adjustment during canvas post-processing' \
+'lightness:Get or set the global '\''lightness'\'' adjustment during canvas post-processing' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl canvas commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__canvas_commands] )) ||
+_eruptionctl__help__canvas_commands() {
+    local commands; commands=(
+'hue:Get or set the global '\''hue'\'' adjustment during canvas post-processing' \
+'saturation:Get or set the global '\''saturation'\'' adjustment during canvas post-processing' \
+'lightness:Get or set the global '\''lightness'\'' adjustment during canvas post-processing' \
+    )
+    _describe -t commands 'eruptionctl help canvas commands' commands "$@"
 }
 (( $+functions[_eruptionctl__color-schemes_commands] )) ||
 _eruptionctl__color-schemes_commands() {
@@ -1261,6 +1380,21 @@ _eruptionctl__scripts__help__edit_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts help edit commands' commands "$@"
 }
+(( $+functions[_eruptionctl__canvas__help_commands] )) ||
+_eruptionctl__canvas__help_commands() {
+    local commands; commands=(
+'hue:Get or set the global '\''hue'\'' adjustment during canvas post-processing' \
+'saturation:Get or set the global '\''saturation'\'' adjustment during canvas post-processing' \
+'lightness:Get or set the global '\''lightness'\'' adjustment during canvas post-processing' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl canvas help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__help__help_commands] )) ||
+_eruptionctl__canvas__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas help help commands' commands "$@"
+}
 (( $+functions[_eruptionctl__color-schemes__help_commands] )) ||
 _eruptionctl__color-schemes__help_commands() {
     local commands; commands=(
@@ -1329,6 +1463,7 @@ _eruptionctl__devices__help__help_commands() {
 (( $+functions[_eruptionctl__help_commands] )) ||
 _eruptionctl__help_commands() {
     local commands; commands=(
+'canvas:Configure post-processing filters of the global canvas' \
 'config:Configuration related sub-commands' \
 'color-schemes:Define, import or delete a named color scheme' \
 'devices:Get or set some device specific configuration parameters' \
@@ -1421,6 +1556,21 @@ _eruptionctl__switch__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl switch help help commands' commands "$@"
 }
+(( $+functions[_eruptionctl__canvas__help__hue_commands] )) ||
+_eruptionctl__canvas__help__hue_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas help hue commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__hue_commands] )) ||
+_eruptionctl__canvas__hue_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas hue commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__canvas__hue_commands] )) ||
+_eruptionctl__help__canvas__hue_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help canvas hue commands' commands "$@"
+}
 (( $+functions[_eruptionctl__color-schemes__help__import_commands] )) ||
 _eruptionctl__color-schemes__help__import_commands() {
     local commands; commands=(
@@ -1487,6 +1637,21 @@ _eruptionctl__scripts__help__info_commands() {
 _eruptionctl__scripts__info_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts info commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__help__lightness_commands] )) ||
+_eruptionctl__canvas__help__lightness_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas help lightness commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__lightness_commands] )) ||
+_eruptionctl__canvas__lightness_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas lightness commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__canvas__lightness_commands] )) ||
+_eruptionctl__help__canvas__lightness_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help canvas lightness commands' commands "$@"
 }
 (( $+functions[_eruptionctl__color-schemes__help__list_commands] )) ||
 _eruptionctl__color-schemes__help__list_commands() {
@@ -1705,6 +1870,21 @@ _eruptionctl__color-schemes__remove_commands() {
 _eruptionctl__help__color-schemes__remove_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help color-schemes remove commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__help__saturation_commands] )) ||
+_eruptionctl__canvas__help__saturation_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas help saturation commands' commands "$@"
+}
+(( $+functions[_eruptionctl__canvas__saturation_commands] )) ||
+_eruptionctl__canvas__saturation_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl canvas saturation commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__canvas__saturation_commands] )) ||
+_eruptionctl__help__canvas__saturation_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help canvas saturation commands' commands "$@"
 }
 (( $+functions[_eruptionctl__help__scripts_commands] )) ||
 _eruptionctl__help__scripts_commands() {
