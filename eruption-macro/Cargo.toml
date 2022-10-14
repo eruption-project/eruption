@@ -32,7 +32,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.13", features = ["derive"] }
+clap =  { version = "4.0.15", features = ["derive"] }
 clap_complete = "4.0.2"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"
@@ -41,7 +41,7 @@ pretty_env_logger = "0.4.0"
 comfy-table = "6.1.0"
 libc = "0.2.135"
 nix = "0.25.0"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.21.2", features = ["full"] }
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
@@ -53,11 +53,7 @@ color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.22", features = ["serde"] }
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
-# lua-src = "544.0.1"
-# mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
-# luajit-src = "210.3.2+resty1085a4d"
-# mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.8.4", features = ["lua54"] }
+mlua = { version = "0.8.4", features = ["lua54", "vendored"] }
 regex = "1.6.0"
 dbus = "0.9.6"
 dbus-tokio = "0.7.5"

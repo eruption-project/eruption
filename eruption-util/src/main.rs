@@ -215,6 +215,7 @@ Copyright (c) 2019-2022, The Eruption Development Team
     );
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -247,6 +248,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 /// Spawns the keyboard events thread and executes it's main loop
 fn spawn_keyboard_input_thread(
@@ -369,9 +371,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     // register ctrl-c handler
     let (ctrl_c_tx, ctrl_c_rx) = unbounded();

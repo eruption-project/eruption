@@ -16,29 +16,23 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-[package]
-name = "simple-example-01"
-version = "0.0.2"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
-edition = "2021"
-repository = "https://github.com/X3n0m0rph59/eruption.git"
-homepage = "https://eruption-project.org"
-keywords = ["eruption", "linux", "led", "driver", "sdk"]
-categories = ["hardware-support"]
-license = "LGPL-3.0"
-readme = "README.md"
-resolver = "2"
+name = "Hardware Acceleration"
+description = "Hardware accelerated effects using GLSL compute shader programs"
+version = "0.0.1"
+author = "The Eruption Development Team"
+min_supported_version = "0.3.0"
+tags = ['Effect', 'Vendor']
 
-[dependencies]
-cfg-if = "1.0.0"
-log = "0.4.17"
-thiserror = "1.0.37"
-eyre = "0.6.8"
-color-eyre = "0.6.2"
-clap = "4.0.15"
-lazy_static = "1.4.0"
-i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
-rust-embed = "6.4.1"
-unic-langid = "0.9.0"
-icecream = "0.1.0"
-eruption-sdk = { path = "../../../lib/rust/eruption-rs" }
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
+default = 0.5
+
+[[config]]
+type = 'string'
+name = 'shader_program'
+description = 'GLSL compute shader program file'
+default = 'shaders/mandelbrot.comp.glsl'

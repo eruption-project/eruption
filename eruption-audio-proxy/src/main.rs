@@ -530,9 +530,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     let opts = Options::parse();
     let daemon = matches!(opts.command, Subcommands::Daemon);
@@ -636,6 +636,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     Ok(())
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -668,6 +669,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {

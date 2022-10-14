@@ -137,7 +137,7 @@ function on_startup(config)
 end
 
 function on_hid_event(event_type, arg1)
-    debug("Macros: HID event: " .. event_type .. " args: " .. arg1)
+    trace("Macros: HID event: " .. event_type .. " args: " .. arg1)
 
     local key_code = arg1
 
@@ -363,7 +363,7 @@ function on_hid_event(event_type, arg1)
 end
 
 function on_mouse_hid_event(event_type, arg1)
-    debug("Macros: HID event (mouse): " .. event_type .. " args: " .. arg1)
+    trace("Macros: HID event (mouse): " .. event_type .. " args: " .. arg1)
 
     if event_type == 1 then
         -- DPI change event
@@ -415,7 +415,7 @@ function on_mouse_hid_event(event_type, arg1)
 end
 
 function on_key_down(key_index)
-    debug("Macros: Key down: Index: " .. key_index)
+    trace("Macros: Key down: Index: " .. key_index)
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -525,7 +525,7 @@ function on_key_down(key_index)
 end
 
 function on_key_up(key_index)
-    debug("Macros: Key up: Index: " .. key_index)
+    trace("Macros: Key up: Index: " .. key_index)
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -569,7 +569,7 @@ function on_key_up(key_index)
 end
 
 function on_mouse_button_down(button_index)
-    debug("Macros: Mouse down: Button: " .. button_index)
+    trace("Macros: Mouse down: Button: " .. button_index)
 
     -- call complex macros on the Easy Shift+ layer (layer 4)
     if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and
@@ -584,7 +584,7 @@ function on_mouse_button_down(button_index)
 end
 
 function on_mouse_button_up(button_index)
-    debug("Macros: Mouse up: Button: " .. button_index)
+    trace("Macros: Mouse up: Button: " .. button_index)
 
     -- call complex macros on the Easy Shift+ layer (layer 4)
     if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and
@@ -599,7 +599,7 @@ function on_mouse_button_up(button_index)
 end
 
 function on_mouse_wheel(direction)
-    debug("Macros: Mouse wheel: Direction: " .. direction)
+    trace("Macros: Mouse wheel: Direction: " .. direction)
 
     -- call complex macros on the Easy Shift+ layer (layer 4)
     if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled and

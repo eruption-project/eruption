@@ -23,7 +23,7 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 ```shell
 sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse lua lua-socket gtksourceview4
-sudo pacman -Sy gcc pkgconf make cmake protobuf xorg-server-devel libxrandr gtk3
+sudo pacman -Sy gcc pkgconf make cmake python vulkan-headers protobuf xorg-server-devel libxrandr gtk3
 ```
 
 #### On Fedora-based distros

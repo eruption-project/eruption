@@ -4,12 +4,12 @@ pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
 pkgver='0.3.0'
-pkgrel='1'
+pkgrel='3'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
-depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'gtksourceview4')
-makedepends=('git' 'rust' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'gtk3')
+depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4')
+makedepends=('git' 'rust' 'python' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'vulkan-headers' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtk3')
 provides=('eruption')
 conflicts=('eruption' 'eruption-roccat-vulcan')
 replaces=('eruption-roccat-vulcan-git')
@@ -38,6 +38,7 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/keymaps"
+    mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/shaders"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/keyboards"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/mice"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/hwdevices/misc"

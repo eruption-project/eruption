@@ -16,29 +16,39 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-[package]
-name = "simple-example-01"
-version = "0.0.2"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
-edition = "2021"
-repository = "https://github.com/X3n0m0rph59/eruption.git"
-homepage = "https://eruption-project.org"
-keywords = ["eruption", "linux", "led", "driver", "sdk"]
-categories = ["hardware-support"]
-license = "LGPL-3.0"
-readme = "README.md"
-resolver = "2"
+id = '59c62fa6-d865-55cb-a0ef-e87d29713119'
+name = 'Shader Demo'
+description = 'Shader Demo (Hardware accelerated)'
+active_scripts = [
+    'hwaccel.lua',
+#   'impact.lua',
+#   'raindrops.lua',
+#   'dim-zone.lua',
+    'macros.lua',
+#   'stats.lua',
+]
 
-[dependencies]
-cfg-if = "1.0.0"
-log = "0.4.17"
-thiserror = "1.0.37"
-eyre = "0.6.8"
-color-eyre = "0.6.2"
-clap = "4.0.15"
-lazy_static = "1.4.0"
-i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
-rust-embed = "6.4.1"
-unic-langid = "0.9.0"
-icecream = "0.1.0"
-eruption-sdk = { path = "../../../lib/rust/eruption-rs" }
+[[config."Hardware Acceleration"]]
+type = 'string'
+name = 'shader_program'
+value = 'shaders/mandelbrot.comp.glsl'
+default = 'shaders/mandelbrot.comp.glsl'
+
+# dim a specific zone, e.g. if the mouse LEDs are too bright
+[[config."Dim Zone"]]
+type = 'int'
+name = 'zone_start'
+value = 144
+default = 144
+
+[[config."Dim Zone"]]
+type = 'int'
+name = 'zone_end'
+value = 180
+default = 180
+
+[[config."Dim Zone"]]
+type = 'float'
+name = 'opacity'
+value = 0.95
+default = 0.95

@@ -755,6 +755,7 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     Ok(dbus_api_tx)
 }
 
+/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -787,6 +788,7 @@ mod thread_util {
         Ok(())
     }
 }
+*/
 
 pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
@@ -1016,9 +1018,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    // #[cfg(debug_assertions)]
+    // thread_util::deadlock_detector()
+    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     info!(
         "Starting eruption-process-monitor: Version {}",
