@@ -770,11 +770,12 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             e
         });
 
-        let _ = ui::process_monitor::initialize_process_monitor_page(application, builder)
-            .map_err(|e| {
+        let _ = ui::process_monitor::initialize_process_monitor_page(application, builder).map_err(
+            |e| {
                 eprintln!("Error updating the main window: {:?}", e);
                 e
-            });
+            },
+        );
 
         let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
             eprintln!("Error updating the main window: {:?}", e);

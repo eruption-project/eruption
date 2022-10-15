@@ -50,8 +50,8 @@ mod error_log;
 mod logger;
 mod preferences;
 mod profiles;
-mod timers;
 mod scripting;
+mod timers;
 mod ui;
 mod util;
 

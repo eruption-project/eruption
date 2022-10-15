@@ -248,9 +248,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::CANVAS_HSL.lock().0;
                     i.append(result);
 
@@ -260,8 +258,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().0 = i.read::<f64>()?;
                     script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
@@ -280,9 +277,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::CANVAS_HSL.lock().1;
                     i.append(result);
 
@@ -292,8 +287,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().1 = i.read::<f64>()?;
                     script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
@@ -312,9 +306,7 @@ impl DbusApi {
             .access(Access::ReadWrite)
             .auto_emit_on_set(true)
             .on_get(|i, m| {
-                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
-                {
+                if perms::has_monitor_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false) {
                     let result = crate::CANVAS_HSL.lock().2;
                     i.append(result);
 
@@ -324,8 +316,7 @@ impl DbusApi {
                 }
             })
             .on_set(|i, m| {
-                if perms::has_settings_permission_cached(&m.msg.sender().unwrap())
-                    .unwrap_or(false)
+                if perms::has_settings_permission_cached(&m.msg.sender().unwrap()).unwrap_or(false)
                 {
                     crate::CANVAS_HSL.lock().2 = i.read::<f64>()?;
                     script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
