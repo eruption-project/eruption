@@ -711,6 +711,13 @@ fn run_main_loop(
                         "Could not process a keyboard event: {}",
                         event.as_ref().unwrap_err()
                     );
+
+                    (*crate::KEYBOARD_DEVICES.read()[0])
+                        .write()
+                        .as_device_mut()
+                        .close_all()
+                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .ok();
                 }
             };
 
@@ -736,6 +743,13 @@ fn run_main_loop(
                         "Could not process a mouse event: {}",
                         event.as_ref().unwrap_err()
                     );
+
+                    (*crate::MOUSE_DEVICES.read()[0])
+                        .write()
+                        .as_device_mut()
+                        .close_all()
+                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .ok();
                 }
             };
 
