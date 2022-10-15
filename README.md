@@ -1,11 +1,24 @@
-![logo](docs/assets/eruption.jpg)
+![Eruption logo](docs/assets/eruption.webp)
 
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
-![Stars](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
+![License](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
+![Crates.io](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
+![Downloads](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
 
-![Stars](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
-![Stars](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
+<div align="center">
+  <br></br>
+  <a href="https://www.gnu.org/">
+    <img src="docs/assets/GPLv3_Logo.svg" height="50" alt="GPLv3 logo" />
+  </a>&nbsp;&nbsp;
+  <a href="https://www.rust-lang.org/">
+    <img src="docs/assets/rustacean-orig-noshadow.svg" height="50" alt="Rustacean logo" />
+  </a>&nbsp;&nbsp;
+  <a href="https://kernel.org/">
+    <img src="docs/assets/tux.svg" height="50" alt="Linux Tux" />
+  </a>&nbsp;&nbsp;
+  <br></br>
+</div>
 
 # Table of Contents
 
