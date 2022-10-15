@@ -36,16 +36,16 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    #[clap(about(tr!("canvas-about")))]
-    Canvas {
-        #[clap(subcommand)]
-        command: canvas::CanvasSubcommands,
-    },
-
-    #[clap(about(tr!("config-about")))]
+    #[clap(about(tr!("config-about")), display_order(0))]
     Config {
         #[clap(subcommand)]
         command: config::ConfigSubcommands,
+    },
+
+    #[clap(about(tr!("canvas-about")), display_order(1))]
+    Canvas {
+        #[clap(subcommand)]
+        command: canvas::CanvasSubcommands,
     },
 
     #[clap(about(tr!("color-scheme-about")))]
