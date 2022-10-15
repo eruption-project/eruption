@@ -197,7 +197,10 @@ pub fn spawn_keyboard_input_thread(
                                 KEY_STATES
                                     .write()
                                     .get_mut(index)
-                                    .and_then(|v| Some(*v = is_pressed));
+                                    .map(|v| {
+                                        *v = is_pressed;
+                                        
+                                    });
                             }
                         }
 

@@ -22,7 +22,7 @@
 use crate::constants;
 use indexmap::IndexMap;
 use log::*;
-use nix;
+
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::os::unix::prelude::{MetadataExt, OpenOptionsExt};
@@ -857,7 +857,7 @@ type = 'bool'
 value = true
         "#;
 
-        let mut de_profile = toml::de::from_str::<Profile>(&lit_toml)?;
+        let mut de_profile = toml::de::from_str::<Profile>(lit_toml)?;
         de_profile.profile_file = PathBuf::from("test.profile");
 
         assert_eq!(lit_profile, de_profile);

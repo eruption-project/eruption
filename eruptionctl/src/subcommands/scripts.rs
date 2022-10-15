@@ -19,7 +19,7 @@
 
 use std::path::PathBuf;
 
-use clap;
+
 use colored::*;
 use same_file::is_same_file;
 

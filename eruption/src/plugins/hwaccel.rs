@@ -130,7 +130,7 @@ impl HwAccelerationPlugin {
 
         // initialize the device...
         let (device, mut queues) = Device::new(
-            physical_device.clone(),
+            physical_device,
             DeviceCreateInfo {
                 enabled_extensions: device_extensions,
                 queue_create_infos: vec![QueueCreateInfo {
@@ -200,7 +200,7 @@ impl HwAccelerationPlugin {
 
                 let shader = if let Ok(shader_path) = util::match_script_path(&shader_path) {
                     let artifact = Self::compile_shader(&shader_path)?;
-                    unsafe { ShaderModule::from_bytes(device.clone(), &artifact.as_binary_u8()) }?
+                    unsafe { ShaderModule::from_bytes(device.clone(), artifact.as_binary_u8()) }?
                 } else {
                     return Err(HwAccelerationPluginError::ShaderCompilationError {
                         description: shader_path.to_string(),
@@ -328,7 +328,7 @@ impl HwAccelerationPlugin {
         // icecream::ice!(&data_buffer_content);
 
         *HWACCEL_STATE.write() = Some(State {
-            device: device.clone(),
+            device,
         });
 
         Ok(())
@@ -340,12 +340,12 @@ impl HwAccelerationPlugin {
 
         options.add_macro_definition("EP", Some("main"));
 
-        let shader_source = std::fs::read_to_string(&shader_path.as_ref())?;
+        let shader_source = std::fs::read_to_string(shader_path.as_ref())?;
 
         let binary_result = compiler.compile_into_spirv(
             &shader_source,
             shaderc::ShaderKind::Compute,
-            &shader_path.as_ref().to_str().unwrap().to_owned(),
+            shader_path.as_ref().to_str().unwrap(),
             "main",
             Some(&options),
         )?;
@@ -367,7 +367,7 @@ impl HwAccelerationPlugin {
                 .device_name
                 .clone();
 
-            result.insert("device".to_string(), device_name.to_string());
+            result.insert("device".to_string(), device_name);
             result.insert("backend".to_string(), "Vulkan".to_string());
             result.insert("acceleration-available".to_string(), "true".to_string());
         } else {
@@ -423,7 +423,8 @@ impl Plugin for HwAccelerationPlugin {
         globals.set("hwaccel_status", hwaccel_status)?;
 
         let hwaccel_tick = lua_ctx.create_function(move |_, (delta,): (i32,)| {
-            Ok(HwAccelerationPlugin::hwaccel_tick(delta))
+            HwAccelerationPlugin::hwaccel_tick(delta);
+            Ok(())
         })?;
         globals.set("hwaccel_tick", hwaccel_tick)?;
 

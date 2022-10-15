@@ -241,7 +241,10 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                                 KEY_STATES
                                     .write()
                                     .get_mut(index as usize)
-                                    .and_then(|v| Some(*v = true));
+                                    .map(|v| {
+                                        *v = true;
+                                        
+                                    });
                             }
 
                             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
@@ -295,7 +298,10 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                                 KEY_STATES
                                     .write()
                                     .get_mut(index as usize)
-                                    .and_then(|v| Some(*v = false));
+                                    .map(|v| {
+                                        *v = false;
+                                        
+                                    });
                             }
 
                             *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
