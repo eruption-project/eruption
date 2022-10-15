@@ -403,6 +403,8 @@ impl RoccatKoneProAir {
                 }
 
                 cntr += 1;
+
+                thread::sleep(Duration::from_millis(10));
             }
 
             Ok(DeviceStatus(table))
@@ -1169,11 +1171,13 @@ impl MouseDeviceTrait for RoccatKoneProAir {
                                 Err(e) => error!("Error in poll loop: {}", e),
                             }
 
-                            if poll_cntr >= 15 {
+                            if poll_cntr >= 5 {
                                 break 'POLL_LOOP;
                             }
 
                             poll_cntr += 1;
+
+                            thread::sleep(Duration::from_millis(10));
                         }
                     }
 

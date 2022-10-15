@@ -10,6 +10,7 @@ Table of new and noteworthy changes:
 | 0.3.0 | Add support for hardware accelerated rendering of effects using `GLSL` compute shaders |
 | 0.3.0 | Add new script: `hwaccel.lua` that utilizes the newly added hardware acceleration features |
 | 0.3.0 | Add new profile using hardware accelerated effects: `shader-demo.profile` |
+| 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air` |
 | 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |

@@ -2,6 +2,8 @@
 Description=Realtime RGB LED Driver for Linux
 Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
 Wants=basic.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
 
 [Service]
 Environment=LAUNCHED_BY_SYSTEMD=1
@@ -12,8 +14,8 @@ ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
 ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
 TimeoutStopSec=10
 Type=exec
-Restart=no
-WatchdogSec=10
+Restart=always
+WatchdogSec=8
 WatchdogSignal=SIGKILL
 CPUSchedulingPolicy=rr
 CPUSchedulingPriority=20
