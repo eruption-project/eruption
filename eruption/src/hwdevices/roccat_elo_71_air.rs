@@ -692,6 +692,10 @@ impl MiscDeviceTrait for RoccatElo71Air {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
+            // the device probably has failed or has been disconnected
+            self.is_initialized = false;
+            self.has_failed = true;
+
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
