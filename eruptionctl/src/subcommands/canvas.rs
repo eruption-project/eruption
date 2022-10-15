@@ -42,53 +42,65 @@ pub enum CanvasSubcommands {
 
 pub async fn handle_command(command: CanvasSubcommands) -> Result<()> {
     match command {
-        CanvasSubcommands::Hue { hue } => {
-            if let Some(hue) = hue {
-                set_canvas_hue(hue)
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-            } else {
-                let result = get_canvas_hue()
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-                println!("{}", format!("Hue: {}", format!("{}", result).bold()));
-            }
-        }
+        CanvasSubcommands::Hue { hue } => hue_command(hue).await?,
 
-        CanvasSubcommands::Saturation { saturation } => {
-            if let Some(saturation) = saturation {
-                set_canvas_saturation(saturation)
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-            } else {
-                let result = get_canvas_saturation()
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-                println!(
-                    "{}",
-                    format!("Saturation: {}", format!("{}", result).bold())
-                );
-            }
-        }
+        CanvasSubcommands::Saturation { saturation } => saturation_command(saturation).await?,
 
-        CanvasSubcommands::Lightness { lightness } => {
-            if let Some(lightness) = lightness {
-                set_canvas_lightness(lightness)
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-            } else {
-                let result = get_canvas_lightness()
-                    .await
-                    .wrap_err("Could not connect to the Eruption daemon")
-                    .suggestion("Please verify that the Eruption daemon is running")?;
-                println!("{}", format!("Lightness: {}", format!("{}", result).bold()));
-            }
-        }
+        CanvasSubcommands::Lightness { lightness } => lightness_command(lightness).await?,
+    }
+
+    Ok(())
+}
+
+async fn hue_command(hue: Option<f64>) -> Result<()> {
+    if let Some(hue) = hue {
+        set_canvas_hue(hue)
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+    } else {
+        let result = get_canvas_hue()
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+        println!("{}", format!("Hue: {}", format!("{}", result).bold()));
+    }
+
+    Ok(())
+}
+
+async fn saturation_command(saturation: Option<f64>) -> Result<()> {
+    if let Some(saturation) = saturation {
+        set_canvas_saturation(saturation)
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+    } else {
+        let result = get_canvas_saturation()
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+        println!(
+            "{}",
+            format!("Saturation: {}", format!("{}", result).bold())
+        );
+    }
+
+    Ok(())
+}
+
+async fn lightness_command(lightness: Option<f64>) -> Result<()> {
+    if let Some(lightness) = lightness {
+        set_canvas_lightness(lightness)
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+    } else {
+        let result = get_canvas_lightness()
+            .await
+            .wrap_err("Could not connect to the Eruption daemon")
+            .suggestion("Please verify that the Eruption daemon is running")?;
+        println!("{}", format!("Lightness: {}", format!("{}", result).bold()));
     }
 
     Ok(())
