@@ -17,8 +17,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-#![allow(dead_code)]
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -26,7 +24,6 @@ use std::process::Command;
 use crate::constants;
 use crate::profiles;
 use crate::profiles::Profile;
-use crate::scripting::manifest::{self, Manifest, ManifestError};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -50,87 +47,44 @@ pub enum UtilError {
 }
 
 pub fn get_profile_dirs() -> Vec<PathBuf> {
-    let mut result = vec![];
-
-    let config = crate::CONFIG.lock();
-
-    let profile_dirs = config
-        .as_ref()
-        .unwrap()
-        .get::<Vec<String>>("global.profile_dirs")
-        .unwrap_or_else(|_| vec![]);
-
-    let mut profile_dirs = profile_dirs
-        .iter()
-        .map(PathBuf::from)
-        .collect::<Vec<PathBuf>>();
-
-    result.append(&mut profile_dirs);
-
-    // if we could not determine a valid set of paths, use a hard coded fallback instead
-    if result.is_empty() {
-        log::warn!("Using default fallback profile directory");
-
-        let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
-        result.push(path);
-    }
-
-    result
+    get_dirs(
+        "global.profile_dirs",
+        constants::DEFAULT_PROFILE_DIR,
+        "profile",
+    )
 }
 
 pub fn get_script_dirs() -> Vec<PathBuf> {
-    let mut result = vec![];
+    get_dirs(
+        "global.script_dirs",
+        constants::DEFAULT_SCRIPT_DIR,
+        "script",
+    )
+}
 
+fn get_dirs(config_key: &str, fallback_dir: &str, fallback_description: &str) -> Vec<PathBuf> {
     let config = crate::CONFIG.lock();
 
     let script_dirs = config
         .as_ref()
         .unwrap()
-        .get::<Vec<String>>("global.script_dirs")
+        .get::<Vec<String>>(config_key)
         .unwrap_or_else(|_| vec![]);
 
-    let mut script_dirs = script_dirs
+    let mut result = script_dirs
         .iter()
         .map(PathBuf::from)
         .collect::<Vec<PathBuf>>();
 
-    result.append(&mut script_dirs);
-
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback script directory");
+        log::warn!("Using default fallback {} directory", fallback_description);
 
-        let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
+        let path = PathBuf::from(fallback_dir);
         result.push(path);
     }
 
     result
-}
-
-pub fn enumerate_scripts() -> Result<Vec<Manifest>> {
-    manifest::get_scripts()
-}
-
-/// Returns the absolute path of a script file
-pub fn match_script_file(script: &Path) -> Result<PathBuf> {
-    let scripts = manifest::get_script_files()?;
-
-    for f in scripts {
-        if f.file_name().unwrap_or_default() == script {
-            return Ok(f);
-        }
-    }
-
-    Err(ManifestError::ScriptEnumerationError {}.into())
-}
-
-pub fn enumerate_profiles() -> Result<Vec<profiles::Profile>> {
-    let mut result = profiles::get_profiles()?;
-
-    // sort profiles by their name
-    result.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name));
-
-    Ok(result)
 }
 
 /// Returns the associated manifest path in `PathBuf` for the script `script_path`.
@@ -204,7 +158,7 @@ pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
             Err(err) => Err(UtilError::ProfileError { err }.into()),
         }
     } else {
-        let profiles = enumerate_profiles().unwrap_or_else(|_| vec![]);
+        let profiles = profiles::get_profiles().unwrap_or_else(|_| vec![]);
         let profile = profiles
             .into_iter()
             .find(|p| p.profile_file.to_string_lossy() == profile_name);
@@ -219,51 +173,28 @@ pub fn match_profile_by_name(profile_name: &str) -> Result<Profile> {
 }
 
 pub fn match_profile_path<P: AsRef<Path>>(profile_file: &P) -> Result<PathBuf> {
-    let profile_file = profile_file.as_ref();
-
-    let mut result = Err(UtilError::FileNotFound {
-        description: format!(
-            "Could not find file in search path(s): {}",
-            &profile_file.display()
-        ),
-    }
-    .into());
-
-    'DIR_LOOP: for dir in get_profile_dirs().iter() {
-        let profile_path = dir.join(profile_file);
-
-        if let Ok(metadata) = fs::metadata(&profile_path) {
-            if metadata.is_file() {
-                result = Ok(profile_path);
-                break 'DIR_LOOP;
-            }
-        }
-    }
-
-    result
+    match_path(get_profile_dirs(), profile_file)
 }
 
 pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
-    let script_file = script_file.as_ref();
+    match_path(get_script_dirs(), script_file)
+}
 
-    let mut result = Err(UtilError::FileNotFound {
-        description: format!(
-            "Could not find file in search path(s): {}",
-            &script_file.display()
-        ),
-    }
-    .into());
+fn match_path<P: AsRef<Path>>(dirs: Vec<PathBuf>, file: &P) -> Result<PathBuf> {
+    let file = file.as_ref();
 
-    'DIR_LOOP: for dir in get_script_dirs().iter() {
-        let script_path = dir.join(script_file);
+    for dir in dirs.iter() {
+        let profile_path = dir.join(file);
 
-        if let Ok(metadata) = fs::metadata(&script_path) {
+        if let Ok(metadata) = fs::metadata(&profile_path) {
             if metadata.is_file() {
-                result = Ok(script_path);
-                break 'DIR_LOOP;
+                return Ok(profile_path);
             }
         }
     }
 
-    result
+    Err(UtilError::FileNotFound {
+        description: format!("Could not find file in search path(s): {}", &file.display()),
+    }
+    .into())
 }
