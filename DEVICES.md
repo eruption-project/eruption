@@ -62,7 +62,7 @@ Hardware feature support matrix
 | ROCCAT | Kain 2xx AIMO        | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone XP              | ??%    | Yes      | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Pro             | ??%    | Yes      | No   | No        | No       | No             | No  | N.a.       | N.a.           |
-| ROCCAT | Kone Pro Air         | ??%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
+| ROCCAT | Kone Pro Air         | 60%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kone Aimo Remastered | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kova AIMO            | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
@@ -95,6 +95,12 @@ Experimental drivers are `disabled` in the default configuration!
 To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
 ```toml
 driver_maturity_level = "experimental"
+```
+
+After that, please restart the eruption daemon
+
+```shell
+sudo systemctl restart eruption.service
 ```
 
 ## ROCCAT Vulcan 100/12x series keyboard

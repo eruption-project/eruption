@@ -91,7 +91,7 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 - [x] ROCCAT Kain 2xx AIMO (as of version `0.1.23`, testing)
 - [ ] ROCCAT Kone XP (work-in-progress, as of version `0.2.0`, experimental)
 - [ ] ROCCAT Kone Pro (work-in-progress, as of version `0.2.0`, experimental)
-- [ ] ROCCAT Kone Pro Air (work-in-progress, as of version `0.2.0`, experimental)
+- [x] ROCCAT Kone Pro Air (work-in-progress, as of version `0.2.0`, testing)
 - [ ] ROCCAT Kone Aimo (experimental)
 - [ ] ROCCAT Kone Aimo Remastered (experimental)
 - [ ] ROCCAT Kova AIMO (testing)

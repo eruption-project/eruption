@@ -114,8 +114,8 @@ lazy_static! {
 
         MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88, &roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
-        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
 
         MouseDriver::register("ROCCAT", "Kain 100 AIMO",     0x1e7d, 0x2d00, &roccat_kain_100::bind_hiddev, MaturityLevel::Experimental),
 
