@@ -27,12 +27,13 @@ use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use same_file::is_same_file;
 use std::sync::atomic::Ordering;
 
+use crate::dbus_client;
+use crate::dbus_client::dbus_system_bus;
 use crate::profiles::Profile;
 use crate::scripting::manifest::Manifest;
 use crate::scripting::parameters::{
     ManifestParameter, ManifestValue, ProfileParameter, TypedValue,
 };
-use crate::{dbus_client, dbus_system_bus};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

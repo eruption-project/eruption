@@ -28,67 +28,69 @@ mod scripts;
 mod status;
 mod switch;
 
+use crate::translations::tr;
+
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    #[clap(about(crate::CONFIG_ABOUT.as_str()))]
+    #[clap(about(tr!("config-about")))]
     Config {
         #[clap(subcommand)]
         command: config::ConfigSubcommands,
     },
 
-    #[clap(about(crate::COLOR_SCHEME_ABOUT.as_str()))]
+    #[clap(about(tr!("color-scheme-about")))]
     ColorSchemes {
         #[clap(subcommand)]
         command: color_schemes::ColorSchemesSubcommands,
     },
 
-    #[clap(about(crate::DEVICES_ABOUT.as_str()))]
+    #[clap(about(tr!("devices-about")))]
     Devices {
         #[clap(subcommand)]
         command: devices::DevicesSubcommands,
     },
 
-    #[clap(about(crate::STATUS_ABOUT.as_str()))]
+    #[clap(about(tr!("status-about")))]
     Status {
         #[clap(subcommand)]
         command: status::StatusSubcommands,
     },
 
-    #[clap(about(crate::SWITCH_ABOUT.as_str()))]
+    #[clap(about(tr!("switch-about")))]
     Switch {
         #[clap(subcommand)]
         command: switch::SwitchSubcommands,
     },
 
-    #[clap(about(crate::PROFILES_ABOUT.as_str()))]
+    #[clap(about(tr!("profiles-about")))]
     Profiles {
         #[clap(subcommand)]
         command: profiles::ProfilesSubcommands,
     },
 
-    #[clap(about(crate::NAMES_ABOUT.as_str()))]
+    #[clap(about(tr!("names-about")))]
     Names {
         #[clap(subcommand)]
         command: names::NamesSubcommands,
     },
 
-    #[clap(about(crate::SCRIPTS_ABOUT.as_str()))]
+    #[clap(about(tr!("scripts-about")))]
     Scripts {
         #[clap(subcommand)]
         command: scripts::ScriptsSubcommands,
     },
 
-    #[clap(about(crate::PARAM_ABOUT.as_str()))]
+    #[clap(about(tr!("param-about")))]
     Param {
         script: Option<String>,
         parameter: Option<String>,
         value: Option<String>,
     },
 
-    #[clap(about(crate::COMPLETIONS_ABOUT.as_str()))]
+    #[clap(about(tr!("completions-about")))]
     Completions { shell: clap_complete::Shell },
 }
 

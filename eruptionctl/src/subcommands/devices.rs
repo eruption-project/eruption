@@ -30,7 +30,7 @@ use comfy_table::{Cell, CellAlignment, ContentArrangement, Table};
 use eyre::Context;
 use std::sync::atomic::Ordering;
 
-use crate::dbus_system_bus;
+use crate::dbus_client::dbus_system_bus;
 use crate::device;
 use crate::tr;
 

@@ -24,7 +24,8 @@ use color_eyre::Help;
 use colored::*;
 use eyre::Context;
 
-use crate::{constants, dbus_system_bus, util};
+use crate::dbus_client::dbus_system_bus;
+use crate::{constants, util};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

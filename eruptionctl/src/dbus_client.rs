@@ -24,9 +24,32 @@ use crate::{
     constants,
 };
 use dbus::blocking::Connection;
-use std::time::Duration;
+use dbus::nonblock;
+use dbus_tokio::connection;
+use std::{sync::Arc, time::Duration};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
+
+/// Returns a connection to the D-Bus system bus using the specified `path`
+pub async fn dbus_system_bus(
+    path: &str,
+) -> Result<dbus::nonblock::Proxy<'_, Arc<dbus::nonblock::SyncConnection>>> {
+    let (resource, conn) = connection::new_system_sync()?;
+
+    tokio::spawn(async {
+        let err = resource.await;
+        panic!("Lost connection to D-Bus: {}", err);
+    });
+
+    let proxy = nonblock::Proxy::new(
+        "org.eruption",
+        path,
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        conn,
+    );
+
+    Ok(proxy)
+}
 
 pub fn set_parameter(
     profile_file: &str,

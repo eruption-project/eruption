@@ -130,10 +130,7 @@ async fn import_pywal(file_name: Option<PathBuf>, optimize: bool) -> Result<()> 
     let file_name = if let Some(path) = file_name {
         path
     } else {
-        PathBuf::from(format!(
-            "/home/{}/.cache/wal/colors.json",
-            env::var("LOGNAME")?
-        ))
+        PathBuf::from(env::var("HOME")?).join(".cache/wal/colors.json")
     };
 
     println!(

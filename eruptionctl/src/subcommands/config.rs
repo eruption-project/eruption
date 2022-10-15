@@ -23,7 +23,7 @@ use colored::*;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use eyre::Context;
 
-use crate::dbus_system_bus;
+use crate::dbus_client::dbus_system_bus;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

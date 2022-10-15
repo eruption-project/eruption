@@ -23,7 +23,7 @@ use clap;
 use colored::*;
 use same_file::is_same_file;
 
-use crate::scripting::manifest::Manifest;
+use crate::scripting::manifest::{self, Manifest};
 use crate::util;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -50,7 +50,7 @@ pub async fn handle_command(command: ScriptsSubcommands) -> Result<()> {
 }
 
 async fn edit_command(script_name: String) -> Result<()> {
-    match find_script_by_name(util::enumerate_scripts()?, &script_name, true) {
+    match find_script_by_name(&script_name) {
         Some(manifest) => util::edit_file(&manifest.script_file)?,
         None => eprintln!("Script not found."),
     }
@@ -67,7 +67,7 @@ async fn list_command() -> Result<()> {
 }
 
 async fn info_command(script_name: String) -> Result<()> {
-    match find_script_by_name(util::enumerate_scripts()?, &script_name, true) {
+    match find_script_by_name(&script_name) {
         Some(script) => {
             let empty = vec![];
             println!(
@@ -88,7 +88,7 @@ async fn info_command(script_name: String) -> Result<()> {
 
 /// Enumerate all available scripts
 fn get_script_list() -> Result<Vec<(String, String)>> {
-    let scripts = util::enumerate_scripts()?;
+    let scripts = manifest::get_scripts()?;
 
     let result = scripts
         .iter()
@@ -103,25 +103,27 @@ fn get_script_list() -> Result<Vec<(String, String)>> {
     Ok(result)
 }
 
-fn find_script_by_name(
-    scripts: Vec<Manifest>,
-    script_name: &str,
-    load_script_if_file: bool,
-) -> Option<Manifest> {
+fn find_script_by_name(script_name: &str) -> Option<Manifest> {
     // Find the script specified, either by script name or filename.
     let script_path = PathBuf::from(script_name);
     let script_path = if script_path.is_file() {
-        Some(script_path)
+        if let Ok(script) = Manifest::load(&script_path) {
+            return Some(script);
+        } else {
+            Some(script_path)
+        }
     } else {
         None
     };
 
-    if load_script_if_file && script_path.is_some() {
-        let script_path = script_path.clone()?;
-        if let Ok(script) = Manifest::load(&script_path) {
-            return Some(script);
+    let scripts = manifest::get_scripts();
+    let scripts = match scripts {
+        Ok(scripts) => scripts,
+        Err(err) => {
+            println!("{}", err);
+            return None;
         }
-    }
+    };
 
     scripts
         .into_iter()
