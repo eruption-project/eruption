@@ -23,7 +23,7 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Mutex, RwLock};
 use serde::{self, Deserialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
@@ -549,10 +549,6 @@ impl Into<u8> for LedKind {
     }
 }
 
-/// Generic Device capabilities
-#[derive(Debug, Clone)]
-pub struct DeviceCapabilities {}
-
 /// Generic Device info
 #[derive(Debug, Clone)]
 pub struct DeviceInfo {
@@ -594,6 +590,37 @@ pub struct NonPnPDevice {
     pub class: String,
     pub name: String,
     pub device_file: PathBuf,
+}
+
+/// Represents the capabilities of a hardware device
+#[derive(Debug, Clone)]
+pub struct DeviceCapabilities(HashSet<Capability>);
+
+impl<const N: usize> From<[Capability; N]> for DeviceCapabilities {
+    fn from(caps: [Capability; N]) -> Self {
+        DeviceCapabilities(HashSet::from(caps))
+    }
+}
+
+/// Capabilities that hardware may have
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum Capability {
+    // Categorization
+    Keyboard,
+    Mouse,
+    Misc,
+    Headset,
+    MousePad,
+
+    // Features
+    RgbLighting,
+    HardwareProfiles,
+    PowerManagement,
+
+    DpiSelection,
+    Debounce,
+    DebounceTimeSelection,
+    AngleSnapping,
 }
 
 /// Information about a generic device

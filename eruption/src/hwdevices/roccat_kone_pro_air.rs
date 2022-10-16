@@ -32,7 +32,7 @@ use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, RGBA,
+    MouseDeviceTrait, MouseHidEvent, RGBA, Capability,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -481,7 +481,7 @@ impl RoccatKoneProAir {
 
 impl DeviceInfoTrait for RoccatKoneProAir {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

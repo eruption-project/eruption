@@ -29,8 +29,8 @@ use std::{mem::size_of, sync::Arc};
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MiscDevice,
-    MiscDeviceTrait, MouseDeviceTrait, RGBA,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
+    MiscDevice, MiscDeviceTrait, MouseDeviceTrait, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -293,7 +293,11 @@ impl RoccatAimoPad {
 
 impl DeviceInfoTrait for RoccatAimoPad {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([
+            Capability::Misc,
+            Capability::MousePad,
+            Capability::RgbLighting,
+        ])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

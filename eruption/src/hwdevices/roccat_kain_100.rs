@@ -30,7 +30,7 @@ use crate::constants;
 
 use super::{
     DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, RGBA,
+    MouseDeviceTrait, MouseHidEvent, RGBA, Capability,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -312,7 +312,7 @@ impl RoccatKain100 {
 
 impl DeviceInfoTrait for RoccatKain100 {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

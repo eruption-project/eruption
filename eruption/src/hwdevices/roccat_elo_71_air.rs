@@ -29,8 +29,8 @@ use std::{mem::size_of, sync::Arc};
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MiscDevice,
-    MiscDeviceTrait, MouseDeviceTrait, RGBA,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
+    MiscDevice, MiscDeviceTrait, MouseDeviceTrait, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -419,7 +419,11 @@ impl RoccatElo71Air {
 
 impl DeviceInfoTrait for RoccatElo71Air {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([
+            Capability::Misc,
+            Capability::Headset,
+            Capability::RgbLighting,
+        ])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {
