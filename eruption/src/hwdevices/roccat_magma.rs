@@ -29,8 +29,9 @@ use std::{sync::Arc, thread};
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice,
-    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA, Capability,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
+    KeyboardDevice, KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind,
+    MouseDeviceTrait, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;

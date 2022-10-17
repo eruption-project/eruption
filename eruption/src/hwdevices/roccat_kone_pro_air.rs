@@ -31,8 +31,8 @@ use std::{any::Any, thread};
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, RGBA, Capability,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
+    MouseDevice, MouseDeviceTrait, MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
