@@ -18,7 +18,7 @@
 
 [package]
 name = "eruption-process-monitor"
-version = "0.0.18"
+version = "0.1.1"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A daemon to monitor and introspect system processes and events"
@@ -31,12 +31,12 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["sensors-most"]
-sensors-most = ["sensor-procmon", "sensor-x11", "sensor-mutter"]
+default = ["sensors-all"]
+sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
 sensors-all = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
 sensor-procmon = ["procmon-sys"]
 sensor-x11 = ["x11rb"]
-sensor-wayland = []
+sensor-wayland = ["wayland-client", "wayland-protocols", "wayland-protocols-wlr"]
 sensor-mutter = []
 
 [dependencies]
@@ -76,6 +76,9 @@ lazy_static = "1.4.0"
 walkdir = "2.3.2"
 procmon-sys = { version = "0.0.3", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.10.1", optional = true, features = ["allow-unsafe-code"] }
+wayland-client = { version = "0.30.0-beta.12", features = ["log"], optional = true }
+wayland-protocols = { version = "0.30.0-beta.12", features = ["unstable"], optional = true }
+wayland-protocols-wlr = { version = "0.1.0-beta.12", features = ["client"], optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.1"

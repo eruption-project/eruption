@@ -30,7 +30,7 @@ use x11rb::protocol::xproto::*;
 use x11rb::x11_utils::TryParse;
 use x11rb::xcb_ffi::XCBConnection;
 
-use super::Sensor;
+use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -107,6 +107,12 @@ impl Sensor for X11Sensor {
         self.screen = Some(screen);
 
         Ok(())
+    }
+
+    fn is_enabled(&self) -> bool {
+        SENSORS_CONFIGURATION
+            .lock()
+            .contains(&SensorConfiguration::EnableX11)
     }
 
     fn get_id(&self) -> String {

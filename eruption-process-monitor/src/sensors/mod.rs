@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::sync::Arc;
+use std::{collections::HashSet, hash::Hash, sync::Arc};
 
 use async_trait::async_trait;
 use dyn_clonable::*;
@@ -48,6 +48,59 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 lazy_static! {
     pub(crate) static ref SENSORS: Arc<Mutex<Vec<Box<dyn Sensor + Send + Sync + 'static>>>> =
         Arc::new(Mutex::new(vec![]));
+
+    /// GLobal configuration of sensors
+    pub(crate) static ref SENSORS_CONFIGURATION: Arc<Mutex<HashSet<SensorConfiguration>>> =
+        Arc::new(Mutex::new(HashSet::new()));
+}
+
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum SensorConfiguration {
+    AutodetectFailed,
+
+    EnableProcmon,
+
+    EnableMutter,
+
+    EnableWayland,
+
+    EnableX11,
+}
+
+impl SensorConfiguration {
+    #[allow(unused)]
+    pub fn profile_gnome_desktop() -> HashSet<Self> {
+        HashSet::from_iter([
+            SensorConfiguration::EnableProcmon,
+            SensorConfiguration::EnableMutter,
+        ])
+    }
+
+    #[allow(unused)]
+    pub fn profile_generic_wayland_compositor() -> HashSet<Self> {
+        HashSet::from_iter([
+            SensorConfiguration::EnableProcmon,
+            SensorConfiguration::EnableWayland,
+        ])
+    }
+
+    #[allow(unused)]
+    pub fn profile_generic_x11_desktop() -> HashSet<Self> {
+        HashSet::from_iter([
+            SensorConfiguration::EnableProcmon,
+            SensorConfiguration::EnableX11,
+        ])
+    }
+
+    #[allow(unused)]
+    pub fn profile_all_sensors_enabled() -> HashSet<Self> {
+        HashSet::from_iter([
+            SensorConfiguration::EnableProcmon,
+            SensorConfiguration::EnableMutter,
+            SensorConfiguration::EnableWayland,
+            SensorConfiguration::EnableX11,
+        ])
+    }
 }
 
 #[clonable]
@@ -58,6 +111,7 @@ pub trait Sensor: Clone {
     fn get_id(&self) -> String;
     fn get_name(&self) -> String;
     fn get_description(&self) -> String;
+    fn is_enabled(&self) -> bool;
 
     fn get_usage_example(&self) -> String;
 

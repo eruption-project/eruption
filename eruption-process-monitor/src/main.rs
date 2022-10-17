@@ -17,13 +17,18 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{dbus_client::Message, sensors::PROCESS_SENSOR_FAILED};
+use crate::dbus_client::Message;
+
+#[cfg(feature = "sensor-procmon")]
+use crate::sensors::PROCESS_SENSOR_FAILED;
 
 #[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
 
+use crate::sensors::SensorConfiguration;
 #[cfg(feature = "sensor-wayland")]
 use crate::sensors::WaylandSensorData;
+use crate::sensors::SENSORS_CONFIGURATION;
 
 #[cfg(feature = "sensor-x11")]
 use crate::sensors::X11SensorData;
@@ -52,6 +57,7 @@ use regex::Regex;
 use rust_embed::RustEmbed;
 use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::{env, fmt, fs, path::PathBuf, process, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
 use syslog::Facility;
@@ -113,9 +119,6 @@ lazy_static! {
     /// Signals that we initiated a profile change
     pub static ref PROFILE_CHANGING: AtomicBool = AtomicBool::new(false);
 
-    /// Global "polling works" for the X11 sensor flag
-    pub static ref X11_POLL_SUCCEEDED: AtomicBool = AtomicBool::new(false);
-
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
 }
@@ -129,6 +132,9 @@ pub enum MainError {
 
     #[error("Sensor error: {description}")]
     SensorError { description: String },
+
+    #[error("Environment autodetect error: {description}")]
+    AutodetectError { description: String },
 
     #[error("Could not register Linux process monitoring")]
     ProcMonError {},
@@ -790,6 +796,7 @@ mod thread_util {
 
 pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
+    #[cfg(feature = "sensor-wayland")] wayland_rx: &Receiver<WaylandSensorData>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
     ctrl_c_rx: &Receiver<bool>,
@@ -825,7 +832,11 @@ pub fn run_main_loop(
 
         #[cfg(feature = "sensor-procmon")]
         {
-            if !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst) {
+            if SENSORS_CONFIGURATION
+                .lock()
+                .contains(&SensorConfiguration::EnableProcmon)
+                && !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst)
+            {
                 sel = sel.recv(sysevents_rx, |event| {
                     if let Ok(event) = event {
                         process_system_event(&event)
@@ -837,11 +848,29 @@ pub fn run_main_loop(
             }
         }
 
+        #[cfg(feature = "sensor-wayland")]
+        {
+            if SENSORS_CONFIGURATION
+                .lock()
+                .contains(&SensorConfiguration::EnableWayland)
+            {
+                sel = sel.recv(wayland_rx, |event| {
+                    if let Ok(event) = event {
+                        process_window_event(&event as &dyn WindowSensorData).unwrap_or_else(|e| {
+                            error!("Could not process a Wayland sensor event: {}", e)
+                        });
+                    } else {
+                        error!("{}", event.as_ref().unwrap_err());
+                    }
+                });
+            }
+        }
+
         let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
 
         // poll all pollable sensors that do not notify us via messages
         for sensor in sensors::SENSORS.lock().iter_mut() {
-            if sensor.is_pollable() && !sensor.is_failed() {
+            if sensor.is_enabled() && sensor.is_pollable() && !sensor.is_failed() {
                 match sensor.poll() {
                     #[allow(unused_variables)]
                     Ok(data) => {
@@ -857,18 +886,17 @@ pub fn run_main_loop(
                             handled = true;
                         }
 
-                        #[cfg(feature = "sensor-wayland")]
-                        if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
-                            process_window_event(data)?;
+                        // this is all handled via events now, instead of polling
+                        // #[cfg(feature = "sensor-wayland")]
+                        // if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
+                        //     process_window_event(data)?;
 
-                            handled = true;
-                        }
+                        //     handled = true;
+                        // }
 
                         #[cfg(feature = "sensor-x11")]
                         if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
                             process_window_event(data)?;
-
-                            X11_POLL_SUCCEEDED.store(true, Ordering::SeqCst);
 
                             handled = true;
                         }
@@ -890,6 +918,33 @@ pub fn run_main_loop(
             }
         }
     }
+
+    Ok(())
+}
+
+fn autodetect_sensor_configuration() -> Result<()> {
+    let config_profile = env::vars().fold(
+        HashSet::from_iter([SensorConfiguration::AutodetectFailed]),
+        |init, (var, value)| {
+            if (var == "XDG_CURRENT_DESKTOP" || var == "XDG_SESSION_DESKTOP")
+                && value.to_lowercase() == "gnome"
+            {
+                return SensorConfiguration::profile_gnome_desktop();
+            }
+
+            if var == "XDG_SESSION_TYPE" && value == "wayland" {
+                return SensorConfiguration::profile_generic_wayland_compositor();
+            } else if var == "XDG_SESSION_TYPE" && value.to_lowercase() == "x11" {
+                return SensorConfiguration::profile_generic_x11_desktop();
+            }
+
+            return init;
+        },
+    );
+
+    log::warn!("The following sensors configuration has been auto-detected: {config_profile:?}");
+
+    *SENSORS_CONFIGURATION.lock() = config_profile;
 
     Ok(())
 }
@@ -1106,7 +1161,29 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 process_sensor.spawn_system_monitor_thread(sysevents_tx)?;
             }
 
+            #[cfg(feature = "sensor-wayland")]
+            let (wayland_tx, wayland_rx) = unbounded();
+
+            #[cfg(feature = "sensor-wayland")]
+            if let Some(mut s) = sensors::find_sensor_by_id("wayland") {
+                let wayland_sensor = s
+                    .as_any_mut()
+                    .downcast_mut::<sensors::WaylandSensor>()
+                    .unwrap();
+
+                wayland_sensor.spawn_wayland_events_thread(wayland_tx)?;
+            }
+
+            info!("Loading global state from Eruption daemon");
+
+            let active_slot = dbus_client::get_active_slot()?;
+            let active_profile = dbus_client::get_active_profile()?;
+
+            *CURRENT_STATE.write() = (Some(active_slot), Some(active_profile));
+
             info!("Startup completed");
+
+            autodetect_sensor_configuration()?;
 
             debug!("Entering the main loop now...");
 
@@ -1114,6 +1191,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             run_main_loop(
                 #[cfg(feature = "sensor-procmon")]
                 &sysevents_rx,
+                #[cfg(feature = "sensor-wayland")]
+                &wayland_rx,
                 &fsevents_rx,
                 &dbusevents_rx,
                 &ctrl_c_rx,

@@ -17,7 +17,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use super::Sensor;
+use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 use crate::procmon::{self, ProcMon};
 use crate::{util, SystemEvent};
 use async_trait::async_trait;
@@ -151,6 +151,12 @@ rules add exec gnome-calc.* 2
 
     fn initialize(&mut self) -> Result<()> {
         Ok(())
+    }
+
+    fn is_enabled(&self) -> bool {
+        SENSORS_CONFIGURATION
+            .lock()
+            .contains(&SensorConfiguration::EnableProcmon)
     }
 
     fn is_pollable(&self) -> bool {

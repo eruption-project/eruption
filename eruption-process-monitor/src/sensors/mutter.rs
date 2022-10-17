@@ -21,13 +21,13 @@
 // use byteorder::{ByteOrder, LittleEndian};
 // use dbus::arg::RefArg;
 // use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
-use std::{sync::atomic::Ordering, time::Duration};
+use std::time::Duration;
 // use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use async_trait::async_trait;
 use dbus::blocking::Connection;
 use serde::Deserialize;
 
-use super::Sensor;
+use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -132,9 +132,14 @@ rules add window-instance gnome-calculator 2
         Ok(())
     }
 
+    fn is_enabled(&self) -> bool {
+        SENSORS_CONFIGURATION
+            .lock()
+            .contains(&SensorConfiguration::EnableMutter)
+    }
+
     fn is_pollable(&self) -> bool {
-        // HACK: This is an ugly hack, but it improves performance and lowers CPU load
-        !crate::X11_POLL_SUCCEEDED.load(Ordering::SeqCst)
+        true
     }
 
     fn is_failed(&self) -> bool {
