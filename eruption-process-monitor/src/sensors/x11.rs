@@ -40,6 +40,9 @@ pub enum X11SensorError {
     // UnknownError { description: String },
     #[error("Sensor error: {description}")]
     SensorError { description: String },
+
+    #[error("Sensor failed: {description}")]
+    SensorFailed { description: String },
 }
 
 #[derive(Debug, Clone)]
@@ -213,7 +216,17 @@ You may want to use the command line tool `xprop` to find the relevant informati
                     pid,
                 };
 
-                Ok(Box::from(result))
+                if result.window_name.is_empty()
+                    && result.window_instance.is_empty()
+                    && result.window_class.is_empty()
+                {
+                    Err(X11SensorError::SensorFailed {
+                        description: "Empty sensor data".to_owned(),
+                    }
+                    .into())
+                } else {
+                    Ok(Box::from(result))
+                }
             }
         } else {
             Err(X11SensorError::SensorError {

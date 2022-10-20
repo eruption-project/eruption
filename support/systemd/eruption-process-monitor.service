@@ -28,6 +28,9 @@ StartLimitBurst=5
 
 [Service]
 Environment=RUST_LOG=warn
+PassEnvironment=WAYLAND_DISPLAY
+PassEnvironment=XDG_SESSION_TYPE
+PassEnvironment=XDG_CURRENT_DESKTOP
 ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon
 PIDFile=/run/eruption-process-monitor.pid
 Type=exec

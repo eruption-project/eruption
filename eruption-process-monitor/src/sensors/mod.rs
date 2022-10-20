@@ -25,15 +25,19 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::Mutex;
 
+#[cfg(feature = "sensor-gnome-shellext")]
+mod gnome_shellext;
 #[cfg(feature = "sensor-mutter")]
 mod mutter;
 #[cfg(feature = "sensor-procmon")]
 mod process;
 #[cfg(feature = "sensor-wayland")]
 mod wayland;
-
 #[cfg(feature = "sensor-x11")]
 mod x11;
+
+#[cfg(feature = "sensor-gnome-shellext")]
+pub use gnome_shellext::*;
 #[cfg(feature = "sensor-mutter")]
 pub use mutter::*;
 #[cfg(feature = "sensor-procmon")]
@@ -56,10 +60,9 @@ lazy_static! {
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum SensorConfiguration {
-    AutodetectFailed,
-
     EnableProcmon,
 
+    EnableGnomeShellExt,
     EnableMutter,
 
     EnableWayland,
@@ -70,10 +73,21 @@ pub enum SensorConfiguration {
 impl SensorConfiguration {
     #[allow(unused)]
     pub fn profile_gnome_desktop() -> HashSet<Self> {
-        HashSet::from_iter([
-            SensorConfiguration::EnableProcmon,
-            SensorConfiguration::EnableMutter,
-        ])
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "sensor-mutter")] {
+                // Use this for legacy GNOME 3 desktops
+                HashSet::from_iter([
+                    SensorConfiguration::EnableProcmon,
+                    SensorConfiguration::EnableMutter,
+                ])
+            } else {
+                // On modern GNOME 4x desktops, we require our custom shell extension to be running
+                HashSet::from_iter([
+                    SensorConfiguration::EnableProcmon,
+                    SensorConfiguration::EnableGnomeShellExt,
+                ])
+            }
+        }
     }
 
     #[allow(unused)]
@@ -173,6 +187,9 @@ pub fn register_sensors() -> Result<()> {
 
     #[cfg(feature = "sensor-procmon")]
     register_sensor(ProcessSensor::new());
+
+    #[cfg(feature = "sensor-gnome-shellext")]
+    register_sensor(GnomeShellExtensionSensor::new());
 
     #[cfg(feature = "sensor-mutter")]
     register_sensor(MutterSensor::new());

@@ -57,7 +57,6 @@ use regex::Regex;
 use rust_embed::RustEmbed;
 use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::{env, fmt, fs, path::PathBuf, process, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
 use syslog::Facility;
@@ -809,6 +808,9 @@ pub fn run_main_loop(
             break 'MAIN_LOOP;
         }
 
+        #[allow(unused_mut)]
+        let mut handled_by_wayland = false;
+
         let mut sel = flume::Selector::new()
             .recv(ctrl_c_rx, |_| {
                 QUIT.store(true, Ordering::SeqCst);
@@ -859,6 +861,8 @@ pub fn run_main_loop(
                         process_window_event(&event as &dyn WindowSensorData).unwrap_or_else(|e| {
                             error!("Could not process a Wayland sensor event: {}", e)
                         });
+
+                        handled_by_wayland = true;
                     } else {
                         error!("{}", event.as_ref().unwrap_err());
                     }
@@ -881,6 +885,8 @@ pub fn run_main_loop(
 
                         #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
+                            log::trace!("Processing Mutter sensor data");
+
                             process_window_event(data)?;
 
                             handled = true;
@@ -889,6 +895,8 @@ pub fn run_main_loop(
                         // this is all handled via events now, instead of polling
                         // #[cfg(feature = "sensor-wayland")]
                         // if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
+                        //     log::trace!("Processing Wayland compositor sensor data");
+
                         //     process_window_event(data)?;
 
                         //     handled = true;
@@ -896,7 +904,13 @@ pub fn run_main_loop(
 
                         #[cfg(feature = "sensor-x11")]
                         if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
-                            process_window_event(data)?;
+                            if !handled_by_wayland {
+                                log::trace!("Event already handled by Wayland");
+                            } else {
+                                log::trace!("Processing X11 sensor data");
+
+                                process_window_event(data)?;
+                            }
 
                             handled = true;
                         }
@@ -923,36 +937,31 @@ pub fn run_main_loop(
 }
 
 fn autodetect_sensor_configuration() -> Result<()> {
-    let config_profile = env::vars().fold(
-        HashSet::from_iter([SensorConfiguration::AutodetectFailed]),
-        |init, (var, value)| {
-            if (var == "XDG_CURRENT_DESKTOP" || var == "XDG_SESSION_DESKTOP")
-                && value.to_lowercase() == "gnome"
-            {
-                return SensorConfiguration::profile_gnome_desktop();
-            }
-
-            if var == "XDG_SESSION_TYPE" && value == "wayland" {
-                return SensorConfiguration::profile_generic_wayland_compositor();
-            } else if var == "XDG_SESSION_TYPE" && value.to_lowercase() == "x11" {
-                return SensorConfiguration::profile_generic_x11_desktop();
-            }
-
-            return init;
-        },
-    );
-
-    if config_profile.contains(&SensorConfiguration::AutodetectFailed) {
+    let config_profile = if env::var("XDG_CURRENT_DESKTOP")
+        .unwrap_or_default()
+        .to_lowercase()
+        == "gnome"
+    {
+        SensorConfiguration::profile_gnome_desktop()
+    } else if env::var("XDG_SESSION_TYPE")
+        .unwrap_or_default()
+        .to_lowercase()
+        == "wayland"
+    {
+        SensorConfiguration::profile_generic_wayland_compositor()
+    } else if env::var("XDG_SESSION_TYPE")
+        .unwrap_or_default()
+        .to_lowercase()
+        == "x11"
+    {
+        SensorConfiguration::profile_generic_x11_desktop()
+    } else {
         log::warn!("Auto-detection failed, enabling all available sensors");
 
-        *SENSORS_CONFIGURATION.lock() = SensorConfiguration::profile_all_sensors_enabled();
-    } else {
-        log::warn!(
-            "The following sensors configuration has been auto-detected: {config_profile:?}"
-        );
+        SensorConfiguration::profile_all_sensors_enabled()
+    };
 
-        *SENSORS_CONFIGURATION.lock() = config_profile;
-    }
+    log::info!("The following sensor configuration has been auto-detected: {config_profile:?}");
 
     Ok(())
 }

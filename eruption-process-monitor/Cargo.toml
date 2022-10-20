@@ -31,13 +31,15 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["sensors-all"]
-sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
-sensors-all = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
+default = ["sensors-most"]
+# sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
+sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-gnome-shellext"]
+sensors-all = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-gnome-shellext", "sensor-mutter"]
 sensor-procmon = ["procmon-sys"]
 sensor-x11 = ["x11rb"]
 sensor-wayland = ["wayland-client", "wayland-protocols", "wayland-protocols-wlr"]
 sensor-mutter = []
+sensor-gnome-shellext = []
 
 [dependencies]
 cfg-if = "1.0.0"

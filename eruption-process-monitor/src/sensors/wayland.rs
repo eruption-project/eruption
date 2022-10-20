@@ -23,6 +23,7 @@ use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use std::{
     collections::HashMap,
+    env,
     fmt::Debug,
     sync::{atomic::Ordering, Arc},
     thread,
@@ -38,7 +39,7 @@ use wayland_protocols_wlr::foreign_toplevel::v1::client::{
     zwlr_foreign_toplevel_manager_v1::ZwlrForeignToplevelManagerV1,
 };
 
-use crate::{constants, QUIT};
+use crate::{constants, CONFIG, QUIT};
 
 use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
@@ -133,12 +134,65 @@ impl WaylandSensor {
                 }
             }
 
-            Err(_e) => {
-                log::error!("Could not connect to Wayland compositor");
+            Err(e) => {
+                log::debug!(
+                    "Could not connect to the Wayland compositor from the current environment: {}",
+                    e
+                );
 
-                Self {
-                    event_queue: None,
-                    is_failed: true,
+                log::debug!(
+                    "Trying to establish a connection to Wayland via the configured parameters..."
+                );
+
+                let display = (*CONFIG.lock())
+                    .as_ref()
+                    .unwrap()
+                    .get_string("Wayland.display")
+                    .unwrap_or_else(|_| "wayland-0".to_string());
+
+                let xdg_runtime_dir =
+                    env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/run/user/1000".to_string());
+
+                // let xdg_desktop_environment = (*CONFIG.lock())
+                //     .as_ref()
+                //     .unwrap()
+                //     .get_string("Wayland.desktop_environment")
+                //     .unwrap_or_default();
+
+                env::set_var("WAYLAND_DISPLAY", display);
+                env::set_var("XDG_RUNTIME_DIR", xdg_runtime_dir);
+
+                // env::set_var("XDG_DESKTOP_ENVIRONMENT", xdg_desktop_environment);
+
+                match Connection::connect_to_env() {
+                    Ok(conn) => {
+                        let display = conn.display();
+
+                        let mut event_queue = conn.new_event_queue();
+                        let qh = event_queue.handle();
+
+                        let _registry = display.get_registry(&qh, ());
+
+                        let mut data = AppData::default();
+                        let _ = event_queue.roundtrip(&mut data);
+
+                        Self {
+                            event_queue: Some(Arc::new(RwLock::new(event_queue))),
+                            is_failed: false,
+                        }
+                    }
+
+                    Err(e) => {
+                        log::error!(
+                            "Could not connect to a Wayland compositor, giving up: {}",
+                            e
+                        );
+
+                        Self {
+                            event_queue: None,
+                            is_failed: true,
+                        }
+                    }
                 }
             }
         }
@@ -275,14 +329,14 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppData {
 
             match &interface[..] {
                 "zwlr_foreign_toplevel_manager_v1" => {
-                    log::info!("Registering: zwlr_foreign_toplevel_manager_v1");
+                    log::debug!("Registering: zwlr_foreign_toplevel_manager_v1");
 
                     let _manager =
                         registry.bind::<ZwlrForeignToplevelManagerV1, _, _>(name, version, qh, ());
                 }
 
                 "zwlr_foreign_toplevel_handle_v1" => {
-                    log::info!("Registering: zwlr_foreign_toplevel_handle_v1");
+                    log::debug!("Registering: zwlr_foreign_toplevel_handle_v1");
 
                     let _manager =
                         registry.bind::<ZwlrForeignToplevelHandleV1, _, _>(name, version, qh, ());

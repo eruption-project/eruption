@@ -21,65 +21,40 @@
 // use byteorder::{ByteOrder, LittleEndian};
 // use dbus::arg::RefArg;
 // use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
-use std::time::Duration;
+// use std::time::Duration;
 // use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use async_trait::async_trait;
-use dbus::blocking::Connection;
+// use dbus::blocking::Connection;
 use serde::Deserialize;
 
 use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-// /// JavaScript code that fetches the "window title" from mutter
-// const MUTTER_TOPLEVEL_WINDOW_TITLE_SCRIPT: &'static str = r#"global
-//                                                         .get_window_actors()
-//                                                         .map(a=>a.meta_window)
-//                                                         .find(w=>w.has_focus())
-//                                                         .get_title()"#;
-
-// /// JavaScript code that fetches the "window class" from mutter
-// const MUTTER_TOPLEVEL_WINDOW_CLASS_SCRIPT: &'static str = r#"global
-//                                                         .get_window_actors()
-//                                                         .map(a=>a.meta_window)
-//                                                         .find(w=>w.has_focus())
-//                                                         .get_wm_class()"#;
-
-// /// JavaScript code that fetches the "window instance" from mutter
-// const MUTTER_TOPLEVEL_WINDOW_CLASS_INSTANCE_SCRIPT: &'static str = r#"global
-//                                                         .get_window_actors()
-//                                                         .map(a=>a.meta_window)
-//                                                         .find(w=>w.has_focus())
-//                                                         .get_wm_class_instance()"#;
-
 /// JavaScript code that fetches the properties of the top-level window from mutter
-const MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT: &str = r#"let w = global
-                                                        .get_window_actors()
-                                                        .map(a => a.meta_window)
-                                                        .find(w => w.has_focus());
+// const MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT: &str = r#""#;
 
-                                                        return Object({
-                                                            pid: w.get_pid(),
-                                                            window_title: w.get_title(),
-                                                            window_instance: w.get_wm_class_instance(),
-                                                            window_class: w.get_wm_class()
-                                                        });"#;
+#[derive(Debug, thiserror::Error)]
+pub enum GnomeShellExtensionSensorError {
+    #[error("Operation not supported")]
+    NotSupported,
+}
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct MutterSensorData {
+pub struct GnomeShellextSensorData {
     pub window_title: String,
     pub window_instance: String,
     pub window_class: String,
     pub pid: i32,
 }
 
-impl super::SensorData for MutterSensorData {
+impl super::SensorData for GnomeShellextSensorData {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
 
-impl super::WindowSensorData for MutterSensorData {
+impl super::WindowSensorData for GnomeShellextSensorData {
     fn window_name(&self) -> Option<&str> {
         Some(&self.window_title)
     }
@@ -94,34 +69,34 @@ impl super::WindowSensorData for MutterSensorData {
 }
 
 #[derive(Debug, Clone)]
-pub struct MutterSensor {
+pub struct GnomeShellExtensionSensor {
     pub is_failed: bool,
 }
 
-impl MutterSensor {
+impl GnomeShellExtensionSensor {
     pub fn new() -> Self {
         Self { is_failed: false }
     }
 }
 
 #[async_trait]
-impl Sensor for MutterSensor {
+impl Sensor for GnomeShellExtensionSensor {
     fn get_id(&self) -> String {
-        "mutter".to_string()
+        "gnome-shellext".to_string()
     }
 
     fn get_name(&self) -> String {
-        "Mutter (legacy)".to_string()
+        "GNOME 4x Shell Extension".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Watches the state of windows on a legacy GNOME 3 desktop running the Mutter window manager"
+        "Watches the state of windows on a GNOME 4x desktop using the Eruption GNOME shell extension"
             .to_string()
     }
 
     fn get_usage_example(&self) -> String {
         r#"
-Mutter:
+gnome-shellext:
 rules add window-[class|instance|name] <regex> [<profile-name.profile>|<slot number>]
 
 rules add window-name '.*YouTube.*Mozilla Firefox' /var/lib/eruption/profiles/profile1.profile
@@ -137,7 +112,7 @@ rules add window-instance gnome-calculator 2
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .lock()
-            .contains(&SensorConfiguration::EnableMutter)
+            .contains(&SensorConfiguration::EnableGnomeShellExt)
     }
 
     fn is_pollable(&self) -> bool {
@@ -174,8 +149,8 @@ rules add window-instance gnome-calculator 2
 }
 
 /// Get the current top level window attributes from Mutter
-pub fn get_top_level_window_attrs() -> Result<MutterSensorData> {
-    let script = MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT.to_owned();
+pub fn get_top_level_window_attrs() -> Result<GnomeShellextSensorData> {
+    /* let script = MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT.to_owned();
 
     let conn = Connection::new_session()?;
     let proxy = conn.with_proxy(
@@ -185,9 +160,11 @@ pub fn get_top_level_window_attrs() -> Result<MutterSensorData> {
     );
 
     let (attributes,): (String,) = proxy.method_call("org.gnome.Shell", "Eval", (script,))?;
-    let v: MutterSensorData = serde_json::from_str(&attributes)?;
+    let v: GnomeShellextSensorData = serde_json::from_str(&attributes)?;
 
-    Ok(v)
+    Ok(v) */
+
+    Err(GnomeShellExtensionSensorError::NotSupported {}.into())
 }
 
 mod gnome {
