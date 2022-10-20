@@ -1,11 +1,30 @@
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
+
+
 [Unit]
 Description=Process Monitoring and Introspection for Eruption
 Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
-BindsTo=graphical-session.target
-Wants=graphical-session.target
+Wants=xdg-desktop-autostart.target
 After=graphical-session.target
+BindsTo=graphical-session.target
 StartLimitIntervalSec=60
 StartLimitBurst=5
+# Wants=graphical-session.target
 
 [Service]
 Environment=RUST_LOG=warn
@@ -14,14 +33,14 @@ PIDFile=/run/eruption-process-monitor.pid
 Type=exec
 Restart=always
 RestartSec=1
-#CapabilityBoundingSet=CAP_NET_ADMIN
-#AmbientCapabilities=CAP_NET_ADMIN
-#ProtectHome=yes
-#ProtectSystem=full
-#ProtectKernelTunables=yes
-#ProtectControlGroups=yes
-#PrivateDevices=no
-#PrivateTmp=yes
+# CapabilityBoundingSet=CAP_NET_ADMIN
+# AmbientCapabilities=CAP_NET_ADMIN
+# ProtectHome=yes
+# ProtectSystem=full
+# ProtectKernelTunables=yes
+# ProtectControlGroups=yes
+# PrivateDevices=no
+# PrivateTmp=yes
 
 [Install]
 WantedBy=default.target

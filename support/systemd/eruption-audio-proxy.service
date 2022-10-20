@@ -1,9 +1,28 @@
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
+
+
 [Unit]
 Description=Audio proxy daemon for Eruption
 Documentation=man:eruption-audio-proxy(1) man:audio-proxy.conf(5) man:eruptionctl(1)
 BindsTo=graphical-session.target
-Wants=graphical-session.target
+Wants=xdg-desktop-autostart.target
 After=graphical-session.target sound.target
+# Wants=graphical-session.target
 # StartLimitIntervalSec=60
 # StartLimitBurst=5
 
@@ -15,14 +34,14 @@ ExecStart=/usr/bin/eruption-audio-proxy -c /etc/eruption/audio-proxy.conf daemon
 Type=exec
 Restart=always
 RestartSec=1
-#CapabilityBoundingSet=CAP_NET_ADMIN
-#AmbientCapabilities=CAP_NET_ADMIN
-#ProtectHome=yes
-#ProtectSystem=full
-#ProtectKernelTunables=yes
-#ProtectControlGroups=yes
-#PrivateDevices=no
-#PrivateTmp=yes
+# CapabilityBoundingSet=CAP_NET_ADMIN
+# AmbientCapabilities=CAP_NET_ADMIN
+# ProtectHome=yes
+# ProtectSystem=full
+# ProtectKernelTunables=yes
+# ProtectControlGroups=yes
+# PrivateDevices=no
+# PrivateTmp=yes
 
 [Install]
 WantedBy=default.target
