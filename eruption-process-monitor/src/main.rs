@@ -942,9 +942,17 @@ fn autodetect_sensor_configuration() -> Result<()> {
         },
     );
 
-    log::warn!("The following sensors configuration has been auto-detected: {config_profile:?}");
+    if config_profile.contains(&SensorConfiguration::AutodetectFailed) {
+        log::warn!("Auto-detection failed, enabling all available sensors");
 
-    *SENSORS_CONFIGURATION.lock() = config_profile;
+        *SENSORS_CONFIGURATION.lock() = SensorConfiguration::profile_all_sensors_enabled();
+    } else {
+        log::warn!(
+            "The following sensors configuration has been auto-detected: {config_profile:?}"
+        );
+
+        *SENSORS_CONFIGURATION.lock() = config_profile;
+    }
 
     Ok(())
 }
