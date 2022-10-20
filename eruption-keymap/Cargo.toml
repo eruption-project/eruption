@@ -55,7 +55,7 @@ chrono = { version = "0.4.22", features = ["serde"] }
 # mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.8.4", features = ["lua54"] }
+mlua = { version = "0.8.4", features = ["luajit52"] }
 regex = "1.6.0"
 dbus = "0.9.6"
 evdev-rs = "0.6.0"
