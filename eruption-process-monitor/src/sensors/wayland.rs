@@ -25,7 +25,10 @@ use std::{
     collections::HashMap,
     env,
     fmt::Debug,
-    sync::{atomic::Ordering, Arc},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     thread,
     time::Duration,
 };
@@ -83,6 +86,9 @@ impl super::WindowSensorData for WaylandSensorData {
     }
 }
 
+/// Specifies whether we successfully connected to a Wayland compositor
+pub static WAYLAND_CONNECTION_SUCCESSFULL: AtomicBool = AtomicBool::new(false);
+
 lazy_static! {
     /// Events tx to the main thread
     static ref WAYLAND_TX: Arc<Mutex<Option<Sender<WaylandSensorData>>>> = Arc::new(Mutex::new(None));
@@ -127,6 +133,8 @@ impl WaylandSensor {
 
                 let mut data = AppData::default();
                 let _ = event_queue.roundtrip(&mut data);
+
+                WAYLAND_CONNECTION_SUCCESSFULL.store(true, Ordering::SeqCst);
 
                 Self {
                     event_queue: Some(Arc::new(RwLock::new(event_queue))),
@@ -175,6 +183,8 @@ impl WaylandSensor {
 
                         let mut data = AppData::default();
                         let _ = event_queue.roundtrip(&mut data);
+
+                        WAYLAND_CONNECTION_SUCCESSFULL.store(true, Ordering::SeqCst);
 
                         Self {
                             event_queue: Some(Arc::new(RwLock::new(event_queue))),
@@ -245,7 +255,7 @@ impl Sensor for WaylandSensor {
 
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
-            .lock()
+            .read()
             .contains(&SensorConfiguration::EnableWayland)
     }
 
@@ -297,17 +307,9 @@ rules add window-instance gnome-calculator 2
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct AppData {
     pub name: String,
-}
-
-impl Default for AppData {
-    fn default() -> Self {
-        Self {
-            name: Default::default(),
-        }
-    }
 }
 
 impl Dispatch<wl_registry::WlRegistry, ()> for AppData {

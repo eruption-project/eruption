@@ -20,17 +20,14 @@
 Description=Process Monitoring and Introspection for Eruption
 Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
 Wants=xdg-desktop-autostart.target
-After=graphical-session.target
+PartOf=graphical-session.target
 BindsTo=graphical-session.target
 StartLimitIntervalSec=60
 StartLimitBurst=5
-# Wants=graphical-session.target
 
 [Service]
 Environment=RUST_LOG=warn
-PassEnvironment=WAYLAND_DISPLAY
-PassEnvironment=XDG_SESSION_TYPE
-PassEnvironment=XDG_CURRENT_DESKTOP
+PassEnvironment=WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY
 ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon
 PIDFile=/run/eruption-process-monitor.pid
 Type=exec
@@ -46,4 +43,4 @@ RestartSec=1
 # PrivateTmp=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target

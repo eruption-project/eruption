@@ -45,6 +45,7 @@ start:
 
 	@echo "Starting up Eruption daemons..."
 
+	-@systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1
 	-@systemctl --user enable --now eruption-audio-proxy.service
 	-@systemctl --user enable --now eruption-process-monitor.service
 
@@ -69,9 +70,8 @@ stop:
 	-@$(SUDO) systemctl disable --now eruption.service
 
 install:
-	# Please be sure that all Eruption daemons have been shut down completely!
-	# Otherwise there will be errors during installation (file busy)
-
+	@echo "Please ensure that all Eruption daemons have been shut down completely!"
+	@echo "Otherwise there will probably be errors during installation (file busy)"
 	@echo ""
 	@echo "Commencing installation of Eruption..."
 
@@ -112,6 +112,7 @@ install:
 	@cp "support/config/eruption.conf" "/etc/eruption/"
 	@cp "support/config/audio-proxy.conf" "/etc/eruption/"
 	@cp "support/config/process-monitor.conf" "/etc/eruption/"
+	@cp "support/profile.d/eruption.sh" "/etc/profile.d/eruption.sh"
 	@cp "support/systemd/eruption.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption.preset"
 	@cp "support/systemd/eruption-audio-proxy.service" "$(TARGET_DIR)/lib/systemd/user/"
@@ -270,6 +271,8 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/eruption/sfx/typewriter1.wav
 	-@rm $(TARGET_DIR)/share/eruption/sfx/phaser1.wav
 	-@rm $(TARGET_DIR)/share/eruption/sfx/phaser2.wav
+
+	-@rm /etc/profile.d/eruption.sh
 
 	-@rm -fr /etc/eruption
 	-@rm -fr $(TARGET_DIR)/share/eruption

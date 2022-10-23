@@ -114,7 +114,7 @@ impl Sensor for X11Sensor {
 
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
-            .lock()
+            .read()
             .contains(&SensorConfiguration::EnableX11)
     }
 

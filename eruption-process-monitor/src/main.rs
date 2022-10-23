@@ -22,12 +22,19 @@ use crate::dbus_client::Message;
 #[cfg(feature = "sensor-procmon")]
 use crate::sensors::PROCESS_SENSOR_FAILED;
 
+#[cfg(feature = "sensor-gnome-shellext")]
+use crate::sensors::GnomeShellExtSensorData;
+
 #[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
 
-use crate::sensors::SensorConfiguration;
+use crate::sensors::WAYLAND_CONNECTION_SUCCESSFULL;
 #[cfg(feature = "sensor-wayland")]
 use crate::sensors::WaylandSensorData;
+
+use crate::sensors::SensorConfiguration;
+
+#[allow(unused)]
 use crate::sensors::SENSORS_CONFIGURATION;
 
 #[cfg(feature = "sensor-x11")]
@@ -804,13 +811,13 @@ pub fn run_main_loop(
     trace!("Entering main loop...");
 
     'MAIN_LOOP: loop {
+        log::trace!("Main loop iteration");
+
         if QUIT.load(Ordering::SeqCst) {
             break 'MAIN_LOOP;
         }
 
         #[allow(unused_mut)]
-        let mut handled_by_wayland = false;
-
         let mut sel = flume::Selector::new()
             .recv(ctrl_c_rx, |_| {
                 QUIT.store(true, Ordering::SeqCst);
@@ -835,11 +842,13 @@ pub fn run_main_loop(
         #[cfg(feature = "sensor-procmon")]
         {
             if SENSORS_CONFIGURATION
-                .lock()
+                .read()
                 .contains(&SensorConfiguration::EnableProcmon)
                 && !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst)
             {
                 sel = sel.recv(sysevents_rx, |event| {
+                    log::trace!("Sensor data: {:?}", event);
+
                     if let Ok(event) = event {
                         process_system_event(&event)
                             .unwrap_or_else(|e| error!("Could not process a system event: {}", e));
@@ -853,16 +862,16 @@ pub fn run_main_loop(
         #[cfg(feature = "sensor-wayland")]
         {
             if SENSORS_CONFIGURATION
-                .lock()
+                .read()
                 .contains(&SensorConfiguration::EnableWayland)
             {
                 sel = sel.recv(wayland_rx, |event| {
+                    log::trace!("Sensor data: {:?}", event);
+
                     if let Ok(event) = event {
                         process_window_event(&event as &dyn WindowSensorData).unwrap_or_else(|e| {
                             error!("Could not process a Wayland sensor event: {}", e)
                         });
-
-                        handled_by_wayland = true;
                     } else {
                         error!("{}", event.as_ref().unwrap_err());
                     }
@@ -873,15 +882,23 @@ pub fn run_main_loop(
         let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
 
         // poll all pollable sensors that do not notify us via messages
-        for sensor in sensors::SENSORS.lock().iter_mut() {
+        for sensor in sensors::SENSORS.write().iter_mut() {
             if sensor.is_enabled() && sensor.is_pollable() && !sensor.is_failed() {
                 match sensor.poll() {
                     #[allow(unused_variables)]
                     Ok(data) => {
-                        // debug!("Sensor data: {}", data);
-
                         #[allow(unused_mut)]
                         let mut handled = false;
+
+                        #[cfg(feature = "sensor-gnome-shellext")]
+                        if let Some(data) = data.as_any().downcast_ref::<GnomeShellExtSensorData>()
+                        {
+                            log::trace!("Processing GNOME shell extension sensor data");
+
+                            process_window_event(data)?;
+
+                            handled = true;
+                        }
 
                         #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
@@ -904,18 +921,16 @@ pub fn run_main_loop(
 
                         #[cfg(feature = "sensor-x11")]
                         if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
-                            if !handled_by_wayland {
-                                log::trace!("Event already handled by Wayland");
-                            } else {
-                                log::trace!("Processing X11 sensor data");
+                            log::trace!("Processing X11 sensor data");
 
-                                process_window_event(data)?;
-                            }
+                            process_window_event(data)?;
 
                             handled = true;
                         }
 
                         if !handled {
+                            log::trace!("Sensor data: {:?}", data);
+
                             return Err(MainError::SensorError {
                                 description: "Unhandled sensor data type".to_string(),
                             }
@@ -937,7 +952,8 @@ pub fn run_main_loop(
 }
 
 fn autodetect_sensor_configuration() -> Result<()> {
-    let config_profile = if env::var("XDG_CURRENT_DESKTOP")
+    #[allow(clippy::if_same_then_else)]
+    let mut config_profile = if env::var("XDG_CURRENT_DESKTOP")
         .unwrap_or_default()
         .to_lowercase()
         == "gnome"
@@ -954,14 +970,30 @@ fn autodetect_sensor_configuration() -> Result<()> {
         .to_lowercase()
         == "x11"
     {
-        SensorConfiguration::profile_generic_x11_desktop()
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "sensor-x11")] {
+                SensorConfiguration::profile_generic_x11_desktop()
+            } else {
+                SensorConfiguration::profile_all_sensors_disabled()
+            }
+        }
     } else {
         log::warn!("Auto-detection failed, enabling all available sensors");
 
         SensorConfiguration::profile_all_sensors_enabled()
     };
 
+
+
+    // if Wayland is present, we remove any detected X11 sensors so that we don't get 
+    // spurious events from any running XWayland server
+    if WAYLAND_CONNECTION_SUCCESSFULL.load(Ordering::SeqCst) {
+        config_profile.remove(&SensorConfiguration::EnableX11);
+    }
+
     log::info!("The following sensor configuration has been auto-detected: {config_profile:?}");
+
+    *SENSORS_CONFIGURATION.write() = config_profile;
 
     Ok(())
 }
@@ -1231,7 +1263,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 fn print_usage_examples() {
                     eprintln!("\nPlease see below for some examples:");
 
-                    for s in sensors::SENSORS.lock().iter() {
+                    for s in sensors::SENSORS.read().iter() {
                         eprintln!("{}", s.get_usage_example());
                     }
                 }

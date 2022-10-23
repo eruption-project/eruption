@@ -26,13 +26,74 @@
 use async_trait::async_trait;
 // use dbus::blocking::Connection;
 use serde::Deserialize;
+use std::{env, path::PathBuf};
 
 use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-/// JavaScript code that fetches the properties of the top-level window from mutter
-// const MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT: &str = r#""#;
+/// Metadata of the GNOME 4x shell extension
+const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META: &str = r#"
+    {
+        "name": "Eruption Sensor (eruption-process-monitor)",
+        "description": "Sensor Extension for the Eruption Realtime RGB LED Driver for Linux",
+        "uuid": "eruption-sensor@x3n0m0rph59.org",
+        "version": "1",
+        "shell-version": [ "41", "42", "43" ]
+    }
+"#;
+
+/// JavaScript code that fetches the properties of the top-level window from GNOME 4x
+const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION: &str = r#"
+        const Shell = imports.gi.Shell;
+        const GLib = imports.gi.GLib;
+
+        let file = imports.gi.Gio.File.new_for_path('{fifo_name}');
+        let pipe = file.append_to_async(0, 0, null, on_pipe_open);
+
+        function send(msg) {
+            if (!pipe)
+                return;
+            try {
+                pipe.write(msg, null);
+            } catch {
+                log('Pipe closed, reopening...');
+
+                pipe = null;
+                file.append_to_async(0, 0, null, on_pipe_open);
+            }
+        }
+
+        function on_pipe_open(file, res) {
+            log('Pipe opened');
+
+            pipe = file.append_to_finish(res);
+        }
+
+        function init() {
+                Shell.WindowTracker.get_default().connect('notify::focus-app', () => {
+                    const instance = global.display.focus_window;
+                    const title = win ? win.get_title() : '';
+                    const cls = win ? win.get_wm_class() : '';
+
+                    send(`{
+                        window_title: ${title},
+                        window_instance: ${instance},
+                        window_class: ${cls},
+                    }`);
+                });
+
+                return {
+                    enable: () => {  
+                        log('Eruption sensor extension enabled');
+                    },
+
+                    disable: () => {
+                        log('Eruption sensor extension disabled');
+                    },
+                };
+        }
+"#;
 
 #[derive(Debug, thiserror::Error)]
 pub enum GnomeShellExtensionSensorError {
@@ -41,20 +102,20 @@ pub enum GnomeShellExtensionSensorError {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct GnomeShellextSensorData {
+pub struct GnomeShellExtSensorData {
     pub window_title: String,
     pub window_instance: String,
     pub window_class: String,
     pub pid: i32,
 }
 
-impl super::SensorData for GnomeShellextSensorData {
+impl super::SensorData for GnomeShellExtSensorData {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
 
-impl super::WindowSensorData for GnomeShellextSensorData {
+impl super::WindowSensorData for GnomeShellExtSensorData {
     fn window_name(&self) -> Option<&str> {
         Some(&self.window_title)
     }
@@ -76,6 +137,20 @@ pub struct GnomeShellExtensionSensor {
 impl GnomeShellExtensionSensor {
     pub fn new() -> Self {
         Self { is_failed: false }
+    }
+
+    pub fn install_extension(&self) -> Result<()> {
+        let meta = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META;
+
+        let fifo_name = PathBuf::from(
+            env::var("XDG_RUNTIME_DIR")
+                .map(|v| v.to_owned().to_string())
+                .unwrap_or_else(|_e| "/run/user/1000/".to_string()),
+        ).join("eruption-sensor");
+
+        let source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION.replace("{fifo_name}", &fifo_name.to_string_lossy());
+
+        Ok(())
     }
 }
 
@@ -106,12 +181,14 @@ rules add window-instance gnome-calculator 2
     }
 
     fn initialize(&mut self) -> Result<()> {
+        self.install_extension()?;
+
         Ok(())
     }
 
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
-            .lock()
+            .read()
             .contains(&SensorConfiguration::EnableGnomeShellExt)
     }
 
@@ -149,7 +226,7 @@ rules add window-instance gnome-calculator 2
 }
 
 /// Get the current top level window attributes from Mutter
-pub fn get_top_level_window_attrs() -> Result<GnomeShellextSensorData> {
+pub fn get_top_level_window_attrs() -> Result<GnomeShellExtSensorData> {
     /* let script = MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT.to_owned();
 
     let conn = Connection::new_session()?;
@@ -160,7 +237,7 @@ pub fn get_top_level_window_attrs() -> Result<GnomeShellextSensorData> {
     );
 
     let (attributes,): (String,) = proxy.method_call("org.gnome.Shell", "Eval", (script,))?;
-    let v: GnomeShellextSensorData = serde_json::from_str(&attributes)?;
+    let v: GnomeShellExtSensorData = serde_json::from_str(&attributes)?;
 
     Ok(v) */
 

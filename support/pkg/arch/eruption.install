@@ -6,10 +6,12 @@ post_install() {
     # systemctl --user daemon-reload
 
     systemctl preset eruption
-    systemctl preset eruption-audio-proxy
-    systemctl preset eruption-process-monitor
+    systemctl --global preset eruption-audio-proxy
+    systemctl --global preset eruption-process-monitor
 
     systemctl enable --now eruption.service
+    
+    # systemctl --global import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY
     systemctl --global enable --now eruption-audio-proxy.service
     # systemctl --global enable --now eruption-process-monitor.service
 
