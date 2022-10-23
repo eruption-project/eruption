@@ -43,10 +43,10 @@ sensor-gnome-shellext = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.57"
+async-trait = "0.1.58"
 byteorder = "1.4.3"
-clap =  { version = "4.0.15", features = ["derive"] }
-clap_complete = "4.0.2"
+clap =  { version = "4.0.18", features = ["derive"] }
+clap_complete = "4.0.3"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 config = "0.13.2"
 dbus = "0.9.6"
@@ -62,8 +62,8 @@ nix = "0.25.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 regex = "1.6.0"
-serde = { version = "1.0.145", features = ["derive"] }
-serde_json = "1.0.86"
+serde = { version = "1.0.147", features = ["derive"] }
+serde_json = "1.0.87"
 tokio = { version = "1.21.2", features = ["full"] }
 # tracing = "0.1.26"
 # tracing-futures = "0.2.5"
@@ -83,8 +83,8 @@ wayland-protocols = { version = "0.30.0-beta.12", features = ["unstable"], optio
 wayland-protocols-wlr = { version = "0.1.0-beta.12", features = ["client"], optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
-rust-embed = "6.4.1"
-unic-langid = "0.9.0"
+rust-embed = "6.4.2"
+unic-langid = "0.9.1"
 icecream = "0.1.0"
 
 [dev-dependencies]
