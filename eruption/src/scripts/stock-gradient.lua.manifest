@@ -1,0 +1,82 @@
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
+
+
+name = "Stock Gradient"
+description = "Compute a gradient effect using a stock gradient or a custom color scheme"
+version = "0.0.1"
+author = "The Eruption Development Team"
+min_supported_version = "0.1.19"
+tags = ['Background', 'Vendor', 'Noise']
+
+[[config]]
+type = 'string'
+name = 'stock_gradient'
+description = 'The stock gradient or custom color scheme to use'
+default = "sinebow-smooth"
+
+[[config]]
+type = 'bool'
+name = 'horizontal'
+description = 'Horizontal or vertical'
+default = false
+
+[[config]]
+type = 'int'
+name = 'direction'
+description = '-1 == left/down, +1 == right/up'
+default = 1
+
+[[config]]
+type = 'float'
+name = 'wave_length'
+description = 'Wave length divisor'
+min = 0.01
+max = 256.0
+default = 5.0
+
+[[config]]
+type = 'float'
+name = 'speed_divisor'
+description = 'Speed of the wave'
+min = 0.1
+max = 1000.0
+default = 64.0
+
+[[config]]
+type = 'float'
+name = 'color_saturation'
+description = 'Saturation in the range 0.0 .. 1.0'
+min = 0.0
+max = 1.0
+default = 1.0
+
+[[config]]
+type = 'float'
+name = 'color_lightness'
+description = 'Lightness in the range 0.0 .. 0.5; above 0.5 == whiten color'
+min = 0.0
+max = 1.0
+default = 0.5
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 1.0
+default = 1.0
