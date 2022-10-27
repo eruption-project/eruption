@@ -39,3 +39,7 @@ function on_apply_parameter(parameters)
     -- update state
     on_startup(nil)
 end
+
+-- function on_render()
+--     submit_color_map(color_map)
+-- end

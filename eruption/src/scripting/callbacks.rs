@@ -35,6 +35,7 @@ use std::vec::Vec;
 use std::{cell::RefCell, thread};
 use tracing::*;
 
+use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::{
     constants,
     hwdevices::RGBA,
@@ -295,9 +296,9 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
 
 /// Get RGB components of a 32 bits color value.
 pub(crate) fn color_to_rgb(c: u32) -> (u8, u8, u8) {
-    let r = u8::try_from((c >> 16) & 0xff).unwrap();
-    let g = u8::try_from((c >> 8) & 0xff).unwrap();
-    let b = u8::try_from(c & 0xff).unwrap();
+    let r = u8::try_from((c >> 16) & 0xff).unwrap_or(0);
+    let g = u8::try_from((c >> 8) & 0xff).unwrap_or(0);
+    let b = u8::try_from(c & 0xff).unwrap_or(0);
 
     (r, g, b)
 }
@@ -305,10 +306,10 @@ pub(crate) fn color_to_rgb(c: u32) -> (u8, u8, u8) {
 /// Get RGB components of a 32 bits color value.
 #[allow(clippy::many_single_char_names)]
 pub(crate) fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
-    let a = u8::try_from((c >> 24) & 0xff).unwrap();
-    let r = u8::try_from((c >> 16) & 0xff).unwrap();
-    let g = u8::try_from((c >> 8) & 0xff).unwrap();
-    let b = u8::try_from(c & 0xff).unwrap();
+    let a = u8::try_from((c >> 24) & 0xff).unwrap_or(0);
+    let r = u8::try_from((c >> 16) & 0xff).unwrap_or(0);
+    let g = u8::try_from((c >> 8) & 0xff).unwrap_or(0);
+    let b = u8::try_from(c & 0xff).unwrap_or(0);
 
     (r, g, b, a)
 }
@@ -323,6 +324,18 @@ pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
     let (h, s, l) = Hsl::from_color(rgb).into_components();
 
     (h.into(), s, l)
+}
+
+/// Get HSL components of a 32 bits color value.
+#[allow(clippy::many_single_char_names)]
+pub(crate) fn color_to_hsla(c: u32) -> (f64, f64, f64, u8) {
+    let (r, g, b, a) = color_to_rgba(c);
+    let rgb = Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
+        .into_linear();
+
+    let (h, s, l) = Hsl::from_color(rgb).into_components();
+
+    (h.into(), s, l, a)
 }
 
 /// Convert RGB components to a 32 bits color value.
@@ -639,7 +652,7 @@ pub(crate) fn rotate(map: &[u32], theta: f64, sizes: (usize, usize)) -> Vec<u32>
         let t = m_rot * point;
 
         let idx = (t.x * sizes.0 as f64 + t.y).round();
-        let idx = clamp(idx, 0 as f64, sizes.0 as f64 * sizes.1 as f64) as usize;
+        let idx = clamp(idx, 0.0, sizes.0 as f64 * sizes.1 as f64) as usize;
 
         // println!("{} -> {}: {}", point, t, idx);
 
@@ -687,9 +700,52 @@ pub(crate) fn get_color_map() -> Vec<u32> {
     let result = global_led_map
         .iter()
         .map(|v| {
-            (v.r as u32).overflowing_shl(16).0 + (v.g as u32).overflowing_shl(8).0 + v.b as u32
+            (v.r as u32).overflowing_shl(24).0
+                + (v.g as u32).overflowing_shl(16).0
+                + (v.b as u32).overflowing_shl(8).0 as u32
+                + (v.a as u32) as u32
         })
         .collect::<Vec<u32>>();
+
+    assert!(result.len() == constants::CANVAS_SIZE);
+
+    result
+}
+
+/// Get saved state of all LEDs
+pub(crate) fn get_saved_color_map() -> Vec<u32> {
+    let global_led_map = LAST_RENDERED_LED_MAP.read();
+
+    let result = global_led_map
+        .iter()
+        .map(|v| {
+            (v.r as u32).overflowing_shl(24).0
+                + (v.g as u32).overflowing_shl(16).0
+                + (v.b as u32).overflowing_shl(8).0 as u32
+                + (v.a as u32) as u32
+        })
+        .collect::<Vec<u32>>();
+
+    assert!(result.len() == constants::CANVAS_SIZE);
+
+    result
+}
+
+/// Get state of all LEDs from the current script's local LED map
+pub(crate) fn get_local_color_map() -> Vec<u32> {
+    let result = LOCAL_LED_MAP.with(|local_led_map| {
+        let local_led_map = local_led_map.borrow();
+
+        local_led_map
+            .iter()
+            .map(|v| {
+                (v.r as u32).overflowing_shl(24).0
+                    + (v.g as u32).overflowing_shl(16).0
+                    + (v.b as u32).overflowing_shl(8).0 as u32
+                    + (v.a as u32) as u32
+            })
+            .collect::<Vec<u32>>()
+    });
 
     assert!(result.len() == constants::CANVAS_SIZE);
 
@@ -918,6 +974,9 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     let color_to_hsl = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_hsl(c)))?;
     globals.set("color_to_hsl", color_to_hsl)?;
 
+    let color_to_hsla = lua_ctx.create_function(|_, c: u32| Ok(callbacks::color_to_hsla(c)))?;
+    globals.set("color_to_hsla", color_to_hsla)?;
+
     let rgb_to_color = lua_ctx
         .create_function(|_, (r, g, b): (u8, u8, u8)| Ok(callbacks::rgb_to_color(r, g, b)))?;
     globals.set("rgb_to_color", rgb_to_color)?;
@@ -1050,6 +1109,14 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
 
     let get_color_map = lua_ctx.create_function(move |_, ()| Ok(callbacks::get_color_map()))?;
     globals.set("get_color_map", get_color_map)?;
+
+    let get_saved_color_map =
+        lua_ctx.create_function(move |_, ()| Ok(callbacks::get_saved_color_map()))?;
+    globals.set("get_saved_color_map", get_saved_color_map)?;
+
+    let get_local_color_map =
+        lua_ctx.create_function(move |_, ()| Ok(callbacks::get_local_color_map()))?;
+    globals.set("get_local_color_map", get_local_color_map)?;
 
     let submit_color_map = lua_ctx.create_function(move |_, map: Vec<u32>| {
         callbacks::submit_color_map(&map)

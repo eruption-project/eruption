@@ -43,6 +43,12 @@ function on_key_down(key_index)
     effect_ttl = max_effect_ttl
 end
 
+function on_render()
+    if effect_ttl > 0 then
+        submit_color_map(color_map)
+    end
+end
+
 function on_tick(delta)
     if effect_ttl <= 0 then return end
 
@@ -145,8 +151,6 @@ function on_tick(delta)
             end
         end
     end
-
-    submit_color_map(color_map)
 
     effect_ttl = effect_ttl - 1
 end

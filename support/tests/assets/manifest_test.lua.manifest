@@ -21,7 +21,7 @@ name = "Manifest Test"
 description = "Test manifest load"
 version = "0.0.0"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.4.0"
 tags = ['Demo']
 
 [[config]]

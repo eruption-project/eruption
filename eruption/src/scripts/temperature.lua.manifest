@@ -21,7 +21,7 @@ name = "Temperature"
 description = "Make the keyboard reflect the system temperature"
 version = "0.0.4"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor', 'Demo']
 
 [[config]]

@@ -277,7 +277,6 @@ function on_hid_event(event_type, arg1)
 
                 saved_audio_muted = audio_muted
                 effect_ttl = max_effect_ttl
-
                 force_update = true
             end
         end
@@ -296,6 +295,7 @@ function on_hid_event(event_type, arg1)
 
         overlay_state = VOLUME_OVERLAY
         overlay_ttl = overlay_max_ttl
+        force_update = true
 
         if HANDLE_EXTRA_FUNCTIONS and not event_handled then
             -- adjust volume
@@ -692,6 +692,8 @@ function update_overlay_state()
     end
 end
 
+function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -708,7 +710,6 @@ function on_tick(delta)
 
         saved_audio_muted = audio_muted
         effect_ttl = max_effect_ttl
-
         force_update = true
     end
 
@@ -759,7 +760,5 @@ function on_tick(delta)
         effect_ttl = effect_ttl - 1
 
         device_specific_key_highlights_indicators()
-
-        submit_color_map(color_map)
     end
 end

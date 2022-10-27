@@ -45,6 +45,7 @@ shockwave_ttl_decrease = (key_state.shockwave_origin -
 state_map = {}
 visited_map = {}
 color_map = {}
+saved_color_map = {}
 color_map_afterglow = {}
 ticks = 0
 
@@ -132,6 +133,15 @@ local function update_key_states()
     end
 end
 
+function on_render()
+    if effect_ttl > 0 then
+        -- get the current color map if we use offset colors
+        if offset_colors then saved_color_map = get_color_map() end
+
+        submit_color_map(color_map)
+    end
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -172,15 +182,25 @@ function on_tick(delta)
         end
 
         -- compute shockwave color
-        if state_map[i] >= key_state.shockwave_sentinel then
-            color_map[i] = color_shockwave - color_step_shockwave
-        end
+        if state_map[i] <= key_state.shockwave_sentinel then
+            state_map[i] = key_state.idle
+            color_map[i] = 0x00000000
+        else
+            if offset_colors then
+                local h, s, l, alpha = color_to_hsla(saved_color_map[i])
+                local color = hsla_to_color(h + hue_offset, s, l, alpha)
 
-        if color_map[i] > 0x00000000 then
-            color_map[i] = color_map[i] - color_step_shockwave
+                color_map[i] = color
+            else
+                color_map[i] = color_shockwave - color_step_shockwave
 
-            if color_map[i] < 0x00000000 then
-                color_map[i] = 0x00000000
+                if color_map[i] > 0x00000000 then
+                    color_map[i] = color_map[i] - color_step_shockwave
+
+                    if color_map[i] < 0x00000000 then
+                        color_map[i] = 0x00000000
+                    end
+                end
             end
         end
 
@@ -199,6 +219,4 @@ function on_tick(delta)
     end
 
     effect_ttl = effect_ttl - 1
-
-    submit_color_map(color_map)
 end

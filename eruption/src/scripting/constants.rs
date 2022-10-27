@@ -24,6 +24,7 @@
 /// These are all the names of supported Lua function handlers invoked by eruption at certain events.
 pub const FUNCTION_ON_STARTUP: &str = "on_startup";
 pub const FUNCTION_ON_QUIT: &str = "on_quit";
+pub const FUNCTION_ON_RENDER: &str = "on_render";
 pub const FUNCTION_ON_TICK: &str = "on_tick";
 pub const FUNCTION_ON_APPLY_PARAMETER: &str = "on_apply_parameter";
 pub const FUNCTION_ON_KEY_DOWN: &str = "on_key_down";

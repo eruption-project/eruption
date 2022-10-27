@@ -97,6 +97,10 @@ function on_quit()
     end
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     if initialized then
         if conn == nil then
@@ -209,8 +213,6 @@ function on_tick(delta)
                                 return
                             end
                         end
-
-                        submit_color_map(color_map)
                     end
 
                     conn:send("OK\n")

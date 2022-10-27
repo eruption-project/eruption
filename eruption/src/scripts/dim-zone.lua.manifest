@@ -21,7 +21,7 @@ name = "Dim Zone"
 description = "Dim (darken) a zone on the canvas"
 version = "0.0.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.22"
+min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor', 'Filter']
 
 [[config]]

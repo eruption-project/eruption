@@ -43,6 +43,10 @@ function on_apply_parameter(parameters)
     on_startup(nil)
 end
 
+-- function on_render()
+--     submit_color_map(color_map)
+-- end
+
 -- function on_tick(delta)
 --     ticks = ticks + delta
 --     submit_color_map(color_map)

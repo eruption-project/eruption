@@ -21,7 +21,7 @@ name = "Macros"
 description = "Default Macro Presets"
 version = "0.0.8"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.12"
+min_supported_version = "0.4.0"
 tags = ['Macros', 'Vendor']
 
 [[config]]

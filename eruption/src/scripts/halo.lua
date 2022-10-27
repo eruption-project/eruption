@@ -118,6 +118,12 @@ local function update_key_states()
     end
 end
 
+function on_render()
+    if effect_ttl > 0 then
+        submit_color_map(color_map)
+    end
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -169,6 +175,4 @@ function on_tick(delta)
     end
 
     effect_ttl = effect_ttl - 1
-
-    submit_color_map(color_map)
 end

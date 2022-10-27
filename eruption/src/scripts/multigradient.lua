@@ -65,6 +65,10 @@ function on_startup(config)
     end
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -74,8 +78,6 @@ function on_tick(delta)
             color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
         end
     end
-
-    submit_color_map(color_map)
 end
 
 -- support functions

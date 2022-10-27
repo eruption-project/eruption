@@ -44,10 +44,16 @@ function on_apply_parameter(parameters)
     submit_color_map(color_map)
 end
 
-function on_tick(delta)
-    if effect_ttl <= 0 then return end
+-- function on_render()
+--     if effect_ttl > 0 then
+--         submit_color_map(color_map)
+--     end
+-- end
 
-    effect_ttl = effect_ttl - 1
+-- function on_tick(delta)
+--     if effect_ttl <= 0 then return end
 
-    submit_color_map(color_map)
-end
+--     effect_ttl = effect_ttl - 1
+
+--     submit_color_map(color_map)
+-- end

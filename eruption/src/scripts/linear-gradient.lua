@@ -43,6 +43,10 @@ function on_apply_parameter(parameters)
     on_startup(nil)
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     if not animate_gradient then return end
 
@@ -54,7 +58,5 @@ function on_tick(delta)
             local p = ((i + ticks) / color_divisor) % 100
             color_map[i] = linear_gradient(color_start, color_end, p / 100)
         end
-
-        submit_color_map(color_map)
     end
 end

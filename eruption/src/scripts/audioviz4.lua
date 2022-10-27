@@ -31,6 +31,10 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -54,6 +58,4 @@ function on_tick(delta)
             color_map[i] = 0xffffffff
         end
     end
-
-    submit_color_map(color_map)
 end

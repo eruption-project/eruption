@@ -5,6 +5,7 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.4.0 | __Next Release__ |
+| 0.4.0 | INCOMPATIBLE CHANGES: Lua scripting callbacks: Split render and timer tick code into distinct callbacks. You need to update your `on_tick(...)` event handlers |
 | 0.4.0 | Update all dependencies to their latest releases |
 | 0.4.0 | Bump MSRV to latest stable Rust `1.65` |
 | 0.3.0 | __New Release__ |
