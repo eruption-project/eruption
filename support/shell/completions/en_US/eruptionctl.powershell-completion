@@ -31,8 +31,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
+            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
@@ -43,6 +43,39 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config;brightness' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;config;soundfx' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;config;help' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config;help;brightness' {
+            break
+        }
+        'eruptionctl;config;help;soundfx' {
+            break
+        }
+        'eruptionctl;config;help;help' {
             break
         }
         'eruptionctl;canvas' {
@@ -86,39 +119,6 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;canvas;help;help' {
-            break
-        }
-        'eruptionctl;config' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
-            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;config;brightness' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;config;soundfx' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;config;help' {
-            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
-            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;config;help;brightness' {
-            break
-        }
-        'eruptionctl;config;help;soundfx' {
-            break
-        }
-        'eruptionctl;config;help;help' {
             break
         }
         'eruptionctl;color-schemes' {
@@ -517,8 +517,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help' {
-            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
+            [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
             [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
@@ -529,6 +529,17 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;help;config' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            break
+        }
+        'eruptionctl;help;config;brightness' {
+            break
+        }
+        'eruptionctl;help;config;soundfx' {
             break
         }
         'eruptionctl;help;canvas' {
@@ -544,17 +555,6 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;canvas;lightness' {
-            break
-        }
-        'eruptionctl;help;config' {
-            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
-            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
-            break
-        }
-        'eruptionctl;help;config;brightness' {
-            break
-        }
-        'eruptionctl;help;config;soundfx' {
             break
         }
         'eruptionctl;help;color-schemes' {

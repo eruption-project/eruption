@@ -34,7 +34,67 @@ _eruptionctl() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-command-$line[1]:"
         case $line[1] in
-            (canvas)
+            (config)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-config-command-$line[1]:"
+        case $line[1] in
+            (brightness)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::brightness:' \
+&& ret=0
+;;
+(soundfx)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::enable:(true false)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__config__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-config-help-command-$line[1]:"
+        case $line[1] in
+            (brightness)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(soundfx)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(canvas)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
@@ -90,66 +150,6 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (lightness)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
-(config)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__config_commands" \
-"*::: :->config" \
-&& ret=0
-
-    case $state in
-    (config)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-config-command-$line[1]:"
-        case $line[1] in
-            (brightness)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'::brightness:' \
-&& ret=0
-;;
-(soundfx)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'::enable:(true false)' \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__config__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-config-help-command-$line[1]:"
-        case $line[1] in
-            (brightness)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(soundfx)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -818,7 +818,31 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-help-command-$line[1]:"
         case $line[1] in
-            (canvas)
+            (config)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-config-command-$line[1]:"
+        case $line[1] in
+            (brightness)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(soundfx)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(canvas)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__canvas_commands" \
 "*::: :->canvas" \
@@ -839,30 +863,6 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (lightness)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-(config)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__config_commands" \
-"*::: :->config" \
-&& ret=0
-
-    case $state in
-    (config)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-config-command-$line[1]:"
-        case $line[1] in
-            (brightness)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(soundfx)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1130,8 +1130,8 @@ esac
 (( $+functions[_eruptionctl_commands] )) ||
 _eruptionctl_commands() {
     local commands; commands=(
-'canvas:Configure post-processing filters of the global canvas' \
 'config:Configuration related sub-commands' \
+'canvas:Configure post-processing filters of the global canvas' \
 'color-schemes:Define, import or delete a named color scheme' \
 'devices:Get or set some device specific configuration parameters' \
 'status:Shows the currently active profile or slot' \
@@ -1463,8 +1463,8 @@ _eruptionctl__devices__help__help_commands() {
 (( $+functions[_eruptionctl__help_commands] )) ||
 _eruptionctl__help_commands() {
     local commands; commands=(
-'canvas:Configure post-processing filters of the global canvas' \
 'config:Configuration related sub-commands' \
+'canvas:Configure post-processing filters of the global canvas' \
 'color-schemes:Define, import or delete a named color scheme' \
 'devices:Get or set some device specific configuration parameters' \
 'status:Shows the currently active profile or slot' \

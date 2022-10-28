@@ -451,7 +451,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts="-v -r -c -h -V --verbose --repeat --config --help --version canvas config color-schemes devices status switch profiles names scripts param completions help"
+            opts="-v -r -c -h -V --verbose --repeat --config --help --version config canvas color-schemes devices status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1257,7 +1257,7 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__help)
-            opts="canvas config color-schemes devices status switch profiles names scripts param completions help"
+            opts="config canvas color-schemes devices status switch profiles names scripts param completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
