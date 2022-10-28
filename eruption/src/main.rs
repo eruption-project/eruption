@@ -1369,7 +1369,6 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
-        process::exit(3);
     });
 
     // send initialization handshake
@@ -1575,7 +1574,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .build()
         .unwrap_or_else(|e| {
             log::error!("Could not parse configuration file: {}", e);
-            process::exit(4);
+            process::exit(1);
         });
 
     *CONFIG.lock() = Some(config.clone());
@@ -1929,7 +1928,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 join!(shutdown_keyboards, shutdown_mice, shutdown_misc);
             } else {
                 error!("Could not enumerate connected devices");
-                process::exit(2);
             }
         }
 

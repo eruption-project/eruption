@@ -29,8 +29,9 @@ use std::{sync::Arc, thread};
 use crate::constants;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError, KeyboardDevice,
-    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
+    KeyboardDevice, KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind,
+    MouseDeviceTrait, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -397,7 +398,7 @@ impl RoccatMagma {
 
 impl DeviceInfoTrait for RoccatMagma {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

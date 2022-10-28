@@ -13,8 +13,13 @@ Table of new and noteworthy changes:
 | 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air` |
 | 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Improve compatibility with laptop docks |
+| 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air`, `ROCCAT/Turtle Beach Elo 7.1 Air` |
+| 0.3.0 | Further reduce CPU load of the `eruption` daemon by only trying to invoke Lua event handler functions that actually exist. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fading when switching profiles. Thanks to `Phen-Ro` for implementing this! |
@@ -22,6 +27,8 @@ Table of new and noteworthy changes:
 | 0.3.0 | `Eruption SDK`: Improve the Python 3 SDK and publish it on <https://pypi.org/project/eruption-sdk/> |
 | 0.3.0 | `Eruption SDK`: Rename Rust package to `eruption-sdk` and publish on <https://crates.io/crates/eruption-sdk> |
 | 0.3.0 | Improve the way we handle parameters of `*.profile` files. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | New Lua scripts: `stock-gradient.lua` linearly interpolates colors from a pre-defined color scheme or from a stock gradient |
+| 0.3.0 | New profile: `rainbow-vertical.profile` that makes use of the newly introduced Lua script that renders stock gradients and custom color schemes |
 | 0.3.0 | Update all dependencies to their latest releases |
 | 0.3.0 | New theme for the eruption CLI tools (`--help`) output, provided by Clap v4 |
 | 0.3.0 | Bump MSRV to latest stable Rust `1.64` |

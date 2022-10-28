@@ -28,8 +28,8 @@ use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
 use crate::{constants, hwdevices::DeviceStatus};
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, RGBA,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice,
+    MouseDeviceTrait, MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -257,7 +257,7 @@ impl RoccatKova2016 {
 
 impl DeviceInfoTrait for RoccatKova2016 {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

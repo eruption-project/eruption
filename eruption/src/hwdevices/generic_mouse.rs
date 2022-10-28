@@ -27,8 +27,8 @@ use parking_lot::RwLock;
 use crate::hwdevices::DeviceStatus;
 
 use super::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice, MouseDeviceTrait,
-    MouseHidEvent, RGBA,
+    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice,
+    MouseDeviceTrait, MouseHidEvent, RGBA,
 };
 
 pub type Result<T> = super::Result<T>;
@@ -75,7 +75,7 @@ impl GenericMouse {
 
 impl DeviceInfoTrait for GenericMouse {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities {}
+        DeviceCapabilities::from([Capability::Mouse])
     }
 
     fn get_device_info(&self) -> Result<super::DeviceInfo> {

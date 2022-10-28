@@ -15,6 +15,7 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
+
 -- global config
 ENABLE_FUNCTION_KEYS = false -- ROCCAT Vulcan TKL variant does not have special function keys
 ENABLE_MEDIA_KEYS = true
