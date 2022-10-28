@@ -36,29 +36,31 @@ function on_tick(delta)
 
     -- calculate the gradient effect
     if horizontal then
-        for i = num_cols, 0, -1 do
-            for j = 1, max_keys_per_col do
-                local val = sin(i / wave_length +
-                                    (ticks * direction / speed_divisor)) *
+        for y = 0, canvas_height - 1 do
+            for x = 0, canvas_width - 1 do
+                local i = canvas_width * y + x + 1
+
+                local val = (sin((x % canvas_width) / wave_length +
+                                     (ticks * direction / speed_divisor)) + 1) *
                                 scale_factor
                 local grad_pos = range(-1.0, 1.0, 0.0, 1.0, val)
                 local color = gradient_color_at(grad, grad_pos)
 
-                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
-                color_map[index] = color
+                color_map[i] = color
             end
         end
     else
-        for i = num_rows, 0, -1 do
-            for j = 1, max_keys_per_row do
-                local val = sin(i / wave_length +
-                                    (ticks * direction / speed_divisor)) *
+        for y = 0, canvas_height - 1 do
+            for x = 0, canvas_width - 1 do
+                local i = canvas_width * y + x + 1
+
+                local val = (sin((y % canvas_height) / wave_length +
+                                     (ticks * direction / speed_divisor)) + 1) *
                                 scale_factor
                 local grad_pos = range(-1.0, 1.0, 0.0, 1.0, val)
                 local color = gradient_color_at(grad, grad_pos)
 
-                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
-                color_map[index] = color
+                color_map[i] = color
             end
         end
     end
