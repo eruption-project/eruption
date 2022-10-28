@@ -53,6 +53,12 @@ default = 1
 
 [[config."Stock Gradient"]]
 type = 'float'
+name = 'scale_factor'
+value = 1.0
+default = 1.0
+
+[[config."Stock Gradient"]]
+type = 'float'
 name = 'wave_length'
 value = 5.0
 default = 5.0

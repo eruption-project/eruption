@@ -19,67 +19,48 @@ require "declarations"
 require "utilities"
 require "debug"
 
-matrix = require "matrix"
-
 -- global state variables --
-ticks = 0
+
 color_map = {}
+ticks = 0
 
 grad = gradient_from_name(stock_gradient)
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0xffffffff end
+    for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_tick(delta)
     ticks = ticks + delta
 
-    local theta = 360 * sin(ticks / 5000)
+    -- calculate the gradient effect
+    if horizontal then
+        for i = num_cols, 0, -1 do
+            for j = 1, max_keys_per_col do
+                local val = sin(i / wave_length +
+                                    (ticks * direction / speed_divisor)) *
+                                scale_factor
+                local grad_pos = range(-1.0, 1.0, 0.0, 1.0, val)
+                local color = gradient_color_at(grad, grad_pos)
 
-    local tx = canvas_width / 2
-    local ty = canvas_height / 2
+                local index = n(cols_topology[j + (i * max_keys_per_col)]) + 1
+                color_map[index] = color
+            end
+        end
+    else
+        for i = num_rows, 0, -1 do
+            for j = 1, max_keys_per_row do
+                local val = sin(i / wave_length +
+                                    (ticks * direction / speed_divisor)) *
+                                scale_factor
+                local grad_pos = range(-1.0, 1.0, 0.0, 1.0, val)
+                local color = gradient_color_at(grad, grad_pos)
 
-    local scale_x = 1.0
-    local scale_y = 1.0
-
-    local trans_mat1 = matrix{{1, 0, tx}, {0, 1, ty}, {0, 0, 1}}:transpose()
-    local trans_mat2 = matrix{{1, 0, -tx}, {0, 1, -ty}, {0, 0, 1}}:transpose()
-    local scaling_mat = matrix{{scale_x, 0, 0}, {0, scale_y, 0}, {0, 0, 1}}:transpose()
-    local rot_mat = matrix{{cos(theta), -sin(theta), 0}, {sin(theta), cos(theta), 0}, {0, 0, 1}}:transpose()
-
-    -- local affine_mat = rot_mat * scaling_mat * trans_mat
-    -- local affine_mat = trans_mat * scaling_mat * rot_mat  
-    -- local affine_mat = scaling_mat * trans_mat2 * rot_mat * trans_mat1
-    -- local affine_mat = scaling_mat * trans_mat1 * rot_mat * trans_mat2 
-    local affine_mat = rot_mat
-
-    for i = 0, canvas_size - 1 do
-	local x = i % canvas_width
-	local y = i / canvas_width
-
-	local val = sin((ticks * direction * wave_length) / speed_divisor)
-	local grad_pos = range(-1.0, 1.0, 0.0, 1.0, val)
-	local color = gradient_color_at(grad, grad_pos)
-
-	-- finer grained color control
-	-- local h,s,l = color_to_hsl(color)
-	-- h = range(-120.0, 120.0, 0.0, 360.0, h)
-	-- color = hsla_to_color(h, (s * color_saturation) * 2, (l * color_lightness * 2), 255)
-
-	local vec = matrix{x, y, 1}
-
-	vec = trans_mat1 * vec
-	vec = affine_mat * vec 
-	vec = trans_mat2 * vec
-
-	warn("" .. stringify(vec))
-
-	x = trunc(vec[1][1])
-	y = trunc(vec[2][1])
-
-	local index = n(rows_topology[x + (y * max_keys_per_row)])
-	color_map[index + 1] = color
+                local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
+                color_map[index] = color
+            end
+        end
     end
 
     submit_color_map(color_map)

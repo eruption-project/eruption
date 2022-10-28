@@ -19,6 +19,8 @@ Table of new and noteworthy changes:
 | 0.3.0 | `Eruption SDK`: Improve the Python 3 SDK and publish it on <https://pypi.org/project/eruption-sdk/> |
 | 0.3.0 | `Eruption SDK`: Rename Rust package to `eruption-sdk` and publish on <https://crates.io/crates/eruption-sdk> |
 | 0.3.0 | Improve the way we handle parameters of `*.profile` files. Thanks to `Phen-Ro` for implementing this! |
+| 0.3.0 | New Lua scripts: `stock-gradient.lua` linearly interpolates colors from a pre-defined color scheme or from a stock gradient |
+| 0.3.0 | New profile: `rainbow-vertical.profile` that makes use of the newly introduced Lua script that renders stock gradients and custom color schemes |
 | 0.3.0 | Update all dependencies to their latest releases |
 | 0.3.0 | New theme for the eruption CLI tools (`--help`) output, provided by Clap v4 |
 | 0.3.0 | Bump MSRV to latest stable Rust `1.64` |
