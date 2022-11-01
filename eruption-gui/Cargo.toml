@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -27,7 +29,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver", "gui"]
 categories = ["hardware-support"]
-license = "GPL-3.0"
+license = "GPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 

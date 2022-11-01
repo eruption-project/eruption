@@ -1,3 +1,5 @@
+//  SPDX-License-Identifier: GPL-3.0-or-later
+//
 //  This file is part of Eruption.
 //
 //  Eruption is free software: you can redistribute it and/or modify
@@ -30,24 +32,18 @@ message Request {
   }
 }
 
-message NoopRequest { }
-message StatusRequest { }
-message ActiveProfileRequest { }
-message SwitchProfileRequest {
-  string profile_file = 1;
-}
+message NoopRequest {}
+message StatusRequest {}
+message ActiveProfileRequest {}
+message SwitchProfileRequest { string profile_file = 1; }
 message SetParametersRequest {
   string profile_file = 1;
   string script_file = 2;
   map<string, string> parameter_values = 3;
 }
 
-message SetCanvasRequest {
-  bytes canvas = 1;
-}
-message NotifyHotplugRequest {
-  bytes payload = 1;
-}
+message SetCanvasRequest { bytes canvas = 1; }
+message NotifyHotplugRequest { bytes payload = 1; }
 message Response {
   oneof response_message {
     StatusResponse status = 1;
@@ -60,18 +56,12 @@ message Response {
 }
 
 // No response to NoopRequest - it's a NOOP
-message StatusResponse {
-  string description = 1;
-}
-message ActiveProfileResponse {
-  string profile_file = 1;
-}
-message SwitchProfileResponse {
-  bool switched = 1;
-}
-message SetParametersResponse { }
-message SetCanvasResponse { }
-message NotifyHotplugResponse { }
+message StatusResponse { string description = 1; }
+message ActiveProfileResponse { string profile_file = 1; }
+message SwitchProfileResponse { bool switched = 1; }
+message SetParametersResponse {}
+message SetCanvasResponse {}
+message NotifyHotplugResponse {}
 
 // Service definition
 service SdkSupport { rpc Sdk(Request) returns (Response); }
