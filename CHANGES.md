@@ -6,6 +6,7 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __Next Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
+| 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that complements some features of `eruption-netfx`  |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Improve compatibility with laptop docks |
 | 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air`, `ROCCAT/Turtle Beach Elo 7.1 Air` |

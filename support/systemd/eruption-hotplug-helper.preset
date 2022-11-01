@@ -1,1 +1,1 @@
-disable eruption-process-monitor.service
+disable eruption-hotplug-helper.service

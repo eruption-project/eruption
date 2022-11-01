@@ -15,14 +15,14 @@ ExecStart=/usr/bin/eruption-audio-proxy -c /etc/eruption/audio-proxy.conf daemon
 Type=exec
 Restart=always
 RestartSec=1
-#CapabilityBoundingSet=CAP_NET_ADMIN
-#AmbientCapabilities=CAP_NET_ADMIN
-#ProtectHome=yes
-#ProtectSystem=full
-#ProtectKernelTunables=yes
-#ProtectControlGroups=yes
-#PrivateDevices=no
-#PrivateTmp=yes
+# CapabilityBoundingSet=CAP_NET_ADMIN
+# AmbientCapabilities=CAP_NET_ADMIN
+# ProtectHome=yes
+# ProtectSystem=full
+# ProtectKernelTunables=yes
+# ProtectControlGroups=yes
+# PrivateDevices=no
+# PrivateTmp=yes
 
 [Install]
 WantedBy=default.target

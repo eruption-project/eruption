@@ -1094,6 +1094,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "eruption-fx-proxy"
+version = "0.0.1"
+dependencies = [
+ "cfg-if 1.0.0",
+ "clap 4.0.18",
+ "clap_complete",
+ "color-eyre",
+ "colored",
+ "ctrlc",
+ "dbus",
+ "dbus-tokio",
+ "dyn-clonable",
+ "eyre",
+ "flume",
+ "i18n-embed",
+ "i18n-embed-fl",
+ "icecream",
+ "image",
+ "jwalk",
+ "lazy_static",
+ "libc",
+ "log",
+ "num-traits",
+ "parking_lot",
+ "pretty_assertions",
+ "pretty_env_logger",
+ "rayon",
+ "rust-embed",
+ "smithay-client-toolkit",
+ "syslog",
+ "tempfile",
+ "thiserror",
+ "thread_local",
+ "tokio",
+ "unic-langid",
+ "wayland-client 0.30.0-beta.12",
+ "x11",
+ "x11rb",
+]
+
+[[package]]
 name = "eruption-gui"
 version = "0.1.5"
 dependencies = [

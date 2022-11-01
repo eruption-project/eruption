@@ -1,0 +1,76 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-fx-proxy] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-fx-proxy'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-fx-proxy'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand daemon 'Run in background'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-fx-proxy;image'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;animation'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;ambient'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;daemon'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;completions'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;help'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand daemon 'Run in background'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-fx-proxy;help;image'= {
+        }
+        &'eruption-fx-proxy;help;animation'= {
+        }
+        &'eruption-fx-proxy;help;ambient'= {
+        }
+        &'eruption-fx-proxy;help;daemon'= {
+        }
+        &'eruption-fx-proxy;help;completions'= {
+        }
+        &'eruption-fx-proxy;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

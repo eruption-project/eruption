@@ -6,10 +6,12 @@ post_install() {
     # systemctl --user daemon-reload
 
     systemctl preset eruption
+    systemctl preset eruption-fx-proxy
     systemctl preset eruption-audio-proxy
     systemctl preset eruption-process-monitor
 
     systemctl enable --now eruption.service
+    systemctl --global enable --now eruption-fx-proxy.service
     systemctl --global enable --now eruption-audio-proxy.service
     # systemctl --global enable --now eruption-process-monitor.service
 
@@ -25,6 +27,7 @@ post_upgrade() {
     # systemctl --user daemon-reload
 
     systemctl try-restart eruption.service
+    systemctl --global try-restart eruption-fx-proxy.service
     systemctl --global try-restart eruption-audio-proxy.service
     systemctl --global try-restart eruption-process-monitor.service
 
@@ -33,8 +36,9 @@ post_upgrade() {
 }
 
 pre_remove() {
-    systemctl --global stop eruption-process-monitor.service
+    systemctl --global stop eruption-fx-proxy.service
     systemctl --global stop eruption-audio-proxy.service
+    systemctl --global stop eruption-process-monitor.service
     systemctl stop eruption.service
 }
 

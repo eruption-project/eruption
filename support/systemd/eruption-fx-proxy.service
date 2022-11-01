@@ -1,0 +1,28 @@
+[Unit]
+Description=Effects proxy daemon for Eruption
+Documentation=man:eruption-fx-proxy(1) man:fx-proxy.conf(5) man:eruptionctl(1)
+BindsTo=graphical-session.target
+Wants=graphical-session.target
+After=graphical-session.target
+# StartLimitIntervalSec=60
+# StartLimitBurst=5
+
+[Service]
+Environment=RUST_LOG=warn
+Environment=PULSE_LATENCY_MSEC=30
+ExecStart=/usr/bin/eruption-fx-proxy -c /etc/eruption/fx-proxy.conf daemon
+# PIDFile=/run/eruption-fx-proxy.pid
+Type=exec
+Restart=always
+RestartSec=1
+#CapabilityBoundingSet=CAP_NET_ADMIN
+#AmbientCapabilities=CAP_NET_ADMIN
+#ProtectHome=yes
+#ProtectSystem=full
+#ProtectKernelTunables=yes
+#ProtectControlGroups=yes
+#PrivateDevices=no
+#PrivateTmp=yes
+
+[Install]
+WantedBy=default.target
