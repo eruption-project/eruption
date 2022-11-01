@@ -57,7 +57,7 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master",
 # mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.8.4", features = ["lua54"] }
+mlua = { version = "0.8.5", features = ["lua54"] }
 regex = "1.6.0"
 dbus = "0.9.6"
 dbus-tokio = "0.7.5"
