@@ -18,6 +18,8 @@
 -- target framerate of the core engine
 target_fps = get_target_fps()
 
+is_audio_muted = is_audio_muted or function() return false end
+
 -- canvas dimensions
 canvas_size = get_canvas_size()
 canvas_height = get_canvas_height()

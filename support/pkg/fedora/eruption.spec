@@ -185,6 +185,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/profile4.profil
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/psychedelic.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/twinkle.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/rainbow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/rainbow-vertical.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/preset-red-yellow.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/preset-blue-red.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profiles/rainbow-wave.profile %{buildroot}/%{_sharedstatedir}/%{ShortName}/profiles/
@@ -367,6 +368,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_sharedstatedir}/%{ShortName}/profiles/psychedelic.profile
 %{_sharedstatedir}/%{ShortName}/profiles/twinkle.profile
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow.profile
+%{_sharedstatedir}/%{ShortName}/profiles/rainbow-vertical.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-red-yellow.profile
 %{_sharedstatedir}/%{ShortName}/profiles/preset-blue-red.profile
 %{_sharedstatedir}/%{ShortName}/profiles/rainbow-wave.profile
@@ -514,6 +516,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_datarootdir}/%{ShortName}/scripts/ripple.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/solid.lua
 %{_datarootdir}/%{ShortName}/scripts/solid.lua.manifest
+%{_datarootdir}/%{ShortName}/scripts/stock-gradient.lua
+%{_datarootdir}/%{ShortName}/scripts/stock-gradient.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua
 %{_datarootdir}/%{ShortName}/scripts/stripes.lua.manifest
 %{_datarootdir}/%{ShortName}/scripts/swirl-perlin.lua

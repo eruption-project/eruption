@@ -128,6 +128,7 @@ support/profiles/profile4.profile var/lib/eruption/profiles
 support/profiles/psychedelic.profile var/lib/eruption/profiles
 support/profiles/twinkle.profile var/lib/eruption/profiles
 support/profiles/rainbow.profile var/lib/eruption/profiles
+support/profiles/rainbow-vertical.profile var/lib/eruption/profiles
 support/profiles/preset-red-yellow.profile var/lib/eruption/profiles
 support/profiles/preset-blue-red.profile var/lib/eruption/profiles
 support/profiles/rainbow-wave.profile var/lib/eruption/profiles
@@ -227,6 +228,8 @@ eruption/src/scripts/ripple.lua usr/share/eruption/scripts
 eruption/src/scripts/ripple.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/solid.lua usr/share/eruption/scripts
 eruption/src/scripts/solid.lua.manifest usr/share/eruption/scripts
+eruption/src/scripts/stock-gradient.lua usr/share/eruption/scripts
+eruption/src/scripts/stock-gradient.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/stripes.lua usr/share/eruption/scripts
 eruption/src/scripts/stripes.lua.manifest usr/share/eruption/scripts
 eruption/src/scripts/shockwave.lua usr/share/eruption/scripts

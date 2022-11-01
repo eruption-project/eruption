@@ -46,7 +46,7 @@ async-trait = "0.1.58"
 # tracing = "0.1.26"
 # tracing-futures = "0.2.5"
 # tracing-subscriber = "0.2.20"
-libc = "0.2.135"
+libc = "0.2.137"
 nix = "0.25.0"
 systemd = "0.10.0"
 log = "0.4.17"
@@ -77,15 +77,15 @@ rand = "0.8.5"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 palette = "0.6.1"
-nalgebra = "0.31.2"
-noise = "0.8.1"
+nalgebra = "0.31.3"
+noise = "0.8.2"
 simdnoise = "3.1.6"
 # lua-src = "544.0.1"
 # mlua = { version = "0.8.4", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.8.4", features = ["luajit52"] }
-mlua = { version = "0.8.4", features = ["lua54"] }
-sysinfo = "0.26.5"
+mlua = { version = "0.8.5", features = ["lua54"] }
+sysinfo = "0.26.7"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.2"
 rustfft = "6.0.1"
