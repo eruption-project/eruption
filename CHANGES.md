@@ -6,7 +6,8 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.0 | __Next Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
-| 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that complements some features of `eruption-netfx`  |
+| 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that supersedes some features of `eruption-netfx` |
+| 0.3.0 | Replace the `Ambient Fx` effect based on `eruption-netfx` and `netfx.profile` with the newer and more efficient `Ambient Effect` provided by `eruption-fx-proxy` |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Improve compatibility with laptop docks |
 | 0.3.0 | Add support for most Wayland compositors to the `eruption-process-monitor` session daemon. (To enable support for automatic profile switching) |
