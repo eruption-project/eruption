@@ -50,6 +50,7 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         builder.object("process_monitor_daemon_switch").unwrap();
     let audio_proxy_daemon_switch: gtk::Switch =
         builder.object("audio_proxy_daemon_switch").unwrap();
+    let fx_proxy_daemon_switch: gtk::Switch = builder.object("fx_proxy_daemon_switch").unwrap();
 
     let eruption_daemon_status_label: gtk::Label =
         builder.object("eruption_daemon_status_label").unwrap();
@@ -58,6 +59,8 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         .unwrap();
     let audio_proxy_daemon_status_label: gtk::Label =
         builder.object("audio_proxy_daemon_status_label").unwrap();
+    let fx_proxy_daemon_status_label: gtk::Label =
+        builder.object("fx_proxy_daemon_status_label").unwrap();
 
     host_name.connect_changed(move |entry| {
         preferences::set_host_name(&entry.text())
@@ -76,6 +79,7 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
     eruption_daemon_status_label.set_use_markup(true);
     process_monitor_daemon_status_label.set_use_markup(true);
     audio_proxy_daemon_status_label.set_use_markup(true);
+    fx_proxy_daemon_status_label.set_use_markup(true);
 
     /* eruption_daemon_switch.connect_state_set(move |_sw, enabled| {
         let _status = set_daemon_status(Daemon::Eruption, enabled);
@@ -91,6 +95,12 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
 
     audio_proxy_daemon_switch.connect_state_set(move |_sw, enabled| {
         let _status = set_daemon_status(Daemon::AudioProxy, enabled);
+
+        gtk::Inhibit(false)
+    });
+
+    fx_proxy_daemon_switch.connect_state_set(move |_sw, enabled| {
+        let _status = set_daemon_status(Daemon::FxProxy, enabled);
 
         gtk::Inhibit(false)
     });
@@ -207,6 +217,42 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                             }
                         }
 
+                        match get_daemon_status(Daemon::FxProxy) {
+                            Ok(status) => {
+                                    match status {
+                                        ServiceStatus::Active => {
+                                            fx_proxy_daemon_status_label.set_label("<b><span background='#00ff00' foreground='white'>    OK    </span></b>");
+                                            fx_proxy_daemon_switch.set_state(true);
+                                            fx_proxy_daemon_switch.set_sensitive(true);
+
+                                        }
+
+                                        ServiceStatus::Inactive => {
+                                            fx_proxy_daemon_status_label.set_label("<b><span background='#ff0000' foreground='white'>offline</span></b>");
+                                            fx_proxy_daemon_switch.set_state(false);
+                                            fx_proxy_daemon_switch.set_sensitive(true);
+                                        }
+
+                                        ServiceStatus::Failed =>  {
+                                            fx_proxy_daemon_status_label.set_label("<b><span background='#ff0000' foreground='white'>failed</span></b>");
+                                            fx_proxy_daemon_switch.set_state(false);
+                                            fx_proxy_daemon_switch.set_sensitive(true);
+                                        }
+
+                                        ServiceStatus::Unknown =>  {
+                                            fx_proxy_daemon_status_label.set_label("<b><span foreground='white'>unknown</span></b>");
+                                            fx_proxy_daemon_switch.set_sensitive(false);
+                                        }
+                                }
+                            }
+
+                            Err(_e) => {
+                                fx_proxy_daemon_status_label.set_label("<b><span background='#ff0000' foreground='white'>error</span></b>");
+                                fx_proxy_daemon_switch.set_state(false);
+                                fx_proxy_daemon_switch.set_sensitive(false);
+                            }
+                        }
+
             Ok(())
         }),
     )?;
@@ -219,6 +265,7 @@ enum Daemon {
     Eruption,
     ProcessMonitor,
     AudioProxy,
+    FxProxy,
 }
 
 fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
@@ -226,12 +273,14 @@ fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
         Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
         Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
         Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
     };
 
     let user_or_system = match daemon {
         Daemon::Eruption => "--system",
         Daemon::ProcessMonitor => "--user",
         Daemon::AudioProxy => "--user",
+        Daemon::FxProxy => "--user",
     };
 
     let action = if running { "start" } else { "stop" };
@@ -263,12 +312,14 @@ fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
         Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
         Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
         Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
     };
 
     let user_or_system = match daemon {
         Daemon::Eruption => "--system",
         Daemon::ProcessMonitor => "--user",
         Daemon::AudioProxy => "--user",
+        Daemon::FxProxy => "--user",
     };
 
     let mut status = Command::new("/usr/bin/systemctl")

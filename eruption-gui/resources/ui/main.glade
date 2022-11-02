@@ -892,7 +892,6 @@ The Eruption Development Team
                           <object class="GtkFrame">
                             <property name="width-request">100</property>
                             <property name="height-request">80</property>
-                            <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="border-width">8</property>
                             <property name="label-xalign">0</property>
@@ -991,7 +990,7 @@ The Eruption Development Team
                             <property name="label-xalign">0</property>
                             <property name="shadow-type">none</property>
                             <child>
-                              <!-- n-columns=3 n-rows=4 -->
+                              <!-- n-columns=3 n-rows=5 -->
                               <object class="GtkGrid">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
@@ -1124,6 +1123,42 @@ The Eruption Development Team
                                   </packing>
                                 </child>
                                 <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Eruption FX Proxy</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSwitch" id="fx_proxy_daemon_switch">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="fx_proxy_daemon_status_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">&lt;unknown&gt;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
                                   <placeholder/>
                                 </child>
                                 <child>
@@ -1147,9 +1182,6 @@ The Eruption Development Team
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -1212,7 +1244,7 @@ The Eruption Development Team
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes">_SoundFX Audio Effects</property>
+                            <property name="label" translatable="yes">_Audio Effects</property>
                             <property name="use-underline">True</property>
                             <property name="mnemonic-widget">soundfx_switch</property>
                           </object>
@@ -1222,7 +1254,7 @@ The Eruption Development Team
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSwitch" id="networkfx_ambient_switch">
+                          <object class="GtkSwitch" id="ambientfx_switch">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                           </object>
@@ -1236,9 +1268,9 @@ The Eruption Development Team
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes">_NetworkFX Ambient Effect</property>
+                            <property name="label" translatable="yes">_Ambient Effect</property>
                             <property name="use-underline">True</property>
-                            <property name="mnemonic-widget">networkfx_ambient_switch</property>
+                            <property name="mnemonic-widget">ambientfx_switch</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>

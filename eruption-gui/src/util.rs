@@ -19,7 +19,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{constants, dbus_client, preferences, profiles};
+use crate::{constants, profiles};
 use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
@@ -34,7 +34,6 @@ use std::{
     process::Child,
     process::Command,
     sync::Arc,
-    thread,
     time::Duration,
     u8,
 };
@@ -47,9 +46,6 @@ lazy_static! {
 
 #[derive(Debug, thiserror::Error)]
 pub enum UtilError {
-    #[error("Process not running")]
-    ProcessNotRunning,
-
     #[error("Daemon restart failed")]
     RestartFailed,
 
@@ -549,48 +545,6 @@ pub fn get_manifest_for(script_file: &Path) -> PathBuf {
     manifest_path.set_extension("lua.manifest");
 
     manifest_path
-}
-
-pub fn toggle_netfx_ambient(enabled: bool) -> Result<()> {
-    // TODO: Make this code more robust
-    let (vid, pid) = dbus_client::get_managed_devices()?.0[0];
-
-    let model = format!("{:04x}:{:04x}", vid, pid);
-    let host_name = preferences::get_host_name().unwrap_or("localhost".to_string());
-    let port_number = preferences::get_port_number()?;
-
-    if enabled {
-        switch_profile(
-            &Path::join(
-                &PathBuf::from(&constants::DEFAULT_PROFILE_DIR),
-                "netfx.profile",
-            )
-            .to_string_lossy(),
-        )?;
-
-        thread::sleep(Duration::from_millis(constants::PROCESS_SPAWN_WAIT_MILLIS));
-
-        let handle = Command::new("/usr/bin/eruption-netfx")
-            .arg(&model)
-            .arg(&host_name)
-            .arg(&format!("{}", port_number))
-            .arg("ambient")
-            .spawn()?;
-
-        *NETFX_PROCESS_HANDLE.lock() = Some(handle);
-
-        Ok(())
-    } else {
-        if let Some(ref mut handle) = NETFX_PROCESS_HANDLE.lock().as_mut() {
-            handle.kill()?;
-        } else {
-            return Err(UtilError::ProcessNotRunning {}.into());
-        }
-
-        *NETFX_PROCESS_HANDLE.lock() = None;
-
-        Ok(())
-    }
 }
 
 pub fn restart_eruption_daemon() -> Result<()> {
