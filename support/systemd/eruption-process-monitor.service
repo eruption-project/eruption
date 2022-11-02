@@ -21,7 +21,6 @@
 [Unit]
 Description=Process Monitoring and Introspection for Eruption
 Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
-Wants=xdg-desktop-autostart.target
 PartOf=graphical-session.target
 BindsTo=graphical-session.target
 StartLimitIntervalSec=60
