@@ -9,6 +9,7 @@ Table of new and noteworthy changes:
 | 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that complements some features of `eruption-netfx`  |
 | 0.3.0 | Improve compatibility with USB HUBs and KVM switches |
 | 0.3.0 | Improve compatibility with laptop docks |
+| 0.3.0 | Add support for most Wayland compositors to the `eruption-process-monitor` session daemon. (To enable support for automatic profile switching) |
 | 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air`, `ROCCAT/Turtle Beach Elo 7.1 Air` |
 | 0.3.0 | Further reduce CPU load of the `eruption` daemon by only trying to invoke Lua event handler functions that actually exist. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |

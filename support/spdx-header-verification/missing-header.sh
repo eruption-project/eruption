@@ -1,3 +1,4 @@
+#!/bin/bash
 #    SPDX-License-Identifier: GPL-3.0-or-later
 #
 #    This file is part of Eruption.
@@ -18,4 +19,11 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-enable eruption-audio-proxy.service
+# exclude the following directories
+FILTER_ARGS="(sdk/examples/python/venv)|(sdk/lib/python/eruption/transport/sdk_support_pb2.py)"
+
+
+echo "The following files have no 'SPDX-License-Identifier' header:"
+echo
+
+support/spdx-header-verification/check-files.py | grep 'NO SPDX HEADER' | cut -f2 | grep -Ev "$FILTER_ARGS"

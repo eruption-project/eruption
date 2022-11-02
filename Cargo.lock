@@ -1381,7 +1381,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.0.18"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -1420,6 +1420,9 @@ dependencies = [
  "toml",
  "unic-langid",
  "walkdir",
+ "wayland-client 0.30.0-beta.12",
+ "wayland-protocols 0.30.0-beta.12",
+ "wayland-protocols-wlr",
  "x11rb",
 ]
 
@@ -4153,7 +4156,7 @@ dependencies = [
  "pkg-config",
  "wayland-client 0.29.5",
  "wayland-cursor",
- "wayland-protocols",
+ "wayland-protocols 0.29.5",
 ]
 
 [[package]]
@@ -4824,6 +4827,7 @@ dependencies = [
  "bitflags",
  "futures-channel",
  "futures-core",
+ "log",
  "nix 0.25.0",
  "thiserror",
  "wayland-backend",
@@ -4863,6 +4867,31 @@ dependencies = [
  "wayland-client 0.29.5",
  "wayland-commons",
  "wayland-scanner 0.29.5",
+]
+
+[[package]]
+name = "wayland-protocols"
+version = "0.30.0-beta.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca770dc814b3c93db1b4ba12a5bdfe899f8d68f9b4b06fc31e53959261cd0c39"
+dependencies = [
+ "bitflags",
+ "wayland-backend",
+ "wayland-client 0.30.0-beta.12",
+ "wayland-scanner 0.30.0-beta.12",
+]
+
+[[package]]
+name = "wayland-protocols-wlr"
+version = "0.1.0-beta.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8795f1c689bce3845292c1d84b8866fa65d1d1845e76769b13f71cadeb8b5853"
+dependencies = [
+ "bitflags",
+ "wayland-backend",
+ "wayland-client 0.30.0-beta.12",
+ "wayland-protocols 0.30.0-beta.12",
+ "wayland-scanner 0.30.0-beta.12",
 ]
 
 [[package]]

@@ -1,17 +1,38 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
+#    This file is part of Eruption.
+#
+#    Eruption is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Eruption is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Copyright (c) 2019-2022, The Eruption Development Team
+
+
 [Unit]
 Description=Audio proxy daemon for Eruption
 Documentation=man:eruption-audio-proxy(1) man:audio-proxy.conf(5) man:eruptionctl(1)
+Wants=xdg-desktop-autostart.target
+Requires=sound.target
+PartOf=graphical-session.target
 BindsTo=graphical-session.target
-Wants=graphical-session.target
-After=graphical-session.target sound.target
-# StartLimitIntervalSec=60
-# StartLimitBurst=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Environment=RUST_LOG=warn
 Environment=PULSE_LATENCY_MSEC=30
 ExecStart=/usr/bin/eruption-audio-proxy -c /etc/eruption/audio-proxy.conf daemon
-# PIDFile=/run/eruption-audio-proxy.pid
+PIDFile=/run/eruption-audio-proxy.pid
 Type=exec
 Restart=always
 RestartSec=1
@@ -25,4 +46,4 @@ RestartSec=1
 # PrivateTmp=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target

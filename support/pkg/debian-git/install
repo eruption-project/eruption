@@ -26,6 +26,8 @@ support/config/fx-proxy.conf etc/eruption
 support/config/audio-proxy.conf etc/eruption
 support/config/process-monitor.conf etc/eruption
 
+support/profile.d/eruption.sh etc/profile.d
+
 support/systemd/eruption.service usr/lib/systemd/system
 support/systemd/eruption.preset usr/lib/systemd/system-preset
 

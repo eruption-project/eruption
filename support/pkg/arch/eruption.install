@@ -9,11 +9,16 @@ post_install() {
     systemctl preset eruption-fx-proxy
     systemctl preset eruption-audio-proxy
     systemctl preset eruption-process-monitor
+    systemctl --global preset eruption-fx-proxy
+    systemctl --global preset eruption-audio-proxy
+    systemctl --global preset eruption-process-monitor
 
     systemctl enable --now eruption.service
+
+    systemctl --global import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY
     systemctl --global enable --now eruption-fx-proxy.service
     systemctl --global enable --now eruption-audio-proxy.service
-    # systemctl --global enable --now eruption-process-monitor.service
+    systemctl --global enable --now eruption-process-monitor.service
 
     systemctl reload dbus.service
     udevadm control --reload-rules

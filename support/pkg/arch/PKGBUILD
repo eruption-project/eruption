@@ -95,6 +95,8 @@ package() {
     install -m 644 "support/config/audio-proxy.conf" "$pkgdir/etc/eruption/"
     install -m 644 "support/config/process-monitor.conf" "$pkgdir/etc/eruption/"
 
+    install -m 644 "support/profile.d/eruption.sh" "$pkgdir/etc/profile.d/"
+
     install -m 644 "support/systemd/eruption.service" "$pkgdir/usr/lib/systemd/system/"
     install -m 644 "support/systemd/eruption.preset" "$pkgdir/usr/lib/systemd/system-preset/50-eruption.preset"
 
