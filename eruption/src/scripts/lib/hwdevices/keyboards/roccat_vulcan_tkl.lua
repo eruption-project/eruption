@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: GPL-3.0-or-later
+--
 -- This file is part of Eruption.
 --
 -- Eruption is free software: you can redistribute it and/or modify
@@ -15,7 +17,6 @@
 --
 -- Copyright (c) 2019-2022, The Eruption Development Team
 --
-
 -- global config
 ENABLE_FUNCTION_KEYS = false -- ROCCAT Vulcan TKL variant does not have special function keys
 ENABLE_MEDIA_KEYS = true

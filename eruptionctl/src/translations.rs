@@ -1,4 +1,4 @@
-use std::sync::Arc;
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
 
 /*
     This file is part of Eruption.
@@ -18,6 +18,7 @@ use std::sync::Arc;
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
+
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -25,6 +26,7 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
+use std::sync::Arc;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
