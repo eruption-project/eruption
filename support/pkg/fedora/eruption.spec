@@ -58,6 +58,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}/%{_mandir}/man8
 %{__mkdir_p} %{buildroot}/%{_mandir}/man1
 %{__mkdir_p} %{buildroot}/%{_sysconfdir}/%{ShortName}
+%{__mkdir_p} %{buildroot}/%{_sysconfdir}/profile.d
 %{__mkdir_p} %{buildroot}/%{_sysconfdir}/dbus-1/system.d
 %{__mkdir_p} %{buildroot}/%{_sysconfdir}/dbus-1/session.d
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
@@ -130,6 +131,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/shell/completions/en_US/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/config/eruption.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/config/audio-proxy.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/profile.d/eruption.sh %{buildroot}/%{_sysconfdir}/profile.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/dbus/org.eruption.control.conf %{buildroot}/%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/dbus/org.eruption.process_monitor.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
@@ -268,6 +270,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %config(noreplace) %{_sysconfdir}/%{ShortName}/%{ShortName}.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/audio-proxy.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
+%{_sysconfdir}/profile.d/eruption.sh
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 %{_sysconfdir}/dbus-1/session.d/org.eruption.process_monitor.conf
 %{_datarootdir}/polkit-1/actions/org.eruption.policy

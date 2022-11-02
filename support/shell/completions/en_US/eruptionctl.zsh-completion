@@ -723,7 +723,7 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'::script_name:' \
+'::script:' \
 '::parameter:' \
 '::value:' \
 && ret=0

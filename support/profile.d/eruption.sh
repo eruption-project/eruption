@@ -18,4 +18,4 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-enable eruption-audio-proxy.service
+systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1
