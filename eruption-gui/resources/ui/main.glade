@@ -1015,7 +1015,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption Process Monitor</property>
+                                    <property name="label" translatable="yes">Process Monitor</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
@@ -1027,7 +1027,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption Audio Proxy</property>
+                                    <property name="label" translatable="yes">Audio Proxy</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
@@ -1127,7 +1127,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Eruption FX Proxy</property>
+                                    <property name="label" translatable="yes">Effects Proxy</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
