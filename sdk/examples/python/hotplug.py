@@ -1,5 +1,4 @@
 #!/bin/env python3
-
 #    SPDX-License-Identifier: GPL-3.0-or-later
 #
 #    This file is part of Eruption.
