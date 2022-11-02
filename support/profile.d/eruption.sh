@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -17,4 +19,3 @@
 
 
 systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1
-

@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -84,7 +86,7 @@ const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION: &str = r#"
                 });
 
                 return {
-                    enable: () => {  
+                    enable: () => {
                         log('Eruption sensor extension enabled');
                     },
 
@@ -146,9 +148,11 @@ impl GnomeShellExtensionSensor {
             env::var("XDG_RUNTIME_DIR")
                 .map(|v| v.to_owned().to_string())
                 .unwrap_or_else(|_e| "/run/user/1000/".to_string()),
-        ).join("eruption-sensor");
+        )
+        .join("eruption-sensor");
 
-        let source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION.replace("{fifo_name}", &fifo_name.to_string_lossy());
+        let source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION
+            .replace("{fifo_name}", &fifo_name.to_string_lossy());
 
         Ok(())
     }

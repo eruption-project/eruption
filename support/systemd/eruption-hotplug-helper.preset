@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -16,4 +18,4 @@
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
 
-disable eruption-process-monitor.service
+disable eruption-hotplug-helper.service
