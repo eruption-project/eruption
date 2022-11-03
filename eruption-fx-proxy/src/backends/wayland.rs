@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use image::ImageBuffer;
+
 use super::{Backend, BackendData};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -65,7 +67,10 @@ impl Backend for WaylandBackend {
     fn poll(&mut self) -> Result<BackendData> {
         wayshot::screenshot()?;
 
-        Ok("".to_string())
+        // TODO: Implement this
+        let result = ImageBuffer::new(0, 0);
+
+        Ok(result)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

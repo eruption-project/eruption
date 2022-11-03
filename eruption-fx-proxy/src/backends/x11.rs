@@ -19,14 +19,12 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use super::{Backend, BackendData};
-use crate::hwdevices::{self, Keyboard};
+use super::{Backend, BackendData, BackendError};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Clone)]
 pub struct X11Backend {
-    pub device: Option<Box<dyn Keyboard + Sync + Send>>,
     pub display: Option<xwrap::Display>,
 
     pub failed: bool,
@@ -35,7 +33,6 @@ pub struct X11Backend {
 impl X11Backend {
     pub fn new() -> Result<Self> {
         Ok(Self {
-            device: None,
             display: None,
             failed: true,
         })
@@ -46,7 +43,7 @@ impl Backend for X11Backend {
     fn initialize(&mut self) -> Result<()> {
         self.failed = true;
 
-        let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
+        // let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
 
         self.display = Some(xwrap::Display::open(None).unwrap());
 
@@ -77,8 +74,7 @@ impl Backend for X11Backend {
     }
 
     fn poll(&mut self) -> Result<BackendData> {
-        let display = self.display.as_ref().expect("Display is not initialized");
-        let device = self.device.as_ref().expect("Device is not initialized");
+        let display = self.display.as_ref().ok_or(BackendError::NoDisplay)?;
 
         let window = display.get_default_root();
 
@@ -91,13 +87,13 @@ impl Backend for X11Backend {
             h: window_rect.h,
         };
 
-        let image = display
+        let result = display
             .get_image(window, sel, xwrap::ALL_PLANES, x11::xlib::ZPixmap)
-            .unwrap();
+            .ok_or(BackendError::Poll)?
+            .into_image_buffer()
+            .ok_or(BackendError::DataConversion)?;
 
-        let commands = "".into();
-
-        Ok(commands)
+        Ok(result)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
@@ -267,13 +263,13 @@ pub mod xwrap {
         // }
     }
 
-    impl Drop for Display {
-        fn drop(&mut self) {
-            unsafe {
-                xlib::XCloseDisplay(self.handle);
-            }
-        }
-    }
+    // impl Drop for Display {
+    //     fn drop(&mut self) {
+    //         unsafe {
+    //             xlib::XCloseDisplay(self.handle);
+    //         }
+    //     }
+    // }
 
     impl Image {
         pub fn from_raw_ximage(ximage: *mut xlib::XImage) -> Image {

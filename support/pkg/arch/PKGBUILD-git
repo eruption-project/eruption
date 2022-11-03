@@ -121,6 +121,7 @@ package() {
 
     install -m 644 "support/dbus/org.eruption.control.conf" "$pkgdir/usr/share/dbus-1/system.d/"
     install -m 644 "support/dbus/org.eruption.process_monitor.conf" "$pkgdir/usr/share/dbus-1/session.d/"
+    install -m 644 "support/dbus/org.eruption.fx_proxy.conf" "$pkgdir/usr/share/dbus-1/session.d/"
 
     install -m 644 "support/policykit/org.eruption.policy" "$pkgdir/usr/share/polkit-1/actions/"
 

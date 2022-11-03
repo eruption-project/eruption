@@ -47,6 +47,7 @@ support/udev/99-eruption.rules usr/lib/udev/rules.d
 
 support/dbus/org.eruption.control.conf etc/dbus-1/system.d
 support/dbus/org.eruption.process_monitor.conf etc/dbus-1/session.d
+support/dbus/org.eruption.fx_proxy.conf etc/dbus-1/session.d
 
 support/policykit/org.eruption.policy usr/share/polkit-1/actions
 

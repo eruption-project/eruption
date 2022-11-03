@@ -23,6 +23,7 @@ mod color_schemes;
 mod completions;
 mod config;
 mod devices;
+mod effects;
 mod names;
 mod param;
 mod profiles;
@@ -85,6 +86,12 @@ pub enum Subcommands {
         command: scripts::ScriptsSubcommands,
     },
 
+    #[clap(about(tr!("effects-about")))]
+    Effects {
+        #[clap(subcommand)]
+        command: effects::EffectsSubcommands,
+    },
+
     #[clap(about(tr!("param-about")))]
     Param {
         script: Option<String>,
@@ -106,6 +113,7 @@ pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
         Subcommands::Profiles { command } => profiles::handle_command(command).await,
         Subcommands::Names { command } => names::handle_command(command).await,
         Subcommands::Scripts { command } => scripts::handle_command(command).await,
+        Subcommands::Effects { command } => effects::handle_command(command).await,
         Subcommands::Param {
             script,
             parameter,

@@ -12,12 +12,6 @@ _eruption-fx-proxy() {
             ",$1")
                 cmd="eruption__fx__proxy"
                 ;;
-            eruption__fx__proxy,ambient)
-                cmd="eruption__fx__proxy__ambient"
-                ;;
-            eruption__fx__proxy,animation)
-                cmd="eruption__fx__proxy__animation"
-                ;;
             eruption__fx__proxy,completions)
                 cmd="eruption__fx__proxy__completions"
                 ;;
@@ -26,15 +20,6 @@ _eruption-fx-proxy() {
                 ;;
             eruption__fx__proxy,help)
                 cmd="eruption__fx__proxy__help"
-                ;;
-            eruption__fx__proxy,image)
-                cmd="eruption__fx__proxy__image"
-                ;;
-            eruption__fx__proxy__help,ambient)
-                cmd="eruption__fx__proxy__help__ambient"
-                ;;
-            eruption__fx__proxy__help,animation)
-                cmd="eruption__fx__proxy__help__animation"
                 ;;
             eruption__fx__proxy__help,completions)
                 cmd="eruption__fx__proxy__help__completions"
@@ -45,9 +30,6 @@ _eruption-fx-proxy() {
             eruption__fx__proxy__help,help)
                 cmd="eruption__fx__proxy__help__help"
                 ;;
-            eruption__fx__proxy__help,image)
-                cmd="eruption__fx__proxy__help__image"
-                ;;
             *)
                 ;;
         esac
@@ -55,40 +37,20 @@ _eruption-fx-proxy() {
 
     case "${cmd}" in
         eruption__fx__proxy)
-            opts="-v -h -V --verbose --help --version image animation ambient daemon completions help"
+            opts="-v -c -h -V --verbose --config --help --version daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                *)
-                    COMPREPLY=()
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
                     ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__ambient)
-            opts="-h --help [FRAME_DELAY]"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
                     ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__animation)
-            opts="-h --help <DIRECTORY_NAME> [FRAME_DELAY]"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -125,36 +87,8 @@ _eruption-fx-proxy() {
             return 0
             ;;
         eruption__fx__proxy__help)
-            opts="image animation ambient daemon completions help"
+            opts="daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__help__ambient)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__help__animation)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -197,34 +131,6 @@ _eruption-fx-proxy() {
         eruption__fx__proxy__help__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__help__image)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        eruption__fx__proxy__image)
-            opts="-h --help <FILENAME>"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

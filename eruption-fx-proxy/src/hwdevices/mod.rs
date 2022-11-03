@@ -35,8 +35,6 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum HwDevicesError {
     // #[error("The device is not supported")]
     // UnsupportedDevice,
-    #[error("Invalid hex number format")]
-    InvalidHexFormat,
 }
 
 #[clonable]
@@ -49,71 +47,24 @@ pub trait Keyboard: Clone {
     fn get_rows_topology(&self) -> &'static [u8];
 }
 
-pub fn get_keyboard_device(model: &Option<String>) -> Result<KeyboardDevice> {
-    match model {
-        Some(model) => {
-            if model.contains(':') {
-                let spl: Vec<_> = model.split(':').collect();
-
-                let vid = u16::from_str_radix(spl[0], 16)
-                    .map_err(|_op| HwDevicesError::InvalidHexFormat {})?;
-
-                let pid = u16::from_str_radix(spl[1], 16)
-                    .map_err(|_op| HwDevicesError::InvalidHexFormat {})?;
-
-                match (vid, pid) {
-                    // ROCCAT Vulcan 1xx series
-                    (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
-                        Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
-                    }
-
-                    // ROCCAT Vulcan Pro series
-                    (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new())),
-
-                    // ROCCAT Vulcan Pro TKL series
-                    (0x1e7d, 0x311a) => {
-                        Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new()))
-                    }
-
-                    // ROCCAT Vulcan TKL series
-                    (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
-
-                    _ => {
-                        log::warn!("Unknown keyboard model specified, assuming generic model");
-
-                        Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
-                    }
-                }
-            } else {
-                match model.as_str() {
-                    // ROCCAT Vulcan 1xx series
-                    "ROCCAT Vulcan 1xx" | "ROCCAT Vulcan 100" | "ROCCAT Vulcan 110"
-                    | "ROCCAT Vulcan 120" | "ROCCAT Vulcan 121" | "ROCCAT Vulcan 122" => {
-                        Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
-                    }
-
-                    // // ROCCAT Vulcan Pro series
-                    // (0x1e7d, 0x30f7) => return Box::new(roccat_vulcan_pro::RoccatVulcanPro::new()),
-
-                    // ROCCAT Vulcan Pro TKL series
-                    "ROCCAT Vulcan Pro TKL" => {
-                        Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new()))
-                    }
-
-                    // ROCCAT Vulcan TKL series
-                    "ROCCAT Vulcan TKL" => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
-
-                    _ => {
-                        log::warn!("Unknown keyboard model specified, assuming generic model");
-
-                        Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
-                    }
-                }
-            }
+pub fn get_keyboard_device(vid: u16, pid: u16) -> Result<KeyboardDevice> {
+    match (vid, pid) {
+        // ROCCAT Vulcan 1xx series
+        (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
+            Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
         }
 
-        None => {
-            log::warn!("No keyboard model specified, assuming generic model");
+        // ROCCAT Vulcan Pro series
+        (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new())),
+
+        // ROCCAT Vulcan Pro TKL series
+        (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new())),
+
+        // ROCCAT Vulcan TKL series
+        (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
+
+        _ => {
+            log::warn!("Unknown keyboard model specified, assuming generic model");
 
             Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
         }

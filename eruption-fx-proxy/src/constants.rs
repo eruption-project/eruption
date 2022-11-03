@@ -28,4 +28,15 @@ pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
 pub const DEFAULT_FRAME_DELAY_MILLIS: u64 = 37;
 
 /// Timeout value to use for D-Bus connections
-pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
+pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
+
+/// Main loop delay
+pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 250;
+
+/// Timeout value to use for D-Bus connections
+/// that may involve interactivity like e.g.:
+/// PolicyKit authentication
+pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u64 = 30000;
+
+/// Default X11 display used by the X11 sensor plugin
+pub const DEFAULT_X11_DISPLAY: &str = ":0";

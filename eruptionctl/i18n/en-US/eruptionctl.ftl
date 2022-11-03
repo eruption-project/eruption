@@ -32,6 +32,7 @@ switch-about = Switch to a different profile or slot
 profiles-about = Profile related sub-commands
 names-about = Naming related commands such as renaming of profile slots
 scripts-about = Script related sub-commands
+effects-about = Special effects like Ambient, image overlays or animations
 param-about = Get or set script parameters on the currently active profile
 
 dumping-devices = Dumping Eruption managed devices list

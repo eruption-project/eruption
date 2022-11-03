@@ -24,7 +24,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::preferences;
+use crate::{preferences, util};
 use glib::clone;
 use gtk::prelude::*;
 
@@ -61,6 +61,13 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         builder.object("audio_proxy_daemon_status_label").unwrap();
     let fx_proxy_daemon_status_label: gtk::Label =
         builder.object("fx_proxy_daemon_status_label").unwrap();
+
+    let restart_eruption_button: gtk::Button = builder.object("restart_eruption_button").unwrap();
+    let restart_process_monitor_button: gtk::Button =
+        builder.object("restart_process_monitor_button").unwrap();
+    let restart_audio_proxy_button: gtk::Button =
+        builder.object("restart_audio_proxy_button").unwrap();
+    let restart_fx_proxy_button: gtk::Button = builder.object("restart_fx_proxy_button").unwrap();
 
     host_name.connect_changed(move |entry| {
         preferences::set_host_name(&entry.text())
@@ -103,6 +110,38 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         let _status = set_daemon_status(Daemon::FxProxy, enabled);
 
         gtk::Inhibit(false)
+    });
+
+    restart_eruption_button.connect_clicked(|_btn| {
+        if let Err(e) = util::restart_eruption_daemon() {
+            log::error!("Could not restart the Eruption daemon: {e}");
+        } else {
+            log::info!("Successfully restarted the Eruption daemon");
+        }
+    });
+
+    restart_process_monitor_button.connect_clicked(|_btn| {
+        if let Err(e) = util::restart_process_monitor_daemon() {
+            log::error!("Could not restart the Eruption process monitor daemon: {e}");
+        } else {
+            log::info!("Successfully restarted the Eruption process monitor daemon");
+        }
+    });
+
+    restart_audio_proxy_button.connect_clicked(|_btn| {
+        if let Err(e) = util::restart_audio_proxy_daemon() {
+            log::error!("Could not restart the Eruption audio proxy daemon: {e}");
+        } else {
+            log::info!("Successfully restarted the Eruption audio proxy daemon");
+        }
+    });
+
+    restart_fx_proxy_button.connect_clicked(|_btn| {
+        if let Err(e) = util::restart_fx_proxy_daemon() {
+            log::error!("Could not restart the Eruption fx proxy daemon: {e}");
+        } else {
+            log::info!("Successfully restarted the Eruption fx proxy daemon");
+        }
     });
 
     crate::register_timer(

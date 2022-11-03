@@ -131,6 +131,7 @@ install:
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
 	@cp "support/dbus/org.eruption.control.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
+	@cp "support/dbus/org.eruption.fx_proxy.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/policykit/org.eruption.policy" "$(TARGET_DIR)/share/polkit-1/actions/"
 	@cp "support/man/eruption.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
@@ -242,6 +243,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
 	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.control.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
+	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.fx_proxy.conf
 	-@rm $(TARGET_DIR)/share/polkit-1/actions/org.eruption.policy
 	-@rm $(TARGET_DIR)/share/man/man8/eruption.8
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8

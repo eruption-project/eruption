@@ -152,6 +152,26 @@ The Eruption Development Team
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
   </object>
+  <object class="GtkImage" id="reloadimage">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">reload</property>
+  </object>
+  <object class="GtkImage" id="reloadimage1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">reload</property>
+  </object>
+  <object class="GtkImage" id="reloadimage2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">reload</property>
+  </object>
+  <object class="GtkImage" id="reloadimage3">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">reload</property>
+  </object>
   <object class="GtkImage" id="save_all_image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -189,7 +209,7 @@ The Eruption Development Team
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="restart_eruption_button">
+              <object class="GtkButton" id="restart_eruption_button_global">
                 <property name="label" translatable="yes">Restart</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -601,7 +621,7 @@ The Eruption Development Team
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="restart_process_monitor_button">
+                      <object class="GtkButton" id="restart_process_monitor_button_global">
                         <property name="label" translatable="yes">Restart</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
@@ -990,7 +1010,7 @@ The Eruption Development Team
                             <property name="label-xalign">0</property>
                             <property name="shadow-type">none</property>
                             <child>
-                              <!-- n-columns=3 n-rows=5 -->
+                              <!-- n-columns=4 n-rows=5 -->
                               <object class="GtkGrid">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
@@ -1157,6 +1177,66 @@ The Eruption Development Team
                                     <property name="left-attach">2</property>
                                     <property name="top-attach">4</property>
                                   </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="restart_process_monitor_button">
+                                    <property name="label" translatable="yes">Restart</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="image">reloadimage</property>
+                                    <property name="relief">half</property>
+                                    <property name="always-show-image">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="restart_audio_proxy_button">
+                                    <property name="label" translatable="yes">Restart</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="image">reloadimage1</property>
+                                    <property name="always-show-image">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="restart_fx_proxy_button">
+                                    <property name="label" translatable="yes">Restart</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="image">reloadimage2</property>
+                                    <property name="always-show-image">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="restart_eruption_button">
+                                    <property name="label" translatable="yes">Restart</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="image">reloadimage3</property>
+                                    <property name="always-show-image">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <placeholder/>

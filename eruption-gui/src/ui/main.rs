@@ -592,7 +592,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     let restart_eruption_daemon_button: gtk::Button =
-        builder.object("restart_eruption_button").unwrap();
+        builder.object("restart_eruption_button_global").unwrap();
 
     let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
     let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
@@ -662,7 +662,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     // special options
     ambientfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, _enabled| {
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+            util::set_ambient_effect(enabled).unwrap();
 
             gtk::Inhibit(false)
         }),

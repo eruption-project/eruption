@@ -22,34 +22,39 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use colored::Colorize;
+
 use flume::unbounded;
 use flume::Receiver;
+use flume::Sender;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
 };
-use jwalk::WalkDir;
+
 use lazy_static::lazy_static;
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
+use std::sync::Arc;
 use std::{
     env,
     sync::atomic::{AtomicBool, Ordering},
     thread,
 };
-use std::{path::PathBuf, sync::Arc};
 use syslog::Facility;
-use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt};
-use tokio::io::{AsyncReadExt, BufReader};
-use tokio::net::TcpStream;
+
 use tokio::time::Duration;
+
+use eruption_sdk::canvas::Canvas;
+use eruption_sdk::color::Color;
+use eruption_sdk::connection::{Connection, ConnectionType};
 
 mod backends;
 mod constants;
+mod dbus_client;
+mod dbus_interface;
 mod hwdevices;
-mod utils;
+mod util;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
@@ -82,7 +87,8 @@ macro_rules! tr {
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
-    // /// Global command line options
+    /// Enable Ambient effect flag
+    pub static ref ENABLE_AMBIENT_EFFECT: AtomicBool = AtomicBool::new(false);
 
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
@@ -113,9 +119,16 @@ lazy_static! {
     about = ABOUT.as_str(),
 )]
 pub struct Options {
-    /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, action = clap::ArgAction::Count)]
+    #[clap(
+        help(VERBOSE_ABOUT.as_str()),
+        short,
+        long,
+        action = clap::ArgAction::Count
+    )]
     verbose: u8,
+
+    #[clap(help(CONFIG_ABOUT.as_str()), short, long)]
+    config: Option<String>,
 
     #[clap(subcommand)]
     command: Subcommands,
@@ -124,18 +137,6 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, Clone, clap::Parser)]
 pub enum Subcommands {
-    /// Load an image file and display it on the connected devices
-    Image { filename: PathBuf },
-
-    /// Load image files from a directory and display each one on the connected devices
-    Animation {
-        directory_name: PathBuf,
-        frame_delay: Option<u64>,
-    },
-
-    /// Make the LEDs of connected devices reflect what is shown on the screen
-    Ambient { frame_delay: Option<u64> },
-
     #[clap(about(DAEMON_ABOUT.as_str()))]
     Daemon,
 
@@ -168,21 +169,116 @@ Copyright (c) 2019-2022, The Eruption Development Team
     );
 }
 
+#[derive(Debug, Clone)]
+pub enum DbusApiEvent {}
+
+/// Spawns the D-Bus API thread and executes it's main loop
+fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = unbounded();
+
+    thread::Builder::new()
+        .name("dbus-interface".into())
+        .spawn(move || -> Result<()> {
+            let dbus = dbus_interface::initialize(dbus_tx)?;
+
+            loop {
+                // process events, destined for the dbus api
+                match dbus_api_rx.recv_timeout(Duration::from_millis(0)) {
+                    Ok(result) => match result {},
+
+                    // ignore timeout errors
+                    Err(_e) => (),
+                }
+
+                dbus.get_next_event_timeout(constants::DBUS_TIMEOUT_MILLIS as u32)
+                    .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
+            }
+        })?;
+
+    Ok(dbus_api_tx)
+}
+
 pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     debug!("Entering the main loop now...");
 
     'MAIN_LOOP: loop {
+        log::trace!("Main loop iteration");
+
         if QUIT.load(Ordering::SeqCst) {
             break 'MAIN_LOOP Ok(());
         }
 
-        debug!("Connecting to Eruption...");
+        // instantiate the best fitting backend for the current system configuration
+        let mut backend = backends::get_best_fitting_backend()?;
+
+        log::debug!("Connecting to Eruption...");
+
+        let connection = Connection::new(ConnectionType::Local)?;
+        connection.connect()?;
+
+        log::debug!("Successfully connected to the Eruption daemon");
+
+        let _status = connection.get_server_status()?;
+
+        // get device; used for topology information
+        let device = util::get_primary_keyboard_device()?;
+
+        let mut canvas_cleared = false;
+
+        // create a new canvas
+        let mut canvas = Canvas::new();
+        canvas.fill(Color::new(0, 0, 0, 0));
 
         'EVENT_LOOP: loop {
+            // log::trace!("Event loop iteration");
+
+            let mut any_updates = false;
+
             if QUIT.load(Ordering::SeqCst) {
-                break 'MAIN_LOOP Ok(());
+                break 'EVENT_LOOP;
+            }
+
+            if ENABLE_AMBIENT_EFFECT.load(Ordering::SeqCst) {
+                // request a screenshot from the backend and convert the image to the device's topology
+                let image_buffer = backend.poll()?;
+                let result = util::process_image_buffer(image_buffer, &device)?;
+
+                // TODO: Implement blend code
+                // utils::blend(&mut canvas, &result);
+                canvas = result;
+
+                any_updates = true;
+            }
+
+            if any_updates {
+                log::debug!("Submitting canvas...");
+
+                connection.submit_canvas(&canvas)?;
+                canvas_cleared = false;
+
+                thread::sleep(Duration::from_millis(constants::DEFAULT_FRAME_DELAY_MILLIS));
+            } else {
+                if !canvas_cleared {
+                    // cleanup, clear the canvas
+                    log::debug!("Clearing canvas...");
+
+                    canvas.fill(Color::new(0, 0, 0, 0));
+                    connection.submit_canvas(&canvas)?;
+
+                    canvas_cleared = true;
+                } else {
+                    log::debug!("Nothing updated");
+
+                    thread::sleep(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
+                }
             }
         }
+
+        // on exit, clear the canvas
+        log::debug!("Clearing canvas...");
+
+        canvas.fill(Color::new(0, 0, 0, 0));
+        connection.submit_canvas(&canvas)?;
     }
 }
 
@@ -258,189 +354,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     match opts.command {
-        Subcommands::Image { filename } => {
-            // let device = hwdevices::get_keyboard_device(&opts.model)?;
-
-            // if filename.to_string_lossy() == "-" {
-            //     let stdin = io::stdin();
-            //     let mut reader = BufReader::new(stdin);
-
-            //     loop {
-            //         let mut buffer = Vec::new();
-            //         let _len = reader.read_to_end(&mut buffer).await?;
-
-            //         let commands = utils::process_image_buffer(&buffer, &device)?;
-
-            //         // print and send the specified command
-            //         if opts.verbose > 0 {
-            //             println!("{}", tr!("sending-data"));
-            //         }
-            //         if opts.verbose > 1 {
-            //             println!("{}", &commands);
-            //         }
-            //         buf_reader.write_all(&Vec::from(commands)).await?;
-
-            //         // receive and print the response
-            //         let mut buffer = String::new();
-            //         buf_reader.read_line(&mut buffer).await?;
-
-            //         println!("{}", buffer.bold());
-
-            //         if buffer.starts_with("BYE") || buffer.starts_with("ERROR:") {
-            //             break;
-            //         }
-            //     }
-            // } else {
-            //     let commands = utils::process_image_file(&filename, &device)?;
-
-            //     // print and send the specified command
-            //     if opts.verbose > 0 {
-            //         println!("{}", tr!("sending-data"));
-            //     }
-            //     if opts.verbose > 1 {
-            //         println!("{}", &commands);
-            //     }
-            //     buf_reader.write_all(&Vec::from(commands)).await?;
-
-            //     // receive and print the response
-            //     let mut buffer = String::new();
-            //     buf_reader.read_line(&mut buffer).await?;
-
-            //     println!("{}", &buffer.bold());
-            // }
-        }
-
-        Subcommands::Animation {
-            directory_name,
-            frame_delay,
-        } => {
-            // let address = format!(
-            //     "{}:{}",
-            //     opts.hostname
-            //         .unwrap_or_else(|| constants::DEFAULT_HOST.to_owned()),
-            //     opts.port.unwrap_or(constants::DEFAULT_PORT)
-            // );
-            // if opts.verbose > 1 {
-            //     println!("{}", tr!("connecting-to", host = address.to_string()));
-            // }
-            // let socket = TcpStream::connect(address).await?;
-            // let mut buf_reader = BufReader::new(socket);
-
-            // // holds pre-processed command-sequences for each image
-            // let processed_images = Arc::new(Mutex::new(vec![]));
-
-            // if opts.verbose > 0 {
-            //     println!("{}", tr!("processing-image-files"));
-            // }
-
-            // // convert each image file to a command sequence beforehand
-            // let walkdir = WalkDir::new(&directory_name)
-            //     .follow_links(true)
-            //     .process_read_dir(|_depth, _path, _read_dir_state, children| {
-            //         children.sort_by(|a, b| match (a, b) {
-            //             (Ok(a), Ok(b)) => a.file_name.cmp(&b.file_name),
-            //             (Ok(_), Err(_)) => Ordering::Less,
-            //             (Err(_), Ok(_)) => Ordering::Greater,
-            //             (Err(_), Err(_)) => Ordering::Equal,
-            //         });
-            //     });
-
-            // for entry in walkdir {
-            //     if let Ok(filename) = entry {
-            //         if !filename.path().is_file() {
-            //             continue;
-            //         }
-
-            //         if opts.verbose > 0 {
-            //             println!("{}", &filename.path().to_string_lossy());
-            //         }
-
-            //         let model = opts.model.clone();
-            //         let processed_images = processed_images.clone();
-
-            //         rayon::spawn(move || {
-            //             let device =
-            //                 hwdevices::get_keyboard_device(&model).expect(&tr!("invalid-model"));
-
-            //             let _result = utils::process_image_file(&filename.path(), &device)
-            //                 .map_err(|e| {
-            //                     eprintln!("{}", tr!("image-error", message = e.to_string()))
-            //                 })
-            //                 .map(|commands| {
-            //                     processed_images.lock().push(commands);
-            //                 });
-            //         });
-            //     }
-            // }
-
-            // if opts.verbose > 0 {
-            //     println!("{}", tr!("entering-loop"));
-            // }
-
-            // loop {
-            //     for commands in processed_images.lock().iter() {
-            //         // print and send the specified command
-            //         if opts.verbose > 1 {
-            //             println!("{}", tr!("sending-data"));
-            //         }
-            //         if opts.verbose > 2 {
-            //             println!("{}", &commands);
-            //         }
-            //         buf_reader.write_all(&Vec::from(commands.clone())).await?;
-
-            //         // receive and print the response
-            //         let mut buffer = String::new();
-            //         buf_reader.read_line(&mut buffer).await?;
-
-            //         if opts.verbose > 1 {
-            //             println!("{}", buffer.bold());
-            //         }
-
-            //         if buffer.starts_with("BYE") || buffer.starts_with("ERROR:") {
-            //             break;
-            //         }
-
-            //         thread::sleep(Duration::from_millis(
-            //             frame_delay.unwrap_or(constants::DEFAULT_ANIMATION_DELAY_MILLIS),
-            //         ));
-            //     }
-            // }
-        }
-
-        Subcommands::Ambient { frame_delay } => {
-            // // register all available screenshot backends
-            // backends::register_backends()?;
-
-            // // instantiate the best fitting backend for the current system configuration
-            // let mut backend = backends::get_best_fitting_backend()?;
-
-            // loop {
-            //     // request a screenshot encoded as Network FX protocol commands from the backend
-            //     let commands = backend.poll()?;
-
-            //     // print and send the commands
-            //     if opts.verbose > 0 {
-            //         println!("{}", tr!("sending-data"));
-            //     }
-            //     if opts.verbose > 1 {
-            //         println!("{}", &commands);
-            //     }
-            //     buf_reader.write_all(&Vec::from(commands)).await?;
-
-            //     // receive and print the response
-            //     let mut buffer = String::new();
-            //     buf_reader.read_line(&mut buffer).await?;
-
-            //     if buffer.starts_with("BYE") || buffer.starts_with("ERROR:") {
-            //         break;
-            //     }
-
-            //     thread::sleep(Duration::from_millis(
-            //         frame_delay.unwrap_or(constants::DEFAULT_FRAME_DELAY_MILLIS),
-            //     ));
-            // }
-        }
-
         Subcommands::Daemon => {
             info!("Starting up...");
 
@@ -455,18 +368,23 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             })
             .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
-            // initialize ...
+            // initialize the D-Bus API
+            let (dbus_tx, _dbus_rx) = unbounded();
+            let _dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
 
-            info!("Startup completed");
+            // register all available screenshot backends
+            backends::register_backends()?;
+
+            log::info!("Startup completed");
 
             // enter the main loop
             run_main_loop(&ctrl_c_rx)
                 .await
                 .unwrap_or_else(|e| error!("{}", e));
 
-            debug!("Left the main loop");
+            log::debug!("Left the main loop");
 
-            info!("Exiting now");
+            log::info!("Exiting now");
         }
 
         Subcommands::Completions { shell } => {

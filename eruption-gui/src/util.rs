@@ -432,6 +432,22 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
+/// Set ambient effect to the state of `enabled`
+pub fn set_ambient_effect(enabled: bool) -> Result<()> {
+    let conn = Connection::new_session()?;
+    let proxy = conn.with_proxy(
+        "org.eruption.fx_proxy",
+        "/org/eruption/fx_proxy/effects",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let arg = Box::new(enabled);
+
+    proxy.set("org.eruption.fx_proxy.Effects", "AmbientEffect", arg)?;
+
+    Ok(())
+}
+
 #[allow(dead_code)]
 pub fn get_script_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
@@ -565,6 +581,34 @@ pub fn restart_process_monitor_daemon() -> Result<()> {
         .arg("--user")
         .arg("restart")
         .arg("eruption-process-monitor.service")
+        .status()?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(UtilError::RestartFailed {}.into())
+    }
+}
+
+pub fn restart_audio_proxy_daemon() -> Result<()> {
+    let status = Command::new("/usr/bin/systemctl")
+        .arg("--user")
+        .arg("restart")
+        .arg("eruption-audio-proxy.service")
+        .status()?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(UtilError::RestartFailed {}.into())
+    }
+}
+
+pub fn restart_fx_proxy_daemon() -> Result<()> {
+    let status = Command::new("/usr/bin/systemctl")
+        .arg("--user")
+        .arg("restart")
+        .arg("eruption-fx-proxy.service")
         .status()?;
 
     if status.success() {

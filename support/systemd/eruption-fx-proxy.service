@@ -29,20 +29,19 @@ After=graphical-session.target
 
 [Service]
 Environment=RUST_LOG=warn
-Environment=PULSE_LATENCY_MSEC=30
 ExecStart=/usr/bin/eruption-fx-proxy -c /etc/eruption/fx-proxy.conf daemon
 # PIDFile=/run/eruption-fx-proxy.pid
 Type=exec
 Restart=always
 RestartSec=1
-#CapabilityBoundingSet=CAP_NET_ADMIN
-#AmbientCapabilities=CAP_NET_ADMIN
-#ProtectHome=yes
-#ProtectSystem=full
-#ProtectKernelTunables=yes
-#ProtectControlGroups=yes
-#PrivateDevices=no
-#PrivateTmp=yes
+# CapabilityBoundingSet=CAP_NET_ADMIN
+# AmbientCapabilities=CAP_NET_ADMIN
+# ProtectHome=yes
+# ProtectSystem=full
+# ProtectKernelTunables=yes
+# ProtectControlGroups=yes
+# PrivateDevices=no
+# PrivateTmp=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target

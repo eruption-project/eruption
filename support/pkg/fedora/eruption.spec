@@ -139,6 +139,7 @@ cp -a %{_builddir}/%{name}-releases-v%{version}/support/config/process-monitor.c
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/profile.d/eruption.sh %{buildroot}/%{_sysconfdir}/profile.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/dbus/org.eruption.control.conf %{buildroot}/%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/dbus/org.eruption.process_monitor.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/dbus/org.eruption.fx_proxy.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/policykit/org.eruption.policy %{buildroot}/%{_datarootdir}/polkit-1/actions/
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
@@ -286,6 +287,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 %{_sysconfdir}/profile.d/eruption.sh
 %{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
 %{_sysconfdir}/dbus-1/session.d/org.eruption.process_monitor.conf
+%{_sysconfdir}/dbus-1/session.d/org.eruption.fx_proxy.conf
 %{_datarootdir}/polkit-1/actions/org.eruption.policy
 /usr/lib/udev/rules.d/99-eruption.rules
 /usr/lib/systemd/system-sleep/eruption
