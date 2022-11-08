@@ -11,6 +11,7 @@
   - [Eruption Components](#eruption-components)
     - [The `eruption` daemon](#the-eruption-daemon)
     - [The `eruption-audio-proxy` daemon](#the-eruption-audio-proxy-daemon)
+    - [The `eruption-fx-proxy` daemon](#the-eruption-fx-proxy-daemon)
     - [The `eruption-process-monitor` daemon](#the-eruption-process-monitor-daemon)
   - [Eruption CLI Utilities](#eruption-cli-utilities)
     - [eruptionctl](#eruptionctl)
@@ -113,10 +114,22 @@ Provides support for audio related tasks. Runs in the session of the currently l
 - Audio SFX playback, used for the Sound FX feature
 - Audio stream capture, used for RMS calculation (Loudness) and audio Spectrum Analyzer (Fourier Transform/FFT calculation)
 
-> To enable the session daemon please run this command, logged in as your Linux user (without sudo in front of it)
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
 
 ```sh
 systemctl --user enable --now eruption-audio-proxy.service
+```
+
+### The `eruption-fx-proxy` daemon
+
+Provides support for additional effects. Runs in the session of the currently logged in user.
+
+- `Ambient Effect`: Processes the screen's content and displays it on the canvas
+
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
+
+```sh
+systemctl --user enable --now eruption-fx-proxy.service
 ```
 
 ### The `eruption-process-monitor` daemon
@@ -128,7 +141,7 @@ Runs in the session of the currently logged in user.
 
 With this feature you are able to automatically switch between profiles, e.g. when a certain window gains focus.
 
-> To enable the session daemon please run this command, logged in as your Linux user (without sudo in front of it)
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
 
 ```sh
 systemctl --user enable --now eruption-process-monitor.service

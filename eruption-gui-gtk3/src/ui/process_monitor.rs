@@ -163,8 +163,9 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     let rules_box: gtk::Box = builder.object("rules_box").unwrap();
 
-    let restart_process_monitor_button: gtk::Button =
-        builder.object("restart_process_monitor_button").unwrap();
+    let restart_process_monitor_button: gtk::Button = builder
+        .object("restart_process_monitor_button_global")
+        .unwrap();
 
     let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 

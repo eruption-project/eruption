@@ -43,6 +43,7 @@ do
     gen_completions "eruption-macro"
     gen_completions "eruption-keymap"
     gen_completions "eruption-netfx"
+    gen_completions "eruption-fx-proxy"
     gen_completions "eruption-audio-proxy"
     gen_completions "eruption-process-monitor"
     gen_completions "eruptionctl"

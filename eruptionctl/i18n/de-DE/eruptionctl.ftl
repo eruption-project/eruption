@@ -32,6 +32,7 @@ switch-about = Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot 
 profiles-about = Profil bezogene Unterbefehle
 names-about = Slot-Namen anzeigen oder ändern
 scripts-about = Script bezogene Unterbefehle
+effects-about = Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen
 param-about = Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten
 
 dumping-devices = Liste der durch Eruption kontrollierten Geräte

@@ -22,7 +22,6 @@
 use gio::prelude::*;
 use glib::clone;
 use glib::IsA;
-use gtk::builders::MessageDialogBuilder;
 use gtk::glib;
 use gtk::prelude::*;
 use std::path::PathBuf;
@@ -593,7 +592,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     let restart_eruption_daemon_button: gtk::Button =
-        builder.object("restart_eruption_button").unwrap();
+        builder.object("restart_eruption_button_global").unwrap();
 
     let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
     let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
@@ -601,7 +600,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
     let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
 
-    let networkfx_ambient_switch: gtk::Switch = builder.object("networkfx_ambient_switch").unwrap();
+    let ambientfx_switch: gtk::Switch = builder.object("ambientfx_switch").unwrap();
     let soundfx_switch: gtk::Switch = builder.object("soundfx_switch").unwrap();
 
     // enable custom CSS support
@@ -662,51 +661,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     }));
 
     // special options
-    networkfx_ambient_switch.connect_state_set(
+    ambientfx_switch.connect_state_set(
         clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
-            if enabled {
-                crate::STATE.write().saved_profile = util::get_active_profile().ok();
-
-                util::toggle_netfx_ambient(true).unwrap_or_else(|e| {
-                    let message = "Could not toggle Network FX".to_string();
-                    let secondary = format!("{}", e);
-
-                    let message_dialog = MessageDialogBuilder::new()
-                        .parent(&main_window)
-                        .destroy_with_parent(true)
-                        .message_type(gtk::MessageType::Error)
-                        .text(&message)
-                        .secondary_text(&secondary)
-                        .title("Error")
-                        .buttons(gtk::ButtonsType::Ok)
-                        .build();
-
-                    message_dialog.run();
-                    message_dialog.hide();
-                });
-            } else {
-                util::toggle_netfx_ambient(false).unwrap_or_else(|e| {
-                    let message = "Could not toggle Network FX".to_string();
-                    let secondary = format!("{}", e);
-
-                    let message_dialog = MessageDialogBuilder::new()
-                        .parent(&main_window)
-                        .destroy_with_parent(true)
-                        .message_type(gtk::MessageType::Error)
-                        .text(&message)
-                        .secondary_text(&secondary)
-                        .title("Error")
-                        .buttons(gtk::ButtonsType::Ok)
-                        .build();
-
-                    message_dialog.run();
-                    message_dialog.hide();
-                });
-
-                if let Some(saved_profile) = &crate::STATE.read().saved_profile {
-                    let _result = util::switch_profile(saved_profile);
-                }
-            }
+            util::set_ambient_effect(enabled).unwrap();
 
             gtk::Inhibit(false)
         }),

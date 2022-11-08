@@ -39,6 +39,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
             [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
+            [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
@@ -462,6 +463,209 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;scripts;help;help' {
             break
         }
+        'eruptionctl;effects' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;enable;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;enable;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;enable;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable;help;image' {
+            break
+        }
+        'eruptionctl;effects;enable;help;animation' {
+            break
+        }
+        'eruptionctl;effects;enable;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;enable;help;help' {
+            break
+        }
+        'eruptionctl;effects;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;disable;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;disable;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;disable;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;disable;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;disable;help;image' {
+            break
+        }
+        'eruptionctl;effects;disable;help;animation' {
+            break
+        }
+        'eruptionctl;effects;disable;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;disable;help;help' {
+            break
+        }
+        'eruptionctl;effects;status' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;config' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;config;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;config;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;config;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;effects;config;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;config;help;image' {
+            break
+        }
+        'eruptionctl;effects;config;help;animation' {
+            break
+        }
+        'eruptionctl;effects;config;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;config;help;help' {
+            break
+        }
+        'eruptionctl;effects;help' {
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;help;enable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;effects;help;enable;image' {
+            break
+        }
+        'eruptionctl;effects;help;enable;animation' {
+            break
+        }
+        'eruptionctl;effects;help;enable;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;disable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            break
+        }
+        'eruptionctl;effects;help;disable;image' {
+            break
+        }
+        'eruptionctl;effects;help;disable;animation' {
+            break
+        }
+        'eruptionctl;effects;help;disable;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;status' {
+            break
+        }
+        'eruptionctl;effects;help;config' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;effects;help;config;image' {
+            break
+        }
+        'eruptionctl;effects;help;config;animation' {
+            break
+        }
+        'eruptionctl;effects;help;config;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;help' {
+            break
+        }
         'eruptionctl;param' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
@@ -481,6 +685,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
             [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
+            [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
@@ -628,6 +833,61 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;scripts;list' {
+            break
+        }
+        'eruptionctl;help;effects' {
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            break
+        }
+        'eruptionctl;help;effects;enable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;help;effects;enable;image' {
+            break
+        }
+        'eruptionctl;help;effects;enable;animation' {
+            break
+        }
+        'eruptionctl;help;effects;enable;ambient' {
+            break
+        }
+        'eruptionctl;help;effects;disable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            break
+        }
+        'eruptionctl;help;effects;disable;image' {
+            break
+        }
+        'eruptionctl;help;effects;disable;animation' {
+            break
+        }
+        'eruptionctl;help;effects;disable;ambient' {
+            break
+        }
+        'eruptionctl;help;effects;status' {
+            break
+        }
+        'eruptionctl;help;effects;config' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;help;effects;config;image' {
+            break
+        }
+        'eruptionctl;help;effects;config;animation' {
+            break
+        }
+        'eruptionctl;help;effects;config;ambient' {
             break
         }
         'eruptionctl;help;param' {

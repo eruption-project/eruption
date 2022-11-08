@@ -136,7 +136,6 @@ pub enum MainError {
 pub struct State {
     active_slot: Option<usize>,
     active_profile: Option<String>,
-    saved_profile: Option<String>,
     current_brightness: Option<i64>,
 }
 
@@ -145,7 +144,6 @@ impl State {
         Self {
             active_slot: None,
             active_profile: None,
-            saved_profile: None,
             current_brightness: None,
         }
     }

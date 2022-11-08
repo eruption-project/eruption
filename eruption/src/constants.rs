@@ -54,6 +54,9 @@ pub const UNIT_NAME_PROCESS_MONITOR: &str = "eruption-process-monitor.service";
 /// Name of the Systemd unit file of the eruption audio proxy
 pub const UNIT_NAME_AUDIO_PROXY: &str = "eruption-audio-proxy.service";
 
+/// Name of the Systemd unit file of the eruption FX proxy
+pub const UNIT_NAME_FX_PROXY: &str = "eruption-fx-proxy.service";
+
 /// Eruption daemon control UNIX domain socket (SDK support)
 pub const CONTROL_SOCKET_NAME: &str = "/run/eruption/control.sock";
 

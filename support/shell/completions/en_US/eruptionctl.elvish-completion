@@ -36,6 +36,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand profiles 'Profile related sub-commands'
             cand names 'Naming related commands such as renaming of profile slots'
             cand scripts 'Script related sub-commands'
+            cand effects 'Special effects like Ambient, image overlays or animations'
             cand param 'Get or set script parameters on the currently active profile'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
@@ -371,6 +372,165 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         }
         &'eruptionctl;scripts;help;help'= {
         }
+        &'eruptionctl;effects'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable;image'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;enable;animation'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;enable;ambient'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;enable;help'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable;help;image'= {
+        }
+        &'eruptionctl;effects;enable;help;animation'= {
+        }
+        &'eruptionctl;effects;enable;help;ambient'= {
+        }
+        &'eruptionctl;effects;enable;help;help'= {
+        }
+        &'eruptionctl;effects;disable'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;disable;image'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;disable;animation'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;disable;ambient'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;disable;help'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;disable;help;image'= {
+        }
+        &'eruptionctl;effects;disable;help;animation'= {
+        }
+        &'eruptionctl;effects;disable;help;ambient'= {
+        }
+        &'eruptionctl;effects;disable;help;help'= {
+        }
+        &'eruptionctl;effects;status'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;config'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;config;image'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;config;animation'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;config;ambient'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruptionctl;effects;config;help'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;config;help;image'= {
+        }
+        &'eruptionctl;effects;config;help;animation'= {
+        }
+        &'eruptionctl;effects;config;help;ambient'= {
+        }
+        &'eruptionctl;effects;config;help;help'= {
+        }
+        &'eruptionctl;effects;help'= {
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;help;enable'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;effects;help;enable;image'= {
+        }
+        &'eruptionctl;effects;help;enable;animation'= {
+        }
+        &'eruptionctl;effects;help;enable;ambient'= {
+        }
+        &'eruptionctl;effects;help;disable'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+        }
+        &'eruptionctl;effects;help;disable;image'= {
+        }
+        &'eruptionctl;effects;help;disable;animation'= {
+        }
+        &'eruptionctl;effects;help;disable;ambient'= {
+        }
+        &'eruptionctl;effects;help;status'= {
+        }
+        &'eruptionctl;effects;help;config'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;effects;help;config;image'= {
+        }
+        &'eruptionctl;effects;help;config;animation'= {
+        }
+        &'eruptionctl;effects;help;config;ambient'= {
+        }
+        &'eruptionctl;effects;help;help'= {
+        }
         &'eruptionctl;param'= {
             cand -h 'Print help information'
             cand --help 'Print help information'
@@ -388,6 +548,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand profiles 'Profile related sub-commands'
             cand names 'Naming related commands such as renaming of profile slots'
             cand scripts 'Script related sub-commands'
+            cand effects 'Special effects like Ambient, image overlays or animations'
             cand param 'Get or set script parameters on the currently active profile'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
@@ -497,6 +658,47 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         &'eruptionctl;help;scripts;edit'= {
         }
         &'eruptionctl;help;scripts;list'= {
+        }
+        &'eruptionctl;help;effects'= {
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+        }
+        &'eruptionctl;help;effects;enable'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;help;effects;enable;image'= {
+        }
+        &'eruptionctl;help;effects;enable;animation'= {
+        }
+        &'eruptionctl;help;effects;enable;ambient'= {
+        }
+        &'eruptionctl;help;effects;disable'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+        }
+        &'eruptionctl;help;effects;disable;image'= {
+        }
+        &'eruptionctl;help;effects;disable;animation'= {
+        }
+        &'eruptionctl;help;effects;disable;ambient'= {
+        }
+        &'eruptionctl;help;effects;status'= {
+        }
+        &'eruptionctl;help;effects;config'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;help;effects;config;image'= {
+        }
+        &'eruptionctl;help;effects;config;animation'= {
+        }
+        &'eruptionctl;help;effects;config;ambient'= {
         }
         &'eruptionctl;help;param'= {
         }

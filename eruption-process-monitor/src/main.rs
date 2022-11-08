@@ -30,9 +30,9 @@ use crate::sensors::GnomeShellExtSensorData;
 #[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
 
-use crate::sensors::WAYLAND_CONNECTION_SUCCESSFULL;
 #[cfg(feature = "sensor-wayland")]
 use crate::sensors::WaylandSensorData;
+use crate::sensors::WAYLAND_CONNECTION_SUCCESSFULL;
 
 use crate::sensors::SensorConfiguration;
 
@@ -746,7 +746,7 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     let (dbus_api_tx, dbus_api_rx) = unbounded();
 
     thread::Builder::new()
-        .name("dbus_interface".into())
+        .name("dbus-interface".into())
         .spawn(move || -> Result<()> {
             let dbus = dbus_interface::initialize(dbus_tx)?;
 
@@ -985,9 +985,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
         SensorConfiguration::profile_all_sensors_enabled()
     };
 
-
-
-    // if Wayland is present, we remove any detected X11 sensors so that we don't get 
+    // if Wayland is present, we remove any detected X11 sensors so that we don't get
     // spurious events from any running XWayland server
     if WAYLAND_CONNECTION_SUCCESSFULL.load(Ordering::SeqCst) {
         config_profile.remove(&SensorConfiguration::EnableX11);
