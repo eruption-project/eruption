@@ -47,8 +47,8 @@ sensor-gnome-shellext = []
 cfg-if = "1.0.0"
 async-trait = "0.1.58"
 byteorder = "1.4.3"
-clap =  { version = "4.0.18", features = ["derive"] }
-clap_complete = "4.0.3"
+clap =  { version = "4.0.22", features = ["derive"] }
+clap_complete = "4.0.5"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 config = "0.13.2"
 dbus = "0.9.6"
@@ -63,7 +63,7 @@ libc = "0.2.137"
 nix = "0.25.0"
 pretty_env_logger = "0.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-regex = "1.6.0"
+regex = "1.7.0"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
 tokio = { version = "1.21.2", features = ["full"] }
@@ -80,9 +80,9 @@ lazy_static = "1.4.0"
 walkdir = "2.3.2"
 procmon-sys = { version = "0.0.3", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.10.1", optional = true, features = ["allow-unsafe-code"] }
-wayland-client = { version = "0.30.0-beta.12", features = ["log"], optional = true }
-wayland-protocols = { version = "0.30.0-beta.12", features = ["unstable"], optional = true }
-wayland-protocols-wlr = { version = "0.1.0-beta.12", features = ["client"], optional = true }
+wayland-client = { version = "0.30.0-beta.13", features = ["log"], optional = true }
+wayland-protocols = { version = "0.30.0-beta.13", features = ["unstable"], optional = true }
+wayland-protocols-wlr = { version = "0.1.0-beta.13", features = ["client"], optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.2"

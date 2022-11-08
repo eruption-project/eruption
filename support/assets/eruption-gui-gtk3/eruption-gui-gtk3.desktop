@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Eruption GUI
+Comment=Eruption GUI
+Exec=/usr/bin/eruption-gui-gtk3
+Icon=keyboard-brightness-symbolic
+Terminal=false

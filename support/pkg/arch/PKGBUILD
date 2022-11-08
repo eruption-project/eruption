@@ -40,7 +40,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/share/applications"
     mkdir -p "$pkgdir/usr/share/icons/hicolor/64x64/apps"
-    mkdir -p "$pkgdir/usr/share/eruption-gui/schemas"
+    mkdir -p "$pkgdir/usr/share/eruption-gui-gtk3/schemas"
 
     mkdir -p "$pkgdir/var/lib/eruption/profiles"
 
@@ -81,11 +81,11 @@ package() {
     install -m 755 "target/release/eruption-hotplug-helper" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-audio-proxy" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
-    install -m 755 "target/release/eruption-gui" "$pkgdir/usr/bin/"
+    install -m 755 "target/release/eruption-gui-gtk3" "$pkgdir/usr/bin/"
 
-    install -m 644 "support/assets/eruption-gui/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
-    install -m 644 "support/assets/eruption-gui/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
-    install -m 644 "eruption-gui/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui/schemas/"
+    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
+    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
+    install -m 644 "eruption-gui-gtk3/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui-gtk3/schemas/"
 
     install -m 755 "support/systemd/eruption-suspend.sh" "$pkgdir/usr/lib/systemd/system-sleep/eruption"
 

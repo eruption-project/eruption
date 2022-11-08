@@ -12,13 +12,13 @@ target/release/eruption-debug-tool usr/bin
 target/release/eruption-hotplug-helper usr/bin
 target/release/eruption-audio-proxy usr/bin
 target/release/eruption-process-monitor usr/bin
-target/release/eruption-gui usr/bin
+target/release/eruption-gui-gtk3 usr/bin
 
 support/systemd/eruption-suspend.sh => usr/lib/systemd/system-sleep/eruption
 
-support/assets/eruption-gui/eruption-gui.desktop usr/share/applications
-support/assets/eruption-gui/eruption-gui.png usr/share/icons/hicolor/64x64/apps
-eruption-gui/schemas/gschemas.compiled usr/share/eruption-gui/schemas
+support/assets/eruption-gui-gtk3/eruption-gui.desktop usr/share/applications
+support/assets/eruption-gui-gtk3/eruption-gui.png usr/share/icons/hicolor/64x64/apps
+eruption-gui-gtk3/schemas/gschemas.compiled usr/share/eruption-gui-gtk3/schemas
 
 support/config/eruption.conf etc/eruption
 support/config/audio-proxy.conf etc/eruption

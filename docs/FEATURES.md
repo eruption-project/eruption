@@ -15,7 +15,8 @@
   - [Eruption CLI Utilities](#eruption-cli-utilities)
     - [eruptionctl](#eruptionctl)
     - [eruption-netfx](#eruption-netfx)
-  - [Eruption GUI](#eruption-gui)
+  - [Pyroclasm UI for Eruption](#pyroclasm-ui-for-eruption)
+  - [Eruption GUI (GTK3)](#eruption-gui-gtk3)
     - [Keyboard](#keyboard)
     - [Mice](#mice)
     - [Other Devices](#other-devices)
@@ -169,7 +170,11 @@ eruptionctl switch slot 4
 
 A client for the Lua embedded Network FX server.
 
-## Eruption GUI
+## Pyroclasm UI for Eruption
+
+The `Pyroclasm UI` is currently available as a technology preview version only
+
+## Eruption GUI (GTK3)
 
 The `Eruption GUI` is currently available as a technology preview version only
 

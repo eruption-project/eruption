@@ -20,11 +20,11 @@
 
 [workspace]
 members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util",
-    "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "eruption-gui", "eruption-cmd",
-    "eruption-keymap", "eruption-macro", "eruption-watchdog", "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption",
-    "sdk/examples/rust/simple"]
+    "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-process-monitor", "pyroclasm", "eruption-gui-gtk3",
+    "eruption-cmd", "eruption-keymap", "eruption-macro", "eruption-watchdog",
+    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
 default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool",
-    "eruption-util", "eruption-hotplug-helper", "eruption-gui", "eruption-cmd",
+    "eruption-util", "eruption-hotplug-helper", "pyroclasm", "eruption-gui-gtk3", "eruption-cmd",
     "eruption-keymap", "eruption-macro", "eruption-audio-proxy", "eruption-process-monitor"]
 resolver = "2"
 
@@ -38,7 +38,8 @@ debug-assertions = true
 overflow-checks = true
 codegen-units = 512
 incremental = true
-panic = 'unwind'
+panic = "unwind"
+# split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -50,7 +51,8 @@ debug-assertions = false
 overflow-checks = true
 codegen-units = 1
 incremental = false
-panic = 'abort'
+panic = "abort"
+# split-debuginfo = "unpacked"
 
 [profile.sccache]
 inherits = "dev"
@@ -63,7 +65,7 @@ debug-assertions = true
 overflow-checks = true
 codegen-units = 512
 incremental = false
-panic = 'unwind'
+panic = "unwind"
 
 [profile.profiling]
 inherits = "release"

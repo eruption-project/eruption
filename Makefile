@@ -87,7 +87,7 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
 	@mkdir -p "$(TARGET_DIR)/share/applications"
 	@mkdir -p "$(TARGET_DIR)/share/icons/hicolor/64x64/apps"
-	@mkdir -p "$(TARGET_DIR)/share/eruption-gui/schemas"
+	@mkdir -p "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas"
 	@mkdir -p "/var/lib/eruption/profiles"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-preset"
@@ -107,9 +107,9 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/i18n"
 	@mkdir -p "$(TARGET_DIR)/share/eruption/sfx"
 
-	@cp "support/assets/eruption-gui/eruption-gui.desktop" "$(TARGET_DIR)/share/applications/"
-	@cp "support/assets/eruption-gui/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
-	@cp "eruption-gui/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui/schemas/"
+	@cp "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/eruption-gui-gtk3/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
+	@cp "eruption-gui-gtk3/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas/"
 	@cp "support/systemd/eruption-suspend.sh" "$(TARGET_DIR)/lib/systemd/system-sleep/eruption"
 	@cp "support/config/eruption.conf" "/etc/eruption/"
 	@cp "support/config/audio-proxy.conf" "/etc/eruption/"
@@ -187,7 +187,7 @@ install:
 	@cp target/release/eruption-debug-tool $(TARGET_DIR)/bin/
 	@cp target/release/eruption-hotplug-helper $(TARGET_DIR)/bin/
 	@cp target/release/eruption-util $(TARGET_DIR)/bin/
-	@cp target/release/eruption-gui $(TARGET_DIR)/bin/
+	@cp target/release/eruption-gui-gtk3 $(TARGET_DIR)/bin/
 	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
 
@@ -210,13 +210,13 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-debug-tool
 	-@rm $(TARGET_DIR)/bin/eruption-hotplug-helper
 	-@rm $(TARGET_DIR)/bin/eruption-util
-	-@rm $(TARGET_DIR)/bin/eruption-gui
+	-@rm $(TARGET_DIR)/bin/eruption-gui-gtk3
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
 
-	-@rm $(TARGET_DIR)/share/applications/eruption-gui.desktop
-	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui.png
-	-@rm $(TARGET_DIR)/share/eruption-gui/schemas/gschemas.compiled
+	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
+	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
 	-@rm $(TARGET_DIR)/lib/systemd/system-sleep/eruption
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption.preset
@@ -278,7 +278,7 @@ uninstall:
 
 	-@rm -fr /etc/eruption
 	-@rm -fr $(TARGET_DIR)/share/eruption
-	-@rm -fr $(TARGET_DIR)/share/eruption-gui
+	-@rm -fr $(TARGET_DIR)/share/eruption-gui-gtk3
 	-@rm -fr /var/lib/eruption
 
 	@echo "Successfully uninstalled Eruption!"

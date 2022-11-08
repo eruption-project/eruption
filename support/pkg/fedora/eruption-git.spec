@@ -87,7 +87,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/applications/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/icons/hicolor/64x64/apps/
-%{__mkdir_p} %{buildroot}/%{_datarootdir}/eruption-gui/schemas
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/eruption-gui-gtk3/schemas
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/bash-completion/completions/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/fish/completions/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/zsh/site-functions/
@@ -223,9 +223,9 @@ cp -ra %{_builddir}/%{OrigName}-%{commit}/eruption/src/scripts %{buildroot}/%{_d
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
-cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui/schemas/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
+cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption %{buildroot}/%{_bindir}/eruption
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruptionctl %{buildroot}/%{_bindir}/eruptionctl
@@ -239,7 +239,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-d
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-hotplug-helper %{buildroot}/%{_bindir}/eruption-hotplug-helper
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-audio-proxy %{buildroot}/%{_bindir}/eruption-audio-proxy
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-process-monitor %{buildroot}/%{_bindir}/eruption-process-monitor
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui %{buildroot}/%{_bindir}/eruption-gui
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui-gtk3 %{buildroot}/%{_bindir}/eruption-gui
 
 %post
 %systemd_post eruption.service
@@ -298,10 +298,10 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_userpresetdir}/50-eruption-process-monitor.preset
 %{_unitdir}/eruption-hotplug-helper.service
 %{_presetdir}/50-eruption-hotplug-helper.preset
-%{_bindir}/eruption-gui
-%{_datarootdir}/applications/eruption-gui.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
-%{_datarootdir}/eruption-gui/schemas/gschemas.compiled
+%{_bindir}/eruption-gui-gtk3
+%{_datarootdir}/applications/eruption-gui-gtk3.desktop
+%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+%{_datarootdir}/eruption-gui-gtk3/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd
 %{_datarootdir}/bash-completion/completions/eruption-hwutil
