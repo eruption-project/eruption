@@ -23,9 +23,10 @@ members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "erup
     "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-fx-proxy", "eruption-process-monitor",
     "pyroclasm", "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro", "eruption-watchdog",
     "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
-default-members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool",
-    "eruption-util", "eruption-hotplug-helper", "pyroclasm", "eruption-gui-gtk3", "eruption-cmd",
-    "eruption-keymap", "eruption-macro", "eruption-audio-proxy", "eruption-process-monitor"]
+default-members =  ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util",
+    "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-fx-proxy", "eruption-process-monitor",
+    "pyroclasm", "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro",
+    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
 resolver = "2"
 
 [profile.dev]
