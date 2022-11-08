@@ -109,7 +109,8 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/i18n"
 	@mkdir -p "$(TARGET_DIR)/share/eruption/sfx"
 
-	@cp "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/eruption-gui-gtk3/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
 	@cp "eruption-gui-gtk3/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas/"
 	@cp "support/systemd/eruption-suspend.sh" "$(TARGET_DIR)/lib/systemd/system-sleep/eruption"
@@ -201,6 +202,7 @@ install:
 	@cp target/release/eruption-fx-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
+	@cp target/release/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 
@@ -225,7 +227,9 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-fx-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
+	-@rm $(TARGET_DIR)/bin/pyroclasm
 
+	-@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
 	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
 	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
 	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
