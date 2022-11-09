@@ -34,12 +34,15 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, clap::Parser)]
 pub enum NamesSubcommands {
     /// List slot names
+    #[clap(display_order = 0)]
     List,
 
     /// Set the name of a single profile slot
+    #[clap(display_order = 1)]
     Set { slot_index: usize, name: String },
 
     /// Set all the profile slot names at once
+    #[clap(display_order = 2)]
     SetAll { names: Vec<String> },
 }
 

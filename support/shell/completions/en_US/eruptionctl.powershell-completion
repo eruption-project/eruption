@@ -31,17 +31,84 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
-            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
-            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
+            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
-            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
+            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
+            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;profile' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;status;slot' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;status;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;help;profile' {
+            break
+        }
+        'eruptionctl;status;help;slot' {
+            break
+        }
+        'eruptionctl;status;help;help' {
+            break
+        }
+        'eruptionctl;switch' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;switch;profile' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;switch;slot' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;switch;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;switch;help;profile' {
+            break
+        }
+        'eruptionctl;switch;help;slot' {
+            break
+        }
+        'eruptionctl;switch;help;help' {
             break
         }
         'eruptionctl;config' {
@@ -75,83 +142,6 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;config;help;help' {
-            break
-        }
-        'eruptionctl;color-schemes' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
-            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
-            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
-            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;color-schemes;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;color-schemes;add' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;color-schemes;remove' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;color-schemes;import' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;color-schemes;import;pywal' {
-            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Optimize palette')
-            [CompletionResult]::new('--optimize', 'optimize', [CompletionResultType]::ParameterName, 'Optimize palette')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;color-schemes;import;help' {
-            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;color-schemes;import;help;pywal' {
-            break
-        }
-        'eruptionctl;color-schemes;import;help;help' {
-            break
-        }
-        'eruptionctl;color-schemes;help' {
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
-            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
-            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
-            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;color-schemes;help;list' {
-            break
-        }
-        'eruptionctl;color-schemes;help;add' {
-            break
-        }
-        'eruptionctl;color-schemes;help;remove' {
-            break
-        }
-        'eruptionctl;color-schemes;help;import' {
-            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
-            break
-        }
-        'eruptionctl;color-schemes;help;import;pywal' {
-            break
-        }
-        'eruptionctl;color-schemes;help;help' {
             break
         }
         'eruptionctl;devices' {
@@ -267,79 +257,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;devices;help;help' {
             break
         }
-        'eruptionctl;status' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;status;profile' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;status;slot' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;status;help' {
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;status;help;profile' {
-            break
-        }
-        'eruptionctl;status;help;slot' {
-            break
-        }
-        'eruptionctl;status;help;help' {
-            break
-        }
-        'eruptionctl;switch' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;switch;profile' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;switch;slot' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            break
-        }
-        'eruptionctl;switch;help' {
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
-            break
-        }
-        'eruptionctl;switch;help;profile' {
-            break
-        }
-        'eruptionctl;switch;help;slot' {
-            break
-        }
-        'eruptionctl;switch;help;help' {
-            break
-        }
         'eruptionctl;profiles' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a profile')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available profiles')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;profiles;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruptionctl;profiles;info' {
@@ -352,16 +281,14 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
-        'eruptionctl;profiles;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+        'eruptionctl;profiles;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
-        'eruptionctl;profiles;help' {
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a profile')
-            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available profiles')
-            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+        'eruptionctl;profiles;help;list' {
             break
         }
         'eruptionctl;profiles;help;info' {
@@ -370,10 +297,132 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;profiles;help;edit' {
             break
         }
-        'eruptionctl;profiles;help;list' {
+        'eruptionctl;profiles;help;help' {
             break
         }
-        'eruptionctl;profiles;help;help' {
+        'eruptionctl;scripts' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;scripts;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;scripts;info' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;scripts;edit' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;scripts;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;scripts;help;list' {
+            break
+        }
+        'eruptionctl;scripts;help;info' {
+            break
+        }
+        'eruptionctl;scripts;help;edit' {
+            break
+        }
+        'eruptionctl;scripts;help;help' {
+            break
+        }
+        'eruptionctl;color-schemes' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;color-schemes;add' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;color-schemes;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;color-schemes;import' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;import;pywal' {
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Optimize palette')
+            [CompletionResult]::new('--optimize', 'optimize', [CompletionResultType]::ParameterName, 'Optimize palette')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;color-schemes;import;help' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;import;help;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;import;help;help' {
+            break
+        }
+        'eruptionctl;color-schemes;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;help;list' {
+            break
+        }
+        'eruptionctl;color-schemes;help;add' {
+            break
+        }
+        'eruptionctl;color-schemes;help;remove' {
+            break
+        }
+        'eruptionctl;color-schemes;help;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;color-schemes;help;import;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;help;help' {
+            break
+        }
+        'eruptionctl;param' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
         'eruptionctl;names' {
@@ -419,52 +468,67 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;names;help;help' {
             break
         }
-        'eruptionctl;scripts' {
+        'eruptionctl;rules' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a script')
-            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a script')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available scripts')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Create a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove an existing rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as disabled')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
-        'eruptionctl;scripts;info' {
+        'eruptionctl;rules;list' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
-        'eruptionctl;scripts;edit' {
+        'eruptionctl;rules;add' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
-        'eruptionctl;scripts;list' {
+        'eruptionctl;rules;remove' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
             break
         }
-        'eruptionctl;scripts;help' {
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a script')
-            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a script')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available scripts')
+        'eruptionctl;rules;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;rules;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            break
+        }
+        'eruptionctl;rules;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Create a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove an existing rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as disabled')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
-        'eruptionctl;scripts;help;info' {
+        'eruptionctl;rules;help;list' {
             break
         }
-        'eruptionctl;scripts;help;edit' {
+        'eruptionctl;rules;help;add' {
             break
         }
-        'eruptionctl;scripts;help;list' {
+        'eruptionctl;rules;help;remove' {
             break
         }
-        'eruptionctl;scripts;help;help' {
+        'eruptionctl;rules;help;enable' {
             break
         }
-        'eruptionctl;param' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+        'eruptionctl;rules;help;disable' {
+            break
+        }
+        'eruptionctl;rules;help;help' {
             break
         }
         'eruptionctl;completions' {
@@ -473,17 +537,40 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help' {
-            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
-            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
-            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
+            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
             [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profile related sub-commands')
-            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script related sub-commands')
+            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Define, import or delete a named color scheme')
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
+            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;help;status' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            break
+        }
+        'eruptionctl;help;status;profile' {
+            break
+        }
+        'eruptionctl;help;status;slot' {
+            break
+        }
+        'eruptionctl;help;switch' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            break
+        }
+        'eruptionctl;help;switch;profile' {
+            break
+        }
+        'eruptionctl;help;switch;slot' {
             break
         }
         'eruptionctl;help;config' {
@@ -495,29 +582,6 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;config;soundfx' {
-            break
-        }
-        'eruptionctl;help;color-schemes' {
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
-            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
-            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
-            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
-            break
-        }
-        'eruptionctl;help;color-schemes;list' {
-            break
-        }
-        'eruptionctl;help;color-schemes;add' {
-            break
-        }
-        'eruptionctl;help;color-schemes;remove' {
-            break
-        }
-        'eruptionctl;help;color-schemes;import' {
-            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
-            break
-        }
-        'eruptionctl;help;color-schemes;import;pywal' {
             break
         }
         'eruptionctl;help;devices' {
@@ -563,32 +627,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;help;devices;angle-snapping' {
             break
         }
-        'eruptionctl;help;status' {
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
-            break
-        }
-        'eruptionctl;help;status;profile' {
-            break
-        }
-        'eruptionctl;help;status;slot' {
-            break
-        }
-        'eruptionctl;help;switch' {
-            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
-            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
-            break
-        }
-        'eruptionctl;help;switch;profile' {
-            break
-        }
-        'eruptionctl;help;switch;slot' {
-            break
-        }
         'eruptionctl;help;profiles' {
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a profile')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available profiles')
+            break
+        }
+        'eruptionctl;help;profiles;list' {
             break
         }
         'eruptionctl;help;profiles;info' {
@@ -597,7 +642,45 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;help;profiles;edit' {
             break
         }
-        'eruptionctl;help;profiles;list' {
+        'eruptionctl;help;scripts' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            break
+        }
+        'eruptionctl;help;scripts;list' {
+            break
+        }
+        'eruptionctl;help;scripts;info' {
+            break
+        }
+        'eruptionctl;help;scripts;edit' {
+            break
+        }
+        'eruptionctl;help;color-schemes' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            break
+        }
+        'eruptionctl;help;color-schemes;list' {
+            break
+        }
+        'eruptionctl;help;color-schemes;add' {
+            break
+        }
+        'eruptionctl;help;color-schemes;remove' {
+            break
+        }
+        'eruptionctl;help;color-schemes;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;help;color-schemes;import;pywal' {
+            break
+        }
+        'eruptionctl;help;param' {
             break
         }
         'eruptionctl;help;names' {
@@ -615,22 +698,27 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;help;names;set-all' {
             break
         }
-        'eruptionctl;help;scripts' {
-            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show info about a script')
-            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a script')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available scripts')
+        'eruptionctl;help;rules' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Create a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove an existing rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark an existing rule as disabled')
             break
         }
-        'eruptionctl;help;scripts;info' {
+        'eruptionctl;help;rules;list' {
             break
         }
-        'eruptionctl;help;scripts;edit' {
+        'eruptionctl;help;rules;add' {
             break
         }
-        'eruptionctl;help;scripts;list' {
+        'eruptionctl;help;rules;remove' {
             break
         }
-        'eruptionctl;help;param' {
+        'eruptionctl;help;rules;enable' {
+            break
+        }
+        'eruptionctl;help;rules;disable' {
             break
         }
         'eruptionctl;help;completions' {

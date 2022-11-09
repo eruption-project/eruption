@@ -53,6 +53,32 @@ pub async fn dbus_system_bus(
     Ok(proxy)
 }
 
+/// Returns a connection to the D-Bus session bus using the specified `dest` and `path`
+pub async fn dbus_session_bus<'a, 'b, 'c>(
+    dest: &'a str,
+    path: &'b str,
+) -> Result<dbus::nonblock::Proxy<'c, Arc<dbus::nonblock::SyncConnection>>>
+where
+    'a: 'c,
+    'b: 'c,
+{
+    let (resource, conn) = connection::new_session_sync()?;
+
+    tokio::spawn(async {
+        let err = resource.await;
+        panic!("Lost connection to D-Bus: {}", err);
+    });
+
+    let proxy = nonblock::Proxy::new(
+        dest,
+        path,
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+        conn,
+    );
+
+    Ok(proxy)
+}
+
 pub fn set_parameter(
     profile_file: &str,
     script_file: &str,

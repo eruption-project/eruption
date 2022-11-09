@@ -33,9 +33,11 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, clap::Parser)]
 pub enum StatusSubcommands {
     /// Shows the currently active profile
+    #[clap(display_order = 0)]
     Profile,
 
     /// Shows the currently active slot
+    #[clap(display_order = 1)]
     Slot,
 }
 

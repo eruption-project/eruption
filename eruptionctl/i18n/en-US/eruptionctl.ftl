@@ -23,7 +23,6 @@
 about = A CLI control utility for the Eruption Linux user-mode driver
 verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
 completions-about = Generate shell completions
-
 config-about = Configuration related sub-commands
 color-scheme-about = Define, import or delete a named color scheme
 devices-about = Get or set some device specific configuration parameters
@@ -33,6 +32,13 @@ profiles-about = Profile related sub-commands
 names-about = Naming related commands such as renaming of profile slots
 scripts-about = Script related sub-commands
 param-about = Get or set script parameters on the currently active profile
+rules-about = Rules related sub-commands
+
+rules-list = List all available rules
+rules-add = Create a new rule
+rules-remove = Remove an existing rule by its index
+rules-enable = Mark an existing rule as enabled
+rules-disable = Mark an existing rule as disabled
 
 dumping-devices = Dumping Eruption managed devices list
 keyboard-devices = Keyboard devices:

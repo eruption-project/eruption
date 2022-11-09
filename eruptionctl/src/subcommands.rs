@@ -26,6 +26,7 @@ mod devices;
 mod names;
 mod param;
 mod profiles;
+mod rules;
 mod scripts;
 mod status;
 mod switch;
@@ -37,80 +38,87 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    #[clap(about(tr!("config-about")))]
-    Config {
-        #[clap(subcommand)]
-        command: config::ConfigSubcommands,
-    },
-
-    #[clap(about(tr!("color-scheme-about")))]
-    ColorSchemes {
-        #[clap(subcommand)]
-        command: color_schemes::ColorSchemesSubcommands,
-    },
-
-    #[clap(about(tr!("devices-about")))]
-    Devices {
-        #[clap(subcommand)]
-        command: devices::DevicesSubcommands,
-    },
-
-    #[clap(about(tr!("status-about")))]
+    #[clap(display_order = 0, about(tr!("status-about")))]
     Status {
         #[clap(subcommand)]
         command: status::StatusSubcommands,
     },
 
-    #[clap(about(tr!("switch-about")))]
+    #[clap(display_order = 1, about(tr!("switch-about")))]
     Switch {
         #[clap(subcommand)]
         command: switch::SwitchSubcommands,
     },
 
-    #[clap(about(tr!("profiles-about")))]
+    #[clap(display_order = 2, about(tr!("config-about")))]
+    Config {
+        #[clap(subcommand)]
+        command: config::ConfigSubcommands,
+    },
+
+    #[clap(display_order = 3, about(tr!("devices-about")))]
+    Devices {
+        #[clap(subcommand)]
+        command: devices::DevicesSubcommands,
+    },
+
+    #[clap(display_order = 4,about(tr!("profiles-about")))]
     Profiles {
         #[clap(subcommand)]
         command: profiles::ProfilesSubcommands,
     },
 
-    #[clap(about(tr!("names-about")))]
-    Names {
-        #[clap(subcommand)]
-        command: names::NamesSubcommands,
-    },
-
-    #[clap(about(tr!("scripts-about")))]
+    #[clap(display_order = 5,about(tr!("scripts-about")))]
     Scripts {
         #[clap(subcommand)]
         command: scripts::ScriptsSubcommands,
     },
 
-    #[clap(about(tr!("param-about")))]
+    #[clap(display_order = 6, about(tr!("color-scheme-about")))]
+    ColorSchemes {
+        #[clap(subcommand)]
+        command: color_schemes::ColorSchemesSubcommands,
+    },
+
+    #[clap(display_order = 7,about(tr!("param-about")))]
     Param {
         script: Option<String>,
         parameter: Option<String>,
         value: Option<String>,
     },
 
-    #[clap(about(tr!("completions-about")))]
+    #[clap(display_order = 8, about(tr!("names-about")))]
+    Names {
+        #[clap(subcommand)]
+        command: names::NamesSubcommands,
+    },
+
+    #[clap(display_order = 9, about(tr!("rules-about")))]
+    Rules {
+        #[clap(subcommand)]
+        command: rules::RulesSubcommands,
+    },
+
+    #[clap(display_order = 9, hide = true, about(tr!("completions-about")))]
     Completions { shell: clap_complete::Shell },
 }
 
 pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
     match subcommand {
-        Subcommands::Config { command } => config::handle_command(command).await,
-        Subcommands::ColorSchemes { command } => color_schemes::handle_command(command).await,
-        Subcommands::Devices { command } => devices::handle_command(command).await,
         Subcommands::Status { command } => status::handle_command(command).await,
         Subcommands::Switch { command } => switch::handle_command(command).await,
+        Subcommands::Config { command } => config::handle_command(command).await,
+        Subcommands::Devices { command } => devices::handle_command(command).await,
         Subcommands::Profiles { command } => profiles::handle_command(command).await,
-        Subcommands::Names { command } => names::handle_command(command).await,
         Subcommands::Scripts { command } => scripts::handle_command(command).await,
+        Subcommands::ColorSchemes { command } => color_schemes::handle_command(command).await,
         Subcommands::Param {
             script,
             parameter,
             value,
         } => param::handle_command(script, parameter, value).await,
+        Subcommands::Names { command } => names::handle_command(command).await,
+        Subcommands::Rules { command } => rules::handle_command(command).await,
         Subcommands::Completions { shell } => completions::handle_command(shell).await,
     }
 }
