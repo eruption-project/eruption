@@ -19,8 +19,29 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use super::Mouse;
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct NullMouse {}
+
+impl NullMouse {
+    pub fn new() -> Self {
+        NullMouse {}
+    }
+}
+
+impl Mouse for NullMouse {
+    fn get_device(&self) -> u64 {
+        0
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("Unknown", "Unknown")
+    }
+
+    fn draw_mouse(&self) -> super::Result<()> {
+        Ok(())
+    }
+}

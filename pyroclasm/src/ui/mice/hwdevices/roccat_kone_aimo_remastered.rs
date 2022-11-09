@@ -19,8 +19,35 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use palette::{FromColor, Hsva, Shade, Srgba};
+
+use crate::constants;
+
+use super::{Mouse, Rectangle};
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct RoccatKoneAimoRemastered {
+    pub device: u64,
+}
+
+impl RoccatKoneAimoRemastered {
+    pub fn new(device: u64) -> Self {
+        RoccatKoneAimoRemastered { device }
+    }
+}
+
+impl Mouse for RoccatKoneAimoRemastered {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("ROCCAT", "Kone Aimo Remastered")
+    }
+
+    fn draw_mouse(&self) -> super::Result<()> {
+        Ok(())
+    }
+}

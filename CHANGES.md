@@ -17,6 +17,7 @@ Table of new and noteworthy changes:
 | 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |
+| 0.3.0 | Ship an initial technology preview version of the new `Pyroclasm UI` |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fading when switching profiles. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | `Eruption SDK`: Add APIs for switching profiles and for modifying configuration parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | `Eruption SDK`: Improve the Python 3 SDK and publish it on <https://pypi.org/project/eruption-sdk/> |

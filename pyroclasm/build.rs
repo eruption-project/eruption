@@ -20,5 +20,5 @@
 */
 
 fn main() {
-    //
+    // do nothing
 }

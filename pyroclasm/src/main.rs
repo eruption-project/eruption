@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use eframe::{NativeOptions, Theme};
+use egui::Vec2;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -310,16 +312,21 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     }
 
     // initialize logging
-    /* if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    } */
+    tracing_subscriber::fmt()
+        .with_line_number(true)
+        .with_thread_names(true)
+        .init();
 
-    tracing_subscriber::fmt::init();
+    // build and map main window
+    let native_options = NativeOptions {
+        // decorated: false,
+        default_theme: Theme::Dark,
+        initial_window_size: Some(Vec2::new(1440.0_f32, 900.0_f32)),
+        resizable: true,
+        // transparent: true,
+        ..NativeOptions::default()
+    };
 
-    let native_options = eframe::NativeOptions::default();
     eframe::run_native(
         "Pyroclasm UI",
         native_options,

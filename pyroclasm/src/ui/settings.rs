@@ -18,9 +18,3 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
-
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;

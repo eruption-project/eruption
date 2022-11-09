@@ -19,8 +19,38 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use super::MiscDevice;
+use crate::constants;
+use crate::ui::misc::hwdevices::Rectangle;
+use palette::{FromColor, Hsva, Shade, Srgba};
+
+// canvas to LED index mapping
+const LED_0: usize = constants::CANVAS_SIZE - 36;
+const LED_1: usize = constants::CANVAS_SIZE - 1;
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct RoccatAimoPad {
+    pub device: u64,
+}
+
+impl RoccatAimoPad {
+    pub fn new(device: u64) -> Self {
+        RoccatAimoPad { device }
+    }
+}
+
+impl MiscDevice for RoccatAimoPad {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("ROCCAT", "Sense AIMO XXL")
+    }
+
+    fn draw(&self) -> super::Result<()> {
+        Ok(())
+    }
+}

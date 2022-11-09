@@ -19,8 +19,29 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use super::MiscDevice;
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct NullMiscDevice {}
+
+impl NullMiscDevice {
+    pub fn new() -> Self {
+        NullMiscDevice {}
+    }
+}
+
+impl MiscDevice for NullMiscDevice {
+    fn get_device(&self) -> u64 {
+        0
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("Unknown", "Unknown")
+    }
+
+    fn draw(&self) -> super::Result<()> {
+        Ok(())
+    }
+}

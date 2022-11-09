@@ -19,8 +19,35 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use super::{MiscDevice, Rectangle};
+use crate::constants;
+use palette::{FromColor, Hsva, Shade, Srgba};
+
+const BORDER: (f64, f64) = (16.0, 16.0);
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct RoccatElo71Air {
+    pub device: u64,
+}
+
+impl RoccatElo71Air {
+    pub fn new(device: u64) -> Self {
+        RoccatElo71Air { device }
+    }
+}
+
+impl MiscDevice for RoccatElo71Air {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("ROCCAT/Turtle Beach", "Elo 7.1 Air")
+    }
+
+    fn draw(&self) -> super::Result<()> {
+        Ok(())
+    }
+}

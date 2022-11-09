@@ -19,8 +19,31 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-pub mod about;
-pub mod main;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
+use palette::{FromColor, Hsva, Shade, Srgba};
+
+use super::{Mouse, Rectangle};
+
+pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Debug)]
+pub struct GenericMouse {
+    pub device: u64,
+}
+
+impl GenericMouse {
+    pub fn new(device: u64) -> Self {
+        GenericMouse { device }
+    }
+}
+
+impl Mouse for GenericMouse {
+    fn get_device(&self) -> u64 {
+        self.device
+    }
+
+    fn get_make_and_model(&self) -> (&'static str, &'static str) {
+        ("Unknown", "Generic Mouse")
+    }
+
+    fn draw_mouse(&self) -> super::Result<()> {}
+}
