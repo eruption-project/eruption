@@ -1,17 +1,19 @@
-#    This file is part of Eruption.
+#    SPDX-License-Identifier: LGPL-3.0-or-later
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
+#    This file is part of the Eruption SDK.
+#
+#    The Eruption SDK is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Lesser General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
+#    The Eruption SDK is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    GNU Lesser General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#    You should have received a copy of the GNU Lesser General Public License
+#    along with the Eruption SDK.  If not, see <http://www.gnu.org/licenses/>.
 #
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
@@ -27,7 +29,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver", "sdk"]
 categories = ["hardware-support"]
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 
@@ -45,9 +47,9 @@ flume = "0.10.14"
 serde = "1.0.147"
 bincode = "2.0.0-rc.2"
 bytes = "1.2.1"
-prost = "0.11.0"
-prost-types = "0.11.1"
+prost = "0.11.2"
+prost-types = "0.11.2"
 socket2 = { version = "0.4.7", features = ["all"] }
 
 [build-dependencies]
-prost-build = "0.11.1"
+prost-build = "0.11.2"

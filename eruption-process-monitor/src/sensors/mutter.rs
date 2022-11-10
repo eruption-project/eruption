@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -21,13 +23,13 @@
 // use byteorder::{ByteOrder, LittleEndian};
 // use dbus::arg::RefArg;
 // use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
-use std::{sync::atomic::Ordering, time::Duration};
+use std::time::Duration;
 // use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use async_trait::async_trait;
 use dbus::blocking::Connection;
 use serde::Deserialize;
 
-use super::Sensor;
+use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -94,11 +96,13 @@ impl super::WindowSensorData for MutterSensorData {
 }
 
 #[derive(Debug, Clone)]
-pub struct MutterSensor {}
+pub struct MutterSensor {
+    pub is_failed: bool,
+}
 
 impl MutterSensor {
     pub fn new() -> Self {
-        Self {}
+        Self { is_failed: false }
     }
 }
 
@@ -109,11 +113,11 @@ impl Sensor for MutterSensor {
     }
 
     fn get_name(&self) -> String {
-        "Mutter".to_string()
+        "Mutter (legacy)".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Watches the state of windows on a GNOME 4x desktop running the Mutter window manager"
+        "Watches the state of windows on a legacy GNOME 3 desktop running the Mutter window manager"
             .to_string()
     }
 
@@ -132,13 +136,18 @@ rules add window-instance gnome-calculator 2
         Ok(())
     }
 
+    fn is_enabled(&self) -> bool {
+        SENSORS_CONFIGURATION
+            .read()
+            .contains(&SensorConfiguration::EnableMutter)
+    }
+
     fn is_pollable(&self) -> bool {
-        // HACK: This is an ugly hack, but it improves performance and lowers CPU load
-        !crate::X11_POLL_SUCCEEDED.load(Ordering::SeqCst)
+        true
     }
 
     fn is_failed(&self) -> bool {
-        false
+        self.is_failed
     }
 
     fn set_failed(&mut self, _failed: bool) {
@@ -146,9 +155,15 @@ rules add window-instance gnome-calculator 2
     }
 
     fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
-        let result = get_top_level_window_attrs()?;
+        match get_top_level_window_attrs() {
+            Ok(result) => Ok(Box::from(result)),
 
-        Ok(Box::from(result))
+            Err(e) => {
+                self.is_failed = true;
+
+                Err(e)
+            }
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

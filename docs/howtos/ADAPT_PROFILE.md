@@ -15,7 +15,7 @@ In this HOWTO we will outline each step that is required to customize an existin
 ### Caveats
 
 Since Eruption `0.1.23` it is possible to override the values defined in a `.profile` file using a `.profile.state` file.
-This state file will be created if you customize a parameter using the `Eruption GUI` or by using the `eruptionctl param` command.
+This state file will be created if you customize a parameter using `Pyroclasm UI` the `Eruption GUI` or by using the `eruptionctl param` command.
 
 If such a file exists, all parameters will be set to the values from that `.profile.state` file. Values from the original
 `.profile` file will only be used again if you delete the `.profile.state` file.

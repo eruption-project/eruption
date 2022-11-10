@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -66,20 +68,21 @@ pub enum MainError {
     about = tr!("about"),
 )]
 pub struct Options {
+    /// Subcommand
+    #[clap(subcommand)]
+    command: subcommands::Subcommands,
+
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(help(tr!("verbose-about")), short, long, action = clap::ArgAction::Count)]
+    #[clap(display_order = 0, help(tr!("verbose-about")), short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     /// Repeat output until ctrl+c is pressed
-    #[clap(short, long)]
+    #[clap(display_order = 1, short, long)]
     repeat: bool,
 
     /// Sets the configuration file to use
-    #[clap(short = 'c', long)]
+    #[clap(display_order = 2, short = 'c', long)]
     config: Option<String>,
-
-    #[clap(subcommand)]
-    command: subcommands::Subcommands,
 }
 
 /// Main program entrypoint
@@ -120,18 +123,18 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 fn print_header() {
     println!("{}", tr!("license-header"));
-    println!(
-        r"
- ********                          **   **                  
- /**/////                 ******   /**  //                   
- /**       ****** **   **/**///** ****** **  ******  ******* 
- /******* //**//*/**  /**/**  /**///**/ /** **////**//**///**
- /**////   /** / /**  /**/******   /**  /**/**   /** /**  /**
- /**       /**   /**  /**/**///    /**  /**/**   /** /**  /**
- /********/***   //******/**       //** /**//******  ***  /**
- //////// ///     ////// //         //  //  //////  ///   //
-"
-    );
+    //     println!(
+    //         r"
+    //  ********                          **   **
+    //  /**/////                 ******   /**  //
+    //  /**       ****** **   **/**///** ****** **  ******  *******
+    //  /******* //**//*/**  /**/**  /**///**/ /** **////**//**///**
+    //  /**////   /** / /**  /**/******   /**  /**/**   /** /**  /**
+    //  /**       /**   /**  /**/**///    /**  /**/**   /** /**  /**
+    //  /********/***   //******/**       //** /**//******  ***  /**
+    //  //////// ///     ////// //         //  //  //////  ///   //
+    // "
+    //     );
 }
 
 fn register_sigint_handler() {

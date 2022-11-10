@@ -11,6 +11,7 @@ _This is a non-exhaustive listing of planned features:_
 
 * Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 * Improve i18n and l10n: Add more translations
+* GUI support: Improve the Pyroclasm UI
 * GUI support: Improve the GTK3+ based GUI
 * Add a KDE Plasma widget
 * Add a MATE Desktop Applet

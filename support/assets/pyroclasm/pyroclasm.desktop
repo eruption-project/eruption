@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Pyroclasm UI
+Comment=Pyroclasm UI for Eruption
+Exec=/usr/bin/pyroclasm
+Icon=keyboard-brightness-symbolic
+Terminal=false

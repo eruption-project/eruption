@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -31,9 +33,11 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, clap::Parser)]
 pub enum ConfigSubcommands {
     /// Get or set the global brightness of the LEDs
+    #[clap(display_order = 0)]
     Brightness { brightness: Option<i64> },
 
     /// Get or set the state of SoundFX
+    #[clap(display_order = 1)]
     Soundfx { enable: Option<bool> },
 }
 

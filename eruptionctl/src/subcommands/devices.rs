@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -52,40 +54,40 @@ pub enum DevicesSubcommands {
     Status { device: String },
 
     /// Get or set the device specific brightness of the LEDs
-    // #[clap(display_order = 3)]
+    #[clap(display_order = 3)]
     Brightness {
         device: String,
         brightness: Option<i64>,
     },
 
     /// Get or set the current profile (applicable for some devices)
-    // #[clap(display_order = 4)]
+    #[clap(display_order = 4)]
     Profile {
         device: String,
         profile: Option<i32>,
     },
 
     /// Get or set the DPI parameter (applicable for some mice)
-    // #[clap(display_order = 5)]
+    #[clap(display_order = 5)]
     Dpi { device: String, dpi: Option<i32> },
 
     /// Get or set the bus poll rate
-    // #[clap(display_order = 6)]
+    #[clap(display_order = 6)]
     Rate { device: String, rate: Option<i32> },
 
     /// Get or set the debounce parameter (applicable for some mice)
-    // #[clap(display_order = 7)]
+    #[clap(display_order = 7)]
     Debounce {
         device: String,
         enable: Option<bool>,
     },
 
     /// Get or set the DCU parameter (applicable for some mice)
-    // #[clap(display_order = 8)]
+    #[clap(display_order = 8)]
     Distance { device: String, param: Option<i32> },
 
     /// Get or set the angle-snapping parameter (applicable for some mice)
-    // #[clap(display_order = 9)]
+    #[clap(display_order = 9)]
     AngleSnapping {
         device: String,
         enable: Option<bool>,

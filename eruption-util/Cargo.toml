@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -26,14 +28,14 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver"]
 categories = ["hardware-support"]
-license = "GPL-3.0"
+license = "GPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.18", features = ["derive"] }
-clap_complete = "4.0.3"
+clap =  { version = "4.0.22", features = ["derive"] }
+clap_complete = "4.0.5"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"
 log = "0.4.17"
@@ -51,7 +53,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
-udev = "0.6.3"
+udev = "0.7"
 evdev-rs = "0.6.1"
 lazy_static = "1.4.0"
 bitvec = "1.0.1"

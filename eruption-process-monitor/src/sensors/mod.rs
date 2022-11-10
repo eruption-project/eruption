@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -17,23 +19,27 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::sync::Arc;
+use std::{collections::HashSet, hash::Hash, sync::Arc};
 
 use async_trait::async_trait;
 use dyn_clonable::*;
 use lazy_static::lazy_static;
 use log::*;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 
+#[cfg(feature = "sensor-gnome-shellext")]
+mod gnome_shellext;
 #[cfg(feature = "sensor-mutter")]
 mod mutter;
 #[cfg(feature = "sensor-procmon")]
 mod process;
 #[cfg(feature = "sensor-wayland")]
 mod wayland;
-
 #[cfg(feature = "sensor-x11")]
 mod x11;
+
+#[cfg(feature = "sensor-gnome-shellext")]
+pub use gnome_shellext::*;
 #[cfg(feature = "sensor-mutter")]
 pub use mutter::*;
 #[cfg(feature = "sensor-procmon")]
@@ -46,8 +52,106 @@ pub use x11::*;
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
-    pub(crate) static ref SENSORS: Arc<Mutex<Vec<Box<dyn Sensor + Send + Sync + 'static>>>> =
-        Arc::new(Mutex::new(vec![]));
+    pub(crate) static ref SENSORS: Arc<RwLock<Vec<Box<dyn Sensor + Send + Sync + 'static>>>> =
+        Arc::new(RwLock::new(vec![]));
+
+    /// GLobal configuration of sensors
+    pub(crate) static ref SENSORS_CONFIGURATION: Arc<RwLock<HashSet<SensorConfiguration>>> =
+        Arc::new(RwLock::new(HashSet::new()));
+}
+
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum SensorConfiguration {
+    AllDisabledHint,
+
+    #[cfg(feature = "sensor-procmon")]
+    EnableProcmon,
+
+    #[cfg(feature = "sensor-gnome-shellext")]
+    EnableGnomeShellExt,
+
+    #[cfg(feature = "sensor-mutter")]
+    EnableMutter,
+
+    #[cfg(feature = "sensor-wayland")]
+    EnableWayland,
+
+    #[cfg(feature = "sensor-x11")]
+    EnableX11,
+}
+
+impl SensorConfiguration {
+    #[allow(unused)]
+    pub fn profile_gnome_desktop() -> HashSet<Self> {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "sensor-gnome-shellext")] {
+                // On modern GNOME 4x desktops, we require our custom shell extension to be running
+                HashSet::from_iter([
+                    #[cfg(feature = "sensor-procmon")]
+                    SensorConfiguration::EnableProcmon,
+
+                    #[cfg(feature = "sensor-gnome-shellext")]
+                    SensorConfiguration::EnableGnomeShellExt,
+                ])
+            } else if #[cfg(feature = "sensor-mutter")] {
+                // Use this for legacy GNOME 3 desktops
+                HashSet::from_iter([
+                    #[cfg(feature = "sensor-procmon")]
+                    SensorConfiguration::EnableProcmon,
+
+                    #[cfg(feature = "sensor-mutter")]
+                    SensorConfiguration::EnableMutter,
+                ])
+            } else {
+               HashSet::from_iter([
+                   #[cfg(feature = "sensor-procmon")]
+                   SensorConfiguration::EnableProcmon,
+
+                   #[cfg(feature = "sensor-x11")]
+                   SensorConfiguration::EnableX11,
+               ])
+            }
+        }
+    }
+
+    #[allow(unused)]
+    pub fn profile_generic_wayland_compositor() -> HashSet<Self> {
+        HashSet::from_iter([
+            #[cfg(feature = "sensor-procmon")]
+            SensorConfiguration::EnableProcmon,
+            #[cfg(feature = "sensor-wayland")]
+            SensorConfiguration::EnableWayland,
+        ])
+    }
+
+    #[allow(unused)]
+    pub fn profile_generic_x11_desktop() -> HashSet<Self> {
+        HashSet::from_iter([
+            #[cfg(feature = "sensor-procmon")]
+            SensorConfiguration::EnableProcmon,
+            #[cfg(feature = "sensor-x11")]
+            SensorConfiguration::EnableX11,
+        ])
+    }
+
+    #[allow(unused)]
+    pub fn profile_all_sensors_disabled() -> HashSet<Self> {
+        HashSet::from_iter([SensorConfiguration::AllDisabledHint])
+    }
+
+    #[allow(unused)]
+    pub fn profile_all_sensors_enabled() -> HashSet<Self> {
+        HashSet::from_iter([
+            #[cfg(feature = "sensor-procmon")]
+            SensorConfiguration::EnableProcmon,
+            #[cfg(feature = "sensor-mutter")]
+            SensorConfiguration::EnableMutter,
+            #[cfg(feature = "sensor-wayland")]
+            SensorConfiguration::EnableWayland,
+            #[cfg(feature = "sensor-x11")]
+            SensorConfiguration::EnableX11,
+        ])
+    }
 }
 
 #[clonable]
@@ -58,6 +162,7 @@ pub trait Sensor: Clone {
     fn get_id(&self) -> String;
     fn get_name(&self) -> String;
     fn get_description(&self) -> String;
+    fn is_enabled(&self) -> bool;
 
     fn get_usage_example(&self) -> String;
 
@@ -110,7 +215,7 @@ where
 {
     info!("{} - {}", sensor.get_name(), sensor.get_description());
 
-    SENSORS.lock().push(Box::from(sensor));
+    SENSORS.write().push(Box::from(sensor));
 }
 
 /// Register all available sensors
@@ -119,6 +224,9 @@ pub fn register_sensors() -> Result<()> {
 
     #[cfg(feature = "sensor-procmon")]
     register_sensor(ProcessSensor::new());
+
+    #[cfg(feature = "sensor-gnome-shellext")]
+    register_sensor(GnomeShellExtensionSensor::new());
 
     #[cfg(feature = "sensor-mutter")]
     register_sensor(MutterSensor::new());
@@ -130,7 +238,7 @@ pub fn register_sensors() -> Result<()> {
     register_sensor(X11Sensor::new());
 
     // initialize all registered sensors
-    for s in SENSORS.lock().iter_mut() {
+    for s in SENSORS.write().iter_mut() {
         s.initialize()?;
     }
 
@@ -140,7 +248,7 @@ pub fn register_sensors() -> Result<()> {
 /// Find a sensor by its respective id
 #[allow(dead_code)]
 pub fn find_sensor_by_id(id: &str) -> Option<Box<dyn Sensor + Send + Sync + 'static>> {
-    match SENSORS.lock().iter().find(|&e| e.get_id() == id) {
+    match SENSORS.read().iter().find(|&e| e.get_id() == id) {
         Some(s) => Some(dyn_clone::clone_box(s.as_ref())),
 
         None => None,

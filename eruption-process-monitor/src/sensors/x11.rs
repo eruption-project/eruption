@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -30,7 +32,7 @@ use x11rb::protocol::xproto::*;
 use x11rb::x11_utils::TryParse;
 use x11rb::xcb_ffi::XCBConnection;
 
-use super::Sensor;
+use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -40,6 +42,9 @@ pub enum X11SensorError {
     // UnknownError { description: String },
     #[error("Sensor error: {description}")]
     SensorError { description: String },
+
+    #[error("Sensor failed: {description}")]
+    SensorFailed { description: String },
 }
 
 #[derive(Debug, Clone)]
@@ -107,6 +112,12 @@ impl Sensor for X11Sensor {
         self.screen = Some(screen);
 
         Ok(())
+    }
+
+    fn is_enabled(&self) -> bool {
+        SENSORS_CONFIGURATION
+            .read()
+            .contains(&SensorConfiguration::EnableX11)
     }
 
     fn get_id(&self) -> String {
@@ -207,7 +218,17 @@ You may want to use the command line tool `xprop` to find the relevant informati
                     pid,
                 };
 
-                Ok(Box::from(result))
+                if result.window_name.is_empty()
+                    && result.window_instance.is_empty()
+                    && result.window_class.is_empty()
+                {
+                    Err(X11SensorError::SensorFailed {
+                        description: "Empty sensor data".to_owned(),
+                    }
+                    .into())
+                } else {
+                    Ok(Box::from(result))
+                }
             }
         } else {
             Err(X11SensorError::SensorError {

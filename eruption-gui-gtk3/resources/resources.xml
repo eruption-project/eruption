@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/eruption/eruption-gui-gtk3">
+    <file>img/eruption-gui.png</file>
+    <file>img/generic-keyboard.png</file>
+    <file>img/generic-mouse.png</file>
+    <file>img/generic-headset.png</file>
+    <file>img/generic-pad-wide.png</file>
+    <file>img/generic-misc.png</file>
+    <file>img/roccat-vulcan-1xx.png</file>
+    <file>img/roccat-vulcan-pro.png</file>
+    <file>img/roccat-vulcan-pro-tkl.png</file>
+    <file>img/roccat-vulcan-tkl.png</file>
+    <file>img/roccat-magma.png</file>
+    <file>img/roccat-kone-xp.png</file>
+    <file>img/roccat-kone-xtd.png</file>
+    <file>img/roccat-kone-pure-ultra.png</file>
+    <file>img/roccat-kone-pro-air.png</file>
+    <file>img/roccat-burst-pro.png</file>
+    <file>img/roccat-kone-aimo-remastered.png</file>
+    <file>img/roccat-kain-100.png</file>
+    <file>img/roccat-kain-2xx.png</file>
+    <file compressed="true">styles/app.css</file>
+    <file compressed="true">ui/main.glade</file>
+    <file compressed="true">ui/about.glade</file>
+    <file compressed="true">ui/rule.glade</file>
+    <file compressed="true">ui/no-connection-template.ui</file>
+    <file compressed="true">ui/no-device-template.ui</file>
+    <file compressed="true">ui/keyboard-device-template.ui</file>
+    <file compressed="true">ui/mouse-device-template.ui</file>
+    <file compressed="true">ui/misc-device-template.ui</file>
+  </gresource>
+</gresources>

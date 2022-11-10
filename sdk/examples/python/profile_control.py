@@ -1,5 +1,6 @@
 #!/bin/env python3
-
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -47,7 +48,7 @@ def main():
 
         # So that we don't interfere with a real profile, let's just create a new one
         with tempfile.NamedTemporaryFile(mode="w", suffix=".profile") as new_profile_file:
-            solid_script = "/usr/share/eruption/scripts/solid.lua" # Solid background color
+            solid_script = "/usr/share/eruption/scripts/solid.lua"  # Solid background color
             wave_script = "/usr/share/eruption/scripts/wave.lua"   # Dark wave pattern
 
             new_profile_file.write(textwrap.dedent(f"""\
@@ -59,7 +60,8 @@ def main():
             new_profile_file.flush()
 
             print()
-            print("Switching to new profile", new_profile_file.name, "using default script parameters.")
+            print("Switching to new profile", new_profile_file.name,
+                  "using default script parameters.")
             switched = connection.switch_profile(new_profile_file.name)
 
             if switched:
@@ -75,14 +77,17 @@ def main():
             print("Updating parameters #1 - Warp core mode")
             # Each script has its own parameters, and the script needs to be specified when setting its parameters.
             # The names and type of the parameters are defined by the script's manifest.
-            connection.set_parameters(new_profile_file.name, solid_script, color_background='#ff10a0ff')
-            connection.set_parameters(new_profile_file.name, wave_script, horizontal=True, direction=1, wave_length=2, speed_divisor=15)
+            connection.set_parameters(
+                new_profile_file.name, solid_script, color_background='#ff10a0ff')
+            connection.set_parameters(new_profile_file.name, wave_script,
+                                      horizontal=True, direction=1, wave_length=2, speed_divisor=15)
 
             time.sleep(3)
 
             print("Updating parameters #2 - Warp factor 9")
             # Only the parameters that change need to be specified.
-            connection.set_parameters(new_profile_file.name, wave_script, wave_length=1, speed_divisor=1.5)
+            connection.set_parameters(
+                new_profile_file.name, wave_script, wave_length=1, speed_divisor=1.5)
 
             time.sleep(3)
 
@@ -93,7 +98,8 @@ def main():
                 'wave_length': 2,
                 'speed_divisor': 25
             }
-            connection.set_parameters(new_profile_file.name, wave_script, **parameters)
+            connection.set_parameters(
+                new_profile_file.name, wave_script, **parameters)
 
             time.sleep(3)
 

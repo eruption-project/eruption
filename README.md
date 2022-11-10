@@ -198,6 +198,7 @@ usage. Both of these session daemons run as the respective logged-in user.
 ```shell
 paru -Syu aur/eruption
 
+systemctl --user enable --now eruption-fx-proxy.service
 systemctl --user enable --now eruption-audio-proxy.service
 systemctl --user enable --now eruption-process-monitor.service
 
@@ -210,6 +211,7 @@ sudo systemctl enable --now eruption.service
 sudo dnf copr enable x3n0m0rph59/eruption
 sudo dnf install eruption
 
+systemctl --user enable --now eruption-fx-proxy.service
 systemctl --user enable --now eruption-audio-proxy.service
 systemctl --user enable --now eruption-process-monitor.service
 
@@ -223,6 +225,7 @@ sudo add-apt-repository ppa:x3n0m0rph59/eruption
 sudo apt update
 sudo apt install eruption
 
+systemctl --user enable --now eruption-fx-proxy.service
 systemctl --user enable --now eruption-audio-proxy.service
 systemctl --user enable --now eruption-process-monitor.service
 

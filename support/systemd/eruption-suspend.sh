@@ -1,5 +1,6 @@
 #!/bin/sh
-
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -24,7 +25,7 @@ if [ "$1" = "pre" ] ; then
     touch /run/lock/eruption-hotplug-helper.lock
 
     systemctl stop eruption-hotplug-helper.service
-	systemctl stop eruption.service
+    systemctl stop eruption.service
 
     touch /run/lock/eruption-sleep.lock
 else

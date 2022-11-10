@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -25,7 +27,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver", "sdk"]
 categories = ["hardware-support"]
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 
@@ -35,7 +37,7 @@ log = "0.4.17"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-clap = "4.0.18"
+clap = "4.0.22"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 rust-embed = "6.4.2"

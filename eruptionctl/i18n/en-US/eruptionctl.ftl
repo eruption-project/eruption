@@ -1,3 +1,5 @@
+#    SPDX-License-Identifier: GPL-3.0-or-later
+#
 #    This file is part of Eruption.
 #
 #    Eruption is free software: you can redistribute it and/or modify
@@ -31,7 +33,15 @@ switch-about = Switch to a different profile or slot
 profiles-about = Profile related sub-commands
 names-about = Naming related commands such as renaming of profile slots
 scripts-about = Script related sub-commands
+effects-about = Special effects like Ambient, image overlays or animations
 param-about = Get or set script parameters on the currently active profile
+rules-about = Rules related sub-commands
+
+rules-list = List all available rules
+rules-add = Create a new rule
+rules-remove = Remove an existing rule by its index
+rules-enable = Mark an existing rule as enabled
+rules-disable = Mark an existing rule as disabled
 
 dumping-devices = Dumping Eruption managed devices list
 keyboard-devices = Keyboard devices:

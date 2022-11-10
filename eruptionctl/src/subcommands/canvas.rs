@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -16,7 +18,6 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
-
 
 use color_eyre::Help;
 use colored::Colorize;

@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
 /*
     This file is part of Eruption.
 
@@ -327,9 +329,7 @@ impl HwAccelerationPlugin {
 
         // icecream::ice!(&data_buffer_content);
 
-        *HWACCEL_STATE.write() = Some(State {
-            device,
-        });
+        *HWACCEL_STATE.write() = Some(State { device });
 
         Ok(())
     }
