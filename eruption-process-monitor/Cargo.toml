@@ -20,7 +20,7 @@
 
 [package]
 name = "eruption-process-monitor"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 description = "A daemon to monitor and introspect system processes and events"
@@ -33,8 +33,8 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["sensors-most"]
-# sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-mutter"]
+default = ["sensors-stable"]
+sensors-stable = ["sensor-procmon", "sensor-x11", "sensor-wayland"]
 sensors-most = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-gnome-shellext"]
 sensors-all = ["sensor-procmon", "sensor-x11", "sensor-wayland", "sensor-gnome-shellext", "sensor-mutter"]
 sensor-procmon = ["procmon-sys"]

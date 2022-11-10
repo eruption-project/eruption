@@ -33,14 +33,17 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 /// Subcommands of the "scripts" command
 #[derive(Debug, clap::Parser)]
 pub enum ScriptsSubcommands {
-    /// Show info about a script
+    /// List all available Lua effects scripts
+    #[clap(display_order = 0)]
+    List,
+
+    /// Show information about a specific Lua script
+    #[clap(display_order = 1)]
     Info { script_name: String },
 
-    /// Edit a script
+    /// Edit a Lua script file
+    #[clap(display_order = 2)]
     Edit { script_name: String },
-
-    /// List available scripts
-    List,
 }
 
 pub async fn handle_command(command: ScriptsSubcommands) -> Result<()> {

@@ -33,15 +33,19 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, clap::Parser)]
 pub enum ColorSchemesSubcommands {
     /// List all color schemes known to Eruption
+    #[clap(display_order = 0)]
     List {},
 
     /// Add a new named color scheme
+    #[clap(display_order = 1)]
     Add { name: String, colors: Vec<String> },
 
     /// Remove a color scheme by name
+    #[clap(display_order = 2)]
     Remove { name: String },
 
     /// Import a color scheme from a file, e.g.: like the Pywal configuration
+    #[clap(display_order = 3)]
     Import {
         #[clap(subcommand)]
         command: ColorSchemeImportSubcommands,

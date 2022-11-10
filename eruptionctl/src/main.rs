@@ -62,20 +62,21 @@ lazy_static! {
     about = tr!("about"),
 )]
 pub struct Options {
+    /// Subcommand
+    #[clap(subcommand)]
+    command: subcommands::Subcommands,
+
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(help(tr!("verbose-about")), short, long, action = clap::ArgAction::Count)]
+    #[clap(display_order = 0, help(tr!("verbose-about")), short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 
     /// Repeat output until ctrl+c is pressed
-    #[clap(short, long)]
+    #[clap(display_order = 1, short, long)]
     repeat: bool,
 
     /// Sets the configuration file to use
-    #[clap(short = 'c', long)]
+    #[clap(display_order = 2, short = 'c', long)]
     config: Option<String>,
-
-    #[clap(subcommand)]
-    command: subcommands::Subcommands,
 }
 
 /// Main program entrypoint

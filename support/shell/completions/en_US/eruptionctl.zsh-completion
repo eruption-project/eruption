@@ -34,7 +34,125 @@ _eruptionctl() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-command-$line[1]:"
         case $line[1] in
-            (config)
+            (status)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__status_commands" \
+"*::: :->status" \
+&& ret=0
+
+    case $state in
+    (status)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-status-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__status__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-status-help-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(switch)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__switch_commands" \
+"*::: :->switch" \
+&& ret=0
+
+    case $state in
+    (switch)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-switch-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':profile_name:' \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':index:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__switch__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-switch-help-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(config)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
@@ -81,148 +199,6 @@ _arguments "${_arguments_options[@]}" \
 (soundfx)
 _arguments "${_arguments_options[@]}" \
 && ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
-(color-schemes)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__color-schemes_commands" \
-"*::: :->color-schemes" \
-&& ret=0
-
-    case $state in
-    (color-schemes)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-command-$line[1]:"
-        case $line[1] in
-            (list)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-&& ret=0
-;;
-(add)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':name:' \
-'*::colors:' \
-&& ret=0
-;;
-(remove)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':name:' \
-&& ret=0
-;;
-(import)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__color-schemes__import_commands" \
-"*::: :->import" \
-&& ret=0
-
-    case $state in
-    (import)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-import-command-$line[1]:"
-        case $line[1] in
-            (pywal)
-_arguments "${_arguments_options[@]}" \
-'-o[Optimize palette]' \
-'--optimize[Optimize palette]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'::file_name -- Optionally specify the file name to the pywal color scheme:_files' \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__color-schemes__import__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-import-help-command-$line[1]:"
-        case $line[1] in
-            (pywal)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__color-schemes__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-help-command-$line[1]:"
-        case $line[1] in
-            (list)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(add)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(remove)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(import)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__color-schemes__help__import_commands" \
-"*::: :->import" \
-&& ret=0
-
-    case $state in
-    (import)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-help-import-command-$line[1]:"
-        case $line[1] in
-            (pywal)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
@@ -390,124 +366,6 @@ esac
     ;;
 esac
 ;;
-(status)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__status_commands" \
-"*::: :->status" \
-&& ret=0
-
-    case $state in
-    (status)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-status-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__status__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-status-help-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
-(switch)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__switch_commands" \
-"*::: :->switch" \
-&& ret=0
-
-    case $state in
-    (switch)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-switch-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':profile_name:' \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':index:' \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__switch__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-switch-help-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
 (profiles)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
@@ -522,7 +380,13 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-profiles-command-$line[1]:"
         case $line[1] in
-            (info)
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(info)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
@@ -534,12 +398,6 @@ _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
 ':profile_name:' \
-&& ret=0
-;;
-(list)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
 && ret=0
 ;;
 (help)
@@ -554,15 +412,15 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-profiles-help-command-$line[1]:"
         case $line[1] in
-            (info)
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(info)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (edit)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -577,6 +435,227 @@ esac
         esac
     ;;
 esac
+;;
+(scripts)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__scripts_commands" \
+"*::: :->scripts" \
+&& ret=0
+
+    case $state in
+    (scripts)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-scripts-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(info)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':script_name:' \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':script_name:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__scripts__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-scripts-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(info)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(edit)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(color-schemes)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__color-schemes_commands" \
+"*::: :->color-schemes" \
+&& ret=0
+
+    case $state in
+    (color-schemes)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':name:' \
+'*::colors:' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':name:' \
+&& ret=0
+;;
+(import)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+":: :_eruptionctl__color-schemes__import_commands" \
+"*::: :->import" \
+&& ret=0
+
+    case $state in
+    (import)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-import-command-$line[1]:"
+        case $line[1] in
+            (pywal)
+_arguments "${_arguments_options[@]}" \
+'-o[Optimize palette]' \
+'--optimize[Optimize palette]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::file_name -- Optionally specify the file name to the pywal color scheme:_files' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__color-schemes__import__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-import-help-command-$line[1]:"
+        case $line[1] in
+            (pywal)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__color-schemes__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(import)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__color-schemes__help__import_commands" \
+"*::: :->import" \
+&& ret=0
+
+    case $state in
+    (import)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-color-schemes-help-import-command-$line[1]:"
+        case $line[1] in
+            (pywal)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(param)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'::script:' \
+'::parameter:' \
+'::value:' \
+&& ret=0
 ;;
 (names)
 _arguments "${_arguments_options[@]}" \
@@ -634,76 +713,6 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (set-all)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-        esac
-    ;;
-esac
-;;
-(scripts)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-":: :_eruptionctl__scripts_commands" \
-"*::: :->scripts" \
-&& ret=0
-
-    case $state in
-    (scripts)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-scripts-command-$line[1]:"
-        case $line[1] in
-            (info)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':script_name:' \
-&& ret=0
-;;
-(edit)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-':script_name:' \
-&& ret=0
-;;
-(list)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
-&& ret=0
-;;
-(help)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__scripts__help_commands" \
-"*::: :->help" \
-&& ret=0
-
-    case $state in
-    (help)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-scripts-help-command-$line[1]:"
-        case $line[1] in
-            (info)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(edit)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1063,14 +1072,97 @@ esac
     ;;
 esac
 ;;
-(param)
+(rules)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help information]' \
 '--help[Print help information]' \
-'::script:' \
-'::parameter:' \
-'::value:' \
+":: :_eruptionctl__rules_commands" \
+"*::: :->rules" \
 && ret=0
+
+    case $state in
+    (rules)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-rules-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'*::rule:' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':rule_index:' \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':rule_index:' \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+':rule_index:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__rules__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-rules-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
@@ -1091,7 +1183,55 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-help-command-$line[1]:"
         case $line[1] in
-            (config)
+            (status)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__status_commands" \
+"*::: :->status" \
+&& ret=0
+
+    case $state in
+    (status)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-status-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(switch)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__switch_commands" \
+"*::: :->switch" \
+&& ret=0
+
+    case $state in
+    (switch)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-switch-command-$line[1]:"
+        case $line[1] in
+            (profile)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(slot)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(config)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__config_commands" \
 "*::: :->config" \
@@ -1110,54 +1250,6 @@ _arguments "${_arguments_options[@]}" \
 (soundfx)
 _arguments "${_arguments_options[@]}" \
 && ret=0
-;;
-        esac
-    ;;
-esac
-;;
-(color-schemes)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__color-schemes_commands" \
-"*::: :->color-schemes" \
-&& ret=0
-
-    case $state in
-    (color-schemes)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-color-schemes-command-$line[1]:"
-        case $line[1] in
-            (list)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(add)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(remove)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(import)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__color-schemes__import_commands" \
-"*::: :->import" \
-&& ret=0
-
-    case $state in
-    (import)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-color-schemes-import-command-$line[1]:"
-        case $line[1] in
-            (pywal)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
 ;;
         esac
     ;;
@@ -1219,54 +1311,6 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
-(status)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__status_commands" \
-"*::: :->status" \
-&& ret=0
-
-    case $state in
-    (status)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-status-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-(switch)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__switch_commands" \
-"*::: :->switch" \
-&& ret=0
-
-    case $state in
-    (switch)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-switch-command-$line[1]:"
-        case $line[1] in
-            (profile)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(slot)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
 (profiles)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__profiles_commands" \
@@ -1279,7 +1323,11 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-help-profiles-command-$line[1]:"
         case $line[1] in
-            (info)
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(info)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1287,13 +1335,89 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
-(list)
+        esac
+    ;;
+esac
+;;
+(scripts)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__scripts_commands" \
+"*::: :->scripts" \
+&& ret=0
+
+    case $state in
+    (scripts)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-scripts-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(info)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(edit)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
         esac
     ;;
 esac
+;;
+(color-schemes)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__color-schemes_commands" \
+"*::: :->color-schemes" \
+&& ret=0
+
+    case $state in
+    (color-schemes)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-color-schemes-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(import)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__color-schemes__import_commands" \
+"*::: :->import" \
+&& ret=0
+
+    case $state in
+    (import)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-color-schemes-import-command-$line[1]:"
+        case $line[1] in
+            (pywal)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(param)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
 ;;
 (names)
 _arguments "${_arguments_options[@]}" \
@@ -1316,34 +1440,6 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (set-all)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-        esac
-    ;;
-esac
-;;
-(scripts)
-_arguments "${_arguments_options[@]}" \
-":: :_eruptionctl__help__scripts_commands" \
-"*::: :->scripts" \
-&& ret=0
-
-    case $state in
-    (scripts)
-        words=($line[1] "${words[@]}")
-        (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruptionctl-help-scripts-command-$line[1]:"
-        case $line[1] in
-            (info)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(edit)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1455,9 +1551,41 @@ esac
     ;;
 esac
 ;;
-(param)
+(rules)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__rules_commands" \
+"*::: :->rules" \
+&& ret=0
+
+    case $state in
+    (rules)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-rules-command-$line[1]:"
+        case $line[1] in
+            (list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
@@ -1479,16 +1607,17 @@ esac
 (( $+functions[_eruptionctl_commands] )) ||
 _eruptionctl_commands() {
     local commands; commands=(
-'config:Configuration related sub-commands' \
-'color-schemes:Define, import or delete a named color scheme' \
-'devices:Get or set some device specific configuration parameters' \
 'status:Shows the currently active profile or slot' \
 'switch:Switch to a different profile or slot' \
+'config:Configuration related sub-commands' \
+'devices:Get or set some device specific configuration parameters' \
 'profiles:Profile related sub-commands' \
-'names:Naming related commands such as renaming of profile slots' \
 'scripts:Script related sub-commands' \
-'effects:Special effects like Ambient, image overlays or animations' \
+'color-schemes:Define, import or delete a named color scheme' \
 'param:Get or set script parameters on the currently active profile' \
+'names:Naming related commands such as renaming of profile slots' \
+'effects:Special effects like Ambient, image overlays or animations' \
+'rules:Rules related sub-commands' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -1508,6 +1637,21 @@ _eruptionctl__color-schemes__help__add_commands() {
 _eruptionctl__help__color-schemes__add_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help color-schemes add commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__rules__add_commands] )) ||
+_eruptionctl__help__rules__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help rules add commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__add_commands] )) ||
+_eruptionctl__rules__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules add commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__add_commands] )) ||
+_eruptionctl__rules__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help add commands' commands "$@"
 }
 (( $+functions[_eruptionctl__effects__config__ambient_commands] )) ||
 _eruptionctl__effects__config__ambient_commands() {
@@ -1826,6 +1970,21 @@ _eruptionctl__help__effects__disable_commands() {
     )
     _describe -t commands 'eruptionctl help effects disable commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__rules__disable_commands] )) ||
+_eruptionctl__help__rules__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help rules disable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__disable_commands] )) ||
+_eruptionctl__rules__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules disable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__disable_commands] )) ||
+_eruptionctl__rules__help__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help disable commands' commands "$@"
+}
 (( $+functions[_eruptionctl__devices__distance_commands] )) ||
 _eruptionctl__devices__distance_commands() {
     local commands; commands=()
@@ -1934,6 +2093,21 @@ _eruptionctl__help__effects__enable_commands() {
 'ambient:Make the LEDs of connected devices reflect what is shown on the screen' \
     )
     _describe -t commands 'eruptionctl help effects enable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__rules__enable_commands] )) ||
+_eruptionctl__help__rules__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help rules enable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__enable_commands] )) ||
+_eruptionctl__rules__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules enable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__enable_commands] )) ||
+_eruptionctl__rules__help__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help enable commands' commands "$@"
 }
 (( $+functions[_eruptionctl__color-schemes__help_commands] )) ||
 _eruptionctl__color-schemes__help_commands() {
@@ -2064,16 +2238,17 @@ _eruptionctl__effects__help__help_commands() {
 (( $+functions[_eruptionctl__help_commands] )) ||
 _eruptionctl__help_commands() {
     local commands; commands=(
-'config:Configuration related sub-commands' \
-'color-schemes:Define, import or delete a named color scheme' \
-'devices:Get or set some device specific configuration parameters' \
 'status:Shows the currently active profile or slot' \
 'switch:Switch to a different profile or slot' \
+'config:Configuration related sub-commands' \
+'devices:Get or set some device specific configuration parameters' \
 'profiles:Profile related sub-commands' \
-'names:Naming related commands such as renaming of profile slots' \
 'scripts:Script related sub-commands' \
-'effects:Special effects like Ambient, image overlays or animations' \
+'color-schemes:Define, import or delete a named color scheme' \
 'param:Get or set script parameters on the currently active profile' \
+'names:Naming related commands such as renaming of profile slots' \
+'effects:Special effects like Ambient, image overlays or animations' \
+'rules:Rules related sub-commands' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -2102,9 +2277,9 @@ _eruptionctl__names__help__help_commands() {
 (( $+functions[_eruptionctl__profiles__help_commands] )) ||
 _eruptionctl__profiles__help_commands() {
     local commands; commands=(
-'info:Show info about a profile' \
+'list:List all available profiles' \
+'info:Show information about a specific profile' \
 'edit:Edit a profile' \
-'list:List available profiles' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl profiles help commands' commands "$@"
@@ -2114,12 +2289,29 @@ _eruptionctl__profiles__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl profiles help help commands' commands "$@"
 }
+(( $+functions[_eruptionctl__rules__help_commands] )) ||
+_eruptionctl__rules__help_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Create a new rule' \
+'remove:Remove an existing rule by its index' \
+'enable:Mark an existing rule as enabled' \
+'disable:Mark an existing rule as disabled' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl rules help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__help_commands] )) ||
+_eruptionctl__rules__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help help commands' commands "$@"
+}
 (( $+functions[_eruptionctl__scripts__help_commands] )) ||
 _eruptionctl__scripts__help_commands() {
     local commands; commands=(
-'info:Show info about a script' \
-'edit:Edit a script' \
-'list:List available scripts' \
+'list:List all available Lua effects scripts' \
+'info:Show information about a specific Lua script' \
+'edit:Edit a Lua script file' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl scripts help commands' commands "$@"
@@ -2324,6 +2516,11 @@ _eruptionctl__help__profiles__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help profiles list commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__rules__list_commands] )) ||
+_eruptionctl__help__rules__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help rules list commands' commands "$@"
+}
 (( $+functions[_eruptionctl__help__scripts__list_commands] )) ||
 _eruptionctl__help__scripts__list_commands() {
     local commands; commands=()
@@ -2348,6 +2545,16 @@ _eruptionctl__profiles__help__list_commands() {
 _eruptionctl__profiles__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl profiles list commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__list_commands] )) ||
+_eruptionctl__rules__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help list commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__list_commands] )) ||
+_eruptionctl__rules__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules list commands' commands "$@"
 }
 (( $+functions[_eruptionctl__scripts__help__list_commands] )) ||
 _eruptionctl__scripts__help__list_commands() {
@@ -2436,18 +2643,18 @@ _eruptionctl__switch__profile_commands() {
 (( $+functions[_eruptionctl__help__profiles_commands] )) ||
 _eruptionctl__help__profiles_commands() {
     local commands; commands=(
-'info:Show info about a profile' \
+'list:List all available profiles' \
+'info:Show information about a specific profile' \
 'edit:Edit a profile' \
-'list:List available profiles' \
     )
     _describe -t commands 'eruptionctl help profiles commands' commands "$@"
 }
 (( $+functions[_eruptionctl__profiles_commands] )) ||
 _eruptionctl__profiles_commands() {
     local commands; commands=(
-'info:Show info about a profile' \
+'list:List all available profiles' \
+'info:Show information about a specific profile' \
 'edit:Edit a profile' \
-'list:List available profiles' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl profiles commands' commands "$@"
@@ -2502,21 +2709,59 @@ _eruptionctl__help__color-schemes__remove_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help color-schemes remove commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__rules__remove_commands] )) ||
+_eruptionctl__help__rules__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help rules remove commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__help__remove_commands] )) ||
+_eruptionctl__rules__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules help remove commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules__remove_commands] )) ||
+_eruptionctl__rules__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl rules remove commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__rules_commands] )) ||
+_eruptionctl__help__rules_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Create a new rule' \
+'remove:Remove an existing rule by its index' \
+'enable:Mark an existing rule as enabled' \
+'disable:Mark an existing rule as disabled' \
+    )
+    _describe -t commands 'eruptionctl help rules commands' commands "$@"
+}
+(( $+functions[_eruptionctl__rules_commands] )) ||
+_eruptionctl__rules_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Create a new rule' \
+'remove:Remove an existing rule by its index' \
+'enable:Mark an existing rule as enabled' \
+'disable:Mark an existing rule as disabled' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl rules commands' commands "$@"
+}
 (( $+functions[_eruptionctl__help__scripts_commands] )) ||
 _eruptionctl__help__scripts_commands() {
     local commands; commands=(
-'info:Show info about a script' \
-'edit:Edit a script' \
-'list:List available scripts' \
+'list:List all available Lua effects scripts' \
+'info:Show information about a specific Lua script' \
+'edit:Edit a Lua script file' \
     )
     _describe -t commands 'eruptionctl help scripts commands' commands "$@"
 }
 (( $+functions[_eruptionctl__scripts_commands] )) ||
 _eruptionctl__scripts_commands() {
     local commands; commands=(
-'info:Show info about a script' \
-'edit:Edit a script' \
-'list:List available scripts' \
+'list:List all available Lua effects scripts' \
+'info:Show information about a specific Lua script' \
+'edit:Edit a Lua script file' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl scripts commands' commands "$@"

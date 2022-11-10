@@ -32,14 +32,17 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 /// Sub-commands of the "profiles" command
 #[derive(Debug, clap::Parser)]
 pub enum ProfilesSubcommands {
-    /// Show info about a profile
+    /// List all available profiles
+    #[clap(display_order = 0)]
+    List,
+
+    /// Show information about a specific profile
+    #[clap(display_order = 1)]
     Info { profile_name: String },
 
     /// Edit a profile
+    #[clap(display_order = 2)]
     Edit { profile_name: String },
-
-    /// List available profiles
-    List,
 }
 
 pub async fn handle_command(command: ProfilesSubcommands) -> Result<()> {

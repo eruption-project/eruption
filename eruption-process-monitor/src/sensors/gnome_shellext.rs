@@ -142,7 +142,7 @@ impl GnomeShellExtensionSensor {
     }
 
     pub fn install_extension(&self) -> Result<()> {
-        let meta = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META;
+        let _meta = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META;
 
         let fifo_name = PathBuf::from(
             env::var("XDG_RUNTIME_DIR")
@@ -151,7 +151,7 @@ impl GnomeShellExtensionSensor {
         )
         .join("eruption-sensor");
 
-        let source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION
+        let _source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION
             .replace("{fifo_name}", &fifo_name.to_string_lossy());
 
         Ok(())

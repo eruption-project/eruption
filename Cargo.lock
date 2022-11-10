@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "byteorder",
@@ -1926,7 +1926,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.0.22",

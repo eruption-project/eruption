@@ -23,7 +23,6 @@
 about = Ein CLI utility für den Eruption Linux Benutzermodus Treiber
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
-
 config-about = Laufzeit Konfiguration des Eruption Daemons bearbeiten
 color-scheme-about = Ein Farbschema definieren, importieren oder löschen
 devices-about = Gerätespezifische Konfiguration bearbeiten
@@ -34,6 +33,13 @@ names-about = Slot-Namen anzeigen oder ändern
 scripts-about = Script bezogene Unterbefehle
 effects-about = Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen
 param-about = Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten
+rules-about = Automatisierungsregeln anzeigen und verwalten
+
+rules-list = Alle Automatisierungsregeln anzeigen
+rules-add = Eine neue Automatisierungsregel hinzufügen
+rules-remove = Eine vorhandene Automatisierungsregel entfernen
+rules-enable = Eine vorhandene Automatisierungsregel aktivieren
+rules-disable = Eine vorhandene Automatisierungsregel deaktivieren
 
 dumping-devices = Liste der durch Eruption kontrollierten Geräte
 keyboard-devices = Tastaturen:

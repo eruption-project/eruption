@@ -102,11 +102,13 @@ impl SensorConfiguration {
                     #[cfg(feature = "sensor-mutter")]
                     SensorConfiguration::EnableMutter,
                 ])
-
             } else {
                HashSet::from_iter([
                    #[cfg(feature = "sensor-procmon")]
                    SensorConfiguration::EnableProcmon,
+
+                   #[cfg(feature = "sensor-x11")]
+                   SensorConfiguration::EnableX11,
                ])
             }
         }
