@@ -857,8 +857,9 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     }
 
     if events::LOST_CONNECTION.load(Ordering::SeqCst) {
-        let no_connection_template =
-            gtk::Builder::from_resource("/org/eruption/eruption-gui/ui/no-connection-template.ui");
+        let no_connection_template = gtk::Builder::from_resource(
+            "/org/eruption/eruption-gui-gtk3/ui/no-connection-template.ui",
+        );
 
         let no_device_template =
             gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui");
