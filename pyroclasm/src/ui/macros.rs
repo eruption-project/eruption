@@ -21,59 +21,27 @@
 
 use crate::highlighting;
 
-struct TabViewer {}
+#[derive(Default)]
+pub struct MacrosPage {}
 
-impl egui_dock::TabViewer for TabViewer {
-    type Tab = String;
-
-    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
-        ui.label(format!("{tab}"));
-    }
-
-    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
-        (&*tab).into()
-    }
-}
-
-pub struct ProfilesPage {
-    tree: egui_dock::Tree<String>,
-}
-
-impl Default for ProfilesPage {
-    fn default() -> Self {
-        let mut tree = egui_dock::Tree::new(vec!["tab1".to_owned(), "tab2".to_owned()]);
-
-        // You can modify the tree before constructing the dock
-        let [a, b] = tree.split_left(egui_dock::NodeIndex::root(), 0.3, vec!["tab3".to_owned()]);
-        let [_, _] = tree.split_below(a, 0.7, vec!["tab4".to_owned()]);
-        let [_, _] = tree.split_below(b, 0.5, vec!["tab5".to_owned()]);
-
-        Self { tree }
-    }
-}
-
-impl ProfilesPage {
+impl MacrosPage {
     pub fn new() -> Self {
-        Self {
-            tree: Default::default(),
-        }
+        Self {}
     }
 
     pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Manage Profiles and Scripts");
+            ui.heading("Macros");
 
-            // let code = std::fs::read_to_string("/usr/share/eruption/scripts/macros.lua").unwrap();
+            let code =
+                std::fs::read_to_string("/usr/share/eruption/scripts/lib/macros/user-macros.lua")
+                    .unwrap();
 
-            // egui::ScrollArea::vertical()
-            //     .auto_shrink([false; 2])
-            //     .show(ui, |ui| {
-            //         show_code(ui, "lua", &code);
-            //     });
-
-            egui_dock::DockArea::new(&mut self.tree)
-                .style(egui_dock::Style::from_egui(ctx.style().as_ref()))
-                .show(ctx, &mut TabViewer {});
+            egui::ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| {
+                    show_code(ui, "lua", &code);
+                });
         });
     }
 }

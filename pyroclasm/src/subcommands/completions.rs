@@ -19,17 +19,20 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-#[derive(Default)]
-pub struct SettingsPage {}
+use clap::CommandFactory;
+use std::env;
 
-impl SettingsPage {
-    pub fn new() -> Self {
-        Self {}
-    }
+use crate::Options;
 
-    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Eruption global settings");
-        });
-    }
+type Result<T> = std::result::Result<T, eyre::Error>;
+
+pub async fn handle_command(shell: clap_complete::Shell) -> Result<()> {
+    const BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+    let mut command = Options::command();
+    let mut fd = std::io::stdout();
+
+    clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
+
+    Ok(())
 }

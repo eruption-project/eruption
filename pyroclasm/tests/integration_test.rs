@@ -22,7 +22,7 @@
 use std::{path::PathBuf, process::Command};
 
 #[test]
-fn test_eruption_gui_version() {
+fn test_pyroclasm_ui_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_pyroclasm"));
 
     let output = Command::new(command)

@@ -34,7 +34,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.22", features = ["derive"] }
+clap =  { version = "4.0.25", features = ["derive"] }
 clap_complete = "4.0.5"
 ctrlc = { version = "3.2.3", features = ["termination"] }
 colored = "2.0.0"
@@ -52,12 +52,12 @@ flume = "0.10.14"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-chrono = { version = "0.4.22", features = ["serde"] }
+chrono = { version = "0.4.23", features = ["serde"] }
 # lua-src = "544.0.1"
 # mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.7.3", features = ["luajit52"] }
-mlua = { version = "0.8.5", features = ["lua54"] }
+mlua = { version = "0.8.6", features = ["lua54"] }
 regex = "1.7.0"
 dbus = "0.9.6"
 evdev-rs = "0.6.1"

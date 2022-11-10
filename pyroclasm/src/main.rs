@@ -19,8 +19,11 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use clap::Parser;
+use config::Config;
 use eframe::{NativeOptions, Theme};
 use egui::Vec2;
+use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -28,7 +31,12 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
-use std::cell::RefCell;
+use std::{
+    cell::RefCell,
+    process,
+    sync::atomic::{AtomicBool, AtomicU8, Ordering},
+};
+use tracing::error;
 
 use std::env;
 use std::path::Path;
@@ -42,36 +50,20 @@ mod app;
 mod constants;
 mod dbus_client;
 mod device;
+mod highlighting;
 mod profiles;
 mod scripting;
+mod subcommands;
+mod threads;
+mod translations;
 mod ui;
 mod util;
+
+use translations::tr;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
 struct Localizations;
-
-lazy_static! {
-    /// Global configuration
-    pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
-}
-
-#[allow(unused)]
-macro_rules! tr {
-    ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
-        let loader = loader.as_ref().unwrap();
-
-        i18n_embed_fl::fl!(loader, $message_id)
-    }};
-
-    ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
-        let loader = loader.as_ref().unwrap();
-
-        i18n_embed_fl::fl!(loader, $message_id, $($args), *)
-    }};
-}
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -124,19 +116,31 @@ pub enum MainError {
 /// Global application state
 #[derive(Default)]
 pub struct State {
-    active_slot: Option<usize>,
-    _active_profile: Option<String>,
+    // egui Context
+    egui_ctx: Option<egui::Context>,
+
     _saved_profile: Option<String>,
-    _current_brightness: Option<i64>,
+
+    // Eruption daemon state
+    slot_names: Option<Vec<String>>,
+    active_slot: Option<usize>,
+    active_profile: Option<String>,
+    current_brightness: Option<i64>,
+    sound_fx: Option<bool>,
 }
 
 impl State {
     fn new() -> Self {
         Self {
-            active_slot: None,
-            _active_profile: None,
+            egui_ctx: None,
+
             _saved_profile: None,
-            _current_brightness: None,
+
+            active_slot: None,
+            active_profile: None,
+            current_brightness: None,
+            slot_names: None,
+            sound_fx: None,
         }
     }
 }
@@ -147,9 +151,38 @@ lazy_static! {
 
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
+}
 
+lazy_static! {
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+
+    /// Global verbosity amount
+    pub static ref VERBOSE: AtomicU8 = AtomicU8::new(0);
+
+    /// Global "quit" status flag
+    pub static ref QUIT: AtomicBool = AtomicBool::new(false);
+}
+
+/// Supported command line arguments
+#[derive(Debug, clap::Parser)]
+#[clap(
+    version = env!("CARGO_PKG_VERSION"),
+    author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+    about = tr!("about"),
+)]
+pub struct Options {
+    /// Subcommand
+    #[clap(subcommand)]
+    command: Option<subcommands::Subcommands>,
+
+    /// Verbose mode (-v, -vv, -vvv, etc.)
+    #[clap(display_order = 0, help(tr!("verbose-about")), short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
+
+    /// Sets the configuration file to use
+    #[clap(display_order = 2, short = 'c', long)]
+    config: Option<String>,
 }
 
 /// Event handling utilities
@@ -224,22 +257,10 @@ Copyright (c) 2019-2022, The Eruption Development Team
     );
 }
 
-/// Update the global color map vector
-pub fn update_color_map() -> Result<()> {
-    let mut led_colors = dbus_client::get_led_colors()?;
-
-    let mut color_map = crate::COLOR_MAP.lock();
-
-    color_map.clear();
-    color_map.append(&mut led_colors);
-
-    Ok(())
-}
-
 /// Switch to slot `index`
 pub fn switch_to_slot(index: usize) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
-        // log::info!("Switching to slot: {}", index);
+        // info!("Switching to slot: {}", index);
         util::switch_slot(index)?;
 
         STATE.write().active_slot = Some(index);
@@ -253,7 +274,7 @@ pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // info!(
         //     "Switching to profile: {}",
         //     file_name.to_string_lossy()
         // );
@@ -269,7 +290,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // info!(
         //     "Switching to slot: {}, using profile: {}",
         //     slot_index,
         //     file_name.to_string_lossy()
@@ -286,12 +307,19 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    translations::load()?;
+
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?
+        .block_on(async move { async_main().await })
+}
+
+pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -307,7 +335,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     }
 
     // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() > 0 {
         print_header();
     }
 
@@ -315,23 +343,86 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     tracing_subscriber::fmt()
         .with_line_number(true)
         .with_thread_names(true)
+        // .pretty()
         .init();
 
-    // build and map main window
-    let native_options = NativeOptions {
-        // decorated: false,
-        default_theme: Theme::Dark,
-        initial_window_size: Some(Vec2::new(1440.0_f32, 900.0_f32)),
-        resizable: true,
-        // transparent: true,
-        ..NativeOptions::default()
-    };
+    // egui_logger::init().unwrap();
 
-    eframe::run_native(
-        "Pyroclasm UI",
-        native_options,
-        Box::new(|cc| Box::new(app::Pyroclasm::new(cc))),
-    );
+    // register_sigint_handler();
+
+    let opts = Options::parse();
+    apply_opts(&opts);
+    if let Some(command) = opts.command {
+        subcommands::handle_command(command).await?;
+    }
+
+    if !QUIT.load(Ordering::SeqCst) {
+        // spawn our event loop
+        let (events_tx, _events_rx) = unbounded();
+        threads::spawn_events_thread(events_tx)?;
+
+        // build and map main window
+        let native_options = NativeOptions {
+            default_theme: Theme::Dark,
+            initial_window_size: Some(Vec2::new(1600.0_f32, 900.0_f32)),
+            decorated: false,
+            resizable: true,
+            transparent: true,
+            ..NativeOptions::default()
+        };
+
+        eframe::run_native(
+            "pyroclasm",
+            native_options,
+            Box::new(|cc| {
+                let mut global_state = STATE.write();
+                global_state.egui_ctx = Some(cc.egui_ctx.clone());
+
+                Box::new(app::Pyroclasm::new(cc))
+            }),
+        );
+    }
 
     Ok(())
+}
+
+// fn register_sigint_handler() {
+//     // register ctrl-c handler
+//     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+//     ctrlc::set_handler(move || {
+//         QUIT.store(true, Ordering::SeqCst);
+
+//         ctrl_c_tx.send(true).unwrap_or_else(|e| {
+//             error!(
+//                 "{}",
+//                 tr!("could-not-send-on-channel", message = e.to_string())
+//             );
+//         });
+//     })
+//     .unwrap_or_else(|e| {
+//         error!(
+//             "{}",
+//             tr!("could-not-set-ctrl-c-handler", message = e.to_string())
+//         )
+//     });
+// }
+
+fn apply_opts(opts: &Options) {
+    VERBOSE.store(opts.verbose, Ordering::SeqCst);
+
+    // process configuration file
+    let config_file = opts
+        .config
+        .as_deref()
+        .unwrap_or(constants::DEFAULT_CONFIG_FILE);
+
+    let config = Config::builder()
+        .add_source(config::File::new(config_file, config::FileFormat::Toml))
+        .build()
+        .unwrap_or_else(|e| {
+            error!("{}", tr!("could-not-parse-config", message = e.to_string()));
+            process::exit(4);
+        });
+
+    *CONFIG.lock() = Some(config);
 }

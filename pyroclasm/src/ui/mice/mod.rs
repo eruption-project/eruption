@@ -22,3 +22,18 @@
 mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Default)]
+pub struct MicePage {}
+
+impl MicePage {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Mouse devices");
+        });
+    }
+}

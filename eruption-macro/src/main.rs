@@ -200,7 +200,7 @@ pub enum Subcommands {
     },
 
     /// Generate shell completions
-    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
+    #[clap(hide = true, about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,

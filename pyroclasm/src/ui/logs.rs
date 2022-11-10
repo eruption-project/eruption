@@ -20,16 +20,16 @@
 */
 
 #[derive(Default)]
-pub struct SettingsPage {}
+pub struct LogsPage {}
 
-impl SettingsPage {
+impl LogsPage {
     pub fn new() -> Self {
         Self {}
     }
 
     pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Eruption global settings");
+            egui_logger::logger_ui(ui);
         });
     }
 }

@@ -45,5 +45,7 @@ impl Mouse for GenericMouse {
         ("Unknown", "Generic Mouse")
     }
 
-    fn draw_mouse(&self) -> super::Result<()> {}
+    fn draw_mouse(&self) -> super::Result<()> {
+        Ok(())
+    }
 }

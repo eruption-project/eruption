@@ -19,17 +19,29 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-#[derive(Default)]
-pub struct SettingsPage {}
+mod completions;
 
-impl SettingsPage {
-    pub fn new() -> Self {
-        Self {}
+use std::sync::atomic::Ordering;
+
+use crate::translations::tr;
+
+type Result<T> = std::result::Result<T, eyre::Error>;
+
+// Sub-commands
+#[derive(Debug, clap::Parser)]
+pub enum Subcommands {
+    #[clap(display_order = 0, hide = true, about(tr!("completions-about")))]
+    Completions { shell: clap_complete::Shell },
+}
+
+pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
+    match subcommand {
+        Subcommands::Completions { shell } => {
+            completions::handle_command(shell).await?;
+
+            crate::QUIT.store(true, Ordering::SeqCst);
+        }
     }
 
-    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Eruption global settings");
-        });
-    }
+    Ok(())
 }

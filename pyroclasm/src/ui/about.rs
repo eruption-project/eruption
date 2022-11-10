@@ -18,3 +18,30 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
+
+#[derive(Default)]
+pub struct AboutPage {}
+
+impl AboutPage {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.vertical(|ui| {
+                ui.heading("About Pyroclasm UI for Eruption");
+
+                ui.separator();
+
+                ui.label("Authors:");
+                ui.label("X3n0m0rph59 <x3n0m0rph59@gmail.com>");
+                ui.label("The Eruption Development Team");
+
+                ui.label("GPL3 or later");
+
+                ui.spacing();
+            });
+        });
+    }
+}

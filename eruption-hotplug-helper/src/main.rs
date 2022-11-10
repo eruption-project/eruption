@@ -118,7 +118,7 @@ pub enum Subcommands {
     #[clap(about(HOTPLUG_ABOUT.as_str()))]
     Hotplug,
 
-    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
+    #[clap(hide = true, about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,

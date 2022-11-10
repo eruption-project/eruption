@@ -20,9 +20,13 @@
 
 ## pyroclasm
 
-about = -
+about = Pyroclasm UI für Eruption
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
+
+could-not-parse-config = Fehler beim Verarbeiten der Konfigurationsdatei: {$message}
+could-not-send-on-channel = Fehler beim Senden auf einem Channel: {$message}
+could-not-set-ctrl-c-handler = Fehler beim Registrieren des CTRL-C handlers: {$message}
 
 license-header = Eruption ist freie Software. Sie können es unter den Bedingungen der
  GNU General Public License, wie von der Free Software Foundation

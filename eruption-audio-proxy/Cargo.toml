@@ -35,7 +35,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.0.22", features = ["derive"] }
+clap =  { version = "4.0.25", features = ["derive"] }
 clap_complete = "4.0.5"
 serde = { version = "1.0.147", features = ["derive"] }
 lazy_static = "1.4.0"

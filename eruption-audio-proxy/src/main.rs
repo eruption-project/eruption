@@ -164,7 +164,7 @@ pub enum Subcommands {
     #[clap(about(DAEMON_ABOUT.as_str()))]
     Daemon,
 
-    #[clap(about(COMPLETIONS_ABOUT.as_str()))]
+    #[clap(hide = true, about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,

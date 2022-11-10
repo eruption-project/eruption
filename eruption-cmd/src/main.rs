@@ -102,6 +102,7 @@ pub struct Options {
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
     /// Generate shell completions
+    #[clap(hide = true, about(tr!("completions-about")))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,

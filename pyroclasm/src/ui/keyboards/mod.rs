@@ -22,3 +22,22 @@
 mod hwdevices;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Default)]
+pub struct KeyboardsPage {}
+
+impl KeyboardsPage {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        egui::SidePanel::left("side_panel").show(ctx, |ui| {
+            ui.label("Side Panel");
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Keyboard devices");
+        });
+    }
+}

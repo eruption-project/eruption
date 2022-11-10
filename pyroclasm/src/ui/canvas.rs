@@ -18,3 +18,18 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
+
+#[derive(Default)]
+pub struct CanvasPage {}
+
+impl CanvasPage {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Unified Canvas");
+        });
+    }
+}

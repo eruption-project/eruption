@@ -123,6 +123,7 @@ pub enum Subcommands {
     Ambient { frame_delay: Option<u64> },
 
     /// Generate shell completions
+    #[clap(hide = true, about(tr!("completions-about")))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
