@@ -1,3 +1,5 @@
+/*  SPDX-License-Identifier: GPL-2.0  */
+
 /*
     This file is part of Eruption.
 
@@ -16,8 +18,6 @@
 
     Copyright (c) 2019-2022, The Eruption Development Team
 */
-
-// SPDX-License-Identifier: GPL-2.0
 
 //! Eruption blackout
 
