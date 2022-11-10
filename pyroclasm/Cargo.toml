@@ -27,7 +27,7 @@ repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver", "gui", "egui"]
 categories = ["hardware-support"]
-license = "GPL-3.0"
+license = "GPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 
