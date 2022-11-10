@@ -68,7 +68,7 @@ impl DbusApi {
         let status_changed_signal_0 = status_changed_signal.clone();
         let status_changed_signal_1 = status_changed_signal.clone();
         let status_changed_signal_2 = status_changed_signal.clone();
-        let status_changed_signal_clone = status_changed_signal.clone();
+        let status_changed_signal_clone = status_changed_signal;
 
         let tree = f.tree(()).add(
             f.object_path("/org/eruption/fx_proxy/effects", ())

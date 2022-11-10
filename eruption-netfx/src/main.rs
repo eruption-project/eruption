@@ -381,7 +381,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         let device =
                             hwdevices::get_keyboard_device(&model).expect(&tr!("invalid-model"));
 
-                        let _result = util::process_image_file(&filename.path(), &device)
+                        let _result = util::process_image_file(filename.path(), &device)
                             .map_err(|e| {
                                 eprintln!("{}", tr!("image-error", message = e.to_string()))
                             })

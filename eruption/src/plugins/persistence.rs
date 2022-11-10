@@ -152,9 +152,9 @@ impl PersistencePlugin {
 
         let json_string = serde_json::to_string_pretty(&*GLOBAL_STORE.read())?;
 
-        let path = PathBuf::from(constants::STATE_DIR).join(&PathBuf::from("persistent.store"));
+        let path = PathBuf::from(constants::STATE_DIR).join(PathBuf::from("persistent.store"));
 
-        fs::write(&path, json_string)?;
+        fs::write(path, json_string)?;
 
         Ok(())
     }
@@ -163,9 +163,9 @@ impl PersistencePlugin {
     pub fn load_persistent_data() -> Result<()> {
         info!("Loading persistent state data from disk...");
 
-        let path = PathBuf::from(constants::STATE_DIR).join(&PathBuf::from("persistent.store"));
+        let path = PathBuf::from(constants::STATE_DIR).join(PathBuf::from("persistent.store"));
 
-        let json_string = fs::read_to_string(&path)?;
+        let json_string = fs::read_to_string(path)?;
 
         let map: HashMap<String, StoreValue> = serde_json::from_str(&json_string)?;
 

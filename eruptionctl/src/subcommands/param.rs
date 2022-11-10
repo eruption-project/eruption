@@ -179,7 +179,8 @@ fn set_parameter(
 
     let default = manifest
         .config
-        .get_parameter(&parameter_name).map(|p| p.get_default());
+        .get_parameter(&parameter_name)
+        .map(|p| p.get_default());
     let mut table = create_table();
     table.add_row(vec![
         Cell::new(&manifest.name),
@@ -298,11 +299,7 @@ fn get_value_cell(value: &TypedValue) -> Cell {
 }
 
 fn apply_rgb(cell: Cell, rgb: u32) -> Cell {
-    let (r, g, b) = (
-        (rgb >> 0o20 & 0xff),
-        (rgb >> 0o10 & 0xff),
-        (rgb & 0xff),
-    );
+    let (r, g, b) = ((rgb >> 0o20 & 0xff), (rgb >> 0o10 & 0xff), (rgb & 0xff));
     // Magic numbers from https://stackoverflow.com/a/3943023/1991305
     let fg = if (r * 299 + g * 587 + b * 114) > 128000 {
         comfy_table::Color::Black

@@ -21,13 +21,8 @@
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct Pyroclasm {}
-
-impl Default for Pyroclasm {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl Pyroclasm {
     /// Called once before the first frame.

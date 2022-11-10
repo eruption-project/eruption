@@ -935,8 +935,9 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
 
         if !any_keyboard_device {
-            let no_device_template =
-                gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui");
+            let no_device_template = gtk::Builder::from_resource(
+                "/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui",
+            );
 
             let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
@@ -965,8 +966,9 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
 
         if !any_mouse_device {
-            let no_device_template =
-                gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui");
+            let no_device_template = gtk::Builder::from_resource(
+                "/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui",
+            );
 
             let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
@@ -995,8 +997,9 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
 
         if !any_misc_device {
-            let no_device_template =
-                gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui");
+            let no_device_template = gtk::Builder::from_resource(
+                "/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui",
+            );
 
             let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 

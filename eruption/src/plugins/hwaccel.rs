@@ -201,7 +201,7 @@ impl HwAccelerationPlugin {
                 let shader_path = "lib/shaders/example.comp.glsl";
 
                 let shader = if let Ok(shader_path) = util::match_script_path(&shader_path) {
-                    let artifact = Self::compile_shader(&shader_path)?;
+                    let artifact = Self::compile_shader(shader_path)?;
                     unsafe { ShaderModule::from_bytes(device.clone(), artifact.as_binary_u8()) }?
                 } else {
                     return Err(HwAccelerationPluginError::ShaderCompilationError {

@@ -32,8 +32,6 @@ pub mod wayland;
 #[cfg(feature = "backend-x11")]
 pub mod x11;
 
-
-
 #[cfg(feature = "backend-x11")]
 pub use self::x11::*;
 #[cfg(feature = "backend-gnome")]

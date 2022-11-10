@@ -44,8 +44,10 @@ impl RoccatAimoPad {
     pub fn new(device: u64) -> Self {
         RoccatAimoPad {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/generic-pad-wide.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/generic-pad-wide.png",
+            )
+            .unwrap(),
         }
     }
 }

@@ -320,7 +320,7 @@ pub fn save_runtime_state() -> Result<()> {
         description: format!("{}", e),
     })?;
 
-    fs::write(&state_path, &toml)?;
+    fs::write(state_path, toml)?;
 
     Ok(())
 }
@@ -360,7 +360,7 @@ pub fn save_color_schemes() -> Result<()> {
 pub fn load_color_schemes() -> Result<()> {
     let file_name = PathBuf::from(&constants::STATE_DIR).join("color-schemes.state");
 
-    let data = fs::read_to_string(&file_name)?;
+    let data = fs::read_to_string(file_name)?;
     let color_schemes: HashMap<String, ColorScheme> = toml::from_str(&data)?;
 
     *crate::NAMED_COLOR_SCHEMES.write() = color_schemes;

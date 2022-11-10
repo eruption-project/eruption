@@ -673,7 +673,7 @@ fn create_config_editor(
                 default.to_owned(),
                 value,
                 clone!(@strong profile, @strong script, @strong name => move |value| {
-                    parameter_changed(&profile, &script, &name, &value);
+                    parameter_changed(&profile, &script, &name, value);
                 }),
             )
         }
@@ -915,7 +915,7 @@ cfg_if::cfg_if! {
             let lua = language_manager.language("lua").unwrap();
 
             // load and show .profile file
-            let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
+            let source_code = std::fs::read_to_string(PathBuf::from(&profile.as_ref())).unwrap();
 
             let mut buffer_index = 0;
             let buffer = BufferBuilder::new()

@@ -289,7 +289,7 @@ impl Profile {
     pub fn save(&self) -> Result<()> {
         let toml = toml::ser::to_string_pretty(&self)?;
 
-        fs::write(&self.profile_file, &toml).map_err(|_| ProfileError::WriteError {
+        fs::write(&self.profile_file, toml).map_err(|_| ProfileError::WriteError {
             msg: "Could not write file".into(),
         })?;
 

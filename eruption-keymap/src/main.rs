@@ -598,21 +598,21 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             for (index, (source, action)) in table.mappings().iter().enumerate() {
                 let description = if action.description.trim().is_empty() {
-                    Cell::new(&format!("{}", tr!("n-a").italic()))
+                    Cell::new(format!("{}", tr!("n-a").italic()))
                 } else {
-                    Cell::new(&action.description.to_string())
+                    Cell::new(action.description.to_string())
                 };
 
                 let enabled = if action.enabled {
-                    Cell::new(&format!("{}", tr!("enabled")))
+                    Cell::new(format!("{}", tr!("enabled")))
                 } else {
-                    Cell::new(&format!("{}", tr!("disabled")))
+                    Cell::new(format!("{}", tr!("disabled")))
                 };
 
                 tab.add_row(vec![
-                    Cell::new(&format!("{}", index + 1)),
-                    Cell::new(&format!("{}", source)),
-                    Cell::new(&format!("{}", action)),
+                    Cell::new(format!("{}", index + 1)),
+                    Cell::new(format!("{}", source)),
+                    Cell::new(format!("{}", action)),
                     description,
                     enabled,
                 ]);
@@ -668,9 +668,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             for (index, code) in event.iter().enumerate() {
                 tab.add_row(vec![
-                    Cell::new(&format!("{}", index + 1)),
-                    Cell::new(&format!("{}", code)),
-                    Cell::new(&format!("{}", util::evdev_key_event_to_int(code))),
+                    Cell::new(format!("{}", index + 1)),
+                    Cell::new(format!("{}", code)),
+                    Cell::new(format!("{}", util::evdev_key_event_to_int(code))),
                 ]);
             }
 

@@ -21,8 +21,6 @@
 
 use std::path::PathBuf;
 
-use clap;
-
 use crate::dbus_client;
 
 type Result<T> = std::result::Result<T, eyre::Error>;

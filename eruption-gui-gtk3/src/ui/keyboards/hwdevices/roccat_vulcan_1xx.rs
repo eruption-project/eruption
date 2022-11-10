@@ -47,8 +47,10 @@ impl RoccatVulcan1xx {
     pub fn new(device: u64) -> Self {
         RoccatVulcan1xx {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-vulcan-1xx.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-vulcan-1xx.png",
+            )
+            .unwrap(),
         }
     }
 }

@@ -528,7 +528,7 @@ impl super::Backend for LuaBackend {
     fn write_to_file<P: AsRef<Path>>(&self, path: P, table: &KeyMappingTable) -> Result<()> {
         let text = self.generate(table)?;
 
-        fs::write(&path, &text)?;
+        fs::write(&path, text)?;
 
         Ok(())
     }

@@ -99,21 +99,11 @@ lazy_static! {
     static ref WAYLAND_TOPLEVEL_WINDOWS: Arc<RwLock<HashMap<String, WaylandToplevelAttributes>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct WaylandToplevelAttributes {
     pub title: Option<String>,
     pub app_id: Option<String>,
     pub state: Option<Vec<u8>>,
-}
-
-impl Default for WaylandToplevelAttributes {
-    fn default() -> Self {
-        Self {
-            title: Default::default(),
-            app_id: Default::default(),
-            state: Default::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -400,7 +390,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(|| WaylandToplevelAttributes::default())
+                    .or_insert_with(WaylandToplevelAttributes::default)
                     .title
                     .replace(title);
             }
@@ -411,7 +401,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(|| WaylandToplevelAttributes::default())
+                    .or_insert_with(WaylandToplevelAttributes::default)
                     .app_id
                     .replace(app_id);
             }
@@ -422,7 +412,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(|| WaylandToplevelAttributes::default())
+                    .or_insert_with(WaylandToplevelAttributes::default)
                     .state
                     .replace(state);
             }

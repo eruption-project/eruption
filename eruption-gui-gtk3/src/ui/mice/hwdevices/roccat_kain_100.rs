@@ -42,8 +42,10 @@ impl RoccatKain100 {
     pub fn new(device: u64) -> Self {
         RoccatKain100 {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-kain-100.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-kain-100.png",
+            )
+            .unwrap(),
         }
     }
 }

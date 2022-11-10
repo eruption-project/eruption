@@ -40,8 +40,10 @@ impl RoccatElo71Air {
     pub fn new(device: u64) -> Self {
         RoccatElo71Air {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/generic-headset.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/generic-headset.png",
+            )
+            .unwrap(),
         }
     }
 }

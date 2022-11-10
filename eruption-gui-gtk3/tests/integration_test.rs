@@ -25,7 +25,7 @@ use std::{path::PathBuf, process::Command};
 fn test_eruption_gui_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-gui-gtk3"));
 
-    let output = Command::new(&command)
+    let output = Command::new(command)
         .args(["--help"])
         .output()
         .expect("Failed to execute the test");
