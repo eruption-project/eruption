@@ -125,18 +125,18 @@ pub enum MainError {
 #[derive(Default)]
 pub struct State {
     active_slot: Option<usize>,
-    active_profile: Option<String>,
-    saved_profile: Option<String>,
-    current_brightness: Option<i64>,
+    _active_profile: Option<String>,
+    _saved_profile: Option<String>,
+    _current_brightness: Option<i64>,
 }
 
 impl State {
     fn new() -> Self {
         Self {
             active_slot: None,
-            active_profile: None,
-            saved_profile: None,
-            current_brightness: None,
+            _active_profile: None,
+            _saved_profile: None,
+            _current_brightness: None,
         }
     }
 }
@@ -172,7 +172,7 @@ pub mod events {
     }
 
     /// ignore next n events (do not act on them)
-    pub(crate) fn ignore_next_ui_events(count: usize) {
+    pub(crate) fn _ignore_next_ui_events(count: usize) {
         IGNORE_NEXT_UI_EVENTS.fetch_add(count, Ordering::SeqCst);
     }
 
@@ -182,22 +182,22 @@ pub mod events {
     }
 
     /// re-enable events
-    pub(crate) fn reenable_ui_events() {
+    pub(crate) fn _reenable_ui_events() {
         IGNORE_NEXT_UI_EVENTS.fetch_sub(1, Ordering::SeqCst);
     }
 
     /// ignore next n events (do not act on them)
-    pub(crate) fn ignore_next_dbus_events(count: usize) {
+    pub(crate) fn _ignore_next_dbus_events(count: usize) {
         IGNORE_NEXT_DBUS_EVENTS.fetch_add(count, Ordering::SeqCst);
     }
 
     /// test whether the current event shall be ignored
-    pub(crate) fn shall_ignore_pending_dbus_event() -> bool {
+    pub(crate) fn _shall_ignore_pending_dbus_event() -> bool {
         IGNORE_NEXT_DBUS_EVENTS.load(Ordering::SeqCst) > 0
     }
 
     /// re-enable events
-    pub(crate) fn reenable_dbus_events() {
+    pub(crate) fn _reenable_dbus_events() {
         IGNORE_NEXT_DBUS_EVENTS.fetch_sub(1, Ordering::SeqCst);
     }
 }

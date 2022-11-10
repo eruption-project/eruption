@@ -147,7 +147,7 @@ With this feature you are able to automatically switch between profiles, e.g. wh
 systemctl --user enable --now eruption-process-monitor.service
 ```
 
-> To add a rule you may either use the `Eruption GUI` or via the CLI:
+> To add a rule you may either use `Pyroclasm UI`, the `Eruption GUI` or via the CLI:
 
 ```sh
 eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile
