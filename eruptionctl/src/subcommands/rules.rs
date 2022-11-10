@@ -271,10 +271,8 @@ async fn add_command(rule: &[String]) -> Result<()> {
                     new_selector.clone(),
                     (new_metadata.clone(), new_action.clone()),
                 );
-            } else {
-                if !metadata.internal {
-                    result.insert(selector.clone(), (metadata.clone(), action.clone()));
-                }
+            } else if !metadata.internal {
+                result.insert(selector.clone(), (metadata.clone(), action.clone()));
             }
         }
 
@@ -291,10 +289,8 @@ async fn remove_command(rule_index: usize) -> Result<()> {
     for (index, (selector, (metadata, action))) in rules.iter().enumerate() {
         if index == rule_index || metadata.internal {
             continue;
-        } else {
-            if !metadata.internal {
-                result.insert(selector.clone(), (metadata.clone(), action.clone()));
-            }
+        } else if !metadata.internal {
+            result.insert(selector.clone(), (metadata.clone(), action.clone()));
         }
     }
 
@@ -308,17 +304,15 @@ async fn enable_command(rule_index: usize) -> Result<()> {
     let mut result = IndexMap::new();
 
     for (index, (selector, (metadata, action))) in rules.iter().enumerate() {
-        if index == rule_index && metadata.internal == false {
+        if index == rule_index && !metadata.internal {
             let metadata = RuleMetadata {
                 enabled: true,
                 ..metadata.clone()
             };
 
             result.insert(selector.clone(), (metadata.clone(), action.clone()));
-        } else {
-            if !metadata.internal {
-                result.insert(selector.clone(), (metadata.clone(), action.clone()));
-            }
+        } else if !metadata.internal {
+            result.insert(selector.clone(), (metadata.clone(), action.clone()));
         }
     }
 
@@ -332,17 +326,15 @@ async fn disable_command(rule_index: usize) -> Result<()> {
     let mut result = IndexMap::new();
 
     for (index, (selector, (metadata, action))) in rules.iter().enumerate() {
-        if index == rule_index && metadata.internal == false {
+        if index == rule_index && !metadata.internal {
             let metadata = RuleMetadata {
                 enabled: false,
                 ..metadata.clone()
             };
 
             result.insert(selector.clone(), (metadata.clone(), action.clone()));
-        } else {
-            if !metadata.internal {
-                result.insert(selector.clone(), (metadata.clone(), action.clone()));
-            }
+        } else if !metadata.internal {
+            result.insert(selector.clone(), (metadata.clone(), action.clone()));
         }
     }
 
@@ -404,7 +396,7 @@ async fn set_rules(rules: &IndexMap<Selector, (RuleMetadata, Action)>) -> Result
         generated_rules.push((sensor, selector, action, metadata));
     }
 
-    let _result = dbus_session_bus(
+    dbus_session_bus(
         "org.eruption.process_monitor",
         "/org/eruption/process_monitor/rules",
     )
@@ -427,22 +419,13 @@ fn parse_rule(rule: &(String, String, String, String)) -> Result<(Selector, Rule
 
     let mut parsed_selector = None;
     let parsed_action;
-    let parsed_metadata;
 
     // parse metadata
-    let enabled = if metadata.contains("enabled") {
-        true
-    } else {
-        false
-    };
+    let enabled = metadata.contains("enabled");
 
-    let internal = if metadata.contains("internal") {
-        true
-    } else {
-        false
-    };
+    let internal = metadata.contains("internal");
 
-    parsed_metadata = RuleMetadata { enabled, internal };
+    let parsed_metadata = RuleMetadata { enabled, internal };
 
     // parse sensor and selector
     if sensor.contains("exec") {
@@ -468,24 +451,22 @@ fn parse_rule(rule: &(String, String, String, String)) -> Result<(Selector, Rule
 
     // parse action
     if parsed_selector.is_none() {
-        return Err(RuleError::Parse {
+        Err(RuleError::Parse {
             description: "Syntax error in selector".to_owned(),
         }
-        .into());
+        .into())
+    } else if action.contains(".profile") {
+        parsed_action = Action::SwitchToProfile {
+            profile_name: action.to_owned(),
+        };
+
+        Ok((parsed_selector.unwrap(), parsed_metadata, parsed_action))
     } else {
-        if action.contains(".profile") {
-            parsed_action = Action::SwitchToProfile {
-                profile_name: action.to_owned(),
-            };
+        parsed_action = Action::SwitchToSlot {
+            slot_index: action.parse::<u64>()?,
+        };
 
-            Ok((parsed_selector.unwrap(), parsed_metadata, parsed_action))
-        } else {
-            parsed_action = Action::SwitchToSlot {
-                slot_index: action.parse::<u64>()?,
-            };
-
-            Ok((parsed_selector.unwrap(), parsed_metadata, parsed_action))
-        }
+        Ok((parsed_selector.unwrap(), parsed_metadata, parsed_action))
     }
 }
 
@@ -495,7 +476,7 @@ fn parse_rules(
     let mut result = IndexMap::new();
 
     for rule in rules {
-        let (selector, rule_metadata, action) = parse_rule(&rule)?;
+        let (selector, rule_metadata, action) = parse_rule(rule)?;
         result.insert(selector, (rule_metadata, action));
     }
 

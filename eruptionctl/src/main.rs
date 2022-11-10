@@ -163,7 +163,7 @@ fn apply_opts(opts: &Options) {
         .unwrap_or(constants::DEFAULT_CONFIG_FILE);
 
     let config = Config::builder()
-        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
+        .add_source(config::File::new(config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
             log::error!("{}", tr!("could-not-parse-config", message = e.to_string()));

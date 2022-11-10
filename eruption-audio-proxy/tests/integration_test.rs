@@ -25,7 +25,7 @@ use std::{path::PathBuf, process::Command};
 fn test_eruption_netfx_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-audio-proxy"));
 
-    let output = Command::new(&command)
+    let output = Command::new(command)
         .args(["-V"])
         .output()
         .expect("Failed to execute the test");

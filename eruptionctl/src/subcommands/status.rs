@@ -19,7 +19,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap;
 use color_eyre::Help;
 use colored::*;
 use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;

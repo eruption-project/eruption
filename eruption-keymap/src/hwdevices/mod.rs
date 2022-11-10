@@ -64,16 +64,7 @@ pub fn ev_key_to_index(ev_key: &EV_KEY, (usb_vid, usb_pid): (u16, u16)) -> Optio
         _ => None,
     };
 
-    if let Some(result) = result {
-        if result == 0xff {
-            // filter out invalid results
-            None
-        } else {
-            Some(result)
-        }
-    } else {
-        None
-    }
+    result.filter(|&result| result != 0xff)
 }
 
 /// Map an index to a [EV_KEY] event

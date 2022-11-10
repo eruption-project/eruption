@@ -47,8 +47,10 @@ impl GenericKeyboard {
     pub fn new(device: u64) -> Self {
         GenericKeyboard {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/generic-keyboard.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/generic-keyboard.png",
+            )
+            .unwrap(),
         }
     }
 }

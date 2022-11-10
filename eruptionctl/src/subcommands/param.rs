@@ -72,12 +72,12 @@ pub async fn handle_command(
 
         if let Some(parameter_name) = parameter_name {
             if let Some(value) = value {
-                set_parameter(&profile, &manifest, parameter_name, value)?;
+                set_parameter(&profile, manifest, parameter_name, value)?;
             } else {
-                list_specified_parameter(&profile, &manifest, parameter_name);
+                list_specified_parameter(&profile, manifest, parameter_name);
             }
         } else {
-            list_script_parameters(&profile, &manifest);
+            list_script_parameters(&profile, manifest);
         }
     } else {
         list_all_parameters(&profile);
@@ -99,14 +99,14 @@ fn find_manifest(profile: &Profile, script_name: String) -> Option<&Manifest> {
 
 /// List parameters from all scripts in the currently active profile
 fn list_all_parameters(profile: &Profile) {
-    print_profile_header(&profile);
+    print_profile_header(profile);
 
     if crate::VERBOSE.load(Ordering::SeqCst) == 0 {
         // dump parameters set in .profile file
         println!("Profile parameters:\n");
         let mut table = create_table();
         for manifest in profile.manifests.values() {
-            add_script_parameters(&mut table, &profile, &manifest, true);
+            add_script_parameters(&mut table, profile, manifest, true);
         }
         println!("{table}");
     } else {
@@ -114,7 +114,7 @@ fn list_all_parameters(profile: &Profile) {
         println!("Available parameters:");
         let mut table = create_table();
         for manifest in profile.manifests.values() {
-            add_script_parameters(&mut table, &profile, &manifest, false);
+            add_script_parameters(&mut table, profile, manifest, false);
         }
         println!("{table}");
     }
@@ -124,7 +124,7 @@ fn list_all_parameters(profile: &Profile) {
 fn list_script_parameters(profile: &Profile, manifest: &Manifest) {
     println!("Listing all parameters from the specified script:");
     let mut table = create_table();
-    add_script_parameters(&mut table, &profile, &manifest, false);
+    add_script_parameters(&mut table, profile, manifest, false);
     println!("{table}");
 }
 
@@ -135,7 +135,7 @@ fn list_specified_parameter(profile: &Profile, manifest: &Manifest, parameter: S
 
     let profile_parameter = profile.config.get_parameter(&manifest.name, &parameter);
     if let Some(profile_parameter) = profile_parameter {
-        print_profile_header(&profile);
+        print_profile_header(profile);
         let mut table = create_table();
         table.add_row(profile_parameter_row(&manifest.name, profile_parameter));
         println!("{table}");
@@ -180,7 +180,7 @@ fn set_parameter(
     let default = manifest
         .config
         .get_parameter(&parameter_name)
-        .and_then(|p| Some(p.get_default()));
+        .map(|p| p.get_default());
     let mut table = create_table();
     table.add_row(vec![
         Cell::new(&manifest.name),
@@ -299,11 +299,7 @@ fn get_value_cell(value: &TypedValue) -> Cell {
 }
 
 fn apply_rgb(cell: Cell, rgb: u32) -> Cell {
-    let (r, g, b) = (
-        (rgb >> 0o20 & 0xff),
-        (rgb >> 0o10 & 0xff),
-        (rgb >> 0o00 & 0xff),
-    );
+    let (r, g, b) = ((rgb >> 0o20 & 0xff), (rgb >> 0o10 & 0xff), (rgb & 0xff));
     // Magic numbers from https://stackoverflow.com/a/3943023/1991305
     let fg = if (r * 299 + g * 587 + b * 114) > 128000 {
         comfy_table::Color::Black

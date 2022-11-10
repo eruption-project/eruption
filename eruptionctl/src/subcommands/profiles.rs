@@ -19,7 +19,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap;
 use color_eyre::Help;
 use colored::*;
 use eyre::Context;
@@ -55,7 +54,7 @@ pub async fn handle_command(command: ProfilesSubcommands) -> Result<()> {
 
 async fn edit_command(profile_name: String) -> Result<()> {
     match util::match_profile_by_name(&profile_name) {
-        Ok(profile) => util::edit_file(&profile.profile_file)?,
+        Ok(profile) => util::edit_file(profile.profile_file)?,
         Err(err) => eprintln!("{}", err),
     }
 

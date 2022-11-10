@@ -44,7 +44,7 @@ fn get_settings() -> Result<gio::Settings> {
     let file_name = "/usr/share/eruption-gui-gtk3/schemas/";
 
     let schema_source = gio::SettingsSchemaSource::from_directory(
-        &PathBuf::from(&file_name),
+        PathBuf::from(&file_name),
         Some(&default_source),
         false,
     )?;

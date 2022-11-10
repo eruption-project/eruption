@@ -535,18 +535,18 @@ pub enum LedKind {
 //     }
 // }
 
-impl Into<u8> for LedKind {
+impl From<LedKind> for u8 {
     /// Convert a LedKind to an integer constant
-    fn into(self) -> u8 {
-        match self {
-            Self::Unknown => 0,
-            Self::AudioMute => 1,
-            Self::Fx => 2,
-            Self::Volume => 3,
-            Self::NumLock => 4,
-            Self::CapsLock => 5,
-            Self::ScrollLock => 6,
-            Self::GameMode => 7,
+    fn from(val: LedKind) -> Self {
+        match val {
+            LedKind::Unknown => 0,
+            LedKind::AudioMute => 1,
+            LedKind::Fx => 2,
+            LedKind::Volume => 3,
+            LedKind::NumLock => 4,
+            LedKind::CapsLock => 5,
+            LedKind::ScrollLock => 6,
+            LedKind::GameMode => 7,
         }
     }
 }

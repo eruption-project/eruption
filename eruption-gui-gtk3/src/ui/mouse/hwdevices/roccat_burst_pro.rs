@@ -42,8 +42,10 @@ impl RoccatBurstPro {
     pub fn new(device: u64) -> Self {
         RoccatBurstPro {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-burst-pro.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-burst-pro.png",
+            )
+            .unwrap(),
         }
     }
 }

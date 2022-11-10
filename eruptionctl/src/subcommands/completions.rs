@@ -19,7 +19,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use clap;
 use clap::CommandFactory;
 use std::env;
 

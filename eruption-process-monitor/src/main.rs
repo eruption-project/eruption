@@ -1010,7 +1010,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
 fn load_rules_map() -> Result<()> {
     let rules_file = util::tilde_expand(constants::STATE_DIR)?.join("process-monitor.rules");
 
-    let s = fs::read_to_string(&rules_file)?;
+    let s = fs::read_to_string(rules_file)?;
 
     let rules_vec: Vec<(Selector, (RuleMetadata, Action))> = serde_json::from_str(&s)?;
     let rules_map = rules_vec
@@ -1064,7 +1064,7 @@ fn save_rules_map() -> Result<()> {
         .collect::<Vec<(&Selector, &(RuleMetadata, Action))>>();
 
     let s = serde_json::to_string_pretty(&v)?;
-    fs::write(&rules_file, s)?;
+    fs::write(rules_file, s)?;
 
     Ok(())
 }

@@ -21,7 +21,6 @@
 
 use std::path::PathBuf;
 
-use clap;
 use colored::*;
 use same_file::is_same_file;
 
@@ -56,7 +55,7 @@ pub async fn handle_command(command: ScriptsSubcommands) -> Result<()> {
 
 async fn edit_command(script_name: String) -> Result<()> {
     match find_script_by_name(&script_name) {
-        Some(manifest) => util::edit_file(&manifest.script_file)?,
+        Some(manifest) => util::edit_file(manifest.script_file)?,
         None => eprintln!("Script not found."),
     }
 

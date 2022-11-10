@@ -257,20 +257,18 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                 canvas_cleared = false;
 
                 thread::sleep(Duration::from_millis(constants::DEFAULT_FRAME_DELAY_MILLIS));
+            } else if !canvas_cleared {
+                // cleanup, clear the canvas
+                log::debug!("Clearing canvas...");
+
+                canvas.fill(Color::new(0, 0, 0, 0));
+                connection.submit_canvas(&canvas)?;
+
+                canvas_cleared = true;
             } else {
-                if !canvas_cleared {
-                    // cleanup, clear the canvas
-                    log::debug!("Clearing canvas...");
+                log::debug!("Nothing updated");
 
-                    canvas.fill(Color::new(0, 0, 0, 0));
-                    connection.submit_canvas(&canvas)?;
-
-                    canvas_cleared = true;
-                } else {
-                    log::debug!("Nothing updated");
-
-                    thread::sleep(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
-                }
+                thread::sleep(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
             }
         }
 

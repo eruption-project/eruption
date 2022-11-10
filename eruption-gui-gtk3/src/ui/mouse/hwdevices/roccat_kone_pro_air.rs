@@ -42,8 +42,10 @@ impl RoccatKoneProAir {
     pub fn new(device: u64) -> Self {
         RoccatKoneProAir {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-kone-pro-air.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-kone-pro-air.png",
+            )
+            .unwrap(),
         }
     }
 }

@@ -21,7 +21,6 @@
 
 use std::{env, fs, path::PathBuf};
 
-use clap;
 use colored::*;
 
 use crate::color_scheme::{ColorScheme, PywalColorScheme};

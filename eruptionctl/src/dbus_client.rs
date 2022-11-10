@@ -85,7 +85,7 @@ pub fn enable_ambient_effect() -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let _result = proxy.enable_ambient_effect()?;
+    proxy.enable_ambient_effect()?;
 
     Ok(())
 }
@@ -100,7 +100,7 @@ pub fn disable_ambient_effect() -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let _result = proxy.disable_ambient_effect()?;
+    proxy.disable_ambient_effect()?;
 
     Ok(())
 }
@@ -1008,7 +1008,7 @@ mod status {
 }
 
 mod fx_proxy {
-    use dbus;
+
     #[allow(unused_imports)]
     use dbus::arg;
     use dbus::blocking;
@@ -1054,7 +1054,7 @@ mod fx_proxy {
 
         fn ambient_effect(&self) -> Result<bool, dbus::Error> {
             <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-                &self,
+                self,
                 "org.eruption.fx_proxy.Effects",
                 "AmbientEffect",
             )
@@ -1070,7 +1070,7 @@ mod fx_proxy {
     {
         fn introspect(&self) -> Result<String, dbus::Error> {
             self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-                .and_then(|r: (String,)| Ok(r.0))
+                .map(|r: (String,)| r.0)
         }
     }
 
@@ -1132,7 +1132,7 @@ mod fx_proxy {
                 "Get",
                 (interface_name, property_name),
             )
-            .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
+            .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
         }
 
         fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -1141,7 +1141,7 @@ mod fx_proxy {
                 "GetAll",
                 (interface_name,),
             )
-            .and_then(|r: (arg::PropMap,)| Ok(r.0))
+            .map(|r: (arg::PropMap,)| r.0)
         }
 
         fn set(

@@ -23,7 +23,6 @@ use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 
-use clap;
 use color_eyre::Help;
 use colored::*;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;

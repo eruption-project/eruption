@@ -40,8 +40,10 @@ impl RoccatKoneXtd {
     pub fn new(device: u64) -> Self {
         RoccatKoneXtd {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-kone-xtd.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-kone-xtd.png",
+            )
+            .unwrap(),
         }
     }
 }
