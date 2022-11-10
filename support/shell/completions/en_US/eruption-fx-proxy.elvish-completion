@@ -1,0 +1,54 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-fx-proxy] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-fx-proxy'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-fx-proxy'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+            cand -V 'Print version information'
+            cand --version 'Print version information'
+            cand daemon 'Run in background'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-fx-proxy;daemon'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;completions'= {
+            cand -h 'Print help information'
+            cand --help 'Print help information'
+        }
+        &'eruption-fx-proxy;help'= {
+            cand daemon 'Run in background'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-fx-proxy;help;daemon'= {
+        }
+        &'eruption-fx-proxy;help;completions'= {
+        }
+        &'eruption-fx-proxy;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

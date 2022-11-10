@@ -30,9 +30,10 @@ use crate::sensors::GnomeShellExtSensorData;
 #[cfg(feature = "sensor-mutter")]
 use crate::sensors::MutterSensorData;
 
-use crate::sensors::WAYLAND_CONNECTION_SUCCESSFULL;
 #[cfg(feature = "sensor-wayland")]
 use crate::sensors::WaylandSensorData;
+#[cfg(feature = "sensor-wayland")]
+use crate::sensors::WAYLAND_CONNECTION_SUCCESSFULL;
 
 use crate::sensors::SensorConfiguration;
 
@@ -294,16 +295,19 @@ pub struct Options {
 // Sub-commands
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
-    /// Run in background and monitor running processes
-    Daemon,
-
-    /// Rules related sub-commands
+    /// Rules related sub-commands (supports offline manipulation of rules)
+    #[clap(display_order = 0)]
     Rules {
         #[clap(subcommand)]
         command: RulesSubcommands,
     },
 
+    /// Run in background and monitor running processes
+    #[clap(display_order = 1)]
+    Daemon,
+
     /// Generate shell completions
+    #[clap(display_order = 2, hide = true)]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -314,19 +318,24 @@ pub enum Subcommands {
 #[derive(Debug, clap::Parser)]
 pub enum RulesSubcommands {
     /// List all available rules
+    #[clap(display_order = 0)]
     List,
 
+    /// Add a new rule
+    #[clap(display_order = 1)]
+    Add { rule: Vec<String> },
+
+    /// Remove a rule by its index
+    #[clap(display_order = 2)]
+    Remove { rule_index: usize },
+
     /// Mark a rule as enabled
+    #[clap(display_order = 3)]
     Enable { rule_index: usize },
 
     /// Mark a rule as disabled
+    #[clap(display_order = 4)]
     Disable { rule_index: usize },
-
-    /// Add a new rule
-    Add { rule: Vec<String> },
-
-    /// Remove a rule by index
-    Remove { rule_index: usize },
 }
 
 /// Subcommands of the "completions" command
@@ -341,11 +350,6 @@ pub enum CompletionsSubcommands {
     PowerShell,
 
     Zsh,
-}
-
-#[derive(Debug, Clone)]
-pub enum DebuggerEvent {
-    ValueChanged { val: u32 },
 }
 
 #[derive(Debug, Clone)]
@@ -746,7 +750,7 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     let (dbus_api_tx, dbus_api_rx) = unbounded();
 
     thread::Builder::new()
-        .name("dbus_interface".into())
+        .name("dbus-interface".into())
         .spawn(move || -> Result<()> {
             let dbus = dbus_interface::initialize(dbus_tx)?;
 
@@ -954,7 +958,7 @@ pub fn run_main_loop(
 }
 
 fn autodetect_sensor_configuration() -> Result<()> {
-    #[allow(clippy::if_same_then_else)]
+    #[allow(unused_mut, clippy::if_same_then_else)]
     let mut config_profile = if env::var("XDG_CURRENT_DESKTOP")
         .unwrap_or_default()
         .to_lowercase()
@@ -985,12 +989,15 @@ fn autodetect_sensor_configuration() -> Result<()> {
         SensorConfiguration::profile_all_sensors_enabled()
     };
 
-
-
-    // if Wayland is present, we remove any detected X11 sensors so that we don't get 
+    // if Wayland is present, we remove any detected X11 sensors so that we don't get
     // spurious events from any running XWayland server
-    if WAYLAND_CONNECTION_SUCCESSFULL.load(Ordering::SeqCst) {
-        config_profile.remove(&SensorConfiguration::EnableX11);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "sensor-wayland")] {
+            if WAYLAND_CONNECTION_SUCCESSFULL.load(Ordering::SeqCst) {
+                config_profile.remove(&SensorConfiguration::EnableX11);
+            }
+        }
     }
 
     log::info!("The following sensor configuration has been auto-detected: {config_profile:?}");

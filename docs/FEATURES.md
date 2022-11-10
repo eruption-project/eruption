@@ -11,11 +11,13 @@
   - [Eruption Components](#eruption-components)
     - [The `eruption` daemon](#the-eruption-daemon)
     - [The `eruption-audio-proxy` daemon](#the-eruption-audio-proxy-daemon)
+    - [The `eruption-fx-proxy` daemon](#the-eruption-fx-proxy-daemon)
     - [The `eruption-process-monitor` daemon](#the-eruption-process-monitor-daemon)
   - [Eruption CLI Utilities](#eruption-cli-utilities)
     - [eruptionctl](#eruptionctl)
     - [eruption-netfx](#eruption-netfx)
-  - [Eruption GUI](#eruption-gui)
+  - [Pyroclasm UI for Eruption](#pyroclasm-ui-for-eruption)
+  - [Eruption GUI (GTK3)](#eruption-gui-gtk3)
     - [Keyboard](#keyboard)
     - [Mice](#mice)
     - [Other Devices](#other-devices)
@@ -112,10 +114,22 @@ Provides support for audio related tasks. Runs in the session of the currently l
 - Audio SFX playback, used for the Sound FX feature
 - Audio stream capture, used for RMS calculation (Loudness) and audio Spectrum Analyzer (Fourier Transform/FFT calculation)
 
-> To enable the session daemon please run this command, logged in as your Linux user (without sudo in front of it)
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
 
 ```sh
 systemctl --user enable --now eruption-audio-proxy.service
+```
+
+### The `eruption-fx-proxy` daemon
+
+Provides support for additional effects. Runs in the session of the currently logged in user.
+
+- `Ambient Effect`: Processes the screen's content and displays it on the canvas
+
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
+
+```sh
+systemctl --user enable --now eruption-fx-proxy.service
 ```
 
 ### The `eruption-process-monitor` daemon
@@ -127,13 +141,13 @@ Runs in the session of the currently logged in user.
 
 With this feature you are able to automatically switch between profiles, e.g. when a certain window gains focus.
 
-> To enable the session daemon please run this command, logged in as your Linux user (without sudo in front of it)
+> To enable the session daemon please run the following command, logged in as your Linux user (without sudo in front of it)
 
 ```sh
 systemctl --user enable --now eruption-process-monitor.service
 ```
 
-> To add a rule you may either use the `Eruption GUI` or via the CLI:
+> To add a rule you may either use `Pyroclasm UI`, the `Eruption GUI` or via the CLI:
 
 ```sh
 eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile
@@ -169,7 +183,11 @@ eruptionctl switch slot 4
 
 A client for the Lua embedded Network FX server.
 
-## Eruption GUI
+## Pyroclasm UI for Eruption
+
+The `Pyroclasm UI` is currently available as a technology preview version only
+
+## Eruption GUI (GTK3)
 
 The `Eruption GUI` is currently available as a technology preview version only
 

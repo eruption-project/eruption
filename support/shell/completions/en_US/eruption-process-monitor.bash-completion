@@ -94,7 +94,7 @@ _eruption-process-monitor() {
 
     case "${cmd}" in
         eruption__process__monitor)
-            opts="-v -c -h -V --verbose --config --help --version daemon rules completions help"
+            opts="-v -c -h -V --verbose --config --help --version rules daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -144,7 +144,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__help)
-            opts="daemon rules completions help"
+            opts="rules daemon completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -200,7 +200,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__help__rules)
-            opts="list enable disable add remove"
+            opts="list add remove enable disable"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -284,7 +284,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules)
-            opts="-h --help list enable disable add remove help"
+            opts="-h --help list add remove enable disable help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -340,7 +340,7 @@ _eruption-process-monitor() {
             return 0
             ;;
         eruption__process__monitor__rules__help)
-            opts="list enable disable add remove help"
+            opts="list add remove enable disable help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

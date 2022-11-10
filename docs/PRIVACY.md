@@ -39,3 +39,14 @@ systemctl --user disable --now eruption-audio-proxy.service
 ```
 
 This will disable the support for audio visualizations, mute status indication and sound effects.
+
+#### `eruption-fx-proxy` Daemon
+
+The `eruption-fx-proxy` daemon processes the screen's content and displays an approximation of it on the Eruption canvas,
+if the `Ambient Effect` has been enabled. You can disable processing of this data at any time by running the following command:
+
+```shell
+systemctl --user disable --now eruption-fx-proxy.service
+```
+
+This will disable the support for the `Ambient Effect`.

@@ -35,9 +35,11 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[derive(Debug, clap::Parser)]
 pub enum SwitchSubcommands {
     /// Switch profiles
+    #[clap(display_order = 0)]
     Profile { profile_name: String },
 
     /// Switch slots
+    #[clap(display_order = 1)]
     Slot { index: usize },
 }
 

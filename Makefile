@@ -48,6 +48,7 @@ start:
 	@echo "Starting up Eruption daemons..."
 
 	-@systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1
+	-@systemctl --user enable --now eruption-fx-proxy.service
 	-@systemctl --user enable --now eruption-audio-proxy.service
 	-@systemctl --user enable --now eruption-process-monitor.service
 
@@ -65,6 +66,7 @@ stop:
 
 	@echo "Shutting down daemons..."
 
+	-@systemctl --user disable --now eruption-fx-proxy.service
 	-@systemctl --user disable --now eruption-audio-proxy.service
 	-@systemctl --user disable --now eruption-process-monitor.service
 
@@ -87,7 +89,7 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
 	@mkdir -p "$(TARGET_DIR)/share/applications"
 	@mkdir -p "$(TARGET_DIR)/share/icons/hicolor/64x64/apps"
-	@mkdir -p "$(TARGET_DIR)/share/eruption-gui/schemas"
+	@mkdir -p "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas"
 	@mkdir -p "/var/lib/eruption/profiles"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-preset"
@@ -107,16 +109,20 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/i18n"
 	@mkdir -p "$(TARGET_DIR)/share/eruption/sfx"
 
-	@cp "support/assets/eruption-gui/eruption-gui.desktop" "$(TARGET_DIR)/share/applications/"
-	@cp "support/assets/eruption-gui/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
-	@cp "eruption-gui/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui/schemas/"
+	@cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/eruption-gui-gtk3/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
+	@cp "eruption-gui-gtk3/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas/"
 	@cp "support/systemd/eruption-suspend.sh" "$(TARGET_DIR)/lib/systemd/system-sleep/eruption"
 	@cp "support/config/eruption.conf" "/etc/eruption/"
+	@cp "support/config/fx-proxy.conf" "/etc/eruption/"
 	@cp "support/config/audio-proxy.conf" "/etc/eruption/"
 	@cp "support/config/process-monitor.conf" "/etc/eruption/"
 	@cp "support/profile.d/eruption.sh" "/etc/profile.d/eruption.sh"
 	@cp "support/systemd/eruption.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption.preset"
+	@cp "support/systemd/eruption-fx-proxy.service" "$(TARGET_DIR)/lib/systemd/user/"
+	@cp "support/systemd/eruption-fx-proxy.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-fx-proxy.preset"
 	@cp "support/systemd/eruption-audio-proxy.service" "$(TARGET_DIR)/lib/systemd/user/"
 	@cp "support/systemd/eruption-audio-proxy.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-audio-proxy.preset"
 	@cp "support/systemd/eruption-process-monitor.service" "$(TARGET_DIR)/lib/systemd/user/"
@@ -126,6 +132,7 @@ install:
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
 	@cp "support/dbus/org.eruption.control.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
+	@cp "support/dbus/org.eruption.fx_proxy.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/policykit/org.eruption.policy" "$(TARGET_DIR)/share/polkit-1/actions/"
 	@cp "support/man/eruption.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
@@ -136,6 +143,7 @@ install:
 	@cp "support/man/eruption-macro.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-keymap.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-netfx.1" "$(TARGET_DIR)/share/man/man1/"
+	@cp "support/man/eruption-fx-proxy.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-audio-proxy.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-process-monitor.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/shell/completions/en_US/eruption-cmd.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-cmd"
@@ -144,6 +152,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-macro.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-macro"
 	@cp "support/shell/completions/en_US/eruption-keymap.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-keymap"
 	@cp "support/shell/completions/en_US/eruption-netfx.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-netfx"
+	@cp "support/shell/completions/en_US/eruption-fx-proxy.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-fx-proxy"
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-audio-proxy"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruptionctl"
@@ -153,6 +162,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-macro.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-macro.fish"
 	@cp "support/shell/completions/en_US/eruption-keymap.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-keymap.fish"
 	@cp "support/shell/completions/en_US/eruption-netfx.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-netfx.fish"
+	@cp "support/shell/completions/en_US/eruption-fx-proxy.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-fx-proxy.fish"
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-audio-proxy.fish"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-process-monitor.fish"
 	@cp "support/shell/completions/en_US/eruptionctl.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruptionctl.fish"
@@ -162,6 +172,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-macro.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-macro"
 	@cp "support/shell/completions/en_US/eruption-keymap.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-keymap"
 	@cp "support/shell/completions/en_US/eruption-netfx.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-netfx"
+	@cp "support/shell/completions/en_US/eruption-fx-proxy.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-fx-proxy"
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-audio-proxy"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruptionctl"
@@ -187,9 +198,11 @@ install:
 	@cp target/release/eruption-debug-tool $(TARGET_DIR)/bin/
 	@cp target/release/eruption-hotplug-helper $(TARGET_DIR)/bin/
 	@cp target/release/eruption-util $(TARGET_DIR)/bin/
-	@cp target/release/eruption-gui $(TARGET_DIR)/bin/
+	@cp target/release/eruption-gui-gtk3 $(TARGET_DIR)/bin/
+	@cp target/release/eruption-fx-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
 	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
+	@cp target/release/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 
@@ -210,16 +223,21 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-debug-tool
 	-@rm $(TARGET_DIR)/bin/eruption-hotplug-helper
 	-@rm $(TARGET_DIR)/bin/eruption-util
-	-@rm $(TARGET_DIR)/bin/eruption-gui
+	-@rm $(TARGET_DIR)/bin/eruption-gui-gtk3
+	-@rm $(TARGET_DIR)/bin/eruption-fx-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
+	-@rm $(TARGET_DIR)/bin/pyroclasm
 
-	-@rm $(TARGET_DIR)/share/applications/eruption-gui.desktop
-	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui.png
-	-@rm $(TARGET_DIR)/share/eruption-gui/schemas/gschemas.compiled
+	-@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
+	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
+	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
 	-@rm $(TARGET_DIR)/lib/systemd/system-sleep/eruption
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption.preset
+	-@rm $(TARGET_DIR)/lib/systemd/user/eruption-fx-proxy.service
+	-@rm $(TARGET_DIR)/lib/systemd/user-preset/50-eruption-fx-proxy.preset
 	-@rm $(TARGET_DIR)/lib/systemd/user/eruption-audio-proxy.service
 	-@rm $(TARGET_DIR)/lib/systemd/user-preset/50-eruption-audio-proxy.preset
 	-@rm $(TARGET_DIR)/lib/systemd/user/eruption-process-monitor.service
@@ -229,6 +247,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
 	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.control.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
+	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.fx_proxy.conf
 	-@rm $(TARGET_DIR)/share/polkit-1/actions/org.eruption.policy
 	-@rm $(TARGET_DIR)/share/man/man8/eruption.8
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8
@@ -239,6 +258,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-netfx.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-macro.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-keymap.1
+	-@rm $(TARGET_DIR)/share/man/man1/eruption-fx-proxy.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-audio-proxy.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-process-monitor.1
 
@@ -248,6 +268,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-macro
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-keymap
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-netfx
+	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-fx-proxy
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruptionctl
@@ -257,6 +278,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-macro.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-keymap.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-netfx.fish
+	-@rm $(TARGET_DIR)/share/fish/completions/eruption-fx-proxy.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-audio-proxy.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-process-monitor.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruptionctl.fish
@@ -266,6 +288,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-macro
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-keymap
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-netfx
+	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-fx-proxy
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-audio-proxy
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruptionctl
@@ -278,7 +301,7 @@ uninstall:
 
 	-@rm -fr /etc/eruption
 	-@rm -fr $(TARGET_DIR)/share/eruption
-	-@rm -fr $(TARGET_DIR)/share/eruption-gui
+	-@rm -fr $(TARGET_DIR)/share/eruption-gui-gtk3
 	-@rm -fr /var/lib/eruption
 
 	@echo "Successfully uninstalled Eruption!"

@@ -16,6 +16,7 @@
   - [Available Macro Definitions](#available-macro-definitions)
   - [Further Reading](#further-reading)
   - [Process Monitor](#process-monitor)
+  - [Effects Proxy Daemon](#effects-proxy-daemon)
   - [Contributing](#contributing)
 
 ## Experimental Features
@@ -287,6 +288,11 @@ refer to the developer documentation [LIBRARY.md](./LIBRARY.md)
 ## Process Monitor
 
 Eruption `0.1.17` added a new daemon called `eruption-process-monitor`, which allows for dynamic switching of profiles and slots using a rule matching engine.
+
+## Effects Proxy Daemon
+
+Eruption `0.3.0` added a new daemon called `eruption-fx-proxy`, that supersedes some functionality of `eruption-netfx`. It provides a more efficient and more
+robust implementation of the `Ambient Effect`.
 
 ## Contributing
 
