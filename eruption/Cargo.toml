@@ -111,7 +111,7 @@ vulkano = "0.31.1"
 vulkano-shaders = "0.31.1"
 vulkano-util = "0.31.0"
 shaderc = "0.8.0"
-bytemuck = "1.12.1"
+bytemuck = "1.12.3"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

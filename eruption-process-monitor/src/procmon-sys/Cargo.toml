@@ -32,4 +32,4 @@ license = "GPL-3.0-or-later"
 libc = "0.2.137"
 
 [build-dependencies]
-cc = "1.0.75"
+cc = "1.0.76"

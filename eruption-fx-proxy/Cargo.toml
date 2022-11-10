@@ -44,9 +44,9 @@ backend-x11 = ["x11", "x11rb"]
 [dependencies]
 cfg-if = "1.0.0"
 nix = "0.25.0"
-memmap2 = "0.5.7"
-clap =  { version = "4.0.18", features = ["derive"] }
-clap_complete = "4.0.3"
+memmap2 = "0.5.8"
+clap =  { version = "4.0.22", features = ["derive"] }
+clap_complete = "4.0.5"
 colored = "2.0.0"
 log = "0.4.17"
 syslog = "6.0.1"
@@ -70,13 +70,13 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 num-traits = "0.2.15"
 dbus = "0.9.6"
-dbus-tree = "0.9.1"
+dbus-tree = "0.9.2"
 dbus-tokio =  "0.7.5"
 image = "0.24.4"
 smithay-client-toolkit = { version = "0.16.0", optional = true }
 x11 = { version = "2.20.0", features = ["xlib"], optional = true }
 x11rb = { version = "0.10.1", optional = true }
-wayland-client = { version = "0.30.0-beta.12", optional = true }
+wayland-client = { version = "0.30.0-beta.13", optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = "6.4.2"
