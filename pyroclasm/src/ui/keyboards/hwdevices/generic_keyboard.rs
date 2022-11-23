@@ -21,11 +21,8 @@
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
-use crate::util::RGBA;
-use palette::{FromColor, Hsva, Shade, Srgba};
-use std::cell::RefCell;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct GenericKeyboard {

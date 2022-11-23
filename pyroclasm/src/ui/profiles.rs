@@ -27,7 +27,7 @@ impl egui_dock::TabViewer for TabViewer {
     type Tab = String;
 
     fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
-        ui.label(format!("{tab}"));
+        ui.label(tab.to_string());
     }
 
     fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
@@ -59,7 +59,7 @@ impl ProfilesPage {
         }
     }
 
-    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Manage Profiles and Scripts");
 
@@ -80,7 +80,7 @@ impl ProfilesPage {
 
 fn show_code(ui: &mut egui::Ui, lang: &str, code: &str) {
     let code = remove_leading_indentation(code.trim_start_matches('\n'));
-    highlighting::code_editor_ui(ui, &lang, &code);
+    highlighting::code_editor_ui(ui, lang, &code);
 }
 
 fn remove_leading_indentation(code: &str) -> String {

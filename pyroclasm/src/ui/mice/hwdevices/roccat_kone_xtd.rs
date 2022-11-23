@@ -19,11 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use palette::{FromColor, Hsva, Shade, Srgba};
+use super::Mouse;
 
-use super::{Mouse, Rectangle};
-
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatKoneXtd {

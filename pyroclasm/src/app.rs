@@ -19,18 +19,16 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use std::{ops::RangeInclusive, sync::Arc};
+use std::ops::RangeInclusive;
 
 use egui::Widget;
 use tracing::error;
 
-use crate::{
-    ui::{self, TabPages},
-    State,
-};
+use crate::ui::{self, TabPages};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct Pyroclasm {
     pub active_page: ui::TabPages,
 
@@ -39,17 +37,6 @@ pub struct Pyroclasm {
 
     #[serde(skip)]
     pub modal_quit: Option<egui_modal::Modal>,
-}
-
-impl Default for Pyroclasm {
-    fn default() -> Self {
-        Self {
-            active_page: Default::default(),
-
-            toasts: Default::default(),
-            modal_quit: None,
-        }
-    }
 }
 
 impl Pyroclasm {
@@ -136,26 +123,28 @@ impl Pyroclasm {
     }
 
     fn setup_modals(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let mut modal = egui_modal::Modal::new(ctx, "quit_dialog");
+        let modal = egui_modal::Modal::new(ctx, "quit_dialog");
 
         modal.show(|ui| {
-            modal.title(ui, "Quit");
+            modal.title(ui, "Quit Pyroclasm?");
 
             modal.frame(ui, |ui| {
-                modal.body(ui, "Do you want to quit the Pyroclasm UI?");
+                modal.body_and_icon(
+                    ui,
+                    "Do you really want to quit the Pyroclasm UI?",
+                    egui_modal::Icon::Info,
+                );
             });
 
             modal.buttons(ui, |ui| {
-                modal.icon(ui, egui_modal::Icon::Info);
-
                 // After clicking, the modal is automatically closed
-                if modal.button(ui, "Quit").clicked() {
+                if modal.suggested_button(ui, "Quit").clicked() {
                     frame.set_visible(false);
                     frame.close();
                 };
 
                 // After clicking, the modal is automatically closed
-                if modal.button(ui, "Cancel").clicked() {};
+                if modal.caution_button(ui, "Cancel").clicked() {};
             });
         });
 
@@ -215,7 +204,9 @@ impl Pyroclasm {
                                     .on_hover_text("Close")
                                     .clicked()
                                 {
-                                    self.modal_quit.as_ref().map(|f| f.open());
+                                    if let Some(f) = self.modal_quit.as_ref() {
+                                        f.open()
+                                    }
                                 };
                             });
 
@@ -268,8 +259,11 @@ impl Pyroclasm {
                                             ui.separator();
 
                                             if ui.button("Quit").clicked() {
-                                                frame.set_visible(false);
-                                                frame.close();
+                                                ui.close_menu();
+
+                                                if let Some(f) = self.modal_quit.as_ref() {
+                                                    f.open()
+                                                }
                                             }
                                         })
                                     },
@@ -295,7 +289,7 @@ impl Pyroclasm {
     }
 
     /// Render the main menu
-    fn menu_panel(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn menu_panel(&mut self, _ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // #[cfg(not(target_arch = "wasm32"))]
         // egui::TopBottomPanel::top("menu_panel").show(ctx, |ui| {
         //     egui::menu::bar(ui, |ui| {
@@ -480,7 +474,7 @@ impl Pyroclasm {
     }
 
     /// Render the footer panel
-    fn footer(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn footer(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let global_state = crate::STATE.read();
 
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
@@ -497,14 +491,14 @@ impl Pyroclasm {
     }
 
     /// Render the slot panel
-    fn slot_panel(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn slot_panel(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let global_state = crate::STATE.read();
 
         egui::TopBottomPanel::bottom("slot_panel").show(ctx, |ui| {
             ui.horizontal_centered(|ui| {
                 let empty = vec!["".to_owned(), "".to_owned(), "".to_owned(), "".to_owned()];
                 let slot_names = global_state.slot_names.as_ref();
-                let slot_names = slot_names.unwrap_or_else(|| &empty);
+                let slot_names = slot_names.unwrap_or(&empty);
 
                 let active_slot = global_state.active_slot.unwrap_or(0);
 
@@ -567,7 +561,7 @@ impl Pyroclasm {
     }
 
     /// Render the "special" functions panel
-    fn special_panel(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn special_panel(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::TopBottomPanel::bottom("special_panel").show(ctx, |ui| {
             ui.with_layout(
                 egui::Layout::from_main_dir_and_cross_align(
@@ -594,6 +588,8 @@ enum Theme {
     GroupScripting,
     GroupManagement,
     GroupAbout,
+
+    #[cfg(debug_assertions)]
     GroupDebug,
 
     //
@@ -607,6 +603,8 @@ fn color(item: Theme) -> egui::Color32 {
         Theme::GroupScripting => egui::Color32::DARK_BLUE,
         Theme::GroupManagement => egui::Color32::YELLOW,
         Theme::GroupAbout => egui::Color32::LIGHT_YELLOW,
+
+        #[cfg(debug_assertions)]
         Theme::GroupDebug => egui::Color32::BLACK,
 
         //

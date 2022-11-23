@@ -19,13 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use super::{MiscDevice, Rectangle};
-use crate::constants;
-use palette::{FromColor, Hsva, Shade, Srgba};
+use super::MiscDevice;
 
-const BORDER: (f64, f64) = (16.0, 16.0);
-
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatElo71Air {

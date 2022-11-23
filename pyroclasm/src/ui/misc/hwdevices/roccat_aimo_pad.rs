@@ -21,14 +21,12 @@
 
 use super::MiscDevice;
 use crate::constants;
-use crate::ui::misc::hwdevices::Rectangle;
-use palette::{FromColor, Hsva, Shade, Srgba};
 
 // canvas to LED index mapping
-const LED_0: usize = constants::CANVAS_SIZE - 36;
-const LED_1: usize = constants::CANVAS_SIZE - 1;
+// const LED_0: usize = constants::CANVAS_SIZE - 36;
+// const LED_1: usize = constants::CANVAS_SIZE - 1;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatAimoPad {

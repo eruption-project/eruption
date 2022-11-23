@@ -205,7 +205,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
                 let mut last_status_update = Instant::now();
                 let mut last_device_update =
-                    Instant::now() - Duration::from_millis(constants::DEVICE_POLL_INTERVAL + 1);
+                    Instant::now().checked_sub(Duration::from_millis(constants::DEVICE_POLL_INTERVAL + 1)).unwrap();
 
                 'EVENT_LOOP: loop {
                     if QUIT.load(Ordering::SeqCst) {

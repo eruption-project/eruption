@@ -27,7 +27,7 @@ impl LogsPage {
         Self {}
     }
 
-    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui_logger::logger_ui(ui);
         });

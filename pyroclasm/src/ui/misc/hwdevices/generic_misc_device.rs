@@ -21,7 +21,7 @@
 
 use super::MiscDevice;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct GenericMiscDevice {

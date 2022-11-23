@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+#![allow(dead_code)]
+
 use egui::text::LayoutJob;
 
 /// View some code with syntax highlighting and selection.

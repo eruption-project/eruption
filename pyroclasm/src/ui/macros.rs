@@ -29,7 +29,7 @@ impl MacrosPage {
         Self {}
     }
 
-    pub fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Macros");
 
@@ -48,7 +48,7 @@ impl MacrosPage {
 
 fn show_code(ui: &mut egui::Ui, lang: &str, code: &str) {
     let code = remove_leading_indentation(code.trim_start_matches('\n'));
-    highlighting::code_editor_ui(ui, &lang, &code);
+    highlighting::code_editor_ui(ui, lang, &code);
 }
 
 fn remove_leading_indentation(code: &str) -> String {

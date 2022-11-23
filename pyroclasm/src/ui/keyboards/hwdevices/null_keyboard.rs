@@ -21,7 +21,6 @@
 
 use super::KeyDef;
 use super::Keyboard;
-use crate::util::RGBA;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
