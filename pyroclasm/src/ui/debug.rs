@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use egui::{CentralPanel, CollapsingHeader};
+
 #[derive(Default)]
 pub struct DebugPage {}
 
@@ -28,39 +30,26 @@ impl DebugPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.vertical(|ui| {
                     ui.heading("Debug Pyroclasm UI");
 
-                    egui::Window::new("Settings")
-                        .auto_sized()
-                        .collapsible(true)
-                        .show(ctx, |ui| {
-                            ctx.settings_ui(ui);
-                        });
+                    CollapsingHeader::new("Settings").show(ui, |ui| {
+                        ctx.settings_ui(ui);
+                    });
 
-                    egui::Window::new("Textures")
-                        .auto_sized()
-                        .auto_sized()
-                        .collapsible(true)
-                        .show(ctx, |ui| {
-                            ctx.texture_ui(ui);
-                        });
+                    CollapsingHeader::new("Textures").show(ui, |ui| {
+                        ctx.texture_ui(ui);
+                    });
 
-                    egui::Window::new("Memory")
-                        .auto_sized()
-                        .collapsible(true)
-                        .show(ctx, |ui| {
-                            ctx.memory_ui(ui);
-                        });
+                    CollapsingHeader::new("Memory").show(ui, |ui| {
+                        ctx.memory_ui(ui);
+                    });
 
-                    egui::Window::new("Inspection")
-                        .auto_sized()
-                        .collapsible(true)
-                        .show(ctx, |ui| {
-                            ctx.inspection_ui(ui);
-                        });
+                    CollapsingHeader::new("Inspection").show(ui, |ui| {
+                        ctx.inspection_ui(ui);
+                    });
                 });
             });
         });

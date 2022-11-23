@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use egui::CentralPanel;
+
 use crate::highlighting;
 
 #[derive(Default)]
@@ -30,7 +32,7 @@ impl MacrosPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             ui.heading("Macros");
 
             let code =

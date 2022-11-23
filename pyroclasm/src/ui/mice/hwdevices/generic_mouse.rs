@@ -19,9 +19,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-
-
-use super::{Mouse};
+use super::Mouse;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 

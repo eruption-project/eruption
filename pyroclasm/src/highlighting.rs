@@ -21,7 +21,7 @@
 
 #![allow(dead_code)]
 
-use egui::text::LayoutJob;
+use egui::{text::LayoutJob, TextEdit, TextStyle};
 
 /// View some code with syntax highlighting and selection.
 pub fn code_view_ui(ui: &mut egui::Ui, language: &str, mut code: &str) {
@@ -34,8 +34,8 @@ pub fn code_view_ui(ui: &mut egui::Ui, language: &str, mut code: &str) {
     };
 
     ui.add(
-        egui::TextEdit::multiline(&mut code)
-            .font(egui::TextStyle::Monospace) // for cursor height
+        TextEdit::multiline(&mut code)
+            .font(TextStyle::Monospace) // for cursor height
             .code_editor()
             .desired_rows(1)
             .lock_focus(true)
@@ -54,8 +54,8 @@ pub fn code_editor_ui(ui: &mut egui::Ui, language: &str, mut code: &str) {
     };
 
     ui.add(
-        egui::TextEdit::multiline(&mut code)
-            .font(egui::TextStyle::Monospace) // for cursor height
+        TextEdit::multiline(&mut code)
+            .font(TextStyle::Monospace) // for cursor height
             .code_editor()
             .desired_rows(1)
             .lock_focus(true)

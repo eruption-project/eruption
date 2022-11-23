@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use egui::CentralPanel;
+
 use crate::highlighting;
 
 struct TabViewer {}
@@ -60,16 +62,16 @@ impl ProfilesPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             ui.heading("Manage Profiles and Scripts");
 
-            // let code = std::fs::read_to_string("/usr/share/eruption/scripts/macros.lua").unwrap();
+            let code = std::fs::read_to_string("/usr/share/eruption/scripts/macros.lua").unwrap();
 
-            // egui::ScrollArea::vertical()
-            //     .auto_shrink([false; 2])
-            //     .show(ui, |ui| {
-            //         show_code(ui, "lua", &code);
-            //     });
+            egui::ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| {
+                    show_code(ui, "lua", &code);
+                });
 
             egui_dock::DockArea::new(&mut self.tree)
                 .style(egui_dock::Style::from_egui(ctx.style().as_ref()))

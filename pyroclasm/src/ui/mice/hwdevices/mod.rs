@@ -19,7 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::{dbus_client};
+#![allow(dead_code)]
+
+use crate::dbus_client;
 
 mod generic_mouse;
 mod null_mouse;

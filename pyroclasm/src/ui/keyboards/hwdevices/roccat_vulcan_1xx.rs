@@ -22,9 +22,6 @@
 use super::Keyboard;
 use super::{Caption, KeyDef};
 
-
-
-
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
@@ -33,7 +30,7 @@ pub struct RoccatVulcan1xx {
 }
 
 impl RoccatVulcan1xx {
-    pub fn new(device: u64) -> Self {
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         RoccatVulcan1xx { device }
     }
 }
@@ -47,7 +44,7 @@ impl Keyboard for RoccatVulcan1xx {
         ("ROCCAT", "Vulcan 100/12x AIMO")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

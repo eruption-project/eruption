@@ -30,7 +30,7 @@ pub struct GenericKeyboard {
 }
 
 impl GenericKeyboard {
-    pub fn new(device: u64) -> Self {
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         GenericKeyboard { device }
     }
 }
@@ -44,7 +44,7 @@ impl Keyboard for GenericKeyboard {
         ("Unknown", "Generic Keyboard")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

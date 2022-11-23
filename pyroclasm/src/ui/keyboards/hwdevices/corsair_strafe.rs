@@ -30,7 +30,7 @@ pub struct CorsairStrafe {
 }
 
 impl CorsairStrafe {
-    pub fn new(device: u64) -> Self {
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         CorsairStrafe { device }
     }
 }
@@ -44,7 +44,7 @@ impl Keyboard for CorsairStrafe {
         ("Corsair", "STRAFE Gaming Keyboard")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

@@ -19,8 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+#![allow(dead_code)]
+
 use super::MiscDevice;
-use crate::constants;
 
 // canvas to LED index mapping
 // const LED_0: usize = constants::CANVAS_SIZE - 36;

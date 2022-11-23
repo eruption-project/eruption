@@ -22,7 +22,7 @@
 use clap::Parser;
 use config::Config;
 use eframe::{NativeOptions, Theme};
-use egui::Vec2;
+use egui::{Context, Vec2};
 use flume::unbounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -52,6 +52,7 @@ mod dbus_client;
 mod device;
 mod highlighting;
 mod profiles;
+mod resources;
 mod scripting;
 mod subcommands;
 mod threads;
@@ -117,7 +118,7 @@ pub enum MainError {
 #[derive(Default)]
 pub struct State {
     // egui Context
-    egui_ctx: Option<egui::Context>,
+    egui_ctx: Option<Context>,
 
     _saved_profile: Option<String>,
 
@@ -151,6 +152,9 @@ lazy_static! {
 
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
+
+    /// Eruption managed devices
+    pub static ref MANAGED_DEVICES: Arc<Mutex<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>)>> = Arc::new(Mutex::new((Vec::new(), Vec::new(), Vec::new())));
 }
 
 lazy_static! {

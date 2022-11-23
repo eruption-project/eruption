@@ -40,7 +40,7 @@ color-eyre = "0.6.2"
 clap = "4.0.26"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
-rust-embed = "6.5.0"
+rust-embed = { version = "6.4.2", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../../../lib/rust/eruption-rs" }

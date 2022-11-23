@@ -30,7 +30,7 @@ pub struct RoccatVulcanPro {
 }
 
 impl RoccatVulcanPro {
-    pub fn new(device: u64) -> Self {
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         RoccatVulcanPro { device }
     }
 }
@@ -44,7 +44,7 @@ impl Keyboard for RoccatVulcanPro {
         ("ROCCAT", "Vulcan Pro")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

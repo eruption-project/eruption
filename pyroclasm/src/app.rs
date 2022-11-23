@@ -21,7 +21,11 @@
 
 use std::ops::RangeInclusive;
 
-use egui::Widget;
+use egui::{
+    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Direction,
+    FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle, TopBottomPanel,
+    Widget,
+};
 use tracing::error;
 
 use crate::ui::{self, TabPages};
@@ -72,36 +76,33 @@ impl Pyroclasm {
 
         style.text_styles = [
             (
-                egui::TextStyle::Heading,
-                egui::FontId::new(22.0, egui::FontFamily::Proportional),
+                TextStyle::Heading,
+                FontId::new(22.0, FontFamily::Proportional),
             ),
             (
-                egui::TextStyle::Name("Title".into()),
-                egui::FontId::new(28.0, egui::FontFamily::Proportional),
+                TextStyle::Name("Title".into()),
+                FontId::new(28.0, FontFamily::Proportional),
             ),
             (
-                egui::TextStyle::Name("MenuButton".into()),
-                egui::FontId::new(28.0, egui::FontFamily::Proportional),
+                TextStyle::Name("MenuButton".into()),
+                FontId::new(28.0, FontFamily::Proportional),
             ),
             (
-                egui::TextStyle::Name("Context".into()),
-                egui::FontId::new(22.0, egui::FontFamily::Proportional),
+                TextStyle::Name("Context".into()),
+                FontId::new(22.0, FontFamily::Proportional),
+            ),
+            (TextStyle::Body, FontId::new(18.0, FontFamily::Proportional)),
+            (
+                TextStyle::Monospace,
+                FontId::new(14.0, FontFamily::Monospace),
             ),
             (
-                egui::TextStyle::Body,
-                egui::FontId::new(18.0, egui::FontFamily::Proportional),
+                TextStyle::Button,
+                FontId::new(14.0, FontFamily::Proportional),
             ),
             (
-                egui::TextStyle::Monospace,
-                egui::FontId::new(14.0, egui::FontFamily::Monospace),
-            ),
-            (
-                egui::TextStyle::Button,
-                egui::FontId::new(14.0, egui::FontFamily::Proportional),
-            ),
-            (
-                egui::TextStyle::Small,
-                egui::FontId::new(10.0, egui::FontFamily::Proportional),
+                TextStyle::Small,
+                FontId::new(10.0, FontFamily::Proportional),
             ),
         ]
         .into();
@@ -126,6 +127,8 @@ impl Pyroclasm {
         let modal = egui_modal::Modal::new(ctx, "quit_dialog");
 
         modal.show(|ui| {
+            ui.spacing_mut().button_padding = egui::vec2(20.0_f32, 12.0_f32);
+
             modal.title(ui, "Quit Pyroclasm?");
 
             modal.frame(ui, |ui| {
@@ -156,27 +159,26 @@ impl Pyroclasm {
         let global_state = crate::STATE.read();
 
         egui::TopBottomPanel::top("title").show(ctx, |ui| {
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Max), |ui| {
+            ui.with_layout(Layout::left_to_right(Align::Max), |ui| {
                 ui.with_layout(
-                    egui::Layout::left_to_right(egui::Align::Min)
-                        .with_cross_align(egui::Align::Center),
+                    Layout::left_to_right(Align::Min).with_cross_align(Align::Center),
                     |ui| {
                         ui.add_space(8.0_f32);
                         ui.label(
-                            egui::RichText::new("Pyroclasm UI")
-                                .text_style(egui::TextStyle::Name("Title".into())),
+                            RichText::new("Pyroclasm UI")
+                                .text_style(TextStyle::Name("Title".into())),
                         );
                         ui.add_space(24.0_f32);
                     },
                 );
 
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     let mut brightness = global_state.current_brightness.unwrap_or(0) as f32;
 
                     ui.scope(|ui| {
                         ui.spacing_mut().slider_width = 230.0;
 
-                        egui::Slider::new(&mut brightness, RangeInclusive::new(0.0_f32, 100.0_f32))
+                        Slider::new(&mut brightness, RangeInclusive::new(0.0_f32, 100.0_f32))
                             .integer()
                             .logarithmic(false)
                             .show_value(true)
@@ -185,21 +187,21 @@ impl Pyroclasm {
                             .on_hover_text("Global brightness");
                     });
 
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         ui.spacing_mut().item_spacing = egui::vec2(0.0_f32, 0.0_f32);
                         ui.spacing_mut().button_padding = egui::vec2(6.0_f32, 6.0_f32);
 
-                        egui::Frame::none()
+                        Frame::none()
                             .rounding(6.0_f32)
-                            .inner_margin(egui::style::Margin::symmetric(8.0_f32, 6.0_f32))
-                            .outer_margin(egui::style::Margin::symmetric(0.0_f32, 8.0_f32))
+                            .inner_margin(Margin::symmetric(8.0_f32, 6.0_f32))
+                            .outer_margin(Margin::symmetric(0.0_f32, 8.0_f32))
                             .show(ui, |ui| {
                                 if ui
                                     .button(
-                                        egui::RichText::new("❌")
+                                        RichText::new("❌")
                                             .color(egui::Color32::RED)
                                             .background_color(egui::Color32::TRANSPARENT)
-                                            .text_style(egui::TextStyle::Name("MenuButton".into())),
+                                            .text_style(TextStyle::Name("MenuButton".into())),
                                     )
                                     .on_hover_text("Close")
                                     .clicked()
@@ -212,16 +214,16 @@ impl Pyroclasm {
 
                         ui.separator();
 
-                        egui::Frame::none()
+                        Frame::none()
                             .rounding(6.0_f32)
-                            .inner_margin(egui::style::Margin::symmetric(8.0_f32, 6.0_f32))
-                            .outer_margin(egui::style::Margin::symmetric(0.0_f32, 8.0_f32))
+                            .inner_margin(Margin::symmetric(8.0_f32, 6.0_f32))
+                            .outer_margin(Margin::symmetric(0.0_f32, 8.0_f32))
                             .show(ui, |ui| {
                                 if ui
                                     .button(
-                                        egui::RichText::new("⚙")
+                                        RichText::new("⚙")
                                             .background_color(egui::Color32::TRANSPARENT)
-                                            .text_style(egui::TextStyle::Name("MenuButton".into())),
+                                            .text_style(TextStyle::Name("MenuButton".into())),
                                     )
                                     .on_hover_text("Settings")
                                     .clicked()
@@ -232,9 +234,9 @@ impl Pyroclasm {
                                 ui.add_space(6.0_f32);
 
                                 ui.menu_button(
-                                    egui::RichText::new("☰")
+                                    RichText::new("☰")
                                         .background_color(egui::Color32::TRANSPARENT)
-                                        .text_style(egui::TextStyle::Name("MenuButton".into())),
+                                        .text_style(TextStyle::Name("MenuButton".into())),
                                     |ui| {
                                         ui.scope(|ui| {
                                             ui.spacing_mut().item_spacing =
@@ -276,11 +278,8 @@ impl Pyroclasm {
             // support dragging the window via the title bar
             let title_bar_rect = ui.max_rect();
 
-            let title_bar_response = ui.interact(
-                title_bar_rect,
-                egui::Id::new("title_bar"),
-                egui::Sense::click(),
-            );
+            let title_bar_response =
+                ui.interact(title_bar_rect, Id::new("title_bar"), Sense::click());
 
             if title_bar_response.is_pointer_button_down_on() {
                 frame.drag_window();
@@ -312,13 +311,11 @@ impl Pyroclasm {
                 $ui.spacing_mut().button_padding = egui::vec2(16.0_f32, 16.0_f32);
 
                 if $ui
-                    .add(
-                        egui::Button::new($text).fill(if *$active_page == $tab_page {
-                            $color.additive().linear_multiply(16.0_f32)
-                        } else {
-                            $color
-                        }),
-                    )
+                    .add(Button::new($text).fill(if *$active_page == $tab_page {
+                        $color.additive().linear_multiply(16.0_f32)
+                    } else {
+                        $color
+                    }))
                     .clicked()
                 {
                     *$active_page = $tab_page;
@@ -328,7 +325,7 @@ impl Pyroclasm {
 
         let active_page = &mut self.active_page;
 
-        egui::TopBottomPanel::top("top_panel")
+        TopBottomPanel::top("top_panel")
             .min_height(50.0_f32)
             .show(ctx, |ui| {
                 ui.horizontal_centered(|ui| {
@@ -477,14 +474,14 @@ impl Pyroclasm {
     fn footer(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let global_state = crate::STATE.read();
 
-        egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+        TopBottomPanel::bottom("footer").show(ctx, |ui| {
             ui.horizontal_centered(|ui| {
                 if let Some(active_profile) = &global_state.active_profile {
                     ui.label(active_profile);
                 }
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    egui::warn_if_debug_build(ui);
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    warn_if_debug_build(ui);
                 });
             });
         });
@@ -494,7 +491,7 @@ impl Pyroclasm {
     fn slot_panel(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let global_state = crate::STATE.read();
 
-        egui::TopBottomPanel::bottom("slot_panel").show(ctx, |ui| {
+        TopBottomPanel::bottom("slot_panel").show(ctx, |ui| {
             ui.horizontal_centered(|ui| {
                 let empty = vec!["".to_owned(), "".to_owned(), "".to_owned(), "".to_owned()];
                 let slot_names = global_state.slot_names.as_ref();
@@ -504,11 +501,11 @@ impl Pyroclasm {
 
                 macro_rules! profile_button {
                     ($slot_index: expr) => {
-                        if egui::Frame::none()
+                        if Frame::none()
                             .fill(color(Theme::GroupProfile))
                             .inner_margin(8.0_f32)
                             .outer_margin(4.0_f32)
-                            .shadow(egui::epaint::Shadow::small_dark())
+                            .shadow(Shadow::small_dark())
                             .rounding(6.0_f32)
                             .show(ui, |ui| {
                                 if ui
@@ -531,7 +528,7 @@ impl Pyroclasm {
                                 }
                                 let mut selected = Enum::First;
 
-                                egui::ComboBox::from_id_source(format!(
+                                ComboBox::from_id_source(format!(
                                     "Profile for slot {}",
                                     $slot_index
                                 ))
@@ -562,12 +559,9 @@ impl Pyroclasm {
 
     /// Render the "special" functions panel
     fn special_panel(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::TopBottomPanel::bottom("special_panel").show(ctx, |ui| {
+        TopBottomPanel::bottom("special_panel").show(ctx, |ui| {
             ui.with_layout(
-                egui::Layout::from_main_dir_and_cross_align(
-                    egui::Direction::LeftToRight,
-                    egui::Align::Center,
-                ),
+                Layout::from_main_dir_and_cross_align(Direction::LeftToRight, Align::Center),
                 |ui| {
                     ui.collapsing("Effects", |ui| {
                         let mut ambient_effect = false;

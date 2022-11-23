@@ -19,9 +19,14 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use egui::CentralPanel;
+use tracing::error;
+
+use self::hwdevices::get_keyboard_device;
+
 mod hwdevices;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Default)]
 pub struct KeyboardsPage {}
@@ -32,12 +37,14 @@ impl KeyboardsPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.label("Side Panel");
-        });
+        CentralPanel::default().show(ctx, |ui| {
+            let device = get_keyboard_device(0, ui, ctx).unwrap();
 
-        egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Keyboard devices");
+
+            if let Err(e) = device.draw_keyboard(ui, ctx) {
+                error!("Error rendering the keyboard: {}", e);
+            }
         });
     }
 }

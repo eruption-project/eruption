@@ -28,7 +28,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub struct NullKeyboard {}
 
 impl NullKeyboard {
-    pub fn new() -> Self {
+    pub fn new(_ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         NullKeyboard {}
     }
 }
@@ -42,7 +42,7 @@ impl Keyboard for NullKeyboard {
         ("Unknown", "Unknown")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

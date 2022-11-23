@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use egui::CentralPanel;
+
 #[derive(Default)]
 pub struct StartPage {}
 
@@ -28,7 +30,7 @@ impl StartPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
             ui.heading("Welcome to the Pyroclasm UI for Eruption");
         });
     }
