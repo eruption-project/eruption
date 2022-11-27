@@ -13,6 +13,7 @@ $
 
 ```shell
 $ eruption-fx-proxy
+
 Eruption is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -33,13 +34,13 @@ Effects proxy daemon for the Eruption Linux user-mode driver
 Usage: eruption-fx-proxy [OPTIONS] <COMMAND>
 
 Commands:
-  daemon       Run in background
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  daemon  Run in background
+  help    Print this message or the help of the given subcommand(s)
 
 Options:
-  -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
-  -h, --help        Print help information
-  -V, --version     Print version information
+  -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)
+  -c, --config <CONFIG>  Sets the configuration file to use
+  -h, --help             Print help information
+  -V, --version          Print version information
 
 ```

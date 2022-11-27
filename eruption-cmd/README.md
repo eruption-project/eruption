@@ -24,11 +24,7 @@ Copyright (c) 2019-2022, The Eruption Development Team
 
 A CLI utility for the Eruption Linux user-mode driver SDK
 
-Usage: eruption-cmd [OPTIONS] <COMMAND>
-
-Commands:
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+Usage: eruption-cmd [OPTIONS]
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)

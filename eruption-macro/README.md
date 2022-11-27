@@ -1,6 +1,6 @@
 ## eruption-macro - A CLI macro utility for Eruption
 
-This utility may be used to record macros for the Eruption daemon
+This utility may be used to manage macros used by the Eruption daemon
 
 ### eruption-macro
 
@@ -35,7 +35,6 @@ Commands:
   disable      Disable an existing macro
   description  Show or set the description of a specified macro
   compile      Compile macros to Lua code and make them available to Eruption
-  completions  Generate shell completions
   help         Print this message or the help of the given subcommand(s)
 
 Options:

@@ -39,9 +39,8 @@ A utility used to notify Eruption about device hotplug events
 Usage: eruption-hotplug-helper [OPTIONS] <COMMAND>
 
 Commands:
-  hotplug      Trigger a hotplug event
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  hotplug  Trigger a hotplug event
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)

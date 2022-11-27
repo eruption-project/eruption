@@ -29,9 +29,8 @@ Audio proxy daemon for the Eruption Linux user-mode driver
 Usage: eruption-audio-proxy [OPTIONS] <COMMAND>
 
 Commands:
-  daemon       Run in background
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  daemon  Run in background
+  help    Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)

@@ -44,13 +44,12 @@ A Network FX protocol client for the Eruption Linux user-mode driver
 Usage: eruption-netfx [OPTIONS] [MODEL] [HOSTNAME] [PORT] <COMMAND>
 
 Commands:
-  ping         Ping the server
-  command      Send Network FX raw protocol commands to the server
-  image        Load an image file and display it on the connected devices
-  animation    Load image files from a directory and display each one on the connected devices
-  ambient      Make the LEDs of connected devices reflect what is shown on the screen
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  ping       Ping the server
+  command    Send Network FX raw protocol commands to the server
+  image      Load an image file and display it on the connected devices
+  animation  Load image files from a directory and display each one on the connected devices
+  ambient    Make the LEDs of connected devices reflect what is shown on the screen
+  help       Print this message or the help of the given subcommand(s)
 
 Arguments:
   [MODEL]     The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"

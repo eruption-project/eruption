@@ -40,9 +40,8 @@ A watchdog daemon for Eruption
 Usage: eruption-watchdog [OPTIONS] <COMMAND>
 
 Commands:
-  daemon       Run watchdog daemon for Eruption
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  daemon  Run watchdog daemon for Eruption
+  help    Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)

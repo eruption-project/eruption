@@ -32,7 +32,6 @@ Commands:
   test-key-indices    Test key index information subcommands
   record-topology     Record key topology information subcommands
   test-topology       Test key topology maps subcommands
-  completions         Generate shell completions
   help                Print this message or the help of the given subcommand(s)
 
 Options:

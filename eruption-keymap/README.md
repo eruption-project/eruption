@@ -34,7 +34,6 @@ Commands:
   macros       Show a list of available macros in a Lua file
   events       Show a list of available Linux EVDEV events
   compile      Compile a keymap to Lua code and make it available to Eruption
-  completions  Generate shell completions
   help         Print this message or the help of the given subcommand(s)
 
 Options:
