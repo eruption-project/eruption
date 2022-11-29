@@ -4,7 +4,7 @@ pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
 pkgver='0.3.0'
-pkgrel='0'
+pkgrel='1'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
@@ -84,7 +84,7 @@ package() {
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-gui-gtk3" "$pkgdir/usr/bin/"
 
-    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
+    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$pkgdir/usr/share/applications/"
     install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
     install -m 644 "eruption-gui-gtk3/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui-gtk3/schemas/"
 
