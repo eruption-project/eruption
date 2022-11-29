@@ -246,7 +246,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eru
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-fx-proxy %{buildroot}/%{_bindir}/eruption-fx-proxy
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-audio-proxy %{buildroot}/%{_bindir}/eruption-audio-proxy
 install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-process-monitor %{buildroot}/%{_bindir}/eruption-process-monitor
-install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-gui-gtk3 %{buildroot}/%{_bindir}/eruption-gui
+install -Dp -m 0755 %{_builddir}/%{name}-releases-v%{version}/target/release/eruption-gui-gtk3 %{buildroot}/%{_bindir}/eruption-gui-gtk3
 
 %post
 %systemd_post eruption.service
