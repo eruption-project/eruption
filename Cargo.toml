@@ -25,8 +25,8 @@ members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "erup
     "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
 default-members =  ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util",
     "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-fx-proxy", "eruption-process-monitor",
-    "pyroclasm", "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro",
-    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
+    "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro",
+    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption"]
 resolver = "2"
 
 [profile.dev]
