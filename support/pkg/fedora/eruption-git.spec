@@ -1,7 +1,7 @@
 %global OrigName eruption
 %global ShortName eruption
 
-%global commit 1bf29ad80522970aae3c5028e0f7a614ed96af31
+%global commit 2af09d9372f9d34ca1a8ad8db156e1022787bba1
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:    eruption-git
@@ -232,7 +232,7 @@ cp -ra %{_builddir}/%{OrigName}-%{commit}/eruption/src/scripts %{buildroot}/%{_d
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop %{buildroot}/usr/share/applications/eruption-gui-gtk3.desktop
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
 cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 

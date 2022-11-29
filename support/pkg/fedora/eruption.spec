@@ -229,7 +229,7 @@ cp -ra %{_builddir}/%{name}-releases-v%{version}/eruption/src/scripts %{buildroo
 
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
-cp -a %{_builddir}/%{name}-releases-v%{version}/support/assets/eruption-gui-gtk3/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{name}-releases-v%{version}/support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop %{buildroot}/usr/share/applications/eruption-gui-gtk3.desktop
 cp -a %{_builddir}/%{name}-releases-v%{version}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
 cp -a %{_builddir}/%{name}-releases-v%{version}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 
