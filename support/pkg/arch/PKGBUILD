@@ -29,6 +29,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/bin"
     mkdir -p "$pkgdir/etc/eruption"
+    mkdir -p "$pkgdir/etc/profile.d"
     mkdir -p "$pkgdir/usr/share/doc/eruption"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
