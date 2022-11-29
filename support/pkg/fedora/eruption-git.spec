@@ -319,7 +319,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_presetdir}/50-eruption-hotplug-helper.preset
 %{_bindir}/eruption-gui-gtk3
 %{_datarootdir}/applications/eruption-gui-gtk3.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 %{_datarootdir}/eruption-gui-gtk3/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd
