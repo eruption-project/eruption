@@ -1,6 +1,7 @@
 %global OrigName eruption
 %global ShortName eruption
 
+%global gittag master
 %global commit 117d53401af4f80a2a5cdbafd69cddda88912fc2
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
@@ -43,7 +44,6 @@ Recommends: lua-socket-compat
 Conflicts: eruption-roccat-vulcan
 Conflicts: eruption-roccat-vulcan-git
 
-%global gittag master
 %global debug_package %{nil}
 
 %description

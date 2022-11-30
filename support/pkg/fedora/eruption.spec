@@ -4,7 +4,7 @@
 
 Name:    eruption
 Version: 0.3.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0
@@ -48,7 +48,7 @@ Conflicts: eruption-roccat-vulcan-git
 Realtime RGB LED Driver for Linux
 
 %prep
-%autosetup -v -n eruption-releases-v0.3
+%autosetup -v -n %{name}-releases-%{gittag}
 
 %build
 cargo build --release --verbose
@@ -85,7 +85,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/%{ShortName}/i18n
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/applications/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/icons/hicolor/64x64/apps/
-#%{__mkdir_p} %{buildroot}/%{_datarootdir}/eruption-gui-gtk3/schemas
+%{__mkdir_p} %{buildroot}/%{_datarootdir}/eruption-gui-gtk3/schemas
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/bash-completion/completions/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/fish/completions/
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/zsh/site-functions/
