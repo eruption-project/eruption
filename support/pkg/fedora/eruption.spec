@@ -4,7 +4,7 @@
 
 Name:    eruption
 Version: 0.3.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0
@@ -237,8 +237,8 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/erupt
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruptionctl %{buildroot}/%{_bindir}/eruptionctl
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-cmd %{buildroot}/%{_bindir}/eruption-cmd
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-hwutil %{buildroot}/%{_bindir}/eruption-hwutil
-install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-macro%{buildroot}/%{_bindir}/eruption-macro
-install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-keymap%{buildroot}/%{_bindir}/eruption-keymap
+install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-macro %{buildroot}/%{_bindir}/eruption-macro
+install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-keymap %{buildroot}/%{_bindir}/eruption-keymap
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-netfx %{buildroot}/%{_bindir}/eruption-netfx
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-util %{buildroot}/%{_bindir}/eruption-util
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption-debug-tool %{buildroot}/%{_bindir}/eruption-debug-tool
