@@ -8,7 +8,7 @@ Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0
 
-Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/releases/v%{Version}/v%{Version}.tar.gz
+Source0: https://github.com/X3n0m0rph59/%{OrigName}/archive/refs/tags/v%{Version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-build
 
