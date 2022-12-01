@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 
 systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1

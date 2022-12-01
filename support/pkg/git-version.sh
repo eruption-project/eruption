@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 
 git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'

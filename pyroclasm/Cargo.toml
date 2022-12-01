@@ -15,12 +15,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 
 [package]
 name = "pyroclasm"
-version = "0.0.3"
+version = "0.0.4"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"

@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 
 ## pyroclasm
@@ -43,4 +43,4 @@ license-header = Eruption ist freie Software. Sie können es unter den Bedingung
  mit diesem Programm erhalten haben. Falls nicht,
  siehe <http://www.gnu.org/licenses/>.
 
- Copyright (c) 2019-2022, Das Eruption Entwicklerteam
+ Copyright (c) 2019-2023, Das Eruption Entwicklerteam

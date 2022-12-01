@@ -1515,7 +1515,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "bincode 2.0.0-rc.2",
@@ -1746,7 +1746,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui-gtk3"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "byteorder",
  "cairo-rs",
@@ -1786,7 +1786,11 @@ dependencies = [
  "serde_json",
  "sourceview4",
  "thiserror",
+ "tokio",
  "toml",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
  "unic-langid",
  "uuid",
  "walkdir",
@@ -4786,7 +4790,7 @@ dependencies = [
 
 [[package]]
 name = "pyroclasm"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "byteorder",
  "cfg-if 1.0.0",
