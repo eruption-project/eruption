@@ -44,9 +44,9 @@ thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 lazy_static = "1.4.0"
-#i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
-#rust-embed = "6.2.0"
-#unic-langid = "0.9.0"
+# i18n-embed = { version = "0.13.0", features = ["fluent-system", "desktop-requester"] }
+# rust-embed = "6.2.0"
+# unic-langid = "0.9.0"
 eruption-sdk = { path = "../../../lib/rust/eruption-rs" }
 icecream = "0.1.0"
 

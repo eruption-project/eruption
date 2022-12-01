@@ -43,7 +43,7 @@ backend-x11 = ["x11", "x11rb"]
 
 [dependencies]
 cfg-if = "1.0.0"
-nix = "0.25.0"
+nix = "0.26.1"
 memmap2 = "0.5.8"
 clap =  { version = "4.0.26", features = ["derive"] }
 clap_complete = "4.0.6"
@@ -62,9 +62,9 @@ jwalk = "0.6.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.22.0", features = ["full"] }
 ctrlc = { version = "3.2.3", features = ["termination"] }
-# tracing = "0.1.26"
-# tracing-futures = "0.2.5"
-# tracing-subscriber = "0.2.20"
+tracing = "0.1.37"
+tracing-futures = "0.2.5"
+tracing-subscriber = "0.3.16"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
