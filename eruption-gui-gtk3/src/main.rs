@@ -247,7 +247,7 @@ pub fn update_color_map() -> Result<()> {
 /// Switch to slot `index`
 pub fn switch_to_slot(index: usize) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
-        // log::info!("Switching to slot: {}", index);
+        // tracing::info!("Switching to slot: {}", index);
         util::switch_slot(index)?;
 
         STATE.write().active_slot = Some(index);
@@ -261,7 +261,7 @@ pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // tracing::info!(
         //     "Switching to profile: {}",
         //     file_name.to_string_lossy()
         // );
@@ -277,7 +277,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // tracing::info!(
         //     "Switching to slot: {}, using profile: {}",
         //     slot_index,
         //     file_name.to_string_lossy()
@@ -483,7 +483,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                         });
                     }
 
-                    _ => log::error!("Internal error detected"),
+                    _ => tracing::error!("Internal error detected"),
                 }
 
                 events::reenable_ui_events();
@@ -519,12 +519,12 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::RulesChanged => {
-                log::info!("Process monitor ruleset has changed");
+                tracing::info!("Process monitor ruleset has changed");
                 ui::process_monitor::update_rules_view(builder)?;
             }
 
             dbus_client::Message::DeviceHotplug(_device_info) => {
-                log::info!("A device has been hotplugged/removed");
+                tracing::info!("A device has been hotplugged/removed");
                 ui::main::update_main_window(builder).unwrap();
             }
         }
@@ -535,6 +535,38 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
+    let format_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                .with(console_layer)
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        } else {
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        }
+    };
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
@@ -558,14 +590,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // print a license header, except if we are generating shell completions
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
-    }
-
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
     }
 
     let application = Application::new(
@@ -599,7 +623,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             .add_source(config::File::new(&config_file, config::FileFormat::Toml))
             .build()
             .map_err(|e| {
-                log::error!("Could not parse configuration file: {}", e);
+                tracing::error!("Could not parse configuration file: {}", e);
                 error_log::fatal_error(&format!("Could not parse configuration file: {}", e), 4);
             });
 
@@ -651,7 +675,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         if let Err(e) = ui::main::initialize_main_window(app) {
-            log::error!("Could not start the Eruption GUI: {}", e);
+            tracing::error!("Could not start the Eruption GUI: {}", e);
 
             let message =
                 "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
@@ -677,7 +701,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     glib::idle_add_local(
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = handle_timers() {
-                log::error!("An error occurred in a timer callback: {}", e);
+                tracing::error!("An error occurred in a timer callback: {}", e);
             }
 
             Continue(true)

@@ -21,13 +21,13 @@
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use std::{any::Any, mem::size_of};
+use tracing::*;
 
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 

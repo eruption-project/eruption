@@ -64,7 +64,7 @@ pub fn get_keyboard_device(vid: u16, pid: u16) -> Result<KeyboardDevice> {
         (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
 
         _ => {
-            log::warn!("Unknown keyboard model specified, assuming generic model");
+            tracing::warn!("Unknown keyboard model specified, assuming generic model");
 
             Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
         }

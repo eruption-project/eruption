@@ -21,7 +21,6 @@
 
 /// These functions are intended to be used from within Lua scripts
 use byteorder::{ByteOrder, LittleEndian};
-use log::*;
 use mlua::prelude::*;
 use noise::NoiseFn;
 use palette::convert::FromColor;
@@ -34,6 +33,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::vec::Vec;
 use std::{cell::RefCell, thread};
+use tracing::*;
 
 use crate::{
     constants,

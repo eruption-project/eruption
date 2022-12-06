@@ -237,7 +237,7 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
                       _message: &dbus::Message| {
                     let _ = tx
                         .send(Message::ProfileChanged(h.profile_name))
-                        .map_err(|e| log::error!("Could not send a message: {}", e));
+                        .map_err(|e| tracing::error!("Could not send a message: {}", e));
 
                     true
                 },

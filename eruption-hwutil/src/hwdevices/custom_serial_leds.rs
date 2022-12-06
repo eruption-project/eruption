@@ -21,7 +21,7 @@
 
 #![allow(dead_code)]
 
-// use log::trace;
+// use tracing::trace;
 use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::{sync::Arc, time::Duration};

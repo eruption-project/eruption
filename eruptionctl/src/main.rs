@@ -27,6 +27,7 @@ use parking_lot::Mutex;
 use std::env;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::{process, sync::Arc};
+use tracing::instrument;
 
 mod color_scheme;
 mod constants;
@@ -80,7 +81,40 @@ pub struct Options {
 }
 
 /// Main program entrypoint
+#[instrument]
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::Layer;
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
+    let format_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                .with(format_layer)
+                .init();
+        } else {
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                // .with(console_layer)
+                .with(format_layer)
+                .init();
+        }
+    };
+
+    // i18n/l10n support
     translations::load()?;
 
     tokio::runtime::Builder::new_current_thread()
@@ -138,14 +172,14 @@ fn register_sigint_handler() {
         QUIT.store(true, Ordering::SeqCst);
 
         ctrl_c_tx.send(true).unwrap_or_else(|e| {
-            log::error!(
+            tracing::error!(
                 "{}",
                 tr!("could-not-send-on-channel", message = e.to_string())
             );
         });
     })
     .unwrap_or_else(|e| {
-        log::error!(
+        tracing::error!(
             "{}",
             tr!("could-not-set-ctrl-c-handler", message = e.to_string())
         )
@@ -166,7 +200,7 @@ fn apply_opts(opts: &Options) {
         .add_source(config::File::new(config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
-            log::error!("{}", tr!("could-not-parse-config", message = e.to_string()));
+            tracing::error!("{}", tr!("could-not-parse-config", message = e.to_string()));
             process::exit(4);
         });
 

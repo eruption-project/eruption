@@ -52,7 +52,7 @@ pub fn ping() -> Result<()> {
     );
 
     if let Err(e) = proxy.ping() {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
             description: format!("{}", e),

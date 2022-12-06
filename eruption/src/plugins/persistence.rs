@@ -20,7 +20,6 @@
 */
 
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -29,6 +28,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::constants;
 use crate::plugins::{self, Plugin};

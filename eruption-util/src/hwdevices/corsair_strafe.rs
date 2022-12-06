@@ -21,10 +21,10 @@
 
 use bitvec::{field::BitField, order::Lsb0, view::BitView};
 use evdev_rs::enums::EV_KEY;
-use log::*;
 use parking_lot::Mutex;
 use std::time::Duration;
 use std::{sync::Arc, thread};
+use tracing::*;
 
 use crate::constants;
 

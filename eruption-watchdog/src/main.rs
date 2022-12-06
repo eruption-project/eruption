@@ -32,7 +32,6 @@ use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 // use colored::*;
 use flume::unbounded;
-use log::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{
     env,
@@ -41,7 +40,7 @@ use std::{
     thread,
     time::Duration,
 };
-use syslog::Facility;
+use tracing::*;
 
 mod constants;
 mod util;
@@ -139,7 +138,7 @@ fn print_header() {
 }
 
 pub fn stop_or_kill_eruption_daemon() -> Result<()> {
-    log::info!("Now stopping the eruption.service...");
+    tracing::info!("Now stopping the eruption.service...");
 
     /* let status = Command::new("/bin/systemctl")
         .arg("stop")
@@ -149,7 +148,7 @@ pub fn stop_or_kill_eruption_daemon() -> Result<()> {
 
     if status.is_ok() && status.unwrap().success() {
         // eruption.service has stopped
-        log::info!("Eruption has been stopped successfully, exiting now");
+        tracing::info!("Eruption has been stopped successfully, exiting now");
 
         Ok(())
     } else { */
@@ -166,14 +165,14 @@ pub fn stop_or_kill_eruption_daemon() -> Result<()> {
         match status {
             Ok(status) => {
                 if status.success() {
-                    log::info!("Eruption has been killed successfully, exiting now");
+                    tracing::info!("Eruption has been killed successfully, exiting now");
 
                     break 'WAIT_KILL_LOOP Ok(());
                 } else {
                     thread::sleep(Duration::from_millis(2000));
 
                     if retry_counter >= 3 {
-                        log::error!("Error while killing the Eruption daemon");
+                        tracing::error!("Error while killing the Eruption daemon");
 
                         break 'WAIT_KILL_LOOP Ok(());
                     } else {
@@ -183,7 +182,7 @@ pub fn stop_or_kill_eruption_daemon() -> Result<()> {
             }
 
             Err(e) => {
-                log::error!("Error while killing Eruption: {}", e);
+                tracing::error!("Error while killing Eruption: {}", e);
 
                 break 'WAIT_KILL_LOOP Ok(());
             }
@@ -206,70 +205,20 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if unsafe { libc::isatty(0) != 0 } {
-        // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
-
-        // print a license header, except if we are generating shell completions
-        if !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
-            && !env::args().any(|a| a.eq_ignore_ascii_case("hotplug"))
-            && env::args().count() < 2
-        {
-            print_header();
-        }
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_DAEMON,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
-        }
-    }
-
     // register ctrl-c handler
     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
         ctrl_c_tx.send(true).unwrap_or_else(|e| {
-            log::error!(
+            tracing::error!(
                 "{}",
                 tr!("could-not-send-on-channel", message = e.to_string())
             );
         });
     })
     .unwrap_or_else(|e| {
-        log::error!(
+        tracing::error!(
             "{}",
             tr!("could-not-set-ctrl-c-handler", message = e.to_string())
         )
@@ -278,38 +227,38 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     match opts.command {
         Subcommands::Daemon => {
-            log::info!("Eruption watchdog daemon initializing...");
+            tracing::info!("Eruption watchdog daemon initializing...");
 
             'MAIN_LOOP: loop {
                 if QUIT.load(Ordering::SeqCst) {
-                    log::debug!("CTRL-C pressed, terminating now...");
+                    tracing::debug!("CTRL-C pressed, terminating now...");
 
                     break 'MAIN_LOOP;
                 }
 
-                log::info!("Polling the Eruption daemon now...");
+                tracing::info!("Polling the Eruption daemon now...");
 
-                log::debug!("Connecting to the Eruption daemon...");
+                tracing::debug!("Connecting to the Eruption daemon...");
 
                 let connection = Connection::new(ConnectionType::Local)?;
                 match connection.connect() {
                     Ok(()) => {
-                        log::debug!("Successfully connected to the Eruption daemon");
+                        tracing::debug!("Successfully connected to the Eruption daemon");
 
                         let status = connection.get_server_status();
 
                         match status {
                             Ok(status) => {
-                                log::debug!("Response: {}", status.server);
+                                tracing::debug!("Response: {}", status.server);
 
                                 connection.disconnect()?;
-                                log::debug!("Disconnected from the Eruption daemon");
+                                tracing::debug!("Disconnected from the Eruption daemon");
                             }
 
                             Err(e) => {
-                                log::warn!("Eruption daemon seems to have crashed: {}", e);
+                                tracing::warn!("Eruption daemon seems to have crashed: {}", e);
 
-                                log::info!("Attempting to kill the Eruption daemon now...");
+                                tracing::info!("Attempting to kill the Eruption daemon now...");
 
                                 stop_or_kill_eruption_daemon()?;
                             }
@@ -317,14 +266,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     }
 
                     Err(e) => {
-                        log::error!("Failed to connect to the Eruption daemon: {}", e);
+                        tracing::error!("Failed to connect to the Eruption daemon: {}", e);
                     }
                 }
 
                 thread::sleep(Duration::from_millis(2000));
             }
 
-            log::info!("Eruption watchdog daemon terminating now");
+            tracing::info!("Eruption watchdog daemon terminating now");
         }
 
         Subcommands::Completions { shell } => {
@@ -342,6 +291,43 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

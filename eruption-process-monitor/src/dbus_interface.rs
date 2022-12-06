@@ -23,8 +23,8 @@ use dbus::{ffidisp::Connection, ffidisp::NameFlag, MethodErr};
 use dbus_tree::{Factory, Signal};
 use flume::Sender;
 use indexmap::IndexMap;
-use log::*;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::{Action, RuleMetadata, Selector, WindowFocusedSelectorMode};
 

@@ -22,7 +22,6 @@
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
 use flume::{unbounded, Sender};
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use parking_lot::RwLock;
 use std::cell::RefCell;
@@ -30,6 +29,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{any::Any, thread};
+use tracing::*;
 
 use crate::plugins::{self, Plugin};
 

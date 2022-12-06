@@ -24,7 +24,6 @@ use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 use lazy_static::lazy_static;
-use log::warn;
 use parking_lot::Mutex;
 use std::{
     collections::HashMap,
@@ -37,6 +36,7 @@ use std::{
     time::Duration,
     u8,
 };
+use tracing::warn;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

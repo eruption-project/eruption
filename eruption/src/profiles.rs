@@ -23,7 +23,7 @@
 
 use crate::constants;
 use indexmap::IndexMap;
-use log::*;
+use tracing::*;
 
 use serde::{Deserialize, Serialize};
 use std::default::Default;
@@ -410,7 +410,7 @@ pub fn get_profile_dirs() -> Vec<PathBuf> {
 
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback profile directory");
+        tracing::warn!("Using default fallback profile directory");
 
         let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
         result.push(path);
@@ -428,7 +428,7 @@ pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     let mut errors_present = false;
 
     let profile_files = get_profile_files_from(profile_dirs).unwrap_or_else(|e| {
-        log::warn!("Could not enumerate profiles: {}", &e);
+        tracing::warn!("Could not enumerate profiles: {}", &e);
         vec![]
     });
 

@@ -21,11 +21,11 @@
 
 #![allow(dead_code)]
 
-use log::*;
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
+use tracing::*;
 
 use crate::profiles::Profile;
 use crate::scripting::parameters::{ManifestConfiguration, PlainParameter, ToPlainParameter};

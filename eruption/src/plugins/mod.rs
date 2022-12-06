@@ -47,7 +47,7 @@ pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
 pub use uleds::UledsPlugin;
 
-use log::*;
+use tracing::*;
 
 use super::plugin_manager;
 

@@ -219,7 +219,7 @@ mod wayshot {
         //         }
         //     }
         //     if !is_present {
-        //         log::error!(
+        //         tracing::error!(
         //             "\"{}\" is not a valid output.",
         //             args.value_of("output").unwrap().trim()
         //         );
@@ -242,7 +242,7 @@ mod wayshot {
                         height,
                         stride,
                     } => {
-                        log::debug!("Received buffer event");
+                        tracing::debug!("Received buffer event");
                         frame_formats.borrow_mut().push(FrameFormat {
                             format,
                             width,
@@ -251,24 +251,24 @@ mod wayshot {
                         });
                     }
                     zwlr_screencopy_frame_v1::Event::Flags { .. } => {
-                        log::debug!("Received flags event");
+                        tracing::debug!("Received flags event");
                     }
                     zwlr_screencopy_frame_v1::Event::Ready { .. } => {
-                        log::debug!("Received ready event");
+                        tracing::debug!("Received ready event");
                         frame_state.borrow_mut().replace(FrameState::Finished);
                     }
                     zwlr_screencopy_frame_v1::Event::Failed => {
-                        log::debug!("Received failed event");
+                        tracing::debug!("Received failed event");
                         frame_state.borrow_mut().replace(FrameState::Failed);
                     }
                     zwlr_screencopy_frame_v1::Event::Damage { .. } => {
-                        log::debug!("Received Damaga event");
+                        tracing::debug!("Received Damaga event");
                     }
                     zwlr_screencopy_frame_v1::Event::LinuxDmabuf { .. } => {
-                        log::debug!("Received LinuxDmaBuf event");
+                        tracing::debug!("Received LinuxDmaBuf event");
                     }
                     zwlr_screencopy_frame_v1::Event::BufferDone => {
-                        log::debug!("Received bufferdone event");
+                        tracing::debug!("Received bufferdone event");
                         frame_buffer_done.store(true, Ordering::SeqCst);
                     }
                     _ => unreachable!(),
@@ -280,7 +280,7 @@ mod wayshot {
             event_queue.dispatch(&mut (), |_, _, _| unreachable!())?;
         }
 
-        log::debug!(
+        tracing::debug!(
             "Received compositor frame buffer formats: {:#?}",
             frame_formats
         );
@@ -297,12 +297,12 @@ mod wayshot {
             .next()
             .copied();
 
-        log::debug!("Selected frame buffer format: {:#?}", frame_format);
+        tracing::debug!("Selected frame buffer format: {:#?}", frame_format);
 
         let frame_format = match frame_format {
             Some(format) => format,
             None => {
-                log::error!("No suitable frame format found");
+                tracing::error!("No suitable frame format found");
                 exit(1);
             }
         };
@@ -332,7 +332,7 @@ mod wayshot {
             if let Some(state) = frame_state.borrow_mut().take() {
                 match state {
                     FrameState::Failed => {
-                        log::error!("Frame copy failed");
+                        tracing::error!("Frame copy failed");
                         break;
                     }
 
@@ -350,7 +350,7 @@ mod wayshot {
 
                             wl_shm::Format::Xbgr8888 => Rgba8,
                             other => {
-                                log::error!("Unsupported buffer format: {:?}", other);
+                                tracing::error!("Unsupported buffer format: {:?}", other);
                                 break;
                             }
                         };

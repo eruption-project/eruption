@@ -19,10 +19,10 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use log::*;
 use parking_lot::Mutex;
 use std::time::Duration;
 use std::{sync::Arc, thread};
+use tracing::*;
 
 #[allow(unused)]
 use crate::{constants, eprintln_v, println_v};

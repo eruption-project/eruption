@@ -31,8 +31,8 @@ use crate::{
 };
 use flume::Sender;
 use lazy_static::lazy_static;
-use log::{error, info, trace, warn};
 use parking_lot::Mutex;
+use tracing::{error, info, trace, warn};
 
 use std::sync::atomic::Ordering;
 use std::sync::Arc;

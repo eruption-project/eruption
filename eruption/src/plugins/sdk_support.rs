@@ -26,7 +26,6 @@ use crate::{
 };
 use flume::unbounded;
 use lazy_static::lazy_static;
-use log::{debug, error, info, trace};
 use mlua::prelude::*;
 use nix::poll::{poll, PollFd, PollFlags};
 use nix::unistd::unlink;
@@ -43,6 +42,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs, thread};
+use tracing::{debug, error, info, trace};
 
 use crate::{
     hwdevices::RGBA,
@@ -269,6 +269,9 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                                 error!("Could not send a pending dbus API event: {}", e)
                             });
                     } else {
+                        let usb_vid = device.read().get_usb_vid();
+                        let usb_pid = device.read().get_usb_pid();
+
                         // insert an unused rx
                         let (_misc_tx, misc_rx) = unbounded();
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
@@ -279,7 +282,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                         dbus_api_tx
-                            .send(DbusApiEvent::DeviceHotplug((0, 0), false))
+                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
                             .unwrap_or_else(|e| {
                                 error!("Could not send a pending dbus API event: {}", e)
                             });

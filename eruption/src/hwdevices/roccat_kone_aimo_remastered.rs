@@ -22,9 +22,9 @@
 use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc, thread, time::Duration};
+use tracing::*;
 
 use crate::{constants, hwdevices::DeviceStatus};
 

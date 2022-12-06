@@ -20,7 +20,7 @@
 
 [package]
 name = "eruption-sdk"
-version = "0.0.5"
+version = "0.0.6"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
@@ -35,13 +35,12 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.17"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-libc = "0.2.137"
+libc = "0.2.138"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-serde = "1.0.148"
+serde = "1.0.149"
 bincode = "2.0.0-rc.2"
 bytes = "1.3.0"
 prost = "0.11.3"

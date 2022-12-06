@@ -20,9 +20,9 @@
 */
 
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
+use tracing::*;
 // use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::{any::Any, thread};
@@ -708,7 +708,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
         } else {
             match self.query_ctrl_dev() {
                 Ok(result) if result == QueryResult::ResetRequired => {
-                    log::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
+                    tracing::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
 
                     let _result = self.send_init_sequence();
                 }

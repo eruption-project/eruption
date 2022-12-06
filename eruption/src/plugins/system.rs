@@ -19,9 +19,9 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use log::*;
 use mlua::prelude::*;
 use std::any::Any;
+use tracing::*;
 
 use std::process::Command;
 use std::sync::atomic::Ordering;

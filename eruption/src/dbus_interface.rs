@@ -25,10 +25,10 @@ use dbus_tree::{
     Access, MethodErr, Signal, {EmitsChangedSignal, Factory},
 };
 use flume::Sender;
-use log::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::{
     color_scheme::ColorScheme,

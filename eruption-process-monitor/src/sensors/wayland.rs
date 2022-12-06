@@ -135,12 +135,12 @@ impl WaylandSensor {
             }
 
             Err(e) => {
-                log::debug!(
+                tracing::debug!(
                     "Could not connect to the Wayland compositor from the current environment: {}",
                     e
                 );
 
-                log::debug!(
+                tracing::debug!(
                     "Trying to establish a connection to Wayland via the configured parameters..."
                 );
 
@@ -185,7 +185,7 @@ impl WaylandSensor {
                     }
 
                     Err(e) => {
-                        log::error!(
+                        tracing::error!(
                             "Could not connect to a Wayland compositor, giving up: {}",
                             e
                         );
@@ -319,18 +319,18 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppData {
             version,
         } = event
         {
-            log::trace!("Interface: {interface}");
+            tracing::trace!("Interface: {interface}");
 
             match &interface[..] {
                 "zwlr_foreign_toplevel_manager_v1" => {
-                    log::debug!("Registering: zwlr_foreign_toplevel_manager_v1");
+                    tracing::debug!("Registering: zwlr_foreign_toplevel_manager_v1");
 
                     let _manager =
                         registry.bind::<ZwlrForeignToplevelManagerV1, _, _>(name, version, qh, ());
                 }
 
                 "zwlr_foreign_toplevel_handle_v1" => {
-                    log::debug!("Registering: zwlr_foreign_toplevel_handle_v1");
+                    tracing::debug!("Registering: zwlr_foreign_toplevel_handle_v1");
 
                     let _manager =
                         registry.bind::<ZwlrForeignToplevelHandleV1, _, _>(name, version, qh, ());
@@ -385,7 +385,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
         match event {
             Event::Title { title } => {
-                log::trace!("{object}: Title: {title}");
+                tracing::trace!("{object}: Title: {title}");
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
@@ -396,7 +396,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
             }
 
             Event::AppId { app_id } => {
-                log::trace!("{object}: App_id: {app_id}");
+                tracing::trace!("{object}: App_id: {app_id}");
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
@@ -407,7 +407,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
             }
 
             Event::State { state } => {
-                log::trace!("{object}: State: {state:#?}");
+                tracing::trace!("{object}: State: {state:#?}");
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
@@ -426,13 +426,13 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                         && attributes.title.is_none()
                         && attributes.state.is_none()
                     {
-                        log::warn!(
+                        tracing::warn!(
                             "Received a 'done' event for {object}, that has no associated state"
                         );
                     } else {
                         // 2 == active state
                         if attributes.state.as_ref().unwrap().iter().any(|&e| e == 2) {
-                            log::debug!("Emitting event: {object}: {attributes:?}");
+                            tracing::debug!("Emitting event: {object}: {attributes:?}");
 
                             WAYLAND_TX
                                 .lock()
@@ -444,12 +444,12 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                                     window_class: attributes.clone().app_id.unwrap_or_default(),
                                 })
                                 .unwrap_or_else(|e| {
-                                    log::error!("Could not send on a channel: {}", e)
+                                    tracing::error!("Could not send on a channel: {}", e)
                                 });
                         }
                     }
                 } else {
-                    log::error!("Received a 'done' event for previously untracked {object}");
+                    tracing::error!("Received a 'done' event for previously untracked {object}");
                 }
             }
 

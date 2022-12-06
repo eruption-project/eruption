@@ -22,13 +22,13 @@
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
+use tracing::*;
 use udev::Enumerator;
 
 mod corsair_strafe;

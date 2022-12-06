@@ -22,11 +22,11 @@
 use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::any::Any;
 use std::collections::HashMap;
 use std::{mem::size_of, sync::Arc};
+use tracing::*;
 
 use crate::constants;
 

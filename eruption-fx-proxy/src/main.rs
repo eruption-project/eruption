@@ -32,7 +32,6 @@ use i18n_embed::{
 };
 
 use lazy_static::lazy_static;
-use log::{debug, error, info};
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::sync::Arc;
@@ -41,7 +40,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
     thread,
 };
-use syslog::Facility;
+use tracing::{debug, error, info};
 
 use tokio::time::Duration;
 
@@ -96,9 +95,6 @@ lazy_static! {
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
-    #[error("Could not parse syslog log-level")]
-    SyslogLevelError {},
-
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
 }
@@ -203,7 +199,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     debug!("Entering the main loop now...");
 
     'MAIN_LOOP: loop {
-        log::trace!("Main loop iteration");
+        tracing::trace!("Main loop iteration");
 
         if QUIT.load(Ordering::SeqCst) {
             break 'MAIN_LOOP Ok(());
@@ -212,12 +208,12 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
         // instantiate the best fitting backend for the current system configuration
         let mut backend = backends::get_best_fitting_backend()?;
 
-        log::debug!("Connecting to Eruption...");
+        tracing::debug!("Connecting to Eruption...");
 
         let connection = Connection::new(ConnectionType::Local)?;
         connection.connect()?;
 
-        log::debug!("Successfully connected to the Eruption daemon");
+        tracing::debug!("Successfully connected to the Eruption daemon");
 
         let _status = connection.get_server_status()?;
 
@@ -231,7 +227,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
         canvas.fill(Color::new(0, 0, 0, 0));
 
         'EVENT_LOOP: loop {
-            // log::trace!("Event loop iteration");
+            // tracing::trace!("Event loop iteration");
 
             let mut any_updates = false;
 
@@ -252,7 +248,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
             }
 
             if any_updates {
-                log::debug!("Submitting canvas...");
+                tracing::debug!("Submitting canvas...");
 
                 connection.submit_canvas(&canvas)?;
                 canvas_cleared = false;
@@ -260,21 +256,21 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                 thread::sleep(Duration::from_millis(constants::DEFAULT_FRAME_DELAY_MILLIS));
             } else if !canvas_cleared {
                 // cleanup, clear the canvas
-                log::debug!("Clearing canvas...");
+                tracing::debug!("Clearing canvas...");
 
                 canvas.fill(Color::new(0, 0, 0, 0));
                 connection.submit_canvas(&canvas)?;
 
                 canvas_cleared = true;
             } else {
-                log::debug!("Nothing updated");
+                tracing::debug!("Nothing updated");
 
                 thread::sleep(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
             }
         }
 
         // on exit, clear the canvas
-        log::debug!("Clearing canvas...");
+        tracing::debug!("Clearing canvas...");
 
         canvas.fill(Color::new(0, 0, 0, 0));
         connection.submit_canvas(&canvas)?;
@@ -308,50 +304,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     *crate::OPTIONS.write() = Some(opts.clone());
 
-    let daemon = matches!(opts.command, Subcommands::Daemon);
-
-    if unsafe { libc::isatty(0) != 0 } && daemon {
-        // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_USER,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
-        }
-    }
-
     match opts.command {
         Subcommands::Daemon => {
             info!("Starting up...");
@@ -374,16 +326,16 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             // register all available screenshot backends
             backends::register_backends()?;
 
-            log::info!("Startup completed");
+            tracing::info!("Startup completed");
 
             // enter the main loop
             run_main_loop(&ctrl_c_rx)
                 .await
                 .unwrap_or_else(|e| error!("{}", e));
 
-            log::debug!("Left the main loop");
+            tracing::debug!("Left the main loop");
 
-            log::info!("Exiting now");
+            tracing::info!("Exiting now");
         }
 
         Subcommands::Completions { shell } => {
@@ -402,10 +354,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
-    use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+    use tracing::*;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -434,6 +386,43 @@ mod thread_util {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

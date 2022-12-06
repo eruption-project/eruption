@@ -21,7 +21,6 @@
 
 use flume::Receiver;
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
@@ -34,6 +33,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::vec::Vec;
+use tracing::*;
 
 use crate::{
     constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,

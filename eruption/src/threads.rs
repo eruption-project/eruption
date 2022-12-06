@@ -22,13 +22,13 @@
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
-use log::{debug, error, info, trace, warn};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
+use tracing::{debug, error, info, trace, warn};
 
 use crate::{
     constants, dbus_interface, hwdevices, macros, plugins, script,
@@ -339,7 +339,7 @@ pub fn spawn_mouse_input_thread(
                                 }
 
                                 Err(e) => {
-                                    log::warn!("Mouse event for '{code:?}' not processed: {e}")
+                                    tracing::warn!("Mouse event for '{code:?}' not processed: {e}")
                                 }
                             }
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =

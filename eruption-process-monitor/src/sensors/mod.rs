@@ -24,8 +24,8 @@ use std::{collections::HashSet, hash::Hash, sync::Arc};
 use async_trait::async_trait;
 use dyn_clonable::*;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::RwLock;
+use tracing::*;
 
 #[cfg(feature = "sensor-gnome-shellext")]
 mod gnome_shellext;

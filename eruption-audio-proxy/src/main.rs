@@ -40,14 +40,13 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use log::{debug, error, info, trace, warn};
 use nix::poll::{poll, PollFd, PollFlags};
 use parking_lot::{Mutex, RwLock};
 use prost::Message;
 use rust_embed::RustEmbed;
 use socket2::{Domain, SockAddr, Socket, Type};
-use syslog::Facility;
 use tokio::io::{self};
+use tracing::{debug, error, info, trace, warn};
 
 use protocol::Command;
 use protocol::CommandType;
@@ -120,9 +119,6 @@ lazy_static! {
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
-    #[error("Could not parse syslog log-level")]
-    SyslogLevelError {},
-
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
 }
@@ -537,49 +533,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     let opts = Options::parse();
-    let daemon = matches!(opts.command, Subcommands::Daemon);
-
-    if unsafe { libc::isatty(0) != 0 } && daemon {
-        // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_USER,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
-        }
-    }
+    let _daemon = matches!(opts.command, Subcommands::Daemon);
 
     match opts.command {
         Subcommands::Daemon => {
@@ -646,10 +600,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
-    use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+    use tracing::*;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -678,6 +632,43 @@ mod thread_util {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

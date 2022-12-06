@@ -28,9 +28,9 @@ mod roccat_vulcan_tkl;
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
-use log::{debug, error, trace};
 use std::{thread, time::Duration};
 use thiserror::Error;
+use tracing::{debug, error, trace};
 use udev::Enumerator;
 
 pub type HwDevice = dyn DeviceTrait + Sync + Send;

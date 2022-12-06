@@ -21,7 +21,6 @@
 
 use config::Config;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::RwLock;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -29,6 +28,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::color_scheme::ColorScheme;
 use crate::plugins::audio;

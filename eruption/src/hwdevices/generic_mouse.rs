@@ -23,8 +23,8 @@ use std::{any::Any, collections::HashMap, sync::Arc};
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::RwLock;
+use tracing::*;
 
 use crate::hwdevices::DeviceStatus;
 

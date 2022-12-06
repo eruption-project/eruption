@@ -34,7 +34,6 @@ use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 // use colored::*;
-use log::*;
 use std::{
     env,
     path::Path,
@@ -43,7 +42,7 @@ use std::{
     thread,
     time::Duration,
 };
-use syslog::Facility;
+use tracing::*;
 
 mod constants;
 mod util;
@@ -80,9 +79,6 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
-
-    #[error("Could not parse syslog log-level")]
-    SyslogLevelError {},
 }
 
 lazy_static! {
@@ -134,7 +130,7 @@ fn print_header() {
 
 pub fn restart_eruption_daemon() -> Result<()> {
     // sleep until udev has settled
-    log::info!("Waiting for the devices to settle...");
+    tracing::info!("Waiting for the devices to settle...");
 
     let status = Command::new("/bin/udevadm")
         .arg("settle")
@@ -144,17 +140,17 @@ pub fn restart_eruption_daemon() -> Result<()> {
     if let Err(e) = status {
         // udev-settle has failed, sleep a while and let the devices settle
 
-        log::error!("udevadm settle has failed: {}", e);
+        tracing::error!("udevadm settle has failed: {}", e);
 
         thread::sleep(Duration::from_millis(3500));
     } else {
         // sleep a while just to be safe
         thread::sleep(Duration::from_millis(1500));
 
-        log::info!("Done, all devices have settled");
+        tracing::info!("Done, all devices have settled");
     }
 
-    log::info!("Now restarting the eruption.service...");
+    tracing::info!("Now restarting the eruption.service...");
 
     let status = Command::new("/bin/systemctl")
         .arg("restart")
@@ -164,7 +160,7 @@ pub fn restart_eruption_daemon() -> Result<()> {
 
     if status.success() {
         // wait for the eruption.service to be fully operational...
-        log::info!("Waiting for Eruption to be fully operational...");
+        tracing::info!("Waiting for Eruption to be fully operational...");
 
         let mut retry_counter = 0;
 
@@ -178,14 +174,14 @@ pub fn restart_eruption_daemon() -> Result<()> {
             match result {
                 Ok(status) => {
                     if status.success() {
-                        log::info!("Eruption has been started successfully, exiting now");
+                        tracing::info!("Eruption has been started successfully, exiting now");
 
                         break 'WAIT_START_LOOP;
                     } else {
                         thread::sleep(Duration::from_millis(2000));
 
                         if retry_counter >= 5 {
-                            log::error!("Timeout while starting eruption.service");
+                            tracing::error!("Timeout while starting eruption.service");
 
                             break 'WAIT_START_LOOP;
                         } else {
@@ -195,14 +191,14 @@ pub fn restart_eruption_daemon() -> Result<()> {
                 }
 
                 Err(e) => {
-                    log::error!("Error while waiting for Eruption to start: {}", e);
+                    tracing::error!("Error while waiting for Eruption to start: {}", e);
 
                     break 'WAIT_START_LOOP;
                 }
             }
         }
     } else {
-        log::error!("Could not start Eruption, an error occurred");
+        tracing::error!("Could not start Eruption, an error occurred");
     }
 
     Ok(())
@@ -222,15 +218,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if unsafe { libc::isatty(0) != 0 } {
-        // initialize logging on console
-        if env::var("RUST_LOG").is_err() {
-            env::set_var("RUST_LOG_OVERRIDE", "info");
-            pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-        } else {
-            pretty_env_logger::init();
-        }
-
+    if atty::is(atty::Stream::Stdout) {
         // print a license header, except if we are generating shell completions
         if !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
             && !env::args().any(|a| a.eq_ignore_ascii_case("hotplug"))
@@ -238,50 +226,18 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         {
             print_header();
         }
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_DAEMON,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
-        }
     }
 
     let opts = Options::parse();
     match opts.command {
         Subcommands::Hotplug => {
-            log::info!("A hotplug event has been triggered, notifying the Eruption daemon...");
+            tracing::info!("A hotplug event has been triggered, notifying the Eruption daemon...");
 
             // place a lockfile, so we don't run into loops
             match lockfile::Lockfile::create("/run/lock/eruption-hotplug-helper.lock") {
                 Ok(lock_file) => {
                     if Path::new("/run/lock/eruption-sleep.lock").exists() {
-                        log::info!("Waking up from system sleep...");
+                        tracing::info!("Waking up from system sleep...");
 
                         // after resume from sleep, the connected devices will be in an indeterminate state
                         // so restart the eruption daemon to be on the safe side
@@ -290,7 +246,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         // a hotplug event has been received while the system is up and running
 
                         // sleep until udev has settled
-                        log::info!("Waiting for the devices to settle...");
+                        tracing::info!("Waiting for the devices to settle...");
 
                         let status = Command::new("/bin/udevadm")
                             .arg("settle")
@@ -299,22 +255,22 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                         if let Err(e) = status {
                             // udev-settle has failed, sleep a while and let the devices settle
-                            log::error!("udevadm settle has failed: {}", e);
+                            tracing::error!("udevadm settle has failed: {}", e);
 
                             thread::sleep(Duration::from_millis(3500));
                         } else {
-                            log::info!("Done, all devices have settled");
+                            tracing::info!("Done, all devices have settled");
                         }
 
-                        log::info!("Connecting to the Eruption daemon...");
+                        tracing::info!("Connecting to the Eruption daemon...");
 
                         let connection = Connection::new(ConnectionType::Local)?;
                         match connection.connect() {
                             Ok(()) => {
-                                log::debug!("Successfully connected to the Eruption daemon");
+                                tracing::debug!("Successfully connected to the Eruption daemon");
                                 let _status = connection.get_server_status()?;
 
-                                log::info!(
+                                tracing::info!(
                                     "Notifying the Eruption daemon about the hotplug event..."
                                 );
 
@@ -326,30 +282,30 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 connection.notify_device_hotplug(&hotplug_info)?;
 
                                 connection.disconnect()?;
-                                log::info!("Disconnected from the Eruption daemon");
+                                tracing::info!("Disconnected from the Eruption daemon");
                             }
 
                             Err(e) => {
-                                log::error!("Failed to connect to the Eruption daemon: {}", e);
+                                tracing::error!("Failed to connect to the Eruption daemon: {}", e);
                             }
                         }
                     }
 
                     let _ = lock_file.release().map_err(|e| {
-                        log::warn!("Could not release the lock file: {}", e);
+                        tracing::warn!("Could not release the lock file: {}", e);
                     });
                 }
 
                 Err(lockfile::Error::LockTaken) => {
-                    log::warn!("We have been invoked while holding a global lock, exiting now");
+                    tracing::warn!("We have been invoked while holding a global lock, exiting now");
                 }
 
                 Err(lockfile::Error::Io(e)) => {
-                    log::error!("An error occurred while creating the lock file: {}", e);
+                    tracing::error!("An error occurred while creating the lock file: {}", e);
                 }
 
                 Err(_) => {
-                    log::error!("An unknown error occurred while creating the lock file");
+                    tracing::error!("An unknown error occurred while creating the lock file");
                 }
             }
         }
@@ -369,6 +325,43 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

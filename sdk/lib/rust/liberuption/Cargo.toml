@@ -20,7 +20,7 @@
 
 [package]
 name = "liberuption"
-version = "0.0.1"
+version = "0.0.2"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
@@ -39,7 +39,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.17"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"

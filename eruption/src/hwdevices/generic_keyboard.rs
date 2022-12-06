@@ -21,10 +21,10 @@
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use std::{any::Any, collections::HashMap};
+use tracing::*;
 
 use crate::hwdevices::DeviceStatus;
 

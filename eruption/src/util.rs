@@ -132,7 +132,7 @@ pub fn demand_file_is_accessible<P: AsRef<Path>>(p: P) -> Result<()> {
 pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
     let path = path.as_ref();
 
-    log::info!("Writing to file: {}", &path.display());
+    tracing::info!("Writing to file: {}", &path.display());
 
     fs::write(path, data).map_err(|e| UtilError::FileWriteError {
         description: format!("{}", e),
@@ -164,7 +164,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback script directory");
+        tracing::warn!("Using default fallback script directory");
 
         let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
         result.push(path);

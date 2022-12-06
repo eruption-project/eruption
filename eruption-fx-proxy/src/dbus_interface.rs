@@ -22,8 +22,8 @@
 use dbus::{ffidisp::Connection, ffidisp::NameFlag};
 use dbus_tree::{Access, EmitsChangedSignal, Factory};
 use flume::Sender;
-use log::*;
 use std::sync::{atomic::Ordering, Arc};
+use tracing::*;
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]

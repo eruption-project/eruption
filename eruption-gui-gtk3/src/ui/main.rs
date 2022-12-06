@@ -139,28 +139,28 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot1_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(0, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(0, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot2_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(1, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(1, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot3_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(2, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(2, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot4_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(3, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(3, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
@@ -657,7 +657,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     });
 
     restart_eruption_daemon_button.connect_clicked(clone!(@weak builder => move |_| {
-        util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
+        util::restart_eruption_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
     }));
 
     // special options

@@ -21,10 +21,10 @@
 
 use std::{any::Any, collections::HashMap, path::PathBuf, sync::Arc};
 
-use log::*;
 use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::time::Duration;
+use tracing::*;
 
 use crate::hwdevices::DeviceStatus;
 

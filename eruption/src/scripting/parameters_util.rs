@@ -19,11 +19,11 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use log::*;
 use same_file;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::Ordering;
+use tracing::*;
 
 use crate::{
     profiles::Profile,

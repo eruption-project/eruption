@@ -244,7 +244,7 @@ pub fn spawn_dbus_event_loop_session(
 
         // let _id1_1 = rules_proxy.match_signal(
         //     move |h: PropertiesPropertiesChanged, _: &Connection, _message: &dbus::Message| {
-        //         log::info!("{:?}", h);
+        //         tracing::info!("{:?}", h);
 
         //         true
         //     },
@@ -280,7 +280,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &str) -> Result<()> {
     );
 
     if let Err(e) = proxy.write_file(&path.as_ref().to_string_lossy(), data) {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
             description: format!("{}", e),
@@ -302,7 +302,7 @@ pub fn ping() -> Result<()> {
     );
 
     if let Err(e) = proxy.ping() {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
             description: format!("{}", e),
@@ -324,7 +324,7 @@ pub fn ping_privileged() -> Result<()> {
     );
 
     if let Err(e) = proxy.ping_privileged() {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
             description: format!("{}", e),

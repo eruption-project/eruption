@@ -22,8 +22,8 @@
 use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
+use tracing::*;
 // use std::sync::atomic::Ordering;
 use std::any::Any;
 use std::collections::HashMap;

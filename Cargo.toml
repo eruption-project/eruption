@@ -40,7 +40,7 @@ overflow-checks = true
 codegen-units = 512
 incremental = true
 panic = "unwind"
-# split-debuginfo = "unpacked"
+split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -53,7 +53,7 @@ overflow-checks = true
 codegen-units = 1
 incremental = false
 panic = "abort"
-# split-debuginfo = "unpacked"
+split-debuginfo = "unpacked"
 
 [profile.sccache]
 inherits = "dev"

@@ -311,6 +311,38 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
+    let format_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                .with(console_layer)
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        } else {
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        }
+    };
+
+    // i18n/l10n support
     translations::load()?;
 
     tokio::runtime::Builder::new_current_thread()
@@ -342,13 +374,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() > 0 {
         print_header();
     }
-
-    // initialize logging
-    tracing_subscriber::fmt()
-        .with_line_number(true)
-        .with_thread_names(true)
-        // .pretty()
-        .init();
 
     // egui_logger::init().unwrap();
 

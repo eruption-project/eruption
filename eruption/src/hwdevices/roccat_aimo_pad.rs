@@ -20,9 +20,9 @@
 */
 
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
+use tracing::*;
 // use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::{any::Any, thread};

@@ -21,7 +21,6 @@
 
 use lazy_static::lazy_static;
 use libc::c_char;
-use log::*;
 use mlua::prelude::*;
 use nix::fcntl::{self, OFlag};
 use nix::sys::stat::Mode;
@@ -34,6 +33,7 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::thread;
+use tracing::*;
 
 use crate::hwdevices::RGBA;
 use crate::plugins::Plugin;

@@ -22,11 +22,11 @@
 use bitvec::{field::BitField, order::Lsb0, view::BitView};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::{any::Any, time::Duration};
 use std::{sync::Arc, thread};
+use tracing::*;
 
 use crate::constants;
 

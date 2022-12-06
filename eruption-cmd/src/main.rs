@@ -28,7 +28,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::{
@@ -38,6 +37,7 @@ use std::{
         Arc,
     },
 };
+use tracing::*;
 
 mod constants;
 mod util;
@@ -148,10 +148,10 @@ Copyright (c) 2019-2023, The Eruption Development Team
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
-    use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+    use tracing::*;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -197,14 +197,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         print_header();
     }
 
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    }
-
     // start the thread deadlock detector
     #[cfg(debug_assertions)]
     thread_util::deadlock_detector()
@@ -238,6 +230,35 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // tracing_subscriber::registry()
+            //     // .with(journald_layer)
+            //     // .with(console_layer)
+            //     // .with(format_layer)
+            //     .init();
+        }
+    };
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
