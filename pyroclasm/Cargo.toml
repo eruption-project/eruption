@@ -1,26 +1,25 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2023, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 [package]
 name = "pyroclasm"
-version = "0.0.5"
+version = "0.0.6"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
@@ -81,7 +80,7 @@ egui-notify = "0.4"
 egui_logger = "0.2.2"
 egui-modal = "0.1.7"
 egui_inspect = "0.1.3"
-egui_file = "0.3.1"
+egui_file = "0.4.0"
 egui_dock = "0.2.1"
 # egui-datepicker = "0.3"
 # egui_cable = "0.3.0"

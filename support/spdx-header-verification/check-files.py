@@ -8,7 +8,6 @@ import re
 SLUG = re.compile('[a-zA-Z0-9.-]+')
 SPDX = re.compile(f'SPDX-License-Identifier:\s+({SLUG.pattern})')
 
-
 class Language:
     def __init__(self, *comments, shebang=False):
         assert(isinstance(shebang, bool))
@@ -36,7 +35,6 @@ class Language:
                 return match.group(1)
 
         return None
-
 
 class Index:
     INTERPRETERS = {
@@ -111,7 +109,6 @@ class Index:
 
                 # Parse the SPDX header for the language.
                 yield (path, language.license(path))
-
 
 if __name__ == '__main__':
     import sys

@@ -1,22 +1,21 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2023, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 # Stable links to Eruption virtual devices
 
@@ -29,7 +28,6 @@ ACTION=="remove", GOTO="eruption_end"
 # check for presence of lock file
 
 TEST=="/run/lock/eruption-hotplug-helper.lock", GOTO="eruption_end"
-
 
 # Keyboard devices
 
@@ -51,7 +49,6 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="31
 
 # Corsair STRAFE Gaming Keyboard
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1b15", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
-
 
 # Mouse devices
 
@@ -90,7 +87,6 @@ ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="0x
 # ROCCAT Nyth
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7c", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2e7d", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service"
-
 
 # Miscellaneous devices
 

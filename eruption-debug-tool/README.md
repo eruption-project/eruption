@@ -13,7 +13,6 @@ A helper utility that can be used to debug USB HID devices
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-
 Please find the device you want to debug below and use its respective
 index number (column 1) as the device index for the other sub-commands of this tool
 

@@ -1463,9 +1463,9 @@ dependencies = [
 
 [[package]]
 name = "egui_file"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44f95b7d634937d4f9ddd4056d8bacc380c4c6bc3112cebdfae4c37f33e79f4f"
+checksum = "9fbdc0d10ee2eff22f35c59eef6c20c34e4315ddad81bac2e4cd21f231b1e170"
 dependencies = [
  "egui 0.19.0",
 ]
@@ -5124,7 +5124,7 @@ dependencies = [
 
 [[package]]
 name = "pyroclasm"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "atty",
  "byteorder",

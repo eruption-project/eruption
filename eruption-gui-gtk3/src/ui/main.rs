@@ -210,7 +210,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_value().get::<String>()
             .unwrap();
 
-
         switch_to_slot_and_profile(0, file).unwrap();
     }));
 
@@ -236,7 +235,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .value(&entry, 2)
             .to_value().get::<String>()
             .unwrap();
-
 
         switch_to_slot_and_profile(1, file).unwrap();
     }));
@@ -264,7 +262,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_value().get::<String>()
             .unwrap();
 
-
         switch_to_slot_and_profile(2, file).unwrap();
     }));
 
@@ -290,7 +287,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .value(&entry, 2)
             .to_value().get::<String>()
             .unwrap();
-
 
         switch_to_slot_and_profile(3, file).unwrap();
     }));

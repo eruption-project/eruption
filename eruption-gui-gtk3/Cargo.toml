@@ -1,22 +1,21 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2023, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 [package]
 name = "eruption-gui-gtk3"
@@ -34,6 +33,7 @@ readme = "README.md"
 resolver = "2"
 
 [features]
+# default = []
 default = ["sourceview"]
 sourceview = ["sourceview4"]
 debug-async = []
@@ -74,14 +74,14 @@ gdk = "0.15.4"
 gdk-pixbuf = "0.15.11"
 pango = "0.15.10"
 glib-sys = "0.15.10"
-gtk-sys = "0.15.3"
+gtk-sys = "0.15.1"
 gobject-sys = "0.15.10"
 gio-sys = "0.15.10"
 gdk-sys = "0.15.1"
 gtk = { version = "0.15.5", features = ["v3_24"] }
 pangocairo = "0.15.1"
 sourceview4 = { version = "0.3.0", optional = true }
-# sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs" }
+# sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
 rust-embed = { version = "6.4.2", features = ["compression"] }
