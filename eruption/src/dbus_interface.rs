@@ -251,7 +251,7 @@ impl DbusApi {
                         .collect::<Vec<DeviceStatus>>();
 
                     let result = serde_json::to_string_pretty(&device_status)
-                        .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+                        .map_err(|e| MethodErr::failed(&format!("{e}")))?;
 
                     i.append(result);
 
@@ -474,7 +474,7 @@ impl DbusApi {
                                         trace!("Querying device [{}] status", device);
 
                                         let result = query_device_specific_status(device)
-                                            .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+                                            .map_err(|e| MethodErr::failed(&format!("{e}")))?;
 
                                         Ok(vec![m.msg.method_return().append1(result)])
                                     } else {
@@ -582,8 +582,7 @@ impl DbusApi {
                                         crate::util::write_file(&PathBuf::from(filename), &data)
                                             .map_err(|e| {
                                                 MethodErr::failed(&format!(
-                                                    "Error writing file: {}",
-                                                    e
+                                                    "Error writing file: {e}"
                                                 ))
                                             })?;
 
@@ -999,7 +998,7 @@ impl DbusApi {
             .collect::<Vec<DeviceStatus>>();
 
         let result = serde_json::to_string_pretty(&device_status)
-            .map_err(|e| MethodErr::failed(&format!("{}", e)))?;
+            .map_err(|e| MethodErr::failed(&format!("{e}")))?;
 
         let _ = self
             .connection
@@ -1364,7 +1363,7 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
             "brightness" => {
                 let brightness = device.read().get_local_brightness()?;
 
-                Ok(format!("{}", brightness))
+                Ok(format!("{brightness}"))
             }
 
             _ => Err(DbusApiError::InvalidParameter {}.into()),
@@ -1401,43 +1400,43 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
             "profile" => {
                 let profile = device.read().get_profile()?;
 
-                Ok(format!("{}", profile))
+                Ok(format!("{profile}"))
             }
 
             "dpi" => {
                 let dpi = device.read().get_dpi()?;
 
-                Ok(format!("{}", dpi))
+                Ok(format!("{dpi}"))
             }
 
             "rate" => {
                 let rate = device.read().get_rate()?;
 
-                Ok(format!("{}", rate))
+                Ok(format!("{rate}"))
             }
 
             "dcu" => {
                 let dcu_config = device.read().get_dcu_config()?;
 
-                Ok(format!("{}", dcu_config))
+                Ok(format!("{dcu_config}"))
             }
 
             "angle-snapping" => {
                 let angle_snapping = device.read().get_angle_snapping()?;
 
-                Ok(format!("{}", angle_snapping))
+                Ok(format!("{angle_snapping}"))
             }
 
             "debounce" => {
                 let debounce = device.read().get_debounce()?;
 
-                Ok(format!("{}", debounce))
+                Ok(format!("{debounce}"))
             }
 
             "brightness" => {
                 let brightness = device.read().get_local_brightness()?;
 
-                Ok(format!("{}", brightness))
+                Ok(format!("{brightness}"))
             }
 
             _ => Err(DbusApiError::InvalidParameter {}.into()),
@@ -1477,7 +1476,7 @@ fn query_device_specific_configuration(device: u64, param: &str) -> Result<Strin
             "brightness" => {
                 let brightness = device.read().get_local_brightness()?;
 
-                Ok(format!("{}", brightness))
+                Ok(format!("{brightness}"))
             }
 
             _ => Err(DbusApiError::InvalidParameter {}.into()),

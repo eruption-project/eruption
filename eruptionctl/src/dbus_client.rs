@@ -40,7 +40,7 @@ pub async fn dbus_system_bus(
 
     tokio::spawn(async {
         let err = resource.await;
-        panic!("Lost connection to D-Bus: {}", err);
+        panic!("Lost connection to D-Bus: {err}");
     });
 
     let proxy = nonblock::Proxy::new(
@@ -62,7 +62,7 @@ pub async fn dbus_session_bus<'a>(
 
     tokio::spawn(async {
         let err = resource.await;
-        panic!("Lost connection to D-Bus: {}", err);
+        panic!("Lost connection to D-Bus: {err}");
     });
 
     let proxy = nonblock::Proxy::new(

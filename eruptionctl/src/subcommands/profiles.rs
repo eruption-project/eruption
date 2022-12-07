@@ -55,7 +55,7 @@ pub async fn handle_command(command: ProfilesSubcommands) -> Result<()> {
 async fn edit_command(profile_name: String) -> Result<()> {
     match util::match_profile_by_name(&profile_name) {
         Ok(profile) => util::edit_file(profile.profile_file)?,
-        Err(err) => eprintln!("{}", err),
+        Err(err) => eprintln!("{err}"),
     }
 
     Ok(())
@@ -85,7 +85,7 @@ async fn info_command(profile_name: String) -> Result<()> {
                 profile.config,
             );
         }
-        Err(err) => eprintln!("{}", err),
+        Err(err) => eprintln!("{err}"),
     }
 
     Ok(())

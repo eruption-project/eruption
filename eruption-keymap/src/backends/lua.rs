@@ -76,7 +76,7 @@ impl super::Backend for LuaBackend {
         )?;
 
         for (index, (source, rule)) in table.mappings().iter().enumerate() {
-            writeln!(&mut text, "-- {:?} -> {:?}", source, rule)?;
+            writeln!(&mut text, "-- {source:?} -> {rule:?}")?;
 
             match &rule.action {
                 Action::Null => {

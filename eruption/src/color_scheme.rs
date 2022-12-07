@@ -63,7 +63,7 @@ impl ColorSchemeExt for ColorScheme {
             .colors
             .get(index)
             .ok_or_else(|| ColorSchemeError::InvalidIndex {
-                description: format!("{}", index),
+                description: format!("{index}"),
             })?
             .to_owned())
     }
@@ -149,7 +149,7 @@ impl ColorSchemeExt for PywalColorScheme {
             15 => Ok(csscolorparser::parse(&self.colors.color15)?),
 
             _ => Err(ColorSchemeError::InvalidIndex {
-                description: format!("{}", index),
+                description: format!("{index}"),
             }
             .into()),
         }

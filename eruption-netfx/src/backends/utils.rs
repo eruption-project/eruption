@@ -61,7 +61,7 @@ pub fn process_image_buffer(buffer: &[u8], device: &KeyboardDevice) -> Result<St
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", key_index, r, g, b, a);
+            result += &format!("{key_index}:{r}:{g}:{b}:{a}\n");
         }
     }
 
@@ -99,7 +99,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, device: &KeyboardDevice) 
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", key_index, r, g, b, a);
+            result += &format!("{key_index}:{r}:{g}:{b}:{a}\n");
         }
     }
 
@@ -135,7 +135,7 @@ pub fn process_screenshot(image: &Image, device: &KeyboardDevice) -> Result<Stri
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", key_index, r, g, b, a);
+            result += &format!("{key_index}:{r}:{g}:{b}:{a}\n");
         }
     }
 

@@ -164,7 +164,7 @@ fn update_parameters_on_active_profile(
     if let Some(lua_tx) = lua_tx {
         let sent = lua_tx.send(script::Message::SetParameters { parameter_values });
         if let Err(e) = sent {
-            eprintln!("Could not update parameter from D-Bus request. {}", e);
+            eprintln!("Could not update parameter from D-Bus request. {e}");
             crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
     }

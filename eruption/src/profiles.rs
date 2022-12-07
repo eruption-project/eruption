@@ -542,8 +542,7 @@ mod tests {
 
         assert!(
             files.contains(&path.join("../support/tests/assets/default.profile")),
-            "Missing default.profile: {:#?}",
-            files
+            "Missing default.profile: {files:#?}"
         );
 
         Ok(())
@@ -560,8 +559,7 @@ mod tests {
                 .map(|p| p.name.as_ref())
                 .collect::<Vec<&str>>()
                 .contains(&"Organic FX"),
-            "Missing profile 'Organic FX' in profiles: {:#?}",
-            profiles
+            "Missing profile 'Organic FX' in profiles: {profiles:#?}"
         );
 
         Ok(())
@@ -579,8 +577,7 @@ mod tests {
         assert_eq!(
             profile_path,
             path.join("../support/tests/assets/default.profile"),
-            "Invalid path {:#?}",
-            profile_path
+            "Invalid path {profile_path:#?}"
         );
 
         Ok(())
@@ -726,7 +723,7 @@ mod tests {
                 min: Some(-1),
                 max: Some(9999),
             } => {}
-            _ => assert!(false, "Wrong manifest_value: {:?}", manifest_value),
+            _ => assert!(false, "Wrong manifest_value: {manifest_value:?}"),
         }
 
         Ok(())

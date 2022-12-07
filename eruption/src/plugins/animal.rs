@@ -476,8 +476,7 @@ impl Plugin for AnimalPlugin {
                     })
                     .map_err(|e: eyre::Error| {
                         LuaError::RuntimeError(format!(
-                            "Could not instantiate the animal object: {}",
-                            e
+                            "Could not instantiate the animal object: {e}"
                         ))
                     })
             },
@@ -1546,7 +1545,7 @@ mod ternimal {
                 let r = (self.red * 255.0).round() as u8;
                 let g = (self.green * 255.0).round() as u8;
                 let b = (self.blue * 255.0).round() as u8;
-                format!("2;{};{};{}", r, g, b)
+                format!("2;{r};{g};{b}")
             } else {
                 let r = (self.red * 5.0).round() as u8;
                 let g = (self.green * 5.0).round() as u8;

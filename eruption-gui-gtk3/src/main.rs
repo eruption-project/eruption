@@ -624,7 +624,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             .build()
             .map_err(|e| {
                 tracing::error!("Could not parse configuration file: {}", e);
-                error_log::fatal_error(&format!("Could not parse configuration file: {}", e), 4);
+                error_log::fatal_error(&format!("Could not parse configuration file: {e}"), 4);
             });
 
         *CONFIG.lock() = config.ok();
@@ -679,7 +679,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
             let message =
                 "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
-            let secondary = format!("Reason:\n{}", e);
+            let secondary = format!("Reason:\n{e}");
 
             let message_dialog = MessageDialogBuilder::new()
                 .destroy_with_parent(true)

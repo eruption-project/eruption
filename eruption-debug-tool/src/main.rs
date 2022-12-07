@@ -323,7 +323,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     for (index, device) in hidapi.device_list().enumerate() {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -337,7 +337,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     println!("\nSpecial devices\n");
 
                     for device_index in 0..4 {
-                        let device_file = format!("/dev/ttyACM{}", device_index);
+                        let device_file = format!("/dev/ttyACM{device_index}");
 
                         println!(
                             "Index: {}: Serial Port {} ({})",
@@ -363,7 +363,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -375,7 +375,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             for i in 0..256 {
                                 if let Ok(result) = dev.get_indexed_string(i) {
                                     if let Some(s) = result {
-                                        println!("{:03}: {}", i, s);
+                                        println!("{i:03}: {s}");
                                     }
                                 } else if opts.verbose > 0 {
                                     error!("{:03}: {}", i, "Failed");
@@ -406,7 +406,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -437,7 +437,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 let bytes_read = dev.read(&mut buf)?;
 
                                 println!("{:?}: {} bytes", Instant::now(), bytes_read);
-                                hexdump::hexdump_iter(&buf).for_each(|s| println!("  {}", s));
+                                hexdump::hexdump_iter(&buf).for_each(|s| println!("  {s}"));
                             }
                         } else {
                             error!("Could not open the device, is the device in use?");
@@ -466,7 +466,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -552,7 +552,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -595,7 +595,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -636,7 +636,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -679,7 +679,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -719,7 +719,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -814,7 +814,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 for b in buf.iter() {
                     if opts.verbose > 0 {
-                        println!("{:?}", buf);
+                        println!("{buf:?}");
                     }
 
                     if QUIT.load(Ordering::SeqCst) {
@@ -824,7 +824,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     for init in 0x00..0xff {
                         for poly in 0x00..0xff {
                             if opts.verbose > 0 {
-                                println!("Processing: init: 0x{:02x}, Poly: 0x{:02x}", init, poly);
+                                println!("Processing: init: 0x{init:02x}, Poly: 0x{poly:02x}");
                             }
 
                             let crc8 = util::crc8_slow_with_poly(&b[1..], init, poly);
@@ -840,7 +840,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 }
 
                                 if opts.verbose > 1 {
-                                    println!("{:?}", result);
+                                    println!("{result:?}");
                                 }
                             }
                         }

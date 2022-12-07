@@ -112,7 +112,7 @@ pub fn spawn_keyboard_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/kbd:{}", device_index))
+        .name(format!("events/kbd:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();
@@ -250,7 +250,7 @@ pub fn spawn_mouse_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/mouse:{}", device_index))
+        .name(format!("events/mouse:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();
@@ -579,7 +579,7 @@ pub fn spawn_misc_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/misc:{}", device_index))
+        .name(format!("events/misc:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();

@@ -251,7 +251,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", data.italic());
                 }
 
-                let v = Vec::from(format!("{}\n", data));
+                let v = Vec::from(format!("{data}\n"));
                 buf_reader.write_all(&v).await?;
 
                 // receive and print the response

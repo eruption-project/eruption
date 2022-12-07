@@ -1119,7 +1119,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         dbus_api_tx
             .send(DbusApiEvent::DeviceHotplug(
-                usb_id.or_else(|| Some((0, 0))).unwrap(),
+                usb_id.unwrap_or((0, 0)),
                 true,
             ))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
@@ -1153,7 +1153,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         dbus_api_tx
             .send(DbusApiEvent::DeviceHotplug(
-                usb_id.or_else(|| Some((0, 0))).unwrap(),
+                usb_id.unwrap_or((0, 0)),
                 true,
             ))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
@@ -1186,7 +1186,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         dbus_api_tx
             .send(DbusApiEvent::DeviceHotplug(
-                usb_id.or_else(|| Some((0, 0))).unwrap(),
+                usb_id.unwrap_or((0, 0)),
                 true,
             ))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));

@@ -42,7 +42,7 @@ fn main() -> Result<(), eyre::Error> {
     println!("Successfully connected to the Eruption daemon");
 
     let status = connection.get_server_status()?;
-    println!("{:?}", status);
+    println!("{status:?}");
 
     // create a new canvas
     let mut canvas = Canvas::new();

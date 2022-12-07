@@ -363,7 +363,7 @@ impl DeviceTrait for RoccatKain2xx {
 
                             table.insert(
                                 "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
+                                format!("{battery_status}"),
                             );
                         }
                     }
@@ -376,7 +376,7 @@ impl DeviceTrait for RoccatKain2xx {
                             // radio
                             table.insert(
                                 "transceiver-enabled".to_string(),
-                                format!("{}", transceiver_enabled),
+                                format!("{transceiver_enabled}"),
                             );
 
                             // signal strength
@@ -385,7 +385,7 @@ impl DeviceTrait for RoccatKain2xx {
                                 format!("{:.0}", (signal as f32 / 100.0).clamp(0.0, 100.0)),
                             );
 
-                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+                            table.insert("signal-strength-raw".to_string(), format!("{signal}"));
                         }
                     }
 

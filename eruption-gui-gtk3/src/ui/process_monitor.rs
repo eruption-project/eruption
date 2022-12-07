@@ -206,7 +206,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
                 let message = "Could not transmit ruleset".to_string();
                 let secondary =
-                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                 let message_dialog = MessageDialogBuilder::new()
                     .parent(&main_window)
@@ -252,7 +252,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
                 let message = "Could not transmit ruleset".to_string();
                 let secondary =
-                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                 let message_dialog = MessageDialogBuilder::new()
                     .parent(&main_window)
@@ -347,7 +347,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
                     let message = "Could not transmit ruleset".to_string();
                     let secondary =
-                        format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                        format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                     let message_dialog = MessageDialogBuilder::new()
                         .parent(&main_window)

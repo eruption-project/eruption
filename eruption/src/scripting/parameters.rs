@@ -95,11 +95,11 @@ pub struct ProfileParameter {
 impl fmt::Display for TypedValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            TypedValue::Int(value) => write!(f, "{}", value),
-            TypedValue::Float(value) => write!(f, "{}", value),
-            TypedValue::Bool(value) => write!(f, "{}", value),
+            TypedValue::Int(value) => write!(f, "{value}"),
+            TypedValue::Float(value) => write!(f, "{value}"),
+            TypedValue::Bool(value) => write!(f, "{value}"),
             TypedValue::String(value) => f.write_str(value),
-            TypedValue::Color(value) => write!(f, "#{:06x}", value),
+            TypedValue::Color(value) => write!(f, "#{value:06x}"),
         }
     }
 }

@@ -49,7 +49,7 @@ impl<'a> HexSlice<'a> {
 impl fmt::Display for HexSlice<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for byte in self.0 {
-            write!(f, "0x{:02x}, ", byte)?;
+            write!(f, "0x{byte:02x}, ")?;
         }
         Ok(())
     }
@@ -142,7 +142,7 @@ pub fn print_diff(current_state: &DeviceState, data: &[DeviceState]) {
 
                     // print differences
                     if !diff.is_empty() {
-                        println!("Changed bytes: {:?}", diff);
+                        println!("Changed bytes: {diff:?}");
 
                         print!("{}: [", format!("0x{:02x}", ds.0).bold().on_green());
                         for (index, current_val) in ds.1.iter().enumerate() {
@@ -150,10 +150,10 @@ pub fn print_diff(current_state: &DeviceState, data: &[DeviceState]) {
                                 print!(
                                     "{}=>{}, ",
                                     format!("0x{:02x}", stored_data[index]).bold().on_red(),
-                                    format!("0x{:02x}", current_val).bold().on_green()
+                                    format!("0x{current_val:02x}").bold().on_green()
                                 );
                             } else {
-                                print!("0x{:02x}, ", current_val);
+                                print!("0x{current_val:02x}, ");
                             }
                         }
                         println!("]\n");

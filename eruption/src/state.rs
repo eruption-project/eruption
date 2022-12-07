@@ -100,7 +100,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .set_default("brightness", 85)?
         .build()
         .map_err(|e| StateError::StateLoadError {
-            description: format!("{}", e),
+            description: format!("{e}"),
         })?;
 
     *STATE.write() = Some(state);
@@ -181,7 +181,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -199,7 +199,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -217,7 +217,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -245,7 +245,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     for device in &*crate::MOUSE_DEVICES.read() {
@@ -257,7 +257,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     for device in &*crate::MISC_DEVICES.read() {
@@ -269,7 +269,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     let config = State {
@@ -282,7 +282,7 @@ pub fn save_runtime_state() -> Result<()> {
     };
 
     let toml = toml::ser::to_string_pretty(&config).map_err(|e| StateError::StateWriteError {
-        description: format!("{}", e),
+        description: format!("{e}"),
     })?;
 
     fs::write(state_path, toml)?;

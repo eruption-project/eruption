@@ -91,7 +91,7 @@ impl Manifest {
 
                     Err(e) => {
                         error!("{}", e);
-                        println!("{}", e);
+                        println!("{e}");
                         Err(ManifestError::ParseError {}.into())
                     }
                 }

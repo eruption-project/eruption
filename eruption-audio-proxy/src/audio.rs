@@ -141,8 +141,7 @@ mod backends {
                 )
                 .map_err(|e| AudioError::ConnectionError {
                     description: format!(
-                        "Could not open PulseAudio/PipeWire recording device: {}",
-                        e
+                        "Could not open PulseAudio/PipeWire recording device: {e}"
                     ),
                 })?;
 
@@ -168,8 +167,7 @@ mod backends {
                 )
                 .map_err(|e| AudioError::ConnectionError {
                     description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {}",
-                        e
+                        "Could not open PulseAudio/PipeWire playback device: {e}"
                     ),
                 })?;
 
@@ -203,8 +201,7 @@ mod backends {
                 )
                 .map_err(|e| AudioError::ConnectionError {
                     description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {}",
-                        e
+                        "Could not open PulseAudio/PipeWire playback device: {e}"
                     ),
                 })?;
 
@@ -290,7 +287,7 @@ mod backends {
                 let data = &sfx_map[&id];
 
                 player.write(data).map_err(|e| AudioError::PlayerError {
-                    description: format!("Error during playback: {}", e),
+                    description: format!("Error during playback: {e}"),
                 })?;
 
                 Ok(())
@@ -305,7 +302,7 @@ mod backends {
         fn play_samples(&self, data: &[u8]) -> Result<()> {
             if let Some(player) = &*self.player_handle.read() {
                 player.write(data).map_err(|e| AudioError::PlayerError {
-                    description: format!("Error during playback: {}", e),
+                    description: format!("Error during playback: {e}"),
                 })?;
 
                 Ok(())
@@ -324,7 +321,7 @@ mod backends {
                 grabber
                     .read(&mut buf)
                     .map_err(|e| AudioError::GrabberError {
-                        description: format!("Error during recording: {}", e),
+                        description: format!("Error during recording: {e}"),
                     })?;
 
                 Ok(())

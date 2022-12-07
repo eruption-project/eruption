@@ -25,8 +25,8 @@ fn main() -> Result<(), Box<dyn Error + 'static>> {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     prost_build::compile_protos(
-        &[&format!("{}/support/protobuf/sdk-support.proto", crate_dir)],
-        &[&format!("{}/support/protobuf/", crate_dir)],
+        &[&format!("{crate_dir}/support/protobuf/sdk-support.proto")],
+        &[&format!("{crate_dir}/support/protobuf/")],
     )?;
 
     Ok(())

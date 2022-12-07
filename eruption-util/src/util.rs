@@ -24,7 +24,7 @@ use std::io;
 use io::Write;
 
 pub fn get_input(prompt: &str) -> io::Result<String> {
-    print!("{}", prompt);
+    print!("{prompt}");
     io::stdout().lock().flush()?;
 
     let mut input = String::new();

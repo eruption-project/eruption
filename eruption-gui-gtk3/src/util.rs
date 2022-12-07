@@ -345,7 +345,7 @@ pub fn get_device_brightness(device: u64) -> Result<i64> {
 
 /// Set the current brightness value of device
 pub fn set_device_brightness(device: u64, brightness: i64) -> Result<()> {
-    set_device_config(device, "brightness", &format!("{}", brightness))?;
+    set_device_config(device, "brightness", &format!("{brightness}"))?;
 
     Ok(())
 }

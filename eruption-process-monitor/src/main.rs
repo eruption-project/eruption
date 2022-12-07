@@ -192,11 +192,11 @@ impl fmt::Display for Selector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Selector::ProcessExec { comm } => {
-                write!(f, "On process execution: comm: '{}'", comm)?;
+                write!(f, "On process execution: comm: '{comm}'")?;
             }
 
             Selector::WindowFocused { mode, regex } => {
-                write!(f, "On window focused: {}: '{}'", mode, regex)?;
+                write!(f, "On window focused: {mode}: '{regex}'")?;
             }
         };
 
@@ -214,7 +214,7 @@ impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Action::SwitchToProfile { profile_name } => {
-                write!(f, "Switch to profile: {}", profile_name)?;
+                write!(f, "Switch to profile: {profile_name}")?;
             }
 
             Action::SwitchToSlot { slot_index } => {
@@ -1222,7 +1222,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Rules { command } => match command {
             RulesSubcommands::List => {
                 for (index, (selector, (metadata, action))) in RULES_MAP.read().iter().enumerate() {
-                    println!("{:3}: {} => {} ({})", index, selector, action, metadata);
+                    println!("{index:3}: {selector} => {action} ({metadata})");
                 }
             }
 
@@ -1307,8 +1307,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             metadata.enabled = true;
 
                             println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
+                                "{rule_index:3}: {selector} => {action} ({metadata})"
                             );
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
@@ -1328,8 +1327,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             metadata.enabled = false;
 
                             println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
+                                "{rule_index:3}: {selector} => {action} ({metadata})"
                             );
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
@@ -1348,8 +1346,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     Some((selector, (metadata, action))) => {
                         if !metadata.internal {
                             println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
+                                "{rule_index:3}: {selector} => {action} ({metadata})"
                             );
                         } else {
                             eprintln!("Trying to remove an internal (auto-generated) rule, this is a noop!");

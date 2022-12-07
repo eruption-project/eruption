@@ -35,7 +35,7 @@ pub enum UtilError {
 #[cfg(feature = "sensor-procmon")]
 pub fn get_process_comm(pid: i32) -> Result<String> {
     Ok(
-        std::fs::read_to_string(Path::new(&format!("/proc/{}/comm", pid)))?
+        std::fs::read_to_string(Path::new(&format!("/proc/{pid}/comm")))?
             .trim()
             .to_string(),
     )
@@ -43,7 +43,7 @@ pub fn get_process_comm(pid: i32) -> Result<String> {
 
 #[cfg(feature = "sensor-procmon")]
 pub fn get_process_file_name(pid: i32) -> Result<String> {
-    let tmp = format!("/proc/{}/exe", pid);
+    let tmp = format!("/proc/{pid}/exe");
     let filename = Path::new(&tmp);
     let result = nix::fcntl::readlink(filename);
 

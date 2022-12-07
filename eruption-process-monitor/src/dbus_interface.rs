@@ -107,7 +107,7 @@ impl DbusApi {
                                                 profile_name.to_string()
                                             }
                                             Action::SwitchToSlot { slot_index } => {
-                                                format!("{}", slot_index)
+                                                format!("{slot_index}")
                                             }
                                         };
 
@@ -261,7 +261,7 @@ impl DbusApi {
                 let action_val = match action {
                     Action::SwitchToProfile { profile_name } => profile_name.to_string(),
                     Action::SwitchToSlot { slot_index } => {
-                        format!("{}", slot_index)
+                        format!("{slot_index}")
                     }
                 };
 

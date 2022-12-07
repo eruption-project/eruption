@@ -260,7 +260,7 @@ fn spawn_keyboard_input_thread(
     usb_pid: u16,
 ) -> Result<()> {
     thread::Builder::new()
-        .name(format!("events/kbd:{}", device_index))
+        .name(format!("events/kbd:{device_index}"))
         .spawn(move || -> Result<()> {
             let device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
@@ -392,7 +392,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     for (index, device) in hidapi.device_list().enumerate() {
                         println!(
                             "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                            format!("{:02}", index).bold(),
+                            format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -436,7 +436,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -574,7 +574,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -611,7 +611,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -750,7 +750,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -832,8 +832,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     // hwdev.lock().send_led_map(&led_map)?;
 
                                     println!(
-                                        "Please press all keys in row {}, press ESC to skip",
-                                        i
+                                        "Please press all keys in row {i}, press ESC to skip"
                                     );
 
                                     let mut key_index = 0;
@@ -911,7 +910,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -925,7 +924,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -964,7 +963,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -1046,8 +1045,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     // hwdev.lock().send_led_map(&led_map)?;
 
                                     println!(
-                                        "Please press all keys in column {}, press ESC to skip",
-                                        i
+                                        "Please press all keys in column {i}, press ESC to skip"
                                     );
 
                                     let mut key_index = 0;
@@ -1125,7 +1123,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -1139,7 +1137,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -1180,7 +1178,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -1334,7 +1332,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -1348,7 +1346,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     print!("\t");
 
                                     for e in row {
-                                        print!("0x{:02x}, ", e);
+                                        print!("0x{e:02x}, ");
                                     }
 
                                     println!();
@@ -1385,7 +1383,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -1432,7 +1430,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         }
 
                                         hwdev.send_led_map(&led_map)?;
-                                        println!("Highlighted key: 0x{:02x}", key_index);
+                                        println!("Highlighted key: 0x{key_index:02x}");
                                     }
                                 }
 
@@ -1464,7 +1462,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         };
 
                                         hwdev.send_led_map(&led_map)?;
-                                        println!("Highlighted key: 0x{:02x}", key_index);
+                                        println!("Highlighted key: 0x{key_index:02x}");
                                     } else {
                                         println!("Sentinel element");
                                     }
@@ -1497,7 +1495,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -1544,7 +1542,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         }
 
                                         hwdev.send_led_map(&led_map)?;
-                                        println!("Highlighted key: 0x{:02x}", key_index);
+                                        println!("Highlighted key: 0x{key_index:02x}");
                                     }
                                 }
 
@@ -1576,7 +1574,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         };
 
                                         hwdev.send_led_map(&led_map)?;
-                                        println!("Highlighted key: 0x{:02x}", key_index);
+                                        println!("Highlighted key: 0x{key_index:02x}");
                                     } else {
                                         println!("Sentinel element");
                                     }
@@ -1607,7 +1605,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -1662,7 +1660,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                             };
 
                                             hwdev.send_led_map(&led_map)?;
-                                            println!("Highlighted key: 0x{:02x}", key_index);
+                                            println!("Highlighted key: 0x{key_index:02x}");
                                         } else {
                                             println!("Sentinel element");
                                         }

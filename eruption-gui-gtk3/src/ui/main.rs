@@ -685,7 +685,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state)?;
     dbus_client::spawn_dbus_event_loop_session(&builder, &|_b, m| {
-        println!("{:?}", m);
+        println!("{m:?}");
         Ok(())
     })?;
 

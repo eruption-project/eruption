@@ -347,12 +347,12 @@ impl RoccatKoneProAir {
 
                                 table.insert(
                                     "battery-level-percent".to_string(),
-                                    format!("{:.0}", battery_level_percent),
+                                    format!("{battery_level_percent:.0}"),
                                 );
 
                                 table.insert(
                                     "battery-level-raw".to_string(),
-                                    format!("{}", battery_status),
+                                    format!("{battery_status}"),
                                 );
                             }
 
@@ -363,7 +363,7 @@ impl RoccatKoneProAir {
                                 // radio
                                 table.insert(
                                     "transceiver-enabled".to_string(),
-                                    format!("{}", transceiver_enabled),
+                                    format!("{transceiver_enabled}"),
                                 );
 
                                 if transceiver_enabled {
@@ -375,7 +375,7 @@ impl RoccatKoneProAir {
 
                                     table.insert(
                                         "signal-strength-raw".to_string(),
-                                        format!("{}", signal),
+                                        format!("{signal}"),
                                     );
                                 } else {
                                     // signal strength when radio is off

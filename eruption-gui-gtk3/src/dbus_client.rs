@@ -283,7 +283,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &str) -> Result<()> {
         tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {
@@ -305,7 +305,7 @@ pub fn ping() -> Result<()> {
         tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {
@@ -327,7 +327,7 @@ pub fn ping_privileged() -> Result<()> {
         tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {

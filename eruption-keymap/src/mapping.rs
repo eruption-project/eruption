@@ -213,7 +213,7 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for value in self.0.iter() {
-            f.write_str(&format!("{} ", value))?;
+            f.write_str(&format!("{value} "))?;
         }
 
         Ok(())
@@ -257,8 +257,8 @@ impl Display for Action {
         match self {
             Action::Null => f.write_str("<No action>"),
 
-            Action::InjectKey(key) => f.write_str(&format!("Event: {}", key)),
-            Action::Call(call) => f.write_str(&format!("Call: {}", call)),
+            Action::InjectKey(key) => f.write_str(&format!("Event: {key}")),
+            Action::Call(call) => f.write_str(&format!("Call: {call}")),
         }
     }
 }
@@ -351,30 +351,30 @@ impl Display for Event {
         match self {
             Event::Null => f.write_str("<No action>"),
 
-            Event::HidKeyDown(key) => f.write_str(&format!("hid+key-down: {}", key)),
-            Event::HidKeyUp(key) => f.write_str(&format!("hid+key-up: {}", key)),
-            Event::HidMouseDown(key) => f.write_str(&format!("hid+mouse-down: {}", key)),
-            Event::HidMouseUp(key) => f.write_str(&format!("hid+mouse-up: {}", key)),
+            Event::HidKeyDown(key) => f.write_str(&format!("hid+key-down: {key}")),
+            Event::HidKeyUp(key) => f.write_str(&format!("hid+key-up: {key}")),
+            Event::HidMouseDown(key) => f.write_str(&format!("hid+mouse-down: {key}")),
+            Event::HidMouseUp(key) => f.write_str(&format!("hid+mouse-up: {key}")),
 
-            Event::EasyShiftKeyDown(key) => f.write_str(&format!("es+key-down: {}", key)),
-            Event::EasyShiftKeyUp(key) => f.write_str(&format!("es+key-up: {}", key)),
-            Event::EasyShiftMouseDown(key) => f.write_str(&format!("es+mouse-down: {}", key)),
-            Event::EasyShiftMouseUp(key) => f.write_str(&format!("es+mouse-up: {}", key)),
+            Event::EasyShiftKeyDown(key) => f.write_str(&format!("es+key-down: {key}")),
+            Event::EasyShiftKeyUp(key) => f.write_str(&format!("es+key-up: {key}")),
+            Event::EasyShiftMouseDown(key) => f.write_str(&format!("es+mouse-down: {key}")),
+            Event::EasyShiftMouseUp(key) => f.write_str(&format!("es+mouse-up: {key}")),
             Event::EasyShiftMouseWheel(direction) => {
-                f.write_str(&format!("es+mouse-wheel: {}", direction))
+                f.write_str(&format!("es+mouse-wheel: {direction}"))
             }
             Event::EasyShiftMouseDpi(direction) => {
-                f.write_str(&format!("es+mouse-dpi: {}", direction))
+                f.write_str(&format!("es+mouse-dpi: {direction}"))
             }
 
-            Event::SimpleKeyDown(key) => f.write_str(&format!("key-down: {}", key)),
-            Event::SimpleKeyUp(key) => f.write_str(&format!("key-up: {}", key)),
-            Event::SimpleMouseDown(key) => f.write_str(&format!("mouse-down: {}", key)),
-            Event::SimpleMouseUp(key) => f.write_str(&format!("mouse-up: {}", key)),
+            Event::SimpleKeyDown(key) => f.write_str(&format!("key-down: {key}")),
+            Event::SimpleKeyUp(key) => f.write_str(&format!("key-up: {key}")),
+            Event::SimpleMouseDown(key) => f.write_str(&format!("mouse-down: {key}")),
+            Event::SimpleMouseUp(key) => f.write_str(&format!("mouse-up: {key}")),
             Event::SimpleMouseWheel(direction) => {
-                f.write_str(&format!("mouse-wheel: {}", direction))
+                f.write_str(&format!("mouse-wheel: {direction}"))
             }
-            Event::SimpleMouseDpi(direction) => f.write_str(&format!("mouse-dpi: {}", direction)),
+            Event::SimpleMouseDpi(direction) => f.write_str(&format!("mouse-dpi: {direction}")),
         }
     }
 }

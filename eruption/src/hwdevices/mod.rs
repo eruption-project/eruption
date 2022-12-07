@@ -1576,13 +1576,13 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
                                         .iter()
-                                        .map(|v| format!("{:04x}", v))
+                                        .map(|v| format!("{v:04x}"))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) && device.properties().any(|e| {
                                 e.name() == "ID_MODEL_ID"
                                     && ([usb_pid]
                                         .iter()
-                                        .map(|v| format!("{:04x}", v))
+                                        .map(|v| format!("{v:04x}"))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) /* && device.devnode().is_some() */;
 
@@ -1792,13 +1792,13 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
                             e.name() == "ID_VENDOR_ID"
                                 && ([usb_vid]
                                     .iter()
-                                    .map(|v| format!("{:04x}", v))
+                                    .map(|v| format!("{v:04x}"))
                                     .any(|v| v == e.value().to_string_lossy()))
                         }) && device.properties().any(|e| {
                             e.name() == "ID_MODEL_ID"
                                 && ([usb_pid]
                                     .iter()
-                                    .map(|v| format!("{:04x}", v))
+                                    .map(|v| format!("{v:04x}"))
                                     .any(|v| v == e.value().to_string_lossy()))
                         });
 

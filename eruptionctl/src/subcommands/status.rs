@@ -63,7 +63,7 @@ async fn slot_command() -> Result<()> {
         .wrap_err("Could not connect to the Eruption daemon")
         .suggestion("Please verify that the Eruption daemon is running")?
         + 1;
-    println!("Current slot: {}", format!("{}", index).bold());
+    println!("Current slot: {}", format!("{index}").bold());
 
     Ok(())
 }

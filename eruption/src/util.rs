@@ -55,7 +55,7 @@ pub enum UtilError {
 /// Write out the current process' PID to the .pid file at `/run/eruption/eruption.pid`
 pub fn write_pid_file() -> Result<()> {
     let pid = getpid().as_raw();
-    let text = format!("{}", pid);
+    let text = format!("{pid}");
 
     let fd = open(
         &PathBuf::from(constants::PID_FILE),
@@ -135,7 +135,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
     tracing::info!("Writing to file: {}", &path.display());
 
     fs::write(path, data).map_err(|e| UtilError::FileWriteError {
-        description: format!("{}", e),
+        description: format!("{e}"),
         source: e,
     })?;
 

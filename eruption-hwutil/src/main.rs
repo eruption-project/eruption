@@ -301,7 +301,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             if opts.verbose > 0 {
                                 println!(
                                     "Index: {}: ID: {:x}:{:x} {}/{}",
-                                    format!("{:02}", index).bold(),
+                                    format!("{index:02}").bold(),
                                     device.vendor_id(),
                                     device.product_id(),
                                     device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -310,7 +310,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             } else {
                                 println!(
                                     "{}: {}/{}",
-                                    format!("{:02}", index).bold(),
+                                    format!("{index:02}").bold(),
                                     device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                     device.product_string().unwrap_or("<unknown>").bold()
                                 );
@@ -354,7 +354,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if opts.verbose > 0 {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -363,7 +363,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         } else {
                             println!(
                                 "{}: {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold()
                             );
@@ -468,7 +468,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if opts.verbose > 1 {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -477,7 +477,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         } else if opts.verbose > 0 {
                             println!(
                                 "{}: {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold()
                             );

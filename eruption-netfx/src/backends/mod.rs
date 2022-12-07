@@ -100,7 +100,7 @@ pub fn register_backends() -> Result<()> {
     BACKENDS.with(|backends| -> Result<()> {
         for backend in backends.borrow_mut().iter_mut() {
             let _ = backend.initialize().map_err(|e| {
-                eprintln!("Backend could not be initialized: {}", e);
+                eprintln!("Backend could not be initialized: {e}");
                 e
             });
         }

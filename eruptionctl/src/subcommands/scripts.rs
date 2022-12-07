@@ -124,7 +124,7 @@ fn find_script_by_name(script_name: &str) -> Option<Manifest> {
     let scripts = match scripts {
         Ok(scripts) => scripts,
         Err(err) => {
-            println!("{}", err);
+            println!("{err}");
             return None;
         }
     };

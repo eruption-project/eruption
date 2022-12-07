@@ -55,7 +55,7 @@ pub fn ping() -> Result<()> {
         tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {

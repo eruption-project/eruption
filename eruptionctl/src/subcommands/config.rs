@@ -60,7 +60,7 @@ async fn brightness_command(brightness: Option<i64>) -> Result<()> {
             .suggestion("Please verify that the Eruption daemon is running")?;
         println!(
             "{}",
-            format!("Global brightness: {}", format!("{}%", result).bold())
+            format!("Global brightness: {}", format!("{result}%").bold())
         );
     }
 
@@ -80,7 +80,7 @@ async fn sound_fx_command(enable: Option<bool>) -> Result<()> {
             .suggestion("Please verify that the Eruption daemon is running")?;
         println!(
             "{}",
-            format!("SoundFX enabled: {}", format!("{}", result).bold())
+            format!("SoundFX enabled: {}", format!("{result}").bold())
         );
     }
 

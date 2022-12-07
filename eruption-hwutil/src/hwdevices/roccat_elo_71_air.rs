@@ -478,7 +478,7 @@ impl DeviceTrait for RoccatElo71Air {
 
                             table.insert(
                                 "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
+                                format!("{battery_status}"),
                             );
 
                             table.insert("transceiver-enabled".to_string(), format!("{}", true));

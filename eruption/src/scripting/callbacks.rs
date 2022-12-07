@@ -152,15 +152,15 @@ pub(crate) fn delay(millis: u64) {
 pub(crate) fn stringify(mut string: &mut String, value: mlua::Value) -> Option<()> {
     match value {
         LuaValue::Nil => write!(&mut string, "nil"),
-        LuaValue::Boolean(b) => write!(string, "{}", b),
-        LuaValue::LightUserData(lud) => write!(string, "[lightuserdata, {:?}]", lud),
-        LuaValue::Integer(i) => write!(string, "{}", i),
-        LuaValue::Number(f) => write!(string, "{}", f),
+        LuaValue::Boolean(b) => write!(string, "{b}"),
+        LuaValue::LightUserData(lud) => write!(string, "[lightuserdata, {lud:?}]"),
+        LuaValue::Integer(i) => write!(string, "{i}"),
+        LuaValue::Number(f) => write!(string, "{f}"),
         LuaValue::String(s) => write!(string, "{}", s.to_string_lossy()),
         LuaValue::Function(f) => write!(string, "[function, {:?}]", f.info()),
         LuaValue::Thread(t) => write!(string, "[thread, {:?}]", t.status()),
-        LuaValue::UserData(ud) => write!(string, "[userdata, {:?}]", ud),
-        LuaValue::Error(e) => write!(string, "{}", e),
+        LuaValue::UserData(ud) => write!(string, "[userdata, {ud:?}]"),
+        LuaValue::Error(e) => write!(string, "{e}"),
         LuaValue::Table(t) => {
             write!(string, "{{ ").unwrap();
             for pair in t.pairs::<mlua::Value, mlua::Value>() {
