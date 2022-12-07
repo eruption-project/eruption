@@ -22,6 +22,7 @@ name = "eruption-process-monitor"
 version = "0.1.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
+rust-version = "1.64"
 description = "A daemon to monitor and introspect system processes and events"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"

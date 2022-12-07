@@ -19,6 +19,7 @@
 
 [package]
 edition = "2021"
+rust-version = "1.64"
 name = "procmon-sys"
 version = "0.0.3"
 build = "build.rs"
