@@ -404,10 +404,7 @@ impl RoccatElo71Air {
                     battery_level.to_string(),
                 );
 
-                table.insert(
-                    "battery-level-raw".to_string(),
-                    format!("{battery_status}"),
-                );
+                table.insert("battery-level-raw".to_string(), format!("{battery_status}"));
 
                 table.insert("transceiver-enabled".to_string(), format!("{}", true));
 

@@ -166,9 +166,7 @@ mod backends {
                     None,
                 )
                 .map_err(|e| AudioError::ConnectionError {
-                    description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {e}"
-                    ),
+                    description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
                 *self.player_handle.write() = Some(result);
@@ -200,9 +198,7 @@ mod backends {
                     None,
                 )
                 .map_err(|e| AudioError::ConnectionError {
-                    description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {e}"
-                    ),
+                    description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
                 *self.player_handle.write() = Some(result);

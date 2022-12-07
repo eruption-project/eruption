@@ -1306,9 +1306,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if !metadata.internal {
                             metadata.enabled = true;
 
-                            println!(
-                                "{rule_index:3}: {selector} => {action} ({metadata})"
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
                         }
@@ -1326,9 +1324,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if !metadata.internal {
                             metadata.enabled = false;
 
-                            println!(
-                                "{rule_index:3}: {selector} => {action} ({metadata})"
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
                         }
@@ -1345,9 +1341,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 match RULES_MAP.write().shift_remove_index(rule_index) {
                     Some((selector, (metadata, action))) => {
                         if !metadata.internal {
-                            println!(
-                                "{rule_index:3}: {selector} => {action} ({metadata})"
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to remove an internal (auto-generated) rule, this is a noop!");
                         }

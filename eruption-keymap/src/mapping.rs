@@ -371,9 +371,7 @@ impl Display for Event {
             Event::SimpleKeyUp(key) => f.write_str(&format!("key-up: {key}")),
             Event::SimpleMouseDown(key) => f.write_str(&format!("mouse-down: {key}")),
             Event::SimpleMouseUp(key) => f.write_str(&format!("mouse-up: {key}")),
-            Event::SimpleMouseWheel(direction) => {
-                f.write_str(&format!("mouse-wheel: {direction}"))
-            }
+            Event::SimpleMouseWheel(direction) => f.write_str(&format!("mouse-wheel: {direction}")),
             Event::SimpleMouseDpi(direction) => f.write_str(&format!("mouse-dpi: {direction}")),
         }
     }

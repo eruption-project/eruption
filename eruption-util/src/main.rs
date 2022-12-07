@@ -831,9 +831,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                     // hwdev.lock().send_led_map(&led_map)?;
 
-                                    println!(
-                                        "Please press all keys in row {i}, press ESC to skip"
-                                    );
+                                    println!("Please press all keys in row {i}, press ESC to skip");
 
                                     let mut key_index = 0;
                                     loop {
