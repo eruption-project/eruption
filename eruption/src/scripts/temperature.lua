@@ -33,6 +33,10 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = color_background end
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -49,6 +53,4 @@ function on_tick(delta)
     for i = 1, canvas_size do
         color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
     end
-
-    submit_color_map(color_map)
 end

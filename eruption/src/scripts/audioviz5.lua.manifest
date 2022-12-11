@@ -21,7 +21,7 @@ name = "Audio Visualizer #5 (Batique)"
 description = "Compute Open Simplex Noise, mapped to the HSL color space"
 version = "0.0.5"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor', 'Demo', 'AudioVisualization']
 
 [[config]]

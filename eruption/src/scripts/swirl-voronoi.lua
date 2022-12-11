@@ -17,7 +17,6 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
-
 require "declarations"
 require "utilities"
 require "debug"
@@ -36,6 +35,10 @@ function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[1] = offsets[1] - rel_x
     offsets[2] = offsets[2] - rel_y
     offsets[3] = offsets[3] - rel_z
+end
+
+function on_render()
+    submit_color_map(color_map)
 end
 
 function on_tick(delta)
@@ -59,7 +62,5 @@ function on_tick(delta)
                                        lerp(0, 255, opacity))
             end
         end
-
-        submit_color_map(color_map)
     end
 end

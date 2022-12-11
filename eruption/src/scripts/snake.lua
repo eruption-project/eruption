@@ -49,6 +49,10 @@ function on_startup(config) reset_state() end
 
 function on_key_down(key_index) food_map[key_index] = max_food_ttl end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 

@@ -636,6 +636,7 @@ fn run_main_loop(
     let mut start_time;
     let mut watchdog_time = Instant::now();
     let mut delay_time_hid_poll = Instant::now();
+    let mut delay_time_tick = Instant::now();
     let mut delay_time_render = Instant::now();
     let mut last_status_poll = Instant::now();
 
@@ -987,14 +988,14 @@ fn run_main_loop(
             }
         }
 
-        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+        if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TICK_FPS) {
             #[cfg(feature = "profiling")]
-            coz::scope!("render code");
+            coz::scope!("timer tick code");
 
             let delta =
-                (delay_time_render.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
+                (delay_time_tick.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
 
-            delay_time_render = Instant::now();
+            delay_time_tick = Instant::now();
 
             // send timer tick events to the Lua VMs
             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
@@ -1006,6 +1007,24 @@ fn run_main_loop(
                             error!("Send error during timer tick event: {}", e);
                             FAILED_TXS.write().insert(index);
                         });
+                }
+            }
+        }
+
+        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+            #[cfg(feature = "profiling")]
+            coz::scope!("render code");
+
+            delay_time_render = Instant::now();
+
+            // send timer tick events to the Lua VMs
+            for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
+                // if this tx failed previously, then skip it completely
+                if !FAILED_TXS.read().contains(&index) {
+                    lua_tx.send(script::Message::Render).unwrap_or_else(|e| {
+                        error!("Send error during timer tick event: {}", e);
+                        FAILED_TXS.write().insert(index);
+                    });
                 }
             }
 

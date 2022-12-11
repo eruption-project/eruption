@@ -21,7 +21,7 @@ name = "Wave"
 description = "A wave effect"
 version = "0.0.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.1.12"
+min_supported_version = "0.4.0"
 tags = ['Effect', 'Vendor']
 
 [[config]]

@@ -19,9 +19,9 @@
 
 name = "Shockwave"
 description = "Show a spreading shockwave when a key has been pressed"
-version = "0.0.9"
+version = "0.1.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.0.12"
+min_supported_version = "0.4.0"
 tags = ['Effect', 'Vendor']
 
 [[config]]
@@ -35,6 +35,20 @@ type = 'color'
 name = 'color_step_afterglow'
 description = 'Color value that gets subtracted from afterglow every [n] frames'
 default = 0x08000000
+
+[[config]]
+type = 'bool'
+name = 'offset_colors'
+description = 'Perform color offset calculation or use color_shockwave?'
+default = true
+
+[[config]]
+type = 'float'
+name = 'hue_offset'
+description = 'Offset existing color by this value. Only used if offset_colors is true'
+min = 0.0
+max = 359.0
+default = 180.0
 
 [[config]]
 type = 'color'

@@ -82,7 +82,10 @@ pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
 /// Target frames per second
-pub const TARGET_FPS: u64 = 24;
+pub const TARGET_FPS: u64 = 19;
+
+/// Target timer tick events per second
+pub const TICK_FPS: u64 = 19;
 
 /// Fade in on profile switch for n milliseconds
 pub const FADE_MILLIS: u64 = 1333;

@@ -32,6 +32,10 @@ function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[3] = offsets[3] - rel_z
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -56,7 +60,5 @@ function on_tick(delta)
                                          color_saturation, color_lightness,
                                          lerp(0, 255, opacity))
         end
-
-        submit_color_map(color_map)
     end
 end

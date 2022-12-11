@@ -55,6 +55,10 @@ function on_startup(config)
     for i = mouse_zone_start, canvas_size do color_map[i] = color_palette[80] end
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -100,7 +104,5 @@ function on_tick(delta)
                 end
             end
         end
-
-        submit_color_map(color_map)
     end
 end

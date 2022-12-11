@@ -21,7 +21,7 @@ name = "Stock Gradient"
 description = "Compute a gradient effect using a stock gradient or a custom color scheme"
 version = "0.0.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.2.0"
+min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor']
 
 [[config]]
