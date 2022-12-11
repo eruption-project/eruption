@@ -23,7 +23,7 @@ version = "0.0.2"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.65"
 description = "Effects proxy daemon for the Eruption Linux user-mode driver"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
@@ -56,11 +56,11 @@ dyn-clonable = "0.9.0"
 libc = "0.2.138"
 atty = "0.2.14"
 tempfile = "3.3.0"
-rayon = "1.6.0"
+rayon = "1.6.1"
 jwalk = "0.6.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.23.0", features = ["full", "tracing", "test-util"] }
-ctrlc = { version = "3.2.3", features = ["termination"] }
+ctrlc = { version = "3.2.4", features = ["termination"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"

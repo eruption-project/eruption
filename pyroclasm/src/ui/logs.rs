@@ -30,8 +30,8 @@ impl LogsPage {
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        CentralPanel::default().show(ctx, |ui| {
-            egui_logger::logger_ui(ui);
+        CentralPanel::default().show(ctx, |_ui| {
+            // egui_logger::logger_ui(ui);
         });
     }
 }

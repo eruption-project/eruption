@@ -22,7 +22,7 @@ name = "eruption-watchdog"
 version = "0.0.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.65"
 description = "A watchdog daemon for Eruption"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
@@ -41,7 +41,7 @@ cfg-if = "1.0.0"
 flume = "0.10.14"
 clap =  { version = "4.0.29", features = ["derive"] }
 clap_complete = "4.0.6"
-ctrlc = { version = "3.2.3", features = ["termination"] }
+ctrlc = { version = "3.2.4", features = ["termination"] }
 syslog = "6.0.1"
 lazy_static = "1.4.0"
 libc = "0.2.138"

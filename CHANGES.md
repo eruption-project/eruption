@@ -6,6 +6,7 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.4.0 | __Next Release__ |
 | 0.4.0 | Update all dependencies to their latest releases |
+| 0.4.0 | Bump MSRV to latest stable Rust `1.65` |
 | 0.3.0 | __New Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
 | 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that supersedes some features of `eruption-netfx` |

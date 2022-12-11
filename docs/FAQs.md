@@ -15,7 +15,7 @@ Below you find a list of the most frequently asked questions and their respectiv
 
 Please ensure that you are using the latest versions of Rust.
 
-MSRV (Minimum supported Rust version) `Rust 1.64`
+MSRV (Minimum supported Rust version) `Rust 1.65`
 
 ### Q: What can I do to help get new hardware supported
 

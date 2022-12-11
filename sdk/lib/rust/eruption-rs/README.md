@@ -32,7 +32,7 @@ eruption-sdk = "0.0.5"
 
 ## MSRV
 
-Minimum Supported Rust Version: `Rust 1.64`
+Minimum Supported Rust Version: `Rust 1.65`
 
 ## Example Code
 

@@ -22,7 +22,7 @@ name = "eruption-process-monitor"
 version = "0.1.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.65"
 description = "A daemon to monitor and introspect system processes and events"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
@@ -50,7 +50,7 @@ async-trait = "0.1.59"
 byteorder = "1.4.3"
 clap =  { version = "4.0.29", features = ["derive"] }
 clap_complete = "4.0.6"
-ctrlc = { version = "3.2.3", features = ["termination"] }
+ctrlc = { version = "3.2.4", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.6"
 # dbus-tokio = "0.7.5"
