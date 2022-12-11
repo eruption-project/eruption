@@ -230,7 +230,8 @@ Eruption currently calls the following event handler functions, if they are pres
 | `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates | Coordinates are relative (delta values) |
 | `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, 6 == Set Brightness, 7 == Next/previous Profile, arg1: data payload e.g.: scan codes/status codes | |
 | `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index | |
-Exhaustive listing of all currently available event callbacks
+
+_Exhaustive listing of all currently available event callbacks_
 
 ## Example Code
 
