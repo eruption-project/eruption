@@ -217,20 +217,19 @@ Eruption currently calls the following event handler functions, if they are pres
 
 | Name                                   | Class      | Parameters                                                                                                                                                                                                     | Description                                       |
 | -------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `on_startup()`                           | _core_     | _n/a_                                                                                                                                                                                                          | Sent on startup, e.g. when a script is loaded     |
-| `on_quit()`                              | _core_     | _n/a_                                                                                                                                                                                                          | Sent on daemon exit                               |
-| `on_render()`                       | _core_     | n/a | Request to submit the current color map for compositing/blending |
-| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick                                                                                                                                                                             | Timer tick event. Used to update the internal state of the script                                                   |
-
-| `on_apply_parameter(parameters)`       | _core_     | parameters: An array of the changed parameter names                                                                                                                                                            | Sent whenever a script parameter shall be updated |
-| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order)                                                                                                                                                                      |                                                   |
-| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order)                                                                                                                                                                      |                                                   |
-| `on_mouse_button_down(button_index)`   | _Mouse_    | button_index: Index of mouse button                                                                                                                                                                            |                                                   |
-| `on_mouse_button_up(button_index)`     | _Mouse_    | button_index: Index of mouse button                                                                                                                                                                            |                                                   |
-| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 1 == up, 2 == down, 3 == left, 4 == right                                                                                                                                                           |                                                   |
-| `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates                                                                                                                                                                                     | Coordinates are relative (delta values)           |
-| `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, 6 == Set Brightness, 7 == Next/previous Profile, arg1: data payload e.g.: scan codes/status codes |                                                   |
-| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index                                                                    |                                                   |
+| `on_startup()`                           | _core_     | _n/a_ | Sent on startup, e.g. when a script is loaded |
+| `on_quit()`                              | _core_     | _n/a_ | Sent on daemon exit |
+| `on_render()`                       | _core_     | _n/a_ | Request to submit the current color map for compositing/blending |
+| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick | Timer tick event. Used to update the internal state of the script |
+| `on_apply_parameter(parameters)`       | _core_     | parameters: An array of the changed parameter names | Sent whenever a script parameter shall be updated |
+| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order) | |
+| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order) | |
+| `on_mouse_button_down(button_index)`   | _Mouse_    | button_index: Index of mouse button | |
+| `on_mouse_button_up(button_index)`     | _Mouse_    | button_index: Index of mouse button | |
+| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 1 == up, 2 == down, 3 == left, 4 == right | |
+| `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates | Coordinates are relative (delta values) |
+| `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, 6 == Set Brightness, 7 == Next/previous Profile, arg1: data payload e.g.: scan codes/status codes | |
+| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index | |
 Exhaustive listing of all currently available event callbacks
 
 ## Example Code
