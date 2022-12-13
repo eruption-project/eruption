@@ -183,11 +183,11 @@ pub fn initialize_mouse_page(
             }
 
             if let Ok(dpi) = util::get_dpi_slot(mouse_device_handle) {
-                mouse_dpi_label.set_label(&format!("{}", dpi));
+                mouse_dpi_label.set_label(&format!("{dpi}"));
             }
 
             if let Ok(hardware_profile) = util::get_hardware_profile(mouse_device_handle) {
-                mouse_profile_label.set_label(&format!("{}", hardware_profile));
+                mouse_profile_label.set_label(&format!("{hardware_profile}"));
             }
 
             if let Ok(debounce) = util::get_debounce(mouse_device_handle) {
@@ -212,7 +212,7 @@ pub fn initialize_mouse_page(
             }
 
             if let Ok(poll_rate) = util::get_poll_rate(mouse_device_handle) {
-                mouse_rate_label.set_label(&format!("{}", poll_rate));
+                mouse_rate_label.set_label(&format!("{poll_rate}"));
             }
 
             Ok(())

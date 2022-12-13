@@ -698,40 +698,40 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         builder: &gtk::Builder,
     ) {
         let _ = update_main_window(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {:?}", e);
+            eprintln!("Error updating the main window: {e:?}");
             e
         });
 
         let _ = ui::canvas::initialize_canvas_page(builder).map_err(|e| {
-            eprintln!("Error updating the canvas page: {:?}", e);
+            eprintln!("Error updating the canvas page: {e:?}");
             e
         });
 
         let _ = ui::profiles::initialize_profiles_page(application, builder).map_err(|e| {
-            eprintln!("Error updating the main window: {:?}", e);
+            eprintln!("Error updating the main window: {e:?}");
             e
         });
 
         let _ = ui::process_monitor::initialize_process_monitor_page(application, builder).map_err(
             |e| {
-                eprintln!("Error updating the main window: {:?}", e);
+                eprintln!("Error updating the main window: {e:?}");
                 e
             },
         );
 
         let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {:?}", e);
+            eprintln!("Error updating the main window: {e:?}");
             e
         });
 
         let _ = initialize_slot_bar(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {:?}", e);
+            eprintln!("Error updating the main window: {e:?}");
             e
         });
 
         let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
         let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
-            eprintln!("{:?}", m);
+            eprintln!("{m:?}");
             Ok(())
         });
     }

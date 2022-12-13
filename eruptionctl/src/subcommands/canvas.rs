@@ -64,7 +64,7 @@ async fn hue_command(hue: Option<f64>) -> Result<()> {
             .await
             .wrap_err("Could not connect to the Eruption daemon")
             .suggestion("Please verify that the Eruption daemon is running")?;
-        println!("{}", format!("Hue: {}", format!("{}", result).bold()));
+        println!("{}", format!("Hue: {}", format!("{result}").bold()));
     }
 
     Ok(())
@@ -81,10 +81,7 @@ async fn saturation_command(saturation: Option<f64>) -> Result<()> {
             .await
             .wrap_err("Could not connect to the Eruption daemon")
             .suggestion("Please verify that the Eruption daemon is running")?;
-        println!(
-            "{}",
-            format!("Saturation: {}", format!("{}", result).bold())
-        );
+        println!("{}", format!("Saturation: {}", format!("{result}").bold()));
     }
 
     Ok(())
@@ -101,7 +98,7 @@ async fn lightness_command(lightness: Option<f64>) -> Result<()> {
             .await
             .wrap_err("Could not connect to the Eruption daemon")
             .suggestion("Please verify that the Eruption daemon is running")?;
-        println!("{}", format!("Lightness: {}", format!("{}", result).bold()));
+        println!("{}", format!("Lightness: {}", format!("{result}").bold()));
     }
 
     Ok(())
