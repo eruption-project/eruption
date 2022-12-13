@@ -1,5 +1,5 @@
 #  SPDX-License-Identifier: GPL-3.0-or-later
-#
+
 #  This file is part of Eruption.
 #
 #  Eruption is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-cmd"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
 rust-version = "1.65"
