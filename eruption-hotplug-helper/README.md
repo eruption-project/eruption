@@ -32,16 +32,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 A utility used to notify Eruption about device hotplug events
 
 Usage: eruption-hotplug-helper [OPTIONS] <COMMAND>
 
 Commands:
-  hotplug      Trigger a hotplug event
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  hotplug  Trigger a hotplug event
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)

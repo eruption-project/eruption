@@ -43,14 +43,11 @@
   - [Installation](#installation)
     - [Arch Linux and derivatives like ArcoLinux or Manjaro](#arch-linux-and-derivatives-like-arcolinux-or-manjaro)
     - [Fedora based](#fedora-based)
-    - [Ubuntu or Pop!_OS](#ubuntu-or-pop_os)
+    - [Ubuntu or Pop!\_OS](#ubuntu-or-pop_os)
     - [From Source](#from-source)
   - [After Setup](#after-setup)
     - [Support for Audio Playback and Capture](#support-for-audio-playback-and-capture)
   - [The `eruption-audio-proxy` Daemon](#the-eruption-audio-proxy-daemon)
-  - [The `eruption-process-monitor` Daemon](#the-eruption-process-monitor-daemon)
-    - [Examples](#examples)
-    - [Removing a rule](#removing-a-rule)
   - [Further Reading](#further-reading)
     - [Features Overview (a.k.a The Eruption Handbook)](#features-overview-aka-the-eruption-handbook)
     - [Other Documentation](#other-documentation)
@@ -296,56 +293,6 @@ Then use `pavucontrol` to assign a monitor of an audio device to the Eruption au
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed
-
-## The `eruption-process-monitor` Daemon
-
-As of Eruption `0.1.19`, automatic switching of profiles and slots is supported via the `eruption-process-monitor`
-daemon. It gathers data via multiple sensor plugins and matches this data against a rule engine.
-It currently supports executing actions on process execution, as well as on Wayland or X11 "window focus changed" events.
-
-### Examples
-
-To enable the daemon please run the command:
-
-`systemctl --user enable --now eruption-process-monitor.service`
-
-To list all rules, run the command:
-
-`eruption-process-monitor rules list`
-
-Switch to `spectrum-analyzer-swirl.profile` when a YouTube tab is active in Google Chrome:
-
-`eruption-process-monitor rules add window-name '.*YouTube.*Google Chrome' /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile`
-
-Switch to `profile3.profile` when a YouTube tab is active in Mozilla Firefox:
-
-`eruption-process-monitor rules add window-name '.*YouTube.*Mozilla Firefox' /var/lib/eruption/profiles/profile3.profile`
-
-
-To list all supported sensors and actions please run the command:
-
-`eruption-process-monitor rules add help`
-
-### Removing a rule
-
-```shell
-eruption-process-monitor rules list
-  0: On window focused: Name: '.*YouTube.*Mozilla Firefox' => Switch to profile: /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile (enabled: false, internal: false)
-  1: On window focused: Name: 'Skype' => Switch to profile: /var/lib/eruption/profiles/vu-meter.profile (enabled: false, internal: false)
-  2: On window focused: Name: 'Left 4 Dead 2.*' => Switch to profile: /var/lib/eruption/profiles/gaming.profile (enabled: true, internal: false)
-  3: On window focused: Name: '.*YouTube.*Google Chrome' => Switch to profile: /var/lib/eruption/profiles/spectrum-analyzer-swirl.profile (enabled: true, internal: false)
-  4: On window focused: Instance: '.*' => Switch to profile: /var/lib/eruption/profiles/profile1.profile (enabled: true, internal: true)
-```
-
-To remove a rule, please run the following command:
-
-```shell
-eruption-process-monitor rules remove 1
-```
-
-> This will remove the rule for the window named `Skype` from the ruleset.
-
----
 
 ## Further Reading
 

@@ -16,10 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use crate::{dbus_client, util::RGBA};
+#![allow(dead_code)]
+
+use crate::MANAGED_DEVICES;
 
 mod corsair_strafe;
 mod generic_keyboard;
@@ -38,46 +40,63 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 //     UnsupportedDevice,
 // }
 
-pub fn get_keyboard_device(device_handle: u64) -> Result<Box<dyn Keyboard>> {
+pub fn get_keyboard_device(
+    device_handle: u64,
+    ui: &mut egui::Ui,
+    ctx: &egui::Context,
+) -> Result<Box<dyn Keyboard>> {
     // let devices = dbus_client::get_managed_devices()?;
 
-    match dbus_client::get_managed_devices()?
-        .0
-        .get(device_handle as usize)
-    {
+    match MANAGED_DEVICES.lock().0.get(device_handle as usize) {
         Some(device) => match device {
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Ok(Box::new(
-                roccat_vulcan_1xx::RoccatVulcan1xx::new(device_handle),
+                roccat_vulcan_1xx::RoccatVulcan1xx::new(device_handle, ui, ctx),
             )),
 
             // ROCCAT Vulcan Pro series
             (0x1e7d, 0x30f7) => Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::new(
                 device_handle,
+                ui,
+                ctx,
             ))),
 
             // ROCCAT Vulcan Pro TKL series
             (0x1e7d, 0x311a) => Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::new(
                 device_handle,
+                ui,
+                ctx,
             ))),
 
             // ROCCAT Vulcan TKL series
             (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new(
                 device_handle,
+                ui,
+                ctx,
             ))),
 
             // ROCCAT Magma
-            (0x1e7d, 0x3124) => Ok(Box::new(roccat_magma::RoccatMagma::new(device_handle))),
+            (0x1e7d, 0x3124) => Ok(Box::new(roccat_magma::RoccatMagma::new(
+                device_handle,
+                ui,
+                ctx,
+            ))),
 
             // Corsair STRAFE series
-            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(device_handle))),
+            (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(
+                device_handle,
+                ui,
+                ctx,
+            ))),
 
             _ => Ok(Box::new(generic_keyboard::GenericKeyboard::new(
                 device_handle,
+                ui,
+                ctx,
             ))),
         },
 
-        _ => Ok(Box::new(null_keyboard::NullKeyboard::new())),
+        _ => Ok(Box::new(null_keyboard::NullKeyboard::new(ui, ctx))),
     }
 }
 
@@ -87,7 +106,7 @@ pub trait Keyboard {
     fn get_make_and_model(&self) -> (&'static str, &'static str);
 
     /// Draw an animated keyboard with live action colors
-    fn draw_keyboard(&self) -> Result<()>;
+    fn draw_keyboard(&self, ui: &mut egui::Ui, ctx: &egui::Context) -> Result<()>;
 
     fn get_key_defs(&self, layout: &str) -> &[KeyDef];
 }

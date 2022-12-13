@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use bitvec::{field::BitField, order::Lsb0, view::BitView};
 use evdev_rs::enums::EV_KEY;
-use log::*;
 use parking_lot::Mutex;
 use std::time::Duration;
 use std::{sync::Arc, thread};
+use tracing::*;
 
 use crate::constants;
 
@@ -208,27 +208,27 @@ impl DeviceTrait for CorsairStrafe {
         } else {
             println!("Step 1");
             self.send_ctrl_report(0x01)
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {e}"));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 1: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 1: {e}"));
 
             println!("Step 2");
             self.send_ctrl_report(0x02)
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 2: {e}"));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 2: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 2: {e}"));
 
             println!("Step 3");
             self.send_ctrl_report(0x03)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {e}"));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {e}"));
 
             println!("Step 4");
             self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {e}"));
             self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| eprintln!("Step 3: {}", e));
+                .unwrap_or_else(|e| eprintln!("Step 3: {e}"));
 
             Ok(())
         }

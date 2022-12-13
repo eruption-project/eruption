@@ -16,9 +16,26 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
+
+use egui::CentralPanel;
 
 mod hwdevices;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
+
+#[derive(Default)]
+pub struct MicePage {}
+
+impl MicePage {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Mouse devices");
+        });
+    }
+}

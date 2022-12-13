@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use crate::dbus_client::Message;
@@ -61,7 +61,6 @@ use i18n_embed::{
 };
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use regex::Regex;
 use rust_embed::RustEmbed;
@@ -69,13 +68,12 @@ use sensors::WindowSensorData;
 use serde::{Deserialize, Serialize};
 use std::{env, fmt, fs, path::PathBuf, process, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
-use syslog::Facility;
+use tracing::*;
 
 mod constants;
 mod dbus_client;
 mod dbus_interface;
 
-mod logger;
 #[cfg(feature = "sensor-procmon")]
 mod procmon;
 mod sensors;
@@ -150,9 +148,6 @@ pub enum MainError {
 
     #[error("Could not switch profiles")]
     SwitchProfileError {},
-
-    #[error("Could not parse syslog log-level")]
-    SyslogLevelError {},
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -197,11 +192,11 @@ impl fmt::Display for Selector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Selector::ProcessExec { comm } => {
-                write!(f, "On process execution: comm: '{}'", comm)?;
+                write!(f, "On process execution: comm: '{comm}'")?;
             }
 
             Selector::WindowFocused { mode, regex } => {
-                write!(f, "On window focused: {}: '{}'", mode, regex)?;
+                write!(f, "On window focused: {mode}: '{regex}'")?;
             }
         };
 
@@ -219,7 +214,7 @@ impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Action::SwitchToProfile { profile_name } => {
-                write!(f, "Switch to profile: {}", profile_name)?;
+                write!(f, "Switch to profile: {profile_name}")?;
             }
 
             Action::SwitchToSlot { slot_index } => {
@@ -374,7 +369,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 "#
     );
 }
@@ -704,7 +699,7 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
                       _message: &dbus::Message| {
                     let _ = tx
                         .send(Message::ProfileChanged(h.new_profile_name))
-                        .map_err(|e| log::error!("Could not send a message: {}", e));
+                        .map_err(|e| tracing::error!("Could not send a message: {}", e));
 
                     true
                 },
@@ -777,10 +772,10 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
-    use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+    use tracing::*;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -819,7 +814,7 @@ pub fn run_main_loop(
     trace!("Entering main loop...");
 
     'MAIN_LOOP: loop {
-        log::trace!("Main loop iteration");
+        tracing::trace!("Main loop iteration");
 
         if QUIT.load(Ordering::SeqCst) {
             break 'MAIN_LOOP;
@@ -855,7 +850,7 @@ pub fn run_main_loop(
                 && !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst)
             {
                 sel = sel.recv(sysevents_rx, |event| {
-                    log::trace!("Sensor data: {:?}", event);
+                    tracing::trace!("Sensor data: {:?}", event);
 
                     if let Ok(event) = event {
                         process_system_event(&event)
@@ -874,7 +869,7 @@ pub fn run_main_loop(
                 .contains(&SensorConfiguration::EnableWayland)
             {
                 sel = sel.recv(wayland_rx, |event| {
-                    log::trace!("Sensor data: {:?}", event);
+                    tracing::trace!("Sensor data: {:?}", event);
 
                     if let Ok(event) = event {
                         process_window_event(&event as &dyn WindowSensorData).unwrap_or_else(|e| {
@@ -901,7 +896,7 @@ pub fn run_main_loop(
                         #[cfg(feature = "sensor-gnome-shellext")]
                         if let Some(data) = data.as_any().downcast_ref::<GnomeShellExtSensorData>()
                         {
-                            log::trace!("Processing GNOME shell extension sensor data");
+                            tracing::trace!("Processing GNOME shell extension sensor data");
 
                             process_window_event(data)?;
 
@@ -910,7 +905,7 @@ pub fn run_main_loop(
 
                         #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
-                            log::trace!("Processing Mutter sensor data");
+                            tracing::trace!("Processing Mutter sensor data");
 
                             process_window_event(data)?;
 
@@ -920,7 +915,7 @@ pub fn run_main_loop(
                         // this is all handled via events now, instead of polling
                         // #[cfg(feature = "sensor-wayland")]
                         // if let Some(data) = data.as_any().downcast_ref::<WaylandSensorData>() {
-                        //     log::trace!("Processing Wayland compositor sensor data");
+                        //     tracing::trace!("Processing Wayland compositor sensor data");
 
                         //     process_window_event(data)?;
 
@@ -929,7 +924,7 @@ pub fn run_main_loop(
 
                         #[cfg(feature = "sensor-x11")]
                         if let Some(data) = data.as_any().downcast_ref::<X11SensorData>() {
-                            log::trace!("Processing X11 sensor data");
+                            tracing::trace!("Processing X11 sensor data");
 
                             process_window_event(data)?;
 
@@ -937,7 +932,7 @@ pub fn run_main_loop(
                         }
 
                         if !handled {
-                            log::trace!("Sensor data: {:?}", data);
+                            tracing::trace!("Sensor data: {:?}", data);
 
                             return Err(MainError::SensorError {
                                 description: "Unhandled sensor data type".to_string(),
@@ -986,7 +981,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
             }
         }
     } else {
-        log::warn!("Auto-detection failed, enabling all available sensors");
+        tracing::warn!("Auto-detection failed, enabling all available sensors");
 
         SensorConfiguration::profile_all_sensors_enabled()
     };
@@ -1002,7 +997,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
         }
     }
 
-    log::info!("The following sensor configuration has been auto-detected: {config_profile:?}");
+    tracing::info!("The following sensor configuration has been auto-detected: {config_profile:?}");
 
     *SENSORS_CONFIGURATION.write() = config_profile;
 
@@ -1091,44 +1086,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     let opts = Options::parse();
-    let daemon = matches!(opts.command, Subcommands::Daemon);
-
-    if unsafe { libc::isatty(0) != 0 } && daemon {
-        // initialize logging on console
-        logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_USER,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
-        }
-    }
+    let _daemon = matches!(opts.command, Subcommands::Daemon);
 
     // start the thread deadlock detector
     // #[cfg(debug_assertions)]
@@ -1160,7 +1118,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
-            log::error!("Could not parse configuration file: {}", e);
+            tracing::error!("Could not parse configuration file: {}", e);
             process::exit(4);
         });
 
@@ -1266,7 +1224,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Rules { command } => match command {
             RulesSubcommands::List => {
                 for (index, (selector, (metadata, action))) in RULES_MAP.read().iter().enumerate() {
-                    println!("{:3}: {} => {} ({})", index, selector, action, metadata);
+                    println!("{index:3}: {selector} => {action} ({metadata})");
                 }
             }
 
@@ -1350,10 +1308,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if !metadata.internal {
                             metadata.enabled = true;
 
-                            println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
                         }
@@ -1371,10 +1326,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if !metadata.internal {
                             metadata.enabled = false;
 
-                            println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to change an internal (auto-generated) rule, this is a noop!");
                         }
@@ -1391,10 +1343,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 match RULES_MAP.write().shift_remove_index(rule_index) {
                     Some((selector, (metadata, action))) => {
                         if !metadata.internal {
-                            println!(
-                                "{:3}: {} => {} ({})",
-                                rule_index, selector, action, metadata
-                            );
+                            println!("{rule_index:3}: {selector} => {action} ({metadata})");
                         } else {
                             eprintln!("Trying to remove an internal (auto-generated) rule, this is a noop!");
                         }
@@ -1427,6 +1376,43 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

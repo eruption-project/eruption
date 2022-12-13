@@ -16,10 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use crate::{dbus_client, util::RGBA};
+#![allow(dead_code)]
+
+use crate::dbus_client;
 
 mod generic_misc_device;
 mod null_misc_device;

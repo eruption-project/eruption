@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::time::Duration;
+use tracing::*;
 // use std::sync::atomic::Ordering;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -347,12 +347,12 @@ impl RoccatKoneProAir {
 
                                 table.insert(
                                     "battery-level-percent".to_string(),
-                                    format!("{:.0}", battery_level_percent),
+                                    format!("{battery_level_percent:.0}"),
                                 );
 
                                 table.insert(
                                     "battery-level-raw".to_string(),
-                                    format!("{}", battery_status),
+                                    format!("{battery_status}"),
                                 );
                             }
 
@@ -363,7 +363,7 @@ impl RoccatKoneProAir {
                                 // radio
                                 table.insert(
                                     "transceiver-enabled".to_string(),
-                                    format!("{}", transceiver_enabled),
+                                    format!("{transceiver_enabled}"),
                                 );
 
                                 if transceiver_enabled {
@@ -375,7 +375,7 @@ impl RoccatKoneProAir {
 
                                     table.insert(
                                         "signal-strength-raw".to_string(),
-                                        format!("{}", signal),
+                                        format!("{signal}"),
                                     );
                                 } else {
                                     // signal strength when radio is off

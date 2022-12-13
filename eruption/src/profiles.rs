@@ -16,14 +16,14 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
 
 use crate::constants;
 use indexmap::IndexMap;
-use log::*;
+use tracing::*;
 
 use serde::{Deserialize, Serialize};
 use std::default::Default;
@@ -410,7 +410,7 @@ pub fn get_profile_dirs() -> Vec<PathBuf> {
 
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback profile directory");
+        tracing::warn!("Using default fallback profile directory");
 
         let path = PathBuf::from(constants::DEFAULT_PROFILE_DIR);
         result.push(path);
@@ -428,7 +428,7 @@ pub fn get_profiles_from(profile_dirs: &[PathBuf]) -> Result<Vec<Profile>> {
     let mut errors_present = false;
 
     let profile_files = get_profile_files_from(profile_dirs).unwrap_or_else(|e| {
-        log::warn!("Could not enumerate profiles: {}", &e);
+        tracing::warn!("Could not enumerate profiles: {}", &e);
         vec![]
     });
 
@@ -542,8 +542,7 @@ mod tests {
 
         assert!(
             files.contains(&path.join("../support/tests/assets/default.profile")),
-            "Missing default.profile: {:#?}",
-            files
+            "Missing default.profile: {files:#?}"
         );
 
         Ok(())
@@ -560,8 +559,7 @@ mod tests {
                 .map(|p| p.name.as_ref())
                 .collect::<Vec<&str>>()
                 .contains(&"Organic FX"),
-            "Missing profile 'Organic FX' in profiles: {:#?}",
-            profiles
+            "Missing profile 'Organic FX' in profiles: {profiles:#?}"
         );
 
         Ok(())
@@ -579,8 +577,7 @@ mod tests {
         assert_eq!(
             profile_path,
             path.join("../support/tests/assets/default.profile"),
-            "Invalid path {:#?}",
-            profile_path
+            "Invalid path {profile_path:#?}"
         );
 
         Ok(())
@@ -726,7 +723,7 @@ mod tests {
                 min: Some(-1),
                 max: Some(9999),
             } => {}
-            _ => assert!(false, "Wrong manifest_value: {:?}", manifest_value),
+            _ => assert!(false, "Wrong manifest_value: {manifest_value:?}"),
         }
 
         Ok(())

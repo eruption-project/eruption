@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use crate::{
@@ -598,7 +598,7 @@ fn create_config_editor(
     where
         T: std::fmt::Display,
     {
-        log::debug!(
+        tracing::debug!(
             "Setting parameter {}: {}: {} to '{}'",
             &profile.profile_file.display(),
             &script.script_file.display(),
@@ -793,10 +793,10 @@ cfg_if::cfg_if! {
 
             match data {
                 Some(data) => {
-                    // log::debug!("{}", &data);
+                    // tracing::debug!("{}", &data);
 
                     if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
-                        log::error!("{}", e);
+                        tracing::error!("{}", e);
 
                         let message = "Could not write file".to_string();
                         let secondary =
@@ -821,14 +821,14 @@ cfg_if::cfg_if! {
                         }
                         .into())
                     } else {
-                        log::info!("Wrote file: {}", &path.as_ref().display());
+                        tracing::info!("Wrote file: {}", &path.as_ref().display());
 
                         Ok(())
                     }
                 }
 
                 _ => {
-                    log::error!("Could not get buffer contents");
+                    tracing::error!("Could not get buffer contents");
 
                     Err(ProfilesError::UnknownError {
                         description: "Could not get buffer contents".to_string(),
@@ -844,17 +844,17 @@ cfg_if::cfg_if! {
             builder: &Builder,
         ) -> Result<()> {
             let main_window: ApplicationWindow = builder.object("main_window").unwrap();
-                // log::debug!("{}", &data);
+                // tracing::debug!("{}", &data);
 
             let (start, end) = buffer.bounds();
             let data = buffer.text(&start, &end, true).map(|v| v.to_string());
 
             match data {
                 Some(data) => {
-                    // log::debug!("{}", &data);
+                    // tracing::debug!("{}", &data);
 
                     if let Err(e) = dbus_client::write_file(&path.as_ref(), &data) {
-                        log::error!("{}", e);
+                        tracing::error!("{}", e);
 
                         let message = "Could not write file".to_string();
                         let secondary =
@@ -879,14 +879,14 @@ cfg_if::cfg_if! {
                         }
                         .into())
                     } else {
-                        log::info!("Wrote file: {}", &path.as_ref().display());
+                        tracing::info!("Wrote file: {}", &path.as_ref().display());
 
                         Ok(())
                     }
                 }
 
                 _ => {
-                    log::error!("Could not get buffer contents");
+                    tracing::error!("Could not get buffer contents");
 
                     Err(ProfilesError::UnknownError {
                         description: "Could not get buffer contents".to_string(),
@@ -1289,10 +1289,10 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     profiles_treeview.connect_row_activated(clone!(@weak builder => move |tv, path, _column| {
         let profile = tv.model().unwrap().value(&tv.model().unwrap().iter(path).unwrap(), 3).get::<String>().unwrap();
 
-        let _result = populate_visual_config_editor(&builder, &profile).map_err(|e| { log::error!("{}", e) });
+        let _result = populate_visual_config_editor(&builder, &profile).map_err(|e| { tracing::error!("{}", e) });
 
         remove_elements_from_stack_widget(&builder);
-        let _result = populate_stack_widget(&builder, &profile).map_err(|e| { log::error!("{}", e) });
+        let _result = populate_stack_widget(&builder, &profile).map_err(|e| { tracing::error!("{}", e) });
     }));
 
     profiles_treeview.show_all();

@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use gdk::prelude::GdkContextExt;
@@ -42,8 +42,10 @@ impl RoccatBurstPro {
     pub fn new(device: u64) -> Self {
         RoccatBurstPro {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-burst-pro.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-burst-pro.png",
+            )
+            .unwrap(),
         }
     }
 }

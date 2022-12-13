@@ -16,11 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use parking_lot::{Mutex, RwLock};
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
@@ -29,6 +28,7 @@ use std::{
     any::Any,
     time::{Duration, Instant},
 };
+use tracing::*;
 
 use crate::events;
 use crate::plugins::{self, Plugin};
@@ -261,7 +261,6 @@ mod backends {
 
     use flume::{self, unbounded, Receiver, Sender};
     use lazy_static::lazy_static;
-    use log::*;
     use nix::unistd::unlink;
     use parking_lot::Mutex;
     use prost::Message;
@@ -272,6 +271,7 @@ mod backends {
     use std::sync::atomic::AtomicI32;
     use std::sync::Arc;
     use std::{sync::atomic::Ordering, thread};
+    use tracing::*;
 
     use nix::poll::{poll, PollFd, PollFlags};
     use rustfft::num_complex::Complex;

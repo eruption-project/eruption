@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "debug"
@@ -30,6 +30,10 @@ column = 0
 -- event handler functions --
 function on_startup(config)
     for i = 1, canvas_size do color_map[i] = color_background end
+end
+
+function on_render()
+    submit_color_map(color_map)
 end
 
 function on_tick(delta)
@@ -52,6 +56,4 @@ function on_tick(delta)
     for i = 1, num_rows - 1 do color_map[column * num_rows + i] = color end
 
     column = column + 1
-
-    submit_color_map(color_map)
 end

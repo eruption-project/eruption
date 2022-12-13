@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 /*
@@ -28,7 +28,6 @@
 */
 
 use byteorder::{ByteOrder, LittleEndian};
-use log::*;
 use mlua::prelude::*;
 use std::{
     any::Any,
@@ -38,6 +37,7 @@ use std::{
     sync::Arc,
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
+use tracing::*;
 
 use crate::plugins::Plugin;
 use crate::{constants, plugins};
@@ -110,7 +110,7 @@ impl Animal {
         opacity: f64,
         coefficients: (f64, f64, f64, f64, f64),
     ) -> Result<Self> {
-        log::trace!("Creating new animal: {}", name);
+        tracing::trace!("Creating new animal: {}", name);
 
         // Seed value for random number generation
         let seed = SystemTime::now()
@@ -227,7 +227,7 @@ impl Animal {
     }
 
     pub fn tick(&mut self, delta: u32) {
-        log::trace!("{}: Timer tick: {}", self.name, delta);
+        tracing::trace!("{}: Timer tick: {}", self.name, delta);
 
         let time = ternimal::seconds(self.start_time.elapsed());
         let position = self.speed * time;
@@ -285,7 +285,7 @@ impl Animal {
     }
 
     pub fn render(&self) -> Vec<u32> {
-        log::trace!("{}: Rendering", self.name);
+        tracing::trace!("{}: Rendering", self.name);
 
         let mut result = vec![0x000000000; constants::CANVAS_SIZE];
 
@@ -434,8 +434,7 @@ impl Plugin for AnimalPlugin {
                     })
                     .map_err(|e: eyre::Error| {
                         LuaError::RuntimeError(format!(
-                            "Could not instantiate the animal object: {}",
-                            e
+                            "Could not instantiate the animal object: {e}"
                         ))
                     })
             },
@@ -482,7 +481,7 @@ impl Plugin for AnimalPlugin {
                     let mut m = f.borrow_mut();
 
                     if let Some(animal) = m.remove(&handle) {
-                        log::trace!("Destroying animal object: {}", animal.name);
+                        tracing::trace!("Destroying animal object: {}", animal.name);
 
                         Ok(())
                     } else {
@@ -1504,7 +1503,7 @@ mod ternimal {
                 let r = (self.red * 255.0).round() as u8;
                 let g = (self.green * 255.0).round() as u8;
                 let b = (self.blue * 255.0).round() as u8;
-                format!("2;{};{};{}", r, g, b)
+                format!("2;{r};{g};{b}")
             } else {
                 let r = (self.red * 5.0).round() as u8;
                 let g = (self.green * 5.0).round() as u8;

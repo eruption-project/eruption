@@ -16,14 +16,14 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use dbus::{ffidisp::Connection, ffidisp::NameFlag};
 use dbus_tree::{Access, EmitsChangedSignal, Factory};
 use flume::Sender;
-use log::*;
 use std::sync::{atomic::Ordering, Arc};
+use tracing::*;
 
 /// D-Bus messages and signals that are processed by the main thread
 #[derive(Debug, Clone)]

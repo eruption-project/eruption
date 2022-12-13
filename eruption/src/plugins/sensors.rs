@@ -16,11 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use lazy_static::lazy_static;
-// use log::*;
+// use tracing::*;
 use mlua::prelude::*;
 use parking_lot::Mutex;
 use std::any::Any;
@@ -186,7 +186,7 @@ impl Plugin for SensorsPlugin {
         // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         // if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
-        //     log::debug!("Refreshing sensors...");
+        //     tracing::debug!("Refreshing sensors...");
         //
         //     Self::refresh();
         // }
@@ -196,7 +196,7 @@ impl Plugin for SensorsPlugin {
         // refresh sensor state (default: every other second), but only
         // if the sensors have been used at least once
         if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
-            log::debug!("Refreshing sensors...");
+            tracing::debug!("Refreshing sensors...");
 
             Self::refresh();
         }

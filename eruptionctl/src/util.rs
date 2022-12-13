@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::fs;
@@ -80,7 +80,7 @@ fn get_dirs(config_key: &str, fallback_dir: &str, fallback_description: &str) ->
 
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback {} directory", fallback_description);
+        tracing::warn!("Using default fallback {} directory", fallback_description);
 
         let path = PathBuf::from(fallback_dir);
         result.push(path);

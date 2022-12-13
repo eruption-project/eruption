@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::collections::HashMap;
@@ -478,7 +478,7 @@ impl DeviceTrait for RoccatElo71Air {
 
                             table.insert(
                                 "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
+                                format!("{battery_status}"),
                             );
 
                             table.insert("transceiver-enabled".to_string(), format!("{}", true));

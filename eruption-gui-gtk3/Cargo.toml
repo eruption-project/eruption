@@ -1,22 +1,21 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 [package]
 name = "eruption-gui-gtk3"
@@ -24,6 +23,7 @@ version = "0.1.8"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
+rust-version = "1.65"
 description = "A GUI for the Eruption Linux user-mode driver"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
@@ -34,26 +34,29 @@ readme = "README.md"
 resolver = "2"
 
 [features]
+# default = []
 default = ["sourceview"]
 sourceview = ["sourceview4"]
+debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.17"
-pretty_env_logger = "0.4.0"
-libc = "0.2.137"
-nix = "0.25.0"
+libc = "0.2.138"
+nix = "0.26.1"
 walkdir = "2.3.2"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-serde = { version = "1.0.147", features = ["derive"] }
-serde_json = "1.0.87"
-indexmap = { version = "1.9.1", features = ["serde"] }
-# tokio = { version = "1.21.2", features = ["full"] }
-# tracing = "0.1.29"
-# tracing-futures = "0.2.5"
-# tracing-subscriber = "0.3.2"
-config = "0.13.2"
-uuid = { version = "1.2.1", features = ["serde", "v4"] }
+serde = { version = "1.0.149", features = ["derive"] }
+serde_json = "1.0.89"
+indexmap = { version = "1.9.2", features = ["serde"] }
+tokio = { version = "1.23.0", features = ["full", "tracing", "test-util"] }
+tracing = "0.1.37"
+tracing-journald = "0.3.0"
+tracing-futures = "0.2.5"
+tracing-log = { version = "0.1.3", features = ["env_logger"] }
+tracing-subscriber = { version = "0.3.16", features = ["parking_lot", "registry", "env-filter"] }
+console-subscriber = { version = "0.1.8", features = ["parking_lot"] }
+config = "0.13.3"
+uuid = { version = "1.2.2", features = ["serde", "v4"] }
 toml = "0.5.9"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
@@ -79,13 +82,13 @@ gdk-sys = "0.15.1"
 gtk = { version = "0.15.5", features = ["v3_24"] }
 pangocairo = "0.15.1"
 sourceview4 = { version = "0.3.0", optional = true }
-# sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs" }
+# sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.4"
-rust-embed = "6.4.2"
+rust-embed = { version = "6.4.2", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
-pretty_assertions = "1.3.0"
 
 [dev-dependencies]
-# tokio = { version = "1.21.2", features = ["test-util"] }
+pretty_assertions = "1.3.0"
+tokio = { version = "1.23.0", features = ["full", "tracing", "test-util"] }

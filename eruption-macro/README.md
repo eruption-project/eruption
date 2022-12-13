@@ -1,6 +1,6 @@
 ## eruption-macro - A CLI macro utility for Eruption
 
-This utility may be used to record macros for the Eruption daemon
+This utility may be used to manage macros used by the Eruption daemon
 
 ### eruption-macro
 
@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 A CLI macro utility for Eruption
 
@@ -35,7 +35,6 @@ Commands:
   disable      Disable an existing macro
   description  Show or set the description of a specified macro
   compile      Compile macros to Lua code and make them available to Eruption
-  completions  Generate shell completions
   help         Print this message or the help of the given subcommand(s)
 
 Options:

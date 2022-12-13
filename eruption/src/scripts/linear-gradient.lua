@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "debug"
@@ -44,6 +44,10 @@ function on_apply_parameter(parameters)
     on_startup(nil)
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     if not animate_gradient then return end
 
@@ -55,7 +59,5 @@ function on_tick(delta)
             local p = ((i + ticks) / color_divisor) % 100
             color_map[i + 1] = linear_gradient(color_start, color_end, p / 100)
         end
-
-        submit_color_map(color_map)
     end
 end

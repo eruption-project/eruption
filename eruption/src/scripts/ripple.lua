@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -41,6 +41,12 @@ function on_key_down(key_index)
     easing_state = 0
 
     effect_ttl = max_effect_ttl
+end
+
+function on_render()
+    if effect_ttl > 0 then
+        submit_color_map(color_map)
+    end
 end
 
 function on_tick(delta)
@@ -145,8 +151,6 @@ function on_tick(delta)
             end
         end
     end
-
-    submit_color_map(color_map)
 
     effect_ttl = effect_ttl - 1
 end

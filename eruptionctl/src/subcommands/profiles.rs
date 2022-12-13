@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use color_eyre::Help;
@@ -55,7 +55,7 @@ pub async fn handle_command(command: ProfilesSubcommands) -> Result<()> {
 async fn edit_command(profile_name: String) -> Result<()> {
     match util::match_profile_by_name(&profile_name) {
         Ok(profile) => util::edit_file(profile.profile_file)?,
-        Err(err) => eprintln!("{}", err),
+        Err(err) => eprintln!("{err}"),
     }
 
     Ok(())
@@ -85,7 +85,7 @@ async fn info_command(profile_name: String) -> Result<()> {
                 profile.config,
             );
         }
-        Err(err) => eprintln!("{}", err),
+        Err(err) => eprintln!("{err}"),
     }
 
     Ok(())

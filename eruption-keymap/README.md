@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 A CLI keymap editor for Eruption
 
@@ -34,7 +34,6 @@ Commands:
   macros       Show a list of available macros in a Lua file
   events       Show a list of available Linux EVDEV events
   compile      Compile a keymap to Lua code and make it available to Eruption
-  completions  Generate shell completions
   help         Print this message or the help of the given subcommand(s)
 
 Options:

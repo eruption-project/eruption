@@ -16,13 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
-use log::{debug, error, info, trace, warn};
 use palette::{FromColor, Hsva, Hue, Saturate, Shade, Srgba};
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -30,6 +29,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
+use tracing::{debug, error, info, trace, warn};
 
 use crate::{
     constants, dbus_interface, hwdevices, macros, plugins, script,
@@ -122,7 +122,7 @@ pub fn spawn_keyboard_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/kbd:{}", device_index))
+        .name(format!("events/kbd:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();
@@ -260,7 +260,7 @@ pub fn spawn_mouse_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/mouse:{}", device_index))
+        .name(format!("events/mouse:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();
@@ -349,7 +349,7 @@ pub fn spawn_mouse_input_thread(
                                 }
 
                                 Err(e) => {
-                                    log::warn!("Mouse event for '{code:?}' not processed: {e}")
+                                    tracing::warn!("Mouse event for '{code:?}' not processed: {e}")
                                 }
                             }
                         } else if let evdev_rs::enums::EventCode::EV_REL(code) =
@@ -589,7 +589,7 @@ pub fn spawn_misc_input_thread(
     usb_pid: u16,
 ) -> plugins::Result<()> {
     thread::Builder::new()
-        .name(format!("events/misc:{}", device_index))
+        .name(format!("events/misc:{device_index}"))
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();

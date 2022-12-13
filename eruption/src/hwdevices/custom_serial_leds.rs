@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::{any::Any, collections::HashMap, path::PathBuf, sync::Arc};
 
-use log::*;
 use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::time::Duration;
+use tracing::*;
 
 use crate::hwdevices::DeviceStatus;
 

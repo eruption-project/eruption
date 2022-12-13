@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -40,7 +40,7 @@ pub async fn dbus_system_bus(
 
     tokio::spawn(async {
         let err = resource.await;
-        panic!("Lost connection to D-Bus: {}", err);
+        panic!("Lost connection to D-Bus: {err}");
     });
 
     let proxy = nonblock::Proxy::new(
@@ -62,7 +62,7 @@ pub async fn dbus_session_bus<'a>(
 
     tokio::spawn(async {
         let err = resource.await;
-        panic!("Lost connection to D-Bus: {}", err);
+        panic!("Lost connection to D-Bus: {err}");
     });
 
     let proxy = nonblock::Proxy::new(

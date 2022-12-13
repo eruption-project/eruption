@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use super::Keyboard;
@@ -47,8 +47,10 @@ impl RoccatVulcan1xx {
     pub fn new(device: u64) -> Self {
         RoccatVulcan1xx {
             device,
-            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/roccat-vulcan-1xx.png")
-                .unwrap(),
+            pixbuf: Pixbuf::from_resource(
+                "/org/eruption/eruption-gui-gtk3/img/roccat-vulcan-1xx.png",
+            )
+            .unwrap(),
         }
     }
 }

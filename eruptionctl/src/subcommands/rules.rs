@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use colored::*;
@@ -213,14 +213,14 @@ async fn list_command() -> Result<()> {
     for (index, (selector, (metadata, action))) in rules.iter().enumerate() {
         if metadata.internal {
             // render internal rules as italic text
-            let text = format!("{:3}: {} => {} ({})", index, selector, action, metadata).italic();
-            println!("{}", text);
+            let text = format!("{index:3}: {selector} => {action} ({metadata})").italic();
+            println!("{text}");
         } else if !metadata.enabled {
             // render disabled rules as dimmed text
-            let text = format!("{:3}: {} => {} ({})", index, selector, action, metadata).dimmed();
-            println!("{}", text);
+            let text = format!("{index:3}: {selector} => {action} ({metadata})").dimmed();
+            println!("{text}");
         } else {
-            println!("{:3}: {} => {} ({})", index, selector, action, metadata);
+            println!("{index:3}: {selector} => {action} ({metadata})");
         }
     }
 

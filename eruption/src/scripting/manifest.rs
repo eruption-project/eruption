@@ -16,16 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
 
-use log::*;
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
+use tracing::*;
 
 use crate::profiles::Profile;
 use crate::scripting::parameters::{ManifestConfiguration, PlainParameter, ToPlainParameter};
@@ -91,7 +91,7 @@ impl Manifest {
 
                     Err(e) => {
                         error!("{}", e);
-                        println!("{}", e);
+                        println!("{e}");
                         Err(ManifestError::ParseError {}.into())
                     }
                 }

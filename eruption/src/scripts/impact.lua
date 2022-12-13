@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 -------------------------------------------------------------------------------
 -- This script was heavily inspired by the excellent work of duncanthrax
@@ -63,6 +63,12 @@ local function update_key_states()
     end
 end
 
+function on_render()
+    if effect_ttl > 0 then
+        submit_color_map(color_map)
+    end
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -84,7 +90,5 @@ function on_tick(delta)
         end
 
         effect_ttl = effect_ttl - 1
-
-        submit_color_map(color_map)
     end
 end

@@ -16,14 +16,14 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use log::*;
 use same_file;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::Ordering;
+use tracing::*;
 
 use crate::{
     profiles::Profile,
@@ -164,7 +164,7 @@ fn update_parameters_on_active_profile(
     if let Some(lua_tx) = lua_tx {
         let sent = lua_tx.send(script::Message::SetParameters { parameter_values });
         if let Err(e) = sent {
-            eprintln!("Could not update parameter from D-Bus request. {}", e);
+            eprintln!("Could not update parameter from D-Bus request. {e}");
             crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
         }
     }

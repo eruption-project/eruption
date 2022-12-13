@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::sync::Arc;
@@ -141,8 +141,7 @@ mod backends {
                 )
                 .map_err(|e| AudioError::ConnectionError {
                     description: format!(
-                        "Could not open PulseAudio/PipeWire recording device: {}",
-                        e
+                        "Could not open PulseAudio/PipeWire recording device: {e}"
                     ),
                 })?;
 
@@ -167,10 +166,7 @@ mod backends {
                     None,
                 )
                 .map_err(|e| AudioError::ConnectionError {
-                    description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {}",
-                        e
-                    ),
+                    description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
                 *self.player_handle.write() = Some(result);
@@ -202,10 +198,7 @@ mod backends {
                     None,
                 )
                 .map_err(|e| AudioError::ConnectionError {
-                    description: format!(
-                        "Could not open PulseAudio/PipeWire playback device: {}",
-                        e
-                    ),
+                    description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
                 *self.player_handle.write() = Some(result);
@@ -290,7 +283,7 @@ mod backends {
                 let data = &sfx_map[&id];
 
                 player.write(data).map_err(|e| AudioError::PlayerError {
-                    description: format!("Error during playback: {}", e),
+                    description: format!("Error during playback: {e}"),
                 })?;
 
                 Ok(())
@@ -305,7 +298,7 @@ mod backends {
         fn play_samples(&self, data: &[u8]) -> Result<()> {
             if let Some(player) = &*self.player_handle.read() {
                 player.write(data).map_err(|e| AudioError::PlayerError {
-                    description: format!("Error during playback: {}", e),
+                    description: format!("Error during playback: {e}"),
                 })?;
 
                 Ok(())
@@ -324,7 +317,7 @@ mod backends {
                 grabber
                     .read(&mut buf)
                     .map_err(|e| AudioError::GrabberError {
-                        description: format!("Error during recording: {}", e),
+                        description: format!("Error during recording: {e}"),
                     })?;
 
                 Ok(())

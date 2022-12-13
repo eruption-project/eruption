@@ -184,7 +184,6 @@ Work-in-progress, as of `0.1.20`.
 
 - Support is only preliminary, at best
 
-
 ## Adalight/Custom serial LEDs
 
 Custom firmware for Arduino devices can be found in `support/firmware/arduino/`

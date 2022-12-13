@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -26,7 +26,6 @@ use crate::{constants, profiles};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 use lazy_static::lazy_static;
-use log::warn;
 use parking_lot::Mutex;
 use std::{
     collections::HashMap,
@@ -38,6 +37,7 @@ use std::{
     time::Duration,
     u8,
 };
+use tracing::warn;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -323,7 +323,7 @@ pub fn get_device_brightness(device: u64) -> Result<i64> {
 
 /// Set the current brightness value of device
 pub fn set_device_brightness(device: u64, brightness: i64) -> Result<()> {
-    set_device_config(device, "brightness", &format!("{}", brightness))?;
+    set_device_config(device, "brightness", &format!("{brightness}"))?;
 
     Ok(())
 }

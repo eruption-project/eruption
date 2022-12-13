@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use dbus::{ffidisp::Connection, ffidisp::NameFlag, MethodErr};
 use dbus_tree::{Factory, Signal};
 use flume::Sender;
 use indexmap::IndexMap;
-use log::*;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::{Action, RuleMetadata, Selector, WindowFocusedSelectorMode};
 
@@ -107,7 +107,7 @@ impl DbusApi {
                                                 profile_name.to_string()
                                             }
                                             Action::SwitchToSlot { slot_index } => {
-                                                format!("{}", slot_index)
+                                                format!("{slot_index}")
                                             }
                                         };
 
@@ -261,7 +261,7 @@ impl DbusApi {
                 let action_val = match action {
                     Action::SwitchToProfile { profile_name } => profile_name.to_string(),
                     Action::SwitchToSlot { slot_index } => {
-                        format!("{}", slot_index)
+                        format!("{slot_index}")
                     }
                 };
 

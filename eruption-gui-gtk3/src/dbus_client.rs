@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -295,7 +295,7 @@ pub fn spawn_dbus_event_loop_session(
 
         // let _id1_1 = rules_proxy.match_signal(
         //     move |h: PropertiesPropertiesChanged, _: &Connection, _message: &dbus::Message| {
-        //         log::info!("{:?}", h);
+        //         tracing::info!("{:?}", h);
 
         //         true
         //     },
@@ -331,10 +331,10 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &str) -> Result<()> {
     );
 
     if let Err(e) = proxy.write_file(&path.as_ref().to_string_lossy(), data) {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {
@@ -353,10 +353,10 @@ pub fn ping() -> Result<()> {
     );
 
     if let Err(e) = proxy.ping() {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {
@@ -375,10 +375,10 @@ pub fn ping_privileged() -> Result<()> {
     );
 
     if let Err(e) = proxy.ping_privileged() {
-        log::error!("{}", e);
+        tracing::error!("{}", e);
 
         Err(DbusClientError::MethodFailed {
-            description: format!("{}", e),
+            description: format!("{e}"),
         }
         .into())
     } else {

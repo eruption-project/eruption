@@ -8,7 +8,6 @@
     - [FN Key functions](#fn-key-functions-1)
     - [Easy Shift+ Key functions while `Game Mode` is active](#easy-shift-key-functions-while-game-mode-is-active-1)
 
-
 ## Eruption Cheat Sheet
 
 ### FN Key functions

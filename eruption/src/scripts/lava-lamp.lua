@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -39,6 +39,10 @@ function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[3] = offsets[3] - rel_z
 end
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -56,7 +60,5 @@ function on_tick(delta)
 
             color_map[i + 1] = gradient_color_at(grad, pos)
         end
-
-        submit_color_map(color_map)
     end
 end

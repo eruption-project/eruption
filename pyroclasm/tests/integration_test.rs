@@ -16,13 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::{path::PathBuf, process::Command};
 
 #[test]
-fn test_eruption_gui_version() {
+fn test_pyroclasm_ui_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_pyroclasm"));
 
     let output = Command::new(command)

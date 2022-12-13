@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -31,6 +31,10 @@ grad = gradient_from_name(stock_gradient)
 -- event handler functions --
 function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
+end
+
+function on_render()
+    submit_color_map(color_map)
 end
 
 function on_tick(delta)
@@ -66,6 +70,4 @@ function on_tick(delta)
             end
         end
     end
-
-    submit_color_map(color_map)
 end

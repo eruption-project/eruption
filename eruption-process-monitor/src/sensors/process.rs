@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
@@ -25,9 +25,9 @@ use crate::{util, SystemEvent};
 use async_trait::async_trait;
 use flume::Sender;
 use lazy_static::lazy_static;
-use log::*;
 use std::sync::atomic::AtomicBool;
 use std::{sync::atomic::Ordering, thread};
+use tracing::*;
 
 use crate::QUIT;
 
@@ -111,7 +111,9 @@ impl ProcessSensor {
                         }
 
                         procmon::EventType::SocketError => {
-                            log::error!("Error while receiving from Linux kernel netlink socket");
+                            tracing::error!(
+                                "Error while receiving from Linux kernel netlink socket"
+                            );
 
                             PROCESS_SENSOR_FAILED.store(true, Ordering::SeqCst);
                             break Err(ProcessSensorError::SocketError {}.into());

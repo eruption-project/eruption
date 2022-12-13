@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use gio::prelude::*;
@@ -26,8 +26,6 @@ use gtk::glib;
 use gtk::prelude::*;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
-use std::thread;
-use std::time::Duration;
 
 use crate::dbus_client;
 use crate::device;
@@ -142,28 +140,28 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
 
     slot1_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(0, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(0, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot2_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(1, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(1, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot3_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(2, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(2, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
 
     slot4_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
-        util::set_slot_name(3, &slot_name).unwrap_or_else(|e| log::error!("{}", e));
+        util::set_slot_name(3, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
         gtk::Inhibit(false)
     });
@@ -213,7 +211,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_value().get::<String>()
             .unwrap();
 
-
         switch_to_slot_and_profile(0, file).unwrap();
     }));
 
@@ -239,7 +236,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .value(&entry, 2)
             .to_value().get::<String>()
             .unwrap();
-
 
         switch_to_slot_and_profile(1, file).unwrap();
     }));
@@ -267,7 +263,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_value().get::<String>()
             .unwrap();
 
-
         switch_to_slot_and_profile(2, file).unwrap();
     }));
 
@@ -293,7 +288,6 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .value(&entry, 2)
             .to_value().get::<String>()
             .unwrap();
-
 
         switch_to_slot_and_profile(3, file).unwrap();
     }));
@@ -532,7 +526,7 @@ fn register_actions<A: IsA<gtk::Application>>(
         if !events::shall_ignore_pending_ui_event() {
             match switch_to_slot(0) {
                 Ok(()) => update_slot_indicator_state(&builder, 0),
-                Err(e) => log::error!("Could not switch slots: {e}"),
+                Err(e) => tracing::error!("Could not switch slots: {e}"),
             }
         }
     }));
@@ -545,7 +539,7 @@ fn register_actions<A: IsA<gtk::Application>>(
         if !events::shall_ignore_pending_ui_event() {
             match switch_to_slot(1) {
                 Ok(()) => update_slot_indicator_state(&builder, 1),
-                Err(e) => log::error!("Could not switch slots: {e}"),
+                Err(e) => tracing::error!("Could not switch slots: {e}"),
             }
         }
     }));
@@ -558,7 +552,7 @@ fn register_actions<A: IsA<gtk::Application>>(
         if !events::shall_ignore_pending_ui_event() {
             match switch_to_slot(2) {
                 Ok(()) => update_slot_indicator_state(&builder, 2),
-                Err(e) => log::error!("Could not switch slots: {e}"),
+                Err(e) => tracing::error!("Could not switch slots: {e}"),
             }
         }
     }));
@@ -571,7 +565,7 @@ fn register_actions<A: IsA<gtk::Application>>(
         if !events::shall_ignore_pending_ui_event() {
             match switch_to_slot(3) {
                 Ok(()) => update_slot_indicator_state(&builder, 3),
-                Err(e) => log::error!("Could not switch slots: {e}"),
+                Err(e) => tracing::error!("Could not switch slots: {e}"),
             }
         }
     }));
@@ -676,20 +670,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }
     });
 
-    restart_eruption_daemon_button.connect_clicked(
-        clone!(@weak application, @weak builder => move |_| {
-            // try to re-connect to eruption daemon first
-            initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
-
-            thread::sleep(Duration::from_millis(1000));
-
-            let connected = crate::dbus_client::ping().is_err();
-            if !connected {
-                // connection failed, restart the eruption daemon
-                util::restart_eruption_daemon().unwrap_or_else(|e| log::error!("{}", e));
-            }
-        }),
-    );
+    restart_eruption_daemon_button.connect_clicked(clone!(@weak builder => move |_| {
+        util::restart_eruption_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
+    }));
 
     // special options
     ambientfx_switch.connect_state_set(

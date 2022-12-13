@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 A CLI developer support utility for the Eruption Linux user-mode driver
 
@@ -32,7 +32,6 @@ Commands:
   test-key-indices    Test key index information subcommands
   record-topology     Record key topology information subcommands
   test-topology       Test key topology maps subcommands
-  completions         Generate shell completions
   help                Print this message or the help of the given subcommand(s)
 
 Options:

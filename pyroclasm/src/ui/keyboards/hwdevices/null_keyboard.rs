@@ -16,12 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use super::KeyDef;
 use super::Keyboard;
-use crate::util::RGBA;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -29,7 +28,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub struct NullKeyboard {}
 
 impl NullKeyboard {
-    pub fn new() -> Self {
+    pub fn new(_ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         NullKeyboard {}
     }
 }
@@ -43,7 +42,7 @@ impl Keyboard for NullKeyboard {
         ("Unknown", "Unknown")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

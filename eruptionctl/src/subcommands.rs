@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 mod canvas;
@@ -64,13 +64,13 @@ pub enum Subcommands {
         command: devices::DevicesSubcommands,
     },
 
-    #[clap(display_order = 4,about(tr!("profiles-about")))]
+    #[clap(display_order = 4, about(tr!("profiles-about")))]
     Profiles {
         #[clap(subcommand)]
         command: profiles::ProfilesSubcommands,
     },
 
-    #[clap(display_order = 5,about(tr!("scripts-about")))]
+    #[clap(display_order = 5, about(tr!("scripts-about")))]
     Scripts {
         #[clap(subcommand)]
         command: scripts::ScriptsSubcommands,
@@ -82,7 +82,7 @@ pub enum Subcommands {
         command: color_schemes::ColorSchemesSubcommands,
     },
 
-    #[clap(display_order = 7,about(tr!("param-about")))]
+    #[clap(display_order = 7, about(tr!("param-about")))]
     Param {
         script: Option<String>,
         parameter: Option<String>,
@@ -95,7 +95,7 @@ pub enum Subcommands {
         command: names::NamesSubcommands,
     },
 
-    #[clap(display_order = 9, about(tr!("canvas-about")), display_order(1))]
+    #[clap(display_order = 9, about(tr!("canvas-about")))]
     Canvas {
         #[clap(subcommand)]
         command: canvas::CanvasSubcommands,

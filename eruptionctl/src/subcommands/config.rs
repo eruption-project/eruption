@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use color_eyre::Help;
@@ -60,7 +60,7 @@ async fn brightness_command(brightness: Option<i64>) -> Result<()> {
             .suggestion("Please verify that the Eruption daemon is running")?;
         println!(
             "{}",
-            format!("Global brightness: {}", format!("{}%", result).bold())
+            format!("Global brightness: {}", format!("{result}%").bold())
         );
     }
 
@@ -80,7 +80,7 @@ async fn sound_fx_command(enable: Option<bool>) -> Result<()> {
             .suggestion("Please verify that the Eruption daemon is running")?;
         println!(
             "{}",
-            format!("SoundFX enabled: {}", format!("{}", result).bold())
+            format!("SoundFX enabled: {}", format!("{result}").bold())
         );
     }
 

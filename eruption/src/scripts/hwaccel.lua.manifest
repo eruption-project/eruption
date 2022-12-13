@@ -20,7 +20,7 @@ name = "Hardware Acceleration"
 description = "Hardware accelerated effects using GLSL compute shader programs"
 version = "0.0.1"
 author = "The Eruption Development Team"
-min_supported_version = "0.3.0"
+min_supported_version = "0.4.0"
 tags = ['Effect', 'Vendor']
 
 [[config]]

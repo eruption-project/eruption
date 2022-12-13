@@ -16,25 +16,30 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
+
+use egui::Vec2;
+use egui_extras::RetainedImage;
+
+use crate::resources;
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
-use crate::util::RGBA;
-use palette::{FromColor, Hsva, Shade, Srgba};
-use std::cell::RefCell;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-#[derive(Debug)]
 pub struct RoccatVulcanProTKL {
     pub device: u64,
+    pub texture: RetainedImage,
 }
 
 impl RoccatVulcanProTKL {
-    pub fn new(device: u64) -> Self {
-        RoccatVulcanProTKL { device }
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
+        let bytes = resources::Assets::get("img/roccat-vulcan-pro-tkl.png").unwrap();
+        let texture = RetainedImage::from_image_bytes("keyboard", &bytes.data).unwrap();
+
+        RoccatVulcanProTKL { device, texture }
     }
 }
 
@@ -47,7 +52,9 @@ impl Keyboard for RoccatVulcanProTKL {
         ("ROCCAT", "Vulcan Pro TKL")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
+        self.texture.show_size(ui, Vec2::new(1200.0, 500.0));
+
         Ok(())
     }
 

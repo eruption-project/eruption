@@ -1,22 +1,21 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 [workspace]
 members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util",
@@ -25,8 +24,8 @@ members = ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "erup
     "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
 default-members =  ["eruption", "eruptionctl", "eruption-hwutil", "eruption-netfx", "eruption-debug-tool", "eruption-util",
     "eruption-hotplug-helper", "eruption-audio-proxy", "eruption-fx-proxy", "eruption-process-monitor",
-    "pyroclasm", "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro",
-    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption", "sdk/examples/rust/simple"]
+    "eruption-gui-gtk3", "eruption-cmd", "eruption-keymap", "eruption-macro",
+    "sdk/lib/rust/eruption-rs", "sdk/lib/rust/liberuption"]
 resolver = "2"
 
 [profile.dev]
@@ -40,7 +39,7 @@ overflow-checks = true
 codegen-units = 512
 incremental = true
 panic = "unwind"
-# split-debuginfo = "unpacked"
+split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -53,7 +52,7 @@ overflow-checks = true
 codegen-units = 1
 incremental = false
 panic = "abort"
-# split-debuginfo = "unpacked"
+split-debuginfo = "unpacked"
 
 [profile.sccache]
 inherits = "dev"

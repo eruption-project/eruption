@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -63,7 +63,7 @@ impl ColorSchemeExt for ColorScheme {
             .colors
             .get(index)
             .ok_or_else(|| ColorSchemeError::InvalidIndex {
-                description: format!("{}", index),
+                description: format!("{index}"),
             })?
             .to_owned())
     }
@@ -149,7 +149,7 @@ impl ColorSchemeExt for PywalColorScheme {
             15 => Ok(csscolorparser::parse(&self.colors.color15)?),
 
             _ => Err(ColorSchemeError::InvalidIndex {
-                description: format!("{}", index),
+                description: format!("{index}"),
             }
             .into()),
         }

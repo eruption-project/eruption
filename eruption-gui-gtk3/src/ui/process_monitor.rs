@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use glib::{clone, StaticType};
@@ -202,11 +202,11 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             );
 
             if let Err(e) = transmit_rules_to_process_monitor(&builder) {
-                log::error!("{}", e);
+                tracing::error!("{}", e);
 
                 let message = "Could not transmit ruleset".to_string();
                 let secondary =
-                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                 let message_dialog = MessageDialogBuilder::new()
                     .parent(&main_window)
@@ -248,11 +248,11 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             }
 
             if let Err(e) = transmit_rules_to_process_monitor(&builder) {
-                log::error!("{}", e);
+                tracing::error!("{}", e);
 
                 let message = "Could not transmit ruleset".to_string();
                 let secondary =
-                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                    format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                 let message_dialog = MessageDialogBuilder::new()
                     .parent(&main_window)
@@ -343,11 +343,11 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 rules_treestore.remove(&rules_treestore.iter(p).unwrap());
 
                 if let Err(e) = transmit_rules_to_process_monitor(&builder) {
-                    log::error!("{}", e);
+                    tracing::error!("{}", e);
 
                     let message = "Could not transmit ruleset".to_string();
                     let secondary =
-                        format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
+                        format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
                     let message_dialog = MessageDialogBuilder::new()
                         .parent(&main_window)
@@ -395,13 +395,13 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     restart_process_monitor_button.connect_clicked(
         clone!(@weak builder, @weak application => move |_| {
-            util::restart_process_monitor_daemon().unwrap_or_else(|e| log::error!("{}", e));
+            util::restart_process_monitor_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
 
             glib::timeout_add_local(
                 Duration::from_millis(1000),
                 clone!(@weak builder, @weak application => @default-return Continue(true), move || {
                     if let Err(e) = initialize_process_monitor_page(&application, &builder) {
-                        log::error!("{}", e);
+                        tracing::error!("{}", e);
                         Continue(true)
                     } else {
                         Continue(false)
@@ -447,7 +447,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             let value = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
             rules_treestore.set_value(&rules_treestore.iter(&p).unwrap(), 0, &(!value).to_value());
 
-            transmit_rules_to_process_monitor(&builder).unwrap_or_else(|e| log::error!("{}", e));
+            transmit_rules_to_process_monitor(&builder).unwrap_or_else(|e| tracing::error!("{}", e));
         }));
 
     enabled_column.pack_start(&cell_renderer_toggle, false);

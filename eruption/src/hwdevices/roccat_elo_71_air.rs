@@ -16,13 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
+use tracing::*;
 // use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::{any::Any, thread};
@@ -404,10 +404,7 @@ impl RoccatElo71Air {
                     battery_level.to_string(),
                 );
 
-                table.insert(
-                    "battery-level-raw".to_string(),
-                    format!("{}", battery_status),
-                );
+                table.insert("battery-level-raw".to_string(), format!("{battery_status}"));
 
                 table.insert("transceiver-enabled".to_string(), format!("{}", true));
 
@@ -708,7 +705,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
         } else {
             match self.query_ctrl_dev() {
                 Ok(result) if result == QueryResult::ResetRequired => {
-                    log::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
+                    tracing::warn!("Reinitializing device: ROCCAT/Turtle Beach Elo 7.1 Air");
 
                     let _result = self.send_init_sequence();
                 }

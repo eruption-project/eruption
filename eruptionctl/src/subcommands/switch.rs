@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::path::PathBuf;
@@ -87,7 +87,7 @@ async fn slot_command(index: usize) -> Result<()> {
             constants::NUM_SLOTS
         );
     } else {
-        println!("Switching to slot: {}", format!("{}", index).bold());
+        println!("Switching to slot: {}", format!("{index}").bold());
         let index = index - 1;
         switch_slot(index)
             .await

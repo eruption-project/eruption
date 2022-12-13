@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::collections::HashMap;
@@ -378,7 +378,7 @@ impl DeviceTrait for RoccatKoneProAir {
 
                             table.insert(
                                 "battery-level-raw".to_string(),
-                                format!("{}", battery_status),
+                                format!("{battery_status}"),
                             );
                         }
                     }
@@ -391,7 +391,7 @@ impl DeviceTrait for RoccatKoneProAir {
                             // radio
                             table.insert(
                                 "transceiver-enabled".to_string(),
-                                format!("{}", transceiver_enabled),
+                                format!("{transceiver_enabled}"),
                             );
 
                             // signal strength
@@ -400,7 +400,7 @@ impl DeviceTrait for RoccatKoneProAir {
                                 format!("{:.0}", ((256.0 - signal as f32) / 2.0).clamp(0.0, 100.0)),
                             );
 
-                            table.insert("signal-strength-raw".to_string(), format!("{}", signal));
+                            table.insert("signal-strength-raw".to_string(), format!("{signal}"));
                         }
                     }
 

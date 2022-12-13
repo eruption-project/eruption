@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use nix::fcntl::{flock, open, FlockArg, OFlag};
@@ -55,7 +55,7 @@ pub enum UtilError {
 /// Write out the current process' PID to the .pid file at `/run/eruption/eruption.pid`
 pub fn write_pid_file() -> Result<()> {
     let pid = getpid().as_raw();
-    let text = format!("{}", pid);
+    let text = format!("{pid}");
 
     let fd = open(
         &PathBuf::from(constants::PID_FILE),
@@ -132,10 +132,10 @@ pub fn demand_file_is_accessible<P: AsRef<Path>>(p: P) -> Result<()> {
 pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
     let path = path.as_ref();
 
-    log::info!("Writing to file: {}", &path.display());
+    tracing::info!("Writing to file: {}", &path.display());
 
     fs::write(path, data).map_err(|e| UtilError::FileWriteError {
-        description: format!("{}", e),
+        description: format!("{e}"),
         source: e,
     })?;
 
@@ -164,7 +164,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 
     // if we could not determine a valid set of paths, use a hard coded fallback instead
     if result.is_empty() {
-        log::warn!("Using default fallback script directory");
+        tracing::warn!("Using default fallback script directory");
 
         let path = PathBuf::from(constants::DEFAULT_SCRIPT_DIR);
         result.push(path);

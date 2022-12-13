@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use color_eyre::Help;
@@ -63,7 +63,7 @@ async fn slot_command() -> Result<()> {
         .wrap_err("Could not connect to the Eruption daemon")
         .suggestion("Please verify that the Eruption daemon is running")?
         + 1;
-    println!("Current slot: {}", format!("{}", index).bold());
+    println!("Current slot: {}", format!("{index}").bold());
 
     Ok(())
 }

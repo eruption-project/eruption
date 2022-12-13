@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use crate::constants;
@@ -48,7 +48,7 @@ pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<S
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", index, r, g, b, a);
+            result += &format!("{index}:{r}:{g}:{b}:{a}\n");
         }
     }
 
@@ -79,7 +79,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice)
             let b = pixel[2];
             let a = pixel[3];
 
-            result += &format!("{}:{}:{}:{}:{}\n", index, r, g, b, a);
+            result += &format!("{index}:{r}:{g}:{b}:{a}\n");
         }
     }
 

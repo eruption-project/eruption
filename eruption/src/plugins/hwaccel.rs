@@ -124,7 +124,7 @@ impl HwAccelerationPlugin {
             })
             .unwrap();
 
-        log::info!(
+        tracing::info!(
             "Hwaccel using device: {} (type: {:?})",
             physical_device.properties().device_name,
             physical_device.properties().device_type

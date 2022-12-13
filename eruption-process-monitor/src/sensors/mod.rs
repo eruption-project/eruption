@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::{collections::HashSet, hash::Hash, sync::Arc};
@@ -24,8 +24,8 @@ use std::{collections::HashSet, hash::Hash, sync::Arc};
 use async_trait::async_trait;
 use dyn_clonable::*;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::RwLock;
+use tracing::*;
 
 #[cfg(feature = "sensor-gnome-shellext")]
 mod gnome_shellext;

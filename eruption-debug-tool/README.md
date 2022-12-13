@@ -13,7 +13,6 @@ A helper utility that can be used to debug USB HID devices
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-
 Please find the device you want to debug below and use its respective
 index number (column 1) as the device index for the other sub-commands of this tool
 
@@ -133,7 +132,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 
  Please stop the Eruption daemon prior to running this tool:
@@ -147,23 +146,21 @@ A CLI utility to debug USB HID devices
 Usage: eruption-debug-tool [OPTIONS] <COMMAND>
 
 Commands:
-  list         List available devices, use this first to find out the index of the device to use
-  report       Generate a report for the specified device
-  trace        Dump a trace of events originating from the specified device (May hang the device)
-  state-diff   Read out the device state and show differences to previous state (May hang the device)
-  read         Read a single USB HID feature report from device
-  write        Send a single USB HID feature report to device (dangerous)
-  read-raw     Read data from device
-  write-raw    Send data to device (dangerous)
-  run-tests    Send a device specific init sequence and try to set colors
-  utils        Special utility functions, like searching for CRC polynoms and parameters
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  list        List available devices, use this first to find out the index of the device to use
+  report      Generate a report for the specified device
+  trace       Dump a trace of events originating from the specified device (May hang the device)
+  state-diff  Read out the device state and show differences to previous state (May hang the device)
+  read        Read a single USB HID feature report from device
+  write       Send a single USB HID feature report to device (dangerous)
+  read-raw    Read data from device
+  write-raw   Send data to device (dangerous)
+  run-tests   Send a device specific init sequence and try to set colors
+  utils       Special utility functions, like searching for CRC polynoms and parameters
+  help        Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
   -h, --help        Print help information
   -V, --version     Print version information
-
 
 ```

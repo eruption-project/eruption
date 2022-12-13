@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use serde::{de, ser::SerializeSeq, Deserialize, Deserializer, Serialize, Serializer};
@@ -95,11 +95,11 @@ pub struct ProfileParameter {
 impl fmt::Display for TypedValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
-            TypedValue::Int(value) => write!(f, "{}", value),
-            TypedValue::Float(value) => write!(f, "{}", value),
-            TypedValue::Bool(value) => write!(f, "{}", value),
+            TypedValue::Int(value) => write!(f, "{value}"),
+            TypedValue::Float(value) => write!(f, "{value}"),
+            TypedValue::Bool(value) => write!(f, "{value}"),
             TypedValue::String(value) => f.write_str(value),
-            TypedValue::Color(value) => write!(f, "#{:06x}", value),
+            TypedValue::Color(value) => write!(f, "#{value:06x}"),
         }
     }
 }

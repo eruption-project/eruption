@@ -1,5 +1,5 @@
 .\" Manpage for Eruption.
-.TH man 1 "Oct 2022" "0.0.4" "eruption-macro man page"
+.TH man 1 "Dec 2022" "0.0.4" "eruption-macro man page"
 .SH NAME
  eruption-macro - A CLI macro utility for Eruption
 .SH SYNOPSIS
@@ -11,9 +11,14 @@
 .BR
 
   Commands:
-    record       Record a key sequence and save it as a Lua function
-    description  Show or set the description of a specified Lua function
-    completions  Generate shell completions
+    list         Show a list of available macros in a Lua file
+    record       Record a key sequence and save it as a macro
+    create       Create a new macro from a description
+    remove       Remove an existing macro
+    enable       Enable an existing macro
+    disable      Disable an existing macro
+    description  Show or set the description of a specified macro
+    compile      Compile macros to Lua code and make them available to Eruption
     help         Print this message or the help of the given subcommand(s)
 
   Options:

@@ -19,7 +19,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-// use log::*;
+// use tracing::*;
 use mlua::prelude::*;
 use std::any::Any;
 

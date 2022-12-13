@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -24,6 +24,7 @@
 /// These are all the names of supported Lua function handlers invoked by eruption at certain events.
 pub const FUNCTION_ON_STARTUP: &str = "on_startup";
 pub const FUNCTION_ON_QUIT: &str = "on_quit";
+pub const FUNCTION_ON_RENDER: &str = "on_render";
 pub const FUNCTION_ON_TICK: &str = "on_tick";
 pub const FUNCTION_ON_APPLY_PARAMETER: &str = "on_apply_parameter";
 pub const FUNCTION_ON_KEY_DOWN: &str = "on_key_down";

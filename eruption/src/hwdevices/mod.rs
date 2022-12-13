@@ -16,19 +16,19 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
+use tracing::*;
 use udev::Enumerator;
 
 mod corsair_strafe;
@@ -1576,13 +1576,13 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
                                         .iter()
-                                        .map(|v| format!("{:04x}", v))
+                                        .map(|v| format!("{v:04x}"))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) && device.properties().any(|e| {
                                 e.name() == "ID_MODEL_ID"
                                     && ([usb_pid]
                                         .iter()
-                                        .map(|v| format!("{:04x}", v))
+                                        .map(|v| format!("{v:04x}"))
                                         .any(|v| v == e.value().to_string_lossy()))
                             }) /* && device.devnode().is_some() */;
 
@@ -1792,13 +1792,13 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
                             e.name() == "ID_VENDOR_ID"
                                 && ([usb_vid]
                                     .iter()
-                                    .map(|v| format!("{:04x}", v))
+                                    .map(|v| format!("{v:04x}"))
                                     .any(|v| v == e.value().to_string_lossy()))
                         }) && device.properties().any(|e| {
                             e.name() == "ID_MODEL_ID"
                                 && ([usb_pid]
                                     .iter()
-                                    .map(|v| format!("{:04x}", v))
+                                    .map(|v| format!("{v:04x}"))
                                     .any(|v| v == e.value().to_string_lossy()))
                         });
 

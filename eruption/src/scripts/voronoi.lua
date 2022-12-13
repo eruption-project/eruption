@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "debug"
@@ -23,6 +23,10 @@ require "debug"
 -- global state variables --
 ticks = 0
 color_map = {}
+
+function on_render()
+    submit_color_map(color_map)
+end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -42,7 +46,5 @@ function on_tick(delta)
                                    color_saturation, color_lightness,
                                    lerp(0, 255, opacity))
         end
-
-        submit_color_map(color_map)
     end
 end

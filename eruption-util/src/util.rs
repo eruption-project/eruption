@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::io;
@@ -24,7 +24,7 @@ use std::io;
 use io::Write;
 
 pub fn get_input(prompt: &str) -> io::Result<String> {
-    print!("{}", prompt);
+    print!("{prompt}");
     io::stdout().lock().flush()?;
 
     let mut input = String::new();

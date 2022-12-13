@@ -42,6 +42,13 @@ function on_key_down(key_index) effect_ttl = max_effect_ttl end
 
 function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
+function on_render()
+    if effect_ttl > 0 then
+        color_map = color_map_from_render_surface()
+        submit_color_map(color_map)
+    end
+end
+
 function on_tick(delta)
     if bail_out then return end
 
@@ -52,7 +59,4 @@ function on_tick(delta)
     effect_ttl = effect_ttl - 1
 
     hwaccel_tick(delta)
-
-    color_map = color_map_from_render_surface()
-    submit_color_map(color_map)
 end

@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use crate::{
@@ -31,8 +31,8 @@ use crate::{
 };
 use flume::Sender;
 use lazy_static::lazy_static;
-use log::{error, info, trace, warn};
 use parking_lot::Mutex;
+use tracing::{error, info, trace, warn};
 
 use std::sync::atomic::Ordering;
 use std::sync::Arc;

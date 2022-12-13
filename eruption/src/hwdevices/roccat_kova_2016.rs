@@ -16,16 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use bitvec::prelude::*;
 use bitvec::view::BitView;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use log::*;
 use parking_lot::{Mutex, RwLock};
 use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
+use tracing::*;
 
 use crate::{constants, hwdevices::DeviceStatus};
 

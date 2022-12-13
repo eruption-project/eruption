@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 
 
  Please stop the Eruption daemon prior to running this tool:
@@ -34,12 +34,11 @@ A CLI control utility for hardware supported by the Eruption Linux user-mode dri
 Usage: eruption-hwutil [OPTIONS] <COMMAND>
 
 Commands:
-  list         List available devices, use this first to find out the index of the device to address
-  status       Query device specific status like e.g.: Signal Strength/Battery Level
-  blackout     Turn off all LEDs, but otherwise leave the device completely usable
-  firmware     Firmware related subcommands (DANGEROUS, may brick the device)
-  completions  Generate shell completions
-  help         Print this message or the help of the given subcommand(s)
+  list      List available devices, use this first to find out the index of the device to address
+  status    Query device specific status like e.g.: Signal Strength/Battery Level
+  blackout  Turn off all LEDs, but otherwise leave the device completely usable
+  firmware  Firmware related subcommands (DANGEROUS, may brick the device)
+  help      Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...       Verbose mode (-v, -vv, -vvv, etc.)

@@ -4,15 +4,15 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0 | __Next Release__ |
-| 0.3.0 | Add support for allocating positions on the unified canvas for each device |
-| 0.3.0 | Fix a locking issue that lead to excessive jitter/input lag |
-| 0.3.0 | Add support for hardware accelerated rendering of effects using `GLSL` compute shaders |
-| 0.3.0 | Add new script: `hwaccel.lua` that utilizes the newly added hardware acceleration features |
-| 0.3.0 | Add new profile using hardware accelerated effects: `shader-demo.profile` |
-| 0.3.0 | Improve stability of some drivers, most notably: `ROCCAT Kone Pro Air` |
-| 0.3.0 | Add a table view to `eruptionctl` used for showing script and profile parameters. Thanks to `Phen-Ro` for implementing this! |
-| 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
+| 0.4.0 | __Next Release__ |
+| 0.4.0 | INCOMPATIBLE CHANGES: Lua scripting callbacks: Split render and timer tick code into distinct callbacks. You need to update your `on_tick(...)` event handlers |
+| 0.4.0 | Add support for hardware accelerated rendering of effects using `GLSL` compute shaders |
+| 0.4.0 | Add new script: `hwaccel.lua` that utilizes the newly added hardware acceleration features |
+| 0.4.0 | Add new profile using hardware accelerated effects: `shader-demo.profile` |
+| 0.4.0 | Add support for allocating positions on the unified canvas for each device |
+| 0.4.0 | Update all dependencies to their latest releases |
+| 0.4.0 | Bump MSRV to latest stable Rust `1.65` |
+| 0.3.0 | __New Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
 | 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that supersedes some features of `eruption-netfx` |
 | 0.3.0 | Replace the `Ambient Fx` effect based on `eruption-netfx` and `netfx.profile` with the newer and more efficient `Ambient Effect` provided by `eruption-fx-proxy` |
@@ -25,7 +25,7 @@ Table of new and noteworthy changes:
 | 0.3.0 | Improve parameter handling in `eruptionctl`. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | Switch the `hidapi` backend from `libusb` to the linux-specific `hidapi-hidraw` |
 | 0.3.0 | Add a new companion utility `eruption-macro` that allows to record macros, which then can be assigned using the `eruption-keymap` utility |
-| 0.3.0 | Ship an initial technology preview version of the new `Pyroclasm UI` |
+| 0.3.0 | ~~Ship an initial technology preview version of the new `Pyroclasm UI`~~ |
 | 0.3.0 | Allow to configure the fade duration or to completely disable fading when switching profiles. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | `Eruption SDK`: Add APIs for switching profiles and for modifying configuration parameters. Thanks to `Phen-Ro` for implementing this! |
 | 0.3.0 | `Eruption SDK`: Improve the Python 3 SDK and publish it on <https://pypi.org/project/eruption-sdk/> |

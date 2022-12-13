@@ -1,12 +1,13 @@
 %global OrigName eruption
 %global ShortName eruption
 
-%global commit 1bf29ad80522970aae3c5028e0f7a614ed96af31
+%global gittag master
+%global commit 117d53401af4f80a2a5cdbafd69cddda88912fc2
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:    eruption-git
 Version: 0.3.0
-Release: 1.%{shortcommit}
+Release: 2.%{shortcommit}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0
@@ -48,7 +49,6 @@ Recommends: lua-socket-compat
 Conflicts: eruption-roccat-vulcan
 Conflicts: eruption-roccat-vulcan-git
 
-%global gittag master
 %global debug_package %{nil}
 
 %description
@@ -237,7 +237,7 @@ cp -ra %{_builddir}/%{OrigName}-%{commit}/eruption/src/scripts %{buildroot}/%{_d
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.desktop %{buildroot}/usr/share/applications/eruption-gui.desktop
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop %{buildroot}/usr/share/applications/eruption-gui-gtk3.desktop
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
 cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 
@@ -254,7 +254,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-h
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-fx-proxy %{buildroot}/%{_bindir}/eruption-fx-proxy
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-audio-proxy %{buildroot}/%{_bindir}/eruption-audio-proxy
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-process-monitor %{buildroot}/%{_bindir}/eruption-process-monitor
-install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui-gtk3 %{buildroot}/%{_bindir}/eruption-gui
+install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-gui-gtk3 %{buildroot}/%{_bindir}/eruption-gui-gtk3
 
 %post
 %systemd_post eruption.service
@@ -324,7 +324,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_presetdir}/50-eruption-hotplug-helper.preset
 %{_bindir}/eruption-gui-gtk3
 %{_datarootdir}/applications/eruption-gui-gtk3.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
 %{_datarootdir}/eruption-gui-gtk3/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd

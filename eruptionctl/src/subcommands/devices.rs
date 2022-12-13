@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::collections::HashMap;
@@ -153,7 +153,7 @@ $ eruptionctl devices dpi 1
             if verbose > 0 {
                 println!(
                     "Index: {}: ID: {}:{} {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     format!("{:04x}", dev.0),
                     format!("{:04x}", dev.1),
                     device::get_device_make(dev.0, dev.1)
@@ -166,7 +166,7 @@ $ eruptionctl devices dpi 1
             } else {
                 println!(
                     "{}: {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
@@ -189,7 +189,7 @@ $ eruptionctl devices dpi 1
             if verbose > 0 {
                 println!(
                     "Index: {}: ID: {}:{} {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     format!("{:04x}", dev.0),
                     format!("{:04x}", dev.1),
                     device::get_device_make(dev.0, dev.1)
@@ -202,7 +202,7 @@ $ eruptionctl devices dpi 1
             } else {
                 println!(
                     "{}: {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
@@ -225,7 +225,7 @@ $ eruptionctl devices dpi 1
             if verbose > 0 {
                 println!(
                     "Index: {}: ID: {}:{} {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     format!("{:04x}", dev.0),
                     format!("{:04x}", dev.1),
                     device::get_device_make(dev.0, dev.1)
@@ -238,7 +238,7 @@ $ eruptionctl devices dpi 1
             } else {
                 println!(
                     "{}: {} {}",
-                    format!("{:02}", base_index).bold(),
+                    format!("{base_index:02}").bold(),
                     device::get_device_make(dev.0, dev.1)
                         .unwrap_or("<unknown make>")
                         .bold(),
@@ -317,7 +317,7 @@ async fn status_command(device: String) -> Result<()> {
         term.clear_last_lines(prev)?;
         prev = cntr;
 
-        println!("{}", table);
+        println!("{table}");
 
         if !crate::REPEAT.load(Ordering::SeqCst) || crate::QUIT.load(Ordering::SeqCst) {
             break;
@@ -338,7 +338,7 @@ async fn profile_command(device: String, profile: Option<i32>) -> Result<()> {
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(profile) = profile {
-        let value = &format!("{}", profile);
+        let value = &format!("{profile}");
 
         set_device_config(device, "profile", value).await?;
     } else {
@@ -359,7 +359,7 @@ async fn dpi_command(device: String, dpi: Option<i32>) -> Result<()> {
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(dpi) = dpi {
-        let value = &format!("{}", dpi);
+        let value = &format!("{dpi}");
 
         set_device_config(device, "dpi", value).await?
     } else {
@@ -380,7 +380,7 @@ async fn rate_command(device: String, rate: Option<i32>) -> Result<()> {
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(rate) = rate {
-        let value = &format!("{}", rate);
+        let value = &format!("{rate}");
 
         set_device_config(device, "rate", value).await?
     } else {
@@ -401,7 +401,7 @@ async fn distance_command(device: String, param: Option<i32>) -> Result<()> {
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(param) = param {
-        let value = &format!("{}", param);
+        let value = &format!("{param}");
 
         set_device_config(device, "dcu", value).await?
     } else {
@@ -422,7 +422,7 @@ async fn angle_snapping_command(device: String, enable: Option<bool>) -> Result<
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(enable) = enable {
-        let value = &format!("{}", enable);
+        let value = &format!("{enable}");
 
         set_device_config(device, "angle-snapping", value).await?
     } else {
@@ -443,7 +443,7 @@ async fn debounce_command(device: String, enable: Option<bool>) -> Result<()> {
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(enable) = enable {
-        let value = &format!("{}", enable);
+        let value = &format!("{enable}");
 
         set_device_config(device, "debounce", value).await?
     } else {
@@ -464,7 +464,7 @@ async fn brightness_command(device: String, brightness: Option<i64>) -> Result<(
         .suggestion("Please verify that the Eruption daemon is running")?;
 
     if let Some(brightness) = brightness {
-        let value = &format!("{}", brightness);
+        let value = &format!("{brightness}");
 
         set_device_config(device, "brightness", value).await?
     } else {

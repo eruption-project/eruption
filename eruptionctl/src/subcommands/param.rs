@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::path::PathBuf;
@@ -55,8 +55,8 @@ pub async fn handle_command(
     let profile = match profile {
         Ok(profile) => profile,
         Err(err) => {
-            eprintln!("Could not load the current profile ({})", profile_name);
-            eprintln!("{}", err);
+            eprintln!("Could not load the current profile ({profile_name})");
+            eprintln!("{err}");
             return Ok(());
         }
     };
@@ -141,7 +141,7 @@ fn list_specified_parameter(profile: &Profile, manifest: &Manifest, parameter: S
         println!("{table}");
 
         if let TypedValue::Color(_) = profile_parameter.value {
-            println!("{}", warning_about_hash_because_i_always_forget);
+            println!("{warning_about_hash_because_i_always_forget}");
         }
     } else {
         // Not all script manifest parameters need be listed in the profile
@@ -152,7 +152,7 @@ fn list_specified_parameter(profile: &Profile, manifest: &Manifest, parameter: S
                 println!("{table}");
 
                 if let ManifestValue::Color { .. } = manifest_param.manifest {
-                    println!("{}", warning_about_hash_because_i_always_forget);
+                    println!("{warning_about_hash_because_i_always_forget}");
                 }
             }
             None => println!("No parameter found."),

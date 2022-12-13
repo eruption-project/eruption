@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::cell::RefCell;
@@ -100,7 +100,7 @@ pub fn register_backends() -> Result<()> {
     BACKENDS.with(|backends| -> Result<()> {
         for backend in backends.borrow_mut().iter_mut() {
             let _ = backend.initialize().map_err(|e| {
-                eprintln!("Backend could not be initialized: {}", e);
+                eprintln!("Backend could not be initialized: {e}");
                 e
             });
         }

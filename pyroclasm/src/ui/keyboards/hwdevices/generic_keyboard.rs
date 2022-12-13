@@ -16,16 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
-use crate::util::RGBA;
-use palette::{FromColor, Hsva, Shade, Srgba};
-use std::cell::RefCell;
 
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct GenericKeyboard {
@@ -33,7 +30,7 @@ pub struct GenericKeyboard {
 }
 
 impl GenericKeyboard {
-    pub fn new(device: u64) -> Self {
+    pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         GenericKeyboard { device }
     }
 }
@@ -47,7 +44,7 @@ impl Keyboard for GenericKeyboard {
         ("Unknown", "Generic Keyboard")
     }
 
-    fn draw_keyboard(&self) -> super::Result<()> {
+    fn draw_keyboard(&self, _ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
         Ok(())
     }
 

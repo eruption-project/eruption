@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use clap::CommandFactory;
@@ -41,7 +41,6 @@ use tokio::time::Duration;
 mod backends;
 mod constants;
 mod hwdevices;
-mod logger;
 mod util;
 
 #[derive(RustEmbed)]
@@ -124,6 +123,7 @@ pub enum Subcommands {
     Ambient { frame_delay: Option<u64> },
 
     /// Generate shell completions
+    #[clap(hide = true, about(tr!("completions-about")))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -147,7 +147,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 "#
     );
 }
@@ -170,9 +170,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
     }
-
-    // initialize logging on console
-    logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
 
     let opts = Options::parse();
     *crate::OPTIONS.write() = Some(opts.clone());
@@ -254,7 +251,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     println!("{}", data.italic());
                 }
 
-                let v = Vec::from(format!("{}\n", data));
+                let v = Vec::from(format!("{data}\n"));
                 buf_reader.write_all(&v).await?;
 
                 // receive and print the response
@@ -487,6 +484,35 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // tracing_subscriber::registry()
+            //     // .with(journald_layer)
+            //     // .with(console_layer)
+            //     // .with(format_layer)
+            //     .init();
+        }
+    };
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

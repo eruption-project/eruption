@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::{
@@ -71,12 +71,12 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
 
     host_name.connect_changed(move |entry| {
         preferences::set_host_name(&entry.text())
-            .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
+            .unwrap_or_else(|e| tracing::error!("Could not save a settings value: {}", e));
     });
 
     port_number.connect_changed(move |entry| {
         preferences::set_port_number(entry.value() as u16)
-            .unwrap_or_else(|e| log::error!("Could not save a settings value: {}", e));
+            .unwrap_or_else(|e| tracing::error!("Could not save a settings value: {}", e));
     });
 
     host_name.set_text(&preferences::get_host_name()?);
@@ -114,33 +114,33 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
 
     restart_eruption_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_eruption_daemon() {
-            log::error!("Could not restart the Eruption daemon: {e}");
+            tracing::error!("Could not restart the Eruption daemon: {e}");
         } else {
-            log::info!("Successfully restarted the Eruption daemon");
+            tracing::info!("Successfully restarted the Eruption daemon");
         }
     });
 
     restart_process_monitor_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_process_monitor_daemon() {
-            log::error!("Could not restart the Eruption process monitor daemon: {e}");
+            tracing::error!("Could not restart the Eruption process monitor daemon: {e}");
         } else {
-            log::info!("Successfully restarted the Eruption process monitor daemon");
+            tracing::info!("Successfully restarted the Eruption process monitor daemon");
         }
     });
 
     restart_audio_proxy_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_audio_proxy_daemon() {
-            log::error!("Could not restart the Eruption audio proxy daemon: {e}");
+            tracing::error!("Could not restart the Eruption audio proxy daemon: {e}");
         } else {
-            log::info!("Successfully restarted the Eruption audio proxy daemon");
+            tracing::info!("Successfully restarted the Eruption audio proxy daemon");
         }
     });
 
     restart_fx_proxy_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_fx_proxy_daemon() {
-            log::error!("Could not restart the Eruption fx proxy daemon: {e}");
+            tracing::error!("Could not restart the Eruption fx proxy daemon: {e}");
         } else {
-            log::info!("Successfully restarted the Eruption fx proxy daemon");
+            tracing::info!("Successfully restarted the Eruption fx proxy daemon");
         }
     });
 

@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -48,6 +48,10 @@ max_food_ttl = 128
 function on_startup(config) reset_state() end
 
 function on_key_down(key_index) food_map[key_index] = max_food_ttl end
+
+function on_render()
+    submit_color_map(color_map)
+end
 
 function on_tick(delta)
     ticks = ticks + delta

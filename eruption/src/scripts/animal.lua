@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -39,6 +39,14 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = color_background end
 end
 
+function on_render()
+    -- render the animal
+    local animal_map = animal_render(handle)
+    for i = 1, num_keys do color_map[i] = animal_map[i] end
+
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -46,11 +54,5 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         -- advance the animal's notion of time by 'delta' ticks
         animal_tick(handle, delta)
-
-        -- render the animal
-        local animal_map = animal_render(handle)
-        for i = 1, canvas_size do color_map[i] = animal_map[i] end
-
-        submit_color_map(color_map)
     end
 end

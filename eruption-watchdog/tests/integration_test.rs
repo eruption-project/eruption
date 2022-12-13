@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use std::{path::PathBuf, process::Command};
@@ -25,7 +25,7 @@ use std::{path::PathBuf, process::Command};
 fn test_eruption_debug_tool_version() {
     let command = PathBuf::from(&env!("CARGO_BIN_EXE_eruption-watchdog"));
 
-    let output = Command::new(&command)
+    let output = Command::new(command)
         .args(["-V"])
         .output()
         .expect("Failed to execute the test");

@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use config::Config;
@@ -49,7 +49,6 @@ mod constants;
 mod dbus_client;
 mod device;
 mod error_log;
-mod logger;
 mod preferences;
 mod profiles;
 mod scripting;
@@ -193,7 +192,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 "#
     );
 }
@@ -213,7 +212,7 @@ pub fn update_color_map() -> Result<()> {
 /// Switch to slot `index`
 pub fn switch_to_slot(index: usize) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
-        // log::info!("Switching to slot: {}", index);
+        // tracing::info!("Switching to slot: {}", index);
         util::switch_slot(index)?;
 
         STATE.write().active_slot = Some(index);
@@ -227,7 +226,7 @@ pub fn switch_to_profile<P: AsRef<Path>>(file_name: P) -> Result<()> {
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // tracing::info!(
         //     "Switching to profile: {}",
         //     file_name.to_string_lossy()
         // );
@@ -243,7 +242,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
     if !events::shall_ignore_pending_ui_event() {
         let file_name = file_name.as_ref();
 
-        // log::info!(
+        // tracing::info!(
         //     "Switching to slot: {}, using profile: {}",
         //     slot_index,
         //     file_name.to_string_lossy()
@@ -457,7 +456,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                         }
                     }
 
-                    _ => log::error!("Internal error detected"),
+                    _ => tracing::error!("Internal error detected"),
                 }
 
                 events::reenable_ui_events();
@@ -536,12 +535,12 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::RulesChanged => {
-                log::info!("Process monitor ruleset has changed");
+                tracing::info!("Process monitor ruleset has changed");
                 ui::process_monitor::update_rules_view(builder)?;
             }
 
             dbus_client::Message::DeviceHotplug(_device_info) => {
-                log::info!("A device has been hotplugged/removed");
+                tracing::info!("A device has been hotplugged/removed");
                 ui::main::update_main_window(builder).unwrap();
             }
         }
@@ -552,6 +551,38 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
+    let format_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                .with(console_layer)
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        } else {
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(format_layer)
+                .init();
+        }
+    };
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
@@ -576,9 +607,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
     }
-
-    // initialize logging on console
-    logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
 
     let application = Application::new(
         Some("org.eruption.eruption-gui-gtk3"),
@@ -611,8 +639,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             .add_source(config::File::new(&config_file, config::FileFormat::Toml))
             .build()
             .map_err(|e| {
-                log::error!("Could not parse configuration file: {}", e);
-                error_log::fatal_error(&format!("Could not parse configuration file: {}", e), 4);
+                tracing::error!("Could not parse configuration file: {}", e);
+                error_log::fatal_error(&format!("Could not parse configuration file: {e}"), 4);
             });
 
         *CONFIG.lock() = config.ok();
@@ -663,10 +691,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         }
 
         if let Err(e) = ui::main::initialize_main_window(app) {
-            log::error!("Could not start the Eruption GUI: {}", e);
+            tracing::error!("Could not start the Eruption GUI: {}", e);
 
-            let message = "Could not start the Eruption GUI".to_string();
-            let secondary = format!("Reason:\n{}", e);
+            let message =
+                "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
+            let secondary = format!("Reason:\n{e}");
 
             let message_dialog = MessageDialogBuilder::new()
                 .destroy_with_parent(true)
@@ -688,7 +717,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     glib::idle_add_local(
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = timers::handle_timers() {
-                log::error!("An error occurred in a timer callback: {}", e);
+                tracing::error!("An error occurred in a timer callback: {}", e);
             }
 
             Continue(true)

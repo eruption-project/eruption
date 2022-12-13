@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use dyn_clonable::clonable;
@@ -79,7 +79,7 @@ pub fn get_keyboard_device(model: &Option<String>) -> Result<KeyboardDevice> {
                     (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
 
                     _ => {
-                        log::warn!("Unknown keyboard model specified, assuming generic model");
+                        tracing::warn!("Unknown keyboard model specified, assuming generic model");
 
                         Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
                     }
@@ -104,7 +104,7 @@ pub fn get_keyboard_device(model: &Option<String>) -> Result<KeyboardDevice> {
                     "ROCCAT Vulcan TKL" => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
 
                     _ => {
-                        log::warn!("Unknown keyboard model specified, assuming generic model");
+                        tracing::warn!("Unknown keyboard model specified, assuming generic model");
 
                         Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
                     }
@@ -113,7 +113,7 @@ pub fn get_keyboard_device(model: &Option<String>) -> Result<KeyboardDevice> {
         }
 
         None => {
-            log::warn!("No keyboard model specified, assuming generic model");
+            tracing::warn!("No keyboard model specified, assuming generic model");
 
             Ok(Box::new(generic_keyboard::GenericKeyboard::new()))
         }

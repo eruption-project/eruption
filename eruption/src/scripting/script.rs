@@ -16,12 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use flume::Receiver;
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
@@ -34,6 +33,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::vec::Vec;
+use tracing::*;
 
 use crate::{
     constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
@@ -50,6 +50,7 @@ pub enum Message {
     // Startup, // Not passed via message but invoked directly
     Quit(u32),
     Tick(u32),
+    Render,
 
     // Keyboard events
     KeyDown(u8),
@@ -161,6 +162,7 @@ struct RunningScriptCallHelper<'lua> {
     file_name: String,
     lua_ctx: &'lua Lua,
     lua_functions: HashMap<String, Option<Function<'lua>>>,
+    skip_on_render: bool,
     skip_on_tick: bool,
     skip_on_mouse_move: bool,
     skip_on_hid_event: bool,
@@ -177,6 +179,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
             file_name: file.to_string_lossy().to_string(),
             lua_ctx,
             lua_functions: HashMap::new(),
+            skip_on_render: false,
             skip_on_tick: false,
             skip_on_mouse_move: false,
             skip_on_hid_event: false,
@@ -220,6 +223,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
                     match function_name {
                         // Special optimizations since they happen frequently.
                         FUNCTION_ON_MOUSE_MOVE => self.skip_on_mouse_move = true,
+                        FUNCTION_ON_RENDER => self.skip_on_render = true,
                         FUNCTION_ON_TICK => self.skip_on_tick = true,
                         FUNCTION_ON_HID_EVENT => self.skip_on_hid_event = true,
                         _ => (),
@@ -371,6 +375,7 @@ fn process_message(
     match msg {
         Message::Quit(param) => on_quit(call_helper, param),
         Message::Tick(param) => on_tick(call_helper, param),
+        Message::Render => on_render(call_helper),
         Message::RealizeColorMap => realize_color_map(),
         Message::KeyDown(param) => on_key_down(call_helper, param),
         Message::KeyUp(param) => on_key_up(call_helper, param),
@@ -403,6 +408,16 @@ fn on_quit(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<Runn
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
+
+    continue_if_ok(called)
+}
+
+fn on_render(call_helper: &mut RunningScriptCallHelper) -> Result<RunningScriptResult> {
+    let called = if call_helper.skip_on_render {
+        Ok(RunningScriptCallHelperResult::NoHandler)
+    } else {
+        call_helper.call(FUNCTION_ON_RENDER, ())
+    };
 
     continue_if_ok(called)
 }

@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 #![allow(dead_code)]
@@ -82,7 +82,10 @@ pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
 /// Target frames per second
-pub const TARGET_FPS: u64 = 24;
+pub const TARGET_FPS: u64 = 19;
+
+/// Target timer tick events per second
+pub const TICK_FPS: u64 = 19;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI

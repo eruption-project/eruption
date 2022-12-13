@@ -16,14 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use palette::{FromColor, Hsva, Shade, Srgba};
+use super::Mouse;
 
-use super::{Mouse, Rectangle};
-
-pub type Result<T> = std::result::Result<T, eyre::Error>;
+// pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug)]
 pub struct RoccatKovaAimo {

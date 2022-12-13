@@ -4,7 +4,7 @@ pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
 pkgver='0.3.0'
-pkgrel='3'
+pkgrel='5'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
@@ -15,20 +15,22 @@ conflicts=('eruption-git' 'eruption-roccat-vulcan-git')
 replaces=('eruption-roccat-vulcan')
 backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/fx-proxy.conf etc/eruption/audio-proxy.conf usr/share/eruption/scripts/lib/keymaps/default.keymap)
 install='eruption.install'
-source=("${_pkgname}-${pkgver}.tar.gz::${url}/archive/releases/v${pkgver}/v${pkgver}.tar.gz")
-sha512sums=('c4ace48ae9b7fbbc7e85ba47f2c969983594cab09ebc069bc39caa27a4e7833042e50a6d523aec18b5dedd1005be0de0aa4719bc3c9e6acafd04cd8a6f514c8a')
+commit=e5e2f4ca83f535f8264c739735472a584b6f6263
+source=("${_pkgname}-${pkgver}.tar.gz::https://github.com/X3n0m0rph59/eruption/archive/${commit}.tar.gz")
+sha512sums=()
 
 build() {
-    cd "$_pkgname-$pkgver"
+    cd "$_pkgname-${commit}"
 
     CARGO_INCREMENTAL=0 cargo build --release
 }
 
 package() {
-    cd "$_pkgname-$pkgver"
+    cd "$_pkgname-${commit}"
 
     mkdir -p "$pkgdir/usr/bin"
     mkdir -p "$pkgdir/etc/eruption"
+    mkdir -p "$pkgdir/etc/profile.d"
     mkdir -p "$pkgdir/usr/share/doc/eruption"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
@@ -85,7 +87,7 @@ package() {
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-gui-gtk3" "$pkgdir/usr/bin/"
 
-    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
+    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$pkgdir/usr/share/applications/"
     install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
     install -m 644 "eruption-gui-gtk3/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui-gtk3/schemas/"
 

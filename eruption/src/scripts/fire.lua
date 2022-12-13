@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -50,6 +50,10 @@ function on_startup(config)
                                          min(0.5, ((i * 1.45) / 256)),
                                          lerp(0, 255, opacity))
     end
+end
+
+function on_render()
+    submit_color_map(color_map)
 end
 
 function on_tick(delta)
@@ -97,7 +101,5 @@ function on_tick(delta)
                     color_palette[clamp(avg, 1, 255)]
             end
         end
-
-        submit_color_map(color_map)
     end
 end

@@ -16,13 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
 use flume::{unbounded, Sender};
 use lazy_static::lazy_static;
-use log::*;
 use mlua::prelude::*;
 use parking_lot::RwLock;
 use std::cell::RefCell;
@@ -30,6 +29,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{any::Any, thread};
+use tracing::*;
 
 use crate::plugins::{self, Plugin};
 

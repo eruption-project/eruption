@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 // use async_macros::join;
@@ -32,7 +32,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::{Condvar, Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::fs::{self};
@@ -44,10 +43,9 @@ use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashMap, env};
 use std::{collections::HashSet, thread};
-use syslog::Facility;
 use tokio::join;
+use tracing::*;
 
-mod logger;
 mod threads;
 use threads::*;
 
@@ -305,9 +303,6 @@ pub enum MainError {
 
     #[error("Could not execute Lua script")]
     ScriptExecError {},
-
-    #[error("Could not parse syslog log-level")]
-    SyslogLevelError {},
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -383,7 +378,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 "#
     );
 }
@@ -647,6 +642,7 @@ fn run_main_loop(
     let mut start_time;
     let mut watchdog_time = Instant::now();
     let mut delay_time_hid_poll = Instant::now();
+    let mut delay_time_tick = Instant::now();
     let mut delay_time_render = Instant::now();
     let mut last_status_poll = Instant::now();
 
@@ -1029,14 +1025,14 @@ fn run_main_loop(
             }
         }
 
-        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+        if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TICK_FPS) {
             #[cfg(feature = "profiling")]
-            coz::scope!("render code");
+            coz::scope!("timer tick code");
 
             let delta =
-                (delay_time_render.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
+                (delay_time_tick.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
 
-            delay_time_render = Instant::now();
+            delay_time_tick = Instant::now();
 
             // send timer tick events to the Lua VMs
             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
@@ -1048,6 +1044,24 @@ fn run_main_loop(
                             error!("Send error during timer tick event: {}", e);
                             FAILED_TXS.write().insert(index);
                         });
+                }
+            }
+        }
+
+        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+            #[cfg(feature = "profiling")]
+            coz::scope!("render code");
+
+            delay_time_render = Instant::now();
+
+            // send timer tick events to the Lua VMs
+            for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
+                // if this tx failed previously, then skip it completely
+                if !FAILED_TXS.read().contains(&index) {
+                    lua_tx.send(script::Message::Render).unwrap_or_else(|e| {
+                        error!("Send error during timer tick event: {}", e);
+                        FAILED_TXS.write().insert(index);
+                    });
                 }
             }
 
@@ -1147,6 +1161,11 @@ fn remove_failed_devices() -> Result<bool> {
         devices_rx.remove(index);
 
         assert!(keyboard_devices.len() > index);
+
+        let usb_id = keyboard_devices
+            .get(index)
+            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
+
         keyboard_devices.remove(index);
 
         result = true;
@@ -1157,7 +1176,7 @@ fn remove_failed_devices() -> Result<bool> {
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
@@ -1173,6 +1192,11 @@ fn remove_failed_devices() -> Result<bool> {
         devices_rx.remove(index);
 
         assert!(mouse_devices.len() > index);
+
+        let usb_id = mouse_devices
+            .get(index)
+            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
+
         mouse_devices.remove(index);
 
         result = true;
@@ -1183,7 +1207,7 @@ fn remove_failed_devices() -> Result<bool> {
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
@@ -1201,6 +1225,10 @@ fn remove_failed_devices() -> Result<bool> {
         assert!(misc_devices.len() > index);
         misc_devices.remove(index);
 
+        let usb_id = misc_devices
+            .get(index)
+            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
+
         result = true;
 
         debug!("Sending device hot remove notification...");
@@ -1209,7 +1237,7 @@ fn remove_failed_devices() -> Result<bool> {
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug((0, 0), true))
+            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
             .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
@@ -1323,10 +1351,10 @@ pub fn register_filesystem_watcher(
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
-    use log::*;
     use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+    use tracing::*;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -1478,45 +1506,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if unsafe { libc::isatty(0) != 0 } {
+    if atty::is(atty::Stream::Stdout) {
         // print a license header, except if we are generating shell completions
         if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
             print_header();
-        }
-
-        // initialize logging on console
-        logger::initialize_logging(&env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))?;
-    } else {
-        // initialize logging to syslog
-        let mut errors_present = false;
-
-        let level_filter = match env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info".to_string())
-            .to_lowercase()
-            .as_str()
-        {
-            "off" => log::LevelFilter::Off,
-            "error" => log::LevelFilter::Error,
-            "warn" => log::LevelFilter::Warn,
-            "info" => log::LevelFilter::Info,
-            "debug" => log::LevelFilter::Debug,
-            "trace" => log::LevelFilter::Trace,
-
-            _ => {
-                errors_present = true;
-                log::LevelFilter::Info
-            }
-        };
-
-        syslog::init(
-            Facility::LOG_DAEMON,
-            level_filter,
-            Some(env!("CARGO_PKG_NAME")),
-        )
-        .map_err(|_e| MainError::SyslogLevelError {})?;
-
-        if errors_present {
-            log::error!("Could not parse syslog log-level");
         }
     }
 
@@ -1545,7 +1538,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     );
 
     if !LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
-        log::warn!("We are not being launched by Systemd, the software watchdog will not be enabled unless you run it manually using `eruption-watchdog`");
+        tracing::warn!("We are not being launched by Systemd, the software watchdog will not be enabled unless you run it manually using `eruption-watchdog`");
     }
 
     // register ctrl-c handler
@@ -1575,7 +1568,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
-            log::error!("Could not parse configuration file: {}", e);
+            tracing::error!("Could not parse configuration file: {}", e);
             process::exit(1);
         });
 
@@ -1953,9 +1946,46 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if atty::is(atty::Stream::Stdout) {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_filter(filter);
+
+        #[allow(unused_mut)]
+        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+            }
+        };
+
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(console_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
     #[cfg(feature = "profiling")]
     coz::thread_init();
 
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

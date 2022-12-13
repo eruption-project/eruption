@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
@@ -96,6 +96,10 @@ function on_quit()
         info("Network FX: Server shutting down")
         server:close()
     end
+end
+
+function on_render()
+    submit_color_map(color_map)
 end
 
 function on_tick(delta)
@@ -212,8 +216,6 @@ function on_tick(delta)
                                 return
                             end
                         end
-
-                        submit_color_map(color_map)
                     end
 
                     conn:send("OK\n")

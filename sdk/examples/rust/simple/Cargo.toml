@@ -1,28 +1,28 @@
-#    SPDX-License-Identifier: GPL-3.0-or-later
+#  SPDX-License-Identifier: GPL-3.0-or-later
 #
-#    This file is part of Eruption.
+#  This file is part of Eruption.
 #
-#    Eruption is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    Eruption is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
-
+#  Copyright (c) 2019-2023, The Eruption Development Team
 
 [package]
 name = "simple-example-01"
-version = "0.0.2"
+version = "0.0.4"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
+rust-version = "1.65"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver", "sdk"]
@@ -33,14 +33,13 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-log = "0.4.17"
 thiserror = "1.0.37"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-clap = "4.0.22"
+clap = "4.0.29"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
-rust-embed = "6.4.2"
+rust-embed = { version = "6.4.2", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../../../lib/rust/eruption-rs" }

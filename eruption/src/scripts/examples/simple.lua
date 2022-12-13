@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 -- global array that stores each key's current color
 color_map = {}
@@ -23,9 +23,6 @@ color_map = {}
 function on_startup()
     -- turn off all LEDs
     for i = 1, get_canvas_size() do color_map[i] = 0x00000000 end
-
-    -- update LED state
-    submit_color_map(color_map)
 end
 
 function on_key_down(key_index)
@@ -33,5 +30,8 @@ function on_key_down(key_index)
 
     -- set color of pressed key to red
     color_map[key_index] = rgba_to_color(255, 0, 0, 255)
+end
+
+function on_render()
     submit_color_map(color_map)
 end

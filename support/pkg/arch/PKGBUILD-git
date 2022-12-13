@@ -34,6 +34,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/bin"
     mkdir -p "$pkgdir/etc/eruption"
+    mkdir -p "$pkgdir/etc/profile.d"
     mkdir -p "$pkgdir/usr/share/doc/eruption"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
@@ -90,7 +91,7 @@ package() {
     install -m 755 "target/release/eruption-process-monitor" "$pkgdir/usr/bin/"
     install -m 755 "target/release/eruption-gui-gtk3" "$pkgdir/usr/bin/"
 
-    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.desktop" "$pkgdir/usr/share/applications/"
+    install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$pkgdir/usr/share/applications/"
     install -m 644 "support/assets/eruption-gui-gtk3/eruption-gui.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/"
     install -m 644 "eruption-gui-gtk3/schemas/gschemas.compiled" "$pkgdir/usr/share/eruption-gui-gtk3/schemas/"
 
@@ -100,7 +101,7 @@ package() {
     install -m 644 "support/config/fx-proxy.conf" "$pkgdir/etc/eruption/"
     install -m 644 "support/config/audio-proxy.conf" "$pkgdir/etc/eruption/"
     install -m 644 "support/config/process-monitor.conf" "$pkgdir/etc/eruption/"
-    
+
     install -m 644 "support/profile.d/eruption.sh" "$pkgdir/etc/profile.d/"
 
     install -m 644 "support/systemd/eruption.service" "$pkgdir/usr/lib/systemd/system/"

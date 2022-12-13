@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "debug"
@@ -44,6 +44,10 @@ local function accum(key_histogram)
 end
 
 -- event handler functions --
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     local key_histogram = load_key_histogram(histogram_name)
     local sum_total = accum(key_histogram)
@@ -52,6 +56,4 @@ function on_tick(delta)
         local percentile = ((key_histogram[i] * 10) / sum_total)
         color_map[i] = linear_gradient(color_cold, color_hot, percentile)
     end
-
-    submit_color_map(color_map)
 end

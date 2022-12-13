@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use clap::CommandFactory;
@@ -30,7 +30,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use log::error;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::{
@@ -43,6 +42,7 @@ use std::{
     thread,
     time::Duration,
 };
+use tracing::error;
 
 mod constants;
 mod device;
@@ -180,6 +180,7 @@ pub enum Subcommands {
     },
 
     /// Generate shell completions
+    #[clap(hide = true, about(tr!("completions-about")))]
     Completions {
         // #[clap(subcommand)]
         shell: Shell,
@@ -215,7 +216,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (c) 2019-2022, The Eruption Development Team
+Copyright (c) 2019-2023, The Eruption Development Team
 "#
     );
 }
@@ -256,14 +257,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    // initialize logging
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG_OVERRIDE", "info");
-        pretty_env_logger::init_custom_env("RUST_LOG_OVERRIDE");
-    } else {
-        pretty_env_logger::init();
-    }
-
     // register ctrl-c handler
     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
     ctrlc::set_handler(move || {
@@ -287,7 +280,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
-            log::error!("Could not parse configuration file: {}", e);
+            tracing::error!("Could not parse configuration file: {}", e);
             process::exit(4);
         });
 
@@ -308,7 +301,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             if opts.verbose > 0 {
                                 println!(
                                     "Index: {}: ID: {:x}:{:x} {}/{}",
-                                    format!("{:02}", index).bold(),
+                                    format!("{index:02}").bold(),
                                     device.vendor_id(),
                                     device.product_id(),
                                     device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -317,7 +310,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             } else {
                                 println!(
                                     "{}: {}/{}",
-                                    format!("{:02}", index).bold(),
+                                    format!("{index:02}").bold(),
                                     device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                     device.product_string().unwrap_or("<unknown>").bold()
                                 );
@@ -361,7 +354,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if opts.verbose > 0 {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -370,7 +363,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         } else {
                             println!(
                                 "{}: {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold()
                             );
@@ -475,7 +468,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         if opts.verbose > 1 {
                             println!(
                                 "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
@@ -484,7 +477,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         } else if opts.verbose > 0 {
                             println!(
                                 "{}: {}/{}",
-                                format!("{:02}", index).bold(),
+                                format!("{index:02}").bold(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold()
                             );
@@ -539,6 +532,35 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // tracing_subscriber::registry()
+            //     // .with(journald_layer)
+            //     // .with(console_layer)
+            //     // .with(format_layer)
+            //     .init();
+        }
+    };
+
+    // i18n/l10n support
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();

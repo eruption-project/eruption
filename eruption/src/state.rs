@@ -16,12 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
 use config::Config;
 use lazy_static::lazy_static;
-use log::*;
 use parking_lot::RwLock;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -29,6 +28,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use tracing::*;
 
 use crate::color_scheme::ColorScheme;
 use crate::plugins::audio;
@@ -107,7 +107,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .set_default("canvas_lightness", 0.0)?
         .build()
         .map_err(|e| StateError::StateLoadError {
-            description: format!("{}", e),
+            description: format!("{e}"),
         })?;
 
     *STATE.write() = Some(state);
@@ -211,7 +211,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -229,7 +229,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -247,7 +247,7 @@ pub fn init_global_runtime_state_late() -> Result<()> {
             let val = config::Value::new(None, 100);
 
             let brightness = device_brightness
-                .get(&format!("{}:{}:{}", make, model, serial))
+                .get(&format!("{make}:{model}:{serial}"))
                 .unwrap_or(&val);
 
             let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
@@ -275,7 +275,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     for device in &*crate::MOUSE_DEVICES.read() {
@@ -287,7 +287,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     for device in &*crate::MISC_DEVICES.read() {
@@ -299,7 +299,7 @@ pub fn save_runtime_state() -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device_brightness.insert(format!("{}:{}:{}", make, model, serial), brightness);
+        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
     let canvas_hsl = crate::CANVAS_HSL.lock();
@@ -317,7 +317,7 @@ pub fn save_runtime_state() -> Result<()> {
     };
 
     let toml = toml::ser::to_string_pretty(&config).map_err(|e| StateError::StateWriteError {
-        description: format!("{}", e),
+        description: format!("{e}"),
     })?;
 
     fs::write(state_path, toml)?;

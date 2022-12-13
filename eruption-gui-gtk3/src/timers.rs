@@ -79,7 +79,7 @@ where
         let mut registered_timers = f.borrow_mut();
 
         if registered_timers.iter().any(|e| *e == id) {
-            log::info!("Timer with id {id} has already been registered");
+            tracing::info!("Timer with id {id} has already been registered");
 
             already_registered = true;
         } else {
@@ -92,7 +92,7 @@ where
             if let Ok(mut timers) = f.try_borrow_mut() {
                 timers.push((id, timeout, Instant::now(), Box::new(callback)));
             } else {
-                log::error!("Could not register a timer, the data structure is locked");
+                tracing::error!("Could not register a timer, the data structure is locked");
             }
         });
     }
