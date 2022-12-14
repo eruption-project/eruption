@@ -34,8 +34,8 @@ function on_tick(delta)
     -- calculate psychedelic effect
     if ticks % animation_delay == 0 then
         for i = 1, canvas_size do
-            local x = i / num_rows
-            local y = i / num_cols
+            local x = i / canvas_width
+            local y = i / canvas_height
 
             local val = super_simplex_noise(x / coord_scale, y / coord_scale,
                                             ticks / time_scale)

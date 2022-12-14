@@ -40,10 +40,6 @@ function on_startup(config)
 end
 
 function on_render()
-    -- render the animal
-    local animal_map = animal_render(handle)
-    for i = 1, num_keys do color_map[i] = animal_map[i] end
-
     submit_color_map(color_map)
 end
 
@@ -54,5 +50,11 @@ function on_tick(delta)
     if ticks % animation_delay == 0 then
         -- advance the animal's notion of time by 'delta' ticks
         animal_tick(handle, delta)
+
+        -- render the animal
+        local animal_map = animal_render(handle)
+        for i = 1, canvas_size do
+            color_map[i] = animal_map[i]
+        end
     end
 end
