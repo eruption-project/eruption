@@ -773,25 +773,27 @@ pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
         a: 0,
     }; constants::CANVAS_SIZE];
 
-    let mut i = 0;
-    loop {
-        led_map[i] = RGBA {
-            a: u8::try_from((map[i] >> 24) & 0xff)?,
-            r: u8::try_from((map[i] >> 16) & 0xff)?,
-            g: u8::try_from((map[i] >> 8) & 0xff)?,
-            b: u8::try_from(map[i] & 0xff)?,
-        };
+    if !map.is_empty() {
+        let mut i = 0;
+        loop {
+            led_map[i] = RGBA {
+                a: u8::try_from((map[i] >> 24) & 0xff).unwrap_or(0),
+                r: u8::try_from((map[i] >> 16) & 0xff).unwrap_or(0),
+                g: u8::try_from((map[i] >> 8) & 0xff).unwrap_or(0),
+                b: u8::try_from(map[i] & 0xff)?,
+            };
 
-        i += 1;
-        if i >= led_map.len() || i >= map.len() {
-            break;
+            i += 1;
+            if i >= led_map.len() || i >= map.len() {
+                break;
+            }
         }
+
+        LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
+        LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
+
+        FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
     }
-
-    LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
-    LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
-
-    FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
 
     Ok(())
 }
