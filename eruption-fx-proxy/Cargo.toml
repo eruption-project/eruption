@@ -57,7 +57,7 @@ libc = "0.2.138"
 atty = "0.2.14"
 tempfile = "3.3.0"
 rayon = "1.6.1"
-jwalk = "0.6.0"
+jwalk = "0.6.2"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.23.0", features = ["full", "tracing", "test-util"] }
 ctrlc = { version = "3.2.4", features = ["termination"] }
