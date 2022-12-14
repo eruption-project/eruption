@@ -32,8 +32,8 @@ use std::time::{Duration, Instant};
 use tracing::{debug, error, info, trace, warn};
 
 use crate::{
-    constants, dbus_interface, hwdevices, macros, plugins, script,
-    scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
+    constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, macros, plugins,
+    script, scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
     KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
     LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
 };
@@ -56,9 +56,7 @@ pub enum DbusApiEvent {
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
-pub fn spawn_dbus_api_thread(
-    dbus_tx: Sender<dbus_interface::Message>,
-) -> plugins::Result<Sender<DbusApiEvent>> {
+pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender<DbusApiEvent>> {
     let (dbus_api_tx, dbus_api_rx) = unbounded();
 
     thread::Builder::new()
@@ -67,7 +65,7 @@ pub fn spawn_dbus_api_thread(
             #[cfg(feature = "profiling")]
             coz::thread_init();
 
-            let dbus = dbus_interface::initialize(dbus_tx)?;
+            let dbus = DbusApi::new(dbus_tx)?;
 
             // will be set to true if we received a dbus event in the current iteration of the loop
             let mut event_received = false;
