@@ -24,6 +24,10 @@ require "debug"
 ticks = 0
 color_map = {}
 
+function on_render()
+    submit_color_map(color_map)
+end
+
 function on_tick(delta)
     ticks = ticks + delta
 
@@ -42,7 +46,5 @@ function on_tick(delta)
                                    color_saturation, color_lightness,
                                    lerp(0, 255, opacity))
         end
-
-        submit_color_map(color_map)
     end
 end

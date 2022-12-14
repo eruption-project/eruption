@@ -68,7 +68,7 @@ function on_tick(delta)
 end
 
 function step_and_draw_init(ticks)
-    for i = 1, num_keys do
+    for i = 1, canvas_size do
         local val = max(64 - (frame_counter * 4), 0)
         color_map[i] = rgba_to_color(val, val, val, val)
     end
@@ -84,7 +84,7 @@ function step_and_draw_game_over(ticks)
     -- if frame_counter > 32 delay
 
     if frame_counter <= 32 then
-        for i = 1, num_keys do color_map[i] = 0x00000000 end
+        for i = 1, canvas_size do color_map[i] = 0x00000000 end
 
         submit_color_map(color_map)
     end
@@ -194,7 +194,7 @@ function step_and_draw_game(ticks)
     -- end
 
     -- clear background, draw food and manage state
-    for i = 1, num_keys do
+    for i = 1, canvas_size do
         if food_map[i] > 0 then
             color_map[i] = rgba_to_color(255, 0, 0, 255)
         else
@@ -290,7 +290,7 @@ function game_over()
 end
 
 function reset_state()
-    for i = 1, num_keys do
+    for i = 1, canvas_size do
         color_map[i] = 0x00000000
         food_map[i] = 0
     end

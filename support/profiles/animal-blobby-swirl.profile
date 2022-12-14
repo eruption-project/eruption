@@ -55,8 +55,8 @@ default = 15.0
 [[config."Perlin Swirl"]]
 type = 'float'
 name = 'opacity'
-value = 0.1
-default = 0.1
+value = 0.5
+default = 0.5
 
 [[config.Animal]]
 type = 'string'
@@ -67,5 +67,5 @@ default = 'Blobby'
 [[config.Animal]]
 type = 'float'
 name = 'opacity'
-value = 1.0
-default = 1.0
+value = 0.65
+default = 0.65

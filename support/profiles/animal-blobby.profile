@@ -74,8 +74,8 @@ default = 0xffffff00
 [[config.Wave]]
 type = 'float'
 name = 'opacity'
-value = 0.05
-default = 0.05
+value = 0.5
+default = 0.5
 
 [[config.Animal]]
 type = 'string'

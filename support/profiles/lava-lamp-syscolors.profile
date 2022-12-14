@@ -28,8 +28,6 @@ active_scripts = [
 #   'water.lua',
 #   'raindrops.lua',
 #   'sysmon.lua',
-    'batique.lua',
-#   'dim-zone.lua',
     'macros.lua',
 #   'stats.lua',
 ]
@@ -49,8 +47,8 @@ default = 150.0
 [[config."Lava Lamp"]]
 type = 'float'
 name = 'coord_scale'
-value = 5.5
-default = 5.5
+value = 3.14159
+default = 3.14159
 
 [[config.Shockwave]]
 type = 'color'
@@ -93,41 +91,3 @@ type = 'color'
 name = 'color_hot'
 value = 0xffff0000
 default = 0xffff0000
-
-# mouse support
-[[config.Batique]]
-type = 'int'
-name = 'zone_start'
-value = 144
-default = 144
-
-[[config.Batique]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
-
-[[config.Batique]]
-type = 'float'
-name = 'coord_scale'
-value = 180
-default = 180
-
-# dim a specific zone, e.g. if the mouse LEDs are too bright
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_start'
-value = 144
-default = 144
-
-[[config."Dim Zone"]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
-
-[[config."Dim Zone"]]
-type = 'float'
-name = 'opacity'
-value = 0.95
-default = 0.95
