@@ -155,8 +155,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     subcommands::handle_command(opts.command).await
 }
 
+/// Print license information
+#[allow(dead_code)]
 fn print_header() {
     println!("{}", tr!("license-header"));
+    println!();
+
     //     println!(
     //         r"
     //  ********                          **   **
