@@ -69,6 +69,7 @@ function on_startup(config)
     for i = 1, canvas_size do
         state_map[i] = key_state.idle
         color_map[i] = 0x00000000
+        saved_color_map[i] = 0x00000000
         color_map_afterglow[i] = 0x00000000
     end
 end
