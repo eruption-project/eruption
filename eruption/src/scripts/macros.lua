@@ -295,8 +295,9 @@ function on_hid_event(event_type, arg1)
 
         overlay_state = VOLUME_OVERLAY
         overlay_ttl = overlay_max_ttl
+        effect_ttl = max_effect_ttl
         force_update = true
-
+        
         if HANDLE_EXTRA_FUNCTIONS and not event_handled then
             -- adjust volume
             if key_code == 1 then
@@ -692,7 +693,11 @@ function update_overlay_state()
     end
 end
 
-function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
+function on_render()
+    if effect_ttl > 0 then
+        submit_color_map(color_map)
+    end
+end
 
 function on_tick(delta)
     ticks = ticks + delta
