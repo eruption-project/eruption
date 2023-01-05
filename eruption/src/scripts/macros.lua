@@ -155,11 +155,16 @@ function on_hid_event(event_type, arg1)
         modifier_map[FN] = is_pressed
 
         overlay_state = NO_OVERLAY
+        effect_ttl = max_effect_ttl
+        force_update = true
 
         debug("Macros: FN key event registered")
     elseif key_code == EASY_SHIFT_KEY then
         -- "Easy Shift+" key event (CAPS LOCK pressed while in game mode)
         modifier_map[CAPS_LOCK] = is_pressed
+
+        effect_ttl = max_effect_ttl
+        force_update = true
 
         if ENABLE_EASY_SHIFT and game_mode_enabled then
             debug("Macros: Easy Shift+ key event registered")
@@ -172,6 +177,10 @@ function on_hid_event(event_type, arg1)
     elseif key_code == GAME_MODE_KEY then
         -- "SCROLL LOCK/GAME MODE" key event
         local fn_pressed = modifier_map[FN]
+
+        effect_ttl = max_effect_ttl
+        force_update = true
+
         if is_pressed and fn_pressed then
             game_mode_enabled = not game_mode_enabled
             store_bool_transient("global.game_mode_enabled", game_mode_enabled)
@@ -297,7 +306,7 @@ function on_hid_event(event_type, arg1)
         overlay_ttl = overlay_max_ttl
         effect_ttl = max_effect_ttl
         force_update = true
-        
+
         if HANDLE_EXTRA_FUNCTIONS and not event_handled then
             -- adjust volume
             if key_code == 1 then
@@ -321,10 +330,12 @@ function on_hid_event(event_type, arg1)
             end
         end
 
-        if HANDLE_EXTRA_FUNCTIONS and not event_handled then
+        if not event_handled then
             -- adjust brightness
             -- overlay_state = NO_OVERLAY
             -- overlay_ttl = overlay_max_ttl
+            -- effect_ttl = max_effect_ttl
+            -- force_update = true
 
             local brightness = get_brightness()
 
@@ -421,6 +432,9 @@ end
 
 function on_key_down(key_index)
     trace("Macros: Key down: Index: " .. key_index)
+
+    effect_ttl = max_effect_ttl
+    force_update = true
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -531,6 +545,9 @@ end
 
 function on_key_up(key_index)
     trace("Macros: Key up: Index: " .. key_index)
+
+    effect_ttl = max_effect_ttl
+    force_update = true
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -668,6 +685,8 @@ end
 function update_overlay_state()
     if overlay_state == NO_OVERLAY then
         overlay_ttl = 0
+        -- effect_ttl = max_effect_ttl
+        -- force_update = true
     elseif overlay_state == VOLUME_OVERLAY then
         -- generate color map values
         local percentage = clamp(get_audio_volume(), 0, 100)
@@ -693,11 +712,7 @@ function update_overlay_state()
     end
 end
 
-function on_render()
-    if effect_ttl > 0 then
-        submit_color_map(color_map)
-    end
-end
+function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
 
 function on_tick(delta)
     ticks = ticks + delta
