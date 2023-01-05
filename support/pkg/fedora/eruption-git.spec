@@ -1,13 +1,12 @@
 %global OrigName eruption
 %global ShortName eruption
 
-%global gittag master
-%global commit 117d53401af4f80a2a5cdbafd69cddda88912fc2
+%global commit ec328c9dfc845b64b763d3898b34f5f4430006fc
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:    eruption-git
-Version: 0.3.0
-Release: 2.%{shortcommit}
+Version: 0.3.1
+Release: 0.%{shortcommit}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0

@@ -4,7 +4,12 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0 | __Next Release__ |
+| 0.3.1 | __New Release__ |
+| 0.3.1 | Fix a critical bug where some devices caused input spam |
+| 0.3.1 | Fix a bug where the brightness regulator does not work |
+| 0.3.1 | Revert switch to `hidraw` backend. Use the `libusb` backend of hidapi for now |
+| 0.3.1 | Update all dependencies to their latest releases |
+| 0.3.0 | __New Release__ |
 | 0.3.0 | Fix a locking issue that lead to excessive jitter and noticeable input lag |
 | 0.3.0 | Add a new user-session daemon: `eruption-fx-proxy` that supersedes some features of `eruption-netfx` |
 | 0.3.0 | Replace the `Ambient Fx` effect based on `eruption-netfx` and `netfx.profile` with the newer and more efficient `Ambient Effect` provided by `eruption-fx-proxy` |

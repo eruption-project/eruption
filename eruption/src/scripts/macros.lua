@@ -320,7 +320,7 @@ function on_hid_event(event_type, arg1)
             end
         end
 
-        if HANDLE_EXTRA_FUNCTIONS and not event_handled then
+        if not event_handled then
             -- adjust brightness
             -- overlay_state = NO_OVERLAY
             -- overlay_ttl = overlay_max_ttl

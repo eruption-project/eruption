@@ -20,7 +20,7 @@
 
 [package]
 name = "eruption"
-version = "0.3.0"
+version = "0.3.1"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
@@ -44,36 +44,36 @@ coz = { version = "0.1.3", optional = true }
 cfg-if = "1.0.0"
 flume = { version = "0.10.14", features = ["async"] }
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-async-trait = "0.1.58"
+async-trait = "0.1.60"
 # tracing = "0.1.26"
 # tracing-futures = "0.2.5"
 # tracing-subscriber = "0.2.20"
-libc = "0.2.137"
-nix = "0.25.0"
+libc = "0.2.139"
+nix = "0.26.1"
 systemd = "0.10.0"
 log = "0.4.17"
 syslog = "6.0.1"
 pretty_env_logger = "0.4.0"
-thiserror = "1.0.37"
+thiserror = "1.0.38"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-toml = "0.5.9"
-serde = { version = "1.0.148", features = ["derive"] }
-serde_json = "1.0.89"
-tokio = { version = "1.22.0", features = ["full"] }
+toml = "0.5.10"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+tokio = { version = "1.23.1", features = ["full"] }
 socket2 = { version = "0.4.7", features = ["all"] }
-ctrlc = { version = "3.2.3", features = ["termination"] }
-clap = "4.0.26"
+ctrlc = { version = "3.2.4", features = ["termination"] }
+clap = "4.0.32"
 hotwatch = "0.4.6"
-config = "0.13.2"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-hidraw"] }
+config = "0.13.3"
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-shared-libusb"] }
 udev = "0.7"
 evdev-rs = "0.6.1"
 hexdump = "0.1.1"
 byteorder = "1.4.3"
 indexmap = { version = "1.9.2", features = ["serde"] }
 itertools = "0.10.5"
-rayon = "1.6.0"
+rayon = "1.6.1"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 colorgrad = "0.6.2"
@@ -86,21 +86,21 @@ simdnoise = "3.1.6"
 # mlua = { version = "0.8.4", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.8.4", features = ["luajit52"] }
-mlua = { version = "0.8.6", features = ["lua54"] }
-sysinfo = "0.26.8"
+mlua = { version = "0.8.7", features = ["lua54"] }
+sysinfo = "0.27.2"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.2"
 rustfft = "6.1.0"
 uuid = { version = "1.2.2", features = ["serde", "v4"] }
 dbus = "0.9.6"
 dbus-tree = "0.9.2"
-paste = "1.0.9"
+paste = "1.0.11"
 bitvec = "1.0.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"
 bytes = "1.3.0"
-prost = "0.11.3"
-prost-types = "0.11.2"
+prost = "0.11.5"
+prost-types = "0.11.5"
 i18n-embed = { version = "0.13.4", features = ["fluent-system", "desktop-requester"] }
 rust-embed = { version = "6.4.2", features = ["compression"] }
 unic-langid = "0.9.1"
@@ -112,8 +112,8 @@ same-file = "1"
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"
-thiserror = "1.0.37"
-tokio = { version = "1.22.0", features = ["test-util"] }
+thiserror = "1.0.38"
+tokio = { version = "1.23.1", features = ["test-util"] }
 
 [build-dependencies]
-prost-build = "0.11.3"
+prost-build = "0.11.5"
