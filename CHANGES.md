@@ -6,6 +6,7 @@ Table of new and noteworthy changes:
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.3.1 | __New Release__ |
 | 0.3.1 | Fix a critical bug where some devices caused input spam |
+| 0.3.1 | Fix a bug where the brightness regulator does not work |
 | 0.3.1 | Revert switch to `hidraw` backend. Use the `libusb` backend of hidapi for now |
 | 0.3.1 | Update all dependencies to their latest releases |
 | 0.3.0 | __New Release__ |
