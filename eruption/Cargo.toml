@@ -20,7 +20,7 @@
 
 [package]
 name = "eruption"
-version = "0.3.0"
+version = "0.3.1"
 build = "build.rs"
 authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
 edition = "2021"
