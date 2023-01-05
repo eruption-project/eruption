@@ -4,6 +4,8 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.2 | __New Release__ |
+| 0.3.2 | Fix special hotkeys and volume control dial knob on `ROCCAT Vulcan 100/12x` |
 | 0.3.1 | __New Release__ |
 | 0.3.1 | Fix a critical bug where some devices caused input spam |
 | 0.3.1 | Fix a bug where the brightness regulator does not work |

@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Please complete the following information:**
 
- * Eruption version [e.g. 0.3.1]
+ * Eruption version [e.g. 0.3.2]
  * List your device(s) (`sudo lsusb`)
 
 **Additional context**
