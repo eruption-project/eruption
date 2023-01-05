@@ -52,9 +52,9 @@ dependencies = [
 
 [[package]]
 name = "accesskit_consumer"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4558a5baff5de42893d462e370a6b0c394355fef615d9ae245357a06bc2f0cf"
+checksum = "52ca67e745149d4f118f67fcdfcf57c94aeb9b43672d4ccc9dc902c8e0abc433"
 dependencies = [
  "accesskit",
  "parking_lot 0.12.1",
@@ -62,9 +62,9 @@ dependencies = [
 
 [[package]]
 name = "accesskit_macos"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d197c6f16b61c07b258ec0ffb44a464c0744d2625d5139c35df58fb81e75274"
+checksum = "aa024dd9711bc1003738f3869762b49a439d4b12df1e26dac75864149115197c"
 dependencies = [
  "accesskit",
  "accesskit_consumer",
@@ -75,9 +75,9 @@ dependencies = [
 
 [[package]]
 name = "accesskit_windows"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54a5a92262b420a00654837d96a5d88bce0331eb9a319572a844075affa6e2ae"
+checksum = "a4423e748eaf38f23388f9b931abc1e026f2bf9c9f35a652a280e0ad9351fd2d"
 dependencies = [
  "accesskit",
  "accesskit_consumer",
@@ -272,9 +272,9 @@ dependencies = [
 
 [[package]]
 name = "atomic_refcell"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73b5e5f48b927f04e952dedc932f31995a65a0bf65ec971c74436e51bf6e970d"
+checksum = "857253367827bd9d0fd973f0ef15506a96e79e41b0ad7aa691203a4e3214f6c8"
 
 [[package]]
 name = "atty"
@@ -861,9 +861,9 @@ dependencies = [
 
 [[package]]
 name = "console"
-version = "0.15.3"
+version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5556015fe3aad8b968e5d4124980fbe2f6aaee7aeec6b749de1faaa2ca5d0a4c"
+checksum = "c9b6515d269224923b26b5febea2ed42b2d5f2ce37284a4dd670fedd6cb8347a"
 dependencies = [
  "encode_unicode",
  "lazy_static",
@@ -1559,9 +1559,9 @@ dependencies = [
 
 [[package]]
 name = "egui-notify"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60cb7e66ecf925bd16a52e4bb3abde9211d0fbe21df6e84be7a9a61f4aa68ed4"
+checksum = "a3d8552204a0d12da822e54a1dbfdb5d78810b095773c139b6a7486e5a4ab8f6"
 dependencies = [
  "egui 0.20.1",
 ]
@@ -4263,9 +4263,9 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.8.6"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4351dbcc863fb6249c81b3bd0c8001214e9d4d44d22cabda17026353a77fe612"
+checksum = "2ee2ad7a9aa69056b148d9d590344bc155d3ce0d2200e3b2838f7034f6ba33c1"
 dependencies = [
  "bstr",
  "cc",
@@ -4642,9 +4642,9 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.30.0"
+version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "239da7f290cfa979f43f85a8efeee9a8a76d0827c356d37f9d3d7254d6b537fb"
+checksum = "8d864c91689fdc196779b98dba0aceac6118594c2df6ee5d943eb6a8df4d107a"
 dependencies = [
  "memchr",
 ]
@@ -6562,9 +6562,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.23.0"
+version = "1.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eab6d665857cc6ca78d6e80303a02cea7a7851e85dfbd77cbdc09bd129f1ef46"
+checksum = "38a54aca0c15d014013256222ba0ebed095673f89345dd79119d912eb561b7a8"
 dependencies = [
  "autocfg",
  "bytes",
