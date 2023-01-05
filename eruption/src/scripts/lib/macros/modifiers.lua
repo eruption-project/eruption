@@ -25,7 +25,7 @@ require "utilities"
 -- therefor events originating from the sub-device will be handled by the window system.
 -- Set this to `true` if the window system can't see the events of the sub-device because it is
 -- grabbed exlusively by Eruption.
-HANDLE_EXTRA_FUNCTIONS = false
+HANDLE_EXTRA_FUNCTIONS = true
 
 ENABLE_EASY_SHIFT = true -- set this to false if you don't want to
 -- use the Easy Shift+ functionality
