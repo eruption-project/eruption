@@ -90,12 +90,6 @@ pub struct DeviceInfo {
     pub reserved3: u8,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum DialMode {
-    Volume,
-    Brightness,
-}
-
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Vulcan 100/12x series keyboards
 pub struct RoccatVulcan1xx {
@@ -111,8 +105,6 @@ pub struct RoccatVulcan1xx {
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
     pub has_failed: bool,
-
-    pub dial_mode: Arc<Mutex<DialMode>>,
 
     // device specific configuration options
     pub brightness: i32,
@@ -135,8 +127,6 @@ impl RoccatVulcan1xx {
             led_hiddev: Arc::new(Mutex::new(None)),
 
             has_failed: false,
-
-            dial_mode: Arc::new(Mutex::new(DialMode::Brightness)),
 
             brightness: 100,
         }
@@ -837,6 +827,17 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                     }
 
                     let event = match buf[0..5] {
+                        [0x03, 0x00, 0x0b, 0x26, 0x00] => KeyboardHidEvent::VolumeDown,
+                        [0x03, 0x00, 0x0b, 0x27, 0x00] => KeyboardHidEvent::VolumeUp,
+
+                        [0x03, 0x00, 0xcc, 0xff, 0x01] => KeyboardHidEvent::BrightnessDown,
+                        [0x03, 0x00, 0xcc, 0x01, 0x01] => KeyboardHidEvent::BrightnessUp,
+
+                        [0x03, 0x00, 0x0c, value, 0x00] => KeyboardHidEvent::SetBrightness(value),
+
+                        [0x02, 0xe2, 0x00, 0x00, 0x00] => KeyboardHidEvent::MuteDown,
+                        [0x02, 0x00, 0x00, 0x00, 0x00] => KeyboardHidEvent::MuteUp,
+
                         // Key reports, incl. KEY_FN, ..
                         [0x03, 0x00, 0xfb, code, status] => match status {
                             0x00 => KeyboardHidEvent::KeyUp {
@@ -866,43 +867,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                             _ => KeyboardHidEvent::Unknown,
                         },
-
-                        // volume up/down adjustment is initiated by the following sequence
-                        [0x03, 0x00, 0x0b, 0x26, _] | [0x02, 0xea, 0x00, 0x00, _] => {
-                            *self.dial_mode.lock() = DialMode::Volume;
-                            KeyboardHidEvent::Unknown
-                        }
-                        [0x03, 0x00, 0x0b, 0x27, _] | [0x02, 0xe9, 0x00, 0x00, _] => {
-                            *self.dial_mode.lock() = DialMode::Volume;
-                            KeyboardHidEvent::Unknown
-                        }
-
-                        [0x03, 0x00, 0xcc, code, _] => {
-                            let result = if *self.dial_mode.lock() == DialMode::Volume {
-                                match code {
-                                    0x01 => KeyboardHidEvent::VolumeUp,
-                                    0xff => KeyboardHidEvent::VolumeDown,
-
-                                    _ => KeyboardHidEvent::Unknown,
-                                }
-                            } else {
-                                match code {
-                                    0x01 => KeyboardHidEvent::BrightnessUp,
-                                    0xff => KeyboardHidEvent::BrightnessDown,
-
-                                    _ => KeyboardHidEvent::Unknown,
-                                }
-                            };
-
-                            // default to brightness
-                            *self.dial_mode.lock() = DialMode::Brightness;
-
-                            result
-                        }
-
-                        // [0x03, 0x00, 0x0c, val, _] => KeyboardHidEvent::SetBrightness(val),
-                        [0x02, 0xe2, 0x00, 0x00, _] => KeyboardHidEvent::MuteDown,
-                        [0x02, 0x00, 0x00, 0x00, _] => KeyboardHidEvent::MuteUp,
 
                         _ => KeyboardHidEvent::Unknown,
                     };
