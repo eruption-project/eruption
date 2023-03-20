@@ -613,8 +613,8 @@ impl eframe::App for Pyroclasm {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
-    fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-        egui::Rgba::TRANSPARENT
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        egui::Rgba::TRANSPARENT.to_rgba_unmultiplied()
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {

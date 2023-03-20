@@ -409,7 +409,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 Box::new(app::Pyroclasm::new(cc))
             }),
-        );
+        )
+        .unwrap_or_else(|e| {
+            tracing::error!("{}", e);
+        });
     }
 
     Ok(())
