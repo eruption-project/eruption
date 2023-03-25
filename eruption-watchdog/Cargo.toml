@@ -39,7 +39,7 @@ debug-async = []
 [dependencies]
 cfg-if = "1.0.0"
 flume = "0.10.14"
-clap =  { version = "4.1.11", features = ["derive"] }
+clap =  { version = "4.1.13", features = ["derive"] }
 clap_complete = "4.1.5"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 syslog = "6.0.1"
@@ -60,7 +60,7 @@ color-eyre = "0.6.2"
 lockfile = "0.4.0"
 i18n-embed = { version = "0.13.8", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.6"
-rust-embed = { version = "6.6.0", features = ["compression"] }
+rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }

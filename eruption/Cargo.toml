@@ -45,7 +45,7 @@ coz = { version = "0.1.3", optional = true }
 cfg-if = "1.0.0"
 flume = { version = "0.10.14", features = ["async"] }
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-async-trait = "0.1.67"
+async-trait = "0.1.68"
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -61,12 +61,12 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 toml = "0.7.3"
-serde = { version = "1.0.157", features = ["derive"] }
+serde = { version = "1.0.158", features = ["derive"] }
 serde_json = "1.0.94"
 tokio = { version = "1.26.0", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.1", features = ["all"] }
 ctrlc = { version = "3.2.5", features = ["termination"] }
-clap = "4.1.11"
+clap = "4.1.13"
 hotwatch = "0.4.6"
 config = "0.13.3"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-static-libusb"] }
@@ -74,7 +74,7 @@ udev = "0.7"
 evdev-rs = "0.6.1"
 hexdump = "0.1.1"
 byteorder = "1.4.3"
-indexmap = { version = "1.9.2", features = ["serde"] }
+indexmap = { version = "1.9.3", features = ["serde"] }
 itertools = "0.10.5"
 rayon = "1.7.0"
 lazy_static = "1.4.0"
@@ -90,7 +90,7 @@ simdnoise = "3.1.6"
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.8.4", features = ["luajit52"] }
 mlua = { version = "0.8.8", features = ["lua54"] }
-sysinfo = "0.28.3"
+sysinfo = "0.28.4"
 procinfo = "0.4.2"
 bincode = "2.0.0-rc.2"
 rustfft = "6.1.0"
@@ -105,7 +105,7 @@ bytes = "1.4.0"
 prost = "0.11.8"
 prost-types = "0.11.8"
 i18n-embed = { version = "0.13.8", features = ["fluent-system", "desktop-requester"] }
-rust-embed = { version = "6.6.0", features = ["compression"] }
+rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"

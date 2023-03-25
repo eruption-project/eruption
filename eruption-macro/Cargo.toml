@@ -38,7 +38,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.1.11", features = ["derive"] }
+clap =  { version = "4.1.13", features = ["derive"] }
 clap_complete = "4.1.5"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
@@ -65,7 +65,7 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master",
 # luajit-src = "210.3.2+resty1085a4d"
 # mlua = { version = "0.7.3", features = ["luajit52"] }
 mlua = { version = "0.8.8", features = ["lua54"] }
-regex = "1.7.1"
+regex = "1.7.3"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
 udev = "0.7"
@@ -76,12 +76,12 @@ walkdir = "2.3.3"
 maplit = "1.0.2"
 pest = "2.5.6"
 pest_derive = "2.5.6"
-serde = { version = "1.0.157", features = ["derive"] }
+serde = { version = "1.0.158", features = ["derive"] }
 serde_json = "1.0.94"
 serde_json_any_key = "2.0.0"
 i18n-embed = { version = "0.13.8", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.6.6"
-rust-embed = { version = "6.6.0", features = ["compression"] }
+rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 
