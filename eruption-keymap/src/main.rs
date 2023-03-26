@@ -594,9 +594,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 };
 
                 let enabled = if action.enabled {
-                    Cell::new(format!("{}", tr!("enabled")))
+                    Cell::new(tr!("enabled").to_string())
                 } else {
-                    Cell::new(format!("{}", tr!("disabled")))
+                    Cell::new(tr!("disabled").to_string())
                 };
 
                 tab.add_row(vec![

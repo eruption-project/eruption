@@ -21,6 +21,7 @@
 
 use gio::prelude::*;
 use glib::clone;
+use glib::prelude::ToValue;
 use glib::IsA;
 use gtk::glib;
 use gtk::prelude::*;
@@ -180,7 +181,7 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
             .to_owned()
             .to_string();
 
-        profiles_treestore.insert_with_values(None, None, &[(0, &0), (1, &name), (2, &filename)]);
+        profiles_treestore.insert_with_values(None, None, &[(1, &name), (2, &filename)]);
     }
 
     let cell_renderer_id = gtk::CellRendererText::new();
@@ -600,7 +601,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let soundfx_switch: gtk::Switch = builder.object("soundfx_switch").unwrap();
 
     // enable custom CSS support
-    let screen = main_window.screen().unwrap();
+    let screen = gtk::prelude::GtkWindowExt::screen(&main_window).unwrap();
     let style = gtk::CssProvider::new();
     gtk::CssProvider::load_from_resource(&style, "/org/eruption/eruption-gui-gtk3/styles/app.css");
     gtk::StyleContext::add_provider_for_screen(&screen, &style, gtk::STYLE_PROVIDER_PRIORITY_USER);
