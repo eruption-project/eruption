@@ -29,31 +29,26 @@ use crate::{
 
 use glib::clone;
 use glib::IsA;
-use gtk::builders::{
-    AdjustmentBuilder, BoxBuilder, ButtonBuilder, ColorButtonBuilder, EntryBuilder,
-    ExpanderBuilder, FrameBuilder, LabelBuilder, MessageDialogBuilder, ScaleBuilder,
-    ScrolledWindowBuilder, SwitchBuilder, TreeViewColumnBuilder,
-};
 use gtk::glib;
 use gtk::{
-    prelude::*, Align, Builder, ButtonsType, CellRendererText, IconSize, Image, Justification,
-    MessageType, Orientation, PositionType, ScrolledWindow, Stack, StackSwitcher, TextBuffer,
-    TreeStore, TreeView, TreeViewColumnSizing,
+    prelude::*, Adjustment, Align, Box, Builder, Button, ButtonsType, CellRendererText,
+    ColorButton, Entry, Expander, Frame, IconSize, Image, Justification, Label, MessageDialog,
+    MessageType, Orientation, PositionType, Scale, ScrolledWindow, ShadowType, Stack,
+    StackSwitcher, Switch, TextBuffer, TreeStore, TreeView, TreeViewColumn, TreeViewColumnSizing,
 };
-use gtk::{Frame, ShadowType};
 use paste::paste;
 
 #[cfg(feature = "sourceview")]
 use gtk::TextView;
-#[cfg(feature = "sourceview")]
-use sourceview4::builders::BufferBuilder;
+
 #[cfg(feature = "sourceview")]
 use sourceview4::prelude::*;
+use sourceview4::Buffer;
 
 #[cfg(not(feature = "sourceview"))]
-use gtk::builders::{TextBufferBuilder, TextViewBuilder};
-#[cfg(not(feature = "sourceview"))]
 use gtk::ApplicationWindow;
+#[cfg(not(feature = "sourceview"))]
+use gtk::{TextBuffer, TextView};
 
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
@@ -98,7 +93,7 @@ macro_rules! declare_config_widget_numeric {
                 value:i64,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = BoxBuilder::new()
+                let container = Box::builder()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -106,7 +101,7 @@ macro_rules! declare_config_widget_numeric {
                     .homogeneous(false)
                     .build();
 
-                let row1 = BoxBuilder::new()
+                let row1 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -116,7 +111,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = BoxBuilder::new()
+                let row2 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -126,7 +121,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -136,18 +131,18 @@ macro_rules! declare_config_widget_numeric {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
-                    .label(&description)
+                    .label(description)
                     .build();
 
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
                 let image = Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = ButtonBuilder::new()
+                let reset_button = Button::builder()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -157,7 +152,7 @@ macro_rules! declare_config_widget_numeric {
 
                 // scale widget
                 // set constraints
-                let mut adjustment = AdjustmentBuilder::new();
+                let mut adjustment = Adjustment::builder();
 
                 adjustment = adjustment.value(value as f64);
                 adjustment = adjustment.step_increment(1.0);
@@ -172,7 +167,7 @@ macro_rules! declare_config_widget_numeric {
 
                 let adjustment = adjustment.build();
 
-                let scale = ScaleBuilder::new()
+                let scale = Scale::builder()
                     .halign(Align::Fill)
                     .hexpand(true)
                     .adjustment(&adjustment)
@@ -207,7 +202,7 @@ macro_rules! declare_config_widget_numeric {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = BoxBuilder::new()
+                let container = Box::builder()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -215,7 +210,7 @@ macro_rules! declare_config_widget_numeric {
                     .homogeneous(false)
                     .build();
 
-                let row1 = BoxBuilder::new()
+                let row1 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -225,7 +220,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = BoxBuilder::new()
+                let row2 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -235,7 +230,7 @@ macro_rules! declare_config_widget_numeric {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -245,18 +240,18 @@ macro_rules! declare_config_widget_numeric {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
-                    .label(&description)
+                    .label(description)
                     .build();
 
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
                 let image = Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = ButtonBuilder::new()
+                let reset_button = Button::builder()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -266,7 +261,7 @@ macro_rules! declare_config_widget_numeric {
 
                 // scale widget
                 // set constraints
-                let mut adjustment = AdjustmentBuilder::new();
+                let mut adjustment = Adjustment::builder();
 
                 adjustment = adjustment.value(value as f64);
                 adjustment = adjustment.step_increment(0.01);
@@ -281,7 +276,7 @@ macro_rules! declare_config_widget_numeric {
 
                 let adjustment = adjustment.build();
 
-                let scale = ScaleBuilder::new()
+                let scale = Scale::builder()
                     .halign(Align::Fill)
                     .hexpand(true)
                     .adjustment(&adjustment)
@@ -316,7 +311,7 @@ macro_rules! declare_config_widget_input {
                 value: String,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = BoxBuilder::new()
+                let container = Box::builder()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -324,7 +319,7 @@ macro_rules! declare_config_widget_input {
                     .homogeneous(false)
                     .build();
 
-                let row1 = BoxBuilder::new()
+                let row1 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -334,7 +329,7 @@ macro_rules! declare_config_widget_input {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = BoxBuilder::new()
+                let row2 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -344,7 +339,7 @@ macro_rules! declare_config_widget_input {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -354,18 +349,18 @@ macro_rules! declare_config_widget_input {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
-                    .label(&description)
+                    .label(description)
                     .build();
 
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
                 let image = Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = ButtonBuilder::new()
+                let reset_button = Button::builder()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -374,7 +369,7 @@ macro_rules! declare_config_widget_input {
                 row2.pack_start(&reset_button, false, false, 8);
 
                 // entry widget
-                let entry = EntryBuilder::new().text(&value).build();
+                let entry = Entry::builder().text(&value).build();
 
                 row2.pack_start(&entry, false, true, 8);
 
@@ -405,7 +400,7 @@ macro_rules! declare_config_widget_color {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = BoxBuilder::new()
+                let container = Box::builder()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -413,7 +408,7 @@ macro_rules! declare_config_widget_color {
                     .homogeneous(false)
                     .build();
 
-                let row1 = BoxBuilder::new()
+                let row1 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -423,7 +418,7 @@ macro_rules! declare_config_widget_color {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = BoxBuilder::new()
+                let row2 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -433,7 +428,7 @@ macro_rules! declare_config_widget_color {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -443,18 +438,18 @@ macro_rules! declare_config_widget_color {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
-                    .label(&description)
+                    .label(description)
                     .build();
 
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
                 let image = Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = ButtonBuilder::new()
+                let reset_button = Button::builder()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -464,7 +459,7 @@ macro_rules! declare_config_widget_color {
 
                 // color chooser widget
                 let rgba = util::color_to_gdk_rgba(value);
-                let chooser = ColorButtonBuilder::new()
+                let chooser = ColorButton::builder()
                     .rgba(&rgba)
                     .use_alpha(true)
                     .show_editor(true)
@@ -500,7 +495,7 @@ macro_rules! declare_config_widget_switch {
                 value: $t,
                 callback: F,
             ) -> Result<gtk::Box> {
-                let container = BoxBuilder::new()
+                let container = Box::builder()
                     .border_width(16)
                     .halign(Align::Fill)
                     .valign(Align::Fill)
@@ -508,7 +503,7 @@ macro_rules! declare_config_widget_switch {
                     .homogeneous(false)
                     .build();
 
-                let row1 = BoxBuilder::new()
+                let row1 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -518,7 +513,7 @@ macro_rules! declare_config_widget_switch {
 
                 container.pack_start(&row1, true, true, 8);
 
-                let row2 = BoxBuilder::new()
+                let row2 = Box::builder()
                     .halign(Align::Fill)
                     .valign(Align::Fill)
                     .spacing(8)
@@ -528,7 +523,7 @@ macro_rules! declare_config_widget_switch {
 
                 container.pack_start(&row2, true, true, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
@@ -538,18 +533,18 @@ macro_rules! declare_config_widget_switch {
 
                 row1.pack_start(&label, false, false, 8);
 
-                let label = LabelBuilder::new()
+                let label = Label::builder()
                     .expand(false)
                     .halign(Align::Start)
                     .justify(Justification::Left)
-                    .label(&description)
+                    .label(description)
                     .build();
 
                 row1.pack_start(&label, false, false, 8);
 
                 // "reset to default value" button
                 let image = Image::from_icon_name(Some("reload"), IconSize::Button);
-                let reset_button = ButtonBuilder::new()
+                let reset_button = Button::builder()
                     .halign(Align::Start)
                     .image(&image)
                     .tooltip_text("Reset this parameter to its default value")
@@ -558,7 +553,7 @@ macro_rules! declare_config_widget_switch {
                 row2.pack_start(&reset_button, false, false, 8);
 
                 // switch widget
-                let switch = SwitchBuilder::new()
+                let switch = Switch::builder()
                     .expand(false)
                     .valign(Align::Center)
                     .state(value)
@@ -615,7 +610,7 @@ fn create_config_editor(
         .unwrap();
     }
 
-    let outer = FrameBuilder::new()
+    let outer = Frame::builder()
         .border_width(16)
         // .label(&format!("{}", param.get_name()))
         // .label_xalign(0.0085)
@@ -707,7 +702,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
     });
 
     // then add config items
-    let container = BoxBuilder::new()
+    let container = Box::builder()
         .border_width(8)
         .orientation(Orientation::Vertical)
         .spacing(8)
@@ -716,7 +711,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
 
     let profile = Profile::load_fully(profile.as_ref())?;
 
-    let label = LabelBuilder::new()
+    let label = Label::builder()
         .label(&profile.name)
         .justify(Justification::Fill)
         .halign(Align::Start)
@@ -728,7 +723,7 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
     container.pack_start(&label, false, false, 8);
 
     for manifest in profile.manifests.values() {
-        let expander = ExpanderBuilder::new()
+        let expander = Expander::builder()
             .border_width(8)
             .label(&format!(
                 "{} ({})",
@@ -737,12 +732,12 @@ fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) 
             ))
             .build();
 
-        let expander_frame = FrameBuilder::new()
+        let expander_frame = Frame::builder()
             .border_width(8)
             .shadow_type(ShadowType::None)
             .build();
 
-        let expander_container = BoxBuilder::new()
+        let expander_container = Box::builder()
             .orientation(Orientation::Vertical)
             .homogeneous(false)
             .build();
@@ -802,7 +797,7 @@ cfg_if::cfg_if! {
                         let secondary =
                             format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
-                        let message_dialog = MessageDialogBuilder::new()
+                        let message_dialog = MessageDialog::builder()
                             .parent(&main_window)
                             .destroy_with_parent(true)
                             .decorated(true)
@@ -860,7 +855,7 @@ cfg_if::cfg_if! {
                         let secondary =
                             format!("Error writing to file {}: {}", &path.as_ref().display(), e);
 
-                        let message_dialog = MessageDialogBuilder::new()
+                        let message_dialog = MessageDialog::builder()
                             .parent(&main_window)
                             .destroy_with_parent(true)
                             .decorated(true)
@@ -918,7 +913,7 @@ cfg_if::cfg_if! {
             let source_code = std::fs::read_to_string(PathBuf::from(&profile.as_ref())).unwrap();
 
             let mut buffer_index = 0;
-            let buffer = BufferBuilder::new()
+            let buffer = Buffer::builder()
                 .language(&toml)
                 .highlight_syntax(true)
                 .text(&source_code)
@@ -950,7 +945,7 @@ cfg_if::cfg_if! {
                 .to_string_lossy()
                 .to_string();
 
-            let scrolled_window = ScrolledWindowBuilder::new()
+            let scrolled_window = ScrolledWindow::builder()
                 .shadow_type(ShadowType::None)
                 .build();
             scrolled_window.add(&sourceview);
@@ -974,7 +969,7 @@ cfg_if::cfg_if! {
 
                         let source_code = std::fs::read_to_string(&abs_path)?;
 
-                        let buffer = BufferBuilder::new()
+                        let buffer = Buffer::builder()
                             .language(&lua)
                             .highlight_syntax(true)
                             .text(&source_code)
@@ -999,7 +994,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindow::builder().build();
                         scrolled_window.add(&sourceview);
 
                         stack_widget.add_titled(
@@ -1016,7 +1011,7 @@ cfg_if::cfg_if! {
 
                         let manifest_data = std::fs::read_to_string(&f)?;
 
-                        let buffer = BufferBuilder::new()
+                        let buffer = Buffer::builder()
                             .language(&toml)
                             .highlight_syntax(true)
                             .text(&manifest_data)
@@ -1041,7 +1036,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindow::builder().build();
                         scrolled_window.add(&sourceview);
 
                         stack_widget.add_titled(
@@ -1072,9 +1067,9 @@ cfg_if::cfg_if! {
             // load and show .profile file
             let source_code = std::fs::read_to_string(&PathBuf::from(&profile.as_ref())).unwrap();
 
-            let buffer = TextBufferBuilder::new().text(&source_code).build();
+            let buffer = TextBuffer::builder().text(&source_code).build();
 
-            let text_view = TextViewBuilder::new()
+            let text_view = TextView::builder()
                 .buffer(&buffer)
                 .build();
 
@@ -1099,7 +1094,7 @@ cfg_if::cfg_if! {
                 .to_string_lossy()
                 .to_string();
 
-            let scrolled_window = ScrolledWindowBuilder::new()
+            let scrolled_window = ScrolledWindow::builder()
                 .shadow_type(ShadowType::None)
                 .build();
             scrolled_window.add(&text_view);
@@ -1123,7 +1118,7 @@ cfg_if::cfg_if! {
 
                         let source_code = std::fs::read_to_string(&abs_path)?;
 
-                        let buffer = TextBufferBuilder::new()
+                        let buffer = TextBuffer::builder()
                             .text(&source_code)
                             .build();
 
@@ -1136,7 +1131,7 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // script file editor
-                        let text_view = TextViewBuilder::new()
+                        let text_view = TextView::builder()
                             .buffer(&buffer)
                             .build();
 
@@ -1144,7 +1139,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindow::builder().build();
                         scrolled_window.add(&text_view);
 
                         stack_widget.add_titled(
@@ -1170,11 +1165,11 @@ cfg_if::cfg_if! {
                         buffer_index += 1;
 
                         // manifest file editor
-                        let buffer = TextBufferBuilder::new()
+                        let buffer = TextBuffer::builder()
                             .text(&manifest_data)
                             .build();
 
-                        let text_view = TextViewBuilder::new()
+                        let text_view = TextView::builder()
                             .buffer(&buffer)
                             .build();
 
@@ -1182,7 +1177,7 @@ cfg_if::cfg_if! {
 
                         let path = f.file_name().unwrap().to_string_lossy().to_string();
 
-                        let scrolled_window = ScrolledWindowBuilder::new().build();
+                        let scrolled_window = ScrolledWindow::builder().build();
                         scrolled_window.add(&text_view);
 
                         stack_widget.add_titled(
@@ -1248,20 +1243,20 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
         );
     }
 
-    let id_column = TreeViewColumnBuilder::new()
+    let id_column = TreeViewColumn::builder()
         .title("ID")
         .sizing(TreeViewColumnSizing::Autosize)
         .visible(false)
         .build();
-    let name_column = TreeViewColumnBuilder::new()
+    let name_column = TreeViewColumn::builder()
         .title("Name")
         .sizing(TreeViewColumnSizing::Autosize)
         .build();
-    let filename_column = TreeViewColumnBuilder::new()
+    let filename_column = TreeViewColumn::builder()
         .title("Filename")
         .sizing(TreeViewColumnSizing::Autosize)
         .build();
-    let path_column = TreeViewColumnBuilder::new()
+    let path_column = TreeViewColumn::builder()
         .visible(false)
         .title("Path")
         .build();
@@ -1270,19 +1265,29 @@ pub fn initialize_profiles_page<A: IsA<gtk::Application>>(
     let cell_renderer_name = CellRendererText::new();
     let cell_renderer_filename = CellRendererText::new();
 
-    id_column.pack_start(&cell_renderer_id, false);
-    name_column.pack_start(&cell_renderer_name, true);
-    filename_column.pack_start(&cell_renderer_filename, true);
+    gtk::prelude::CellLayoutExt::pack_start(&id_column, &cell_renderer_id, false);
+    gtk::prelude::CellLayoutExt::pack_start(&name_column, &cell_renderer_name, true);
+    gtk::prelude::CellLayoutExt::pack_start(&filename_column, &cell_renderer_filename, true);
 
     profiles_treeview.insert_column(&id_column, 0);
     profiles_treeview.insert_column(&name_column, 1);
     profiles_treeview.insert_column(&filename_column, 2);
     profiles_treeview.insert_column(&path_column, 3);
 
-    id_column.add_attribute(&cell_renderer_id, "text", 0);
-    name_column.add_attribute(&cell_renderer_name, "text", 1);
-    filename_column.add_attribute(&cell_renderer_filename, "text", 2);
-    path_column.add_attribute(&cell_renderer_filename, "text", 3);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&id_column, &cell_renderer_id, "text", 0);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&name_column, &cell_renderer_name, "text", 1);
+    gtk::prelude::TreeViewColumnExt::add_attribute(
+        &filename_column,
+        &cell_renderer_filename,
+        "text",
+        2,
+    );
+    gtk::prelude::TreeViewColumnExt::add_attribute(
+        &path_column,
+        &cell_renderer_filename,
+        "text",
+        3,
+    );
 
     profiles_treeview.set_model(Some(&profiles_treestore));
 

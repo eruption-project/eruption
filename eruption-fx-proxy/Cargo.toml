@@ -46,7 +46,7 @@ backend-x11 = ["x11", "x11rb"]
 cfg-if = "1.0.0"
 nix = "0.26.2"
 memmap2 = "0.5.10"
-clap =  { version = "4.2.0", features = ["derive"] }
+clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 colored = "2.0.0"
 lazy_static = "1.4.0"
@@ -55,9 +55,7 @@ thread_local = "1.1.7"
 dyn-clonable = "0.9.0"
 libc = "0.2.140"
 atty = "0.2.14"
-tempfile = "3.5.0"
 rayon = "1.7.0"
-jwalk = "0.8.1"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
 ctrlc = { version = "3.2.5", features = ["termination"] }
@@ -74,7 +72,6 @@ color-eyre = "0.6.2"
 num-traits = "0.2.15"
 dbus = "0.9.7"
 dbus-tree = "0.9.2"
-dbus-tokio =  "0.7.6"
 image = "0.24.6"
 smithay-client-toolkit = { version = "0.16.0", optional = true }
 x11 = { version = "2.21.0", features = ["xlib"], optional = true }

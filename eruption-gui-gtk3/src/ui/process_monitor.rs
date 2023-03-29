@@ -20,9 +20,9 @@
 */
 
 use glib::{clone, StaticType};
-use gtk::builders::{MessageDialogBuilder, TreeViewColumnBuilder};
-use gtk::glib;
+
 use gtk::prelude::*;
+use gtk::{glib, MessageDialog, TreeViewColumn};
 use std::time::Duration;
 
 use crate::{dbus_client, ui::rule, util};
@@ -208,7 +208,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 let secondary =
                     format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
-                let message_dialog = MessageDialogBuilder::new()
+                let message_dialog = MessageDialog::builder()
                     .parent(&main_window)
                     .destroy_with_parent(true)
                     .decorated(true)
@@ -254,7 +254,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 let secondary =
                     format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
-                let message_dialog = MessageDialogBuilder::new()
+                let message_dialog = MessageDialog::builder()
                     .parent(&main_window)
                     .destroy_with_parent(true)
                     .decorated(true)
@@ -349,7 +349,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                     let secondary =
                         format!("Could not transmit the ruleset to the eruption-process-monitor daemon {e}");
 
-                    let message_dialog = MessageDialogBuilder::new()
+                    let message_dialog = MessageDialog::builder()
                         .parent(&main_window)
                         .destroy_with_parent(true)
                         .decorated(true)
@@ -411,32 +411,32 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
         }),
     );
 
-    let enabled_column = TreeViewColumnBuilder::new()
+    let enabled_column = TreeViewColumn::builder()
         .title("Enabled")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
-    let index_column = TreeViewColumnBuilder::new()
+    let index_column = TreeViewColumn::builder()
         .title("#")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
-    let sensor_column = TreeViewColumnBuilder::new()
+    let sensor_column = TreeViewColumn::builder()
         .title("Sensor")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .build();
 
-    let selector_column = TreeViewColumnBuilder::new()
+    let selector_column = TreeViewColumn::builder()
         .title("Selector")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(true)
         .build();
 
-    let action_column = TreeViewColumnBuilder::new().title("Action").build();
+    let action_column = TreeViewColumn::builder().title("Action").build();
 
-    let metadata_column = TreeViewColumnBuilder::new().title("Metadata").build();
+    let metadata_column = TreeViewColumn::builder().title("Metadata").build();
 
     let cell_renderer_toggle = gtk::CellRendererToggle::new();
     let cell_renderer_text = gtk::CellRendererText::new();
@@ -450,12 +450,12 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
             transmit_rules_to_process_monitor(&builder).unwrap_or_else(|e| tracing::error!("{}", e));
         }));
 
-    enabled_column.pack_start(&cell_renderer_toggle, false);
-    index_column.pack_start(&cell_renderer_text, false);
-    sensor_column.pack_start(&cell_renderer_text, false);
-    selector_column.pack_start(&cell_renderer_text, true);
-    action_column.pack_start(&cell_renderer_text, true);
-    metadata_column.pack_start(&cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&enabled_column, &cell_renderer_toggle, false);
+    gtk::prelude::CellLayoutExt::pack_start(&index_column, &cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&sensor_column, &cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&selector_column, &cell_renderer_text, true);
+    gtk::prelude::CellLayoutExt::pack_start(&action_column, &cell_renderer_text, true);
+    gtk::prelude::CellLayoutExt::pack_start(&metadata_column, &cell_renderer_text, false);
 
     rules_treeview
         .columns()
@@ -471,12 +471,27 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     rules_treeview.insert_column(&action_column, 4);
     rules_treeview.insert_column(&metadata_column, 5);
 
-    enabled_column.add_attribute(&cell_renderer_toggle, "active", 0);
-    index_column.add_attribute(&cell_renderer_text, "text", 1);
-    sensor_column.add_attribute(&cell_renderer_text, "text", 2);
-    selector_column.add_attribute(&cell_renderer_text, "text", 3);
-    action_column.add_attribute(&cell_renderer_text, "text", 4);
-    metadata_column.add_attribute(&cell_renderer_text, "text", 5);
+    gtk::prelude::TreeViewColumnExt::add_attribute(
+        &enabled_column,
+        &cell_renderer_toggle,
+        "active",
+        0,
+    );
+    gtk::prelude::TreeViewColumnExt::add_attribute(&index_column, &cell_renderer_text, "text", 1);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&sensor_column, &cell_renderer_text, "text", 2);
+    gtk::prelude::TreeViewColumnExt::add_attribute(
+        &selector_column,
+        &cell_renderer_text,
+        "text",
+        3,
+    );
+    gtk::prelude::TreeViewColumnExt::add_attribute(&action_column, &cell_renderer_text, "text", 4);
+    gtk::prelude::TreeViewColumnExt::add_attribute(
+        &metadata_column,
+        &cell_renderer_text,
+        "text",
+        5,
+    );
 
     // update the rules view or show an error notification
     update_rules_view(builder).unwrap_or_else(

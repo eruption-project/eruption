@@ -24,9 +24,8 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::clone;
 use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
-use gtk::builders::MessageDialogBuilder;
-use gtk::prelude::*;
 use gtk::Application;
+use gtk::{prelude::*, MessageDialog};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -665,7 +664,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
             let secondary = &error.message;
 
-            let message_dialog = MessageDialogBuilder::new()
+            let message_dialog = MessageDialog::builder()
                 .destroy_with_parent(true)
                 .message_type(gtk::MessageType::Error)
                 .text(message)
@@ -697,7 +696,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 "Could not start the Eruption GUI, is the Eruption daemon running?".to_string();
             let secondary = format!("Reason:\n{e}");
 
-            let message_dialog = MessageDialogBuilder::new()
+            let message_dialog = MessageDialog::builder()
                 .destroy_with_parent(true)
                 .message_type(gtk::MessageType::Error)
                 .text(&message)

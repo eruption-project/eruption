@@ -38,7 +38,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.2.0", features = ["derive"] }
+clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
@@ -57,7 +57,7 @@ flume = "0.10.14"
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-chrono = { version = "0.4.24", features = ["serde"] }
+chrono = { git = "https://github.com/chronotope/chrono.git", branch = "main", features = ["serde"] }
 # lua-src = "544.0.1"
 # mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"

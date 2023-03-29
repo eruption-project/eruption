@@ -19,7 +19,6 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use cairo::Rectangle;
 use glib::clone;
 use gtk::prelude::*;
 // use palette::{FromColor, Hsva, Srgba};
@@ -40,6 +39,13 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum CanvasError {
     // #[error("Unknown error")]
     // UnknownError,
+}
+
+struct Rectangle {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
 }
 
 /// Initialize page "Canvas"
@@ -164,24 +170,24 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let column = gtk::TreeViewColumn::new();
     let cell = gtk::CellRendererText::new();
 
-    column.pack_start(&cell, false);
-    column.add_attribute(&cell, "text", 0);
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 0);
 
     devices_tree_view.append_column(&column);
 
     let column = gtk::TreeViewColumn::new();
     let cell = gtk::CellRendererText::new();
 
-    column.pack_start(&cell, true);
-    column.add_attribute(&cell, "text", 1);
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, true);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 1);
 
     devices_tree_view.append_column(&column);
 
     let column = gtk::TreeViewColumn::new();
     let cell = gtk::CellRendererText::new();
 
-    column.pack_start(&cell, false);
-    column.add_attribute(&cell, "text", 2);
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 2);
 
     devices_tree_view.append_column(&column);
 

@@ -400,7 +400,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             ..NativeOptions::default()
         };
 
-        eframe::run_native(
+        let _ = eframe::run_native(
             "pyroclasm",
             native_options,
             Box::new(|cc| {
