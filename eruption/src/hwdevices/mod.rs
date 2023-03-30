@@ -910,6 +910,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
         Ok(false)
     }
 }
+
 /// Returns a Vec of non plug and play devices declared in eruption.conf
 pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
     let mut result = vec![];

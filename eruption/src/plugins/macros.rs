@@ -91,7 +91,7 @@ impl MacrosPlugin {
 
         // setup virtual keyboard device
         dev.set_name("Eruption Virtual Keyboard");
-        dev.set_bustype(3);
+        dev.set_bustype(6);
         dev.set_vendor_id(0xffff);
         dev.set_product_id(0x0123);
         dev.set_version(0x01);
@@ -326,7 +326,7 @@ impl MacrosPlugin {
 
         // setup a virtual mouse device
         dev.set_name("Eruption Virtual Mouse");
-        dev.set_bustype(3);
+        dev.set_bustype(6);
         dev.set_vendor_id(0xffff);
         dev.set_product_id(0x0124);
         dev.set_version(0x01);
@@ -532,7 +532,6 @@ impl MacrosPlugin {
     }
 
     /// Inject a pre-existing InputEvent into to output of the virtual mouse device
-    /// Will send a SYN_REPORT directly after sending `event`
     fn inject_mouse_event_immediate(event: evdev_rs::InputEvent) -> Result<()> {
         // let mut do_initialize = false;
 
