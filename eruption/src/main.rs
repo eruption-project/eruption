@@ -705,7 +705,7 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| error!("An error occurred while closing the device: {}", _e))
                                 .ok();
                         });
                 } else {
@@ -718,7 +718,7 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|_e| error!("An error occurred while closing the device: {}", _e))
                         .ok();
                 }
             };
@@ -737,7 +737,7 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| error!("An error occurred while closing the device: {}", _e))
                                 .ok();
                         });
                 } else {
@@ -750,7 +750,7 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|_e| error!("An error occurred while closing the device: {}", _e))
                         .ok();
                 }
             };
