@@ -39,12 +39,12 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.2.0", features = ["derive"] }
+clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 serde = { version = "1.0.159", features = ["derive"] }
 lazy_static = "1.4.0"
 flume = "0.10.14"
-libc = "0.2.140"
+libc = "0.2.141"
 nix = "0.26.2"
 atty = "0.2.14"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }

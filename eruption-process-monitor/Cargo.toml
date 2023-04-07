@@ -48,7 +48,7 @@ sensor-gnome-shellext = []
 cfg-if = "1.0.0"
 async-trait = "0.1.68"
 byteorder = "1.4.3"
-clap =  { version = "4.2.0", features = ["derive"] }
+clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 config = "0.13.3"
@@ -58,7 +58,7 @@ dbus-tree = "0.9.2"
 dyn-clone = "1.0.11"
 dyn-clonable = "0.9.0"
 indexmap = "1.9.3"
-libc = "0.2.140"
+libc = "0.2.141"
 nix = "0.26.2"
 atty = "0.2.14"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }

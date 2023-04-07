@@ -38,12 +38,12 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.2.0", features = ["derive"] }
+clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
 comfy-table = "6.1.4"
-libc = "0.2.140"
+libc = "0.2.141"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
@@ -74,8 +74,8 @@ lazy_static = "1.4.0"
 bitvec = "1.0.1"
 walkdir = "2.3.3"
 maplit = "1.0.2"
-pest = "2.5.6"
-pest_derive = "2.5.6"
+pest = "2.5.7"
+pest_derive = "2.5.7"
 serde = { version = "1.0.159", features = ["derive"] }
 serde_json = "1.0.95"
 serde_json_any_key = "2.0.0"
