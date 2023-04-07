@@ -836,6 +836,9 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
                             let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
                             let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
 
+                            // let x = index % NUM_COLS + (NUM_COLS / 2);
+                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
+
                             let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
 
                             result.clamp(0, constants::CANVAS_SIZE - 1)
