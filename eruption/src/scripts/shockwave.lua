@@ -187,7 +187,7 @@ function on_tick(delta)
             color_map[i] = 0x00000000
         else
             if offset_colors then
-                local h, s, l, alpha = color_to_hsla(saved_color_map[i])
+                local h, s, l, alpha = color_to_hsla(n(saved_color_map[i]))
                 local color = hsla_to_color(h + hue_offset, s, l, alpha)
 
                 color_map[i] = color
