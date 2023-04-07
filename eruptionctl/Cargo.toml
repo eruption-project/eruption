@@ -46,7 +46,7 @@ cfg-if = "1.0.0"
 colored = "2.0.0"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.5"
-libc = "0.2.140"
+libc = "0.2.141"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 serde = { version = "1.0.159", features = ["derive"] }

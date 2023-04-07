@@ -43,7 +43,7 @@ clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
 comfy-table = "6.1.4"
-libc = "0.2.140"
+libc = "0.2.141"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }

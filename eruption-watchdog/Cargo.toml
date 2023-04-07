@@ -43,7 +43,7 @@ clap =  { version = "4.2.1", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 lazy_static = "1.4.0"
-libc = "0.2.140"
+libc = "0.2.141"
 atty = "0.2.14"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
