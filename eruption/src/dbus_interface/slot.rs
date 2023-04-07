@@ -1,5 +1,3 @@
-//f.method_with_permission("SwitchSlot", Permission::Settings, x)
-//f.method_with_permission("SwitchSlot", Permission::Settings, x)
 /*  SPDX-License-Identifier: GPL-3.0-or-later  */
 
 /*
