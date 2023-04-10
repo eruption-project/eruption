@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Create a bug report to help us improve Eruption
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Introduction**
@@ -27,8 +26,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Please complete the following information:**
 
- * Eruption version [e.g. 0.4.0]
- * List your device(s) (`sudo lsusb`)
+- Eruption version [e.g. 0.4.0]
+- List your device(s) (`sudo lsusb`)
 
 **Additional context**
 Add any other context about the problem here.
