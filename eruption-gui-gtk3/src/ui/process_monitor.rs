@@ -29,7 +29,7 @@ use gtk::prelude::ButtonExt;
 use gtk::prelude::TreeStoreExtManual;
 use gtk::prelude::TreeViewColumnExt;
 use gtk::prelude::WidgetExt;
-use gtk::traits::{TreeViewExt, DialogExt, CellRendererToggleExt};
+use gtk::traits::{CellRendererToggleExt, DialogExt, TreeViewExt};
 use gtk::traits::{GtkApplicationExt, TreeModelExt, TreeSelectionExt, TreeStoreExt};
 use gtk::MessageDialog;
 use gtk::TreeViewColumn;
