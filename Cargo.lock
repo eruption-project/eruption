@@ -1080,7 +1080,7 @@ dependencies = [
  "async-trait",
  "json5",
  "lazy_static",
- "nom 7.1.3",
+ "nom",
  "pathdiff",
  "ron 0.7.1",
  "rust-ini",
@@ -1231,9 +1231,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2b3e8478797446514c91ef04bafcb59faba183e621ad488df88983cc14128c"
+checksum = "a33c2bf77f2df06183c3aa30d1e96c0695a313d4f9c453cc3762a6db39f99200"
 dependencies = [
  "cfg-if 1.0.0",
  "crossbeam-utils",
@@ -1936,13 +1936,13 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50d6a0976c999d473fe89ad888d5a284e55366d9dc9038b1ba2aa15128c4afa0"
+checksum = "4bcfec3a70f97c962c307b2d2c56e358cf1d00b558d74262b5f929ee8cc7e73a"
 dependencies = [
  "errno-dragonfly",
  "libc",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -2017,7 +2017,6 @@ dependencies = [
  "parking_lot 0.12.1",
  "paste 1.0.12",
  "pretty_assertions",
- "procinfo",
  "prost",
  "prost-build",
  "prost-types",
@@ -2049,7 +2048,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-audio-proxy"
-version = "0.0.14"
+version = "0.0.15"
 dependencies = [
  "atty",
  "byteorder",
@@ -2092,7 +2091,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-cmd"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.2.1",
@@ -2124,7 +2123,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.22"
+version = "0.0.23"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2164,7 +2163,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-fx-proxy"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
@@ -2213,7 +2212,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui-gtk3"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "byteorder",
  "cairo-rs",
@@ -2266,7 +2265,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
@@ -2297,7 +2296,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.16"
+version = "0.0.17"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2340,7 +2339,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-keymap"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
@@ -2385,7 +2384,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-macro"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -2435,7 +2434,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-netfx"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.2.1",
@@ -2477,7 +2476,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-process-monitor"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "async-trait",
  "atty",
@@ -2528,7 +2527,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-sdk"
-version = "0.0.6"
+version = "0.0.11"
 dependencies = [
  "bincode 2.0.0-rc.3",
  "bytes",
@@ -2547,7 +2546,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-util"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -2584,7 +2583,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-watchdog"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
@@ -2618,7 +2617,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.1.2"
+version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.2.1",
@@ -2742,7 +2741,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3cf3a800ff6e860c863ca6d4b16fd999db8b752819c1606884047b73e468535"
 dependencies = [
  "memoffset 0.8.0",
- "rustc_version 0.4.0",
+ "rustc_version",
 ]
 
 [[package]]
@@ -3456,7 +3455,7 @@ dependencies = [
  "base64 0.13.1",
  "byteorder",
  "flate2",
- "nom 7.1.3",
+ "nom",
  "num-traits",
 ]
 
@@ -4065,7 +4064,7 @@ dependencies = [
 
 [[package]]
 name = "liberuption"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "cbindgen",
  "cfg-if 1.0.0",
@@ -4613,12 +4612,6 @@ dependencies = [
  "rand 0.7.3",
  "rand_xorshift",
 ]
-
-[[package]]
-name = "nom"
-version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf51a729ecf40266a2368ad335a5fdde43471f545a967109cd62146ecf8b66ff"
 
 [[package]]
 name = "nom"
@@ -5363,18 +5356,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "procinfo"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab1427f3d2635891f842892dda177883dca0639e05fe66796a62c9d2f23b49c"
-dependencies = [
- "byteorder",
- "libc",
- "nom 2.2.1",
- "rustc_version 0.2.3",
-]
-
-[[package]]
 name = "procmon-sys"
 version = "0.0.3"
 dependencies = [
@@ -5449,7 +5430,7 @@ dependencies = [
 
 [[package]]
 name = "pyroclasm"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "atty",
  "byteorder",
@@ -5885,20 +5866,11 @@ checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustc_version"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
-dependencies = [
- "semver 0.9.0",
-]
-
-[[package]]
-name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
- "semver 1.0.17",
+ "semver",
 ]
 
 [[package]]
@@ -5918,9 +5890,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.8"
+version = "0.37.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1aef160324be24d31a62147fae491c14d2204a3865c7ca8c3b0d7f7bcb3ea635"
+checksum = "85597d61f83914ddeba6a47b3b8ffe7365107221c2e557ed94426489fefb5f77"
 dependencies = [
  "bitflags",
  "errno",
@@ -6030,24 +6002,9 @@ checksum = "1ef965a420fe14fdac7dd018862966a4c14094f900e1650bbc71ddd7d580c8af"
 
 [[package]]
 name = "semver"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
-dependencies = [
- "semver-parser",
-]
-
-[[package]]
-name = "semver"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
-
-[[package]]
-name = "semver-parser"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
@@ -7277,9 +7234,9 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "uuid"
-version = "1.3.0"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1674845326ee10d37ca60470760d4288a6f80f304007d92e5c53bab78c9cfd79"
+checksum = "5b55a3fef2a1e3b3a00ce878640918820d3c51081576ac657d23af9fc7928fdb"
 dependencies = [
  "getrandom 0.2.9",
  "serde",
@@ -8010,7 +7967,7 @@ version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "463705a63313cd4301184381c5e8042f0a7e9b4bb63653f216311d4ae74690b7"
 dependencies = [
- "nom 7.1.3",
+ "nom",
 ]
 
 [[package]]
