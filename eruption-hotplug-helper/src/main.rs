@@ -268,7 +268,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         match connection.connect() {
                             Ok(()) => {
                                 tracing::debug!("Successfully connected to the Eruption daemon");
-                                let _status = connection.get_server_status()?;
+                                // let _status = connection.get_server_status()?;
 
                                 tracing::info!(
                                     "Notifying the Eruption daemon about the hotplug event..."

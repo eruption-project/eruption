@@ -215,7 +215,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
         tracing::debug!("Successfully connected to the Eruption daemon");
 
-        let _status = connection.get_server_status()?;
+        // let _status = connection.get_server_status()?;
 
         // get device; used for topology information
         let device = util::get_primary_keyboard_device()?;
