@@ -11,18 +11,18 @@ the respective file was loaded previously via a call to `require "..."`.
 
 ## Available Plugins
 
-* Keyboard: Keyboard related functions
-* Mouse: Mouse related functions
-* System: Basic system information and status, like e.g. running processes. Execute external commands, ...
-* Sensors: Query system sensor values, like e.g. CPU package temperature
-* Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
-* Introspection: Provides internal status information of the Eruption daemon
-* Persistence: Provides a persistence layer for the Lua scripts to store data
-* Profiles: Switch slots, switch profiles based on system state, ...
-* Macros: Inject programmable key stroke sequences
-* Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
-* SDK Support: Support for the Eruption SDK
-* Animal: Simulation of organic movements (support library)
+- Keyboard: Keyboard related functions
+- Mouse: Mouse related functions
+- System: Basic system information and status, like e.g. running processes. Execute external commands, ...
+- Sensors: Query system sensor values, like e.g. CPU package temperature
+- Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
+- Introspection: Provides internal status information of the Eruption daemon
+- Persistence: Provides a persistence layer for the Lua scripts to store data
+- Profiles: Switch slots, switch profiles based on system state, ...
+- Macros: Inject programmable key stroke sequences
+- Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
+- SDK Support: Support for the Eruption SDK
+- Animal: Simulation of organic movements (support library)
 
 ## Available Support Library Functions
 
@@ -75,12 +75,12 @@ Eruption currently ships with the following support library functions:
 | `inOutBounce(t, b, c, d)`          | `easing.lua`    | since 0.1.17 | Easing function                                             |
 | `outInBounce(t, b, c, d)`          | `easing.lua`    | since 0.1.17 | Easing function                                             |
 
-*For all easing functions:*
+_For all easing functions:_
 
-* t = elapsed time
-* b = begin
-* c = change == ending - beginning
-* d = duration (total time)
+- t = elapsed time
+- b = begin
+- c = change == ending - beginning
+- d = duration (total time)
 
 ## Core Functions
 
@@ -95,7 +95,7 @@ Eruption currently ships with the following core functions:
 | `warn(message)`                                                                                                                                                                                     | _core_      | Std       | since before 0.0.9 | Log message with severity: `warn`                                                                                                                                                                        |
 | `error(message)`                                                                                                                                                                                    | _core_      | Std       | since before 0.0.9 | Log message with severity: `error`                                                                                                                                                                       |
 | `delay(millis)`                                                                                                                                                                                     | _core_      | Std       | since before 0.0.9 | Delay script execution for `millis` milliseconds                                                                                                                                                         |
-| `stringify(arg)`                                                                                                                                                                                    | _core_      | Std       | since 0.3.0        | Best effort to stringify the argument.  Useful for debugging.                                                                                                                                            |
+| `stringify(arg)`                                                                                                                                                                                    | _core_      | Std       | since 0.3.0        | Best effort to stringify the argument. Useful for debugging.                                                                                                                                             |
 | `abs(f) -> f`                                                                                                                                                                                       | _core_      | Math      | since before 0.0.9 | Returns the absolute value of `f`                                                                                                                                                                        |
 | `sin(a) -> f`                                                                                                                                                                                       | _core_      | Math      | since before 0.0.9 | Returns the sine of angle `a`                                                                                                                                                                            |
 | `cos(a) -> f`                                                                                                                                                                                       | _core_      | Math      | since 0.1.4        | Returns the cosine of angle `a`                                                                                                                                                                          |
@@ -150,9 +150,9 @@ Eruption currently ships with the following core functions:
 | ~~`set_key_color(key_index, color)`~~                                                                                                                                                               | _core_      | Hw        | removed in 0.1.18  | Sets the current color of the key `key_index` to `color`                                                                                                                                                 |
 | ~~`set_color_map([color_map])`~~                                                                                                                                                                    | _core_      | Hw        | removed in 0.1.18  | Set all LEDs at once to the colors specified in the array `color_map`. This will directly access the hardware. Please see also: submit_color_map()                                                       |
 | `submit_color_map([color_map])`                                                                                                                                                                     | _core_      | Hw        | since 0.0.12       | Set all LEDs at once to the colors specified in the array `color_map`. Color maps of all scripts will be alpha blended together, and then sent to the hardware once for each render frame.               |
-| `get_color_map() -> [color_map]`                                                                                                                                                                     | _core_      | Hw        | since 0.4.0       | Returns the current composited color map |
-| `get_saved_color_map() -> [color_map]`                                                                                                                                                                     | _core_      | Hw        | since 0.4.0       | Returns the last successfully rendered composited color map |
-| `get_local_color_map() -> [color_map]`                                                                                                                                                                     | _core_      | Hw        | since 0.4.0       | Returns the current local color map of the running Lua script |
+| `get_color_map() -> [color_map]`                                                                                                                                                                    | _core_      | Hw        | since 0.4.0        | Returns the current composited color map                                                                                                                                                                 |
+| `get_saved_color_map() -> [color_map]`                                                                                                                                                              | _core_      | Hw        | since 0.4.0        | Returns the last successfully rendered composited color map                                                                                                                                              |
+| `get_local_color_map() -> [color_map]`                                                                                                                                                              | _core_      | Hw        | since 0.4.0        | Returns the current local color map of the running Lua script                                                                                                                                            |
 | `inject_key(ev_key, down)`                                                                                                                                                                          | _core_      | Hw        | since 0.1.1        | Inject a key event on the virtual keyboard                                                                                                                                                               |
 | `inject_key_with_delay(ev_key, down, millis)`                                                                                                                                                       | _core_      | Hw        | since 0.1.9        | Inject a key event on the virtual keyboard, after `millis` milliseconds has passed                                                                                                                       |
 | `inject_mouse_button(button_index, down)`                                                                                                                                                           | _core_      | Hw        | since 0.1.10       | Inject a mouse button event on the virtual mouse                                                                                                                                                         |
@@ -200,36 +200,37 @@ Eruption currently ships with the following core functions:
 | `load_color_transient(key, default) -> color`                                                                                                                                                       | Persistence | _core_    | since 0.1.11       | Load a color value from the ephemeral storage, or return default instead if `key` does not exist                                                                                                         |
 | `animal_create(name, speed, len_min, len_max, gradient_stop_1, gradient_stop_2, gradient_stop_3, opacity, { coefficient_1, coefficient_2, coefficient_3, coefficient_4, coefficient_5 }) -> handle` | Animal      | _core_    | since 0.1.20       | Creates an animal object and returns an opaque handle to it                                                                                                                                              |
 | `animal_destroy(handle)`                                                                                                                                                                            | Animal      | _core_    | since 0.1.20       | Destroys the animal referenced by `handle`                                                                                                                                                               |
-| `animal_tick(handle, delta)`                                                                                                                                                                        | Animal      | _core_    | since 0.1.20       | Advances the notion of time of the animal referenced by `handle` by the amount  `delta`                                                                                                                  |
+| `animal_tick(handle, delta)`                                                                                                                                                                        | Animal      | _core_    | since 0.1.20       | Advances the notion of time of the animal referenced by `handle` by the amount `delta`                                                                                                                   |
 | `animal_render(handle) -> [u32]`                                                                                                                                                                    | Animal      | _core_    | since 0.1.20       | Returns a color map of a rendering of the animal references by `handle`, the color map may be modified afterwards and is suitable to be used with `submit_color_map()`                                   |
 
 _Non-exhaustive, more documentation coming soon_
 
 Please Note:
-* All color values should lie in the range [0..255] unless otherwise specified
-* Some API calls currently involve bringing up of threads for each call,
-	especially the `System` and `Sensor` ones, so better don't call them in a
-	tight loop
+
+- All color values should lie in the range [0..255] unless otherwise specified
+- Some API calls currently involve bringing up of threads for each call,
+  especially the `System` and `Sensor` ones, so better don't call them in a
+  tight loop
 
 ## Available Callback Functions (Events)
 
 Eruption currently calls the following event handler functions, if they are present in a Lua script:
 
-| Name                                   | Class      | Parameters                                                                                                                                                                                                     | Description                                       |
-| -------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `on_startup()`                           | _core_     | _n/a_ | Sent on startup, e.g. when a script is loaded |
-| `on_quit()`                              | _core_     | _n/a_ | Sent on daemon exit |
-| `on_render()`                       | _core_     | _n/a_ | Request to submit the current color map for compositing/blending |
-| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick | Timer tick event. Used to update the internal state of the script |
-| `on_apply_parameter(parameters)`       | _core_     | parameters: An array of the changed parameter names | Sent whenever a script parameter shall be updated |
-| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order) | |
-| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order) | |
-| `on_mouse_button_down(button_index)`   | _Mouse_    | button_index: Index of mouse button | |
-| `on_mouse_button_up(button_index)`     | _Mouse_    | button_index: Index of mouse button | |
-| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 1 == up, 2 == down, 3 == left, 4 == right | |
-| `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates | Coordinates are relative (delta values) |
-| `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, 6 == Set Brightness, 7 == Next/previous Profile, arg1: data payload e.g.: scan codes/status codes | |
-| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index | |
+| Name                                   | Class      | Parameters                                                                                                                                                                                                     | Description                                                       |
+| -------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `on_startup()`                         | _core_     | _n/a_                                                                                                                                                                                                          | Sent on startup, e.g. when a script is loaded                     |
+| `on_quit()`                            | _core_     | _n/a_                                                                                                                                                                                                          | Sent on daemon exit                                               |
+| `on_render()`                          | _core_     | _n/a_                                                                                                                                                                                                          | Request to submit the current color map for compositing/blending  |
+| `on_tick(delta)`                       | _core_     | delta: Timer delta since last tick                                                                                                                                                                             | Timer tick event. Used to update the internal state of the script |
+| `on_apply_parameter(parameters)`       | _core_     | parameters: An array of the changed parameter names                                                                                                                                                            | Sent whenever a script parameter shall be updated                 |
+| `on_key_down(key_index)`               | _Keyboard_ | key_index: Key index (column major order)                                                                                                                                                                      |                                                                   |
+| `on_key_up(key_index)`                 | _Keyboard_ | key_index: Key index (column major order)                                                                                                                                                                      |                                                                   |
+| `on_mouse_button_down(button_index)`   | _Mouse_    | button_index: Index of mouse button                                                                                                                                                                            |                                                                   |
+| `on_mouse_button_up(button_index)`     | _Mouse_    | button_index: Index of mouse button                                                                                                                                                                            |                                                                   |
+| `on_mouse_wheel(direction)`            | _Mouse_    | direction: 1 == up, 2 == down, 3 == left, 4 == right                                                                                                                                                           |                                                                   |
+| `on_mouse_move(rel_x, rel_y, rel_z)`   | _Mouse_    | x, y, z coordinate updates                                                                                                                                                                                     | Coordinates are relative (delta values)                           |
+| `on_hid_event(event_type, arg1)`       | _Hardware_ | event_type: 0 == unknown, 1 == KeyUp, 2 == KeyDown, 3 == MuteButton, 4 == Volume knob, 5 == Brightness knob, 6 == Set Brightness, 7 == Next/previous Profile, arg1: data payload e.g.: scan codes/status codes |                                                                   |
+| `on_mouse_hid_event(event_type, arg1)` | _Hardware_ | event_type: 0 == unknown, 1 == DPI changed, 2 == Button Down, 3 == Button Up, arg1: data payload e.g.: scan codes/status codes/button index                                                                    |                                                                   |
 
 _Exhaustive listing of all currently available event callbacks_
 

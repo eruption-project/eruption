@@ -24,12 +24,12 @@ This is the documentation of the Python 3 SDK for Eruption
 
 First you need to set up the required environment:
 
- * Create a virtual environment (venv)
- * Install the dependencies
-   * Eruption Python 3 SDK
-   * Google Protocol Buffers
- * Run an example application to test the installation
-   * `simple.py` located in `sdk/examples/python/`
+- Create a virtual environment (venv)
+- Install the dependencies
+  - Eruption Python 3 SDK
+  - Google Protocol Buffers
+- Run an example application to test the installation
+  - `simple.py` located in `sdk/examples/python/`
 
 ### Installation Instructions
 
@@ -87,7 +87,7 @@ The current active profile file can be queried using `get_active_profile()` and 
 
 #### Updating Parameters
 
-One or more script parameters can be set using `set_parameters()`.  Pass in the full file
+One or more script parameters can be set using `set_parameters()`. Pass in the full file
 path of the profile and the script, then any parameters you want to update.
 
 ```python

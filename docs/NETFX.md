@@ -37,8 +37,8 @@ Set "mouse zone" of the canvas to green: **144-180:0:255:00:255**
 
 The following commands are currently supported:
 
-* STATUS: Returns server specific infos and status
-* QUIT: Terminates the TCP connection to the server
+- STATUS: Returns server specific infos and status
+- QUIT: Terminates the TCP connection to the server
 
 ## Error Codes
 

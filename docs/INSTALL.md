@@ -2,14 +2,14 @@
 
 - [Table of Contents](#table-of-contents)
 - [How to build and install Eruption from source](#how-to-build-and-install-eruption-from-source)
-    - [Install build dependencies](#install-build-dependencies)
-      - [On Arch-based distros](#on-arch-based-distros)
-      - [On Fedora-based distros](#on-fedora-based-distros)
-      - [On OpenSuse-based distros](#on-opensuse-based-distros)
-      - [On Debian-based distros](#on-debian-based-distros)
-    - [Clone the project and build the release binaries](#clone-the-project-and-build-the-release-binaries)
-    - [Install Eruption](#install-eruption)
-    - [Run Eruption](#run-eruption)
+  - [Install build dependencies](#install-build-dependencies)
+    - [On Arch-based distros](#on-arch-based-distros)
+    - [On Fedora-based distros](#on-fedora-based-distros)
+    - [On OpenSuse-based distros](#on-opensuse-based-distros)
+    - [On Debian-based distros](#on-debian-based-distros)
+  - [Clone the project and build the release binaries](#clone-the-project-and-build-the-release-binaries)
+  - [Install Eruption](#install-eruption)
+  - [Run Eruption](#run-eruption)
 
 # How to build and install Eruption from source
 
@@ -85,5 +85,6 @@ eruptionctl switch profile spectrum-analyzer-swirl.profile
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](assets/screenshot-audio-grabber-pavucontrol.png)
+
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed

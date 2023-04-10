@@ -30,8 +30,8 @@
 ### Eruption configuration file
 
 > You may want to try the
-[Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-GNOME Shell extension, for easy switching of profiles on the fly.
+> [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
+> GNOME Shell extension, for easy switching of profiles on the fly.
 
 The eruption configuration file `/etc/eruption/eruption.conf`:
 
@@ -72,15 +72,15 @@ afk_timeout_secs = 0
 
 #### Section [global]
 
-*enable_experimental_features* = Enable experimental (unstable) features
+_enable_experimental_features_ = Enable experimental (unstable) features
 
-*driver_maturity_level* = Allow drivers with this maturity levels: "stable", "testing", "experimental"
+_driver_maturity_level_ = Allow drivers with this maturity levels: "stable", "testing", "experimental"
 
-*keyboard_variant* = Switch between sub-variants of your device. (Only partially supported)
+_keyboard_variant_ = Switch between sub-variants of your device. (Only partially supported)
 
-*enable_mouse* = Enable support for mouse events. This will allow Eruption to react on mouse events.
+_enable_mouse_ = Enable support for mouse events. This will allow Eruption to react on mouse events.
 
-*grab_mouse* = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.
+_grab_mouse_ = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.
 
 ### Profiles
 
@@ -108,10 +108,10 @@ id = '5dc62fa6-e965-45cb-a0da-e87d29713099'
 name = 'Preset: Red and Yellow'
 description = '''Presets for a 'red and yellow' color scheme'''
 active_scripts = [
-	  'batique.lua',
-	  'shockwave.lua',
- 	  'macros.lua',
-#	  'stats.lua',
+   'batique.lua',
+   'shockwave.lua',
+    'macros.lua',
+#   'stats.lua',
 ]
 
 [[config.Batique]]
@@ -134,8 +134,8 @@ will be taken from the script's `.manifest` file.
 #### Switching profiles and slots at runtime
 
 > You may want to install the GNOME Shell extension
-[Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
+> [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
+> or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
 
 You may switch the currently active slot to `profile1.profile` with the following command:
 
@@ -187,20 +187,21 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 
 ## Available Plugins
 
-* Keyboard: Keyboard related functions
-* Mouse: Mouse related functions
-* System: Basic system information and status, like e.g. running processes. Execute external commands, ...
-* Sensors: Query system sensor values, like e.g. CPU package temperature
-* Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
-* Introspection: Provides internal status information of the Eruption daemon
-* Persistence: Provides a persistence layer for the Lua scripts to store data
-* Profiles: Switch slots, switch profiles based on system state, ...
-* Macros: Inject programmable key stroke sequences
-* Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
-* SDK Support: Support for the Eruption SDK
+- Keyboard: Keyboard related functions
+- Mouse: Mouse related functions
+- System: Basic system information and status, like e.g. running processes. Execute external commands, ...
+- Sensors: Query system sensor values, like e.g. CPU package temperature
+- Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
+- Introspection: Provides internal status information of the Eruption daemon
+- Persistence: Provides a persistence layer for the Lua scripts to store data
+- Profiles: Switch slots, switch profiles based on system state, ...
+- Macros: Inject programmable key stroke sequences
+- Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
+- SDK Support: Support for the Eruption SDK
 
 **Additional Plugins:**
-* Animal: Simulation of organic movements (support library)
+
+- Animal: Simulation of organic movements (support library)
 
 ## Available Effects Scripts
 
@@ -235,11 +236,11 @@ Eruption currently ships with the following Lua scripts:
 | Gradient                        | Background | `gradient.lua`         | Ready  | Gradient Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                    |
 | Turbulence                      | Background | `turbulence.lua`       | Ready  | Turbulence Noise, requires a CPU later than 2015 with support for SIMD/AVX2                                  |
 | Color Swirls (Perlin Noise)     | Background | `swirl-perlin.lua`     | Ready  | Color swirls effect, based on the Perlin Noise function that serves as input to produce a HSL color          |
-| Color Swirls (Simplex Noise)    | Background | `swirl-simplex.lua`    | Ready  | Color swirls effect, based on the Simplex Noise function that serves as input to produce a HSL color          |
+| Color Swirls (Simplex Noise)    | Background | `swirl-simplex.lua`    | Ready  | Color swirls effect, based on the Simplex Noise function that serves as input to produce a HSL color         |
 | Color Swirls (Turbulence Noise) | Background | `swirl-turbulence.lua` | Ready  | Color swirls effect, based on the Turbulence Noise function that serves as input to produce a HSL color      |
 | Color Swirls (Voronoi Noise)    | Background | `swirl-voronoi.lua`    | Ready  | Color swirls effect, based on the Voronoi Noise function that serves as input to produce a HSL color         |
 | Lava Lamp                       | Background | `lava-lamp.lua`        | Ready  | Display a lava lamp like effect                                                                              |
-| Domain Coloring                 | Background | `domain-coloring.lua`  | Ready  | Visualize a mathematical function |
+| Domain Coloring                 | Background | `domain-coloring.lua`  | Ready  | Visualize a mathematical function                                                                            |
 | Dim Zone                        | Filter     | `dim-zone.lua`         | Ready  | Dim (darken) a zone on the canvas                                                                            |
 
 The following scripts are unfinished/still in development, and some of them have known bugs:

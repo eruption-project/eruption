@@ -8,8 +8,8 @@
 
 Eruption currently has built-in support for the following audio APIs:
 
-* `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
-* `PulseAudio`
+- `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
+- `PulseAudio`
 
 Audio support is provided by `eruption-audio-proxy.service` session daemon.
 
@@ -34,5 +34,6 @@ eruptionctl switch profile spectrum-analyzer-swirl.profile
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](assets/screenshot-audio-grabber-pavucontrol.png)
+
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed
