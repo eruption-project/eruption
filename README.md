@@ -59,13 +59,13 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 ### Image and Video Gallery
 
-[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](<https://www.youtube.com/watch?v=ig_71zg14nQ>)
+[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-01.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-01.png)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-02.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-02.png)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-03.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-03.png)
 
 ---
 
@@ -103,7 +103,7 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
-> __NOTE__
+> **NOTE**
 >
 > **Experimental** drivers are `disabled` in the default configuration!
 >
@@ -209,7 +209,7 @@ systemctl --user enable --now eruption-process-monitor.service
 sudo systemctl enable --now eruption.service
 ```
 
-### Ubuntu or Pop!_OS
+### Ubuntu or Pop!\_OS
 
 ```shell
 sudo add-apt-repository ppa:x3n0m0rph59/eruption
@@ -248,8 +248,8 @@ able to successfully build Eruption from source.
 ## After Setup
 
 > You may want to try the
-[Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-GNOME Shell extension that enables easy switching of profiles on the fly
+> [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
+> GNOME Shell extension that enables easy switching of profiles on the fly
 
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
 
@@ -259,8 +259,8 @@ GNOME Shell extension that enables easy switching of profiles on the fly
 
 Eruption currently has built-in support for the following audio APIs:
 
-* `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
-* `PulseAudio`
+- `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
+- `PulseAudio`
 
 Audio support is provided by `eruption-audio-proxy.service`.
 
@@ -285,6 +285,7 @@ eruptionctl switch profile spectrum-analyzer-swirl.profile
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
+
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed
 
