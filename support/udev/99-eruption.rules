@@ -22,6 +22,8 @@
 ACTION=="add|change", ATTRS{name}=="Eruption Virtual Keyboard", SYMLINK+="input/by-id/eruption-virtual-keyboard"
 ACTION=="add|change", ATTRS{name}=="Eruption Virtual Mouse", SYMLINK+="input/by-id/eruption-virtual-mouse"
 
+# Tag the Eruption virtual devices as keyboard and mouse devices respectively
+
 SUBSYSTEM=="input", ATTRS{name}=="Eruption Virtual Keyboard", ENV{ID_INPUT_KEYBOARD}="1"
 SUBSYSTEM=="input", ATTRS{name}=="Eruption Virtual Mouse", ENV{ID_INPUT_TABLET}="0", ENV{ID_INPUT_TABLET_PAD}="0", ENV{ID_INPUT_MOUSE}="1"
 
