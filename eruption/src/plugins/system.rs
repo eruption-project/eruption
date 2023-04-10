@@ -21,7 +21,8 @@
 
 use mlua::prelude::*;
 use std::any::Any;
-use tracing::*;
+use sysinfo::{ProcessExt, ProcessStatus, System, SystemExt};
+// use tracing::*;
 
 use std::process::Command;
 use std::sync::atomic::Ordering;
@@ -47,53 +48,32 @@ impl SystemPlugin {
     }
 
     /// Get the system's load average of the last minute
-    pub(crate) fn get_current_load_avg_1() -> f32 {
-        procinfo::loadavg()
-            .unwrap_or_else(|e| {
-                error!("Could not gather status information: {}", e);
-                panic!();
-            })
-            .load_avg_1_min
+    pub(crate) fn get_current_load_avg_1() -> f64 {
+        System::new().load_average().one
     }
 
     /// Get the system's load average of the last 5 minutes
-    pub(crate) fn get_current_load_avg_5() -> f32 {
-        procinfo::loadavg()
-            .unwrap_or_else(|e| {
-                error!("Could not gather status information: {}", e);
-                panic!();
-            })
-            .load_avg_5_min
+    pub(crate) fn get_current_load_avg_5() -> f64 {
+        System::new().load_average().five
     }
 
-    /// Get the system's load average of the last 10 minutes
-    pub(crate) fn get_current_load_avg_10() -> f32 {
-        procinfo::loadavg()
-            .unwrap_or_else(|e| {
-                error!("Could not gather status information: {}", e);
-                panic!();
-            })
-            .load_avg_10_min
+    /// Get the system's load average of the last 15 minutes
+    pub(crate) fn get_current_load_avg_15() -> f64 {
+        System::new().load_average().fifteen
     }
 
     /// Get the number of runnable tasks
-    pub(crate) fn get_runnable_tasks() -> u32 {
-        procinfo::loadavg()
-            .unwrap_or_else(|e| {
-                error!("Could not gather status information: {}", e);
-                panic!();
-            })
-            .tasks_runnable
+    pub(crate) fn get_runnable_tasks() -> usize {
+        System::new()
+            .processes()
+            .iter()
+            .filter(|(_pid, process)| process.status() == ProcessStatus::Run)
+            .count()
     }
 
     /// Get the number of tasks on the system
-    pub(crate) fn get_total_tasks() -> u32 {
-        procinfo::loadavg()
-            .unwrap_or_else(|e| {
-                error!("Could not gather status information: {}", e);
-                panic!();
-            })
-            .tasks_total
+    pub(crate) fn get_total_tasks() -> usize {
+        System::new().processes().len()
     }
 
     /// Execute a shell command
@@ -137,9 +117,9 @@ impl Plugin for SystemPlugin {
             lua_ctx.create_function(|_, ()| Ok(SystemPlugin::get_current_load_avg_5()))?;
         globals.set("get_current_load_avg_5", get_current_load_avg_5)?;
 
-        let get_current_load_avg_10 =
-            lua_ctx.create_function(|_, ()| Ok(SystemPlugin::get_current_load_avg_10()))?;
-        globals.set("get_current_load_avg_10", get_current_load_avg_10)?;
+        let get_current_load_avg_15 =
+            lua_ctx.create_function(|_, ()| Ok(SystemPlugin::get_current_load_avg_15()))?;
+        globals.set("get_current_load_avg_15", get_current_load_avg_15)?;
 
         let get_runnable_tasks =
             lua_ctx.create_function(|_, ()| Ok(SystemPlugin::get_runnable_tasks()))?;
