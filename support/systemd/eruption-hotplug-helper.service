@@ -27,9 +27,10 @@ Environment=RUST_LOG=warn
 ExecStart=/usr/bin/eruption-hotplug-helper hotplug
 PIDFile=/run/eruption-hotplug-helper.pid
 # ExecStopPost=-/usr/bin/rm -f /var/lock/eruption-hotplug-helper.lock
-# TimeoutStopSec=5
+TimeoutStopSec=5
 Type=exec
-Restart=never
+# Restart=always
+# RestartSec=1
 # WatchdogSec=8
 # WatchdogSignal=SIGKILL
 # Restart=no
