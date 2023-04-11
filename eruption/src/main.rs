@@ -19,10 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-// use async_macros::join;
 use clap::{Arg, Command};
 use config::Config;
-use flume::{unbounded, Receiver, Selector, Sender};
+use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -35,8 +34,6 @@ use lazy_static::lazy_static;
 use log::*;
 use parking_lot::{Condvar, Mutex, RwLock};
 use rust_embed::RustEmbed;
-use std::process;
-use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
@@ -45,6 +42,10 @@ use std::{collections::HashSet, thread};
 use std::{
     fs,
     path::{Path, PathBuf},
+};
+use std::{
+    process,
+    sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering},
 };
 use tokio::join;
 use util::ratelimited;
@@ -292,6 +293,9 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Could not access storage: {description}")]
     StorageError { description: String },
+
+    #[error("A device failed")]
+    DeviceFailed {},
 
     #[error("Lost connection to device")]
     DeviceDisconnected {},
@@ -661,12 +665,17 @@ fn run_main_loop(
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
-    let kbd_rxs = crate::KEYBOARD_DEVICES_RX.read();
-    let mouse_rxs = crate::MOUSE_DEVICES_RX.read();
-
     'MAIN_LOOP: loop {
         #[cfg(feature = "profiling")]
         coz::scope!("main loop");
+
+        let mut device_has_failed = false;
+
+        let kbd_rxs = crate::KEYBOARD_DEVICES_RX.write();
+        let mouse_rxs = crate::MOUSE_DEVICES_RX.write();
+
+        let kbd_rxs_clone = kbd_rxs.clone();
+        let mouse_rxs_clone = mouse_rxs.clone();
 
         let mut sel = Selector::new()
             .recv(ctrl_c_rx, |_event| {
@@ -701,12 +710,18 @@ fn run_main_loop(
                 }
             });
 
-        for rx in kbd_rxs.iter() {
+        let failed_kbd_rxs = Arc::new(Mutex::new(HashSet::new()));
+
+        for (index, rx) in kbd_rxs_clone.iter().enumerate() {
+            let failed_kbd_rxs = failed_kbd_rxs.clone();
+
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     // TODO: support multiple keyboards
                     events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
+                            device_has_failed = true;
+
                             ratelimited::error!(
                                 "Could not process a keyboard event: {}. Trying to close the device now...",
                                 e
@@ -720,6 +735,8 @@ fn run_main_loop(
                                 .ok();
                         });
                 } else {
+                    device_has_failed = true;
+
                     ratelimited::error!(
                         "Could not process a keyboard event: {}",
                         event.as_ref().unwrap_err()
@@ -734,16 +751,26 @@ fn run_main_loop(
                         })
                         .ok();
                 }
+
+                if device_has_failed {
+                    failed_kbd_rxs.lock().insert(index);
+                }
             };
 
             sel = sel.recv(rx, mapper);
         }
 
-        for rx in mouse_rxs.iter() {
+        let failed_mouse_rxs = Arc::new(Mutex::new(HashSet::new()));
+
+        for (index, rx) in mouse_rxs_clone.iter().enumerate() {
+            let failed_mouse_rxs = failed_mouse_rxs.clone();
+
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
+                            device_has_failed = true;
+
                             ratelimited::error!("Could not process a mouse event: {}. Trying to close the device now...", e);
 
                             (*crate::MOUSE_DEVICES.read()[0])
@@ -754,6 +781,8 @@ fn run_main_loop(
                                 .ok();
                         });
                 } else {
+                    device_has_failed = true;
+
                     ratelimited::error!(
                         "Could not process a mouse event: {}",
                         event.as_ref().unwrap_err()
@@ -767,6 +796,10 @@ fn run_main_loop(
                             ratelimited::error!("An error occurred while closing the device")
                         })
                         .ok();
+                }
+
+                if device_has_failed {
+                    failed_mouse_rxs.lock().insert(index);
                 }
             };
 
@@ -985,7 +1018,65 @@ fn run_main_loop(
         }
 
         // now, process events from all available sources...
-        let _result = sel.wait_timeout(Duration::from_millis(1000 / (constants::TARGET_FPS * 2)));
+        let result = sel.wait_timeout(Duration::from_millis(1000 / (constants::TARGET_FPS * 2)));
+
+        let timedout = if let Err(result) = result {
+            match result {
+                SelectError::Timeout => true,
+            }
+        } else {
+            false
+        };
+
+        // remove all failed rxs
+        for idx in failed_kbd_rxs.lock().iter() {
+            // warn!("Removing keyboard rx with index {idx}");
+            // kbd_rxs.remove(*idx);
+
+            if let Some(device) = crate::KEYBOARD_DEVICES.write().get_mut(*idx) {
+                let _ = device
+                    .write()
+                    .as_device_mut()
+                    .fail()
+                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            }
+        }
+
+        for idx in failed_mouse_rxs.lock().iter() {
+            // warn!("Removing mouse rx with index {idx}");
+            // mouse_rxs.remove(*idx);
+
+            if let Some(device) = crate::MOUSE_DEVICES.write().get_mut(*idx) {
+                let _ = device
+                    .write()
+                    .as_device_mut()
+                    .fail()
+                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            }
+        }
+
+        // for idx in failed_misc_rxs.lock().iter() {
+        //     // warn!("Removing misc rx with index {idx}");
+        //     // misc_rxs.remove(*idx);
+        //
+        //     if let Some(device) = crate::MISC_DEVICES.write().get_mut(*idx) {
+        //         let _ = device
+        //             .write()
+        //             .as_device_mut()
+        //             .fail()
+        //             .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+        //     }
+        // }
+
+        // terminate the main loop (and later re-enter it) on device failure
+        // in most cases eruption should better be restarted
+        if device_has_failed
+            || (result.is_err() && !timedout)
+            || !failed_kbd_rxs.lock().is_empty()
+            || !failed_mouse_rxs.lock().is_empty()
+        {
+            return Err(MainError::DeviceFailed {}.into());
+        }
 
         if delay_time_hid_poll.elapsed()
             >= Duration::from_millis(1000 / (constants::TARGET_FPS * 8))
@@ -1009,7 +1100,9 @@ fn run_main_loop(
             }
         }
 
-        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+        if !device_has_failed
+            && delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS)
+        {
             #[cfg(feature = "profiling")]
             coz::scope!("render code");
 
@@ -1030,16 +1123,6 @@ fn run_main_loop(
                         });
                 }
             }
-
-            // finally, update the LEDs if necessary
-            DEV_IO_TX
-                .lock()
-                .as_ref()
-                .unwrap()
-                .send(DeviceAction::RenderNow)
-                .unwrap_or_else(|e| {
-                    error!("Send error: {}", e);
-                });
         }
 
         let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);

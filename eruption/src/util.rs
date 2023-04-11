@@ -391,7 +391,7 @@ pub mod ratelimited {
                 let count = e.count;
 
                 if result {
-                    e.count = 1;
+                    e.count = 0;
                     e.last = Instant::now();
                 }
 

@@ -52,6 +52,8 @@ pub fn bind_hiddev(
 pub struct GenericMouse {
     usb_vid: u16,
     usb_pid: u16,
+
+    pub has_failed: bool,
 }
 
 impl GenericMouse {
@@ -59,7 +61,11 @@ impl GenericMouse {
     pub fn bind(usb_vid: u16, usb_pid: u16) -> Self {
         info!("Bound driver: Generic Mouse Device");
 
-        Self { usb_vid, usb_pid }
+        Self {
+            usb_vid,
+            usb_pid,
+            has_failed: false,
+        }
     }
 
     //     fn send_ctrl_report(&mut self, _id: u8) -> Result<()> {
@@ -137,6 +143,11 @@ impl DeviceTrait for GenericMouse {
 
     fn has_failed(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
     }
 
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
