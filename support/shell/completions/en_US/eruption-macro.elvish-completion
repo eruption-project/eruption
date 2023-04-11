@@ -20,10 +20,10 @@ set edit:completion:arg-completer[eruption-macro] = {|@words|
         &'eruption-macro'= {
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
             cand list 'Show a list of available macros in a Lua file'
             cand record 'Record a key sequence and save it as a macro'
             cand create 'Create a new macro from a description'
@@ -38,53 +38,53 @@ set edit:completion:arg-completer[eruption-macro] = {|@words|
         &'eruption-macro;list'= {
             cand -l 'l'
             cand --lua-path 'lua-path'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;record'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;create'= {
             cand --description 'Specify a description for a macro'
             cand -e 'Specify the enabled status of the newly added macro'
             cand --enabled 'Specify the enabled status of the newly added macro'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;remove'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;enable'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;disable'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;description'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;compile'= {
             cand -l 'l'
             cand --lua-file 'lua-file'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;completions'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-macro;help'= {
             cand list 'Show a list of available macros in a Lua file'

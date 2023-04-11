@@ -20,10 +20,10 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
         &'eruption-keymap'= {
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
             cand list 'List all available keymaps'
             cand mapping 'Add or remove a single mapping entry'
             cand description 'Show or set the description of the specified keymap'
@@ -35,12 +35,12 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-keymap;list'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;mapping'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
             cand add 'Add a mapping rule for `source` that executes `action`'
             cand remove 'Remove the mapping rule for `source`'
             cand enable 'Enable a mapping rule'
@@ -57,32 +57,32 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
             cand --keymap 'The filename of the keymap'
             cand -e 'Specify the enabled status of the newly added rule'
             cand --enabled 'Specify the enabled status of the newly added rule'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;mapping;remove'= {
             cand -d 'Specify the device to remove the mapping from'
             cand --device 'Specify the device to remove the mapping from'
             cand -k 'Specify a list of layers'
             cand --keymap 'Specify a list of layers'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;mapping;enable'= {
             cand -d 'Specify the device'
             cand --device 'Specify the device'
             cand -k 'Specify a list of layers'
             cand --keymap 'Specify a list of layers'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;mapping;disable'= {
             cand -d 'Specify the device'
             cand --device 'Specify the device'
             cand -k 'Specify a list of layers'
             cand --keymap 'Specify a list of layers'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;mapping;help'= {
             cand add 'Add a mapping rule for `source` that executes `action`'
@@ -104,34 +104,34 @@ set edit:completion:arg-completer[eruption-keymap] = {|@words|
         &'eruption-keymap;description'= {
             cand -k 'k'
             cand --keymap 'keymap'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;show'= {
             cand -k 'k'
             cand --keymap 'keymap'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;macros'= {
             cand -l 'l'
             cand --lua-path 'lua-path'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;events'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;compile'= {
             cand -k 'k'
             cand --keymap 'keymap'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;completions'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-keymap;help'= {
             cand list 'List all available keymaps'

@@ -17,10 +17,10 @@ _eruption-keymap() {
     _arguments "${_arguments_options[@]}" \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruption-keymap_commands" \
 "*::: :->eruption-keymap" \
 && ret=0
@@ -32,14 +32,14 @@ _eruption-keymap() {
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (mapping)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruption-keymap__mapping_commands" \
 "*::: :->mapping" \
 && ret=0
@@ -61,8 +61,8 @@ _arguments "${_arguments_options[@]}" \
 '--keymap=[The filename of the keymap]:KEYMAP:_files' \
 '-e[Specify the enabled status of the newly added rule]' \
 '--enabled[Specify the enabled status of the newly added rule]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':source:' \
 ':action:' \
 && ret=0
@@ -73,8 +73,8 @@ _arguments "${_arguments_options[@]}" \
 '--device=[Specify the device to remove the mapping from]:DEVICE: ' \
 '-k+[Specify a list of layers]:KEYMAP:_files' \
 '--keymap=[Specify a list of layers]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -84,8 +84,8 @@ _arguments "${_arguments_options[@]}" \
 '--device=[Specify the device]:DEVICE: ' \
 '-k+[Specify a list of layers]:KEYMAP:_files' \
 '--keymap=[Specify a list of layers]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -95,8 +95,8 @@ _arguments "${_arguments_options[@]}" \
 '--device=[Specify the device]:DEVICE: ' \
 '-k+[Specify a list of layers]:KEYMAP:_files' \
 '--keymap=[Specify a list of layers]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -144,8 +144,8 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-k+[]:KEYMAP:_files' \
 '--keymap=[]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::description:' \
 && ret=0
 ;;
@@ -153,36 +153,36 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-k+[]:KEYMAP:_files' \
 '--keymap=[]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (macros)
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_PATH:_files' \
 '--lua-path=[]:LUA_PATH:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (events)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (compile)
 _arguments "${_arguments_options[@]}" \
 '-k+[]:KEYMAP:_files' \
 '--keymap=[]:KEYMAP:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -474,4 +474,8 @@ _eruption-keymap__show_commands() {
     _describe -t commands 'eruption-keymap show commands' commands "$@"
 }
 
-_eruption-keymap "$@"
+if [ "$funcstack[1]" = "_eruption-keymap" ]; then
+    _eruption-keymap "$@"
+else
+    compdef _eruption-keymap eruption-keymap
+fi
