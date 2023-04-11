@@ -34,8 +34,6 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Condvar, Mutex, RwLock};
 use rust_embed::RustEmbed;
-use std::fs::{self};
-use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -43,8 +41,13 @@ use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashMap, env};
 use std::{collections::HashSet, thread};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 use tokio::join;
 use tracing::*;
+use util::ratelimited;
 
 mod threads;
 use threads::*;
@@ -631,6 +634,13 @@ fn run_main_loop(
 
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
+    let afk_timeout_secs = crate::CONFIG
+        .lock()
+        .as_ref()
+        .unwrap()
+        .get_int("global.afk_timeout_secs")
+        .unwrap_or(constants::AFK_TIMEOUT_SECS as i64) as u64;
+
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
@@ -661,10 +671,11 @@ fn run_main_loop(
             })
             .recv(fsevents_rx, |event| {
                 if let Ok(event) = event {
-                    events::process_filesystem_event(&event, dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not process a filesystem event: {}", e))
+                    events::process_filesystem_event(&event, dbus_api_tx).unwrap_or_else(|e| {
+                        ratelimited::error!("Could not process a filesystem event: {}", e)
+                    })
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Could not process a filesystem event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -672,12 +683,13 @@ fn run_main_loop(
             })
             .recv(dbus_rx, |event| {
                 if let Ok(event) = event {
-                    events::process_dbus_event(&event, dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
+                    events::process_dbus_event(&event, dbus_api_tx).unwrap_or_else(|e| {
+                        ratelimited::error!("Could not process a D-Bus event: {}", e)
+                    });
 
                     // FAILED_TXS.write().clear();
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Fatal: Could not process a D-Bus event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -692,7 +704,7 @@ fn run_main_loop(
                     // TODO: support multiple keyboards
                     events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
-                            error!(
+                            ratelimited::error!(
                                 "Could not process a keyboard event: {}. Trying to close the device now...",
                                 e
                             );
@@ -701,11 +713,11 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| ratelimited::error!("An error occurred while closing the device"))
                                 .ok();
                         });
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Could not process a keyboard event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -714,7 +726,9 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|_e| {
+                            ratelimited::error!("An error occurred while closing the device")
+                        })
                         .ok();
                 }
             };
@@ -727,17 +741,17 @@ fn run_main_loop(
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
-                            error!("Could not process a mouse event: {}. Trying to close the device now...", e);
+                            ratelimited::error!("Could not process a mouse event: {}. Trying to close the device now...", e);
 
                             (*crate::MOUSE_DEVICES.read()[0])
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| ratelimited::error!("An error occurred while closing the device"))
                                 .ok();
                         });
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Could not process a mouse event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -746,7 +760,9 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|_e| {
+                            ratelimited::error!("An error occurred while closing the device")
+                        })
                         .ok();
                 }
             };
@@ -978,13 +994,15 @@ fn run_main_loop(
 
             // poll HID events on all available devices
             for device in crate::KEYBOARD_DEVICES.read().iter() {
-                events::process_keyboard_hid_events(device)
-                    .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
+                events::process_keyboard_hid_events(device).unwrap_or_else(|e| {
+                    ratelimited::error!("Could not process a keyboard HID event: {}", e)
+                });
             }
 
             for device in crate::MOUSE_DEVICES.read().iter() {
-                events::process_mouse_hid_events(device)
-                    .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
+                events::process_mouse_hid_events(device).unwrap_or_else(|e| {
+                    ratelimited::error!("Could not process a mouse HID event: {}", e)
+                });
             }
         }
 
@@ -1045,13 +1063,6 @@ fn run_main_loop(
         }
 
         // compute AFK time
-        let afk_timeout_secs = crate::CONFIG
-            .lock()
-            .as_ref()
-            .unwrap()
-            .get_int("global.afk_timeout_secs")
-            .unwrap_or(constants::AFK_TIMEOUT_SECS as i64) as u64;
-
         if afk_timeout_secs > 0 {
             let afk = LAST_INPUT_TIME.lock().elapsed() >= Duration::from_secs(afk_timeout_secs);
             AFK.store(afk, Ordering::SeqCst);
@@ -1088,7 +1099,7 @@ fn run_main_loop(
             let result =
                 systemd::daemon::notify(false, [(systemd::daemon::STATE_WATCHDOG, "1")].iter());
             if result.is_err() || !result.unwrap() {
-                error!("Could not notify the systemd software watchdog");
+                ratelimited::error!("Could not notify the systemd software watchdog");
             }
 
             watchdog_time = Instant::now();

@@ -194,3 +194,218 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
     }
     .into())
 }
+
+/// Provide a simple means to rate-limit log output
+pub mod ratelimited {
+    use lazy_static::lazy_static;
+    use parking_lot::RwLock;
+    use std::{
+        collections::{hash_map::Entry, HashMap},
+        sync::Arc,
+        time::{Duration, Instant},
+    };
+
+    const LIMIT_MSGS_PER_MIN: u64 = 2;
+
+    struct Metadata {
+        last: Instant,
+        count: usize,
+    }
+
+    lazy_static! {
+        static ref LAST_LOG_MAP: Arc<RwLock<HashMap<String, Metadata>>> =
+            Arc::new(RwLock::new(HashMap::new()));
+    }
+
+    #[allow(unused)]
+    #[macro_export]
+    macro_rules! trace {
+        ($p:expr) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::trace!($p);
+                if count > 1 {
+                    tracing::trace!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+
+        ($p:expr, $($pn:expr),+) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::trace!($p, $($pn),+);
+                if count > 1 {
+                    tracing::trace!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+    }
+
+    #[allow(unused)]
+    #[macro_export]
+    macro_rules! debug {
+        ($p:expr) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::debug!($p);
+                if count > 1 {
+                    tracing::debug!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+
+        ($p:expr, $($pn:expr),+) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::debug!($p, $($pn),+);
+                if count > 1 {
+                    tracing::debug!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+    }
+
+    #[allow(unused)]
+    #[macro_export]
+    macro_rules! info {
+        ($p:expr) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::info!($p);
+                if count > 1 {
+                    tracing::info!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+
+        ($p:expr, $($pn:expr),+) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::info!($p, $($pn),+);
+                if count > 1 {
+                    tracing::info!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+    }
+
+    #[allow(unused)]
+    #[macro_export]
+    macro_rules! warning {
+        ($p:expr) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::warn!($p);
+                if count > 1 {
+                    tracing::warn!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+
+        ($p:expr, $($pn:expr),+) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::warn!($p, $($pn),+);
+                if count > 1 {
+                    tracing::warn!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+    }
+
+    #[allow(unused)]
+    #[macro_export]
+    macro_rules! error {
+        ($p:expr) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::error!($p);
+                if count > 1 {
+                    tracing::error!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+
+        ($p:expr, $($pn:expr),+) => {{
+            let (within_limit, count) = ratelimited::is_within_rate_limit($p);
+
+            if within_limit {
+                tracing::error!($p, $($pn),+);
+                if count > 1 {
+                    tracing::error!("The previous message was rate-limited [{count}]");
+                }
+            } else {
+                // rate-limit reached
+            }
+        }};
+    }
+
+    #[allow(unused)]
+    pub(crate) use debug;
+    #[allow(unused)]
+    pub(crate) use error;
+    #[allow(unused)]
+    pub(crate) use info;
+    #[allow(unused)]
+    pub(crate) use trace;
+    #[allow(unused)]
+    pub(crate) use warning as warn;
+
+    pub(crate) fn is_within_rate_limit(p: &str) -> (bool, usize) {
+        let mut map = LAST_LOG_MAP.write();
+        let e = map.entry(p.to_string());
+
+        match e {
+            Entry::Occupied(mut e) => {
+                let e = e.get_mut();
+                let result = e.last.elapsed() > Duration::from_secs(60 / LIMIT_MSGS_PER_MIN);
+
+                e.count = e.count + 1;
+                let count = e.count;
+
+                if result {
+                    e.count = 1;
+                    e.last = Instant::now();
+                }
+
+                (result, count)
+            }
+
+            Entry::Vacant(e) => {
+                e.insert(Metadata {
+                    count: 1,
+                    last: Instant::now(),
+                });
+
+                (true, 1)
+            }
+        }
+    }
+}
