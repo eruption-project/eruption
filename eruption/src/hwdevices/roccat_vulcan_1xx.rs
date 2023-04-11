@@ -676,6 +676,11 @@ impl DeviceTrait for RoccatVulcan1xx {
         Ok(self.has_failed)
     }
 
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
+    }
+
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
