@@ -1025,7 +1025,7 @@ fn run_main_loop(
             false
         };
 
-        // remove all failed rxs
+        // remove all failed devices
         for idx in failed_kbd_rxs.lock().iter() {
             // warn!("Removing keyboard rx with index {idx}");
             // kbd_rxs.remove(*idx);
