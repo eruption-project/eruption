@@ -202,20 +202,18 @@ impl DeviceTrait for RoccatKoneProAir {
             let ctrl_dev = self.ctrl_hiddev.borrow_mut();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            loop {
-                let mut buf = Vec::new();
-                buf.resize(size, 0);
-                buf[0] = id;
+            let mut buf = Vec::new();
+            buf.resize(size, 0);
+            buf[0] = id;
 
-                match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
+            match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
-                        break Ok(buf);
-                    }
-
-                    Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
+                    return Ok(buf);
                 }
+
+                Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
