@@ -702,8 +702,8 @@ pub(crate) fn get_color_map() -> Vec<u32> {
         .map(|v| {
             (v.r as u32).overflowing_shl(24).0
                 + (v.g as u32).overflowing_shl(16).0
-                + (v.b as u32).overflowing_shl(8).0 as u32
-                + (v.a as u32) as u32
+                + (v.b as u32).overflowing_shl(8).0
+                + (v.a as u32)
         })
         .collect::<Vec<u32>>();
 
@@ -721,8 +721,8 @@ pub(crate) fn get_saved_color_map() -> Vec<u32> {
         .map(|v| {
             (v.r as u32).overflowing_shl(24).0
                 + (v.g as u32).overflowing_shl(16).0
-                + (v.b as u32).overflowing_shl(8).0 as u32
-                + (v.a as u32) as u32
+                + (v.b as u32).overflowing_shl(8).0
+                + (v.a as u32)
         })
         .collect::<Vec<u32>>();
 
@@ -741,8 +741,8 @@ pub(crate) fn get_local_color_map() -> Vec<u32> {
             .map(|v| {
                 (v.r as u32).overflowing_shl(24).0
                     + (v.g as u32).overflowing_shl(16).0
-                    + (v.b as u32).overflowing_shl(8).0 as u32
-                    + (v.a as u32) as u32
+                    + (v.b as u32).overflowing_shl(8).0
+                    + (v.a as u32)
             })
             .collect::<Vec<u32>>()
     });

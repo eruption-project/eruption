@@ -387,7 +387,7 @@ pub mod ratelimited {
                 let e = e.get_mut();
                 let result = e.last.elapsed() > Duration::from_secs(60 / LIMIT_MSGS_PER_MIN);
 
-                e.count = e.count + 1;
+                e.count += 1;
                 let count = e.count;
 
                 if result {
