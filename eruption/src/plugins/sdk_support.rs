@@ -362,17 +362,20 @@ impl SdkSupportPlugin {
                 listener.listen(1)?;
 
                 match listener.accept() {
-                    Ok((socket, _sockaddr)) => {
-                        debug!("Eruption SDK client connected");
+                    Ok((socket, sockaddr)) => {
+                        let peer_addr = match sockaddr.as_pathname() {
+                            Some(path) => path.to_string_lossy().to_string(),
+                            None => String::from("unknown"),
+                        };
+
+                        debug!("Eruption SDK client connected from: {peer_addr}");
 
                         // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
                         socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
                         socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
-                        let peer_addr = "client";
-
                         thread::Builder::new()
-                            .name(format!("sdk-connection/{peer_addr}"))
+                            .name(format!("conn/{peer_addr}"))
                             .spawn(move || -> Result<()> {
                                 // connection successful, enter event loop now
                                 'EVENT_LOOP: loop {
