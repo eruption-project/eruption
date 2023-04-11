@@ -24,7 +24,7 @@ require "debug"
 -- global state variables --
 ticks = 0
 color_map = {}
-offsets = {0, 0, 0}
+offsets = { 0, 0, 0 }
 
 -- event handler functions --
 function on_startup(config)
@@ -44,7 +44,7 @@ end
 function on_tick(delta)
     ticks = ticks + delta
 
-    -- calculate perlin swirl effect
+    -- calculate domain coloring effect
     if ticks % animation_delay == 0 then
         -- compute the colors in the keyboard zone on the canvas
         for i = num_rows, 0, -1 do
@@ -63,9 +63,9 @@ function on_tick(delta)
 
                 local index = n(rows_topology[j + (i * max_keys_per_row)]) + 1
                 color_map[index] = hsla_to_color(
-                                       (val / color_divisor) + color_offset,
-                                       color_saturation, color_lightness,
-                                       lerp(0, 255, opacity))
+                    (val / color_divisor) + color_offset,
+                    color_saturation, color_lightness,
+                    lerp(0, 255, opacity))
             end
         end
     end
