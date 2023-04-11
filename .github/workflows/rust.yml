@@ -5,72 +5,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Dependencies
-        run: |
-            sudo apt-get update -y -qq
-            sudo apt-get install -y -qq \
-                protobuf-compiler \ 
-		            libprotobuf-dev \
-		            libsystemd-dev \
-		            libusb-1.0-0-dev \
-		            libhidapi-dev \
-		            libevdev-dev \
-		            libudev-dev \
-		            libdbus-1-dev \
-		            libpulse-dev \
-		            liblua5.3-dev \
-		            libx11-dev \
- 		            libxrandr-dev \
-		            libgtk-3-dev \
-		            libgdk-pixbuf2.0-dev \
-		            libatk1.0-dev \
-		            libpango1.0-dev \
-		            libcairo2-dev \
-		            libgtksourceview-4-dev
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.3-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: stable
-            components: clippy
-            override: true
+          toolchain: stable
+          components: clippy
+          override: true
       - uses: actions-rs/clippy-check@v1
         with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
   tests:
-      name: Test Suite
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          rust:
-            - stable
-      steps:
-        - name: Setup Dependencies
-          run: |
-              sudo apt-get update -y -qq
-              sudo apt-get install -y -qq \
-                protobuf-compiler \ 
-		            libprotobuf-dev \
-		            libsystemd-dev \
-		            libusb-1.0-0-dev \
-		            libhidapi-dev \
-		            libevdev-dev \
-		            libudev-dev \
-		            libdbus-1-dev \
-		            libpulse-dev \
-		            liblua5.3-dev \
-		            libx11-dev \
- 		            libxrandr-dev \
-		            libgtk-3-dev \
-		            libgdk-pixbuf2.0-dev \
-		            libatk1.0-dev \
-		            libpango1.0-dev \
-		            libcairo2-dev \
-        - uses: actions/checkout@v2
-        - uses: actions-rs/toolchain@v1
-          with:
-            profile: minimal
-            toolchain: ${{ matrix.rust }}
-            override: true
-        - uses: actions-rs/cargo@v1
-          with:
-            command: test
-            args: --all-features
+    name: Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    steps:
+      - name: Setup Dependencies
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.3-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
