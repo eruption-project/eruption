@@ -2012,22 +2012,24 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             .compact()
             .with_filter(filter);
 
-        #[allow(unused_mut)]
-        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                let console_layer = console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn();
 
-        // cfg_if::cfg_if! {
-        //     if #[cfg(feature = "debug-async")] {
-        //         console_layer = Some(console_subscriber::ConsoleLayer::builder()
-        //             .with_default_env()
-        //             .spawn());
-        //     }
-        // };
-
-        tracing_subscriber::registry()
-            // .with(journald_layer)
-            .with(console_layer)
-            .with(format_layer)
-            .init();
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(console_layer)
+                    .with(format_layer)
+                    .init();
+            } else {
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(format_layer)
+                    .init();
+            }
+        };
     } else {
         let filter = tracing_subscriber::EnvFilter::from_default_env();
         let journald_layer = tracing_journald::layer()?.with_filter(filter);

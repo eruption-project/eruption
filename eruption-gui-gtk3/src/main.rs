@@ -548,7 +548,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "debug-async")] {
-            console_layer = console_subscriber::ConsoleLayer::builder()
+            let console_layer = console_subscriber::ConsoleLayer::builder()
                 .with_default_env()
                 .spawn();
 
