@@ -825,34 +825,35 @@ mod tests {
         };
 
         let lit_toml = r#"
-id = '9030f2e0-489d-11ed-b7bd-a306df98fead'
-name = 'Test profile'
-description = 'Testing serialization'
+id = "9030f2e0-489d-11ed-b7bd-a306df98fead"
+name = "Test profile"
+description = "Testing serialization"
 active_scripts = [
-    'xyz',
-    'def',
-    'abc',
-    '123',
-    'ghi',
-    '789',
-    'jkl',
-    '456',
-    'mno',
-    'pqr',
+    "xyz",
+    "def",
+    "abc",
+    "123",
+    "ghi",
+    "789",
+    "jkl",
+    "456",
+    "mno",
+    "pqr",
 ]
+
 [[config.123]]
-name = '123_param'
-type = 'int'
+name = "123_param"
+type = "int"
 value = 1
 
 [[config.Abc]]
-name = 'abc_param'
-type = 'int'
+name = "abc_param"
+type = "int"
 value = 3
 
 [[config.Xyz]]
-name = 'xyz_param'
-type = 'bool'
+name = "xyz_param"
+type = "bool"
 value = true
         "#;
 
