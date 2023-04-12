@@ -20,7 +20,8 @@
 [Unit]
 Description=Eruption device hotplug notification daemon
 Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
-Wants=basic.target
+After=eruption.service
+Wants=multi-user.target
 
 [Service]
 Environment=RUST_LOG=warn
@@ -42,4 +43,4 @@ Type=exec
 # PrivateTmp=yes
 
 [Install]
-WantedBy=basic.target
+WantedBy=multi-user.target
