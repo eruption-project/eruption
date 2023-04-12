@@ -2015,13 +2015,13 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         #[allow(unused_mut)]
         let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
 
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "debug-async")] {
-                console_layer = Some(console_subscriber::ConsoleLayer::builder()
-                    .with_default_env()
-                    .spawn());
-            }
-        };
+        // cfg_if::cfg_if! {
+        //     if #[cfg(feature = "debug-async")] {
+        //         console_layer = Some(console_subscriber::ConsoleLayer::builder()
+        //             .with_default_env()
+        //             .spawn());
+        //     }
+        // };
 
         tracing_subscriber::registry()
             // .with(journald_layer)
