@@ -1,0 +1,84 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-netfx] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-netfx'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-netfx'= {
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand ping 'Ping the server'
+            cand command 'Send Network FX raw protocol commands to the server'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-netfx;ping'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;command'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;image'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;animation'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;ambient'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-netfx;help'= {
+            cand ping 'Ping the server'
+            cand command 'Send Network FX raw protocol commands to the server'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-netfx;help;ping'= {
+        }
+        &'eruption-netfx;help;command'= {
+        }
+        &'eruption-netfx;help;image'= {
+        }
+        &'eruption-netfx;help;animation'= {
+        }
+        &'eruption-netfx;help;ambient'= {
+        }
+        &'eruption-netfx;help;completions'= {
+        }
+        &'eruption-netfx;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

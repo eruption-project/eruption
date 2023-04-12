@@ -1,0 +1,149 @@
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'eruption-macro'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'eruption-macro' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verboser Modus (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verboser Modus (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei')
+            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Zeichnet eine Tastensequenz auf und speichert sie als Makro')
+            [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Ein neues Makro manuell aus einer Beschreibung erzeugen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro entfernen')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro aktivieren')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro deaktivieren')
+            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Zeigt oder setzt die Beschreibung eines Makros')
+            [CompletionResult]::new('compile', 'compile', [CompletionResultType]::ParameterValue, 'Übersetzt Makros zu Lua Code und macht sie für Eruption verfügbar')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-macro;list' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-path', 'lua-path', [CompletionResultType]::ParameterName, 'lua-path')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;record' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;create' {
+            [CompletionResult]::new('--description', 'description', [CompletionResultType]::ParameterName, 'Specify a description for a macro')
+            [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added macro')
+            [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added macro')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;enable' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;disable' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;description' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;compile' {
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
+            [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;completions' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-macro;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei')
+            [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Zeichnet eine Tastensequenz auf und speichert sie als Makro')
+            [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Ein neues Makro manuell aus einer Beschreibung erzeugen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro entfernen')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro aktivieren')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Ein vorhandenes Makro deaktivieren')
+            [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Zeigt oder setzt die Beschreibung eines Makros')
+            [CompletionResult]::new('compile', 'compile', [CompletionResultType]::ParameterValue, 'Übersetzt Makros zu Lua Code und macht sie für Eruption verfügbar')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-macro;help;list' {
+            break
+        }
+        'eruption-macro;help;record' {
+            break
+        }
+        'eruption-macro;help;create' {
+            break
+        }
+        'eruption-macro;help;remove' {
+            break
+        }
+        'eruption-macro;help;enable' {
+            break
+        }
+        'eruption-macro;help;disable' {
+            break
+        }
+        'eruption-macro;help;description' {
+            break
+        }
+        'eruption-macro;help;compile' {
+            break
+        }
+        'eruption-macro;help;completions' {
+            break
+        }
+        'eruption-macro;help;help' {
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}

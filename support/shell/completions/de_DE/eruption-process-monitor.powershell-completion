@@ -1,0 +1,154 @@
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'eruption-process-monitor'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'eruption-process-monitor' {
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands (supports offline manipulation of rules)')
+            [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Run in background and monitor running processes')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-process-monitor;rules' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark a rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark a rule as disabled')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-process-monitor;rules;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;rules;add' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;rules;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;rules;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;rules;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;rules;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark a rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark a rule as disabled')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-process-monitor;rules;help;list' {
+            break
+        }
+        'eruption-process-monitor;rules;help;add' {
+            break
+        }
+        'eruption-process-monitor;rules;help;remove' {
+            break
+        }
+        'eruption-process-monitor;rules;help;enable' {
+            break
+        }
+        'eruption-process-monitor;rules;help;disable' {
+            break
+        }
+        'eruption-process-monitor;rules;help;help' {
+            break
+        }
+        'eruption-process-monitor;daemon' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;completions' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruption-process-monitor;help' {
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands (supports offline manipulation of rules)')
+            [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Run in background and monitor running processes')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruption-process-monitor;help;rules' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new rule')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a rule by its index')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Mark a rule as enabled')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Mark a rule as disabled')
+            break
+        }
+        'eruption-process-monitor;help;rules;list' {
+            break
+        }
+        'eruption-process-monitor;help;rules;add' {
+            break
+        }
+        'eruption-process-monitor;help;rules;remove' {
+            break
+        }
+        'eruption-process-monitor;help;rules;enable' {
+            break
+        }
+        'eruption-process-monitor;help;rules;disable' {
+            break
+        }
+        'eruption-process-monitor;help;daemon' {
+            break
+        }
+        'eruption-process-monitor;help;completions' {
+            break
+        }
+        'eruption-process-monitor;help;help' {
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}

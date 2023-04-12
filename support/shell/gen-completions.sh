@@ -27,7 +27,7 @@ function gen_completions {
 }
 
 # supported locales
-languages=('en_US')
+languages=('en_US' 'de_DE')
 
 for l in ${languages[@]}
 do
