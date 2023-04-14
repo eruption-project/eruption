@@ -68,6 +68,7 @@ i18n-embed = { version = "0.13.8", features = [
 i18n-embed-fl = "0.6.6"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
+lockfile = "0.4.0"
 icecream = "0.1.0"
 eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }
 

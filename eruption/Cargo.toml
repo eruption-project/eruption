@@ -119,6 +119,7 @@ rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"
+systemd = "0.10.0"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"
