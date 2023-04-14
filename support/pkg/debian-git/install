@@ -45,7 +45,7 @@ support/systemd/eruption-hotplug-helper.preset usr/lib/systemd/system-preset
 
 support/udev/99-eruption.rules usr/lib/udev/rules.d
 
-support/dbus/org.eruption.control.conf etc/dbus-1/system.d
+support/dbus/org.eruption.conf etc/dbus-1/system.d
 support/dbus/org.eruption.process_monitor.conf etc/dbus-1/session.d
 support/dbus/org.eruption.fx_proxy.conf etc/dbus-1/session.d
 

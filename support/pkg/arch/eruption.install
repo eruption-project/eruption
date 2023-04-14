@@ -1,9 +1,29 @@
+pre_install() {
+    # _eruption_user="eruption"
+	# _eruption_group="eruption"
+
+    # create 'eruption' system user and group
+	# getent group $_eruption_group > /dev/null || groupadd -r $_eruption_group > /dev/null
+	# getent passwd $_eruption_user > /dev/null || useradd -rM -g $_eruption_group -d /dev/null -s /bin/false $_eruption_user > /dev/null	
+}
+
 post_install() {
     setcap cap_net_admin+ep /usr/bin/eruption-process-monitor
 
     systemctl daemon-reload
     systemctl --global daemon-reload
     # systemctl --user daemon-reload
+
+    systemctl start systemd-sysusers.service
+
+	# claim ownership of /var/lib/eruption
+    _eruption_user="eruption"
+	_eruption_group="eruption"
+
+	owner="$(stat --format '%U:%G' "/var/lib/eruption")"
+	if [ ! "x${owner}" == "x${_eruption_user}:${_eruption_group}" ]; then
+       chown -Rv "$owner" /var/lib/eruption/
+	fi
 
     systemctl preset eruption
     systemctl preset eruption-fx-proxy
@@ -24,12 +44,37 @@ post_install() {
     udevadm control --reload-rules
 }
 
+pre_upgrade() {
+    # _eruption_user="eruption"
+	# _eruption_group="eruption"
+
+	# getent group $_eruption_group > /dev/null || groupadd -r $_eruption_group > /dev/null
+	# getent passwd $_eruption_user > /dev/null || useradd -rM -g $_eruption_group -d /dev/null -s /bin/false $_eruption_user > /dev/null	
+
+	# claim ownership of /var/lib/eruption
+	# owner="$(stat --format '%U:%G' "/var/lib/eruption")"
+	# if [ ! "x${owner}" == "x${_eruption_user}:${_eruption_group}" ]; then
+    #    chown -Rv "$owner" /var/lib/eruption/
+	# fi
+}
+
 post_upgrade() {
     setcap cap_net_admin+ep /usr/bin/eruption-process-monitor
 
     systemctl daemon-reload
     systemctl --global daemon-reload
     # systemctl --user daemon-reload
+
+    systemctl start systemd-sysusers.service
+
+	# claim ownership of /var/lib/eruption
+    _eruption_user="eruption"
+	_eruption_group="eruption"
+
+	owner="$(stat --format '%U:%G' "/var/lib/eruption")"
+	if [ ! "x${owner}" == "x${_eruption_user}:${_eruption_group}" ]; then
+       chown -Rv "$owner" /var/lib/eruption/
+	fi
 
     systemctl try-restart eruption.service
     systemctl --global try-restart eruption-fx-proxy.service

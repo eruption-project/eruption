@@ -36,7 +36,6 @@ use rust_embed::RustEmbed;
 // use colored::*;
 use std::{
     env,
-    path::Path,
     process::{Command, Stdio},
     sync::Arc,
     thread,
@@ -73,7 +72,7 @@ macro_rules! tr {
     }};
 }
 
-type Result<T> = std::result::Result<T, eyre::Error>;
+// type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
@@ -128,81 +127,81 @@ fn print_header() {
     println!();
 }
 
-pub fn restart_eruption_daemon() -> Result<()> {
-    // sleep until udev has settled
-    tracing::info!("Waiting for the devices to settle...");
-
-    let status = Command::new("/bin/udevadm")
-        .arg("settle")
-        .stdout(Stdio::null())
-        .status();
-
-    if let Err(e) = status {
-        // udev-settle has failed, sleep a while and let the devices settle
-
-        tracing::error!("udevadm settle has failed: {}", e);
-
-        thread::sleep(Duration::from_millis(3500));
-    } else {
-        // sleep a while just to be safe
-        thread::sleep(Duration::from_millis(1500));
-
-        tracing::info!("Done, all devices have settled");
-    }
-
-    tracing::info!("Now restarting the eruption.service...");
-
-    let status = Command::new("/bin/systemctl")
-        .arg("restart")
-        .arg("eruption.service")
-        .stdout(Stdio::null())
-        .status()?;
-
-    if status.success() {
-        // wait for the eruption.service to be fully operational...
-        tracing::info!("Waiting for Eruption to be fully operational...");
-
-        let mut retry_counter = 0;
-
-        'WAIT_START_LOOP: loop {
-            let result = Command::new("/bin/systemctl")
-                .arg("is-active")
-                .arg("eruption.service")
-                .stdout(Stdio::null())
-                .status();
-
-            match result {
-                Ok(status) => {
-                    if status.success() {
-                        tracing::info!("Eruption has been started successfully, exiting now");
-
-                        break 'WAIT_START_LOOP;
-                    } else {
-                        thread::sleep(Duration::from_millis(2000));
-
-                        if retry_counter >= 5 {
-                            tracing::error!("Timeout while starting eruption.service");
-
-                            break 'WAIT_START_LOOP;
-                        } else {
-                            retry_counter += 1;
-                        }
-                    }
-                }
-
-                Err(e) => {
-                    tracing::error!("Error while waiting for Eruption to start: {}", e);
-
-                    break 'WAIT_START_LOOP;
-                }
-            }
-        }
-    } else {
-        tracing::error!("Could not start Eruption, an error occurred");
-    }
-
-    Ok(())
-}
+// pub fn restart_eruption_daemon() -> Result<()> {
+//     // sleep until udev has settled
+//     tracing::info!("Waiting for the devices to settle...");
+//
+//     let status = Command::new("/bin/udevadm")
+//         .arg("settle")
+//         .stdout(Stdio::null())
+//         .status();
+//
+//     if let Err(e) = status {
+//         // udev-settle has failed, sleep a while and let the devices settle
+//
+//         tracing::error!("udevadm settle has failed: {}", e);
+//
+//         thread::sleep(Duration::from_millis(3500));
+//     } else {
+//         // sleep a while just to be safe
+//         thread::sleep(Duration::from_millis(1500));
+//
+//         tracing::info!("Done, all devices have settled");
+//     }
+//
+//     tracing::info!("Now restarting the eruption.service...");
+//
+//     let status = Command::new("/bin/systemctl")
+//         .arg("restart")
+//         .arg("eruption.service")
+//         .stdout(Stdio::null())
+//         .status()?;
+//
+//     if status.success() {
+//         // wait for the eruption.service to be fully operational...
+//         tracing::info!("Waiting for Eruption to be fully operational...");
+//
+//         let mut retry_counter = 0;
+//
+//         'WAIT_START_LOOP: loop {
+//             let result = Command::new("/bin/systemctl")
+//                 .arg("is-active")
+//                 .arg("eruption.service")
+//                 .stdout(Stdio::null())
+//                 .status();
+//
+//             match result {
+//                 Ok(status) => {
+//                     if status.success() {
+//                         tracing::info!("Eruption has been started successfully, exiting now");
+//
+//                         break 'WAIT_START_LOOP;
+//                     } else {
+//                         thread::sleep(Duration::from_millis(2000));
+//
+//                         if retry_counter >= 5 {
+//                             tracing::error!("Timeout while starting eruption.service");
+//
+//                             break 'WAIT_START_LOOP;
+//                         } else {
+//                             retry_counter += 1;
+//                         }
+//                     }
+//                 }
+//
+//                 Err(e) => {
+//                     tracing::error!("Error while waiting for Eruption to start: {}", e);
+//
+//                     break 'WAIT_START_LOOP;
+//                 }
+//             }
+//         }
+//     } else {
+//         tracing::error!("Could not start Eruption, an error occurred");
+//     }
+//
+//     Ok(())
+// }
 
 pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
@@ -233,79 +232,46 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         Subcommands::Hotplug => {
             tracing::info!("A hotplug event has been triggered, notifying the Eruption daemon...");
 
-            // place a lockfile, so we don't run into loops
-            match lockfile::Lockfile::create("/run/lock/eruption-hotplug-helper.lock") {
-                Ok(lock_file) => {
-                    if Path::new("/run/lock/eruption-sleep.lock").exists() {
-                        tracing::info!("Waking up from system sleep...");
+            // sleep until udev has settled
+            tracing::info!("Waiting for the devices to settle...");
 
-                        // after resume from sleep, the connected devices will be in an indeterminate state
-                        // so restart the eruption daemon to be on the safe side
-                        restart_eruption_daemon()?;
-                    } else {
-                        // a hotplug event has been received while the system is up and running
+            let status = Command::new("/bin/udevadm")
+                .arg("settle")
+                .stdout(Stdio::null())
+                .status();
 
-                        // sleep until udev has settled
-                        tracing::info!("Waiting for the devices to settle...");
+            if let Err(e) = status {
+                // udev-settle has failed, sleep a while and let the devices settle
+                tracing::error!("udevadm settle has failed: {}", e);
 
-                        let status = Command::new("/bin/udevadm")
-                            .arg("settle")
-                            .stdout(Stdio::null())
-                            .status();
+                thread::sleep(Duration::from_millis(3500));
+            } else {
+                tracing::info!("Done, all devices have settled");
+            }
 
-                        if let Err(e) = status {
-                            // udev-settle has failed, sleep a while and let the devices settle
-                            tracing::error!("udevadm settle has failed: {}", e);
+            tracing::info!("Connecting to the Eruption daemon...");
 
-                            thread::sleep(Duration::from_millis(3500));
-                        } else {
-                            tracing::info!("Done, all devices have settled");
-                        }
+            let connection = Connection::new(ConnectionType::Local)?;
+            match connection.connect() {
+                Ok(()) => {
+                    tracing::debug!("Successfully connected to the Eruption daemon");
+                    // let _status = connection.get_server_status()?;
 
-                        tracing::info!("Connecting to the Eruption daemon...");
+                    tracing::info!("Notifying the Eruption daemon about the hotplug event...");
 
-                        let connection = Connection::new(ConnectionType::Local)?;
-                        match connection.connect() {
-                            Ok(()) => {
-                                tracing::debug!("Successfully connected to the Eruption daemon");
-                                // let _status = connection.get_server_status()?;
+                    // TODO: fully implement this
+                    let hotplug_info = HotplugInfo {
+                        usb_vid: 0,
+                        usb_pid: 0,
+                    };
+                    connection.notify_device_hotplug(&hotplug_info)?;
 
-                                tracing::info!(
-                                    "Notifying the Eruption daemon about the hotplug event..."
-                                );
-
-                                // TODO: implement this
-                                let hotplug_info = HotplugInfo {
-                                    usb_vid: 0,
-                                    usb_pid: 0,
-                                };
-                                connection.notify_device_hotplug(&hotplug_info)?;
-
-                                connection.disconnect()?;
-                                tracing::info!("Disconnected from the Eruption daemon");
-                            }
-
-                            Err(e) => {
-                                tracing::error!("Failed to connect to the Eruption daemon: {}", e);
-                            }
-                        }
-                    }
-
-                    let _ = lock_file.release().map_err(|e| {
-                        tracing::warn!("Could not release the lock file: {}", e);
-                    });
+                    connection.disconnect()?;
+                    tracing::info!("Disconnected from the Eruption daemon");
                 }
 
-                Err(lockfile::Error::LockTaken) => {
-                    tracing::warn!("We have been invoked while holding a global lock, exiting now");
-                }
-
-                Err(lockfile::Error::Io(e)) => {
-                    tracing::error!("An error occurred while creating the lock file: {}", e);
-                }
-
-                Err(_) => {
-                    tracing::error!("An unknown error occurred while creating the lock file");
+                Err(e) => {
+                    tracing::error!("Failed to connect to the Eruption daemon: {}", e);
                 }
             }
         }
