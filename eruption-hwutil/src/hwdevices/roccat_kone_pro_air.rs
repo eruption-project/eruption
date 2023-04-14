@@ -210,10 +210,10 @@ impl DeviceTrait for RoccatKoneProAir {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| println_v!(2, "  {}", s));
 
-                    return Ok(buf);
+                    Ok(buf)
                 }
 
-                Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
         }
     }
