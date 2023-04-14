@@ -728,7 +728,7 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| ratelimited::error!("An error occurred while closing the device"))
+                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
                         });
                 } else {
@@ -743,8 +743,8 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| {
-                            ratelimited::error!("An error occurred while closing the device")
+                        .map_err(|e| {
+                            ratelimited::error!("An error occurred while closing the device: {e}")
                         })
                         .ok();
                 }
@@ -774,7 +774,7 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| ratelimited::error!("An error occurred while closing the device"))
+                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
                         });
                 } else {
@@ -789,8 +789,8 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| {
-                            ratelimited::error!("An error occurred while closing the device")
+                        .map_err(|e| {
+                            ratelimited::error!("An error occurred while closing the device: {e}")
                         })
                         .ok();
                 }

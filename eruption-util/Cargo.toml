@@ -41,7 +41,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.2.1", features = ["derive"] }
+clap = { version = "4.2.2", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
@@ -64,7 +64,7 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
+hidapi = { version = "2.2.2", default-features = false, features = [
   "linux-static-libusb",
 ] }
 udev = "0.7"

@@ -41,7 +41,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.2.1", features = ["derive"] }
+clap = { version = "4.2.2", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
@@ -66,7 +66,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.24", features = ["serde"] }
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
+hidapi = { version = "2.2.2", default-features = false, features = [
   "linux-static-libusb",
 ] }
 # lua-src = "544.0.1"
@@ -86,7 +86,7 @@ maplit = "1.0.2"
 pest = "2.5.7"
 pest_derive = "2.5.7"
 serde = { version = "1.0.160", features = ["derive"] }
-serde_json = "1.0.95"
+serde_json = "1.0.96"
 serde_json_any_key = "2.0.0"
 i18n-embed = { version = "0.13.8", features = [
   "fluent-system",
