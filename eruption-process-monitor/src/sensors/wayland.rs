@@ -97,6 +97,9 @@ lazy_static! {
 
     /// Holds the attributes of all tracked toplevels
     static ref WAYLAND_TOPLEVEL_WINDOWS: Arc<RwLock<HashMap<String, WaylandToplevelAttributes>>> = Arc::new(RwLock::new(HashMap::new()));
+
+    /// Is the background ("root") window active?
+    static ref WAYLAND_ROOT_WINDOW_ACTIVE: AtomicBool = AtomicBool::new(false);
 }
 
 #[derive(Debug, Clone, Default)]
@@ -383,6 +386,8 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
         let object = proxy.id().to_string();
 
+        tracing::trace!("[T]: {object} - {0}", _state.name);
+
         match event {
             Event::Title { title } => {
                 tracing::trace!("{object}: Title: {title}");
@@ -409,6 +414,12 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
             Event::State { state } => {
                 tracing::trace!("{object}: State: {state:#?}");
 
+                if state.len() <= 4 {
+                    WAYLAND_ROOT_WINDOW_ACTIVE.store(true, Ordering::SeqCst);
+                } else {
+                    WAYLAND_ROOT_WINDOW_ACTIVE.store(false, Ordering::SeqCst);
+                }
+
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
@@ -418,7 +429,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
             }
 
             Event::Done => {
-                let windows = WAYLAND_TOPLEVEL_WINDOWS.write();
+                let windows = WAYLAND_TOPLEVEL_WINDOWS.read();
                 let attributes = windows.get(&object);
 
                 if let Some(attributes) = attributes {
@@ -442,6 +453,24 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                                     window_title: attributes.clone().title.unwrap_or_default(),
                                     window_instance: attributes.clone().app_id.unwrap_or_default(),
                                     window_class: attributes.clone().app_id.unwrap_or_default(),
+                                })
+                                .unwrap_or_else(|e| {
+                                    tracing::error!("Could not send on a channel: {}", e)
+                                });
+                        } else if WAYLAND_ROOT_WINDOW_ACTIVE.load(Ordering::SeqCst) {
+                            // heuristics for detecting the "root" window
+                            tracing::debug!("Root window heuristics matched");
+
+                            tracing::debug!("Emitting event: {object}: {attributes:?}");
+
+                            WAYLAND_TX
+                                .lock()
+                                .as_ref()
+                                .unwrap()
+                                .send(WaylandSensorData {
+                                    window_title: "".to_string(),
+                                    window_instance: "".to_string(),
+                                    window_class: "".to_string(),
                                 })
                                 .unwrap_or_else(|e| {
                                     tracing::error!("Could not send on a channel: {}", e)
