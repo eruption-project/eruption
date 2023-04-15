@@ -64,9 +64,7 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
-hidapi = { version = "2.2.2", default-features = false, features = [
-  "linux-static-libusb",
-] }
+hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
 udev = "0.7"
 evdev-rs = "0.6.1"
 lazy_static = "1.4.0"

@@ -75,9 +75,7 @@ ctrlc = { version = "3.2.5", features = ["termination"] }
 clap = "4.2.2"
 hotwatch = "0.4.6"
 config = "0.13.3"
-hidapi = { version = "2.2.2", default-features = false, features = [
-  "linux-static-libusb",
-] }
+hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
 udev = "0.7"
 evdev-rs = "0.6.1"
 hexdump = "0.1.1"

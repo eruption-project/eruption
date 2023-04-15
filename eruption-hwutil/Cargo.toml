@@ -71,9 +71,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-hidapi = { version = "2.2.2", default-features = false, features = [
-  "linux-static-libusb",
-] }
+hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
 hexdump = "0.1.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"
