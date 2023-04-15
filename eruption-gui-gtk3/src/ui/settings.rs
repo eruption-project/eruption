@@ -19,26 +19,16 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use std::{
-    io::Read,
-    process::{Command, Stdio},
+use crate::{
+    preferences,
+    util::{self, get_daemon_status, set_daemon_status, Daemon, ServiceStatus},
 };
-
-use crate::{preferences, util};
 use glib::clone;
 use gtk::prelude::*;
 
-use crate::constants;
+// use crate::constants;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
-
-#[derive(Debug, thiserror::Error)]
-pub enum ServiceError {
-    #[error("Daemon action failed")]
-    ActionFailed,
-    // #[error("Unknown error")]
-    // UnknownError,
-}
 
 /// Initialize page "Profiles"
 pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
@@ -297,95 +287,4 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
     )?;
 
     Ok(())
-}
-
-#[derive(Debug)]
-enum Daemon {
-    Eruption,
-    ProcessMonitor,
-    AudioProxy,
-    FxProxy,
-}
-
-fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
-    let unit_file = match daemon {
-        Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
-        Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
-        Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
-        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
-    };
-
-    let user_or_system = match daemon {
-        Daemon::Eruption => "--system",
-        Daemon::ProcessMonitor => "--user",
-        Daemon::AudioProxy => "--user",
-        Daemon::FxProxy => "--user",
-    };
-
-    let action = if running { "start" } else { "stop" };
-
-    let status = Command::new("/usr/bin/systemctl")
-        // .stdout(Stdio::null())
-        .arg(user_or_system)
-        .arg(action)
-        .arg(unit_file)
-        .status()?;
-
-    let exit_code = status.code().unwrap_or(0);
-
-    if exit_code != 0 {
-        Err(ServiceError::ActionFailed {}.into())
-    } else {
-        Ok(())
-    }
-}
-pub enum ServiceStatus {
-    Unknown,
-    Active,
-    Inactive,
-    Failed,
-}
-
-fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
-    let unit_file = match daemon {
-        Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
-        Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
-        Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
-        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
-    };
-
-    let user_or_system = match daemon {
-        Daemon::Eruption => "--system",
-        Daemon::ProcessMonitor => "--user",
-        Daemon::AudioProxy => "--user",
-        Daemon::FxProxy => "--user",
-    };
-
-    let mut status = Command::new("/usr/bin/systemctl")
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .arg(user_or_system)
-        .arg("is-failed")
-        .arg(unit_file)
-        .spawn()?;
-
-    let _status = status.wait()?;
-
-    match status.stdout {
-        Some(ref mut out) => {
-            let mut output = String::new();
-            out.read_to_string(&mut output)?;
-
-            match output.trim() {
-                "failed" => Ok(ServiceStatus::Failed),
-                "active" => Ok(ServiceStatus::Active),
-                "inactive" => Ok(ServiceStatus::Inactive),
-
-                _ => Ok(ServiceStatus::Unknown),
-            }
-        }
-
-        None => Err(ServiceError::ActionFailed {}.into()),
-    }
 }
