@@ -1,0 +1,374 @@
+#compdef eruption-process-monitor
+
+autoload -U is-at-least
+
+_eruption-process-monitor() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'-c+[Sets the configuration file to use]:CONFIG: ' \
+'--config=[Sets the configuration file to use]:CONFIG: ' \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_eruption-process-monitor_commands" \
+"*::: :->eruption-process-monitor" \
+&& ret=0
+    case $state in
+    (eruption-process-monitor)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-command-$line[1]:"
+        case $line[1] in
+            (rules)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_eruption-process-monitor__rules_commands" \
+"*::: :->rules" \
+&& ret=0
+
+    case $state in
+    (rules)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-rules-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::rule:' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':rule_index:' \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':rule_index:' \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':rule_index:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-process-monitor__rules__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-rules-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(daemon)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-process-monitor__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-help-command-$line[1]:"
+        case $line[1] in
+            (rules)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-process-monitor__help__rules_commands" \
+"*::: :->rules" \
+&& ret=0
+
+    case $state in
+    (rules)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-process-monitor-help-rules-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(daemon)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-process-monitor_commands] )) ||
+_eruption-process-monitor_commands() {
+    local commands; commands=(
+'rules:Rules related sub-commands (supports offline manipulation of rules)' \
+'daemon:Run in background and monitor running processes' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-process-monitor commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules__add_commands] )) ||
+_eruption-process-monitor__help__rules__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help rules add commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__add_commands] )) ||
+_eruption-process-monitor__rules__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules add commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__add_commands] )) ||
+_eruption-process-monitor__rules__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help add commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__completions_commands] )) ||
+_eruption-process-monitor__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor completions commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__completions_commands] )) ||
+_eruption-process-monitor__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help completions commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__daemon_commands] )) ||
+_eruption-process-monitor__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor daemon commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__daemon_commands] )) ||
+_eruption-process-monitor__help__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help daemon commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules__disable_commands] )) ||
+_eruption-process-monitor__help__rules__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help rules disable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__disable_commands] )) ||
+_eruption-process-monitor__rules__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules disable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__disable_commands] )) ||
+_eruption-process-monitor__rules__help__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help disable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules__enable_commands] )) ||
+_eruption-process-monitor__help__rules__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help rules enable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__enable_commands] )) ||
+_eruption-process-monitor__rules__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules enable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__enable_commands] )) ||
+_eruption-process-monitor__rules__help__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help enable commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help_commands] )) ||
+_eruption-process-monitor__help_commands() {
+    local commands; commands=(
+'rules:Rules related sub-commands (supports offline manipulation of rules)' \
+'daemon:Run in background and monitor running processes' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-process-monitor help commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__help_commands] )) ||
+_eruption-process-monitor__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help help commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help_commands] )) ||
+_eruption-process-monitor__rules__help_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Add a new rule' \
+'remove:Remove a rule by its index' \
+'enable:Mark a rule as enabled' \
+'disable:Mark a rule as disabled' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-process-monitor rules help commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__help_commands] )) ||
+_eruption-process-monitor__rules__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help help commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules__list_commands] )) ||
+_eruption-process-monitor__help__rules__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help rules list commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__list_commands] )) ||
+_eruption-process-monitor__rules__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help list commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__list_commands] )) ||
+_eruption-process-monitor__rules__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules list commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules__remove_commands] )) ||
+_eruption-process-monitor__help__rules__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor help rules remove commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__help__remove_commands] )) ||
+_eruption-process-monitor__rules__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules help remove commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules__remove_commands] )) ||
+_eruption-process-monitor__rules__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-process-monitor rules remove commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__help__rules_commands] )) ||
+_eruption-process-monitor__help__rules_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Add a new rule' \
+'remove:Remove a rule by its index' \
+'enable:Mark a rule as enabled' \
+'disable:Mark a rule as disabled' \
+    )
+    _describe -t commands 'eruption-process-monitor help rules commands' commands "$@"
+}
+(( $+functions[_eruption-process-monitor__rules_commands] )) ||
+_eruption-process-monitor__rules_commands() {
+    local commands; commands=(
+'list:List all available rules' \
+'add:Add a new rule' \
+'remove:Remove a rule by its index' \
+'enable:Mark a rule as enabled' \
+'disable:Mark a rule as disabled' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-process-monitor rules commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_eruption-process-monitor" ]; then
+    _eruption-process-monitor "$@"
+else
+    compdef _eruption-process-monitor eruption-process-monitor
+fi

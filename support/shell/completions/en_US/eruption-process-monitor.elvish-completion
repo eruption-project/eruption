@@ -1,0 +1,123 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-process-monitor] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-process-monitor'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-process-monitor'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand rules 'Rules related sub-commands (supports offline manipulation of rules)'
+            cand daemon 'Run in background and monitor running processes'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-process-monitor;rules'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List all available rules'
+            cand add 'Add a new rule'
+            cand remove 'Remove a rule by its index'
+            cand enable 'Mark a rule as enabled'
+            cand disable 'Mark a rule as disabled'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-process-monitor;rules;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;rules;add'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;rules;remove'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;rules;enable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;rules;disable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;rules;help'= {
+            cand list 'List all available rules'
+            cand add 'Add a new rule'
+            cand remove 'Remove a rule by its index'
+            cand enable 'Mark a rule as enabled'
+            cand disable 'Mark a rule as disabled'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-process-monitor;rules;help;list'= {
+        }
+        &'eruption-process-monitor;rules;help;add'= {
+        }
+        &'eruption-process-monitor;rules;help;remove'= {
+        }
+        &'eruption-process-monitor;rules;help;enable'= {
+        }
+        &'eruption-process-monitor;rules;help;disable'= {
+        }
+        &'eruption-process-monitor;rules;help;help'= {
+        }
+        &'eruption-process-monitor;daemon'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-process-monitor;help'= {
+            cand rules 'Rules related sub-commands (supports offline manipulation of rules)'
+            cand daemon 'Run in background and monitor running processes'
+            cand completions 'Generate shell completions'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-process-monitor;help;rules'= {
+            cand list 'List all available rules'
+            cand add 'Add a new rule'
+            cand remove 'Remove a rule by its index'
+            cand enable 'Mark a rule as enabled'
+            cand disable 'Mark a rule as disabled'
+        }
+        &'eruption-process-monitor;help;rules;list'= {
+        }
+        &'eruption-process-monitor;help;rules;add'= {
+        }
+        &'eruption-process-monitor;help;rules;remove'= {
+        }
+        &'eruption-process-monitor;help;rules;enable'= {
+        }
+        &'eruption-process-monitor;help;rules;disable'= {
+        }
+        &'eruption-process-monitor;help;daemon'= {
+        }
+        &'eruption-process-monitor;help;completions'= {
+        }
+        &'eruption-process-monitor;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

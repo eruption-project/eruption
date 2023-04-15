@@ -1,1 +1,994 @@
-[2m2023-04-14T21:15:40.111425Z[0m [31mERROR[0m [1meruptionctl[0m[2m:[0m Fehler beim Verarbeiten der Konfigurationsdatei: ⁨configuration file "/etc/eruption/eruption.conf" not found⁩
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'eruptionctl'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'eruptionctl' {
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verboser Modus (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verboser Modus (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
+            [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Zeigt das aktuell aktive Profil oder den Slot')
+            [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Laufzeit Konfiguration des Eruption Daemons bearbeiten')
+            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Gerätespezifische Konfiguration bearbeiten')
+            [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profil bezogene Unterbefehle')
+            [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script bezogene Unterbefehle')
+            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Ein Farbschema definieren, importieren oder löschen')
+            [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten')
+            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Slot-Namen anzeigen oder ändern')
+            [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Automatisierungsregeln anzeigen und verwalten')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;profile' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;status;slot' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;status;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;help;profile' {
+            break
+        }
+        'eruptionctl;status;help;slot' {
+            break
+        }
+        'eruptionctl;status;help;help' {
+            break
+        }
+        'eruptionctl;switch' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;switch;profile' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;switch;slot' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;switch;help' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;switch;help;profile' {
+            break
+        }
+        'eruptionctl;switch;help;slot' {
+            break
+        }
+        'eruptionctl;switch;help;help' {
+            break
+        }
+        'eruptionctl;config' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config;brightness' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;config;soundfx' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;config;help' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;config;help;brightness' {
+            break
+        }
+        'eruptionctl;config;help;soundfx' {
+            break
+        }
+        'eruptionctl;config;help;help' {
+            break
+        }
+        'eruptionctl;devices' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the device specific brightness of the LEDs')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Get or set the current profile (applicable for some devices)')
+            [CompletionResult]::new('dpi', 'dpi', [CompletionResultType]::ParameterValue, 'Get or set the DPI parameter (applicable for some mice)')
+            [CompletionResult]::new('rate', 'rate', [CompletionResultType]::ParameterValue, 'Get or set the bus poll rate')
+            [CompletionResult]::new('debounce', 'debounce', [CompletionResultType]::ParameterValue, 'Get or set the debounce parameter (applicable for some mice)')
+            [CompletionResult]::new('distance', 'distance', [CompletionResultType]::ParameterValue, 'Get or set the DCU parameter (applicable for some mice)')
+            [CompletionResult]::new('angle-snapping', 'angle-snapping', [CompletionResultType]::ParameterValue, 'Get or set the angle-snapping parameter (applicable for some mice)')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;devices;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;info' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;status' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;brightness' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;profile' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;dpi' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;rate' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;debounce' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;distance' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;angle-snapping' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;devices;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the device specific brightness of the LEDs')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Get or set the current profile (applicable for some devices)')
+            [CompletionResult]::new('dpi', 'dpi', [CompletionResultType]::ParameterValue, 'Get or set the DPI parameter (applicable for some mice)')
+            [CompletionResult]::new('rate', 'rate', [CompletionResultType]::ParameterValue, 'Get or set the bus poll rate')
+            [CompletionResult]::new('debounce', 'debounce', [CompletionResultType]::ParameterValue, 'Get or set the debounce parameter (applicable for some mice)')
+            [CompletionResult]::new('distance', 'distance', [CompletionResultType]::ParameterValue, 'Get or set the DCU parameter (applicable for some mice)')
+            [CompletionResult]::new('angle-snapping', 'angle-snapping', [CompletionResultType]::ParameterValue, 'Get or set the angle-snapping parameter (applicable for some mice)')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;devices;help;list' {
+            break
+        }
+        'eruptionctl;devices;help;info' {
+            break
+        }
+        'eruptionctl;devices;help;status' {
+            break
+        }
+        'eruptionctl;devices;help;brightness' {
+            break
+        }
+        'eruptionctl;devices;help;profile' {
+            break
+        }
+        'eruptionctl;devices;help;dpi' {
+            break
+        }
+        'eruptionctl;devices;help;rate' {
+            break
+        }
+        'eruptionctl;devices;help;debounce' {
+            break
+        }
+        'eruptionctl;devices;help;distance' {
+            break
+        }
+        'eruptionctl;devices;help;angle-snapping' {
+            break
+        }
+        'eruptionctl;devices;help;help' {
+            break
+        }
+        'eruptionctl;profiles' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;profiles;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;profiles;info' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;profiles;edit' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;profiles;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;profiles;help;list' {
+            break
+        }
+        'eruptionctl;profiles;help;info' {
+            break
+        }
+        'eruptionctl;profiles;help;edit' {
+            break
+        }
+        'eruptionctl;profiles;help;help' {
+            break
+        }
+        'eruptionctl;scripts' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;scripts;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;scripts;info' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;scripts;edit' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;scripts;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;scripts;help;list' {
+            break
+        }
+        'eruptionctl;scripts;help;info' {
+            break
+        }
+        'eruptionctl;scripts;help;edit' {
+            break
+        }
+        'eruptionctl;scripts;help;help' {
+            break
+        }
+        'eruptionctl;color-schemes' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;color-schemes;add' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;color-schemes;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;color-schemes;import' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;import;pywal' {
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Optimize palette')
+            [CompletionResult]::new('--optimize', 'optimize', [CompletionResultType]::ParameterName, 'Optimize palette')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;color-schemes;import;help' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;import;help;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;import;help;help' {
+            break
+        }
+        'eruptionctl;color-schemes;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;color-schemes;help;list' {
+            break
+        }
+        'eruptionctl;color-schemes;help;add' {
+            break
+        }
+        'eruptionctl;color-schemes;help;remove' {
+            break
+        }
+        'eruptionctl;color-schemes;help;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;color-schemes;help;import;pywal' {
+            break
+        }
+        'eruptionctl;color-schemes;help;help' {
+            break
+        }
+        'eruptionctl;param' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;names' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
+            [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;names;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;names;set' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;names;set-all' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;names;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
+            [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;names;help;list' {
+            break
+        }
+        'eruptionctl;names;help;set' {
+            break
+        }
+        'eruptionctl;names;help;set-all' {
+            break
+        }
+        'eruptionctl;names;help;help' {
+            break
+        }
+        'eruptionctl;effects' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;enable;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;enable;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;enable;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;enable;help;image' {
+            break
+        }
+        'eruptionctl;effects;enable;help;animation' {
+            break
+        }
+        'eruptionctl;effects;enable;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;enable;help;help' {
+            break
+        }
+        'eruptionctl;effects;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;disable;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;disable;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;disable;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;disable;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;disable;help;image' {
+            break
+        }
+        'eruptionctl;effects;disable;help;animation' {
+            break
+        }
+        'eruptionctl;effects;disable;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;disable;help;help' {
+            break
+        }
+        'eruptionctl;effects;status' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;config' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;config;image' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;config;animation' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;config;ambient' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;effects;config;help' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;config;help;image' {
+            break
+        }
+        'eruptionctl;effects;config;help;animation' {
+            break
+        }
+        'eruptionctl;effects;config;help;ambient' {
+            break
+        }
+        'eruptionctl;effects;config;help;help' {
+            break
+        }
+        'eruptionctl;effects;help' {
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;effects;help;enable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;effects;help;enable;image' {
+            break
+        }
+        'eruptionctl;effects;help;enable;animation' {
+            break
+        }
+        'eruptionctl;effects;help;enable;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;disable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            break
+        }
+        'eruptionctl;effects;help;disable;image' {
+            break
+        }
+        'eruptionctl;effects;help;disable;animation' {
+            break
+        }
+        'eruptionctl;effects;help;disable;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;status' {
+            break
+        }
+        'eruptionctl;effects;help;config' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;effects;help;config;image' {
+            break
+        }
+        'eruptionctl;effects;help;config;animation' {
+            break
+        }
+        'eruptionctl;effects;help;config;ambient' {
+            break
+        }
+        'eruptionctl;effects;help;help' {
+            break
+        }
+        'eruptionctl;rules' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Alle Automatisierungsregeln anzeigen')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Eine neue Automatisierungsregel hinzufügen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel entfernen')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel aktivieren')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel deaktivieren')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;rules;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;rules;add' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;rules;remove' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;rules;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;rules;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;rules;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Alle Automatisierungsregeln anzeigen')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Eine neue Automatisierungsregel hinzufügen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel entfernen')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel aktivieren')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel deaktivieren')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;rules;help;list' {
+            break
+        }
+        'eruptionctl;rules;help;add' {
+            break
+        }
+        'eruptionctl;rules;help;remove' {
+            break
+        }
+        'eruptionctl;rules;help;enable' {
+            break
+        }
+        'eruptionctl;rules;help;disable' {
+            break
+        }
+        'eruptionctl;rules;help;help' {
+            break
+        }
+        'eruptionctl;completions' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;help' {
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Zeigt das aktuell aktive Profil oder den Slot')
+            [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Laufzeit Konfiguration des Eruption Daemons bearbeiten')
+            [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Gerätespezifische Konfiguration bearbeiten')
+            [CompletionResult]::new('profiles', 'profiles', [CompletionResultType]::ParameterValue, 'Profil bezogene Unterbefehle')
+            [CompletionResult]::new('scripts', 'scripts', [CompletionResultType]::ParameterValue, 'Script bezogene Unterbefehle')
+            [CompletionResult]::new('color-schemes', 'color-schemes', [CompletionResultType]::ParameterValue, 'Ein Farbschema definieren, importieren oder löschen')
+            [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten')
+            [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Slot-Namen anzeigen oder ändern')
+            [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Automatisierungsregeln anzeigen und verwalten')
+            [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;help;status' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            break
+        }
+        'eruptionctl;help;status;profile' {
+            break
+        }
+        'eruptionctl;help;status;slot' {
+            break
+        }
+        'eruptionctl;help;switch' {
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
+            [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
+            break
+        }
+        'eruptionctl;help;switch;profile' {
+            break
+        }
+        'eruptionctl;help;switch;slot' {
+            break
+        }
+        'eruptionctl;help;config' {
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
+            [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
+            break
+        }
+        'eruptionctl;help;config;brightness' {
+            break
+        }
+        'eruptionctl;help;config;soundfx' {
+            break
+        }
+        'eruptionctl;help;devices' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
+            [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the device specific brightness of the LEDs')
+            [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Get or set the current profile (applicable for some devices)')
+            [CompletionResult]::new('dpi', 'dpi', [CompletionResultType]::ParameterValue, 'Get or set the DPI parameter (applicable for some mice)')
+            [CompletionResult]::new('rate', 'rate', [CompletionResultType]::ParameterValue, 'Get or set the bus poll rate')
+            [CompletionResult]::new('debounce', 'debounce', [CompletionResultType]::ParameterValue, 'Get or set the debounce parameter (applicable for some mice)')
+            [CompletionResult]::new('distance', 'distance', [CompletionResultType]::ParameterValue, 'Get or set the DCU parameter (applicable for some mice)')
+            [CompletionResult]::new('angle-snapping', 'angle-snapping', [CompletionResultType]::ParameterValue, 'Get or set the angle-snapping parameter (applicable for some mice)')
+            break
+        }
+        'eruptionctl;help;devices;list' {
+            break
+        }
+        'eruptionctl;help;devices;info' {
+            break
+        }
+        'eruptionctl;help;devices;status' {
+            break
+        }
+        'eruptionctl;help;devices;brightness' {
+            break
+        }
+        'eruptionctl;help;devices;profile' {
+            break
+        }
+        'eruptionctl;help;devices;dpi' {
+            break
+        }
+        'eruptionctl;help;devices;rate' {
+            break
+        }
+        'eruptionctl;help;devices;debounce' {
+            break
+        }
+        'eruptionctl;help;devices;distance' {
+            break
+        }
+        'eruptionctl;help;devices;angle-snapping' {
+            break
+        }
+        'eruptionctl;help;profiles' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
+            break
+        }
+        'eruptionctl;help;profiles;list' {
+            break
+        }
+        'eruptionctl;help;profiles;info' {
+            break
+        }
+        'eruptionctl;help;profiles;edit' {
+            break
+        }
+        'eruptionctl;help;scripts' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
+            [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
+            break
+        }
+        'eruptionctl;help;scripts;list' {
+            break
+        }
+        'eruptionctl;help;scripts;info' {
+            break
+        }
+        'eruptionctl;help;scripts;edit' {
+            break
+        }
+        'eruptionctl;help;color-schemes' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import a color scheme from a file, e.g.: like the Pywal configuration')
+            break
+        }
+        'eruptionctl;help;color-schemes;list' {
+            break
+        }
+        'eruptionctl;help;color-schemes;add' {
+            break
+        }
+        'eruptionctl;help;color-schemes;remove' {
+            break
+        }
+        'eruptionctl;help;color-schemes;import' {
+            [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
+            break
+        }
+        'eruptionctl;help;color-schemes;import;pywal' {
+            break
+        }
+        'eruptionctl;help;param' {
+            break
+        }
+        'eruptionctl;help;names' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
+            [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
+            break
+        }
+        'eruptionctl;help;names;list' {
+            break
+        }
+        'eruptionctl;help;names;set' {
+            break
+        }
+        'eruptionctl;help;names;set-all' {
+            break
+        }
+        'eruptionctl;help;effects' {
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configure an active effect')
+            break
+        }
+        'eruptionctl;help;effects;enable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;help;effects;enable;image' {
+            break
+        }
+        'eruptionctl;help;effects;enable;animation' {
+            break
+        }
+        'eruptionctl;help;effects;enable;ambient' {
+            break
+        }
+        'eruptionctl;help;effects;disable' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
+            break
+        }
+        'eruptionctl;help;effects;disable;image' {
+            break
+        }
+        'eruptionctl;help;effects;disable;animation' {
+            break
+        }
+        'eruptionctl;help;effects;disable;ambient' {
+            break
+        }
+        'eruptionctl;help;effects;status' {
+            break
+        }
+        'eruptionctl;help;effects;config' {
+            [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
+            [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
+            [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
+            break
+        }
+        'eruptionctl;help;effects;config;image' {
+            break
+        }
+        'eruptionctl;help;effects;config;animation' {
+            break
+        }
+        'eruptionctl;help;effects;config;ambient' {
+            break
+        }
+        'eruptionctl;help;rules' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Alle Automatisierungsregeln anzeigen')
+            [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Eine neue Automatisierungsregel hinzufügen')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel entfernen')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel aktivieren')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Eine vorhandene Automatisierungsregel deaktivieren')
+            break
+        }
+        'eruptionctl;help;rules;list' {
+            break
+        }
+        'eruptionctl;help;rules;add' {
+            break
+        }
+        'eruptionctl;help;rules;remove' {
+            break
+        }
+        'eruptionctl;help;rules;enable' {
+            break
+        }
+        'eruptionctl;help;rules;disable' {
+            break
+        }
+        'eruptionctl;help;completions' {
+            break
+        }
+        'eruptionctl;help;help' {
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}
