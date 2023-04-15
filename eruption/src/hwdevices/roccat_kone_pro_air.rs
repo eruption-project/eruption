@@ -1190,8 +1190,8 @@ impl MouseDeviceTrait for RoccatKoneProAir {
 
                     Err(_) => {
                         // the device has failed; maybe it has been disconnected?
-                        self.is_initialized = false;
-                        self.is_opened = false;
+                        // self.is_opened = false;
+                        // self.is_initialized = false;
                         self.has_failed = true;
 
                         return Err(HwDeviceError::InvalidResult {}.into());
