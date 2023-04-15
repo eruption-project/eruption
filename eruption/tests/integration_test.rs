@@ -33,10 +33,17 @@ fn test_eruption_version() {
     assert_eq!(
         String::from_utf8_lossy(&output.stdout),
         format!(
-            "Eruption {} ({}) ({} build)\n",
-            env!("CARGO_PKG_VERSION"),
-            env!("ERUPTION_GIT_PKG_VERSION"),
-            if cfg!(debug_assertions) {
+            "Eruption version {version} ({build_type} build) [{branch}:{commit} {dirty}]\n",
+            version = env!("CARGO_PKG_VERSION"),
+            branch = env!("GIT_BRANCH"),
+            commit = env!("GIT_COMMIT"),
+            dirty = if env!("GIT_DIRTY") == "true" {
+                "dirty"
+            } else {
+                "clean"
+            },
+            // timestamp = env!("SOURCE_TIMESTAMP"),
+            build_type = if cfg!(debug_assertions) {
                 "debug"
             } else {
                 "release"

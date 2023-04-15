@@ -94,11 +94,17 @@ lazy_static! {
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
 
     pub static ref VERSION: String = {
-        format!(
-            "{} ({}) ({} build)",
-            env!("CARGO_PKG_VERSION"),
-            env!("ERUPTION_GIT_PKG_VERSION"),
-            if cfg!(debug_assertions) {
+        format!("version {version} ({build_type} build) [{branch}:{commit} {dirty}]",
+            version = env!("CARGO_PKG_VERSION"),
+            branch = env!("GIT_BRANCH"),
+            commit = env!("GIT_COMMIT"),
+            dirty = if env!("GIT_DIRTY") == "true" {
+                "dirty"
+            } else {
+                "clean"
+            },
+            // timestamp = env!("SOURCE_TIMESTAMP"),
+            build_type = if cfg!(debug_assertions) {
                 "debug"
             } else {
                 "release"
@@ -1584,14 +1590,24 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let matches = parse_commandline();
 
     info!(
-        "Starting Eruption - Realtime RGB LED Driver for Linux: Version {} ({}) ({} build)",
-        env!("CARGO_PKG_VERSION"),
-        env!("ERUPTION_GIT_PKG_VERSION"),
-        if cfg!(debug_assertions) {
-            "debug"
-        } else {
-            "release"
-        }
+        "Starting Eruption - Realtime RGB LED Driver for Linux: {}",
+        format!(
+            "version {version} ({build_type} build) [{branch}:{commit} {dirty}]",
+            version = env!("CARGO_PKG_VERSION"),
+            branch = env!("GIT_BRANCH"),
+            commit = env!("GIT_COMMIT"),
+            dirty = if env!("GIT_DIRTY") == "true" {
+                "dirty"
+            } else {
+                "clean"
+            },
+            // timestamp = env!("SOURCE_TIMESTAMP"),
+            build_type = if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            }
+        )
     );
 
     // register ctrl-c handler

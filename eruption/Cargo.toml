@@ -130,4 +130,5 @@ thiserror = "1.0.40"
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
 
 [build-dependencies]
+build-data = "0.1"
 prost-build = "0.11.9"
