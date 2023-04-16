@@ -84,8 +84,8 @@ install:
 	@echo "Creating 'eruption' system user and group..."
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
-	@$(SUDO) systemctl daemon-reload
-	@$(SUDO) systemctl start systemd-sysusers.service
+	systemctl daemon-reload
+	systemctl restart systemd-sysusers.service
 
 	@echo "Commencing installation of Eruption..."
 
