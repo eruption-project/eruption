@@ -34,9 +34,11 @@ build:
 	@echo ""
 	@echo "If Eruption is already running, stop it first.  Consider:"
 	@echo "'make stop && sudo make install && make start'"
+	@echo ""
 
 start:
 	@echo "Notifying system daemons about Eruption..."
+	@echo ""
 
 	-@$(SUDO) systemctl daemon-reload
 	-@systemctl --user daemon-reload
@@ -60,6 +62,7 @@ start:
 
 stop:
 	@echo "Notifying system daemons about Eruption..."
+	@echo ""
 
 	-@$(SUDO) systemctl daemon-reload
 	-@systemctl --user daemon-reload
@@ -82,12 +85,14 @@ install:
 	@echo ""
 
 	@echo "Creating 'eruption' system user and group..."
+	@echo ""
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
-	systemctl daemon-reload
-	systemctl restart systemd-sysusers.service
+	@systemctl daemon-reload
+	@systemctl restart systemd-sysusers.service
 
 	@echo "Commencing installation of Eruption..."
+	@echo ""
 
 	@mkdir -p "/etc/eruption"
 	@mkdir -p "$(TARGET_DIR)/share/doc/eruption"
@@ -226,12 +231,15 @@ install:
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 	@chown -R eruption:eruption /var/lib/eruption
 
-	@echo "Successfully installed Eruption!"
+
 	@echo ""
+	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
+	@echo ""
 
 uninstall:
 	@echo "Commencing removal of Eruption..."
+	@echo ""
 
 	-@rm $(TARGET_DIR)/bin/eruption
 	-@rm $(TARGET_DIR)/bin/eruptionctl
@@ -338,6 +346,7 @@ uninstall:
 
 	-@systemctl start systemd-sysusers.service
 
+	@echo ""
 	@echo "Successfully uninstalled Eruption!"
 
 check:
