@@ -117,6 +117,7 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system-services"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/session.d"
 	@mkdir -p "$(TARGET_DIR)/share/polkit-1/actions"
+	@mkdir -p "$(TARGET_DIR)/share/polkit-1/rules.d"
 	@mkdir -p "$(TARGET_DIR)/share/man/man8"
 	@mkdir -p "$(TARGET_DIR)/share/man/man5"
 	@mkdir -p "$(TARGET_DIR)/share/man/man1"
@@ -154,6 +155,7 @@ install:
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/dbus/org.eruption.fx_proxy.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/policykit/org.eruption.policy" "$(TARGET_DIR)/share/polkit-1/actions/"
+	@cp "support/policykit/org.eruption.rules" "$(TARGET_DIR)/share/polkit-1/rules.d/"
 	@cp "support/man/eruption.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption.conf.5" "$(TARGET_DIR)/share/man/man5/"
@@ -231,7 +233,6 @@ install:
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 	@chown -R eruption:eruption /var/lib/eruption
 
-
 	@echo ""
 	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
@@ -279,6 +280,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.fx_proxy.conf
 	-@rm $(TARGET_DIR)/share/polkit-1/actions/org.eruption.policy
+	-@rm $(TARGET_DIR)/share/polkit-1/rules.d/org.eruption.rules
 	-@rm $(TARGET_DIR)/share/man/man8/eruption.8
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8
 	-@rm $(TARGET_DIR)/share/man/man5/eruption.conf.5

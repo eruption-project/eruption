@@ -46,8 +46,6 @@ pub enum Permission {
 }
 
 pub fn has_permission_cached(permission: Permission, sender: &str) -> Result<bool> {
-    return Ok(true);
-
     match permission {
         Permission::Monitor => has_monitor_permission_cached(sender),
         Permission::Settings => has_settings_permission_cached(sender),
