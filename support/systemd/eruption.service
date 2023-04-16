@@ -25,23 +25,22 @@ StartLimitIntervalSec=300
 StartLimitBurst=2
 
 [Service]
-BusName=org.eruption
 Environment=RUST_LOG=warn
 RuntimeDirectory=eruption
 PIDFile=/run/eruption/eruption.pid
 ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
 ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
-TimeoutStopSec=10
+TimeoutStopSec=8
 Type=exec
 Restart=always
-# WatchdogSec=8
+# WatchdogSec=5
 # WatchdogSignal=SIGKILL
 CPUSchedulingPolicy=rr
 CPUSchedulingPriority=20
 # AmbientCapabilities=CAP_SYS_ADMIN CAP_FOWNER CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_SYS_RAWIO CAP_KILL CAP_NET_BIND_SERVICE
 User=eruption
 Group=eruption
-# SupplementaryGroups=dbus input
+# SupplementaryGroups=input
 # ProtectHome=yes
 # ProtectSystem=full
 # ProtectKernelTunables=yes
