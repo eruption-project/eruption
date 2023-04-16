@@ -80,6 +80,13 @@ install:
 	@echo "Please ensure that all Eruption daemons have been shut down completely!"
 	@echo "Otherwise there will probably be errors during installation (file busy)"
 	@echo ""
+
+	@echo "Creating 'eruption' system user and group..."
+
+	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
+	@$(SUDO) systemctl daemon-reload
+	@$(SUDO) systemctl start systemd-sysusers.service
+
 	@echo "Commencing installation of Eruption..."
 
 	@mkdir -p "/etc/eruption"
@@ -135,7 +142,7 @@ install:
 	@cp "support/systemd/eruption-process-monitor.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-process-monitor.preset"
 	@cp "support/systemd/eruption-hotplug-helper.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
-	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
+	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
 	@cp "support/dbus/org.eruption.service" "$(TARGET_DIR)/share/dbus-1/system-services/"
 	@cp "support/dbus/org.eruption.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
