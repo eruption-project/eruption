@@ -194,13 +194,28 @@ pub fn spawn_keyboard_input_thread(
                         }
 
                         kbd_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a keyboard event to the main thread: {}", e);
+                            ratelimited::error!(
+                                "Could not send a keyboard event to the main thread: {}",
+                                e
+                            );
 
                             // try to recover from an invalid state
-                            keyboard_device.write().close_all().unwrap_or_else(|e| {
-                                warn!("Could not close the device: {}", e);
-                            });
+                            // keyboard_device.write().close_all().unwrap_or_else(|e| {
+                            //     warn!("Could not close the device: {}", e);
+                            // });
 
+                            // mark the device as failed
+                            keyboard_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
@@ -215,7 +230,11 @@ pub fn spawn_keyboard_input_thread(
                             keyboard_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
@@ -326,7 +345,10 @@ pub fn spawn_mouse_input_thread(
                                             k.1.clone(),
                                         ))
                                         .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse event: {}", e)
+                                            ratelimited::error!(
+                                                "Could not send a pending mouse event: {}",
+                                                e
+                                            )
                                         });
                                 }
                             }
@@ -363,20 +385,38 @@ pub fn spawn_mouse_input_thread(
                                             k.1.clone(),
                                         ))
                                         .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse event: {}", e)
+                                            ratelimited::error!(
+                                                "Could not send a pending mouse event: {}",
+                                                e
+                                            )
                                         });
                                 }
                             }
                         }
 
                         mouse_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a mouse event to the main thread: {}", e);
+                            ratelimited::error!(
+                                "Could not send a mouse event to the main thread: {}",
+                                e
+                            );
 
                             // try to recover from an invalid state
-                            mouse_device.write().close_all().unwrap_or_else(|e| {
-                                warn!("Could not close the device: {}", e);
-                            });
+                            // mouse_device.write().close_all().unwrap_or_else(|e| {
+                            //     warn!("Could not close the device: {}", e);
+                            // });
 
+                            // mark the device as failed
+                            mouse_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
@@ -391,7 +431,11 @@ pub fn spawn_mouse_input_thread(
                             mouse_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
@@ -647,14 +691,31 @@ pub fn spawn_misc_input_thread(
                             .unwrap()
                             .send(macros::Message::MirrorKey(k.1.clone()))
                             .unwrap_or_else(|e| {
-                                error!("Could not send a pending misc device input event: {}", e)
+                                ratelimited::error!(
+                                    "Could not send a pending misc device input event: {}",
+                                    e
+                                )
                             });
 
                         misc_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!(
+                            ratelimited::error!(
                                 "Could not send a misc device input event to the main thread: {}",
                                 e
-                            )
+                            );
+
+                            // mark the device as failed
+                            misc_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
@@ -668,7 +729,11 @@ pub fn spawn_misc_input_thread(
                             misc_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
