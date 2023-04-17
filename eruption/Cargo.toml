@@ -87,15 +87,14 @@ lazy_static = "1.4.0"
 rand = "0.8.5"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
-palette = "0.6.1"
+palette = "0.7.1"
 nalgebra = "0.32.2"
 noise = "0.8.2"
 simdnoise = "3.1.6"
 # lua-src = "544.0.1"
-# mlua = { version = "0.8.4", features = ["lua54", "vendored"] }
-# luajit-src = "210.3.2+resty1085a4d"
-# mlua = { version = "0.8.4", features = ["luajit52"] }
-mlua = { version = "0.8.8", features = ["lua54"] }
+# mlua = { version = "0.8.8", features = ["lua54", "vendored"] }
+luajit-src = "210.4.5"
+mlua = { version = "0.8.8", features = ["luajit52", "vendored"] }
 sysinfo = "0.28.4"
 bincode = "2.0.0-rc.3"
 rustfft = "6.1.0"

@@ -24,7 +24,7 @@ use crate::constants;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
-use palette::{FromColor, Hsva, Shade, Srgba};
+use palette::{FromColor, Hsva, Lighten, Srgba};
 
 const BORDER: (f64, f64) = (16.0, 16.0);
 
