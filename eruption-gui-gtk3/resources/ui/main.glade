@@ -24,7 +24,7 @@ The Eruption Development Team
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk+" version="3.24" />
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Eruption -->
   <!-- interface-copyright 2019-2023 The Eruption Development Team -->
@@ -221,7 +221,7 @@ The Eruption Development Team
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Connection to the Eruption daemon failed</property>
                 <style>
-                  <class name="notification"/>
+                  <class name="notification" />
                 </style>
               </object>
               <packing>
@@ -247,7 +247,7 @@ The Eruption Development Team
               </packing>
             </child>
             <style>
-              <class name="notification-bar"/>
+              <class name="notification-bar" />
             </style>
           </object>
           <packing>
@@ -275,7 +275,7 @@ The Eruption Development Team
                     <property name="can-focus">False</property>
                     <property name="interpolate-size">True</property>
                     <child>
-                      <placeholder/>
+                      <placeholder />
                     </child>
                   </object>
                   <packing>
@@ -315,7 +315,7 @@ The Eruption Development Team
                     <property name="can-focus">False</property>
                     <property name="interpolate-size">True</property>
                     <child>
-                      <placeholder/>
+                      <placeholder />
                     </child>
                   </object>
                   <packing>
@@ -356,7 +356,7 @@ The Eruption Development Team
                     <property name="can-focus">False</property>
                     <property name="interpolate-size">True</property>
                     <child>
-                      <placeholder/>
+                      <placeholder />
                     </child>
                   </object>
                   <packing>
@@ -412,7 +412,7 @@ The Eruption Development Team
                             <property name="tooltip-column">2</property>
                             <property name="activate-on-single-click">True</property>
                             <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
+                              <object class="GtkTreeSelection" />
                             </child>
                           </object>
                         </child>
@@ -517,7 +517,7 @@ The Eruption Development Team
                             <property name="can-focus">False</property>
                             <property name="transition-type">under-down</property>
                             <child>
-                              <placeholder/>
+                              <placeholder />
                             </child>
                           </object>
                           <packing>
@@ -631,10 +631,9 @@ The Eruption Development Team
                       <object class="GtkLabel" id="connection_failed_label">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Connection to
-                          eruption-system-monitor daemon failed</property>
+                        <property name="label" translatable="yes">Connection to eruption-process-monitor daemon failed</property>
                         <style>
-                          <class name="notification"/>
+                          <class name="notification" />
                         </style>
                       </object>
                       <packing>
@@ -660,7 +659,7 @@ The Eruption Development Team
                       </packing>
                     </child>
                     <style>
-                      <class name="notification-bar"/>
+                      <class name="notification-bar" />
                     </style>
                   </object>
                   <packing>
@@ -805,8 +804,8 @@ The Eruption Development Team
                                 <property name="ellipsize">middle</property>
                                 <property name="single-line-mode">True</property>
                                 <attributes>
-                                  <attribute name="weight" value="bold"/>
-                                  <attribute name="scale" value="2"/>
+                                  <attribute name="weight" value="bold" />
+                                  <attribute name="scale" value="2" />
                                 </attributes>
                               </object>
                               <packing>
@@ -840,7 +839,7 @@ The Eruption Development Team
                         <property name="enable-tree-lines">True</property>
                         <property name="tooltip-column">4</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
+                          <object class="GtkTreeSelection" />
                         </child>
                       </object>
                       <packing>
@@ -870,7 +869,7 @@ The Eruption Development Team
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <placeholder/>
+                  <placeholder />
                 </child>
                 <child>
                   <object class="GtkBox">
@@ -885,8 +884,8 @@ The Eruption Development Team
                         <property name="label" translatable="yes">Eruption Settings</property>
                         <property name="single-line-mode">True</property>
                         <attributes>
-                          <attribute name="weight" value="bold"/>
-                          <attribute name="scale" value="2"/>
+                          <attribute name="weight" value="bold" />
+                          <attribute name="scale" value="2" />
                         </attributes>
                       </object>
                       <packing>
@@ -1013,10 +1012,9 @@ The Eruption Development Team
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Eruption NetworkFX
-                                  Settings</property>
+                                <property name="label" translatable="yes">Eruption NetworkFX Settings</property>
                                 <attributes>
-                                  <attribute name="weight" value="bold"/>
+                                  <attribute name="weight" value="bold" />
                                 </attributes>
                               </object>
                             </child>
@@ -1125,7 +1123,7 @@ The Eruption Development Team
                                     <property name="margin-bottom">8</property>
                                     <property name="label" translatable="yes">Session Daemons</property>
                                     <attributes>
-                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="weight" value="bold" />
                                     </attributes>
                                   </object>
                                   <packing>
@@ -1263,13 +1261,13 @@ The Eruption Development Team
                                   </packing>
                                 </child>
                                 <child>
-                                  <placeholder/>
+                                  <placeholder />
                                 </child>
                                 <child>
-                                  <placeholder/>
+                                  <placeholder />
                                 </child>
                                 <child>
-                                  <placeholder/>
+                                  <placeholder />
                                 </child>
                               </object>
                             </child>
@@ -1279,7 +1277,7 @@ The Eruption Development Team
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Eruption Status</property>
                                 <attributes>
-                                  <attribute name="weight" value="bold"/>
+                                  <attribute name="weight" value="bold" />
                                 </attributes>
                               </object>
                             </child>
@@ -1413,7 +1411,7 @@ The Eruption Development Team
               </object>
             </child>
             <child type="label_item">
-              <placeholder/>
+              <placeholder />
             </child>
           </object>
           <packing>
@@ -1474,9 +1472,10 @@ The Eruption Development Team
                                     <property name="text" translatable="yes">Profile Slot 1</property>
                                     <property name="placeholder-text" translatable="yes">Enter the
                                       name of the profile slot</property>
-                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK |
+                                      GTK_INPUT_HINT_NONE</property>
                                     <style>
-                                      <class name="slot_entry"/>
+                                      <class name="slot_entry" />
                                     </style>
                                   </object>
                                 </child>
@@ -1531,10 +1530,10 @@ The Eruption Development Team
                   </object>
                 </child>
                 <child type="label_item">
-                  <placeholder/>
+                  <placeholder />
                 </child>
                 <style>
-                  <class name="slot_indicator"/>
+                  <class name="slot_indicator" />
                 </style>
               </object>
               <packing>
@@ -1587,9 +1586,10 @@ The Eruption Development Team
                                     <property name="text" translatable="yes">Profile Slot 2</property>
                                     <property name="placeholder-text" translatable="yes">Enter the
                                       name of the profile slot</property>
-                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK |
+                                      GTK_INPUT_HINT_NONE</property>
                                     <style>
-                                      <class name="slot_entry"/>
+                                      <class name="slot_entry" />
                                     </style>
                                   </object>
                                 </child>
@@ -1645,10 +1645,10 @@ The Eruption Development Team
                   </object>
                 </child>
                 <child type="label_item">
-                  <placeholder/>
+                  <placeholder />
                 </child>
                 <style>
-                  <class name="slot_indicator"/>
+                  <class name="slot_indicator" />
                 </style>
               </object>
               <packing>
@@ -1701,9 +1701,10 @@ The Eruption Development Team
                                     <property name="text" translatable="yes">Profile Slot 3</property>
                                     <property name="placeholder-text" translatable="yes">Enter the
                                       name of the profile slot</property>
-                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK |
+                                      GTK_INPUT_HINT_NONE</property>
                                     <style>
-                                      <class name="slot_entry"/>
+                                      <class name="slot_entry" />
                                     </style>
                                   </object>
                                 </child>
@@ -1759,10 +1760,10 @@ The Eruption Development Team
                   </object>
                 </child>
                 <child type="label_item">
-                  <placeholder/>
+                  <placeholder />
                 </child>
                 <style>
-                  <class name="slot_indicator"/>
+                  <class name="slot_indicator" />
                 </style>
               </object>
               <packing>
@@ -1817,9 +1818,10 @@ The Eruption Development Team
                                     <property name="primary-icon-sensitive">False</property>
                                     <property name="placeholder-text" translatable="yes">Enter the
                                       name of the profile slot</property>
-                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK |
+                                      GTK_INPUT_HINT_NONE</property>
                                     <style>
-                                      <class name="slot_entry"/>
+                                      <class name="slot_entry" />
                                     </style>
                                   </object>
                                 </child>
@@ -1875,10 +1877,10 @@ The Eruption Development Team
                   </object>
                 </child>
                 <child type="label_item">
-                  <placeholder/>
+                  <placeholder />
                 </child>
                 <style>
-                  <class name="slot_indicator"/>
+                  <class name="slot_indicator" />
                 </style>
               </object>
               <packing>
@@ -1895,7 +1897,7 @@ The Eruption Development Team
           </packing>
         </child>
         <style>
-          <class name="client"/>
+          <class name="client" />
         </style>
       </object>
     </child>
@@ -1941,7 +1943,7 @@ The Eruption Development Team
                 <property name="icon-name">open-menu-symbolic</property>
               </object>
             </child>
-            <accelerator key="F10" signal="activate"/>
+            <accelerator key="F10" signal="activate" />
           </object>
           <packing>
             <property name="pack-type">end</property>
@@ -1952,11 +1954,11 @@ The Eruption Development Team
           <object class="GtkLockButton" id="lock_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="text-lock" translatable="yes"/>
-            <property name="text-unlock" translatable="yes"/>
-            <property name="tooltip-lock" translatable="yes"/>
-            <property name="tooltip-unlock" translatable="yes"/>
-            <property name="tooltip-not-authorized" translatable="yes"/>
+            <property name="text-lock" translatable="yes" />
+            <property name="text-unlock" translatable="yes" />
+            <property name="tooltip-lock" translatable="yes" />
+            <property name="tooltip-unlock" translatable="yes" />
+            <property name="tooltip-not-authorized" translatable="yes" />
           </object>
           <packing>
             <property name="pack-type">end</property>
@@ -1988,7 +1990,7 @@ The Eruption Development Team
       </object>
     </child>
     <style>
-      <class name="window"/>
+      <class name="window" />
     </style>
   </object>
 </interface>
