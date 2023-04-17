@@ -24,7 +24,7 @@ The Eruption Development Team
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk+" version="3.24" />
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Eruption -->
   <!-- interface-copyright 2019-2023 The Eruption Development Team -->
@@ -42,11 +42,11 @@ The Eruption Development Team
   <object class="GtkListStore" id="sensors_liststore">
     <columns>
       <!-- column-name index -->
-      <column type="guint"/>
+      <column type="guint" />
       <!-- column-name description -->
-      <column type="gchararray"/>
+      <column type="gchararray" />
       <!-- column-name parameter -->
-      <column type="gchararray"/>
+      <column type="gchararray" />
     </columns>
     <data>
       <row>
@@ -203,7 +203,7 @@ The Eruption Development Team
                 <property name="popup-fixed-width">False</property>
                 <property name="id-column">2</property>
                 <child>
-                  <object class="GtkCellRendererText" id="cellrenderertext"/>
+                  <object class="GtkCellRendererText" id="cellrenderertext" />
                   <attributes>
                     <attribute name="text">1</attribute>
                   </attributes>
@@ -236,7 +236,7 @@ The Eruption Development Team
             <property name="receives-default">True</property>
             <property name="image">image2</property>
             <style>
-              <class name="destructive-action"/>
+              <class name="destructive-action" />
             </style>
           </object>
         </child>
@@ -251,7 +251,7 @@ The Eruption Development Team
             <property name="receives-default">True</property>
             <property name="image">image1</property>
             <style>
-              <class name="suggested-action"/>
+              <class name="suggested-action" />
             </style>
           </object>
           <packing>

@@ -44,85 +44,100 @@ The Eruption Development Team
   <object class="GtkImage" id="edit_image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">edit</property>
+    <property name="icon-name">text-x-generic</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="edit_image1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">edit</property>
+    <property name="icon-name">text-x-generic</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="edit_image2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">edit</property>
+    <property name="icon-name">text-x-generic</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="edit_image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">edit</property>
+    <property name="icon-name">text-x-generic</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_edit_rule">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-end">4</property>
-    <property name="icon-name">document-edit-symbolic</property>
+    <property name="icon-name">document-edit</property>
+    <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
   <object class="GtkImage" id="image_new_profile">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-new-symbolic</property>
+    <property name="icon-name">document-new</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_new_profile1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-new-symbolic</property>
+    <property name="icon-name">document-new</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_new_profile2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-new-symbolic</property>
+    <property name="icon-name">document-new</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_new_rule">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-end">4</property>
-    <property name="icon-name">document-new-symbolic</property>
+    <property name="icon-name">document-new</property>
+    <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
   <object class="GtkImage" id="image_reload_rules">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-end">4</property>
-    <property name="icon-name">view-refresh-symbolic</property>
+    <property name="icon-name">view-refresh</property>
+    <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
   <object class="GtkImage" id="image_remove_profile">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-revert-symbolic</property>
+    <property name="icon-name">edit-delete</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_remove_profile1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-revert-symbolic</property>
+    <property name="icon-name">edit-delete</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_remove_profile2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-revert-symbolic</property>
+    <property name="icon-name">edit-delete</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image_remove_rule">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-end">4</property>
-    <property name="icon-name">document-revert-symbolic</property>
+    <property name="icon-name">edit-delete</property>
+    <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
   <object class="GtkImage" id="image_remove_rule1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-revert-symbolic</property>
+    <property name="icon-name">edit-delete</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkMenu" id="main_menu">
     <property name="visible">True</property>
@@ -146,36 +161,43 @@ The Eruption Development Team
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="reload_image_global">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="reloadimage">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="reloadimage1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="reloadimage2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="reloadimage3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">reload</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="save_all_image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">document-save-symbolic</property>
+    <property name="icon-name">document-save</property>
+    <property name="use-fallback">True</property>
   </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can-focus">False</property>
@@ -609,7 +631,8 @@ The Eruption Development Team
                       <object class="GtkLabel" id="connection_failed_label">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Connection to eruption-system-monitor daemon failed</property>
+                        <property name="label" translatable="yes">Connection to
+                          eruption-system-monitor daemon failed</property>
                         <style>
                           <class name="notification"/>
                         </style>
@@ -763,7 +786,8 @@ The Eruption Development Team
                                 <property name="valign">center</property>
                                 <property name="margin-end">8</property>
                                 <property name="pixel-size">32</property>
-                                <property name="icon-name">view-refresh-symbolic</property>
+                                <property name="icon-name">media-playlist-repeat</property>
+                                <property name="use-fallback">True</property>
                                 <property name="icon_size">0</property>
                               </object>
                               <packing>
@@ -777,8 +801,9 @@ The Eruption Development Team
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-end">8</property>
-                                <property name="label" translatable="yes">Eruption Process Monitor Rules</property>
+                                <property name="label" translatable="yes">Switching Rules</property>
                                 <property name="ellipsize">middle</property>
+                                <property name="single-line-mode">True</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                   <attribute name="scale" value="2"/>
@@ -834,8 +859,8 @@ The Eruption Development Team
               </object>
               <packing>
                 <property name="name">page4</property>
-                <property name="title" translatable="yes">Process Monitor</property>
-                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="title" translatable="yes">Switching Rules</property>
+                <property name="icon-name">media-playlist-repeat</property>
                 <property name="position">4</property>
               </packing>
             </child>
@@ -858,6 +883,7 @@ The Eruption Development Team
                         <property name="halign">end</property>
                         <property name="margin-end">8</property>
                         <property name="label" translatable="yes">Eruption Settings</property>
+                        <property name="single-line-mode">True</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                           <attribute name="scale" value="2"/>
@@ -878,8 +904,8 @@ The Eruption Development Team
                         <property name="valign">center</property>
                         <property name="margin-end">8</property>
                         <property name="pixel-size">32</property>
-                        <property name="icon-name">system-run-symbolic</property>
-                        <property name="icon_size">0</property>
+                        <property name="icon-name">system-run</property>
+                        <property name="use-fallback">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -987,7 +1013,8 @@ The Eruption Development Team
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Eruption NetworkFX Settings</property>
+                                <property name="label" translatable="yes">Eruption NetworkFX
+                                  Settings</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -1445,8 +1472,12 @@ The Eruption Development Team
                                     <property name="hexpand">True</property>
                                     <property name="has-frame">False</property>
                                     <property name="text" translatable="yes">Profile Slot 1</property>
-                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the
+                                      name of the profile slot</property>
                                     <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <style>
+                                      <class name="slot_entry"/>
+                                    </style>
                                   </object>
                                 </child>
                               </object>
@@ -1554,8 +1585,12 @@ The Eruption Development Team
                                     <property name="hexpand">True</property>
                                     <property name="has-frame">False</property>
                                     <property name="text" translatable="yes">Profile Slot 2</property>
-                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the
+                                      name of the profile slot</property>
                                     <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <style>
+                                      <class name="slot_entry"/>
+                                    </style>
                                   </object>
                                 </child>
                               </object>
@@ -1664,8 +1699,12 @@ The Eruption Development Team
                                     <property name="hexpand">True</property>
                                     <property name="has-frame">False</property>
                                     <property name="text" translatable="yes">Profile Slot 3</property>
-                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the
+                                      name of the profile slot</property>
                                     <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <style>
+                                      <class name="slot_entry"/>
+                                    </style>
                                   </object>
                                 </child>
                               </object>
@@ -1776,8 +1815,12 @@ The Eruption Development Team
                                     <property name="text" translatable="yes">Profile Slot 4</property>
                                     <property name="primary-icon-activatable">False</property>
                                     <property name="primary-icon-sensitive">False</property>
-                                    <property name="placeholder-text" translatable="yes">Enter the name of the profile slot</property>
+                                    <property name="placeholder-text" translatable="yes">Enter the
+                                      name of the profile slot</property>
                                     <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                                    <style>
+                                      <class name="slot_entry"/>
+                                    </style>
                                   </object>
                                 </child>
                               </object>

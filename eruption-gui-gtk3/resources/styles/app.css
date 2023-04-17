@@ -45,13 +45,18 @@ box .slot_indicator {
 
 box .slot_indicator.active {
   background: linear-gradient(
-    0deg,
+    180deg,
     rgba(105, 105, 105, 0.7),
     rgba(105, 105, 105, 0.15)
   );
-  border: 4px solid rgba(128, 128, 128, 0.5);
+  border: 5px solid rgba(128, 128, 128, 0.5);
 }
 
 .slot_indicator combobox {
   font-size: small;
+}
+
+.slot_entry {
+  font-size: large;
+  font-weight: bold;
 }
