@@ -100,7 +100,7 @@ This means that you can assign up to 4 slots which may be quickly switched betwe
 
 Implements the core functionality of Eruption. It provides the basic functionality like a support API written in Rust,
 as well as an embedded Lua interpreter. It needs special elevated privileges to access the hardware of your system.
-Normally runs as the `root` user. It makes use of realtime scheduling where available, to reduce input lag (latency).
+Normally runs as the `eruption` user. It makes use of realtime scheduling where available, to reduce input lag (latency).
 The daemon proper provides a `D-Bus` based API as well as an interface exposed over UNIX Domain sockets, for use by
 the session daemons and the `Eruption SDK` as well.
 
