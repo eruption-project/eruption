@@ -23,7 +23,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eruption-sdk"
-version = "0.0.10"
+version = "0.0.11"
 authors = [{ name = "X3n0m0rph59", email = "x3n0m0rph59@gmail.com" }]
 description = "Provides an interface to the Eruption Realtime RGB LED Driver for Linux"
 readme = "README.md"

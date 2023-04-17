@@ -299,6 +299,85 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
     Ok(())
 }
 
+pub fn resume_from_suspend() -> Result<()> {
+    if crate::QUIT.load(Ordering::SeqCst) {
+        info!("Ignoring resume from suspend or hibernation event since Eruption is shutting down");
+    } else {
+        // enumerate devices
+        info!("Enumerating connected devices...");
+
+        // initialize keyboard devices
+        for device in crate::KEYBOARD_DEVICES.read().iter() {
+            let make = hwdevices::get_device_make(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+            let model = hwdevices::get_device_model(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+
+            info!("Reinitializing keyboard device '{make} {model}'");
+
+            // send initialization handshake
+            device
+                .write()
+                .send_init_sequence()
+                .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        }
+
+        // initialize mouse devices
+        for device in crate::MOUSE_DEVICES.read().iter() {
+            let make = hwdevices::get_device_make(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+            let model = hwdevices::get_device_model(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+
+            info!("Reinitializing mouse device '{make} {model}'");
+
+            // send initialization handshake
+            device
+                .write()
+                .send_init_sequence()
+                .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        }
+
+        // initialize misc devices
+        for device in crate::MISC_DEVICES.read().iter() {
+            let make = hwdevices::get_device_make(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+            let model = hwdevices::get_device_model(
+                device.read().get_usb_vid(),
+                device.read().get_usb_pid(),
+            )
+            .unwrap_or_else(|| "<unknown>");
+
+            info!("Reinitializing misc device '{make} {model}'");
+
+            // send initialization handshake
+            device
+                .write()
+                .send_init_sequence()
+                .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+
+            info!("Device enumeration completed");
+        }
+    }
+
+    Ok(())
+}
+
 ///
 pub struct SdkSupportPlugin {}
 
@@ -702,6 +781,46 @@ impl SdkSupportPlugin {
                                                         info!("Hotplug event received, trying to claim newly added devices now...");
 
                                                         claim_hotplugged_devices(&hotplug_info)?;
+
+                                                        // this is required for hotplug to work correctly in case we didn't transfer
+                                                        // data to the device for an extended period of time
+                                                        script::FRAME_GENERATION_COUNTER
+                                                            .fetch_add(1, Ordering::SeqCst);
+
+                                                        let response = protocol::Response {
+                                                            response_message: Some(
+                                                                protocol::response::ResponseMessage::NotifyHotplug(
+                                                                    protocol::NotifyHotplugResponse {},
+                                                                ),
+                                                            ),
+                                                        };
+
+                                                        let mut buf = Vec::new();
+                                                        response.encode_length_delimited(&mut buf)?;
+
+                                                        // send data
+                                                        match socket.send(&buf) {
+                                                            Ok(_n) => {}
+
+                                                            Err(_e) => {
+                                                                return Err(SdkPluginError::PluginError {
+                                                                    description: "Lost connection to Eruption SDK client".to_owned(),
+                                                                }
+                                                                    .into());
+                                                            }
+                                                        }
+                                                    }
+
+                                                    Some(
+                                                        protocol::request::RequestMessage::NotifyResume(
+                                                            _message,
+                                                        ),
+                                                    ) => {
+                                                        trace!("Notify resume from suspend or hibernation");
+
+                                                        info!("Resume event received, trying to reinitialize all devices now...");
+
+                                                        resume_from_suspend()?;
 
                                                         // this is required for hotplug to work correctly in case we didn't transfer
                                                         // data to the device for an extended period of time

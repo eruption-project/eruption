@@ -724,6 +724,17 @@ fn run_main_loop(
                         .unwrap_or_else(|e| {
                             device_has_failed = true;
 
+                            // let make = hwdevices::get_device_make(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+                            // let model = hwdevices::get_device_model(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+
                             ratelimited::error!(
                                 "Could not process a keyboard event: {}. Trying to close the device now...",
                                 e
@@ -739,8 +750,19 @@ fn run_main_loop(
                 } else {
                     device_has_failed = true;
 
+                    // let make = hwdevices::get_device_make(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+                    // let model = hwdevices::get_device_model(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+
                     ratelimited::error!(
-                        "Could not process a keyboard event: {}",
+                        "Could not process a keyboard event from: {}",
                         event.as_ref().unwrap_err()
                     );
 
@@ -773,7 +795,18 @@ fn run_main_loop(
                         .unwrap_or_else(|e| {
                             device_has_failed = true;
 
-                            ratelimited::error!("Could not process a mouse event: {}. Trying to close the device now...", e);
+                            // let make = hwdevices::get_device_make(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+                            // let model = hwdevices::get_device_model(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+
+                            ratelimited::error!("Could not process a mouse event from: {}. Trying to close the device now...", e);
 
                             (*crate::MOUSE_DEVICES.read()[0])
                                 .write()
@@ -785,8 +818,19 @@ fn run_main_loop(
                 } else {
                     device_has_failed = true;
 
+                    // let make = hwdevices::get_device_make(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+                    // let model = hwdevices::get_device_model(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+
                     ratelimited::error!(
-                        "Could not process a mouse event: {}",
+                        "Could not process a mouse event from: {}",
                         event.as_ref().unwrap_err()
                     );
 
@@ -1451,8 +1495,19 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        keyboard_device.read().get_usb_vid(),
+        keyboard_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+    let model = hwdevices::get_device_model(
+        keyboard_device.read().get_usb_vid(),
+        keyboard_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+
     keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the keyboard device: {}", e);
+        error!("Error opening the keyboard device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1463,17 +1518,22 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     keyboard_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring keyboard LEDs...");
     keyboard_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         keyboard_device.read().get_firmware_revision()
     );
 }
@@ -1485,8 +1545,19 @@ pub fn init_mouse_device(mouse_device: &MouseDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        mouse_device.read().get_usb_vid(),
+        mouse_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+    let model = hwdevices::get_device_model(
+        mouse_device.read().get_usb_vid(),
+        mouse_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+
     mouse_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the mouse device: {}", e);
+        error!("Error opening the mouse device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1497,17 +1568,22 @@ pub fn init_mouse_device(mouse_device: &MouseDevice) {
     mouse_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring mouse LEDs...");
     mouse_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         mouse_device.read().get_firmware_revision()
     );
 }
@@ -1519,8 +1595,19 @@ pub fn init_misc_device(misc_device: &MiscDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        misc_device.read().get_usb_vid(),
+        misc_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+    let model = hwdevices::get_device_model(
+        misc_device.read().get_usb_vid(),
+        misc_device.read().get_usb_pid(),
+    )
+    .unwrap_or_else(|| "<unknown>");
+
     misc_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the misc device: {}", e);
+        error!("Error opening the misc device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1531,17 +1618,22 @@ pub fn init_misc_device(misc_device: &MiscDevice) {
     misc_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring misc device LEDs...");
     misc_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         misc_device.read().get_firmware_revision()
     );
 }

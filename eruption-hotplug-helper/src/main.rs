@@ -84,6 +84,7 @@ lazy_static! {
     static ref ABOUT: String = tr!("about");
     static ref VERBOSE_ABOUT: String = tr!("verbose-about");
     static ref HOTPLUG_ABOUT: String = tr!("hotplug-about");
+    static ref RESUME_ABOUT: String = tr!("resume-about");
     static ref COMPLETIONS_ABOUT: String = tr!("completions-about");
 }
 
@@ -112,6 +113,9 @@ pub struct Options {
 pub enum Subcommands {
     #[clap(about(HOTPLUG_ABOUT.as_str()))]
     Hotplug,
+
+    #[clap(about(RESUME_ABOUT.as_str()))]
+    Resume,
 
     #[clap(hide = true, about(COMPLETIONS_ABOUT.as_str()))]
     Completions {
@@ -265,6 +269,48 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         usb_pid: 0,
                     };
                     connection.notify_device_hotplug(&hotplug_info)?;
+
+                    connection.disconnect()?;
+                    tracing::info!("Disconnected from the Eruption daemon");
+                }
+
+                Err(e) => {
+                    tracing::error!("Failed to connect to the Eruption daemon: {}", e);
+                }
+            }
+        }
+
+        Subcommands::Resume => {
+            tracing::info!("A resume event has been triggered, notifying the Eruption daemon...");
+
+            // sleep until udev has settled
+            tracing::info!("Waiting for the devices to settle...");
+
+            let status = Command::new("/bin/udevadm")
+                .arg("settle")
+                .stdout(Stdio::null())
+                .status();
+
+            if let Err(e) = status {
+                // udev-settle has failed, sleep a while and let the devices settle
+                tracing::error!("udevadm settle has failed: {}", e);
+
+                thread::sleep(Duration::from_millis(3500));
+            } else {
+                tracing::info!("Done, all devices have settled");
+            }
+
+            tracing::info!("Connecting to the Eruption daemon...");
+
+            let connection = Connection::new(ConnectionType::Local)?;
+            match connection.connect() {
+                Ok(()) => {
+                    tracing::debug!("Successfully connected to the Eruption daemon");
+                    // let _status = connection.get_server_status()?;
+
+                    tracing::info!("Notifying the Eruption daemon about the resume event...");
+
+                    connection.notify_resume_from_suspend()?;
 
                     connection.disconnect()?;
                     tracing::info!("Disconnected from the Eruption daemon");

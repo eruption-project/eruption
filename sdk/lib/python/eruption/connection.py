@@ -51,7 +51,7 @@ class Connection:
 
     def is_connected(self):
         """Get connection state, returns True if we are connected to a running Eruption
-           instance, otherwise returns False"""
+        instance, otherwise returns False"""
         return self.connected
 
     def get_server_status(self):
@@ -83,8 +83,7 @@ class Connection:
         if not self.is_connected():
             raise NotConnectedError("Not connected")
 
-        result = self._con.set_parameters(
-            profile_file, script_file, **parameters)
+        result = self._con.set_parameters(profile_file, script_file, **parameters)
         return result
 
     def submit_canvas(self, canvas, *args, **kwargs):
@@ -101,6 +100,14 @@ class Connection:
             raise NotConnectedError("Not connected")
 
         result = self._con.notify_device_hotplug(hotplug_info)
+        return result
+
+    def notify_resume_from_suspend(self, *args, **kwargs):
+        """Notify Eruption about a resume from suspend or hibernation event"""
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.notify_resume_from_suspend()
         return result
 
 

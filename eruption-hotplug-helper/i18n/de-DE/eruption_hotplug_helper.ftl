@@ -22,6 +22,7 @@
 about = Eine Hilfsanwendung die Eruption über neu angeschlossene Geräte informiert
 verbose-about = Verboser Modus (-v, -vv, -vvv, etc.)
 hotplug-about = Ein "Hotplug" Ereignis auslösen
+resume-about = Ein "Resume from suspend or hibernate" Ereignis auslösen
 completions-about = Shell Definitionen für Autovervollständigung erzeugen
 
 license-header = Eruption ist freie Software. Sie können es unter den Bedingungen der

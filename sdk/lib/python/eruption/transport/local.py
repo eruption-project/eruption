@@ -151,5 +151,23 @@ class LocalTransport:
 
         return response
 
+    def notify_resume_from_suspend(self):
+        """Notify Eruption about a resume from suspend or hibernation event"""
+
+        data_bytes = []
+
+        request = Request()
+        request.resume_request.payload = bytes(data_bytes)
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        return response
+
 class RequestFailed(Exception):
     pass

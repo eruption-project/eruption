@@ -57,6 +57,10 @@ impl Connection {
     pub fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
         self.con.lock().notify_device_hotplug(hotplug_info)
     }
+
+    pub fn notify_resume_from_suspend(&self) -> Result<()> {
+        self.con.lock().notify_resume_from_suspend()
+    }
 }
 
 impl Drop for Connection {

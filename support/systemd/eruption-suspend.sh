@@ -18,11 +18,6 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-# if [ "$1" = "pre" ] ; then
-#     # prepare Eruption for system sleep
-# 
-# else
-#     # wake up Eruption after system sleep
-# 
-#     # systemctl start eruption-hotplug-helper.service
-# fi
+if [ "$1" = "post" ]; then
+    RUST_LOG="${RUST_LOG:-info}" /usr/bin/eruption-hotplug-helper resume
+fi
