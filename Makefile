@@ -43,10 +43,11 @@ start:
 	-@$(SUDO) systemctl daemon-reload
 	-@systemctl --user daemon-reload
 
-	-@$(SUDO) systemctl start systemd-sysusers.service
+	-@$(SUDO) /usr/bin/systemd-sysusers
 
 	-@$(SUDO) systemctl reload dbus.service
 	-@$(SUDO) systemctl reload systemd-udevd
+
 	-@$(SUDO) modprobe uinput
 	-@$(SUDO) udevadm trigger
 
@@ -88,8 +89,9 @@ install:
 	@echo ""
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
-	@systemctl daemon-reload
-	@systemctl restart systemd-sysusers.service
+	-@systemctl daemon-reload
+	
+	@/usr/bin/systemd-sysusers
 
 	@echo "Commencing installation of Eruption..."
 	@echo ""
