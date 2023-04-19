@@ -23,7 +23,12 @@ use color_eyre::{owo_colors::OwoColorize, Help};
 use colored::*;
 use dbus::{blocking::Connection, nonblock::stdintf::org_freedesktop_dbus::Properties};
 use eyre::Context;
-use std::{fmt::Display, time::Duration};
+use std::{
+    fmt::Display,
+    io::Read,
+    process::{Command, Stdio},
+    time::Duration,
+};
 
 use crate::{
     constants,
@@ -38,7 +43,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 /// Sub-commands of the "status" command
 #[derive(Debug, clap::Parser)]
 pub enum StatusSubcommands {
-    /// Shows some status informations about Eruption
+    /// Shows status information about Eruption
     #[clap(display_order = 0)]
     Daemon,
 
@@ -60,8 +65,8 @@ pub async fn handle_command(command: StatusSubcommands) -> Result<()> {
 }
 
 async fn daemon_command() -> Result<()> {
-    let daemon_status = get_daemon_status().await?;
-    println!("{}\n\n{daemon_status}", "Eruption status".bold());
+    let daemon_status = get_systems_status().await?;
+    println!("{}\n\n{daemon_status}", "Eruption Status".bold());
 
     Ok(())
 }
@@ -71,7 +76,7 @@ async fn profile_command() -> Result<()> {
         .await
         .wrap_err("Could not connect to the Eruption daemon")
         .suggestion("Please verify that the Eruption daemon is running")?;
-    println!("Current profile: {}", profile_name.bold());
+    println!("Profile: {}", profile_name.bold());
 
     Ok(())
 }
@@ -82,15 +87,27 @@ async fn slot_command() -> Result<()> {
         .wrap_err("Could not connect to the Eruption daemon")
         .suggestion("Please verify that the Eruption daemon is running")?
         + 1;
-    println!("Current slot: {}", format!("{index}").bold());
+    println!("Slot: {}", format!("{index}").bold());
 
     Ok(())
 }
 
 /// Status information about the running Eruption daemons
-struct DaemonStatus {
+struct SystemsStatus {
     /// Status of the Eruption daemon
-    pub status: String,
+    pub eruption_status: ServiceStatus,
+
+    /// Eruption process-monitor daemon status
+    pub eruption_process_monitor_status: ServiceStatus,
+
+    /// Eruption audio-proxy daemon status
+    pub eruption_audio_proxy_status: ServiceStatus,
+
+    /// Eruption fx-proxy daemon status
+    pub eruption_fx_proxy_status: ServiceStatus,
+
+    /// Eruption daemon ping call reply
+    pub eruption_ping: String,
 
     /// List of slot names
     pub slot_names: Vec<String>,
@@ -108,21 +125,34 @@ struct DaemonStatus {
     pub active_slot: usize,
 }
 
-impl Display for DaemonStatus {
+impl Display for SystemsStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Eruption daemon: {}\nLoaded Profiles: {}\n",
-            self.status.bold(),
+            "Eruption core: {}\nPing: {}\nLoaded Profiles: {}\n",
+            self.eruption_status.bold(),
+            self.eruption_ping.bold(),
             self.profiles.len()
         )?;
 
         write!(
             f,
-            "Active Profile: {}\nActive Slot: {}\n\nSlots:\n",
+            "Active Profile: {}\nActive Slot: {}\n\n",
             self.active_profile.bold(),
             (self.active_slot + 1).bold()
         )?;
+
+        write!(f, "{}\n\n", "Session Daemons".bold())?;
+
+        write!(
+            f,
+            "Process Monitor: {}\nAudio Proxy: {}\nEffects Proxy: {}\n\n",
+            self.eruption_process_monitor_status.bold(),
+            self.eruption_audio_proxy_status.bold(),
+            self.eruption_fx_proxy_status.bold(),
+        )?;
+
+        write!(f, "{}\n\n", "Slots".bold())?;
 
         for (index, (slot_name, profile)) in self
             .slot_names
@@ -135,7 +165,7 @@ impl Display for DaemonStatus {
                 "{}: {}: {}",
                 (index + 1).dimmed(),
                 slot_name.bold(),
-                profile
+                profile.italic(),
             )?;
         }
 
@@ -144,22 +174,23 @@ impl Display for DaemonStatus {
 }
 
 /// Returns a few stats about the running Eruption daemons
-async fn get_daemon_status() -> Result<DaemonStatus> {
-    let conn = Connection::new_system()?;
+async fn get_systems_status() -> Result<SystemsStatus> {
+    let conn_system_bus = Connection::new_system()?;
+    // let conn_session_bus = Connection::new_session()?;
 
-    let config_proxy = conn.with_proxy(
+    let config_proxy = conn_system_bus.with_proxy(
         "org.eruption",
         "/org/eruption/config",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let profiles_proxy = conn.with_proxy(
+    let profiles_proxy = conn_system_bus.with_proxy(
         "org.eruption",
         "/org/eruption/profile",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let slot_proxy = conn.with_proxy(
+    let slot_proxy = conn_system_bus.with_proxy(
         "org.eruption",
         "/org/eruption/slot",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
@@ -171,10 +202,10 @@ async fn get_daemon_status() -> Result<DaemonStatus> {
     //     Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     // );
 
-    let status = if config_proxy.ping()? {
+    let eruption_ping = if config_proxy.ping()? {
         "OK"
     } else {
-        "<no response>"
+        "<Unknown>"
     }
     .to_string();
 
@@ -185,8 +216,12 @@ async fn get_daemon_status() -> Result<DaemonStatus> {
     let active_profile = get_active_profile().await?;
     let active_slot = get_active_slot().await?;
 
-    Ok(DaemonStatus {
-        status,
+    Ok(SystemsStatus {
+        eruption_status: get_daemon_status(Daemon::Eruption)?,
+        eruption_process_monitor_status: get_daemon_status(Daemon::ProcessMonitor)?,
+        eruption_audio_proxy_status: get_daemon_status(Daemon::AudioProxy)?,
+        eruption_fx_proxy_status: get_daemon_status(Daemon::FxProxy)?,
+        eruption_ping: eruption_ping,
         slot_names,
         slot_profiles,
         profiles,
@@ -213,4 +248,117 @@ async fn get_active_slot() -> Result<usize> {
         .await?;
 
     Ok(result as usize)
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceError {
+    #[error("Daemon action failed")]
+    ActionFailed,
+    // #[error("Unknown error")]
+    // UnknownError,
+}
+
+#[derive(Debug)]
+pub enum Daemon {
+    Eruption,
+    ProcessMonitor,
+    AudioProxy,
+    FxProxy,
+}
+
+// pub fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
+//     let unit_file = match daemon {
+//         Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
+//         Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
+//         Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+//         Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
+//     };
+
+//     let user_or_system = match daemon {
+//         Daemon::Eruption => "--system",
+//         Daemon::ProcessMonitor => "--user",
+//         Daemon::AudioProxy => "--user",
+//         Daemon::FxProxy => "--user",
+//     };
+
+//     let action = if running { "start" } else { "stop" };
+
+//     let status = Command::new("/usr/bin/systemctl")
+//         // .stdout(Stdio::null())
+//         .arg(user_or_system)
+//         .arg(action)
+//         .arg(unit_file)
+//         .status()?;
+
+//     let exit_code = status.code().unwrap_or(0);
+
+//     if exit_code != 0 {
+//         Err(ServiceError::ActionFailed {}.into())
+//     } else {
+//         Ok(())
+//     }
+// }
+
+pub enum ServiceStatus {
+    Unknown,
+    Active,
+    Inactive,
+    Failed,
+}
+
+impl Display for ServiceStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            ServiceStatus::Unknown => write!(f, "Unknown"),
+            ServiceStatus::Active => write!(f, "Active"),
+            ServiceStatus::Inactive => write!(f, "Inactive"),
+            ServiceStatus::Failed => write!(f, "Failed"),
+        }?;
+
+        Ok(())
+    }
+}
+
+pub fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
+    let unit_file = match daemon {
+        Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
+        Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
+        Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
+    };
+
+    let user_or_system = match daemon {
+        Daemon::Eruption => "--system",
+        Daemon::ProcessMonitor => "--user",
+        Daemon::AudioProxy => "--user",
+        Daemon::FxProxy => "--user",
+    };
+
+    let mut status = Command::new("/usr/bin/systemctl")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg(user_or_system)
+        .arg("is-failed")
+        .arg(unit_file)
+        .spawn()?;
+
+    let _status = status.wait()?;
+
+    match status.stdout {
+        Some(ref mut out) => {
+            let mut output = String::new();
+            out.read_to_string(&mut output)?;
+
+            match output.trim() {
+                "failed" => Ok(ServiceStatus::Failed),
+                "active" => Ok(ServiceStatus::Active),
+                "inactive" => Ok(ServiceStatus::Inactive),
+
+                _ => Ok(ServiceStatus::Unknown),
+            }
+        }
+
+        None => Err(ServiceError::ActionFailed {}.into()),
+    }
 }

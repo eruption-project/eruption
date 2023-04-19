@@ -28,7 +28,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help'
             cand -V 'Print version'
             cand --version 'Print version'
-            cand status 'Shows the currently active profile or slot'
+            cand status 'Shows the status of Eruption as well as the currently active profile or slot'
             cand switch 'Switch to a different profile or slot'
             cand config 'Configuration related sub-commands'
             cand devices 'Get or set some device specific configuration parameters'
@@ -45,7 +45,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         &'eruptionctl;status'= {
             cand -h 'Print help'
             cand --help 'Print help'
-            cand daemon 'Shows some status informations about Eruption'
+            cand daemon 'Shows status information about Eruption'
             cand profile 'Shows the currently active profile'
             cand slot 'Shows the currently active slot'
             cand help 'Print this message or the help of the given subcommand(s)'
@@ -63,7 +63,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help'
         }
         &'eruptionctl;status;help'= {
-            cand daemon 'Shows some status informations about Eruption'
+            cand daemon 'Shows status information about Eruption'
             cand profile 'Shows the currently active profile'
             cand slot 'Shows the currently active slot'
             cand help 'Print this message or the help of the given subcommand(s)'
@@ -599,7 +599,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand --help 'Print help'
         }
         &'eruptionctl;help'= {
-            cand status 'Shows the currently active profile or slot'
+            cand status 'Shows the status of Eruption as well as the currently active profile or slot'
             cand switch 'Switch to a different profile or slot'
             cand config 'Configuration related sub-commands'
             cand devices 'Get or set some device specific configuration parameters'
@@ -614,7 +614,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruptionctl;help;status'= {
-            cand daemon 'Shows some status informations about Eruption'
+            cand daemon 'Shows status information about Eruption'
             cand profile 'Shows the currently active profile'
             cand slot 'Shows the currently active slot'
         }

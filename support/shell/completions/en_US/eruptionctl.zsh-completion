@@ -1621,7 +1621,7 @@ esac
 (( $+functions[_eruptionctl_commands] )) ||
 _eruptionctl_commands() {
     local commands; commands=(
-'status:Shows the currently active profile or slot' \
+'status:Shows the status of Eruption as well as the currently active profile or slot' \
 'switch:Switch to a different profile or slot' \
 'config:Configuration related sub-commands' \
 'devices:Get or set some device specific configuration parameters' \
@@ -2267,7 +2267,7 @@ _eruptionctl__effects__help__help_commands() {
 (( $+functions[_eruptionctl__help_commands] )) ||
 _eruptionctl__help_commands() {
     local commands; commands=(
-'status:Shows the currently active profile or slot' \
+'status:Shows the status of Eruption as well as the currently active profile or slot' \
 'switch:Switch to a different profile or slot' \
 'config:Configuration related sub-commands' \
 'devices:Get or set some device specific configuration parameters' \
@@ -2353,7 +2353,7 @@ _eruptionctl__scripts__help__help_commands() {
 (( $+functions[_eruptionctl__status__help_commands] )) ||
 _eruptionctl__status__help_commands() {
     local commands; commands=(
-'daemon:Shows some status informations about Eruption' \
+'daemon:Shows status information about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -2904,7 +2904,7 @@ _eruptionctl__help__effects__status_commands() {
 (( $+functions[_eruptionctl__help__status_commands] )) ||
 _eruptionctl__help__status_commands() {
     local commands; commands=(
-'daemon:Shows some status informations about Eruption' \
+'daemon:Shows status information about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
     )
@@ -2913,7 +2913,7 @@ _eruptionctl__help__status_commands() {
 (( $+functions[_eruptionctl__status_commands] )) ||
 _eruptionctl__status_commands() {
     local commands; commands=(
-'daemon:Shows some status informations about Eruption' \
+'daemon:Shows status information about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
 'help:Print this message or the help of the given subcommand(s)' \
