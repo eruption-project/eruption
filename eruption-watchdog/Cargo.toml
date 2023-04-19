@@ -42,7 +42,7 @@ debug-async = []
 [dependencies]
 cfg-if = "1.0.0"
 flume = "0.10.14"
-clap = { version = "4.2.2", features = ["derive"] }
+clap = { version = "4.2.3", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 syslog = "6.0.1"

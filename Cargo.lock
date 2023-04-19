@@ -522,9 +522,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "axum"
-version = "0.6.15"
+version = "0.6.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b32c5ea3aabaf4deb5f5ced2d688ec0844c881c9e6c696a8b769a05fc691e62"
+checksum = "113713495a32dd0ab52baf5c10044725aa3aec00b31beda84218e469029b72a3"
 dependencies = [
  "async-trait",
  "axum-core",
@@ -913,9 +913,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.2.2"
+version = "4.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b802d85aaf3a1cdb02b224ba472ebdea62014fccfcb269b95a4d76443b5ee5a"
+checksum = "49f9152d70e42172fdb87de2efd7327160beee37886027cf86f30a233d5b30b4"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -924,9 +924,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.2.2"
+version = "4.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14a1a858f532119338887a4b8e1af9c60de8249cd7bafd68036a489e261e37b6"
+checksum = "e067b220911598876eb55d52725ddcc201ffe3f0904018195973bc5b012ea2ca"
 dependencies = [
  "anstream",
  "anstyle",
@@ -941,7 +941,7 @@ version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01c22dcfb410883764b29953103d9ef7bb8fe21b3fa1158bc99986c2067294bd"
 dependencies = [
- "clap 4.2.2",
+ "clap 4.2.3",
 ]
 
 [[package]]
@@ -1798,9 +1798,9 @@ dependencies = [
 
 [[package]]
 name = "egui_file"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "667861bdb6d3eb3f010f06f81aea27877b925757c47b875d5d205d747942c2fa"
+checksum = "5019f0b646dd17aac634749cf127eab536329fc70ab115dae87f4696480a4a0c"
 dependencies = [
  "egui 0.21.0",
 ]
@@ -1997,7 +1997,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "color-eyre",
  "colorgrad",
  "config",
@@ -2067,7 +2067,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2107,7 +2107,7 @@ name = "eruption-cmd"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2141,7 +2141,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2180,7 +2180,7 @@ version = "0.0.4"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2282,7 +2282,7 @@ version = "0.1.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2314,7 +2314,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2356,7 +2356,7 @@ version = "0.0.8"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2403,7 +2403,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2452,7 +2452,7 @@ name = "eruption-netfx"
 version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2497,7 +2497,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "config",
@@ -2565,7 +2565,7 @@ version = "0.0.11"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2602,7 +2602,7 @@ version = "0.0.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2632,10 +2632,10 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -4255,9 +4255,9 @@ checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
+checksum = "3f508063cc7bb32987c71511216bd5a32be15bccb6a80b52df8b9d7f01fc3aa2"
 
 [[package]]
 name = "locale_config"
@@ -5497,7 +5497,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "clap_complete",
  "color-eyre",
  "config",
@@ -5952,9 +5952,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.11"
+version = "0.37.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85597d61f83914ddeba6a47b3b8ffe7365107221c2e557ed94426489fefb5f77"
+checksum = "722529a737f5a942fdbac3a46cee213053196737c5eaa3386d52e85b786f2659"
 dependencies = [
  "bitflags",
  "errno",
@@ -6315,7 +6315,7 @@ name = "simple-example-01"
 version = "0.0.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.2",
+ "clap 4.2.3",
  "color-eyre",
  "eruption-sdk",
  "eyre",

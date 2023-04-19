@@ -19,7 +19,7 @@
 
 [package]
 name = "eruptionctl"
-version = "0.1.4"
+version = "0.1.5"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -42,7 +42,7 @@ debug-async = []
 [dependencies]
 lazy_static = "1.4.0"
 flume = "0.10.14"
-clap = { version = "4.2.2", features = ["derive"] }
+clap = { version = "4.2.3", features = ["derive"] }
 clap_complete = "4.2.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 cfg-if = "1.0.0"
