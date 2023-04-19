@@ -65,6 +65,8 @@ pub async fn handle_command(command: StatusSubcommands) -> Result<()> {
 }
 
 async fn daemon_command() -> Result<()> {
+    print_header();
+
     let daemon_status = get_systems_status().await?;
     println!("{}\n\n{daemon_status}", "Eruption Status".bold());
 
@@ -90,6 +92,21 @@ async fn slot_command() -> Result<()> {
     println!("Slot: {}", format!("{index}").bold());
 
     Ok(())
+}
+
+fn print_header() {
+    println!(
+        r"
+     ********                          **   **
+     /**/////                 ******   /**  //
+     /**       ****** **   **/**///** ****** **  ******  *******
+     /******* //**//*/**  /**/**  /**///**/ /** **////**//**///**
+     /**////   /** / /**  /**/******   /**  /**/**   /** /**  /**
+     /**       /**   /**  /**/**///    /**  /**/**   /** /**  /**
+     /********/***   //******/**       //** /**//******  ***  /**
+     //////// ///     ////// //         //  //  //////  ///   //
+    "
+    );
 }
 
 /// Status information about the running Eruption daemons
