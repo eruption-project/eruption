@@ -312,12 +312,12 @@ pub fn resume_from_suspend() -> Result<()> {
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
             let model = hwdevices::get_device_model(
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
 
             info!("Reinitializing keyboard device '{make} {model}'");
 
@@ -334,12 +334,12 @@ pub fn resume_from_suspend() -> Result<()> {
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
             let model = hwdevices::get_device_model(
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
 
             info!("Reinitializing mouse device '{make} {model}'");
 
@@ -356,12 +356,12 @@ pub fn resume_from_suspend() -> Result<()> {
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
             let model = hwdevices::get_device_model(
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
             )
-            .unwrap_or_else(|| "<unknown>");
+            .unwrap_or("<unknown>");
 
             info!("Reinitializing misc device '{make} {model}'");
 

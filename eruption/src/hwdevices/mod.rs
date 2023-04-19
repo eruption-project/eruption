@@ -1882,9 +1882,5 @@ pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'st
         .iter()
         .find(|e| e.get_usb_vid() == usb_vid && e.get_usb_pid() == usb_pid);
 
-    if let Some(metadata) = metadata {
-        Some((metadata.get_device_make(), metadata.get_device_model()))
-    } else {
-        None
-    }
+    metadata.map(|metadata| (metadata.get_device_make(), metadata.get_device_model()))
 }

@@ -1499,12 +1499,12 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
         keyboard_device.read().get_usb_vid(),
         keyboard_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
     let model = hwdevices::get_device_model(
         keyboard_device.read().get_usb_vid(),
         keyboard_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
 
     keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the keyboard device '{make} {model}': {}", e);
@@ -1549,12 +1549,12 @@ pub fn init_mouse_device(mouse_device: &MouseDevice) {
         mouse_device.read().get_usb_vid(),
         mouse_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
     let model = hwdevices::get_device_model(
         mouse_device.read().get_usb_vid(),
         mouse_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
 
     mouse_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the mouse device '{make} {model}': {}", e);
@@ -1599,12 +1599,12 @@ pub fn init_misc_device(misc_device: &MiscDevice) {
         misc_device.read().get_usb_vid(),
         misc_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
     let model = hwdevices::get_device_model(
         misc_device.read().get_usb_vid(),
         misc_device.read().get_usb_pid(),
     )
-    .unwrap_or_else(|| "<unknown>");
+    .unwrap_or("<unknown>");
 
     misc_device.write().open(hidapi).unwrap_or_else(|e| {
         error!("Error opening the misc device '{make} {model}': {}", e);
