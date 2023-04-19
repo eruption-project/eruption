@@ -23,10 +23,17 @@
   margin: 18px;
 }
 
+.icon {
+  font-size: x-large;
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.2);
+}
+
 .heading {
-  font-size: xx-large;
+  font-size: x-large;
   font-weight: bold;
   margin-left: 8px;
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .notification {
