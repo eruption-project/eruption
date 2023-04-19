@@ -24,7 +24,7 @@ The Eruption Development Team
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24" />
+  <requires lib="gtk+" version="3.24"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Eruption -->
   <!-- interface-copyright 2019-2023 The Eruption Development Team -->
@@ -69,9 +69,12 @@ The Eruption Development Team
             <property name="halign">start</property>
             <property name="label" translatable="yes">&lt;Unknown&gt;</property>
             <attributes>
-              <attribute name="weight" value="bold" />
-              <attribute name="scale" value="2" />
+              <attribute name="weight" value="bold"/>
+              <attribute name="scale" value="2"/>
             </attributes>
+            <style>
+              <class name="heading"/>
+            </style>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -87,6 +90,9 @@ The Eruption Development Team
             <property name="pixel-size">64</property>
             <property name="icon-name">input-keyboard-symbolic</property>
             <property name="icon_size">0</property>
+            <style>
+              <class name="heading"/>
+            </style>
           </object>
           <packing>
             <property name="left-attach">0</property>
