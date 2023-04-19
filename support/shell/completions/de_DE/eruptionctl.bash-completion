@@ -480,6 +480,9 @@ _eruptionctl() {
             eruptionctl__help__scripts,list)
                 cmd="eruptionctl__help__scripts__list"
                 ;;
+            eruptionctl__help__status,daemon)
+                cmd="eruptionctl__help__status__daemon"
+                ;;
             eruptionctl__help__status,profile)
                 cmd="eruptionctl__help__status__profile"
                 ;;
@@ -600,6 +603,9 @@ _eruptionctl() {
             eruptionctl__scripts__help,list)
                 cmd="eruptionctl__scripts__help__list"
                 ;;
+            eruptionctl__status,daemon)
+                cmd="eruptionctl__status__daemon"
+                ;;
             eruptionctl__status,help)
                 cmd="eruptionctl__status__help"
                 ;;
@@ -608,6 +614,9 @@ _eruptionctl() {
                 ;;
             eruptionctl__status,slot)
                 cmd="eruptionctl__status__slot"
+                ;;
+            eruptionctl__status__help,daemon)
+                cmd="eruptionctl__status__help__daemon"
                 ;;
             eruptionctl__status__help,help)
                 cmd="eruptionctl__status__help__help"
@@ -2723,8 +2732,22 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__help__status)
-            opts="profile slot"
+            opts="daemon profile slot"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__status__daemon)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -3381,7 +3404,7 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__status)
-            opts="-h --help profile slot help"
+            opts="-h --help daemon profile slot help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3394,9 +3417,37 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        eruptionctl__status__help)
-            opts="profile slot help"
+        eruptionctl__status__daemon)
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__status__help)
+            opts="daemon profile slot help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__status__help__daemon)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

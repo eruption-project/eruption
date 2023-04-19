@@ -48,7 +48,13 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-status-command-$line[1]:"
         case $line[1] in
-            (profile)
+            (daemon)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(profile)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -72,7 +78,11 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-status-help-command-$line[1]:"
         case $line[1] in
-            (profile)
+            (daemon)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(profile)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1195,7 +1205,11 @@ _arguments "${_arguments_options[@]}" \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:eruptionctl-help-status-command-$line[1]:"
         case $line[1] in
-            (profile)
+            (daemon)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(profile)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1894,6 +1908,21 @@ _eruptionctl__help__effects__config_commands() {
     )
     _describe -t commands 'eruptionctl help effects config commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__status__daemon_commands] )) ||
+_eruptionctl__help__status__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help status daemon commands' commands "$@"
+}
+(( $+functions[_eruptionctl__status__daemon_commands] )) ||
+_eruptionctl__status__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl status daemon commands' commands "$@"
+}
+(( $+functions[_eruptionctl__status__help__daemon_commands] )) ||
+_eruptionctl__status__help__daemon_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl status help daemon commands' commands "$@"
+}
 (( $+functions[_eruptionctl__devices__debounce_commands] )) ||
 _eruptionctl__devices__debounce_commands() {
     local commands; commands=()
@@ -2324,6 +2353,7 @@ _eruptionctl__scripts__help__help_commands() {
 (( $+functions[_eruptionctl__status__help_commands] )) ||
 _eruptionctl__status__help_commands() {
     local commands; commands=(
+'daemon:Shows some status informations about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -2874,6 +2904,7 @@ _eruptionctl__help__effects__status_commands() {
 (( $+functions[_eruptionctl__help__status_commands] )) ||
 _eruptionctl__help__status_commands() {
     local commands; commands=(
+'daemon:Shows some status informations about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
     )
@@ -2882,6 +2913,7 @@ _eruptionctl__help__status_commands() {
 (( $+functions[_eruptionctl__status_commands] )) ||
 _eruptionctl__status_commands() {
     local commands; commands=(
+'daemon:Shows some status informations about Eruption' \
 'profile:Shows the currently active profile' \
 'slot:Shows the currently active slot' \
 'help:Print this message or the help of the given subcommand(s)' \
