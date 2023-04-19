@@ -913,9 +913,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.2.3"
+version = "4.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49f9152d70e42172fdb87de2efd7327160beee37886027cf86f30a233d5b30b4"
+checksum = "956ac1f6381d8d82ab4684768f89c0ea3afe66925ceadb4eeb3fc452ffc55d62"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -924,9 +924,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.2.3"
+version = "4.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e067b220911598876eb55d52725ddcc201ffe3f0904018195973bc5b012ea2ca"
+checksum = "84080e799e54cff944f4b4a4b0e71630b0e0443b25b985175c7dddc1a859b749"
 dependencies = [
  "anstream",
  "anstyle",
@@ -941,7 +941,7 @@ version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01c22dcfb410883764b29953103d9ef7bb8fe21b3fa1158bc99986c2067294bd"
 dependencies = [
- "clap 4.2.3",
+ "clap 4.2.4",
 ]
 
 [[package]]
@@ -1997,7 +1997,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "color-eyre",
  "colorgrad",
  "config",
@@ -2067,7 +2067,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2107,7 +2107,7 @@ name = "eruption-cmd"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2141,7 +2141,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2180,7 +2180,7 @@ version = "0.0.4"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2282,7 +2282,7 @@ version = "0.1.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2314,7 +2314,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2356,7 +2356,7 @@ version = "0.0.8"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2403,7 +2403,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2452,7 +2452,7 @@ name = "eruption-netfx"
 version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2497,7 +2497,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "config",
@@ -2565,7 +2565,7 @@ version = "0.0.11"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2602,7 +2602,7 @@ version = "0.0.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2635,7 +2635,7 @@ name = "eruptionctl"
 version = "0.1.5"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -5497,7 +5497,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "clap_complete",
  "color-eyre",
  "config",
@@ -6315,7 +6315,7 @@ name = "simple-example-01"
 version = "0.0.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.3",
+ "clap 4.2.4",
  "color-eyre",
  "eruption-sdk",
  "eyre",
@@ -7505,9 +7505,9 @@ checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
 
 [[package]]
 name = "wayland-backend"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79ebd48bfc1178c9190c7ff80cc822b3335ffc83141e9aa723168f377257623e"
+checksum = "41b48e27457e8da3b2260ac60d0a94512f5cba36448679f3747c0865b7893ed8"
 dependencies = [
  "cc",
  "downcast-rs",
