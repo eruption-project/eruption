@@ -29,6 +29,7 @@ mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
+mod wooting_two_he_arm;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -46,6 +47,11 @@ pub fn get_keyboard_device(device_handle: u64) -> Result<Box<dyn Keyboard>> {
         .get(device_handle as usize)
     {
         Some(device) => match device {
+            // Wooting Two HE (ARM)
+            (0x31e3, 0x1230) => Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::new(
+                device_handle,
+            ))),
+
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Ok(Box::new(
                 roccat_vulcan_1xx::RoccatVulcan1xx::new(device_handle),

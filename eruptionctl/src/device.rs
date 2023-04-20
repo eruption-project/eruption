@@ -41,7 +41,13 @@ pub struct DeviceInfo {
 
 lazy_static! {
     #[rustfmt::skip]
-    pub static ref DEVICE_INFO: &'static [DeviceInfo; 28] = &[
+    pub static ref DEVICE_INFO: &'static [DeviceInfo; 29] = &[
+        // Wooting
+
+        // Wooting Two HE (ARM) series
+        DeviceInfo { make: "Wooting", model: "Two HE (ARM)",        usb_vid: 0x31e3, usb_pid: 0x1230, },
+
+        // ROCCAT / Turtle Beach
         DeviceInfo { make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x3098, },
         DeviceInfo { make: "ROCCAT", model: "Vulcan 100/12x",       usb_vid: 0x1e7d, usb_pid: 0x307a, },
 
@@ -55,6 +61,7 @@ lazy_static! {
 
         DeviceInfo { make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15, },
 
+        //
         DeviceInfo { make: "ROCCAT", model: "Kone Aimo",            usb_vid: 0x1e7d, usb_pid: 0x2e27, },
 
         DeviceInfo { make: "ROCCAT", model: "Kone Aimo Remastered", usb_vid: 0x1e7d, usb_pid: 0x2e2c, },
@@ -87,6 +94,7 @@ lazy_static! {
         DeviceInfo { make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7c, },
         DeviceInfo { make: "ROCCAT", model: "Nyth",                 usb_vid: 0x1e7d, usb_pid: 0x2e7d, },
 
+        //
         DeviceInfo { make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37, },
 
         DeviceInfo { make: "ROCCAT", model: "Sense AIMO XXL", usb_vid: 0x1e7d, usb_pid: 0x343b, },

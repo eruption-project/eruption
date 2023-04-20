@@ -57,6 +57,7 @@ mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
+mod wooting_two_he_arm;
 
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
 pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
@@ -65,10 +66,15 @@ pub type MiscSerialDevice = Arc<RwLock<Box<dyn MiscDeviceTrait + Sync + Send>>>;
 
 #[derive(Debug, Clone, Copy, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum MaturityLevel {
+    /// The driver is considered to be stable
     #[serde(rename = "stable")]
     Stable,
+
+    /// The driver may contain bugs, but is enabled by default
     #[serde(rename = "testing")]
     Testing,
+
+    /// The driver may contain serious bugs, therefor it is disabled by default
     #[serde(rename = "experimental")]
     Experimental,
 }
@@ -78,8 +84,13 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 28]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 29]>> = Arc::new(Mutex::new([
         // Supported keyboards
+
+        // Wooting
+
+        // Wooting Two HE (ARM) series
+        KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230, &wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
 
         // ROCCAT
 
@@ -1606,12 +1617,32 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
     loop {
         match Enumerator::new() {
             Ok(mut enumerator) => {
-                // enumerator.match_is_initialized().unwrap();
+                enumerator.match_is_initialized().unwrap();
+
                 enumerator.match_subsystem("input").unwrap();
+                enumerator.match_property("ID_INPUT_KEYBOARD", "1").unwrap();
+                enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+
+                // statically blacklist the following unsupported devices
+                let static_blacklist: Vec<String> = vec![/* String::from("Generic X-Box pad") */];
 
                 match enumerator.scan_devices() {
                     Ok(devices) => {
                         for device in devices {
+                            if let Some(devname) = device
+                                .properties()
+                                .find(|e| e.name() == "NAME")
+                                .map(|v| v.value().to_string_lossy().into_owned())
+                            {
+                                if static_blacklist
+                                    .iter()
+                                    .any(|e| e.eq_ignore_ascii_case(&devname))
+                                {
+                                    warn!("Skipping statically blacklisted device: {}", devname);
+                                    continue;
+                                }
+                            }
+
                             let found_dev = device.properties().any(|e| {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
