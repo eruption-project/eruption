@@ -68,7 +68,7 @@ hexdump = "0.1.1"
 chrono = { version = "0.4.24", features = ["serde"] }
 hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
 luajit-src = "210.4.5"
-mlua = { version = "0.8.8", features = ["luajit52", "vendored"] }
+mlua = { version = "0.9.0-beta.1", features = ["luajit52", "vendored"] }
 regex = "1.8.1"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"

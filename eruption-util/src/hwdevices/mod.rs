@@ -25,6 +25,7 @@ mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
+mod wooting_two_he_arm;
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
