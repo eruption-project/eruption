@@ -186,7 +186,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
         }
     }
 
-    fn call<Args: ToLuaMulti<'lua>>(
+    fn call<Args: IntoLuaMulti<'lua>>(
         &mut self,
         function_name: &str,
         args: Args,

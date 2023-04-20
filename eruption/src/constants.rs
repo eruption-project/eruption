@@ -111,8 +111,8 @@ pub const MAX_EVENTS_PER_ITERATION: u64 = 128;
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
 
-/// Amount of time that has to pass before we retry sending a command to the LED control device
-pub const DEVICE_SETTLE_MILLIS: u64 = 25;
+/// Amount of time that has to pass before we retry sending a command to the LED/control USB sub-device
+pub const DEVICE_SETTLE_MILLIS: u64 = 100;
 
 /// Update sensors every n seconds
 /// It is recommended to use a prime number value here

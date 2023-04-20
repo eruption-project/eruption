@@ -41,6 +41,7 @@ Hardware feature support matrix
 
 | Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys     | Media keys F9-F12 |
 | ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ------------------------------------ | ----------------- |
+| Wooting | Two HE (ARM)       | work-in-progress  | No | No | No | No | No | No |
 | ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
 | ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |
 | ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |

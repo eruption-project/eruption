@@ -94,7 +94,7 @@ simdnoise = "3.1.6"
 # lua-src = "544.0.1"
 # mlua = { version = "0.8.8", features = ["lua54", "vendored"] }
 luajit-src = "210.4.5"
-mlua = { version = "0.8.8", features = ["luajit52", "vendored"] }
+mlua = { version = "0.9.0-beta.1", features = ["luajit52", "vendored"] }
 sysinfo = "0.28.4"
 bincode = "2.0.0-rc.3"
 rustfft = "6.1.0"
@@ -105,6 +105,7 @@ paste = "1.0.12"
 bitvec = "1.0.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"
+crc16 = "0.4.0"
 bytes = "1.4.0"
 prost = "0.11.9"
 prost-types = "0.11.9"
@@ -117,6 +118,8 @@ unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"
 systemd = "0.10.0"
+bitfield-struct = "0.4.1"
+transpose = "0.2.2"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"
