@@ -42,11 +42,11 @@ debug-async = []
 [dependencies]
 cfg-if = "1.0.0"
 clap = { version = "4.2.4", features = ["derive"] }
-clap_complete = "4.2.0"
+clap_complete = "4.2.1"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
 comfy-table = "6.1.4"
-libc = "0.2.141"
+libc = "0.2.142"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
@@ -67,7 +67,7 @@ color-eyre = "0.6.2"
 chrono = { version = "0.4.24", features = ["serde"] }
 luajit-src = "210.4.5"
 mlua = { version = "0.8.8", features = ["luajit52", "vendored"] }
-regex = "1.7.3"
+regex = "1.8.1"
 dbus = "0.9.7"
 evdev-rs = "0.6.1"
 lazy_static = "1.4.0"
