@@ -59,7 +59,7 @@ tracing-subscriber = { version = "0.3.16", features = [
   "env-filter",
 ] }
 console-subscriber = { version = "0.1.8", features = ["parking_lot"] }
-libc = "0.2.141"
+libc = "0.2.142"
 nix = "0.26.2"
 atty = "0.2.14"
 syslog = "6.0.1"
