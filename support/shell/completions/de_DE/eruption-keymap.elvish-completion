@@ -1,0 +1,179 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-keymap] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-keymap'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-keymap'= {
+            cand -v 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand list 'Listet alle verfügbaren Keymaps auf'
+            cand mapping 'Hinzufügen oder entfernen eines Tasten Mappings'
+            cand description 'Zeigt oder setzt die Beschreibung der Keymap'
+            cand show 'Zeigt verfügbare Informationen über eine Keymap'
+            cand macros 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei'
+            cand events 'Zeigt eine Liste der verfügbaren Linux EVDEV Ereignisse'
+            cand compile 'Übersetzt eine Keymap zu Lua Code und macht sie für Eruption verfügbar'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-keymap;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;mapping'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand add 'Ein Tasten Mapping von `source` nach `action` hinzufügen'
+            cand remove 'Das Tasten Mapping von `source` entfernen'
+            cand enable 'Aktiviert eine Mapping Regel'
+            cand disable 'Deaktiviert eine Mapping Regel'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-keymap;mapping;add'= {
+            cand -d 'Specify the device to add the rule for'
+            cand --device 'Specify the device to add the rule for'
+            cand --description 'Specify a description for a rule'
+            cand -l 'Specify a list of layers'
+            cand --layers 'Specify a list of layers'
+            cand -k 'The filename of the keymap'
+            cand --keymap 'The filename of the keymap'
+            cand -e 'Specify the enabled status of the newly added rule'
+            cand --enabled 'Specify the enabled status of the newly added rule'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;mapping;remove'= {
+            cand -d 'Specify the device to remove the mapping from'
+            cand --device 'Specify the device to remove the mapping from'
+            cand -k 'Specify a list of layers'
+            cand --keymap 'Specify a list of layers'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;mapping;enable'= {
+            cand -d 'Specify the device'
+            cand --device 'Specify the device'
+            cand -k 'Specify a list of layers'
+            cand --keymap 'Specify a list of layers'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;mapping;disable'= {
+            cand -d 'Specify the device'
+            cand --device 'Specify the device'
+            cand -k 'Specify a list of layers'
+            cand --keymap 'Specify a list of layers'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;mapping;help'= {
+            cand add 'Ein Tasten Mapping von `source` nach `action` hinzufügen'
+            cand remove 'Das Tasten Mapping von `source` entfernen'
+            cand enable 'Aktiviert eine Mapping Regel'
+            cand disable 'Deaktiviert eine Mapping Regel'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-keymap;mapping;help;add'= {
+        }
+        &'eruption-keymap;mapping;help;remove'= {
+        }
+        &'eruption-keymap;mapping;help;enable'= {
+        }
+        &'eruption-keymap;mapping;help;disable'= {
+        }
+        &'eruption-keymap;mapping;help;help'= {
+        }
+        &'eruption-keymap;description'= {
+            cand -k 'k'
+            cand --keymap 'keymap'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;show'= {
+            cand -k 'k'
+            cand --keymap 'keymap'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;macros'= {
+            cand -l 'l'
+            cand --lua-path 'lua-path'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;events'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;compile'= {
+            cand -k 'k'
+            cand --keymap 'keymap'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-keymap;help'= {
+            cand list 'Listet alle verfügbaren Keymaps auf'
+            cand mapping 'Hinzufügen oder entfernen eines Tasten Mappings'
+            cand description 'Zeigt oder setzt die Beschreibung der Keymap'
+            cand show 'Zeigt verfügbare Informationen über eine Keymap'
+            cand macros 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei'
+            cand events 'Zeigt eine Liste der verfügbaren Linux EVDEV Ereignisse'
+            cand compile 'Übersetzt eine Keymap zu Lua Code und macht sie für Eruption verfügbar'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-keymap;help;list'= {
+        }
+        &'eruption-keymap;help;mapping'= {
+            cand add 'Ein Tasten Mapping von `source` nach `action` hinzufügen'
+            cand remove 'Das Tasten Mapping von `source` entfernen'
+            cand enable 'Aktiviert eine Mapping Regel'
+            cand disable 'Deaktiviert eine Mapping Regel'
+        }
+        &'eruption-keymap;help;mapping;add'= {
+        }
+        &'eruption-keymap;help;mapping;remove'= {
+        }
+        &'eruption-keymap;help;mapping;enable'= {
+        }
+        &'eruption-keymap;help;mapping;disable'= {
+        }
+        &'eruption-keymap;help;description'= {
+        }
+        &'eruption-keymap;help;show'= {
+        }
+        &'eruption-keymap;help;macros'= {
+        }
+        &'eruption-keymap;help;events'= {
+        }
+        &'eruption-keymap;help;compile'= {
+        }
+        &'eruption-keymap;help;completions'= {
+        }
+        &'eruption-keymap;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

@@ -1,0 +1,431 @@
+#compdef eruption-debug-tool
+
+autoload -U is-at-least
+
+_eruption-debug-tool() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_eruption-debug-tool_commands" \
+"*::: :->eruption-debug-tool" \
+&& ret=0
+    case $state in
+    (eruption-debug-tool)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(report)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(trace)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(state-diff)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(read)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':report_id -- ID of the USB HID report:' \
+':length -- Length in bytes to read:' \
+&& ret=0
+;;
+(write)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
+&& ret=0
+;;
+(read-raw)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':report_id -- ID of the USB HID report:' \
+':length -- Length in bytes to read:' \
+&& ret=0
+;;
+(write-raw)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
+&& ret=0
+;;
+(run-tests)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(utils)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_eruption-debug-tool__utils_commands" \
+"*::: :->utils" \
+&& ret=0
+
+    case $state in
+    (utils)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-utils-command-$line[1]:"
+        case $line[1] in
+            (reverse-crc8)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::data -- Hex byte vectors each starting with expected CRC8, no spaces allowed. \[0x32,0xff,0x00,0x00,0x00,0x00,0xff\] \[0x31,0x59,0xa5,0xff,0x00,0x00,0x00\] \[0x31,0x00,0x00,0xff,0xff,0x00,0x00\]:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-debug-tool__utils__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-utils-help-command-$line[1]:"
+        case $line[1] in
+            (reverse-crc8)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-debug-tool__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(report)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(trace)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(state-diff)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(read)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(write)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(read-raw)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(write-raw)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(run-tests)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(utils)
+_arguments "${_arguments_options[@]}" \
+":: :_eruption-debug-tool__help__utils_commands" \
+"*::: :->utils" \
+&& ret=0
+
+    case $state in
+    (utils)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruption-debug-tool-help-utils-command-$line[1]:"
+        case $line[1] in
+            (reverse-crc8)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_eruption-debug-tool_commands] )) ||
+_eruption-debug-tool_commands() {
+    local commands; commands=(
+'list:List available devices, use this first to find out the index of the device to use' \
+'report:Generate a report for the specified device' \
+'trace:Dump a trace of events originating from the specified device (May hang the device)' \
+'state-diff:Read out the device state and show differences to previous state (May hang the device)' \
+'read:Read a single USB HID feature report from device' \
+'write:Send a single USB HID feature report to device (dangerous)' \
+'read-raw:Read data from device' \
+'write-raw:Send data to device (dangerous)' \
+'run-tests:Send a device specific init sequence and try to set colors' \
+'utils:Special utility functions, like searching for CRC polynoms and parameters' \
+'completions:Shell Definitionen für Autovervollständigung erzeugen' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-debug-tool commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__completions_commands] )) ||
+_eruption-debug-tool__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool completions commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__completions_commands] )) ||
+_eruption-debug-tool__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help completions commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help_commands] )) ||
+_eruption-debug-tool__help_commands() {
+    local commands; commands=(
+'list:List available devices, use this first to find out the index of the device to use' \
+'report:Generate a report for the specified device' \
+'trace:Dump a trace of events originating from the specified device (May hang the device)' \
+'state-diff:Read out the device state and show differences to previous state (May hang the device)' \
+'read:Read a single USB HID feature report from device' \
+'write:Send a single USB HID feature report to device (dangerous)' \
+'read-raw:Read data from device' \
+'write-raw:Send data to device (dangerous)' \
+'run-tests:Send a device specific init sequence and try to set colors' \
+'utils:Special utility functions, like searching for CRC polynoms and parameters' \
+'completions:Shell Definitionen für Autovervollständigung erzeugen' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-debug-tool help commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__help_commands] )) ||
+_eruption-debug-tool__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help help commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils__help_commands] )) ||
+_eruption-debug-tool__utils__help_commands() {
+    local commands; commands=(
+'reverse-crc8:Find CRC8 polynoms and init params by performing an exhaustive search' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-debug-tool utils help commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils__help__help_commands] )) ||
+_eruption-debug-tool__utils__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool utils help help commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__list_commands] )) ||
+_eruption-debug-tool__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help list commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__list_commands] )) ||
+_eruption-debug-tool__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool list commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__read_commands] )) ||
+_eruption-debug-tool__help__read_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help read commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__read_commands] )) ||
+_eruption-debug-tool__read_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool read commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__read-raw_commands] )) ||
+_eruption-debug-tool__help__read-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help read-raw commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__read-raw_commands] )) ||
+_eruption-debug-tool__read-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool read-raw commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__report_commands] )) ||
+_eruption-debug-tool__help__report_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help report commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__report_commands] )) ||
+_eruption-debug-tool__report_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool report commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__utils__reverse-crc8_commands] )) ||
+_eruption-debug-tool__help__utils__reverse-crc8_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help utils reverse-crc8 commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils__help__reverse-crc8_commands] )) ||
+_eruption-debug-tool__utils__help__reverse-crc8_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool utils help reverse-crc8 commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils__reverse-crc8_commands] )) ||
+_eruption-debug-tool__utils__reverse-crc8_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool utils reverse-crc8 commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__run-tests_commands] )) ||
+_eruption-debug-tool__help__run-tests_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help run-tests commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__run-tests_commands] )) ||
+_eruption-debug-tool__run-tests_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool run-tests commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__state-diff_commands] )) ||
+_eruption-debug-tool__help__state-diff_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help state-diff commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__state-diff_commands] )) ||
+_eruption-debug-tool__state-diff_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool state-diff commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__trace_commands] )) ||
+_eruption-debug-tool__help__trace_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help trace commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__trace_commands] )) ||
+_eruption-debug-tool__trace_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool trace commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__utils_commands] )) ||
+_eruption-debug-tool__help__utils_commands() {
+    local commands; commands=(
+'reverse-crc8:Find CRC8 polynoms and init params by performing an exhaustive search' \
+    )
+    _describe -t commands 'eruption-debug-tool help utils commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__utils_commands] )) ||
+_eruption-debug-tool__utils_commands() {
+    local commands; commands=(
+'reverse-crc8:Find CRC8 polynoms and init params by performing an exhaustive search' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruption-debug-tool utils commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__write_commands] )) ||
+_eruption-debug-tool__help__write_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help write commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__write_commands] )) ||
+_eruption-debug-tool__write_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool write commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__write-raw_commands] )) ||
+_eruption-debug-tool__help__write-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help write-raw commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__write-raw_commands] )) ||
+_eruption-debug-tool__write-raw_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool write-raw commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_eruption-debug-tool" ]; then
+    _eruption-debug-tool "$@"
+else
+    compdef _eruption-debug-tool eruption-debug-tool
+fi

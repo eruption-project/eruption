@@ -29,9 +29,10 @@ use std::{
     collections::HashMap,
     convert::TryFrom,
     fs,
+    io::Read,
     path::{Path, PathBuf},
-    process::Child,
     process::Command,
+    process::{Child, Stdio},
     sync::Arc,
     time::Duration,
     u8,
@@ -522,6 +523,20 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
     Ok(())
 }
 
+/// Returns true when AmbientFX is enabled
+pub fn get_ambient_fx() -> Result<bool> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption.fx_proxy",
+        "/org/eruption/config",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
+
+    let result = proxy.get("org.eruption.fx_proxy.Effects", "AmbientEffect")?;
+
+    Ok(result)
+}
+
 /// Set ambient effect to the state of `enabled`
 pub fn set_ambient_effect(enabled: bool) -> Result<()> {
     let conn = Connection::new_session()?;
@@ -705,5 +720,105 @@ pub fn restart_fx_proxy_daemon() -> Result<()> {
         Ok(())
     } else {
         Err(UtilError::RestartFailed {}.into())
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceError {
+    #[error("Daemon action failed")]
+    ActionFailed,
+    // #[error("Unknown error")]
+    // UnknownError,
+}
+
+#[derive(Debug)]
+pub enum Daemon {
+    Eruption,
+    ProcessMonitor,
+    AudioProxy,
+    FxProxy,
+}
+
+pub fn set_daemon_status(daemon: Daemon, running: bool) -> Result<()> {
+    let unit_file = match daemon {
+        Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
+        Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
+        Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
+    };
+
+    let user_or_system = match daemon {
+        Daemon::Eruption => "--system",
+        Daemon::ProcessMonitor => "--user",
+        Daemon::AudioProxy => "--user",
+        Daemon::FxProxy => "--user",
+    };
+
+    let action = if running { "start" } else { "stop" };
+
+    let status = Command::new("/usr/bin/systemctl")
+        // .stdout(Stdio::null())
+        .arg(user_or_system)
+        .arg(action)
+        .arg(unit_file)
+        .status()?;
+
+    let exit_code = status.code().unwrap_or(0);
+
+    if exit_code != 0 {
+        Err(ServiceError::ActionFailed {}.into())
+    } else {
+        Ok(())
+    }
+}
+
+pub enum ServiceStatus {
+    Unknown,
+    Active,
+    Inactive,
+    Failed,
+}
+
+pub fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
+    let unit_file = match daemon {
+        Daemon::Eruption => constants::UNIT_NAME_ERUPTION,
+        Daemon::ProcessMonitor => constants::UNIT_NAME_PROCESS_MONITOR,
+        Daemon::AudioProxy => constants::UNIT_NAME_AUDIO_PROXY,
+        Daemon::FxProxy => constants::UNIT_NAME_FX_PROXY,
+    };
+
+    let user_or_system = match daemon {
+        Daemon::Eruption => "--system",
+        Daemon::ProcessMonitor => "--user",
+        Daemon::AudioProxy => "--user",
+        Daemon::FxProxy => "--user",
+    };
+
+    let mut status = Command::new("/usr/bin/systemctl")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg(user_or_system)
+        .arg("is-failed")
+        .arg(unit_file)
+        .spawn()?;
+
+    let _status = status.wait()?;
+
+    match status.stdout {
+        Some(ref mut out) => {
+            let mut output = String::new();
+            out.read_to_string(&mut output)?;
+
+            match output.trim() {
+                "failed" => Ok(ServiceStatus::Failed),
+                "active" => Ok(ServiceStatus::Active),
+                "inactive" => Ok(ServiceStatus::Inactive),
+
+                _ => Ok(ServiceStatus::Unknown),
+            }
+        }
+
+        None => Err(ServiceError::ActionFailed {}.into()),
     }
 }

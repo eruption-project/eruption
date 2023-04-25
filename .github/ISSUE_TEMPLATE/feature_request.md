@@ -1,10 +1,9 @@
 ---
 name: Feature request
 about: Create a request for a feature that you would like to be added to Eruption
-title: ''
-labels: 'enhancement'
-assignees: ''
-
+title: ""
+labels: enhancement
+assignees: ""
 ---
 
 **Introduction**

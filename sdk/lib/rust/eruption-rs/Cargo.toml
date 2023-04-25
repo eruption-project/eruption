@@ -19,9 +19,12 @@
 
 [package]
 name = "eruption-sdk"
-version = "0.0.6"
+version = "0.0.11"
 build = "build.rs"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+authors = [
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
+]
 edition = "2021"
 rust-version = "1.65"
 description = "Provides an interface to the Eruption Realtime RGB LED Driver for Linux"
@@ -38,14 +41,14 @@ cfg-if = "1.0.0"
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-libc = "0.2.141"
+libc = "0.2.142"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-serde = "1.0.159"
+serde = "1.0.160"
 bincode = "2.0.0-rc.3"
 bytes = "1.4.0"
-prost = "0.11.8"
-prost-types = "0.11.8"
-socket2 = { version = "0.5.1", features = ["all"] }
+prost = "0.11.9"
+prost-types = "0.11.9"
+socket2 = { version = "0.5.2", features = ["all"] }
 
 [build-dependencies]
-prost-build = "0.11.8"
+prost-build = "0.11.9"

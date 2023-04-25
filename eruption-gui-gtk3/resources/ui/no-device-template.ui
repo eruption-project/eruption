@@ -47,7 +47,7 @@ The Eruption Development Team
         <property name="ypad">8</property>
         <property name="label" translatable="yes">No devices detected</property>
         <style>
-          <class name="heading"/>
+          <class name="heading_large"/>
         </style>
       </object>
       <packing>
@@ -65,9 +65,9 @@ The Eruption Development Team
         <property name="vexpand">True</property>
         <property name="xpad">8</property>
         <property name="ypad">8</property>
-        <property name="label" translatable="yes">There have been no supported devices detected in this category</property>
+        <property name="label" translatable="yes">No supported devices detected in this device category</property>
         <style>
-          <class name="notification"/>
+          <class name="notification_dim"/>
         </style>
       </object>
       <packing>

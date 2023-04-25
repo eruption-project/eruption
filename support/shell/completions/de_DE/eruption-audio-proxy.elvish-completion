@@ -1,0 +1,54 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-audio-proxy] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-audio-proxy'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-audio-proxy'= {
+            cand -c 'Die zu verwendende Konfigurationsdatei'
+            cand --config 'Die zu verwendende Konfigurationsdatei'
+            cand -v 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand daemon 'Im Hintergrund ausführen'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-audio-proxy;daemon'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-audio-proxy;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-audio-proxy;help'= {
+            cand daemon 'Im Hintergrund ausführen'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-audio-proxy;help;daemon'= {
+        }
+        &'eruption-audio-proxy;help;completions'= {
+        }
+        &'eruption-audio-proxy;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

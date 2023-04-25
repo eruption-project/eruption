@@ -34,15 +34,22 @@ build:
 	@echo ""
 	@echo "If Eruption is already running, stop it first.  Consider:"
 	@echo "'make stop && sudo make install && make start'"
+	@echo ""
 
 start:
 	@echo "Notifying system daemons about Eruption..."
+	@echo ""
 
 	-@$(SUDO) systemctl daemon-reload
 	-@systemctl --user daemon-reload
 
-	-@$(SUDO) systemctl reload systemd-udevd
+	-@$(SUDO) /usr/bin/systemd-sysusers
+
 	-@$(SUDO) systemctl reload dbus.service
+	-@$(SUDO) systemctl reload systemd-udevd
+
+	-@$(SUDO) modprobe uinput
+	-@$(SUDO) udevadm trigger
 
 	@echo "Starting up Eruption daemons..."
 
@@ -56,12 +63,13 @@ start:
 
 stop:
 	@echo "Notifying system daemons about Eruption..."
+	@echo ""
 
 	-@$(SUDO) systemctl daemon-reload
 	-@systemctl --user daemon-reload
 
-	-@$(SUDO) systemctl reload systemd-udevd
 	-@$(SUDO) systemctl reload dbus.service
+	-@$(SUDO) systemctl reload systemd-udevd
 
 	@echo "Shutting down daemons..."
 
@@ -76,7 +84,17 @@ install:
 	@echo "Please ensure that all Eruption daemons have been shut down completely!"
 	@echo "Otherwise there will probably be errors during installation (file busy)"
 	@echo ""
+
+	@echo "Creating 'eruption' system user and group..."
+	@echo ""
+
+	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
+	-@systemctl daemon-reload
+	
+	@/usr/bin/systemd-sysusers
+
 	@echo "Commencing installation of Eruption..."
+	@echo ""
 
 	@mkdir -p "/etc/eruption"
 	@mkdir -p "$(TARGET_DIR)/share/doc/eruption"
@@ -95,10 +113,13 @@ install:
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/user"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/user-preset"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-sleep"
+	@mkdir -p "$(TARGET_DIR)/lib/sysusers.d/"
 	@mkdir -p "$(TARGET_DIR)/lib/udev/rules.d/"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system.d"
+	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system-services"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/session.d"
 	@mkdir -p "$(TARGET_DIR)/share/polkit-1/actions"
+	@mkdir -p "$(TARGET_DIR)/share/polkit-1/rules.d"
 	@mkdir -p "$(TARGET_DIR)/share/man/man8"
 	@mkdir -p "$(TARGET_DIR)/share/man/man5"
 	@mkdir -p "$(TARGET_DIR)/share/man/man1"
@@ -118,6 +139,7 @@ install:
 	@cp "support/config/audio-proxy.conf" "/etc/eruption/"
 	@cp "support/config/process-monitor.conf" "/etc/eruption/"
 	@cp "support/profile.d/eruption.sh" "/etc/profile.d/eruption.sh"
+	@cp "support/modules-load.d/eruption.conf" "/etc/modules-load.d/eruption.conf"
 	@cp "support/systemd/eruption.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption.preset"
 	@cp "support/systemd/eruption-fx-proxy.service" "$(TARGET_DIR)/lib/systemd/user/"
@@ -128,11 +150,14 @@ install:
 	@cp "support/systemd/eruption-process-monitor.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-process-monitor.preset"
 	@cp "support/systemd/eruption-hotplug-helper.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
+	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
-	@cp "support/dbus/org.eruption.control.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
+	@cp "support/dbus/org.eruption.service" "$(TARGET_DIR)/share/dbus-1/system-services/"
+	@cp "support/dbus/org.eruption.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/dbus/org.eruption.fx_proxy.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
 	@cp "support/policykit/org.eruption.policy" "$(TARGET_DIR)/share/polkit-1/actions/"
+	@cp "support/policykit/org.eruption.rules" "$(TARGET_DIR)/share/polkit-1/rules.d/"
 	@cp "support/man/eruption.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption.conf.5" "$(TARGET_DIR)/share/man/man5/"
@@ -208,13 +233,16 @@ install:
 	# @cp target/release/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
+	@chown -R eruption:eruption /var/lib/eruption
 
-	@echo "Successfully installed Eruption!"
 	@echo ""
+	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
+	@echo ""
 
 uninstall:
 	@echo "Commencing removal of Eruption..."
+	@echo ""
 
 	-@rm $(TARGET_DIR)/bin/eruption
 	-@rm $(TARGET_DIR)/bin/eruptionctl
@@ -247,11 +275,14 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/systemd/user-preset/50-eruption-process-monitor.preset
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption-hotplug-helper.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset
+	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
-	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.control.conf
+	-@rm $(TARGET_DIR)/share/dbus-1/system-services/org.eruption.service
+	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.fx_proxy.conf
 	-@rm $(TARGET_DIR)/share/polkit-1/actions/org.eruption.policy
+	-@rm $(TARGET_DIR)/share/polkit-1/rules.d/org.eruption.rules
 	-@rm $(TARGET_DIR)/share/man/man8/eruption.8
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8
 	-@rm $(TARGET_DIR)/share/man/man5/eruption.conf.5
@@ -305,12 +336,21 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/eruption/sfx/phaser2.wav
 
 	-@rm /etc/profile.d/eruption.sh
+	-@rm /etc/modules-load.d/eruption.conf
 
 	-@rm -fr /etc/eruption
 	-@rm -fr $(TARGET_DIR)/share/eruption
 	-@rm -fr $(TARGET_DIR)/share/eruption-gui-gtk3
 	-@rm -fr /var/lib/eruption
 
+	-@systemctl daemon-reload
+
+	-@systemctl reload dbus.service
+	-@systemctl reload systemd-udevd
+
+	-@systemctl start systemd-sysusers.service
+
+	@echo ""
 	@echo "Successfully uninstalled Eruption!"
 
 check:

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE policyconfig PUBLIC
- "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
- "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
 
 <!--
     This file is part of Eruption.
@@ -29,6 +27,7 @@
 
   <!-- Monitor the Eruption daemons state -->
   <action id="org.eruption.monitor">
+    <annotate key="org.freedesktop.policykit.owner">unix-user:eruption</annotate>
     <description>Monitor Eruption</description>
     <message>Authentication is required to monitor Eruption</message>
     <defaults>
@@ -40,6 +39,7 @@
 
   <!-- Change non-priviledged settings like e.g.: LED Brightness -->
   <action id="org.eruption.settings">
+    <annotate key="org.freedesktop.policykit.owner">unix-user:eruption</annotate>
     <description>Change settings of Eruption</description>
     <message>Authentication is required to change the settings of Eruption</message>
     <defaults>
@@ -51,6 +51,7 @@
 
   <!-- Change priviledged settings like e.g.: Lua script code -->
   <action id="org.eruption.manage">
+    <annotate key="org.freedesktop.policykit.owner">unix-user:eruption</annotate>
     <description>Manage the Eruption daemon</description>
     <message>Authentication is required to manage the Eruption daemon</message>
     <defaults>

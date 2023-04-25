@@ -42,12 +42,16 @@ pub fn process_image_buffer(
         FilterType::Gaussian,
     );
 
-    for x in 0..device.get_num_cols() {
-        for y in 0..device.get_num_rows() {
-            let key_index: usize =
-                (device.get_rows_topology()[x + (y * (device.get_num_cols() + 1))]) as usize + 1;
+    let num_cols = device.get_num_cols();
+    let num_rows = device.get_num_rows();
+    let num_keys = device.get_num_keys();
+    let rows_topology = device.get_rows_topology();
 
-            if !(1..=device.get_num_keys()).contains(&key_index) {
+    for x in 0..num_cols {
+        for y in 0..num_rows {
+            let key_index: usize = (rows_topology[x + (y * (num_cols + 1))]) as usize + 1;
+
+            if !(1..=num_keys).contains(&key_index) {
                 continue;
             }
 

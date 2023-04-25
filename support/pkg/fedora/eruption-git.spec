@@ -6,8 +6,8 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:    eruption-git
-Version: 0.3.0
-Release: 2.%{shortcommit}
+Version: 0.4.0
+Release: 0.%{shortcommit}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
 License: GPL-3.0
@@ -43,6 +43,7 @@ Requires: spirv-tools
 Requires: shaderc
 Requires: lua
 Requires: gtksourceview4
+Requires: acl
 
 Recommends: lua-socket-compat
 
@@ -145,7 +146,7 @@ cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/fx-proxy.conf %{buildroo
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/audio-proxy.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/config/process-monitor.conf %{buildroot}/%{_sysconfdir}/%{ShortName}/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/profile.d/eruption.sh %{buildroot}/%{_sysconfdir}/profile.d/
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.control.conf %{buildroot}/%{_sysconfdir}/dbus-1/system.d/
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.conf %{buildroot}/%{_sysconfdir}/dbus-1/system.d/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.process_monitor.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/dbus/org.eruption.fx_proxy.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
@@ -293,7 +294,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %config(noreplace) %{_sysconfdir}/%{ShortName}/audio-proxy.conf
 %config(noreplace) %{_sysconfdir}/%{ShortName}/process-monitor.conf
 %{_sysconfdir}/profile.d/eruption.sh
-%{_sysconfdir}/dbus-1/system.d/org.eruption.control.conf
+%{_sysconfdir}/dbus-1/system.d/org.eruption.conf
 %{_sysconfdir}/dbus-1/session.d/org.eruption.process_monitor.conf
 %{_sysconfdir}/dbus-1/session.d/org.eruption.fx_proxy.conf
 %{_datarootdir}/polkit-1/actions/org.eruption.policy

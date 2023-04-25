@@ -19,34 +19,33 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 function gen_completions {
-    ./target/debug/"$1" "completions" "bash" > "support/shell/completions/$LANG/$1.bash-completion"
-    ./target/debug/"$1" "completions" "elvish" > "support/shell/completions/$LANG/$1.elvish-completion"
-    ./target/debug/"$1" "completions" "fish" > "support/shell/completions/$LANG/$1.fish-completion"
-    ./target/debug/"$1" "completions" "powershell" > "support/shell/completions/$LANG/$1.powershell-completion"
-    ./target/debug/"$1" "completions" "zsh" > "support/shell/completions/$LANG/$1.zsh-completion"
+	./target/debug/"$1" "completions" "bash" >"support/shell/completions/$LANG/$1.bash-completion"
+	./target/debug/"$1" "completions" "elvish" >"support/shell/completions/$LANG/$1.elvish-completion"
+	./target/debug/"$1" "completions" "fish" >"support/shell/completions/$LANG/$1.fish-completion"
+	./target/debug/"$1" "completions" "powershell" >"support/shell/completions/$LANG/$1.powershell-completion"
+	./target/debug/"$1" "completions" "zsh" >"support/shell/completions/$LANG/$1.zsh-completion"
 }
 
 # supported locales
-languages=('en_US')
+languages=('en_US' 'de_DE')
 
-for l in ${languages[@]}
-do
-    export LANG=$l
-    mkdir -p "support/shell/completions/$LANG/"
+for l in "${languages[@]}"; do
+	export LANG=$l
+	mkdir -p "support/shell/completions/$LANG/"
 
-    # gen_completions "eruption"
-    gen_completions "eruption-cmd"
-    gen_completions "eruption-hwutil"
-    gen_completions "eruption-debug-tool"
-    # gen_completions "eruption-gui-gtk3"
-    gen_completions "eruption-macro"
-    gen_completions "eruption-keymap"
-    gen_completions "eruption-netfx"
-    gen_completions "eruption-fx-proxy"
-    gen_completions "eruption-audio-proxy"
-    gen_completions "eruption-process-monitor"
-    gen_completions "eruptionctl"
-    gen_completions "pyroclasm"
+	# gen_completions "eruption"
+	gen_completions "eruption-cmd"
+	gen_completions "eruption-hwutil"
+	gen_completions "eruption-debug-tool"
+	# gen_completions "eruption-gui-gtk3"
+	gen_completions "eruption-macro"
+	gen_completions "eruption-keymap"
+	gen_completions "eruption-netfx"
+	gen_completions "eruption-fx-proxy"
+	gen_completions "eruption-audio-proxy"
+	gen_completions "eruption-process-monitor"
+	gen_completions "eruptionctl"
+	gen_completions "pyroclasm"
 done
 
 exit 0

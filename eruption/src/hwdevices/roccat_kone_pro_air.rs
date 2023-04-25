@@ -652,6 +652,11 @@ impl DeviceTrait for RoccatKoneProAir {
         Ok(self.has_failed)
     }
 
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
+    }
+
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -1185,8 +1190,8 @@ impl MouseDeviceTrait for RoccatKoneProAir {
 
                     Err(_) => {
                         // the device has failed; maybe it has been disconnected?
-                        self.is_initialized = false;
-                        self.is_opened = false;
+                        // self.is_opened = false;
+                        // self.is_initialized = false;
                         self.has_failed = true;
 
                         return Err(HwDeviceError::InvalidResult {}.into());

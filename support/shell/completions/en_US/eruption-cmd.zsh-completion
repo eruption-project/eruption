@@ -17,10 +17,10 @@ _eruption-cmd() {
     _arguments "${_arguments_options[@]}" \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruption-cmd_commands" \
 "*::: :->eruption-cmd" \
 && ret=0
@@ -32,8 +32,8 @@ _eruption-cmd() {
         case $line[1] in
             (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -98,4 +98,8 @@ _eruption-cmd__help__help_commands() {
     _describe -t commands 'eruption-cmd help help commands' commands "$@"
 }
 
-_eruption-cmd "$@"
+if [ "$funcstack[1]" = "_eruption-cmd" ]; then
+    _eruption-cmd "$@"
+else
+    compdef _eruption-cmd eruption-cmd
+fi

@@ -37,7 +37,7 @@ module! {
 
 struct EruptionBlackout {}
 
-impl KernelModule for EruptionBlackout {
+impl kernel::Module for EruptionBlackout {
     fn init(_name: &'static CStr, _module: &'static ThisModule) -> Result<Self> {
         pr_info!("Eruption blackout (init)\n");
 

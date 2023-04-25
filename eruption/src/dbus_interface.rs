@@ -130,7 +130,7 @@ impl DbusApi {
         let devices_interface = devices::DevicesInterface::new(&f);
         let config_interface = config::ConfigInterface::new(&f);
         let slot_interface = slot::SlotInterface::new(&f, dbus_tx.clone(), conn.clone());
-        let profile_interface = profile::ProfileInterface::new(&f, dbus_tx.clone(), conn.clone());
+        let profile_interface = profile::ProfileInterface::new(&f, dbus_tx, conn.clone());
 
         let tree = f
             .tree(())

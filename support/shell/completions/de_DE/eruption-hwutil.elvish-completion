@@ -1,0 +1,108 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-hwutil] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-hwutil'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-hwutil'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -r 'Repeat output until ctrl+c is pressed'
+            cand --repeat 'Repeat output until ctrl+c is pressed'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand list 'List available devices, use this first to find out the index of the device to address'
+            cand status 'Query device specific status like e.g.: Signal Strength/Battery Level'
+            cand blackout 'Turn off all LEDs, but otherwise leave the device completely usable'
+            cand firmware 'Firmware related subcommands (DANGEROUS, may brick the device)'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-hwutil;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;status'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;blackout'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;firmware'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand info 'Get some information about the currently installed firmware'
+            cand flash 'Flash firmware to device (DANGEROUS, may brick the device)'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-hwutil;firmware;info'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;firmware;flash'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;firmware;help'= {
+            cand info 'Get some information about the currently installed firmware'
+            cand flash 'Flash firmware to device (DANGEROUS, may brick the device)'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-hwutil;firmware;help;info'= {
+        }
+        &'eruption-hwutil;firmware;help;flash'= {
+        }
+        &'eruption-hwutil;firmware;help;help'= {
+        }
+        &'eruption-hwutil;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-hwutil;help'= {
+            cand list 'List available devices, use this first to find out the index of the device to address'
+            cand status 'Query device specific status like e.g.: Signal Strength/Battery Level'
+            cand blackout 'Turn off all LEDs, but otherwise leave the device completely usable'
+            cand firmware 'Firmware related subcommands (DANGEROUS, may brick the device)'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-hwutil;help;list'= {
+        }
+        &'eruption-hwutil;help;status'= {
+        }
+        &'eruption-hwutil;help;blackout'= {
+        }
+        &'eruption-hwutil;help;firmware'= {
+            cand info 'Get some information about the currently installed firmware'
+            cand flash 'Flash firmware to device (DANGEROUS, may brick the device)'
+        }
+        &'eruption-hwutil;help;firmware;info'= {
+        }
+        &'eruption-hwutil;help;firmware;flash'= {
+        }
+        &'eruption-hwutil;help;completions'= {
+        }
+        &'eruption-hwutil;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

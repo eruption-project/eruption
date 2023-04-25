@@ -338,6 +338,42 @@ impl Transport for LocalTransport {
             Err(_e) => Err(eyre!("Lost connection to Eruption")),
         }
     }
+
+    fn notify_resume_from_suspend(&self) -> Result<()> {
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::NotifyResume(
+                protocol::NotifyResumeRequest {},
+            )),
+        };
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.lock();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let _result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+
+                        Ok(())
+                    }
+
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
 }
 
 impl Drop for LocalTransport {

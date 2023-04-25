@@ -802,8 +802,8 @@ cfg_if::cfg_if! {
                             .destroy_with_parent(true)
                             .decorated(true)
                             .message_type(MessageType::Error)
-                            .text(&message)
-                            .secondary_text(&secondary)
+                            .text(message)
+                            .secondary_text(secondary)
                             .title("Error")
                             .buttons(ButtonsType::Ok)
                             .build();
@@ -904,10 +904,16 @@ cfg_if::cfg_if! {
             let context = stack_switcher.style_context();
             context.add_class("small-font");
 
-            let language_manager = sourceview4::LanguageManager::default().unwrap();
+            let style_scheme = sourceview4::StyleSchemeManager::builder()
+                .search_path(["/usr/share/gtksourceview-3.0/styles/",
+                              "/usr/share/gnome/gtksourceview-3.0/styles/"])
+                .build()
+                .scheme("solarized-dark")
+                .unwrap();
+            let language_manager = sourceview4::LanguageManager::builder().search_path(["/usr/share/gtksourceview-3.0/language-specs/", "/usr/share/gnome/gtksourceview-3.0/language-specs/"]).build();
 
-            let toml = language_manager.language("toml").unwrap();
             let lua = language_manager.language("lua").unwrap();
+            let toml = language_manager.language("toml").unwrap();
 
             // load and show .profile file
             let source_code = std::fs::read_to_string(PathBuf::from(&profile.as_ref())).unwrap();
@@ -915,6 +921,7 @@ cfg_if::cfg_if! {
             let mut buffer_index = 0;
             let buffer = Buffer::builder()
                 .language(&toml)
+                .style_scheme(&style_scheme)
                 .highlight_syntax(true)
                 .text(&source_code)
                 .build();
@@ -971,6 +978,7 @@ cfg_if::cfg_if! {
 
                         let buffer = Buffer::builder()
                             .language(&lua)
+                            .style_scheme(&style_scheme)
                             .highlight_syntax(true)
                             .text(&source_code)
                             .build();
@@ -1013,6 +1021,7 @@ cfg_if::cfg_if! {
 
                         let buffer = Buffer::builder()
                             .language(&toml)
+                            .style_scheme(&style_scheme)
                             .highlight_syntax(true)
                             .text(&manifest_data)
                             .build();

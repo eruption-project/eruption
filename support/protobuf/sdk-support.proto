@@ -29,6 +29,7 @@ message Request {
     SetParametersRequest set_parameters = 5;
     SetCanvasRequest set_canvas = 6;
     NotifyHotplugRequest notify_hotplug = 7;
+    NotifyResumeRequest notify_resume = 8;
   }
 }
 
@@ -44,6 +45,7 @@ message SetParametersRequest {
 
 message SetCanvasRequest { bytes canvas = 1; }
 message NotifyHotplugRequest { bytes payload = 1; }
+message NotifyResumeRequest {}
 message Response {
   oneof response_message {
     StatusResponse status = 1;
@@ -52,6 +54,7 @@ message Response {
     SetParametersResponse set_parameters = 4;
     SetCanvasResponse set_canvas = 5;
     NotifyHotplugResponse notify_hotplug = 6;
+    NotifyResumeResponse notify_resume = 7;
   }
 }
 
@@ -62,6 +65,7 @@ message SwitchProfileResponse { bool switched = 1; }
 message SetParametersResponse {}
 message SetCanvasResponse {}
 message NotifyHotplugResponse {}
+message NotifyResumeResponse {}
 
 // Service definition
 service SdkSupport { rpc Sdk(Request) returns (Response); }

@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define ERUPTION_SDK_VERSION 0.0.5
+#define ERUPTION_SDK_VERSION 0.0.11
 
 
 #ifdef __cplusplus

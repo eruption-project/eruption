@@ -19,9 +19,12 @@
 
 [package]
 name = "liberuption"
-version = "0.0.2"
+version = "0.0.3"
 build = "build.rs"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+authors = [
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
+]
 edition = "2021"
 rust-version = "1.65"
 description = "Provides an interface to the Eruption Realtime RGB LED Driver for Linux"
@@ -55,4 +58,4 @@ thiserror = "1.0.40"
 
 [build-dependencies]
 cbindgen = "0.24.3"
-prost-build = "0.11.8"
+prost-build = "0.11.9"

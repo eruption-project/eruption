@@ -21,7 +21,10 @@
 name = "pyroclasm"
 version = "0.0.7"
 build = "build.rs"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+authors = [
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
+]
 edition = "2021"
 rust-version = "1.65"
 description = "Pyroclasm UI for Eruption"
@@ -39,44 +42,56 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.2.1", features = ["derive"] }
-clap_complete = "4.2.0"
-libc = "0.2.141"
+clap = { version = "4.2.4", features = ["derive"] }
+clap_complete = "4.2.1"
+libc = "0.2.142"
 nix = "0.26.2"
 atty = "0.2.14"
 walkdir = "2.3.3"
 flume = { version = "0.10.14", features = ["async"] }
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
+serde = { version = "1.0.160", features = ["derive"] }
+serde_json = "1.0.96"
 tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
 # tracing-flame = "0.2.0"
 tracing-log = { version = "0.1.3", features = ["env_logger"] }
-tracing-subscriber = { version = "0.3.16", features = ["parking_lot", "registry", "env-filter"] }
+tracing-subscriber = { version = "0.3.17", features = [
+  "parking_lot",
+  "registry",
+  "env-filter",
+] }
 console-subscriber = { version = "0.1.8", features = ["parking_lot"] }
 config = "0.13.3"
-uuid = { version = "1.3.0", features = ["serde", "v4"] }
+uuid = { version = "1.3.1", features = ["serde", "v4"] }
 toml = "0.7.3"
 indexmap = "1.9.3"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
-palette = "0.6.1"
+palette = "0.7.1"
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 paste = "1.0.12"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
-i18n-embed = { version = "0.13.8", features = ["fluent-system", "desktop-requester"] }
+i18n-embed = { version = "0.13.8", features = [
+  "fluent-system",
+  "desktop-requester",
+] }
 i18n-embed-fl = "0.6.6"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 image = { version = "0.24", features = ["jpeg", "png", "webp"] }
 egui = { version = "0.21.0", features = ["serde", "tracing"] }
-egui_extras = { version = "0.21.0", features = ["tracing", "image", "svg", "datepicker"] }
+egui_extras = { version = "0.21.0", features = [
+  "tracing",
+  "image",
+  "svg",
+  "datepicker",
+] }
 eframe = { version = "0.21.3", features = ["persistence"] }
 egui-bind = { version = "0.6.0", features = ["serde"] }
 # egui_hotkey = { version = "0.2.0", features = ["serde"] }
@@ -84,10 +99,13 @@ egui-bind = { version = "0.6.0", features = ["serde"] }
 egui-notify = "0.6.0"
 egui-modal = "0.2.2"
 egui_inspect = "0.1.3"
-egui_file = "0.8.0"
-egui_dock = "0.4.2"
-egui_commonmark = { version = "0.7.0", features = ["syntax_highlighting", "svg"] }
-tiny-skia = "0.8.3"
+egui_file = "0.8.1"
+egui_dock = "0.5.0"
+egui_commonmark = { version = "0.7.2", features = [
+  "syntax_highlighting",
+  "svg",
+] }
+tiny-skia = "0.9.0"
 syntect = "5.0.0"
 icecream = "0.1.0"
 

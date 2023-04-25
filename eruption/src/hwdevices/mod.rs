@@ -200,6 +200,9 @@ pub trait DriverMetadata {
     fn get_usb_vid(&self) -> u16;
     fn get_usb_pid(&self) -> u16;
 
+    fn get_device_make(&self) -> &'static str;
+    fn get_device_model(&self) -> &'static str;
+
     fn get_device_class(&self) -> DeviceClass;
 
     fn as_any(&self) -> &(dyn Any);
@@ -247,6 +250,14 @@ impl KeyboardDriver<'static> {
 impl DriverMetadata for KeyboardDriver<'static> {
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
+    }
+
+    fn get_device_make(&self) -> &'static str {
+        self.device_make
+    }
+
+    fn get_device_model(&self) -> &'static str {
+        self.device_name
     }
 
     fn as_any(&self) -> &(dyn Any) {
@@ -300,6 +311,14 @@ impl MouseDriver<'static> {
 impl DriverMetadata for MouseDriver<'static> {
     fn get_device_class(&self) -> DeviceClass {
         self.device_class
+    }
+
+    fn get_device_make(&self) -> &'static str {
+        self.device_make
+    }
+
+    fn get_device_model(&self) -> &'static str {
+        self.device_name
     }
 
     fn as_any(&self) -> &(dyn Any) {
@@ -356,6 +375,14 @@ impl DriverMetadata for MiscDriver<'static> {
         self.device_class
     }
 
+    fn get_device_make(&self) -> &'static str {
+        self.device_make
+    }
+
+    fn get_device_model(&self) -> &'static str {
+        self.device_name
+    }
+
     fn as_any(&self) -> &(dyn Any) {
         self
     }
@@ -408,6 +435,14 @@ impl DriverMetadata for MiscSerialDriver<'static> {
 
     fn get_usb_pid(&self) -> u16 {
         0
+    }
+
+    fn get_device_make(&self) -> &'static str {
+        self.device_make
+    }
+
+    fn get_device_model(&self) -> &'static str {
+        self.device_name
     }
 
     fn get_device_class(&self) -> DeviceClass {
@@ -684,6 +719,9 @@ pub trait DeviceTrait: DeviceInfoTrait {
 
     /// Returns `true` if the device has failed or has been disconnected
     fn has_failed(&self) -> Result<bool>;
+
+    /// Set the device as `failed`
+    fn fail(&mut self) -> Result<()>;
 
     /// Send raw data to the control device
     fn write_data_raw(&self, buf: &[u8]) -> Result<()>;
@@ -1829,4 +1867,21 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
 
         Err(_e) => Err(HwDeviceError::UdevError {}.into()),
     }
+}
+
+pub fn get_device_make(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
+    Some(get_device_info(usb_vid, usb_pid)?.0)
+}
+
+pub fn get_device_model(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
+    Some(get_device_info(usb_vid, usb_pid)?.1)
+}
+
+pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'static str)> {
+    let drivers = DRIVERS.lock();
+    let metadata = drivers
+        .iter()
+        .find(|e| e.get_usb_vid() == usb_vid && e.get_usb_pid() == usb_pid);
+
+    metadata.map(|metadata| (metadata.get_device_make(), metadata.get_device_model()))
 }

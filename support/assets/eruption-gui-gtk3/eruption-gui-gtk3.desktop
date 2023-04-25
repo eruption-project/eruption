@@ -2,7 +2,7 @@
 Type=Application
 Encoding=UTF-8
 Name=Eruption GUI
-Comment=Eruption GUI
+Comment=Eruption GUI - Graphical User Interface for Eruption
 Exec=/usr/bin/eruption-gui-gtk3
 Icon=keyboard-brightness-symbolic
 Terminal=false

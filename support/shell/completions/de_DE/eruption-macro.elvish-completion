@@ -1,0 +1,123 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruption-macro] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruption-macro'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruption-macro'= {
+            cand -v 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand list 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei'
+            cand record 'Zeichnet eine Tastensequenz auf und speichert sie als Makro'
+            cand create 'Ein neues Makro manuell aus einer Beschreibung erzeugen'
+            cand remove 'Ein vorhandenes Makro entfernen'
+            cand enable 'Ein vorhandenes Makro aktivieren'
+            cand disable 'Ein vorhandenes Makro deaktivieren'
+            cand description 'Zeigt oder setzt die Beschreibung eines Makros'
+            cand compile 'Übersetzt Makros zu Lua Code und macht sie für Eruption verfügbar'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-macro;list'= {
+            cand -l 'l'
+            cand --lua-path 'lua-path'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;record'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;create'= {
+            cand --description 'Specify a description for a macro'
+            cand -e 'Specify the enabled status of the newly added macro'
+            cand --enabled 'Specify the enabled status of the newly added macro'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;remove'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;enable'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;disable'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;description'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;compile'= {
+            cand -l 'l'
+            cand --lua-file 'lua-file'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruption-macro;help'= {
+            cand list 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei'
+            cand record 'Zeichnet eine Tastensequenz auf und speichert sie als Makro'
+            cand create 'Ein neues Makro manuell aus einer Beschreibung erzeugen'
+            cand remove 'Ein vorhandenes Makro entfernen'
+            cand enable 'Ein vorhandenes Makro aktivieren'
+            cand disable 'Ein vorhandenes Makro deaktivieren'
+            cand description 'Zeigt oder setzt die Beschreibung eines Makros'
+            cand compile 'Übersetzt Makros zu Lua Code und macht sie für Eruption verfügbar'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruption-macro;help;list'= {
+        }
+        &'eruption-macro;help;record'= {
+        }
+        &'eruption-macro;help;create'= {
+        }
+        &'eruption-macro;help;remove'= {
+        }
+        &'eruption-macro;help;enable'= {
+        }
+        &'eruption-macro;help;disable'= {
+        }
+        &'eruption-macro;help;description'= {
+        }
+        &'eruption-macro;help;compile'= {
+        }
+        &'eruption-macro;help;completions'= {
+        }
+        &'eruption-macro;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

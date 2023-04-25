@@ -121,7 +121,7 @@ pub const DEVICE_SETTLE_MILLIS: u64 = 25;
 pub const SENSOR_UPDATE_TICKS: u64 = 19; // TARGET_FPS /* * 1 */;
 
 /// Timeout value to use for D-Bus connections
-pub const DBUS_TIMEOUT_MILLIS: u32 = 250;
+pub const DBUS_TIMEOUT_MILLIS: u32 = 4000;
 
 /// Timeout value to use for D-Bus connections
 /// that may involve interactivity like e.g.: PolicyKit authentication

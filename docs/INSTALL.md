@@ -23,13 +23,13 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 
 ```shell
 sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse lua lua-socket gtksourceview4
-sudo pacman -Sy gcc pkgconf make cmake python vulkan-headers protobuf xorg-server-devel libxrandr gtk3
+sudo pacman -Sy gcc pkgconf make cmake protobuf xorg-server-devel libxrandr gtk3 acl
 ```
 
 #### On Fedora-based distros
 
 ```shell
-sudo dnf install cmake systemd dbus hidapi libevdev lua gtksourceview4 lua-socket-compat
+sudo dnf install cmake systemd dbus hidapi libevdev lua gtksourceview4 lua-socket-compat acl
 sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
   pulseaudio-libs-devel lua-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel
 ```
@@ -37,14 +37,14 @@ sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-d
 #### On OpenSuse-based distros
 
 ```shell
-sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel \
+sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel acl \
     libhidapi-devel lua54-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel
 ```
 
 #### On Debian-based distros
 
 ```shell
-sudo apt install build-essential cmake protobuf-compiler libprotobuf-dev \
+sudo apt install build-essential cmake acl protobuf-compiler libprotobuf-dev \
   libsystemd-dev libusb-1.0-0-dev libhidapi-dev \
   libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.4-dev libx11-dev \
   libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev \
@@ -85,5 +85,6 @@ eruptionctl switch profile spectrum-analyzer-swirl.profile
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](assets/screenshot-audio-grabber-pavucontrol.png)
+
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed

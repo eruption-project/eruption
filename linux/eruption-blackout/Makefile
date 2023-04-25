@@ -17,13 +17,26 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-KDIR ?= /lib/modules/`uname -r`/build
+NAME=eruption_blackout
 
-default:
-	$(MAKE) -C $(KDIR) M=$$PWD/src
+ifndef KERNELRELEASE
+ifndef KDIR
+KDIR:=/lib/modules/`uname -r`/build
+endif
+PWD := $(shell pwd)
 
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+install:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules_install
 clean:
-	rm -f src/modules.order src/Module.symvers src/eruption_blackout.o src/eruption_blackout.mod.o \
+	rm -f *.o *.ko *.mod* .*.cmd *.d Module.symvers modules.order
+	rm -rf .tmp_versions
+else
+obj-m := src/$(NAME).o
+endif
+
+# rm -f src/modules.order src/Module.symvers src/eruption_blackout.o src/eruption_blackout.mod.o \
 		  src/eruption_blackout.mod.c src/eruption_blackout.mod \
 		  src/.eruption_blackout.ko.cmd src/.eruption_blackout.mod.cmd \
 		  src/.eruption_blackout.mod.o.cmd src/.eruption_blackout.o.cmd \

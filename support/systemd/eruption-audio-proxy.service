@@ -23,10 +23,11 @@ Documentation=man:eruption-audio-proxy(1) man:audio-proxy.conf(5) man:eruptionct
 Requires=sound.target
 PartOf=graphical-session.target
 BindsTo=graphical-session.target
-StartLimitIntervalSec=60
-StartLimitBurst=5
+# StartLimitIntervalSec=60
+# StartLimitBurst=5
 
 [Service]
+BusName=org.eruption.audio_proxy
 Environment=RUST_LOG=warn
 Environment=PULSE_LATENCY_MSEC=30
 ExecStart=/usr/bin/eruption-audio-proxy -c /etc/eruption/audio-proxy.conf daemon

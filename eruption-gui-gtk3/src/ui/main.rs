@@ -675,9 +675,11 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     }));
 
     // special options
+    ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
+
     ambientfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
-            util::set_ambient_effect(enabled).unwrap();
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |sw, enabled| {
+            util::set_ambient_effect(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); sw.set_state(false); });
 
             gtk::Inhibit(false)
         }),
@@ -686,8 +688,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
 
     soundfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
-            util::set_sound_fx(enabled).unwrap();
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |sw, enabled| {
+            util::set_sound_fx(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); sw.set_state(false); });
 
             gtk::Inhibit(false)
         }),
@@ -753,7 +755,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 timers::clear_timers()?;
 
                 // remove all devices sub-pages for now, until we regain the connection
-                update_main_window(&builder).unwrap();
+                update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             } else {
                 notification_box_global.hide();
 
@@ -771,8 +773,11 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             if events::UPDATE_MAIN_WINDOW.load(Ordering::SeqCst) {
                 events::UPDATE_MAIN_WINDOW.store(false, Ordering::SeqCst);
 
-                update_main_window(&builder).unwrap();
+                update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
+
+            ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
+            soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
 
             Ok(())
         }),

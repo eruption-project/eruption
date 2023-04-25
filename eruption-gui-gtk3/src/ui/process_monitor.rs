@@ -19,10 +19,18 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use glib::{clone, StaticType};
-
-use gtk::prelude::*;
-use gtk::{glib, MessageDialog, TreeViewColumn};
+use gdk::prelude::ActionMapExt;
+use glib::{clone, Cast, StaticType, ToValue};
+use glib::{Continue, IsA};
+use gtk::glib;
+use gtk::prelude::BuilderExtManual;
+use gtk::prelude::ButtonExt;
+use gtk::prelude::TreeStoreExtManual;
+use gtk::prelude::WidgetExt;
+use gtk::traits::{CellRendererToggleExt, DialogExt, TreeViewExt};
+use gtk::traits::{GtkApplicationExt, TreeModelExt, TreeSelectionExt, TreeStoreExt};
+use gtk::MessageDialog;
+use gtk::TreeViewColumn;
 use std::time::Duration;
 
 use crate::{dbus_client, ui::rule, util};
@@ -213,8 +221,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                     .destroy_with_parent(true)
                     .decorated(true)
                     .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
+                    .text(message)
+                    .secondary_text(secondary)
                     .title("Error")
                     .buttons(gtk::ButtonsType::Ok)
                     .build();
@@ -259,8 +267,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                     .destroy_with_parent(true)
                     .decorated(true)
                     .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
+                    .text(message)
+                    .secondary_text(secondary)
                     .title("Error")
                     .buttons(gtk::ButtonsType::Ok)
                     .build();
@@ -354,8 +362,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                         .destroy_with_parent(true)
                         .decorated(true)
                         .message_type(gtk::MessageType::Error)
-                        .text(&message)
-                        .secondary_text(&secondary)
+                        .text(message)
+                        .secondary_text(secondary)
                         .title("Error")
                         .buttons(gtk::ButtonsType::Ok)
                         .build();

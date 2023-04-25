@@ -165,7 +165,7 @@ pub fn has_monitor_permission(sender: &str) -> Result<(bool, bool)> {
             "org.eruption.monitor",
             details,
             1,
-            "",
+            "eruption-1",
         )?;
 
         let dismissed = result.2.get("polkit.dismissed").is_some();
@@ -216,7 +216,7 @@ pub fn has_settings_permission(sender: &str) -> Result<(bool, bool)> {
             "org.eruption.settings",
             details,
             1,
-            "",
+            "eruption-2",
         )?;
 
         let dismissed = result.2.get("polkit.dismissed").is_some();
@@ -267,7 +267,7 @@ pub fn has_manage_permission(sender: &str) -> Result<(bool, bool)> {
             "org.eruption.manage",
             details,
             1,
-            "",
+            "eruption-3",
         )?;
 
         let dismissed = result.2.get("polkit.dismissed").is_some();

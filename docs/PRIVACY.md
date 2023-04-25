@@ -8,7 +8,7 @@ counter (a histogram) of how many times each key has been pressed, in the `/var/
 This is currently used by the `heatmap.profile` and `heatmap-errors.profile` to color each key depending on usage
 frequency. This feature is disabled in the default installation.
 
-### Other privacy sensitive behavior:
+### Other privacy sensitive behavior
 
 #### `eruption-process-monitor` Daemon
 

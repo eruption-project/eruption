@@ -54,7 +54,6 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum HwAccelerationPluginError {
     #[error("Initialization failed: {}", description)]
     InitError { description: String },
-
     // #[error("No devices found")]
     // NoDevicesFound,
     // #[error("Compilation failed: {}", description)]
@@ -143,7 +142,11 @@ impl HwAccelerationPlugin {
                 },
             )?;
 
-            let _queue = queues.next().ok_or_else(|| HwAccelerationPluginError::InitError { description: "Could not request a queue".to_string() })?;
+            let _queue = queues
+                .next()
+                .ok_or_else(|| HwAccelerationPluginError::InitError {
+                    description: "Could not request a queue".to_string(),
+                })?;
 
             // Now let's get to the actual example.
             //

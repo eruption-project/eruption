@@ -39,14 +39,14 @@
 
 Hardware feature support matrix
 
-| Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys    | Media keys F9-F12 |
-| ------- |------------------------| -------------------------- | ---------- | -------------- | ------------------------------ | ----------------------------------- | ----------------- |
-| ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
-| ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
-| ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (*inofficial)              | No, but may be forced (*inofficial) | Yes               |
-| ROCCAT  | Vulcan Pro             | work-in-progress, untested | Yes        | Yes            | Yes                            | Yes                                 | Yes               |
-| ROCCAT  | Magma                  | work-in-progress, untested | Yes        | Yes            | Yes (*inofficial)              | Yes                                 | Yes               |
-| Corsair | Strafe Gaming Keyboard | 35%, work-in-progress      | No         | No             | No                             | No                                  | No                |
+| Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys     | Media keys F9-F12 |
+| ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ------------------------------------ | ----------------- |
+| ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
+| ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |
+| ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |
+| ROCCAT  | Vulcan Pro             | work-in-progress, untested | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
+| ROCCAT  | Magma                  | work-in-progress, untested | Yes        | Yes            | Yes (\*inofficial)             | Yes                                  | Yes               |
+| Corsair | Strafe Gaming Keyboard | 35%, work-in-progress      | No         | No             | No                             | No                                   | No                |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -55,7 +55,7 @@ Hardware feature support matrix
 Hardware feature support matrix
 
 | Vendor | Product              | Status | Profiles | DPI  | Poll Rate | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift Key |
-| ------ |----------------------| ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
+| ------ | -------------------- | ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
 | ROCCAT | Kone Pure Ultra      | 100%   | Yes      | Yes  | TODO      | Yes      | Yes            | No  | N.a.       | N.a.           |
 | ROCCAT | Burst Pro            | 100%   | Yes      | Yes¹ | No        | No       | No             | No  | N.a.       | N.a.           |
 | ROCCAT | Kain 100 AIMO        | 80%    | No       | No   | No        | No       | No             | No  | N.a.       | N.a.           |
@@ -80,11 +80,11 @@ Hardware feature support matrix
 
 Hardware feature support matrix
 
-| Vendor                | Product            | Status | Device Type                 |
-| --------------------- | ------------------ | ------ | --------------------------- |
-| ROCCAT / Turtle Beach | Elo 7.1 Air        | 50%    | Headset (Wireless)          |
+| Vendor                | Product                        | Status | Device Type                 |
+| --------------------- | ------------------------------ | ------ | --------------------------- |
+| ROCCAT / Turtle Beach | Elo 7.1 Air                    | 50%    | Headset (Wireless)          |
 | ROCCAT                | Sense AIMO XXL (Aimo Pad Wide) | 95%    | Misc device (Mousepad)      |
-| Adalight / Custom     | Custom serial LEDs | 95%    | LED Strip (variable length) |
+| Adalight / Custom     | Custom serial LEDs             | 95%    | LED Strip (variable length) |
 
 \* This feature is not supported/endorsed by the OEM and may be subject to change.
 
@@ -93,6 +93,7 @@ Hardware feature support matrix
 Experimental drivers are `disabled` in the default configuration!
 
 To enable support for experimental drivers, please edit `/etc/eruption/eruption.conf` and set
+
 ```toml
 driver_maturity_level = "experimental"
 ```
@@ -128,7 +129,7 @@ Nearly fully supported, as of `0.1.19`
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
 - Slots may currently only be switched via `FN` + `F1-F4`, switching via `FN + LEFT` or `FN + RIGHT` causes problems
 - Neighbor topology tables are currently not fully correct, this may lead to mis-rendering of some effects
-- You can use the `FN` key to access special function keys (`F5`-`F8`) (*inofficial) like on the ROCCAT Vulcan Pro / ROCCAT Vulcan 100/12x
+- You can use the `FN` key to access special function keys (`F5`-`F8`) (\*inofficial) like on the ROCCAT Vulcan Pro / ROCCAT Vulcan 100/12x
 - Use the `FN` key too to access media functions (`F9`-`F12`)
 - Easy Shift+ may be activated by pressing `FN`+`Page Down/GameMode` and then `CAPS LOCK`.
 
@@ -143,7 +144,7 @@ Work-in-progress, completely untested, as of `0.1.20`.
 - The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`).
 - Slots may currently only be switched via `FN` + `F1-F4`, switching via `FN + LEFT` or `FN + RIGHT` causes problems
 - Neighbor topology tables are currently not fully correct, this may lead to mis-rendering of some effects
-- You can use the `FN` key to access special function keys (`F5`-`F8`) (*inofficial) like on the ROCCAT Vulcan Pro / ROCCAT Vulcan 100/12x
+- You can use the `FN` key to access special function keys (`F5`-`F8`) (\*inofficial) like on the ROCCAT Vulcan Pro / ROCCAT Vulcan 100/12x
 - Use the `FN` key too to access media functions (`F9`-`F12`)
 - Easy Shift+ may be activated by pressing `FN`+`Page Down/GameMode` and then `CAPS LOCK`.
 

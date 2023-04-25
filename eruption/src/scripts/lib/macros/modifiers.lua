@@ -34,9 +34,9 @@ ENABLE_SUPER_KEY_IN_GAME_MODE = false -- set this to true to enable the Windows 
 
 -- comment out the declarations below to change the modifier key you want to use; default is the "FN" key:
 
-MODIFIER_KEY = FN --
+MODIFIER_KEY = FN                            --
 MODIFIER_KEY_INDEX = key_name_to_index("FN") -- the KEY_INDEX of the modifier key; has to match the key defined above
-MODIFIER_KEY_EV_CODE = 464 -- the EV_KEY code of the modifier key; has to match the key defined above
+MODIFIER_KEY_EV_CODE = 464                   -- the EV_KEY code of the modifier key; has to match the key defined above
 
 -- or use this if you prefer "Right Menu" as the modifier key:
 

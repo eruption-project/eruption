@@ -20,24 +20,27 @@
 [Unit]
 Description=Realtime RGB LED Driver for Linux
 Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
-Wants=basic.target
+After=local-fs.target
 StartLimitIntervalSec=300
-StartLimitBurst=3
+StartLimitBurst=2
 
 [Service]
-Environment=LAUNCHED_BY_SYSTEMD=1
-Environment=RUST_LOG=warn
+Environment=RUST_LOG=info
 RuntimeDirectory=eruption
 PIDFile=/run/eruption/eruption.pid
 ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
 ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
-TimeoutStopSec=10
+TimeoutStopSec=8
 Type=exec
 Restart=always
-WatchdogSec=8
-WatchdogSignal=SIGKILL
+# WatchdogSec=5
+# WatchdogSignal=SIGKILL
 CPUSchedulingPolicy=rr
 CPUSchedulingPriority=20
+# AmbientCapabilities=CAP_SYS_ADMIN CAP_FOWNER CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_SYS_RAWIO CAP_KILL CAP_NET_BIND_SERVICE
+User=eruption
+Group=eruption
+# SupplementaryGroups=input
 # ProtectHome=yes
 # ProtectSystem=full
 # ProtectKernelTunables=yes
@@ -46,4 +49,4 @@ CPUSchedulingPriority=20
 # PrivateTmp=yes
 
 [Install]
-WantedBy=basic.target
+WantedBy=multi-user.target

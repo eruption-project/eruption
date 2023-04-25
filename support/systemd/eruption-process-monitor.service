@@ -22,10 +22,11 @@ Description=Process Monitoring and Introspection for Eruption
 Documentation=man:eruption-process-monitor(1) man:process-monitor.conf(5) man:eruptionctl(1)
 PartOf=graphical-session.target
 BindsTo=graphical-session.target
-StartLimitIntervalSec=60
-StartLimitBurst=5
+# StartLimitIntervalSec=60
+# StartLimitBurst=5
 
 [Service]
+BusName=org.eruption.process_monitor
 Environment=RUST_LOG=warn
 PassEnvironment=WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY
 ExecStart=/usr/bin/eruption-process-monitor -c /etc/eruption/process-monitor.conf daemon

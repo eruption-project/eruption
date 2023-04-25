@@ -27,11 +27,11 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the status of Eruption as well as the currently active profile or slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
@@ -48,27 +48,37 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;status' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Shows status information about Eruption')
             [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
             [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;daemon' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;status;profile' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;status;slot' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;status;help' {
+            [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Shows status information about Eruption')
             [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
             [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;status;help;daemon' {
             break
         }
         'eruptionctl;status;help;profile' {
@@ -81,21 +91,21 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;switch' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Switch profiles')
             [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Switch slots')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
         'eruptionctl;switch;profile' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;switch;slot' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;switch;help' {
@@ -114,21 +124,21 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;config' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('brightness', 'brightness', [CompletionResultType]::ParameterValue, 'Get or set the global brightness of the LEDs')
             [CompletionResult]::new('soundfx', 'soundfx', [CompletionResultType]::ParameterValue, 'Get or set the state of SoundFX')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
         'eruptionctl;config;brightness' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;config;soundfx' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;config;help' {
@@ -147,8 +157,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;devices' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List connected devices and their indices (run this first)')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Get information about a specific device')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Get status of a specific device')
@@ -163,53 +173,53 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;devices;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;info' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;status' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;brightness' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;profile' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;dpi' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;rate' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;debounce' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;distance' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;angle-snapping' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;devices;help' {
@@ -260,8 +270,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;profiles' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available profiles')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific profile')
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a profile')
@@ -269,18 +279,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;profiles;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;profiles;info' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;profiles;edit' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;profiles;help' {
@@ -303,8 +313,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;scripts' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available Lua effects scripts')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show information about a specific Lua script')
             [CompletionResult]::new('edit', 'edit', [CompletionResultType]::ParameterValue, 'Edit a Lua script file')
@@ -312,18 +322,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;scripts;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;scripts;info' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;scripts;edit' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;scripts;help' {
@@ -346,8 +356,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;color-schemes' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all color schemes known to Eruption')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new named color scheme')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a color scheme by name')
@@ -356,23 +366,23 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;color-schemes;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;color-schemes;add' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;color-schemes;remove' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;color-schemes;import' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('pywal', 'pywal', [CompletionResultType]::ParameterValue, 'Import an existing Pywal color scheme')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -380,8 +390,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;color-schemes;import;pywal' {
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Optimize palette')
             [CompletionResult]::new('--optimize', 'optimize', [CompletionResultType]::ParameterName, 'Optimize palette')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;color-schemes;import;help' {
@@ -423,13 +433,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;param' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;names' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List slot names')
             [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the name of a single profile slot')
             [CompletionResult]::new('set-all', 'set-all', [CompletionResultType]::ParameterValue, 'Set all the profile slot names at once')
@@ -437,18 +447,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;names;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;names;set' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;names;set-all' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;names;help' {
@@ -471,8 +481,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;canvas' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('hue', 'hue', [CompletionResultType]::ParameterValue, 'Get or set the global ''hue'' adjustment during canvas post-processing')
             [CompletionResult]::new('saturation', 'saturation', [CompletionResultType]::ParameterValue, 'Get or set the global ''saturation'' adjustment during canvas post-processing')
             [CompletionResult]::new('lightness', 'lightness', [CompletionResultType]::ParameterValue, 'Get or set the global ''lightness'' adjustment during canvas post-processing')
@@ -480,18 +490,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;canvas;hue' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;canvas;saturation' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;canvas;lightness' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;canvas;help' {
@@ -514,8 +524,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable an effect')
             [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable an active effect')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Show the status of the Eruption effects subsystem')
@@ -524,8 +534,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;enable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
             [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
             [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
@@ -533,18 +543,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;enable;image' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;enable;animation' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;enable;ambient' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;enable;help' {
@@ -567,8 +577,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;disable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Disable the image effect')
             [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Disable the animation effect')
             [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Disable the ambient effect')
@@ -576,18 +586,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;disable;image' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;disable;animation' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;disable;ambient' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;disable;help' {
@@ -610,13 +620,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;status' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;config' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('image', 'image', [CompletionResultType]::ParameterValue, 'Load an image file and display it on the connected devices')
             [CompletionResult]::new('animation', 'animation', [CompletionResultType]::ParameterValue, 'Load image files from a directory and display each one on the connected devices')
             [CompletionResult]::new('ambient', 'ambient', [CompletionResultType]::ParameterValue, 'Make the LEDs of connected devices reflect what is shown on the screen')
@@ -624,18 +634,18 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;effects;config;image' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;config;animation' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;config;ambient' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;effects;config;help' {
@@ -717,8 +727,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;rules' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Create a new rule')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove an existing rule by its index')
@@ -728,28 +738,28 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;rules;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;rules;add' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;rules;remove' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;rules;enable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;rules;disable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;rules;help' {
@@ -780,12 +790,12 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;completions' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruptionctl;help' {
-            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the currently active profile or slot')
+            [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the status of Eruption as well as the currently active profile or slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Configuration related sub-commands')
             [CompletionResult]::new('devices', 'devices', [CompletionResultType]::ParameterValue, 'Get or set some device specific configuration parameters')
@@ -802,8 +812,12 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;status' {
+            [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Shows status information about Eruption')
             [CompletionResult]::new('profile', 'profile', [CompletionResultType]::ParameterValue, 'Shows the currently active profile')
             [CompletionResult]::new('slot', 'slot', [CompletionResultType]::ParameterValue, 'Shows the currently active slot')
+            break
+        }
+        'eruptionctl;help;status;daemon' {
             break
         }
         'eruptionctl;help;status;profile' {

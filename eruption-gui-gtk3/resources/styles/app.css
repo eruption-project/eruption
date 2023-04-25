@@ -20,34 +20,81 @@
 */
 
 .client {
-    margin: 18px;
+  padding: 16px;
+  background: linear-gradient(155deg,
+      rgba(80, 80, 80, 0.85),
+      rgba(59, 59, 59, 0.1));
+}
+
+.icon {
+  font-size: xx-large;
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .heading {
-    font-size: xx-large;
-    font-weight: bold;
-    margin-left: 8px;
+  font-size: x-large;
+  font-weight: bold;
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: gray 3px 3px 3px;
+}
+
+.heading_large {
+  font-size: 3.55rem;
+  font-style: italic;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: gray 3px 3px 3px;
 }
 
 .notification {
-    font-style: italic;
-    margin-bottom: 8px;
+  font-size: larger;
+  font-style: italic;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: gray 3px 3px 3px;
+}
+
+.notification_dim {
+  font-size: larger;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: gray 3px 3px 3px;
 }
 
 .small-font {
-    font-size: small;
+  font-size: small;
 }
 
-box .slot_indicator {
-    border-radius: 8px;
-    border: 4px dotted gray;
+.slot_indicator {
+  border-radius: 8px;
+  border: 5px dotted gray;
 }
 
-box .slot_indicator.active {
-    /* background: linear-gradient(0deg, rgba(105, 105, 105, 0.70), rgba(105, 105, 105, 0.15)); */
-    border: 4px solid rgba(128, 128, 128, 0.5);
+.slot_indicator.active {
+  background: linear-gradient(155deg,
+      rgba(90, 90, 90, 0.85),
+      rgba(105, 105, 105, 0.1));
+  border: 5px solid rgba(128, 128, 128, 0.5);
+  box-shadow: rgb(230, 0, 115) 0px 0px 6px 6px;
 }
 
 .slot_indicator combobox {
-    font-size: small;
+  font-size: small;
 }
+
+.slot_entry {
+  font-size: large;
+  font-weight: bold;
+}
+
+/* box * {
+  background-color: transparent;
+}
+
+box *:hover {
+  background: linear-gradient(165deg,
+      rgba(90, 90, 90, 0.85),
+      rgba(105, 105, 105, 0.1));
+} */

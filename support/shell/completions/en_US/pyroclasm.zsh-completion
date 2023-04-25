@@ -19,10 +19,10 @@ _pyroclasm() {
 '--config=[Sets the configuration file to use]:CONFIG: ' \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_pyroclasm_commands" \
 "*::: :->pyroclasm" \
 && ret=0
@@ -34,8 +34,8 @@ _pyroclasm() {
         case $line[1] in
             (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -100,4 +100,8 @@ _pyroclasm__help__help_commands() {
     _describe -t commands 'pyroclasm help help commands' commands "$@"
 }
 
-_pyroclasm "$@"
+if [ "$funcstack[1]" = "_pyroclasm" ]; then
+    _pyroclasm "$@"
+else
+    compdef _pyroclasm pyroclasm
+fi

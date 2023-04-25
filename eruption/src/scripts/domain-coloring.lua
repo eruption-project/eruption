@@ -24,7 +24,7 @@ require "debug"
 -- global state variables --
 ticks = 0
 color_map = {}
-offsets = {0, 0, 0}
+offsets = { 0, 0, 0 }
 
 -- event handler functions --
 function on_startup(config)

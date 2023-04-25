@@ -1,10 +1,9 @@
 ---
 name: Request hardware support
 about: Create a request for a device to be supported by Eruption
-title: 'Add Support for <make and name of the device goes here>'
-labels: 'hardware support'
-assignees: ''
-
+title: Add Support for <make and name of the device goes here>
+labels: hardware support
+assignees: ""
 ---
 
 **Introduction**
@@ -13,5 +12,5 @@ Introductory text.
 **Device to add support for**
 Your device, please include `sudo lsusb`.
 
-**Please attach your *.pcapng file, if possible**
+**Please attach your \*.pcapng file, if possible**
 For further information, please see the [Eruption Wiki](https://github.com/X3n0m0rph59/eruption/wiki).

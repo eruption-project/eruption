@@ -3,12 +3,12 @@
 pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
-pkgver='0.3.0'
-pkgrel='5'
+pkgver='0.4.0'
+pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
-depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4')
+depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4' 'acl')
 makedepends=('git' 'rust' 'python' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'vulkan-headers' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtk3')
 provides=('eruption')
 conflicts=('eruption-git' 'eruption-roccat-vulcan-git')
@@ -31,6 +31,7 @@ package() {
     mkdir -p "$pkgdir/usr/bin"
     mkdir -p "$pkgdir/etc/eruption"
     mkdir -p "$pkgdir/etc/profile.d"
+    mkdir -p "$pkgdir/etc/modules-load.d"
     mkdir -p "$pkgdir/usr/share/doc/eruption"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/macros"
     mkdir -p "$pkgdir/usr/share/eruption/scripts/lib/themes"
@@ -59,6 +60,7 @@ package() {
 
     mkdir -p "$pkgdir/usr/share/dbus-1/system.d"
     mkdir -p "$pkgdir/usr/share/dbus-1/session.d"
+    mkdir -p "$pkgdir/usr/share/dbus-1/system-services"
 
     mkdir -p "$pkgdir/usr/share/polkit-1/actions"
 
@@ -100,6 +102,8 @@ package() {
 
     install -m 644 "support/profile.d/eruption.sh" "$pkgdir/etc/profile.d/"
 
+    install -m 644 "support/modules-load.d/eruption.conf" "$pkgdir/etc/modules-load.d/"
+
     install -m 644 "support/systemd/eruption.service" "$pkgdir/usr/lib/systemd/system/"
     install -m 644 "support/systemd/eruption.preset" "$pkgdir/usr/lib/systemd/system-preset/50-eruption.preset"
 
@@ -117,9 +121,10 @@ package() {
 
     install -m 644 "support/udev/99-eruption.rules" "$pkgdir/usr/lib/udev/rules.d/"
 
-    install -m 644 "support/dbus/org.eruption.control.conf" "$pkgdir/usr/share/dbus-1/system.d/"
+    install -m 644 "support/dbus/org.eruption.conf" "$pkgdir/usr/share/dbus-1/system.d/"
     install -m 644 "support/dbus/org.eruption.process_monitor.conf" "$pkgdir/usr/share/dbus-1/session.d/"
     install -m 644 "support/dbus/org.eruption.fx_proxy.conf" "$pkgdir/usr/share/dbus-1/session.d/"
+    install -m 644 "support/dbus/org.eruption.service" "$pkgdir/usr/share/dbus-1/system-services/"
 
     install -m 644 "support/policykit/org.eruption.policy" "$pkgdir/usr/share/polkit-1/actions/"
 

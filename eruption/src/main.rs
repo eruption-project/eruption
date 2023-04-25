@@ -19,10 +19,9 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-// use async_macros::join;
 use clap::{Arg, Command};
 use config::Config;
-use flume::{unbounded, Receiver, Selector, Sender};
+use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -34,17 +33,22 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Condvar, Mutex, RwLock};
 use rust_embed::RustEmbed;
-use std::fs::{self};
-use std::path::{Path, PathBuf};
-use std::process;
-use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashMap, env};
 use std::{collections::HashSet, thread};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+use std::{
+    process,
+    sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering},
+};
 use tokio::join;
 use tracing::*;
+use util::ratelimited;
 
 mod threads;
 use threads::*;
@@ -90,11 +94,17 @@ lazy_static! {
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
 
     pub static ref VERSION: String = {
-        format!(
-            "{} ({}) ({} build)",
-            env!("CARGO_PKG_VERSION"),
-            env!("ERUPTION_GIT_PKG_VERSION"),
-            if cfg!(debug_assertions) {
+        format!("version {version} ({build_type} build) [{branch}:{commit} {dirty}]",
+            version = env!("CARGO_PKG_VERSION"),
+            branch = env!("GIT_BRANCH"),
+            commit = env!("GIT_COMMIT"),
+            dirty = if env!("GIT_DIRTY") == "true" {
+                "dirty"
+            } else {
+                "clean"
+            },
+            // timestamp = env!("SOURCE_TIMESTAMP"),
+            build_type = if cfg!(debug_assertions) {
                 "debug"
             } else {
                 "release"
@@ -294,6 +304,9 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Could not access storage: {description}")]
     StorageError { description: String },
+
+    #[error("A device failed")]
+    DeviceFailed {},
 
     #[error("Lost connection to device")]
     DeviceDisconnected {},
@@ -637,10 +650,16 @@ fn run_main_loop(
 
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
+    let afk_timeout_secs = crate::CONFIG
+        .lock()
+        .as_ref()
+        .unwrap()
+        .get_int("global.afk_timeout_secs")
+        .unwrap_or(constants::AFK_TIMEOUT_SECS as i64) as u64;
+
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
-    let mut watchdog_time = Instant::now();
     let mut delay_time_hid_poll = Instant::now();
     let mut delay_time_tick = Instant::now();
     let mut delay_time_render = Instant::now();
@@ -658,12 +677,17 @@ fn run_main_loop(
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
-    let kbd_rxs = crate::KEYBOARD_DEVICES_RX.read();
-    let mouse_rxs = crate::MOUSE_DEVICES_RX.read();
-
     'MAIN_LOOP: loop {
         #[cfg(feature = "profiling")]
         coz::scope!("main loop");
+
+        let mut device_has_failed = false;
+
+        let kbd_rxs = crate::KEYBOARD_DEVICES_RX.write();
+        let mouse_rxs = crate::MOUSE_DEVICES_RX.write();
+
+        let kbd_rxs_clone = kbd_rxs.clone();
+        let mouse_rxs_clone = mouse_rxs.clone();
 
         let mut sel = Selector::new()
             .recv(ctrl_c_rx, |_event| {
@@ -671,10 +695,11 @@ fn run_main_loop(
             })
             .recv(fsevents_rx, |event| {
                 if let Ok(event) = event {
-                    events::process_filesystem_event(&event, dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not process a filesystem event: {}", e))
+                    events::process_filesystem_event(&event, dbus_api_tx).unwrap_or_else(|e| {
+                        ratelimited::error!("Could not process a filesystem event: {}", e)
+                    })
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Could not process a filesystem event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -682,12 +707,13 @@ fn run_main_loop(
             })
             .recv(dbus_rx, |event| {
                 if let Ok(event) = event {
-                    events::process_dbus_event(&event, dbus_api_tx)
-                        .unwrap_or_else(|e| error!("Could not process a D-Bus event: {}", e));
+                    events::process_dbus_event(&event, dbus_api_tx).unwrap_or_else(|e| {
+                        ratelimited::error!("Could not process a D-Bus event: {}", e)
+                    });
 
                     // FAILED_TXS.write().clear();
                 } else {
-                    error!(
+                    ratelimited::error!(
                         "Fatal: Could not process a D-Bus event: {}",
                         event.as_ref().unwrap_err()
                     );
@@ -696,13 +722,30 @@ fn run_main_loop(
                 }
             });
 
-        for rx in kbd_rxs.iter() {
+        let failed_kbd_rxs = Arc::new(Mutex::new(HashSet::new()));
+
+        for (index, rx) in kbd_rxs_clone.iter().enumerate() {
+            let failed_kbd_rxs = failed_kbd_rxs.clone();
+
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     // TODO: support multiple keyboards
                     events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
-                            error!(
+                            device_has_failed = true;
+
+                            // let make = hwdevices::get_device_make(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+                            // let model = hwdevices::get_device_model(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+
+                            ratelimited::error!(
                                 "Could not process a keyboard event: {}. Trying to close the device now...",
                                 e
                             );
@@ -711,12 +754,25 @@ fn run_main_loop(
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
                         });
                 } else {
-                    error!(
-                        "Could not process a keyboard event: {}",
+                    device_has_failed = true;
+
+                    // let make = hwdevices::get_device_make(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+                    // let model = hwdevices::get_device_model(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+
+                    ratelimited::error!(
+                        "Could not process a keyboard event from: {}",
                         event.as_ref().unwrap_err()
                     );
 
@@ -724,31 +780,67 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|e| {
+                            ratelimited::error!("An error occurred while closing the device: {e}")
+                        })
                         .ok();
+                }
+
+                if device_has_failed {
+                    failed_kbd_rxs.lock().insert(index);
                 }
             };
 
             sel = sel.recv(rx, mapper);
         }
 
-        for rx in mouse_rxs.iter() {
+        let failed_mouse_rxs = Arc::new(Mutex::new(HashSet::new()));
+
+        for (index, rx) in mouse_rxs_clone.iter().enumerate() {
+            let failed_mouse_rxs = failed_mouse_rxs.clone();
+
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
                     events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
                         .unwrap_or_else(|e| {
-                            error!("Could not process a mouse event: {}. Trying to close the device now...", e);
+                            device_has_failed = true;
+
+                            // let make = hwdevices::get_device_make(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+                            // let model = hwdevices::get_device_model(
+                            //     device.read().get_usb_vid(),
+                            //     device.read().get_usb_pid(),
+                            // )
+                            // .unwrap_or_else(|| "<unknown>");
+
+                            ratelimited::error!("Could not process a mouse event from: {}. Trying to close the device now...", e);
 
                             (*crate::MOUSE_DEVICES.read()[0])
                                 .write()
                                 .as_device_mut()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
                         });
                 } else {
-                    error!(
-                        "Could not process a mouse event: {}",
+                    device_has_failed = true;
+
+                    // let make = hwdevices::get_device_make(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+                    // let model = hwdevices::get_device_model(
+                    //     device.read().get_usb_vid(),
+                    //     device.read().get_usb_pid(),
+                    // )
+                    // .unwrap_or_else(|| "<unknown>");
+
+                    ratelimited::error!(
+                        "Could not process a mouse event from: {}",
                         event.as_ref().unwrap_err()
                     );
 
@@ -756,8 +848,14 @@ fn run_main_loop(
                         .write()
                         .as_device_mut()
                         .close_all()
-                        .map_err(|_e| error!("An error occurred while closing the device"))
+                        .map_err(|e| {
+                            ratelimited::error!("An error occurred while closing the device: {e}")
+                        })
                         .ok();
+                }
+
+                if device_has_failed {
+                    failed_mouse_rxs.lock().insert(index);
                 }
             };
 
@@ -1003,7 +1101,65 @@ fn run_main_loop(
         }
 
         // now, process events from all available sources...
-        let _result = sel.wait_timeout(Duration::from_millis(1000 / (constants::TARGET_FPS * 2)));
+        let result = sel.wait_timeout(Duration::from_millis(1000 / (constants::TARGET_FPS * 2)));
+
+        let timedout = if let Err(result) = result {
+            match result {
+                SelectError::Timeout => true,
+            }
+        } else {
+            false
+        };
+
+        // remove all failed devices
+        for idx in failed_kbd_rxs.lock().iter() {
+            // warn!("Removing keyboard rx with index {idx}");
+            // kbd_rxs.remove(*idx);
+
+            if let Some(device) = crate::KEYBOARD_DEVICES.write().get_mut(*idx) {
+                let _ = device
+                    .write()
+                    .as_device_mut()
+                    .fail()
+                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            }
+        }
+
+        for idx in failed_mouse_rxs.lock().iter() {
+            // warn!("Removing mouse rx with index {idx}");
+            // mouse_rxs.remove(*idx);
+
+            if let Some(device) = crate::MOUSE_DEVICES.write().get_mut(*idx) {
+                let _ = device
+                    .write()
+                    .as_device_mut()
+                    .fail()
+                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            }
+        }
+
+        // for idx in failed_misc_rxs.lock().iter() {
+        //     // warn!("Removing misc rx with index {idx}");
+        //     // misc_rxs.remove(*idx);
+        //
+        //     if let Some(device) = crate::MISC_DEVICES.write().get_mut(*idx) {
+        //         let _ = device
+        //             .write()
+        //             .as_device_mut()
+        //             .fail()
+        //             .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+        //     }
+        // }
+
+        // terminate the main loop (and later re-enter it) on device failure
+        // in most cases eruption should better be restarted
+        if device_has_failed
+            || (result.is_err() && !timedout)
+            || !failed_kbd_rxs.lock().is_empty()
+            || !failed_mouse_rxs.lock().is_empty()
+        {
+            return Err(MainError::DeviceFailed {}.into());
+        }
 
         if delay_time_hid_poll.elapsed()
             >= Duration::from_millis(1000 / (constants::TARGET_FPS * 8))
@@ -1015,13 +1171,15 @@ fn run_main_loop(
 
             // poll HID events on all available devices
             for device in crate::KEYBOARD_DEVICES.read().iter() {
-                events::process_keyboard_hid_events(device)
-                    .unwrap_or_else(|e| error!("Could not process a keyboard HID event: {}", e));
+                events::process_keyboard_hid_events(device).unwrap_or_else(|e| {
+                    ratelimited::error!("Could not process a keyboard HID event: {}", e)
+                });
             }
 
             for device in crate::MOUSE_DEVICES.read().iter() {
-                events::process_mouse_hid_events(device)
-                    .unwrap_or_else(|e| error!("Could not process a mouse HID event: {}", e));
+                events::process_mouse_hid_events(device).unwrap_or_else(|e| {
+                    ratelimited::error!("Could not process a mouse HID event: {}", e)
+                });
             }
         }
 
@@ -1048,7 +1206,9 @@ fn run_main_loop(
             }
         }
 
-        if delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS) {
+        if !device_has_failed
+            && delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS)
+        {
             #[cfg(feature = "profiling")]
             coz::scope!("render code");
 
@@ -1082,13 +1242,6 @@ fn run_main_loop(
         }
 
         // compute AFK time
-        let afk_timeout_secs = crate::CONFIG
-            .lock()
-            .as_ref()
-            .unwrap()
-            .get_int("global.afk_timeout_secs")
-            .unwrap_or(constants::AFK_TIMEOUT_SECS as i64) as u64;
-
         if afk_timeout_secs > 0 {
             let afk = LAST_INPUT_TIME.lock().elapsed() >= Duration::from_secs(afk_timeout_secs);
             AFK.store(afk, Ordering::SeqCst);
@@ -1119,19 +1272,6 @@ fn run_main_loop(
                 1000 / constants::TARGET_FPS
             );
         } */
-
-        if LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
-            // notify the software watchdog that we are still "alive"
-            if watchdog_time.elapsed() >= Duration::from_millis(constants::WATCHDOG_NOTIFY_MILLIS) {
-                let result =
-                    systemd::daemon::notify(false, [(systemd::daemon::STATE_WATCHDOG, "1")].iter());
-                if result.is_err() || !result.unwrap() {
-                    error!("Could not notify the systemd software watchdog");
-                }
-
-                watchdog_time = Instant::now();
-            }
-        }
 
         // shall we quit the main loop?
         if QUIT.load(Ordering::SeqCst) {
@@ -1394,8 +1534,19 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        keyboard_device.read().get_usb_vid(),
+        keyboard_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+    let model = hwdevices::get_device_model(
+        keyboard_device.read().get_usb_vid(),
+        keyboard_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+
     keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the keyboard device: {}", e);
+        error!("Error opening the keyboard device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1406,17 +1557,22 @@ pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
     keyboard_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring keyboard LEDs...");
     keyboard_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         keyboard_device.read().get_firmware_revision()
     );
 }
@@ -1428,8 +1584,19 @@ pub fn init_mouse_device(mouse_device: &MouseDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        mouse_device.read().get_usb_vid(),
+        mouse_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+    let model = hwdevices::get_device_model(
+        mouse_device.read().get_usb_vid(),
+        mouse_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+
     mouse_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the mouse device: {}", e);
+        error!("Error opening the mouse device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1440,17 +1607,22 @@ pub fn init_mouse_device(mouse_device: &MouseDevice) {
     mouse_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring mouse LEDs...");
     mouse_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         mouse_device.read().get_firmware_revision()
     );
 }
@@ -1462,8 +1634,19 @@ pub fn init_misc_device(misc_device: &MiscDevice) {
     let hidapi = crate::HIDAPI.read();
     let hidapi = hidapi.as_ref().unwrap();
 
+    let make = hwdevices::get_device_make(
+        misc_device.read().get_usb_vid(),
+        misc_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+    let model = hwdevices::get_device_model(
+        misc_device.read().get_usb_vid(),
+        misc_device.read().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+
     misc_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the misc device: {}", e);
+        error!("Error opening the misc device '{make} {model}': {}", e);
         error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
@@ -1474,17 +1657,22 @@ pub fn init_misc_device(misc_device: &MiscDevice) {
     misc_device
         .write()
         .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
     info!("Configuring misc device LEDs...");
     misc_device
         .write()
         .set_led_init_pattern()
-        .unwrap_or_else(|e| error!("Could not initialize LEDs: {}", e));
+        .unwrap_or_else(|e| {
+            error!(
+                "Could not initialize LEDs of the device '{make} {model}': {}",
+                e
+            )
+        });
 
     info!(
-        "Firmware revision: {}",
+        "Firmware revision: '{make} {model}': {}",
         misc_device.read().get_firmware_revision()
     );
 }
@@ -1527,14 +1715,24 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let matches = parse_commandline();
 
     info!(
-        "Starting Eruption - Realtime RGB LED Driver for Linux: Version {} ({}) ({} build)",
-        env!("CARGO_PKG_VERSION"),
-        env!("ERUPTION_GIT_PKG_VERSION"),
-        if cfg!(debug_assertions) {
-            "debug"
-        } else {
-            "release"
-        }
+        "Starting Eruption - Realtime RGB LED Driver for Linux: {}",
+        format!(
+            "version {version} ({build_type} build) [{branch}:{commit} {dirty}]",
+            version = env!("CARGO_PKG_VERSION"),
+            branch = env!("GIT_BRANCH"),
+            commit = env!("GIT_COMMIT"),
+            dirty = if env!("GIT_DIRTY") == "true" {
+                "dirty"
+            } else {
+                "clean"
+            },
+            // timestamp = env!("SOURCE_TIMESTAMP"),
+            build_type = if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            }
+        )
     );
 
     if !LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
@@ -1932,13 +2130,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if util::file_exists("/run/lock/eruption-hotplug-helper.lock") {
-        debug!("Removing stale eruption-hotplug-helper.lock file...");
-
-        fs::remove_file("/run/lock/eruption-hotplug-helper.lock")
-            .unwrap_or_else(|e| warn!("Could not remove lock file: {}", e));
-    }
-
     info!("Exiting now");
 
     Ok(())
@@ -1959,22 +2150,24 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             .compact()
             .with_filter(filter);
 
-        #[allow(unused_mut)]
-        let mut console_layer: Option<console_subscriber::ConsoleLayer> = None;
-
         cfg_if::cfg_if! {
             if #[cfg(feature = "debug-async")] {
-                console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                let console_layer = console_subscriber::ConsoleLayer::builder()
                     .with_default_env()
-                    .spawn());
+                    .spawn();
+
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(console_layer)
+                    .with(format_layer)
+                    .init();
+            } else {
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(format_layer)
+                    .init();
             }
         };
-
-        tracing_subscriber::registry()
-            // .with(journald_layer)
-            .with(console_layer)
-            .with(format_layer)
-            .init();
     } else {
         let filter = tracing_subscriber::EnvFilter::from_default_env();
         let journald_layer = tracing_journald::layer()?.with_filter(filter);

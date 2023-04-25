@@ -22,6 +22,7 @@
 about = A utility used to notify Eruption about device hotplug events
 verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
 hotplug-about = Trigger a hotplug event
+resume-about = Trigger a resume from suspend or hibernate event
 completions-about = Generate shell completions
 
 license-header = Eruption is free software: you can redistribute it and/or modify

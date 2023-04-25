@@ -75,6 +75,9 @@ The Eruption Development Team
               <attribute name="weight" value="bold"/>
               <attribute name="scale" value="2"/>
             </attributes>
+            <style>
+              <class name="heading"/>
+            </style>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -90,6 +93,9 @@ The Eruption Development Team
             <property name="pixel-size">64</property>
             <property name="icon-name">input-mouse-symbolic</property>
             <property name="icon_size">0</property>
+            <style>
+              <class name="heading"/>
+            </style>
           </object>
           <packing>
             <property name="left-attach">0</property>

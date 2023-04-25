@@ -22,7 +22,7 @@
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
-use palette::{FromColor, Hsva, Shade, Srgba};
+use palette::{FromColor, Hsva, Lighten, Srgba};
 
 use crate::constants;
 

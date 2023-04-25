@@ -22,15 +22,7 @@
 use std::{error::Error, process::Command};
 
 fn main() -> Result<(), Box<dyn Error + 'static>> {
-    let output = Command::new("bash")
-        .args(["-c", "../support/pkg/git-version.sh"])
-        .output()
-        .expect("Failed to execute command");
-
-    let result = String::from_utf8_lossy(&output.stdout);
-
-    println!("cargo:rustc-env=ERUPTION_GIT_PKG_VERSION={}", &*result);
-
+    // build protobuf protocols
     prost_build::compile_protos(
         &["../support/protobuf/audio-proxy.proto"],
         &["../support/protobuf/"],
@@ -40,6 +32,35 @@ fn main() -> Result<(), Box<dyn Error + 'static>> {
         &["../support/protobuf/sdk-support.proto"],
         &["../support/protobuf/"],
     )?;
+
+    // gather some data about the state of the git working directory
+    let output = Command::new("sh")
+        .args(["-c", "../support/pkg/git-version.sh"])
+        .output()
+        .expect("Failed to execute command");
+
+    let result = String::from_utf8_lossy(&output.stdout);
+
+    println!("cargo:rustc-env=ERUPTION_GIT_PKG_VERSION={}", &*result);
+
+    build_data::set_GIT_BRANCH();
+    build_data::set_GIT_COMMIT();
+    build_data::set_GIT_DIRTY();
+    build_data::set_SOURCE_TIMESTAMP();
+    // build_data::no_debug_rebuilds();
+
+    println!(
+        "cargo:rustc-env=GIT_BRANCH={}",
+        build_data::get_git_branch().unwrap()
+    );
+    println!(
+        "cargo:rustc-env=GIT_COMMIT={}",
+        build_data::get_git_commit().unwrap()
+    );
+    println!(
+        "cargo:rustc-env=GIT_DIRTY={}",
+        build_data::get_git_dirty().unwrap()
+    );
 
     Ok(())
 }

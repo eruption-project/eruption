@@ -45,6 +45,7 @@ pub trait Transport {
     fn submit_canvas(&self, canvas: &Canvas) -> Result<()>;
 
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()>;
+    fn notify_resume_from_suspend(&self) -> Result<()>;
 }
 
 #[derive(Debug, Default, Clone)]

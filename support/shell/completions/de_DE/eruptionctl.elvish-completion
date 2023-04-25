@@ -1,0 +1,838 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[eruptionctl] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'eruptionctl'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'eruptionctl'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand -r 'Repeat output until ctrl+c is pressed'
+            cand --repeat 'Repeat output until ctrl+c is pressed'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand status 'Zeigt den Status von Eruption, das aktuell aktive Profil oder den Slot'
+            cand switch 'Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln'
+            cand config 'Laufzeit Konfiguration des Eruption Daemons bearbeiten'
+            cand devices 'Gerätespezifische Konfiguration bearbeiten'
+            cand profiles 'Profil bezogene Unterbefehle'
+            cand scripts 'Script bezogene Unterbefehle'
+            cand color-schemes 'Ein Farbschema definieren, importieren oder löschen'
+            cand param 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten'
+            cand names 'Slot-Namen anzeigen oder ändern'
+            cand canvas 'Nachbearbeitungs-Filter für die globale Leinwand konfigurieren'
+            cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
+            cand rules 'Automatisierungsregeln anzeigen und verwalten'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;status'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand daemon 'Shows status information about Eruption'
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;status;daemon'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;status;profile'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;status;slot'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;status;help'= {
+            cand daemon 'Shows status information about Eruption'
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;status;help;daemon'= {
+        }
+        &'eruptionctl;status;help;profile'= {
+        }
+        &'eruptionctl;status;help;slot'= {
+        }
+        &'eruptionctl;status;help;help'= {
+        }
+        &'eruptionctl;switch'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;switch;profile'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;switch;slot'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;switch;help'= {
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;switch;help;profile'= {
+        }
+        &'eruptionctl;switch;help;slot'= {
+        }
+        &'eruptionctl;switch;help;help'= {
+        }
+        &'eruptionctl;config'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand brightness 'Get or set the global brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;config;brightness'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;config;soundfx'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;config;help'= {
+            cand brightness 'Get or set the global brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;config;help;brightness'= {
+        }
+        &'eruptionctl;config;help;soundfx'= {
+        }
+        &'eruptionctl;config;help;help'= {
+        }
+        &'eruptionctl;devices'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+            cand profile 'Get or set the current profile (applicable for some devices)'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand rate 'Get or set the bus poll rate'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;devices;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;info'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;status'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;brightness'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;profile'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;dpi'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;rate'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;debounce'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;distance'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;angle-snapping'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;devices;help'= {
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+            cand profile 'Get or set the current profile (applicable for some devices)'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand rate 'Get or set the bus poll rate'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;devices;help;list'= {
+        }
+        &'eruptionctl;devices;help;info'= {
+        }
+        &'eruptionctl;devices;help;status'= {
+        }
+        &'eruptionctl;devices;help;brightness'= {
+        }
+        &'eruptionctl;devices;help;profile'= {
+        }
+        &'eruptionctl;devices;help;dpi'= {
+        }
+        &'eruptionctl;devices;help;rate'= {
+        }
+        &'eruptionctl;devices;help;debounce'= {
+        }
+        &'eruptionctl;devices;help;distance'= {
+        }
+        &'eruptionctl;devices;help;angle-snapping'= {
+        }
+        &'eruptionctl;devices;help;help'= {
+        }
+        &'eruptionctl;profiles'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List all available profiles'
+            cand info 'Show information about a specific profile'
+            cand edit 'Edit a profile'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;profiles;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;profiles;info'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;profiles;edit'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;profiles;help'= {
+            cand list 'List all available profiles'
+            cand info 'Show information about a specific profile'
+            cand edit 'Edit a profile'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;profiles;help;list'= {
+        }
+        &'eruptionctl;profiles;help;info'= {
+        }
+        &'eruptionctl;profiles;help;edit'= {
+        }
+        &'eruptionctl;profiles;help;help'= {
+        }
+        &'eruptionctl;scripts'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List all available Lua effects scripts'
+            cand info 'Show information about a specific Lua script'
+            cand edit 'Edit a Lua script file'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;scripts;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;scripts;info'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;scripts;edit'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;scripts;help'= {
+            cand list 'List all available Lua effects scripts'
+            cand info 'Show information about a specific Lua script'
+            cand edit 'Edit a Lua script file'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;scripts;help;list'= {
+        }
+        &'eruptionctl;scripts;help;info'= {
+        }
+        &'eruptionctl;scripts;help;edit'= {
+        }
+        &'eruptionctl;scripts;help;help'= {
+        }
+        &'eruptionctl;color-schemes'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;color-schemes;add'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;color-schemes;remove'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;color-schemes;import'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand pywal 'Import an existing Pywal color scheme'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;import;pywal'= {
+            cand -o 'Optimize palette'
+            cand --optimize 'Optimize palette'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;color-schemes;import;help'= {
+            cand pywal 'Import an existing Pywal color scheme'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;import;help;pywal'= {
+        }
+        &'eruptionctl;color-schemes;import;help;help'= {
+        }
+        &'eruptionctl;color-schemes;help'= {
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;color-schemes;help;list'= {
+        }
+        &'eruptionctl;color-schemes;help;add'= {
+        }
+        &'eruptionctl;color-schemes;help;remove'= {
+        }
+        &'eruptionctl;color-schemes;help;import'= {
+            cand pywal 'Import an existing Pywal color scheme'
+        }
+        &'eruptionctl;color-schemes;help;import;pywal'= {
+        }
+        &'eruptionctl;color-schemes;help;help'= {
+        }
+        &'eruptionctl;param'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;names'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;names;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;names;set'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;names;set-all'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;names;help'= {
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;names;help;list'= {
+        }
+        &'eruptionctl;names;help;set'= {
+        }
+        &'eruptionctl;names;help;set-all'= {
+        }
+        &'eruptionctl;names;help;help'= {
+        }
+        &'eruptionctl;canvas'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand hue 'Get or set the global ''hue'' adjustment during canvas post-processing'
+            cand saturation 'Get or set the global ''saturation'' adjustment during canvas post-processing'
+            cand lightness 'Get or set the global ''lightness'' adjustment during canvas post-processing'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;canvas;hue'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;canvas;saturation'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;canvas;lightness'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;canvas;help'= {
+            cand hue 'Get or set the global ''hue'' adjustment during canvas post-processing'
+            cand saturation 'Get or set the global ''saturation'' adjustment during canvas post-processing'
+            cand lightness 'Get or set the global ''lightness'' adjustment during canvas post-processing'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;canvas;help;hue'= {
+        }
+        &'eruptionctl;canvas;help;saturation'= {
+        }
+        &'eruptionctl;canvas;help;lightness'= {
+        }
+        &'eruptionctl;canvas;help;help'= {
+        }
+        &'eruptionctl;effects'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable;image'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;enable;animation'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;enable;ambient'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;enable;help'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;enable;help;image'= {
+        }
+        &'eruptionctl;effects;enable;help;animation'= {
+        }
+        &'eruptionctl;effects;enable;help;ambient'= {
+        }
+        &'eruptionctl;effects;enable;help;help'= {
+        }
+        &'eruptionctl;effects;disable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;disable;image'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;disable;animation'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;disable;ambient'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;disable;help'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;disable;help;image'= {
+        }
+        &'eruptionctl;effects;disable;help;animation'= {
+        }
+        &'eruptionctl;effects;disable;help;ambient'= {
+        }
+        &'eruptionctl;effects;disable;help;help'= {
+        }
+        &'eruptionctl;effects;status'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;config'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;config;image'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;config;animation'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;config;ambient'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;effects;config;help'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;config;help;image'= {
+        }
+        &'eruptionctl;effects;config;help;animation'= {
+        }
+        &'eruptionctl;effects;config;help;ambient'= {
+        }
+        &'eruptionctl;effects;config;help;help'= {
+        }
+        &'eruptionctl;effects;help'= {
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;effects;help;enable'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;effects;help;enable;image'= {
+        }
+        &'eruptionctl;effects;help;enable;animation'= {
+        }
+        &'eruptionctl;effects;help;enable;ambient'= {
+        }
+        &'eruptionctl;effects;help;disable'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+        }
+        &'eruptionctl;effects;help;disable;image'= {
+        }
+        &'eruptionctl;effects;help;disable;animation'= {
+        }
+        &'eruptionctl;effects;help;disable;ambient'= {
+        }
+        &'eruptionctl;effects;help;status'= {
+        }
+        &'eruptionctl;effects;help;config'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;effects;help;config;image'= {
+        }
+        &'eruptionctl;effects;help;config;animation'= {
+        }
+        &'eruptionctl;effects;help;config;ambient'= {
+        }
+        &'eruptionctl;effects;help;help'= {
+        }
+        &'eruptionctl;rules'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'Alle Automatisierungsregeln anzeigen'
+            cand add 'Eine neue Automatisierungsregel hinzufügen'
+            cand remove 'Eine vorhandene Automatisierungsregel entfernen'
+            cand enable 'Eine vorhandene Automatisierungsregel aktivieren'
+            cand disable 'Eine vorhandene Automatisierungsregel deaktivieren'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;rules;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;rules;add'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;rules;remove'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;rules;enable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;rules;disable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;rules;help'= {
+            cand list 'Alle Automatisierungsregeln anzeigen'
+            cand add 'Eine neue Automatisierungsregel hinzufügen'
+            cand remove 'Eine vorhandene Automatisierungsregel entfernen'
+            cand enable 'Eine vorhandene Automatisierungsregel aktivieren'
+            cand disable 'Eine vorhandene Automatisierungsregel deaktivieren'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;rules;help;list'= {
+        }
+        &'eruptionctl;rules;help;add'= {
+        }
+        &'eruptionctl;rules;help;remove'= {
+        }
+        &'eruptionctl;rules;help;enable'= {
+        }
+        &'eruptionctl;rules;help;disable'= {
+        }
+        &'eruptionctl;rules;help;help'= {
+        }
+        &'eruptionctl;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;help'= {
+            cand status 'Zeigt den Status von Eruption, das aktuell aktive Profil oder den Slot'
+            cand switch 'Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln'
+            cand config 'Laufzeit Konfiguration des Eruption Daemons bearbeiten'
+            cand devices 'Gerätespezifische Konfiguration bearbeiten'
+            cand profiles 'Profil bezogene Unterbefehle'
+            cand scripts 'Script bezogene Unterbefehle'
+            cand color-schemes 'Ein Farbschema definieren, importieren oder löschen'
+            cand param 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten'
+            cand names 'Slot-Namen anzeigen oder ändern'
+            cand canvas 'Nachbearbeitungs-Filter für die globale Leinwand konfigurieren'
+            cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
+            cand rules 'Automatisierungsregeln anzeigen und verwalten'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;help;status'= {
+            cand daemon 'Shows status information about Eruption'
+            cand profile 'Shows the currently active profile'
+            cand slot 'Shows the currently active slot'
+        }
+        &'eruptionctl;help;status;daemon'= {
+        }
+        &'eruptionctl;help;status;profile'= {
+        }
+        &'eruptionctl;help;status;slot'= {
+        }
+        &'eruptionctl;help;switch'= {
+            cand profile 'Switch profiles'
+            cand slot 'Switch slots'
+        }
+        &'eruptionctl;help;switch;profile'= {
+        }
+        &'eruptionctl;help;switch;slot'= {
+        }
+        &'eruptionctl;help;config'= {
+            cand brightness 'Get or set the global brightness of the LEDs'
+            cand soundfx 'Get or set the state of SoundFX'
+        }
+        &'eruptionctl;help;config;brightness'= {
+        }
+        &'eruptionctl;help;config;soundfx'= {
+        }
+        &'eruptionctl;help;devices'= {
+            cand list 'List connected devices and their indices (run this first)'
+            cand info 'Get information about a specific device'
+            cand status 'Get status of a specific device'
+            cand brightness 'Get or set the device specific brightness of the LEDs'
+            cand profile 'Get or set the current profile (applicable for some devices)'
+            cand dpi 'Get or set the DPI parameter (applicable for some mice)'
+            cand rate 'Get or set the bus poll rate'
+            cand debounce 'Get or set the debounce parameter (applicable for some mice)'
+            cand distance 'Get or set the DCU parameter (applicable for some mice)'
+            cand angle-snapping 'Get or set the angle-snapping parameter (applicable for some mice)'
+        }
+        &'eruptionctl;help;devices;list'= {
+        }
+        &'eruptionctl;help;devices;info'= {
+        }
+        &'eruptionctl;help;devices;status'= {
+        }
+        &'eruptionctl;help;devices;brightness'= {
+        }
+        &'eruptionctl;help;devices;profile'= {
+        }
+        &'eruptionctl;help;devices;dpi'= {
+        }
+        &'eruptionctl;help;devices;rate'= {
+        }
+        &'eruptionctl;help;devices;debounce'= {
+        }
+        &'eruptionctl;help;devices;distance'= {
+        }
+        &'eruptionctl;help;devices;angle-snapping'= {
+        }
+        &'eruptionctl;help;profiles'= {
+            cand list 'List all available profiles'
+            cand info 'Show information about a specific profile'
+            cand edit 'Edit a profile'
+        }
+        &'eruptionctl;help;profiles;list'= {
+        }
+        &'eruptionctl;help;profiles;info'= {
+        }
+        &'eruptionctl;help;profiles;edit'= {
+        }
+        &'eruptionctl;help;scripts'= {
+            cand list 'List all available Lua effects scripts'
+            cand info 'Show information about a specific Lua script'
+            cand edit 'Edit a Lua script file'
+        }
+        &'eruptionctl;help;scripts;list'= {
+        }
+        &'eruptionctl;help;scripts;info'= {
+        }
+        &'eruptionctl;help;scripts;edit'= {
+        }
+        &'eruptionctl;help;color-schemes'= {
+            cand list 'List all color schemes known to Eruption'
+            cand add 'Add a new named color scheme'
+            cand remove 'Remove a color scheme by name'
+            cand import 'Import a color scheme from a file, e.g.: like the Pywal configuration'
+        }
+        &'eruptionctl;help;color-schemes;list'= {
+        }
+        &'eruptionctl;help;color-schemes;add'= {
+        }
+        &'eruptionctl;help;color-schemes;remove'= {
+        }
+        &'eruptionctl;help;color-schemes;import'= {
+            cand pywal 'Import an existing Pywal color scheme'
+        }
+        &'eruptionctl;help;color-schemes;import;pywal'= {
+        }
+        &'eruptionctl;help;param'= {
+        }
+        &'eruptionctl;help;names'= {
+            cand list 'List slot names'
+            cand set 'Set the name of a single profile slot'
+            cand set-all 'Set all the profile slot names at once'
+        }
+        &'eruptionctl;help;names;list'= {
+        }
+        &'eruptionctl;help;names;set'= {
+        }
+        &'eruptionctl;help;names;set-all'= {
+        }
+        &'eruptionctl;help;canvas'= {
+            cand hue 'Get or set the global ''hue'' adjustment during canvas post-processing'
+            cand saturation 'Get or set the global ''saturation'' adjustment during canvas post-processing'
+            cand lightness 'Get or set the global ''lightness'' adjustment during canvas post-processing'
+        }
+        &'eruptionctl;help;canvas;hue'= {
+        }
+        &'eruptionctl;help;canvas;saturation'= {
+        }
+        &'eruptionctl;help;canvas;lightness'= {
+        }
+        &'eruptionctl;help;effects'= {
+            cand enable 'Enable an effect'
+            cand disable 'Disable an active effect'
+            cand status 'Show the status of the Eruption effects subsystem'
+            cand config 'Configure an active effect'
+        }
+        &'eruptionctl;help;effects;enable'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;help;effects;enable;image'= {
+        }
+        &'eruptionctl;help;effects;enable;animation'= {
+        }
+        &'eruptionctl;help;effects;enable;ambient'= {
+        }
+        &'eruptionctl;help;effects;disable'= {
+            cand image 'Disable the image effect'
+            cand animation 'Disable the animation effect'
+            cand ambient 'Disable the ambient effect'
+        }
+        &'eruptionctl;help;effects;disable;image'= {
+        }
+        &'eruptionctl;help;effects;disable;animation'= {
+        }
+        &'eruptionctl;help;effects;disable;ambient'= {
+        }
+        &'eruptionctl;help;effects;status'= {
+        }
+        &'eruptionctl;help;effects;config'= {
+            cand image 'Load an image file and display it on the connected devices'
+            cand animation 'Load image files from a directory and display each one on the connected devices'
+            cand ambient 'Make the LEDs of connected devices reflect what is shown on the screen'
+        }
+        &'eruptionctl;help;effects;config;image'= {
+        }
+        &'eruptionctl;help;effects;config;animation'= {
+        }
+        &'eruptionctl;help;effects;config;ambient'= {
+        }
+        &'eruptionctl;help;rules'= {
+            cand list 'Alle Automatisierungsregeln anzeigen'
+            cand add 'Eine neue Automatisierungsregel hinzufügen'
+            cand remove 'Eine vorhandene Automatisierungsregel entfernen'
+            cand enable 'Eine vorhandene Automatisierungsregel aktivieren'
+            cand disable 'Eine vorhandene Automatisierungsregel deaktivieren'
+        }
+        &'eruptionctl;help;rules;list'= {
+        }
+        &'eruptionctl;help;rules;add'= {
+        }
+        &'eruptionctl;help;rules;remove'= {
+        }
+        &'eruptionctl;help;rules;enable'= {
+        }
+        &'eruptionctl;help;rules;disable'= {
+        }
+        &'eruptionctl;help;completions'= {
+        }
+        &'eruptionctl;help;help'= {
+        }
+    ]
+    $completions[$command]
+}
