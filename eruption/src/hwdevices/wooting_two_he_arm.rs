@@ -833,7 +833,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         fn index_of(cntr: usize) -> Option<usize> {
                             let offset = ((cntr / 24) * 6) + (cntr % 6);
 
-                            return Some(offset);
+                            Some(offset)
 
                             // let x = cntr / NUM_COLS;
                             // let y = cntr % NUM_COLS;
