@@ -36,31 +36,28 @@
   font-size: x-large;
   font-weight: bold;
   margin-left: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: gray 3px 3px 3px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: gray 0px 0px 2px;
 }
 
 .heading_large {
   font-size: 3.55rem;
-  font-style: italic;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 3px 3px 3px;
+  text-shadow: gray 0px 0px 2px;
 }
 
 .notification {
   font-size: larger;
-  font-style: italic;
   margin-bottom: 8px;
   color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 3px 3px 3px;
+  text-shadow: gray 0px 0px 2px;
 }
 
 .notification_dim {
   font-size: larger;
-  font-style: italic;
   color: rgba(255, 255, 255, 0.8);
-  text-shadow: gray 3px 3px 3px;
+  text-shadow: gray 0px 0px 2px;
 }
 
 .small-font {
@@ -68,33 +65,30 @@
 }
 
 .slot_indicator {
+  padding: 4px;
+  border: 4px dotted rgba(128, 128, 128, 0.25);
   border-radius: 8px;
-  border: 5px dotted gray;
 }
 
 .slot_indicator.active {
-  background: linear-gradient(155deg,
-      rgba(90, 90, 90, 0.85),
-      rgba(105, 105, 105, 0.1));
-  border: 5px solid rgba(128, 128, 128, 0.5);
-  box-shadow: rgba(255, 255, 255, 0.8) 0px 0px 6px 6px;
+  border: 4px solid;
+  border-radius: 8px;
+  box-shadow: rgba(255, 255, 255, 0.8) 0px 0px 4px;
 }
 
 .slot_indicator combobox {
   font-size: small;
 }
 
+.slot_indicator.active radiobutton {
+  border-style: none !important;
+}
+
 .slot_entry {
-  font-size: large;
+  font-size: x-large;
   font-weight: bold;
 }
 
-/* box * {
-  background-color: transparent;
-}
-
-box *:hover {
-  background: linear-gradient(165deg,
-      rgba(90, 90, 90, 0.85),
-      rgba(105, 105, 105, 0.1));
+/* .slot_indicator.active .slot_entry {
+  text-shadow: 1px 1px 2px red;
 } */

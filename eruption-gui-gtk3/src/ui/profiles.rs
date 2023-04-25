@@ -908,7 +908,7 @@ cfg_if::cfg_if! {
                 .search_path(["/usr/share/gtksourceview-3.0/styles/",
                               "/usr/share/gnome/gtksourceview-3.0/styles/"])
                 .build()
-                .scheme("solarized-dark")
+                .scheme("cobalt")
                 .unwrap();
             let language_manager = sourceview4::LanguageManager::builder().search_path(["/usr/share/gtksourceview-3.0/language-specs/", "/usr/share/gnome/gtksourceview-3.0/language-specs/"]).build();
 

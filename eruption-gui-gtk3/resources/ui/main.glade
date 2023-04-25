@@ -334,7 +334,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Unified Canvas Setup</property>
+                                    <property name="label" translatable="yes">Unified Canvas</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
                                       <attribute name="scale" value="2"/>
@@ -492,8 +492,8 @@ The Eruption Development Team
                             </child>
                             <child>
                               <object class="GtkBox">
+                                <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="no-show-all">True</property>
                                 <property name="margin-top">16</property>
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">8</property>
@@ -1283,8 +1283,7 @@ The Eruption Development Team
                                 <property name="can-focus">False</property>
                                 <property name="border-width">8</property>
                                 <property name="row-spacing">8</property>
-                                <property name="column-spacing">16</property>
-                                <property name="column-homogeneous">True</property>
+                                <property name="column-spacing">32</property>
                                 <child>
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
