@@ -41,6 +41,7 @@ mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
+mod wooting_two_he_arm;
 
 pub use custom_serial_leds::*;
 
@@ -122,6 +123,24 @@ pub fn bind_device(
 
     match (vendor_id, product_id) {
         // Keyboard devices
+
+        // Wooting Two HE (ARM)
+        (0x31e3, 0x1230) => {
+            let leddev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == wooting_two_he_arm::LED_INTERFACE
+                })
+                .expect("Could not bind LED sub-device")
+                .open_device(hidapi)
+                .expect("Could not open LED sub-device");
+
+            Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::bind(
+                hiddev, leddev,
+            )))
+        }
 
         // ROCCAT Vulcan 1xx series
         (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {

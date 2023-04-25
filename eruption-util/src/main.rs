@@ -55,9 +55,50 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 #[folder = "i18n"] // path to the compiled localization resources
 struct Localizations;
 
+#[macro_export]
+macro_rules! println_v {
+    () => {
+        println!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!($($params),*)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! eprintln_v {
+    () => {
+        eprintln!()
+    };
+
+    ($verbosity : expr, $l : literal $(,$params : tt) *) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($l, $($params),*)
+        }
+    };
+
+    ($verbosity : expr, $($params : tt) *) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!($($params),*)
+        }
+    };
+}
+
 lazy_static! {
     /// Global configuration
     pub static ref STATIC_LOADER: Arc<Mutex<Option<FluentLanguageLoader>>> = Arc::new(Mutex::new(None));
+
+    /// Global command line options
+    pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
 }
 
 #[allow(unused)]
@@ -89,7 +130,7 @@ pub enum MainError {
 }
 
 /// Supported command line arguments
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 #[clap(
     version = env!("CARGO_PKG_VERSION"),
     author = "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -105,7 +146,7 @@ pub struct Options {
 }
 
 // Sub-commands
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum Subcommands {
     /// List available devices, use this first to find out the index of the device to use
     List,
@@ -143,21 +184,21 @@ pub enum Subcommands {
 }
 
 /// Sub-commands of the "RecordKeyIndices" command
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum RecordKeyIndicesSubcommands {
     /// Generate evdev event-code to key index mapping table
     EvDev { device_index: usize },
 }
 
 /// Sub-commands of the "TestKeyIndices" command
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum TestKeyIndicesSubcommands {
     /// Test mapping of evdev event-codes to key index
     EvDev { device_index: usize },
 }
 
 /// Sub-commands of the "RecordTopology" command
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum RecordTopologySubcommands {
     /// Generate rows topology information
     Rows { device_index: usize },
@@ -170,7 +211,7 @@ pub enum RecordTopologySubcommands {
 }
 
 /// Sub-commands of the "TestTopology" command
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum TestTopologySubcommands {
     /// Test rows topology information
     Rows { device_index: usize },
@@ -183,7 +224,7 @@ pub enum TestTopologySubcommands {
 }
 
 /// Subcommands of the "completions" command
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, Clone, clap::Parser)]
 pub enum CompletionsSubcommands {
     Bash,
 
@@ -382,6 +423,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
+    *OPTIONS.lock() = Some(opts.clone());
+
     match opts.command {
         Subcommands::List => {
             println!();

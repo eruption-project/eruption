@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-debug-tool"
-version = "0.0.23"
+version = "0.0.24"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -72,6 +72,7 @@ bitvec = "1.0.1"
 byteorder = "1.4.3"
 serialport = "4.2.0"
 crc8 = "0.1.1"
+crc16 = "0.4.0"
 i18n-embed = { version = "0.13.8", features = [
   "fluent-system",
   "desktop-requester",

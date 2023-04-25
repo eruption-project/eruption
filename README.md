@@ -79,6 +79,7 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 ### Keyboards
 
+- [ ] Wooting Two HE (ARM) series keyboard (work-in-progress, as of version `0.4.0`, experimental)
 - [x] ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
 - [x] ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
 - [ ] ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)

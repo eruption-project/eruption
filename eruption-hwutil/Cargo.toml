@@ -75,6 +75,7 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "a842fd6", d
 hexdump = "0.1.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"
+crc16 = "0.4.0"
 i18n-embed = { version = "0.13.8", features = [
   "fluent-system",
   "desktop-requester",

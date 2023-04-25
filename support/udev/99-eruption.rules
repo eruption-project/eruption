@@ -18,7 +18,7 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 # Eruption needs access to /dev/uinput to be able to inject events via the virtual devices
-ACTION=="add|change", SUBSYSTEM=="misc", KERNEL=="uinput", RUN+="/usr/bin/setfacl -m u:eruption:rw %N", OPTIONS+="static_node=uinput" 
+ACTION=="add|change", SUBSYSTEM=="misc", KERNEL=="uinput", RUN+="/usr/bin/setfacl -m u:eruption:rw %N", OPTIONS+="static_node=uinput"
 
 # Stable links to Eruption virtual devices
 ACTION=="add|change", ATTRS{name}=="Eruption Virtual Keyboard", SYMLINK+="input/by-id/eruption-virtual-keyboard"
@@ -31,6 +31,9 @@ SUBSYSTEM=="input", ATTRS{name}=="Eruption Virtual Mouse", ENV{ID_INPUT_TABLET}=
 ACTION=="remove", GOTO="eruption_end"
 
 # Keyboard devices
+
+# Wooting Two HE (ARM)
+ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="1230", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service", RUN+="/usr/bin/setfacl -m u:eruption:rw %N"
 
 # ROCCAT Vulcan 100/120/121
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service", RUN+="/usr/bin/setfacl -m u:eruption:rw %N"
