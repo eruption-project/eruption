@@ -66,7 +66,7 @@ Author: X3n0m0rph59
         <property name="vexpand">True</property>
         <property name="xpad">8</property>
         <property name="ypad">8</property>
-        <property name="label" translatable="yes">Please verify that the Eruption daemon is running, and then try again</property>
+        <property name="label" translatable="yes">Please verify that the Eruption daemon is running and then try again</property>
         <style>
           <class name="notification"/>
         </style>

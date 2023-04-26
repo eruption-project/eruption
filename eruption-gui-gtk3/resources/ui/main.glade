@@ -494,7 +494,7 @@ The Eruption Development Team
                               <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="margin-top">16</property>
+                                <property name="margin-top">32</property>
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">8</property>
                                 <child>
@@ -502,11 +502,11 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">end</property>
-                                    <property name="label" translatable="yes">Zone Allocation</property>
-                                    <attributes>
-                                      <attribute name="weight" value="bold"/>
-                                      <attribute name="scale" value="2"/>
-                                    </attributes>
+                                    <property name="label" translatable="yes">Device Zone Allocation</property>
+                                    <style>
+                                      <class name="heading"/>
+                                      <class name="small"/>
+                                    </style>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -1658,12 +1658,13 @@ The Eruption Development Team
           <object class="GtkFrame">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-top">16</property>
             <property name="label-xalign">0</property>
+            <property name="shadow-type">none</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkFrame">
                     <property name="visible">True</property>
@@ -1736,7 +1737,7 @@ The Eruption Development Team
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Special</property>
+                        <property name="label" translatable="yes">Effects</property>
                       </object>
                     </child>
                   </object>
@@ -1745,6 +1746,9 @@ The Eruption Development Team
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
             </child>
@@ -1770,6 +1774,7 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot1_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -1883,6 +1888,7 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot2_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -1997,6 +2003,7 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot3_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -2111,6 +2118,7 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot4_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
