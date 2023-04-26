@@ -1186,7 +1186,7 @@ The Eruption Development Team
                 </child>
               </object>
               <packing>
-                <property name="name">page4</property>
+                <property name="name">page5</property>
                 <property name="title" translatable="yes">Profiles</property>
                 <property name="icon-name">folder-documents-symbolic</property>
                 <property name="position">5</property>
