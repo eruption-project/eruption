@@ -17,10 +17,10 @@ _eruption-macro() {
     _arguments "${_arguments_options[@]}" \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruption-macro_commands" \
 "*::: :->eruption-macro" \
 && ret=0
@@ -34,16 +34,16 @@ _eruption-macro() {
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_PATH:_files' \
 '--lua-path=[]:LUA_PATH:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (record)
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_FILE:_files' \
 '--lua-file=[]:LUA_FILE:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':macro_name:' \
 '::description:' \
 && ret=0
@@ -53,15 +53,15 @@ _arguments "${_arguments_options[@]}" \
 '--description=[Specify a description for a macro]:DESCRIPTION: ' \
 '-e[Specify the enabled status of the newly added macro]' \
 '--enabled[Specify the enabled status of the newly added macro]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':macro_code:' \
 && ret=0
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -69,8 +69,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_FILE:_files' \
 '--lua-file=[]:LUA_FILE:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -78,8 +78,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_FILE:_files' \
 '--lua-file=[]:LUA_FILE:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -87,8 +87,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_FILE:_files' \
 '--lua-file=[]:LUA_FILE:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::description:' \
 && ret=0
 ;;
@@ -96,14 +96,14 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-l+[]:LUA_FILE:_files' \
 '--lua-file=[]:LUA_FILE:_files' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -296,4 +296,8 @@ _eruption-macro__remove_commands() {
     _describe -t commands 'eruption-macro remove commands' commands "$@"
 }
 
-_eruption-macro "$@"
+if [ "$funcstack[1]" = "_eruption-macro" ]; then
+    _eruption-macro "$@"
+else
+    compdef _eruption-macro eruption-macro
+fi

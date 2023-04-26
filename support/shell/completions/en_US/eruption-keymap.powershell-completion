@@ -23,10 +23,10 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
         'eruption-keymap' {
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available keymaps')
             [CompletionResult]::new('mapping', 'mapping', [CompletionResultType]::ParameterValue, 'Add or remove a single mapping entry')
             [CompletionResult]::new('description', 'description', [CompletionResultType]::ParameterValue, 'Show or set the description of the specified keymap')
@@ -39,13 +39,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             break
         }
         'eruption-keymap;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;mapping' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a mapping rule for `source` that executes `action`')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove the mapping rule for `source`')
             [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable a mapping rule')
@@ -63,8 +63,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'The filename of the keymap')
             [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
             [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added rule')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;mapping;remove' {
@@ -72,8 +72,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             [CompletionResult]::new('--device', 'device', [CompletionResultType]::ParameterName, 'Specify the device to remove the mapping from')
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'Specify a list of layers')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'Specify a list of layers')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;mapping;enable' {
@@ -81,8 +81,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             [CompletionResult]::new('--device', 'device', [CompletionResultType]::ParameterName, 'Specify the device')
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'Specify a list of layers')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'Specify a list of layers')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;mapping;disable' {
@@ -90,8 +90,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
             [CompletionResult]::new('--device', 'device', [CompletionResultType]::ParameterName, 'Specify the device')
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'Specify a list of layers')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'Specify a list of layers')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;mapping;help' {
@@ -120,39 +120,39 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-keymap' -ScriptBlock {
         'eruption-keymap;description' {
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'k')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'keymap')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;show' {
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'k')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'keymap')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;macros' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-path', 'lua-path', [CompletionResultType]::ParameterName, 'lua-path')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;events' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;compile' {
             [CompletionResult]::new('-k', 'k', [CompletionResultType]::ParameterName, 'k')
             [CompletionResult]::new('--keymap', 'keymap', [CompletionResultType]::ParameterName, 'keymap')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;completions' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-keymap;help' {

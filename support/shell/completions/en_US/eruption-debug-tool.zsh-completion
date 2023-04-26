@@ -17,10 +17,10 @@ _eruption-debug-tool() {
     _arguments "${_arguments_options[@]}" \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruption-debug-tool_commands" \
 "*::: :->eruption-debug-tool" \
 && ret=0
@@ -32,35 +32,35 @@ _eruption-debug-tool() {
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (report)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 && ret=0
 ;;
 (trace)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 && ret=0
 ;;
 (state-diff)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 && ret=0
 ;;
 (read)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 ':report_id -- ID of the USB HID report:' \
 ':length -- Length in bytes to read:' \
@@ -68,16 +68,16 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (write)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 ':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
 && ret=0
 ;;
 (read-raw)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 ':report_id -- ID of the USB HID report:' \
 ':length -- Length in bytes to read:' \
@@ -85,23 +85,23 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (write-raw)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 ':data -- Hex bytes e.g.\: \[0x09, 0x00, 0x1f\]:' \
 && ret=0
 ;;
 (run-tests)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device -- The index of the device, can be found with the list sub-command:' \
 && ret=0
 ;;
 (utils)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruption-debug-tool__utils_commands" \
 "*::: :->utils" \
 && ret=0
@@ -114,8 +114,8 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (reverse-crc8)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '*::data -- Hex byte vectors each starting with expected CRC8, no spaces allowed. \[0x32,0xff,0x00,0x00,0x00,0x00,0xff\] \[0x31,0x59,0xa5,0xff,0x00,0x00,0x00\] \[0x31,0x00,0x00,0xff,0xff,0x00,0x00\]:' \
 && ret=0
 ;;
@@ -149,8 +149,8 @@ esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -424,4 +424,8 @@ _eruption-debug-tool__write-raw_commands() {
     _describe -t commands 'eruption-debug-tool write-raw commands' commands "$@"
 }
 
-_eruption-debug-tool "$@"
+if [ "$funcstack[1]" = "_eruption-debug-tool" ]; then
+    _eruption-debug-tool "$@"
+else
+    compdef _eruption-debug-tool eruption-debug-tool
+fi

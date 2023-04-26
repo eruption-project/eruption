@@ -25,10 +25,10 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -Scri
             [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands (supports offline manipulation of rules)')
             [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Run in background and monitor running processes')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
@@ -36,8 +36,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -Scri
             break
         }
         'eruption-process-monitor;rules' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all available rules')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add a new rule')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove a rule by its index')
@@ -47,28 +47,28 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -Scri
             break
         }
         'eruption-process-monitor;rules;list' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;rules;add' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;rules;remove' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;rules;enable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;rules;disable' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;rules;help' {
@@ -99,13 +99,13 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-process-monitor' -Scri
             break
         }
         'eruption-process-monitor;daemon' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;completions' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-process-monitor;help' {

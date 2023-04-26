@@ -21,10 +21,10 @@ _eruption-hwutil() {
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '-r[Repeat output until ctrl+c is pressed]' \
 '--repeat[Repeat output until ctrl+c is pressed]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruption-hwutil_commands" \
 "*::: :->eruption-hwutil" \
 && ret=0
@@ -36,28 +36,28 @@ _eruption-hwutil() {
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
 (blackout)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
 (firmware)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruption-hwutil__firmware_commands" \
 "*::: :->firmware" \
 && ret=0
@@ -70,15 +70,15 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (info)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
 (flash)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
@@ -116,8 +116,8 @@ esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -190,7 +190,7 @@ esac
 _eruption-hwutil_commands() {
     local commands; commands=(
 'list:List available devices, use this first to find out the index of the device to address' \
-'status:Query device specific status like e.g.: Signal Strength/Battery Level' \
+'status:Query device specific status like e.g.\: Signal Strength/Battery Level' \
 'blackout:Turn off all LEDs, but otherwise leave the device completely usable' \
 'firmware:Firmware related subcommands (DANGEROUS, may brick the device)' \
 'completions:Generate shell completions' \
@@ -268,7 +268,7 @@ _eruption-hwutil__firmware__help__help_commands() {
 _eruption-hwutil__help_commands() {
     local commands; commands=(
 'list:List available devices, use this first to find out the index of the device to address' \
-'status:Query device specific status like e.g.: Signal Strength/Battery Level' \
+'status:Query device specific status like e.g.\: Signal Strength/Battery Level' \
 'blackout:Turn off all LEDs, but otherwise leave the device completely usable' \
 'firmware:Firmware related subcommands (DANGEROUS, may brick the device)' \
 'completions:Generate shell completions' \
@@ -317,4 +317,8 @@ _eruption-hwutil__status_commands() {
     _describe -t commands 'eruption-hwutil status commands' commands "$@"
 }
 
-_eruption-hwutil "$@"
+if [ "$funcstack[1]" = "_eruption-hwutil" ]; then
+    _eruption-hwutil "$@"
+else
+    compdef _eruption-hwutil eruption-hwutil
+fi

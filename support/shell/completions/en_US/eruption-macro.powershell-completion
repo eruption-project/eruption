@@ -23,10 +23,10 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
         'eruption-macro' {
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version information')
-            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Show a list of available macros in a Lua file')
             [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Record a key sequence and save it as a macro')
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Create a new macro from a description')
@@ -42,61 +42,61 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
         'eruption-macro;list' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-path', 'lua-path', [CompletionResultType]::ParameterName, 'lua-path')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;record' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;create' {
             [CompletionResult]::new('--description', 'description', [CompletionResultType]::ParameterName, 'Specify a description for a macro')
             [CompletionResult]::new('-e', 'e', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added macro')
             [CompletionResult]::new('--enabled', 'enabled', [CompletionResultType]::ParameterName, 'Specify the enabled status of the newly added macro')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;remove' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;enable' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;disable' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;description' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;compile' {
             [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'l')
             [CompletionResult]::new('--lua-file', 'lua-file', [CompletionResultType]::ParameterName, 'lua-file')
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;completions' {
-            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help information')
-            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help information')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'eruption-macro;help' {
