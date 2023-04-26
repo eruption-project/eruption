@@ -388,6 +388,46 @@ fn spawn_keyboard_input_thread(
 }
 
 pub async fn async_main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            // initialize logging
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
+
+            let console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // initialize logging
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
+
+            let console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        }
+    };
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
