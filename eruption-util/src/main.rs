@@ -896,7 +896,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 let num_rows = hwdev.lock().get_num_rows();
 
                                 // the table that will be filled
-                                let mut topology: Vec<u8> = vec![0xff; num_cols * num_rows];
+                                let mut topology: Vec<u8> = vec![0xff; (num_cols * num_rows) + 1];
 
                                 for i in 0..num_rows {
                                     let mut led_map = [RGBA {
@@ -1107,7 +1107,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 let num_rows = hwdev.lock().get_num_rows();
 
                                 // the table that will be filled
-                                let mut topology: Vec<u8> = vec![0xff; num_cols * num_rows];
+                                let mut topology: Vec<u8> = vec![0xff; (num_cols * num_rows) + 1];
 
                                 for i in 0..num_cols {
                                     let mut led_map = [RGBA {
@@ -1162,12 +1162,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                                                     key_index += 1;
 
                                                                     // set highlighted LEDs
-                                                                    led_map[idx as usize] = RGBA {
-                                                                        r: 255,
-                                                                        g: 0,
-                                                                        b: 0,
-                                                                        a: 0,
-                                                                    };
+                                                                    if let Some(e) = led_map.get_mut(idx as usize) {
+                                                                        *e = RGBA {
+                                                                                r: 255,
+                                                                                g: 0,
+                                                                                b: 0,
+                                                                                a: 0,
+                                                                            };
+                                                                    }
 
                                                                     hwdev.lock().send_led_map(&led_map)?;
                                                                 }
@@ -1801,11 +1803,19 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 // .with(format_layer)
                 .init();
         } else {
-            // tracing_subscriber::registry()
-            //     // .with(journald_layer)
-            //     // .with(console_layer)
-            //     // .with(format_layer)
-            //     .init();
+            // initialize logging
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
+
+            let console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+             tracing_subscriber::registry()
+                 // .with(journald_layer)
+                  .with(console_layer)
+                 // .with(format_layer)
+                 .init();
         }
     };
 
