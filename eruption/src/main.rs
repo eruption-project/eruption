@@ -1123,6 +1123,16 @@ fn run_main_loop(
                         });
                 }
             }
+
+            // finally, update the LEDs if necessary
+            DEV_IO_TX
+                .lock()
+                .as_ref()
+                .unwrap()
+                .send(DeviceAction::RenderNow)
+                .unwrap_or_else(|e| {
+                    error!("Send error: {}", e);
+                });
         }
 
         let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
