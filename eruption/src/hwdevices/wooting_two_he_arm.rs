@@ -54,7 +54,7 @@ pub const LED_INDICES: usize = 127;
 pub const SMALL_PACKET_SIZE: usize = 64;
 pub const SMALL_PACKET_COUNT: usize = 4;
 pub const RESPONSE_SIZE: usize = 256;
-pub const READ_RESPONSE_TIMEOUT: i32 = 1000;
+pub const READ_RESPONSE_TIMEOUT: i32 = 250; // Default: 1000;
 
 /// Wooting protocol v2 commands
 #[allow(non_camel_case_types)]
@@ -122,7 +122,7 @@ pub struct DeviceInfo {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Vulcan Pro TKL series keyboards
+/// Device specific code for the Wooting Two HE (ARM) series keyboards
 pub struct WootingTwoHeArm {
     pub is_initialized: bool,
 
@@ -510,6 +510,9 @@ impl DeviceTrait for WootingTwoHeArm {
         } else {
             // TODO: Implement firmware version check
 
+            // This helps slow USB HUBs and KVM switches to not fail to init the device
+            thread::sleep(Duration::from_millis(15));
+
             self.v2_send_feature_report(Command::RESET_ALL_COMMAND as u8, &[0, 0, 0, 0])
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
             self.wait_for_ctrl_dev()
@@ -519,8 +522,6 @@ impl DeviceTrait for WootingTwoHeArm {
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 2: {}", e));
-
-            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             self.is_initialized = true;
 
