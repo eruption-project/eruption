@@ -571,7 +571,6 @@ impl DeviceTrait for WootingTwoHeArm {
                         for i in (4..BUFFER_SIZE).step_by(2) {
                             if i % 64 == 0 {
                                 buffer[i] = 0x0;
-
                                 submit_packet(led_dev, &buffer[(i - 64)..=i])?;
                             } else {
                                 let index = cntr / size_of::<RGBA>();

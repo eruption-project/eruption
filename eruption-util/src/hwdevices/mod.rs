@@ -31,7 +31,7 @@ use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
 use std::{thread, time::Duration};
 use thiserror::Error;
-use tracing::{debug, error, trace};
+use tracing::{debug, error, trace, warn};
 use udev::Enumerator;
 
 pub type HwDevice = dyn DeviceTrait + Sync + Send;
@@ -182,6 +182,24 @@ pub fn bind_device(
     match (vendor_id, product_id) {
         // Keyboard devices
 
+        // Wooting Two HE (ARM)
+        (0x31e3, 0x1230) => {
+            let leddev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == wooting_two_he_arm::LED_INTERFACE
+                })
+                .expect("Could not bind LED sub-device")
+                .open_device(hidapi)
+                .expect("Could not open LED sub-device");
+
+            Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::bind(
+                hiddev, leddev,
+            )))
+        }
+
         // ROCCAT Vulcan 1xx series
         (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
             let leddev = hidapi
@@ -305,12 +323,32 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
     loop {
         match Enumerator::new() {
             Ok(mut enumerator) => {
-                // enumerator.match_is_initialized().unwrap();
+                enumerator.match_is_initialized().unwrap();
+
                 enumerator.match_subsystem("input").unwrap();
+                enumerator.match_property("ID_INPUT_KEYBOARD", "1").unwrap();
+                // enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+
+                // statically blacklist the following unsupported devices
+                let static_blacklist: Vec<String> = vec![/* String::from("Generic X-Box pad") */];
 
                 match enumerator.scan_devices() {
                     Ok(devices) => {
                         for device in devices {
+                            if let Some(devname) = device
+                                .properties()
+                                .find(|e| e.name() == "NAME")
+                                .map(|v| v.value().to_string_lossy().into_owned())
+                            {
+                                if static_blacklist
+                                    .iter()
+                                    .any(|e| e.eq_ignore_ascii_case(&devname))
+                                {
+                                    warn!("Skipping statically blacklisted device: {}", devname);
+                                    continue;
+                                }
+                            }
+
                             let found_dev = device.properties().any(|e| {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
@@ -401,12 +439,32 @@ pub fn get_input_sub_dev_from_udev(
     loop {
         match Enumerator::new() {
             Ok(mut enumerator) => {
-                // enumerator.match_is_initialized();
+                enumerator.match_is_initialized().unwrap();
+
                 enumerator.match_subsystem("input").unwrap();
+                enumerator.match_property("ID_INPUT_KEYBOARD", "1").unwrap();
+                // enumerator.match_property("ID_INPUT_MOUSE", "1").unwrap();
+
+                // statically blacklist the following unsupported devices
+                let static_blacklist: Vec<String> = vec![/* String::from("Generic X-Box pad") */];
 
                 match enumerator.scan_devices() {
                     Ok(devices) => {
                         for device in devices {
+                            if let Some(devname) = device
+                                .properties()
+                                .find(|e| e.name() == "NAME")
+                                .map(|v| v.value().to_string_lossy().into_owned())
+                            {
+                                if static_blacklist
+                                    .iter()
+                                    .any(|e| e.eq_ignore_ascii_case(&devname))
+                                {
+                                    warn!("Skipping statically blacklisted device: {}", devname);
+                                    continue;
+                                }
+                            }
+
                             let found_dev = device.properties().any(|e| {
                                 e.name() == "ID_VENDOR_ID"
                                     && ([usb_vid]
