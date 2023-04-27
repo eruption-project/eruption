@@ -25,7 +25,7 @@ authors = [
   "The Eruption Development Team",
 ]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.69"
 description = "A CLI macro utility for Eruption"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
@@ -78,8 +78,8 @@ lazy_static = "1.4.0"
 bitvec = "1.0.1"
 walkdir = "2.3.3"
 maplit = "1.0.2"
-pest = "2.5.7"
-pest_derive = "2.5.7"
+pest = "2.6.0"
+pest_derive = "2.6.0"
 serde = { version = "1.0.160", features = ["derive"] }
 serde_json = "1.0.96"
 serde_json_any_key = "2.0.0"
