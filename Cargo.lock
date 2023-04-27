@@ -3283,9 +3283,7 @@ source = "git+https://github.com/ruabmbua/hidapi-rs.git?branch=master#923a3712c5
 dependencies = [
  "cc",
  "libc",
- "nix 0.26.2",
  "pkg-config",
- "udev",
  "winapi 0.3.9",
 ]
 

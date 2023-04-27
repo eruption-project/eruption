@@ -55,7 +55,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.24", features = ["serde"] }
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-native"] }
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-static-libusb"] }
 # lua-src = "544.0.1"
 # mlua = { version = "0.7.3", features = ["lua54", "vendored"] }
 # luajit-src = "210.3.2+resty1085a4d"
