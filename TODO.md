@@ -19,3 +19,5 @@ _This is a non-exhaustive listing of planned features:_
 ## Bugs and known Problems
 
 - Wayland support is still lacking: AmbientFx support is currently not available
+- Ratelimit all: WARN eruption::events: Not sending a message to a failed tx
+- High CPU load while using the GTK3+ based GUI: Maybe use the Eruption SDK for communicating with the daemon instead of DBus

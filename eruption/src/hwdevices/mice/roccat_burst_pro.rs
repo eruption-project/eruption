@@ -23,28 +23,29 @@ use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::{Mutex, RwLock};
+use tracing::*;
+// use std::sync::atomic::Ordering;
+
 use std::any::Any;
 use std::collections::HashMap;
 use std::{mem::size_of, sync::Arc};
-use tracing::*;
 
-use crate::constants;
+use crate::{constants, hwdevices, hwdevices::DeviceStatus};
 
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
-    MouseDevice, MouseDeviceTrait, MouseHidEvent, RGBA,
+use crate::hwdevices::{
+    Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, MouseDevice, MouseDeviceTrait, MouseHidEvent, Result,
+    Zone, RGBA,
 };
 
-pub type Result<T> = super::Result<T>;
-
-// TODO: Maybe a split in two distinct devices is needed?
-pub const SUB_DEVICE: i32 = 2; // LED USB sub device
+pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
 
 // pub const NUM_BUTTONS: usize = 9;
 
 // canvas to LED index mapping
 pub const LED_0: usize = constants::CANVAS_SIZE - 36;
 pub const LED_1: usize = constants::CANVAS_SIZE - 1;
+pub const NUM_LEDS: usize = 2;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -52,7 +53,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<MouseDevice> {
+) -> Result<MouseDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -63,13 +64,13 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatKain100::bind(
+        Ok(Arc::new(RwLock::new(Box::new(RoccatBurstPro::bind(
             ctrl_dev.unwrap(),
         )))))
     }
 }
 
-/// ROCCAT Kain 100 info struct (sent as HID report)
+/// ROCCAT Burst Pro info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -82,8 +83,8 @@ pub struct DeviceInfo {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Kain 100 mouse
-pub struct RoccatKain100 {
+/// Device specific code for the ROCCAT Burst Pro mouse
+pub struct RoccatBurstPro {
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -96,14 +97,16 @@ pub struct RoccatKain100 {
 
     pub has_failed: bool,
 
+    pub allocated_zone: Zone,
+
     // device specific configuration options
     pub brightness: i32,
 }
 
-impl RoccatKain100 {
+impl RoccatBurstPro {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kain 100 AIMO");
+        info!("Bound driver: ROCCAT Burst Pro");
 
         Self {
             is_initialized: false,
@@ -117,6 +120,8 @@ impl RoccatKain100 {
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
 
             has_failed: false,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Mouse),
 
             brightness: 100,
         }
@@ -167,9 +172,9 @@ impl RoccatKain100 {
 
             match id {
                 0x04 => {
-                    for j in &[0x80, 0x90] {
+                    for j in 0..=1 {
                         for i in 0..=4 {
-                            let buf: [u8; 4] = [0x04, i, *j, 0x00];
+                            let buf: [u8; 4] = [0x04, i, j, 0x00];
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
@@ -241,8 +246,8 @@ impl RoccatKain100 {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             loop {
-                let mut buf: [u8; 2] = [0; 2];
-                buf[0] = 0x00;
+                let mut buf: [u8; 4] = [0; 4];
+                buf[0] = 0x04;
 
                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -261,63 +266,14 @@ impl RoccatKain100 {
             }
         }
     }
-
-    // fn write_feature_report(&self, buffer: &[u8]) -> Result<()> {
-    //     if !self.is_bound {
-    //         Err(HwDeviceError::DeviceNotBound {}.into())
-    //     } else {
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-    //         match ctrl_dev.send_feature_report(buffer) {
-    //             Ok(_result) => {
-    //                 hexdump::hexdump_iter(buffer).for_each(|s| trace!("  {}", s));
-
-    //                 Ok(())
-    //             }
-
-    //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-    //         }
-    //     }
-    // }
-
-    // fn read_feature_report(&self, id: u8, size: usize) -> Result<Vec<u8>> {
-    //     if !self.is_bound {
-    //         Err(HwDeviceError::DeviceNotBound {}.into())
-    //     } else {
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-    //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-    //         loop {
-    //             let mut buf = Vec::new();
-    //             buf.resize(size, 0);
-    //             buf[0] = id;
-
-    //             match ctrl_dev.read_timeout(buf.as_mut_slice(), 10) {
-    //                 Ok(_result) => {
-    //                     // TODO: is this required?
-    //                     if buf[0] == 0x01 || buf[0..2] == [0x07, 0x14] {
-    //                         continue;
-    //                     } else {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-    //                         break Ok(buf);
-    //                     }
-    //                 }
-
-    //                 Err(_) => break Err(HwDeviceError::InvalidResult {}.into()),
-    //             }
-    //         }
-    //     }
-    // }
 }
 
-impl DeviceInfoTrait for RoccatKain100 {
+impl DeviceInfoTrait for RoccatBurstPro {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
@@ -337,7 +293,7 @@ impl DeviceInfoTrait for RoccatKain100 {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
@@ -347,19 +303,19 @@ impl DeviceInfoTrait for RoccatKain100 {
     }
 
     fn get_firmware_revision(&self) -> String {
-        // if let Ok(device_info) = self.get_device_info() {
-        //     format!(
-        //         "{}.{:02}",
-        //         device_info.firmware_version / 100,
-        //         device_info.firmware_version % 100
-        //     )
-        // } else {
-        "<unknown>".to_string()
-        // }
+        if let Ok(device_info) = self.get_device_info() {
+            format!(
+                "{}.{:02}",
+                device_info.firmware_version / 100,
+                device_info.firmware_version % 100
+            )
+        } else {
+            "<unknown>".to_string()
+        }
     }
 }
 
-impl DeviceTrait for RoccatKain100 {
+impl DeviceTrait for RoccatBurstPro {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -383,7 +339,7 @@ impl DeviceTrait for RoccatKain100 {
     }
 
     fn get_support_script_file(&self) -> String {
-        "mice/roccat_kain_100".to_string()
+        "mice/roccat_burst_pro".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
@@ -431,29 +387,29 @@ impl DeviceTrait for RoccatKain100 {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // match self.get_device_info() {
-            //     Ok(device_info) => {
-            //         if device_info.firmware_version < 110 {
-            //             warn!(
-            //                 "Outdated firmware version: {}, should be: >= 1.10",
-            //                 format!(
-            //                     "{}.{:02}",
-            //                     device_info.firmware_version / 100,
-            //                     device_info.firmware_version % 100
-            //                 )
-            //             );
-            //         }
-            //     }
+            match self.get_device_info() {
+                Ok(device_info) => {
+                    if device_info.firmware_version < 110 {
+                        warn!(
+                            "Outdated firmware version: {}, should be: >= 1.10",
+                            format!(
+                                "{}.{:02}",
+                                device_info.firmware_version / 100,
+                                device_info.firmware_version % 100
+                            )
+                        );
+                    }
+                }
 
-            //     Err(e) => {
-            //         error!("Could not get firmware version: {}", e);
-            //     }
-            // }
+                Err(e) => {
+                    error!("Could not get firmware version: {}", e);
+                }
+            }
 
-            self.send_ctrl_report(0x04)
-                .unwrap_or_else(|e| error!("Step 1: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 1: {}", e));
+            // self.send_ctrl_report(0x04)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x0e)
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
@@ -533,7 +489,7 @@ impl DeviceTrait for RoccatKain100 {
         }
     }
 
-    fn device_status(&self) -> Result<super::DeviceStatus> {
+    fn device_status(&self) -> Result<DeviceStatus> {
         let mut table = HashMap::new();
 
         table.insert("connected".to_owned(), format!("{}", true));
@@ -566,7 +522,21 @@ impl DeviceTrait for RoccatKain100 {
     }
 }
 
-impl MouseDeviceTrait for RoccatKain100 {
+impl DeviceZoneAllocationTrait for RoccatBurstPro {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
+    }
+}
+
+impl MouseDeviceTrait for RoccatBurstPro {
     fn get_profile(&self) -> Result<i32> {
         trace!("Querying device profile config");
 
@@ -575,29 +545,27 @@ impl MouseDeviceTrait for RoccatKain100 {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            // let mut buf: [u8; 64] = [0x00 as u8; 64];
-            // buf[0] = 0x06;
+            let mut buf: [u8; 64] = [0x00_u8; 64];
+            buf[0] = 0x06;
 
-            // match ctrl_dev.get_feature_report(&mut buf) {
-            //     Ok(_result) => {
-            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-            //         Ok(())
-            //     }
+                    Ok(())
+                }
 
-            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
-            // }?;
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
 
-            // Ok(buf[6] as i32)
-
-            Err(HwDeviceError::OpNotSupported {}.into())
+            Ok(buf[6] as i32)
         }
     }
 
-    fn set_profile(&mut self, _profile: i32) -> Result<()> {
+    fn set_profile(&mut self, profile: i32) -> Result<()> {
         trace!("Setting device profile config");
 
         if !self.is_bound {
@@ -605,37 +573,35 @@ impl MouseDeviceTrait for RoccatKain100 {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            // let mut buf: [u8; 64] = [0x00 as u8; 64];
-            // buf[0] = 0x06;
+            let mut buf: [u8; 64] = [0x00_u8; 64];
+            buf[0] = 0x06;
 
-            // match ctrl_dev.get_feature_report(&mut buf) {
-            //     Ok(_result) => {
-            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            match ctrl_dev.get_feature_report(&mut buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-            //         Ok(())
-            //     }
+                    Ok(())
+                }
 
-            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
-            // }?;
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
 
-            // buf[6] = profile as u8;
+            buf[6] = profile as u8;
 
-            // match ctrl_dev.send_feature_report(&buf) {
-            //     Ok(_result) => {
-            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            match ctrl_dev.send_feature_report(&buf) {
+                Ok(_result) => {
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-            //         Ok(())
-            //     }
+                    Ok(())
+                }
 
-            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
-            // }?;
+                Err(_) => Err(HwDeviceError::InvalidResult {}),
+            }?;
 
-            // Ok(())
-
-            Err(HwDeviceError::OpNotSupported {}.into())
+            Ok(())
         }
     }
 
@@ -737,9 +703,9 @@ impl MouseDeviceTrait for RoccatKain100 {
                 Ok(size) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    let event = match buf[0..6] {
+                    let event = match buf[0..5] {
                         // Button reports (DPI)
-                        [0x07, 0x04, 0x17, 0x01, level, _] => MouseHidEvent::DpiChange(level),
+                        [0x03, 0x00, 0xb0, level, _] => MouseHidEvent::DpiChange(level),
 
                         // Button reports
                         [button_mask, 0x00, button_mask2, 0x00, _] if size > 0 => {
@@ -915,8 +881,8 @@ impl MouseDeviceTrait for RoccatKain100 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_dev = self.ctrl_hiddev.as_ref().lock();
-            let led_dev = led_dev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let buf: [u8; 11] = [
                 0x0d,
@@ -932,9 +898,11 @@ impl MouseDeviceTrait for RoccatKain100 {
                 0x00,
             ];
 
-            match led_dev.send_feature_report(&buf) {
+            match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                    Ok(())
                 }
 
                 Err(_) => {
@@ -943,11 +911,9 @@ impl MouseDeviceTrait for RoccatKain100 {
                     self.is_opened = false;
                     self.has_failed = true;
 
-                    return Err(HwDeviceError::InvalidResult {}.into());
+                    Err(HwDeviceError::InvalidResult {}.into())
                 }
             }
-
-            Ok(())
         }
     }
 

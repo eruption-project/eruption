@@ -26,14 +26,11 @@ use std::sync::Arc;
 use std::{any::Any, collections::HashMap};
 use tracing::*;
 
-use crate::hwdevices::DeviceStatus;
-
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, KeyboardDevice,
-    KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, RGBA,
+use crate::hwdevices::{
+    self, Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait,
+    KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, Result, Zone, RGBA,
 };
-
-pub type Result<T> = super::Result<T>;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -41,7 +38,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     _serial: &str,
-) -> super::Result<KeyboardDevice> {
+) -> Result<KeyboardDevice> {
     Ok(Arc::new(RwLock::new(Box::new(GenericKeyboard::bind(
         usb_vid, usb_pid,
     )))))
@@ -92,15 +89,29 @@ impl DeviceInfoTrait for GenericKeyboard {
         DeviceCapabilities::from([Capability::Keyboard])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
-        let result = super::DeviceInfo::new(0);
+        let result = hwdevices::DeviceInfo::new(0);
         Ok(result)
     }
 
     fn get_firmware_revision(&self) -> String {
         "<not supported>".to_string()
+    }
+}
+
+impl DeviceZoneAllocationTrait for GenericKeyboard {
+    fn get_zone_size_hint(&self) -> usize {
+        0
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        Zone::empty()
+    }
+
+    fn set_zone_allocation(&mut self, _zone: Zone) {
+        // self.allocated_zone = zone;
     }
 }
 

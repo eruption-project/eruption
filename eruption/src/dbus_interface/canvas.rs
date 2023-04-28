@@ -20,12 +20,16 @@
 */
 
 use dbus::arg::{Iter, IterAppend};
-use dbus_tree::{Access, EmitsChangedSignal, Signal};
+use dbus_tree::{Access, EmitsChangedSignal, MethodResult, Signal};
 use std::sync::Arc;
 
+use crate::hwdevices::Zone;
+
 use super::{
-    convenience::InterfaceAddend, convenience::PropertyWithPermission, perms::Permission, Factory,
-    Interface, Property,
+    convenience::PropertyWithPermission,
+    convenience::{FactoryWithPermission, InterfaceAddend},
+    perms::Permission,
+    Factory, Interface, Property,
 };
 
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -90,7 +94,7 @@ impl CanvasInterface {
 }
 
 impl InterfaceAddend for CanvasInterface {
-    fn add_to_interface(&self, _f: &Factory, interface: Interface) -> Interface {
+    fn add_to_interface(&self, f: &Factory, interface: Interface) -> Interface {
         interface
             .add_s(self.hue_changed_signal.clone())
             .add_s(self.saturation_changed_signal.clone())
@@ -98,6 +102,23 @@ impl InterfaceAddend for CanvasInterface {
             .add_p(self.hue_property.clone())
             .add_p(self.saturation_property.clone())
             .add_p(self.lightness_property.clone())
+            .add_m(
+                f.method_with_permission(
+                    "GetDevicesZoneAllocations",
+                    Permission::Monitor,
+                    get_devices_zone_allocations,
+                )
+                // .inarg::<u64, _>("device")
+                .outarg::<Vec<(u64, Zone)>, _>("zones"),
+            )
+            .add_m(
+                f.method_with_permission(
+                    "SetDevicesZoneAllocations",
+                    Permission::Settings,
+                    set_devices_zone_allocations,
+                )
+                .inarg::<Vec<(u64, Zone)>, _>("zones"),
+            )
     }
 }
 
@@ -129,4 +150,44 @@ fn get_lightness(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::Propert
 fn set_lightness(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
     crate::CANVAS_HSL.lock().2 = i.read::<f64>()?;
     Ok(())
+}
+
+fn get_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
+    let mut result: Vec<(u64, Zone)> = Vec::new();
+    let mut cntr = 0;
+
+    let keyboards = crate::KEYBOARD_DEVICES.read();
+
+    for device in keyboards.iter() {
+        result.push((cntr, device.read().get_allocated_zone()));
+
+        cntr += 1;
+    }
+
+    let mice = crate::MOUSE_DEVICES.read();
+
+    for device in mice.iter() {
+        result.push((cntr, device.read().get_allocated_zone()));
+
+        cntr += 1;
+    }
+
+    let misc = crate::MISC_DEVICES.read();
+
+    for device in misc.iter() {
+        result.push((cntr, device.read().get_allocated_zone()));
+
+        cntr += 1;
+    }
+
+    Ok(vec![m.msg.method_return().append1(result)])
+}
+
+fn set_devices_zone_allocations(_m: &super::MethodInfo) -> MethodResult {
+    // let result = serde_json::to_string_pretty(&device_status)
+    //     .map_err(|e| MethodErr::failed(&format!("{e}")))?;
+
+    // Ok(vec![m.msg.method_return().append1(result)])
+
+    Ok(vec![])
 }

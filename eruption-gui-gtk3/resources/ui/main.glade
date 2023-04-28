@@ -517,14 +517,11 @@ The Eruption Development Team
                                 <child>
                                   <object class="GtkTreeView" id="devices_tree_view">
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="margin-start">8</property>
-                                    <property name="margin-top">8</property>
-                                    <property name="headers-visible">False</property>
-                                    <property name="reorderable">True</property>
-                                    <property name="search-column">2</property>
-                                    <property name="enable-grid-lines">both</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="search-column">3</property>
+                                    <property name="enable-grid-lines">horizontal</property>
                                     <property name="enable-tree-lines">True</property>
+                                    <property name="tooltip-column">3</property>
                                     <property name="activate-on-single-click">True</property>
                                     <child internal-child="selection">
                                       <object class="GtkTreeSelection"/>

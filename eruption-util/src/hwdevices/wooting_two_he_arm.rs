@@ -42,6 +42,8 @@ pub const LED_INTERFACE: i32 = 2; // LED USB sub device
 
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;
+#[allow(unused)]
+pub const NUM_LEDS: usize = NUM_ROWS * NUM_COLS;
 pub const NUM_KEYS: usize = 127;
 // pub const NUM_RGB: usize = 196;
 pub const LED_INDICES: usize = 127;

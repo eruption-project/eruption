@@ -34,6 +34,7 @@ pub const SETTINGS_TIMER_ID: usize = 150;
 pub const COLOR_MAP_TIMER_ID: usize = 200;
 // pub const CANVAS_TIMER_ID: usize = 300;
 pub const CANVAS_RENDER_TIMER_ID: usize = 400;
+pub const CANVAS_ZONES_TIMER_ID: usize = 450;
 pub const KEYBOARD_TIMER_ID: usize = 500;
 // pub const KEYBOARD_SLOW_TIMER_ID: usize = 600;
 pub const KEYBOARD_RENDER_TIMER_ID: usize = 700;

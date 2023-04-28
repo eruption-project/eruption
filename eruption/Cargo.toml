@@ -88,6 +88,8 @@ colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 palette = "0.7.1"
 nalgebra = "0.32.2"
+ndarray = "0.15.6"
+transpose = "0.2.2"
 noise = "0.8.2"
 simdnoise = "3.1.6"
 # lua-src = "544.0.1"
@@ -123,7 +125,6 @@ vulkano-util = "0.33.0"
 shaderc = "0.8.2"
 bytemuck = "1.13.1"
 bitfield-struct = "0.4.1"
-transpose = "0.2.2"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

@@ -67,13 +67,13 @@ pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 pub const NUM_SLOTS: usize = 4;
 
 /// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "organic.lua";
+pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
 
 /// Default AFK timeout
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
 /// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/rainbow-wave.profile";
+pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/blackout.profile";
 
 /// Notify the software watchdog every n milliseconds
 pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
@@ -89,11 +89,11 @@ pub const TICK_FPS: u64 = 19;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_WIDTH: usize = 38;
+pub const CANVAS_WIDTH: usize = 36;
 
 /// The height of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_HEIGHT: usize = 20;
+pub const CANVAS_HEIGHT: usize = 16;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;

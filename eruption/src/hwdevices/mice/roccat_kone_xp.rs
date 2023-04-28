@@ -23,19 +23,23 @@ use bitvec::prelude::*;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::{Mutex, RwLock};
-use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc, thread, time::Duration};
 use tracing::*;
+// use std::sync::atomic::Ordering;
+use std::any::Any;
+use std::collections::HashMap;
+use std::sync::Arc;
 
-use crate::{constants, hwdevices::DeviceStatus};
+use crate::{constants, hwdevices};
 
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, RGBA,
+use crate::hwdevices::{
+    Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, MouseDevice, MouseDeviceTrait, MouseHidEvent, Result,
+    Zone, RGBA,
 };
 
-pub type Result<T> = super::Result<T>;
+pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
 
-pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
+// pub const NUM_BUTTONS: usize = 9;
 
 // canvas to LED index mapping
 pub const LED_0: usize = constants::CANVAS_SIZE - 36;
@@ -49,6 +53,45 @@ pub const LED_7: usize = constants::CANVAS_SIZE - 29;
 pub const LED_8: usize = constants::CANVAS_SIZE - 28;
 pub const LED_9: usize = constants::CANVAS_SIZE - 27;
 pub const LED_10: usize = constants::CANVAS_SIZE - 26;
+pub const LED_11: usize = constants::CANVAS_SIZE - 25;
+pub const LED_12: usize = constants::CANVAS_SIZE - 24;
+pub const LED_13: usize = constants::CANVAS_SIZE - 23;
+pub const LED_14: usize = constants::CANVAS_SIZE - 22;
+pub const LED_15: usize = constants::CANVAS_SIZE - 21;
+pub const LED_16: usize = constants::CANVAS_SIZE - 20;
+pub const LED_17: usize = constants::CANVAS_SIZE - 19;
+pub const LED_18: usize = constants::CANVAS_SIZE - 18;
+pub const LED_19: usize = constants::CANVAS_SIZE - 17;
+pub const LED_20: usize = constants::CANVAS_SIZE - 16;
+pub const LED_21: usize = constants::CANVAS_SIZE - 15;
+pub const LED_22: usize = constants::CANVAS_SIZE - 14;
+
+// stripes
+pub const LED_23: usize = constants::CANVAS_SIZE - 36;
+pub const LED_24: usize = constants::CANVAS_SIZE - 1;
+
+pub const LED_25: usize = constants::CANVAS_SIZE - 35;
+pub const LED_26: usize = constants::CANVAS_SIZE - 1;
+
+pub const LED_27: usize = constants::CANVAS_SIZE - 34;
+pub const LED_28: usize = constants::CANVAS_SIZE - 2;
+
+pub const LED_29: usize = constants::CANVAS_SIZE - 33;
+pub const LED_30: usize = constants::CANVAS_SIZE - 3;
+
+pub const LED_31: usize = constants::CANVAS_SIZE - 33;
+pub const LED_32: usize = constants::CANVAS_SIZE - 3;
+
+pub const LED_33: usize = constants::CANVAS_SIZE - 34;
+pub const LED_34: usize = constants::CANVAS_SIZE - 2;
+
+pub const LED_35: usize = constants::CANVAS_SIZE - 35;
+pub const LED_36: usize = constants::CANVAS_SIZE - 1;
+
+pub const LED_37: usize = constants::CANVAS_SIZE - 36;
+pub const LED_38: usize = constants::CANVAS_SIZE - 1;
+
+pub const NUM_LEDS: usize = 39;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -56,7 +99,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<MouseDevice> {
+) -> Result<MouseDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -67,13 +110,13 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(
-            RoccatKoneAimoRemastered::bind(ctrl_dev.unwrap()),
-        ))))
+        Ok(Arc::new(RwLock::new(Box::new(RoccatKoneXp::bind(
+            ctrl_dev.unwrap(),
+        )))))
     }
 }
 
-/// ROCCAT Kone Aimo info struct (sent as HID report)
+/// ROCCAT Kone XP info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -86,8 +129,8 @@ pub struct DeviceInfo {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Kone Aimo Remastered mouse
-pub struct RoccatKoneAimoRemastered {
+/// Device specific code for the ROCCAT Kone XP mouse
+pub struct RoccatKoneXp {
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -100,14 +143,16 @@ pub struct RoccatKoneAimoRemastered {
 
     pub has_failed: bool,
 
+    pub allocated_zone: Zone,
+
     // device specific configuration options
     pub brightness: i32,
 }
 
-impl RoccatKoneAimoRemastered {
+impl RoccatKoneXp {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone Aimo Remastered");
+        info!("Bound driver: ROCCAT Kone XP");
 
         Self {
             is_initialized: false,
@@ -121,6 +166,8 @@ impl RoccatKoneAimoRemastered {
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
 
             has_failed: false,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Mouse),
 
             brightness: 100,
         }
@@ -171,22 +218,11 @@ impl RoccatKoneAimoRemastered {
 
             match id {
                 0x04 => {
-                    for j in &[0x80, 0x90] {
+                    for j in [0x80, 0x90] {
                         for i in 0..=4 {
-                            let buf: [u8; 3] = [0x04, i, *j];
+                            let buf: [u8; 4] = [0x04, i, j, 0x00];
 
                             match ctrl_dev.send_feature_report(&buf) {
-                                Ok(_result) => {
-                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                                    Ok(())
-                                }
-
-                                Err(_) => Err(HwDeviceError::InvalidResult {}),
-                            }?;
-
-                            let mut buf: [u8; 5] = [0xa1, 0x00, 0x00, 0x00, 0x00];
-                            match ctrl_dev.get_feature_report(&mut buf) {
                                 Ok(_result) => {
                                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
@@ -216,11 +252,18 @@ impl RoccatKoneAimoRemastered {
                 }
 
                 0x0d => {
-                    let buf: [u8; 46] = [
-                        0x0d, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    let buf: [u8; 122] = [
+                        0x0d, 0x7a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00,
                     ];
 
                     match ctrl_dev.send_feature_report(&buf) {
@@ -249,7 +292,7 @@ impl RoccatKoneAimoRemastered {
         } else {
             loop {
                 let mut buf: [u8; 4] = [0; 4];
-                buf[0] = 0x04;
+                buf[0] = 0x01;
 
                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
@@ -265,29 +308,25 @@ impl RoccatKoneAimoRemastered {
 
                     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                 }
-
-                thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
             }
         }
     }
 }
 
-impl DeviceInfoTrait for RoccatKoneAimoRemastered {
+impl DeviceInfoTrait for RoccatKoneXp {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let mut buf = [0; size_of::<DeviceInfo>()];
+            /* let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
 
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
@@ -299,12 +338,15 @@ impl DeviceInfoTrait for RoccatKoneAimoRemastered {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            } */
+
+            let result = hwdevices::DeviceInfo::new(0_i32);
+            Ok(result)
         }
     }
 
@@ -321,7 +363,7 @@ impl DeviceInfoTrait for RoccatKoneAimoRemastered {
     }
 }
 
-impl DeviceTrait for RoccatKoneAimoRemastered {
+impl DeviceTrait for RoccatKoneXp {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -345,7 +387,7 @@ impl DeviceTrait for RoccatKoneAimoRemastered {
     }
 
     fn get_support_script_file(&self) -> String {
-        "mice/roccat_kone_aimo_remastered".to_string()
+        "mice/roccat_kone_xp".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
@@ -393,6 +435,25 @@ impl DeviceTrait for RoccatKoneAimoRemastered {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
+            // match self.get_device_info() {
+            //     Ok(device_info) => {
+            //         if device_info.firmware_version < 106 {
+            //             warn!(
+            //                 "Outdated firmware version: {}, should be: >= 1.06",
+            //                 format!(
+            //                     "{}.{:02}",
+            //                     device_info.firmware_version / 100,
+            //                     device_info.firmware_version % 100
+            //                 )
+            //             );
+            //         }
+            //     }
+            //
+            //     Err(e) => {
+            //         error!("Could not get firmware version: {}", e);
+            //     }
+            // }
+
             self.send_ctrl_report(0x04)
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
             self.wait_for_ctrl_dev()
@@ -509,41 +570,245 @@ impl DeviceTrait for RoccatKoneAimoRemastered {
     }
 }
 
-impl MouseDeviceTrait for RoccatKoneAimoRemastered {
+impl DeviceZoneAllocationTrait for RoccatKoneXp {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
+    }
+}
+
+impl MouseDeviceTrait for RoccatKoneXp {
     fn get_profile(&self) -> Result<i32> {
         trace!("Querying device profile config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x06;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(buf[3] as i32)
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn set_profile(&mut self, _profile: i32) -> Result<()> {
         trace!("Setting device profile config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x06;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // buf[3] = profile as u8;
+            //
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(())
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn get_dpi(&self) -> Result<i32> {
         trace!("Querying device DPI config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x06;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(buf[6] as i32)
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn set_dpi(&mut self, _dpi: i32) -> Result<()> {
         trace!("Setting device DPI config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x06;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // buf[6] = dpi as u8;
+            //
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(())
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn get_rate(&self) -> Result<i32> {
         trace!("Querying device poll rate config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // match buf[29] {
+            //     0 => Ok(125),
+            //
+            //     1 => Ok(250),
+            //
+            //     2 => Ok(500),
+            //
+            //     3 => Ok(1000),
+            //
+            //     _ => Err(HwDeviceError::InvalidResult {}.into()),
+            // }
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn set_rate(&mut self, _rate: i32) -> Result<()> {
         trace!("Setting device poll rate config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // buf[29] = rate as u8;
+            //
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(())
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn get_dcu_config(&self) -> Result<i32> {
@@ -561,25 +826,161 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
     fn get_angle_snapping(&self) -> Result<bool> {
         trace!("Querying device angle-snapping config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // if buf[18] == 0x00 {
+            //     Ok(false)
+            // } else {
+            //     Ok(true)
+            // }
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn set_angle_snapping(&mut self, _angle_snapping: bool) -> Result<()> {
         trace!("Setting device angle-snapping config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // buf[18] = if angle_snapping { 0x01 } else { 0x00 };
+            //
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(())
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn get_debounce(&self) -> Result<bool> {
         trace!("Querying device debounce config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // // inverted logic here, if the zero-debounce feature is disabled then debounce is on
+            // if buf[2] == 0x00 {
+            //     Ok(true)
+            // } else {
+            //     Ok(false)
+            // }
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
     }
 
     fn set_debounce(&mut self, _debounce: bool) -> Result<()> {
         trace!("Setting device debounce config");
 
-        Err(HwDeviceError::OpNotSupported {}.into())
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            //
+            // let mut buf: [u8; 64] = [0x00_u8; 64];
+            // buf[0] = 0x11;
+            //
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // // inverted logic here, if debounce is true then we have to disable the zero-debounce feature
+            // buf[2] = if debounce { 0x00 } else { 0x01 };
+            //
+            // match ctrl_dev.send_feature_report(&buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //
+            //         Ok(())
+            //     }
+            //
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}),
+            // }?;
+            //
+            // Ok(())
+
+            Err(HwDeviceError::OpNotSupported {}.into())
+        }
+    }
+
+    fn get_local_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Ok(self.brightness)
     }
 
     fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
@@ -588,12 +989,6 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
         self.brightness = brightness;
 
         Ok(())
-    }
-
-    fn get_local_brightness(&self) -> Result<i32> {
-        trace!("Querying device specific brightness");
-
-        Ok(self.brightness)
     }
 
     #[inline]
@@ -679,8 +1074,8 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
 
                             if result.len() > 1 {
                                 error!(
-                                "We missed a HID event, mouse button states will be inconsistent"
-                            );
+                                    "We missed a HID event, mouse button states will be inconsistent"
+                                );
                             }
 
                             if result.is_empty() {
@@ -801,53 +1196,129 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 46] = [
+            let buf: [u8; 122] = [
                 0x0d,
-                0x2e,
+                0x7a,
                 (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_2].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_2].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_2].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_2].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_3].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_3].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_3].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_3].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_4].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_4].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_4].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_4].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_5].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_5].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_5].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_5].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_6].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_6].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_6].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_6].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_7].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_7].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_7].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_7].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_8].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_8].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_8].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_8].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_9].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_9].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_9].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_9].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_10].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_10].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_10].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_10].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_11].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_11].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_11].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_12].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_12].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_12].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_13].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_13].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_13].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_14].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_14].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_14].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_15].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_15].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_15].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_16].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_16].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_16].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_17].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_17].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_17].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_18].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_18].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_18].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_19].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_19].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_19].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_20].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_20].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_20].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_21].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_21].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_21].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_22].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_22].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_22].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_23].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_23].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_23].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_24].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_24].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_24].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_25].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_25].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_25].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_26].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_26].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_26].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_27].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_27].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_27].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_28].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_28].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_28].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_29].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_29].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_29].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_30].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_30].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_30].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_31].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_31].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_31].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_32].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_32].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_32].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_33].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_33].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_33].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_34].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_34].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_34].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_35].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_35].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_35].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_36].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_36].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_36].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_37].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_37].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_37].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_38].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_38].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_38].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                0xff,
+                0xff,
+                0xff,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

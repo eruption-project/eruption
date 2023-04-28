@@ -21,11 +21,14 @@
 
 use dyn_clonable::clonable;
 
+mod corsair_strafe;
 mod generic_keyboard;
+mod roccat_magma;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
+mod wooting_two_he_arm;
 
 pub type KeyboardDevice = Box<dyn Keyboard + Sync + Send>;
 
@@ -49,6 +52,13 @@ pub trait Keyboard: Clone {
 
 pub fn get_keyboard_device(vid: u16, pid: u16) -> Result<KeyboardDevice> {
     match (vid, pid) {
+        // Wooting
+
+        // Wooting Two HE (ARM)
+        (0x31e3, 0x1230) => Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::new())),
+
+        // Roccat
+
         // ROCCAT Vulcan 1xx series
         (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => {
             Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::new()))
@@ -62,6 +72,14 @@ pub fn get_keyboard_device(vid: u16, pid: u16) -> Result<KeyboardDevice> {
 
         // ROCCAT Vulcan TKL series
         (0x1e7d, 0x2fee) => Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::new())),
+
+        // ROCCAT Magma
+        (0x1e7d, 0x3124) => Ok(Box::new(roccat_magma::RoccatMagma::new())),
+
+        // Corsair
+
+        // Corsair STRAFE Gaming Keyboard
+        (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new())),
 
         _ => {
             tracing::warn!("Unknown keyboard model specified, assuming generic model");

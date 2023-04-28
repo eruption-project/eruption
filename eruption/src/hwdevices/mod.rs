@@ -19,43 +19,26 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use crate::constants;
+use crate::hwdevices::{keyboards::*, mice::*, misc::*};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
+use std::fmt::{Display, Formatter};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
 use tracing::*;
 use udev::Enumerator;
 
-mod corsair_strafe;
-mod custom_serial_leds;
-mod generic_keyboard;
-mod generic_mouse;
-mod roccat_aimo_pad;
-mod roccat_burst_pro;
-mod roccat_elo_71_air;
-mod roccat_kain_100;
-mod roccat_kain_2xx;
-mod roccat_kone_aimo;
-mod roccat_kone_aimo_remastered;
-mod roccat_kone_pro;
-mod roccat_kone_pro_air;
-mod roccat_kone_pure_ultra;
-mod roccat_kone_xp;
-mod roccat_kone_xtd;
-mod roccat_kova_2016;
-mod roccat_kova_aimo;
-mod roccat_magma;
-mod roccat_nyth;
-mod roccat_vulcan_1xx;
-mod roccat_vulcan_pro;
-mod roccat_vulcan_pro_tkl;
-mod roccat_vulcan_tkl;
-mod wooting_two_he_arm;
+mod util;
+
+mod keyboards;
+mod mice;
+mod misc;
 
 pub type KeyboardDevice = Arc<RwLock<Box<dyn KeyboardDeviceTrait + Sync + Send>>>;
 pub type MouseDevice = Arc<RwLock<Box<dyn MouseDeviceTrait + Sync + Send>>>;
@@ -88,71 +71,71 @@ lazy_static! {
         // Wooting
 
         // Wooting Two HE (ARM) series
-        KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230, &wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
+        KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230, &keyboards::wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
 
         // ROCCAT
 
         // Vulcan 100/12x/Pro (TKL) series
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &roccat_vulcan_pro::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &keyboards::roccat_vulcan_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &roccat_vulcan_tkl::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &keyboards::roccat_vulcan_tkl::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &keyboards::roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
 
-        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &roccat_magma::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &keyboards::roccat_magma::bind_hiddev, MaturityLevel::Experimental),
 
         // CORSAIR
 
         // Corsair STRAFE Gaming Keyboard
-        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &corsair_strafe::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &keyboards::corsair_strafe::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported mice
 
         // ROCCAT
-        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &roccat_kone_aimo::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &mice::roccat_kone_aimo::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &roccat_kone_aimo_remastered::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &mice::roccat_kone_aimo_remastered::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &roccat_kone_xtd::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &mice::roccat_kone_xtd::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
+        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &mice::roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
 
-        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &mice::roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kone XP",           0x1e7d, 0x2c8b, &roccat_kone_xp::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone XP",           0x1e7d, 0x2c8b, &mice::roccat_kone_xp::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88, &roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88, &mice::roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kain 100 AIMO",     0x1e7d, 0x2d00, &roccat_kain_100::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kain 100 AIMO",     0x1e7d, 0x2d00, &mice::roccat_kain_100::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
         // MouseDriver::register("ROCCAT", "Kain 202 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev, Status::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported miscellaneous devices
 
         // ROCCAT/Turtle Beach
-        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &roccat_elo_71_air::bind_hiddev, MaturityLevel::Testing),
+        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &misc::roccat_elo_71_air::bind_hiddev, MaturityLevel::Testing),
 
-        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &roccat_aimo_pad::bind_hiddev, MaturityLevel::Stable),
+        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &misc::roccat_aimo_pad::bind_hiddev, MaturityLevel::Stable),
 
 
         // Misc Serial devices
@@ -471,7 +454,7 @@ impl SerialDriverMetadata for MiscSerialDriver<'static> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeviceClass {
     Unknown,
     Keyboard,
@@ -698,8 +681,120 @@ pub trait GenericConfiguration {
     fn set_device_config(&self, param: &DeviceConfig, value: &dyn Any) -> Result<()>;
 }
 
+/// Represents a rectangular zone on the canvas that is allocated to a device
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Zone {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+}
+
+impl dbus::arg::Arg for Zone {
+    const ARG_TYPE: dbus::arg::ArgType = dbus::arg::ArgType::Struct;
+
+    fn signature() -> dbus::Signature<'static> {
+        dbus::Signature::from("(iiii)")
+    }
+}
+
+impl dbus::arg::Append for Zone {
+    fn append_by_ref(&self, i: &mut dbus::arg::IterAppend) {
+        i.append(&(self.x, self.y, self.width, self.height));
+    }
+}
+
+#[allow(unused)]
+impl Zone {
+    #[inline]
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+
+    pub fn defaults_for(device_class: DeviceClass) -> Self {
+        match device_class {
+            DeviceClass::Keyboard => Self {
+                x: constants::CANVAS_WIDTH as i32 / 2 - 12,
+                y: constants::CANVAS_HEIGHT as i32 / 2,
+                width: 21,
+                height: 6,
+            },
+
+            DeviceClass::Mouse => Self {
+                x: constants::CANVAS_WIDTH as i32 - 6,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 2,
+                width: 5,
+                height: 5,
+            },
+
+            DeviceClass::Misc => Self {
+                x: constants::CANVAS_WIDTH as i32 / 2 - 4,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 5,
+                width: 8,
+                height: 1,
+            },
+
+            DeviceClass::Unknown => Self::empty(),
+        }
+    }
+
+    #[inline]
+    pub fn empty() -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        }
+    }
+
+    #[inline]
+    pub fn cell_count(&self) -> usize {
+        (self.width * self.height).abs() as usize
+    }
+
+    #[inline]
+    pub fn x2(&self) -> i32 {
+        self.x + self.width
+    }
+
+    #[inline]
+    pub fn y2(&self) -> i32 {
+        self.y + self.height
+    }
+}
+
+impl Default for Zone {
+    fn default() -> Self {
+        Self::empty()
+    }
+}
+
+impl Display for Zone {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}x{}:{}x{}", self.x, self.y, self.width, self.height)
+    }
+}
+
+/// Zone allocation on the unified canvas for a supported device
+pub trait DeviceZoneAllocationTrait {
+    /// Returns the size of the zone (number of LEDs) that the device is able to display
+    fn get_zone_size_hint(&self) -> usize;
+
+    /// Returns the allocated rectangular area on the canvas
+    fn get_allocated_zone(&self) -> Zone;
+
+    /// Sets the rectangular area on the canvas that is allocated to be displayed on the device
+    fn set_zone_allocation(&mut self, zone: Zone);
+}
+
 /// Generic device trait
-pub trait DeviceTrait: DeviceInfoTrait {
+pub trait DeviceTrait: DeviceInfoTrait + DeviceZoneAllocationTrait {
     /// Returns the USB path/ID of the device
     fn get_usb_path(&self) -> String;
 

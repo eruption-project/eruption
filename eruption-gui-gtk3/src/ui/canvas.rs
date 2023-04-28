@@ -19,10 +19,15 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use std::cell::RefCell;
+
 use glib::clone;
-use gtk::prelude::*;
+use gtk::{
+    prelude::*, Builder, ScrolledWindow, ShadowType, Stack, StackSwitcher, TreeViewColumnSizing,
+};
 // use palette::{FromColor, Hsva, Srgba};
 
+use crate::dbus_client::Zone;
 use crate::{constants, dbus_client, timers};
 use crate::{events, util};
 
@@ -46,6 +51,11 @@ struct Rectangle {
     y: f64,
     width: f64,
     height: f64,
+}
+
+thread_local! {
+    // Pango font description, used to render the captions on the visual representation of keyboard
+    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("Roboto demibold 32"));
 }
 
 /// Initialize page "Canvas"
@@ -110,7 +120,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[
         glib::Type::U64,
-        // String::static_type(),
+        String::static_type(),
         String::static_type(),
         String::static_type(),
     ]);
@@ -126,11 +136,20 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Keyboard");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
+
+        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
@@ -142,11 +161,20 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Mouse");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
+
+        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
@@ -158,16 +186,43 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Misc");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
+
+        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
 
-    let column = gtk::TreeViewColumn::new();
+    let column = gtk::TreeViewColumn::builder()
+        .sizing(TreeViewColumnSizing::Autosize)
+        .alignment(0.5)
+        // .visible(false)
+        .build();
+
+    let cell = gtk::CellRendererToggle::builder().active(true).build();
+
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 0);
+
+    devices_tree_view.append_column(&column);
+
+    let column = gtk::TreeViewColumn::builder()
+        .title("ID")
+        .sizing(TreeViewColumnSizing::Autosize)
+        // .visible(false)
+        .build();
+
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
@@ -175,19 +230,39 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     devices_tree_view.append_column(&column);
 
-    let column = gtk::TreeViewColumn::new();
+    let column = gtk::TreeViewColumn::builder()
+        .title("Type")
+        .sizing(TreeViewColumnSizing::Autosize)
+        .build();
+
     let cell = gtk::CellRendererText::new();
 
-    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, true);
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
     gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 1);
 
     devices_tree_view.append_column(&column);
 
-    let column = gtk::TreeViewColumn::new();
+    let column = gtk::TreeViewColumn::builder()
+        .title("Make")
+        .sizing(TreeViewColumnSizing::Autosize)
+        .build();
+
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
     gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 2);
+
+    devices_tree_view.append_column(&column);
+
+    let column = gtk::TreeViewColumn::builder()
+        .title("Model")
+        .sizing(TreeViewColumnSizing::Autosize)
+        .build();
+
+    let cell = gtk::CellRendererText::new();
+
+    gtk::prelude::CellLayoutExt::pack_start(&column, &cell, true);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 3);
 
     devices_tree_view.append_column(&column);
 
@@ -222,13 +297,31 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
-        1000 / constants::TARGET_FPS,
+        1000 / (constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
 
             Ok(())
         }),
     )?;
+
+    // update the global LED color map vector
+    timers::register_timer(
+        timers::CANVAS_ZONES_TIMER_ID,
+        750,
+        clone!(@weak builder => @default-return Ok(()), move || {
+            let _result = update_allocated_zones(&builder).map_err(|e| tracing::error!("{e}"));
+
+            Ok(())
+        }),
+    )?;
+
+    Ok(())
+}
+
+pub fn update_allocated_zones(_builder: &gtk::Builder) -> Result<()> {
+    let zones = crate::dbus_client::get_allocated_zones()?;
+    *crate::ZONES.lock() = zones;
 
     Ok(())
 }
@@ -241,7 +334,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
+    let _devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
 
     crate::dbus_client::ping().unwrap_or_else(|_e| {
         notification_box_global.show_now();
@@ -252,7 +345,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[
         glib::Type::U64,
-        // String::static_type(),
+        String::static_type(),
         String::static_type(),
         String::static_type(),
     ]);
@@ -268,10 +361,17 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Keyboard");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
 
         index += 1;
@@ -284,10 +384,17 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Mouse");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
 
         index += 1;
@@ -300,17 +407,42 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
 
+        let device_type = String::from("Misc");
+
         devices_treestore.insert_with_values(
             None,
             None,
-            &[(0, &(index as u64)), (1, &(make)), (2, &(model))],
+            &[
+                (0, &(index as u64)),
+                (1, &(device_type)),
+                (2, &(make)),
+                (3, &(model)),
+            ],
         );
 
         index += 1;
     }
 
-    devices_tree_view.set_model(Some(&devices_treestore));
-    devices_tree_view.show_all();
+    Ok(())
+}
+
+fn populate_canvas_stack_widget_for_device(builder: &Builder, title: &str) -> Result<()> {
+    let stack_widget: Stack = builder.object("canvas_stack").unwrap();
+    let stack_switcher: StackSwitcher = builder.object("canvas_switcher").unwrap();
+
+    let context = stack_switcher.style_context();
+    context.add_class("small-font");
+
+    let scrolled_window = ScrolledWindow::builder()
+        .shadow_type(ShadowType::None)
+        .build();
+    // scrolled_window.add(&sourceview);
+
+    scrolled_window.show_all();
+
+    stack_widget.add_titled(&scrolled_window, "Device", &title);
+
+    scrolled_window.show_all();
 
     Ok(())
 }
@@ -331,6 +463,123 @@ fn render_canvas(
     for (i, color) in led_colors.iter().enumerate() {
         paint_cell(i, color, hsl, context, width, height, scale_factor)?;
     }
+
+    let layout = pangocairo::create_layout(context);
+    FONT_DESC.with(|f| -> Result<()> {
+        let desc = f.borrow();
+        layout.set_font_description(Some(&desc));
+
+        // draw allocated zones
+        for (device, zone) in crate::ZONES.lock().iter() {
+            paint_zone(&context, &layout, *device, &zone, scale_factor)?;
+        }
+
+        Ok(())
+    })?;
+
+    Ok(())
+}
+
+pub fn rounded_rectangle(
+    cr: &cairo::Context,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+    radius: f64,
+    color: &(f64, f64, f64, f64),
+    color2: &(f64, f64, f64, f64),
+) -> Result<()> {
+    let aspect = 1.0; // aspect ratio
+    let corner_radius = height / radius; // corner curvature radius
+
+    let radius = corner_radius / aspect;
+    let degrees = std::f64::consts::PI / 180.0;
+
+    cr.new_sub_path();
+    cr.arc(
+        x + width - radius,
+        y + radius,
+        radius,
+        -90.0 * degrees,
+        0.0 * degrees,
+    );
+    cr.arc(
+        x + width - radius,
+        y + height - radius,
+        radius,
+        0.0 * degrees,
+        90.0 * degrees,
+    );
+    cr.arc(
+        x + radius,
+        y + height - radius,
+        radius,
+        90.0 * degrees,
+        180.0 * degrees,
+    );
+    cr.arc(
+        x + radius,
+        y + radius,
+        radius,
+        180.0 * degrees,
+        270.0 * degrees,
+    );
+    cr.close_path();
+
+    cr.set_source_rgba(color2.0, color2.1, color2.2, 1.0 - color2.3);
+    cr.fill_preserve()?;
+
+    cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
+    cr.set_line_width(1.85);
+    cr.stroke()?;
+
+    Ok(())
+}
+
+fn paint_zone(
+    cr: &cairo::Context,
+    layout: &pango::Layout,
+    device: u64,
+    zone: &Zone,
+    scale_factor: f64,
+) -> Result<()> {
+    for y in zone.y..zone.y2() {
+        for x in zone.x..zone.x2() {
+            let cell_def = Rectangle {
+                x: BORDER.0 + (x * PIXEL_SIZE as i32) as f64 * scale_factor,
+                y: BORDER.1 + (y * PIXEL_SIZE as i32) as f64 * scale_factor,
+                width: PIXEL_SIZE as f64 * scale_factor,
+                height: PIXEL_SIZE as f64 * scale_factor,
+            };
+
+            // use a translucent color to paint the zone
+            let color = (1.0, 0.9, 0.75, 0.15);
+            let color2 = (0.8, 0.7, 0.55, 0.25);
+
+            rounded_rectangle(
+                &cr,
+                cell_def.x,
+                cell_def.y,
+                cell_def.width,
+                cell_def.height,
+                4.0,
+                &color,
+                &color2,
+            )?;
+        }
+    }
+
+    // draw caption
+    cr.set_source_rgba(0.21, 0.21, 0.21, 0.65);
+    cr.move_to(
+        BORDER.0 + (zone.x as f64 * (PIXEL_SIZE as f64) * scale_factor) + 20.0,
+        BORDER.1 + (zone.y as f64 * (PIXEL_SIZE as f64) * scale_factor),
+    );
+
+    layout.set_text(&format!("{}", device));
+
+    pangocairo::show_layout(cr, layout);
 
     Ok(())
 }
@@ -377,14 +626,39 @@ fn paint_cell(
 
     // cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
 
-    cr.set_source_rgba(
+    // cr.set_source_rgba(
+    //     color.r as f64 / 255.0,
+    //     color.g as f64 / 255.0,
+    //     color.b as f64 / 255.0,
+    //     1.0 - color.a as f64 / 255.0,
+    // );
+    // cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+    // cr.fill()?;
+
+    // use a translucent color to paint the zone
+    let color1 = (
         color.r as f64 / 255.0,
         color.g as f64 / 255.0,
         color.b as f64 / 255.0,
-        1.0, /* -  color.a as f64 / 255.0 */
+        color.a as f64 / 255.0,
     );
-    cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-    cr.fill()?;
+    let color2 = (
+        color.r as f64 / 255.0,
+        color.g as f64 / 255.0,
+        color.b as f64 / 255.0,
+        color.a as f64 / 255.0,
+    );
+
+    rounded_rectangle(
+        &cr,
+        cell_def.x,
+        cell_def.y,
+        cell_def.width,
+        cell_def.height,
+        4.0,
+        &color1,
+        &color2,
+    )?;
 
     Ok(())
 }

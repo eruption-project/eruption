@@ -35,6 +35,8 @@ pub type Result<T> = super::Result<T>;
 pub const NUM_KEYS: usize = 144;
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;
+#[allow(unused)]
+pub const NUM_LEDS: usize = NUM_ROWS * NUM_COLS;
 
 // pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 // pub const LED_INTERFACE: i32 = 3; // LED USB sub device

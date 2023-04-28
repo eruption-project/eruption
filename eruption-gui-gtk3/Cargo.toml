@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.2.0"
+version = "0.2.2"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -68,6 +68,9 @@ toml = "0.7.3"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
 palette = "0.7.1"
+nalgebra = "0.32.2"
+ndarray = "0.15.6"
+transpose = "0.2.2"
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"

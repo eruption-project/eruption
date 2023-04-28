@@ -51,6 +51,7 @@ impl Keyboard for RoccatVulcan1xx {
 pub const NUM_KEYS: usize = 144;
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;
+// pub const NUM_LEDS: usize = NUM_ROWS * NUM_COLS;
 
 // const ARRAY_OFFSET: usize = 132;
 

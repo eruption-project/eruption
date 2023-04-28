@@ -41,7 +41,7 @@ function on_tick(delta)
     -- calculate batique effect
     if ticks % animation_delay == 0 then
         for i = 1, zone_end do
-            local x = i / (zone_end - zone_start)
+            local x = i % (zone_end - zone_start)
             local y = i / (zone_end - zone_start)
 
             local val = super_simplex_noise((x / coord_scale),

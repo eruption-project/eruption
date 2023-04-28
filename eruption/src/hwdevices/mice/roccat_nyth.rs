@@ -30,14 +30,13 @@ use std::time::Duration;
 use std::{any::Any, thread};
 use std::{mem::size_of, sync::Arc};
 
-use crate::constants;
+use crate::{constants, hwdevices};
 
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
-    MouseDevice, MouseDeviceTrait, MouseHidEvent, RGBA,
+use crate::hwdevices::{
+    Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, MouseDevice, MouseDeviceTrait, MouseHidEvent, Result,
+    Zone, RGBA,
 };
-
-pub type Result<T> = super::Result<T>;
 
 pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
 
@@ -47,7 +46,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<MouseDevice> {
+) -> Result<MouseDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -89,6 +88,8 @@ pub struct RoccatNyth {
 
     pub has_failed: bool,
 
+    pub allocated_zone: Zone,
+
     pub button_states: Arc<Mutex<BitVec>>,
 }
 
@@ -107,6 +108,8 @@ impl RoccatNyth {
             ctrl_hiddev: Arc::new(Mutex::new(None)),
 
             has_failed: false,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Mouse),
 
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
         }
@@ -211,7 +214,7 @@ impl DeviceInfoTrait for RoccatNyth {
         DeviceCapabilities::from([Capability::Mouse])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
@@ -233,7 +236,7 @@ impl DeviceInfoTrait for RoccatNyth {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
@@ -252,6 +255,20 @@ impl DeviceInfoTrait for RoccatNyth {
         } else {
             "<unknown>".to_string()
         }
+    }
+}
+
+impl DeviceZoneAllocationTrait for RoccatNyth {
+    fn get_zone_size_hint(&self) -> usize {
+        0
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        Zone::empty()
+    }
+
+    fn set_zone_allocation(&mut self, _zone: Zone) {
+        // self.allocated_zone = zone;
     }
 }
 

@@ -21,27 +21,24 @@
 
 use std::{any::Any, collections::HashMap, sync::Arc};
 
+use crate::hwdevices::DeviceStatus;
+use crate::hwdevices::{self, DeviceZoneAllocationTrait, Zone};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::RwLock;
 use tracing::*;
 
-use crate::hwdevices::DeviceStatus;
-
-use super::{
+use crate::hwdevices::{
     Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, RGBA,
+    MouseDeviceTrait, MouseHidEvent, Result, RGBA,
 };
 
-pub type Result<T> = super::Result<T>;
-
-/// Binds the driver to a device
 pub fn bind_hiddev(
     _hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
     _serial: &str,
-) -> super::Result<MouseDevice> {
+) -> Result<MouseDevice> {
     Ok(Arc::new(RwLock::new(Box::new(GenericMouse::bind(
         usb_vid, usb_pid,
     )))))
@@ -86,15 +83,29 @@ impl DeviceInfoTrait for GenericMouse {
         DeviceCapabilities::from([Capability::Mouse])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
-        let result = super::DeviceInfo::new(0);
+        let result = hwdevices::DeviceInfo::new(0);
         Ok(result)
     }
 
     fn get_firmware_revision(&self) -> String {
         "<not supported>".to_string()
+    }
+}
+
+impl DeviceZoneAllocationTrait for GenericMouse {
+    fn get_zone_size_hint(&self) -> usize {
+        0
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        Zone::empty()
+    }
+
+    fn set_zone_allocation(&mut self, _zone: Zone) {
+        // self.allocated_zone = zone;
     }
 }
 

@@ -26,17 +26,15 @@ use serialport::SerialPort;
 use std::time::Duration;
 use tracing::*;
 
-use crate::hwdevices::DeviceStatus;
+use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationTrait, Zone};
 
-use super::{
+use crate::hwdevices::{
     DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MiscDeviceTrait,
-    MouseDeviceTrait, RGBA,
+    MouseDeviceTrait, Result, RGBA,
 };
 
 const BAUD_RATE: u32 = 460800;
 const NUM_LEDS: usize = 80;
-
-pub type Result<T> = super::Result<T>;
 
 #[derive(Clone)]
 pub struct CustomSerialLeds {
@@ -45,6 +43,8 @@ pub struct CustomSerialLeds {
 
     // device specific configuration options
     pub brightness: i32,
+
+    pub allocated_zone: Zone,
 
     pub has_failed: bool,
 }
@@ -59,6 +59,9 @@ impl CustomSerialLeds {
             port: Arc::new(Mutex::new(None)),
 
             brightness: 100,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Misc),
+
             has_failed: false,
         }
     }
@@ -69,10 +72,10 @@ impl DeviceInfoTrait for CustomSerialLeds {
         DeviceCapabilities::from([])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
-        let result = super::DeviceInfo::new(0);
+        let result = hwdevices::DeviceInfo::new(0);
         Ok(result)
     }
 
@@ -199,6 +202,20 @@ impl DeviceTrait for CustomSerialLeds {
 
     fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
         None
+    }
+}
+
+impl DeviceZoneAllocationTrait for CustomSerialLeds {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
     }
 }
 

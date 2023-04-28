@@ -18,6 +18,7 @@
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
+require "utilities"
 require "debug"
 
 -- global state variables --
@@ -31,9 +32,7 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -42,20 +41,25 @@ function on_tick(delta)
     percentage =
         min((get_audio_loudness() / 100) * loudness_scale_factor, 100.0)
 
-    -- generate heartbeat color map values
-    local upper_bound = canvas_size * (min(percentage, 100) / 100)
-    for i = 1, canvas_size do
-        if i >= upper_bound then
-            color_map[i] = color_map[i] + color_step
+    local upper_bound = canvas_width * (min(percentage, 100) / 100)
 
-            if color_map[i] >= 0xffffffff then
-                color_map[i] =
-                    rgba_to_color(128, 64, 255, lerp(0, 255, opacity))
-            elseif color_map[i] <= 0xff000000 then
-                color_map[i] = 0xff000000
+    for x = 0, canvas_width do
+        for y = 0, canvas_height do
+            local i = canvas_width * y + x
+            local p = x / canvas_width
+
+            if x < upper_bound then
+                color_map[i] = n(color_map[i]) + color_step
+
+                if color_map[i] >= 0xffffffff then
+                    color_map[i] = rgba_to_color(128, 64, 255,
+                                                 lerp(0, 255, opacity))
+                elseif color_map[i] <= 0xff000000 then
+                    color_map[i] = 0xff000000
+                end
+            else
+                color_map[i] = 0xffffffff
             end
-        else
-            color_map[i] = 0xffffffff
         end
     end
 end

@@ -22,6 +22,7 @@
 use bitfield_struct::bitfield;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use ndarray::{Array2, Order};
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -31,19 +32,19 @@ use tracing::*;
 
 use crate::constants;
 
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
-    KeyboardDevice, KeyboardDeviceTrait, KeyboardHidEvent, KeyboardHidEventCode, LedKind,
-    MouseDeviceTrait, RGBA,
+use crate::hwdevices::{
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait,
+    KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, Result, Zone, RGBA,
 };
-
-pub type Result<T> = super::Result<T>;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 2; // LED USB sub device
 
 pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;
+#[allow(unused)]
+pub const NUM_LEDS: usize = NUM_ROWS * NUM_COLS;
 pub const NUM_KEYS: usize = 127;
 // pub const NUM_RGB: usize = 196;
 pub const LED_INDICES: usize = 127;
@@ -84,7 +85,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<KeyboardDevice> {
+) -> Result<KeyboardDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -137,6 +138,8 @@ pub struct WootingTwoHeArm {
     pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
     pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
 
+    pub allocated_zone: Zone,
+
     // device specific configuration options
     pub brightness: i32,
 }
@@ -158,6 +161,8 @@ impl WootingTwoHeArm {
 
             ctrl_hiddev: Arc::new(Mutex::new(None)),
             led_hiddev: Arc::new(Mutex::new(None)),
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Keyboard),
 
             brightness: 100,
         }
@@ -376,7 +381,7 @@ impl DeviceInfoTrait for WootingTwoHeArm {
         DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
@@ -396,7 +401,7 @@ impl DeviceInfoTrait for WootingTwoHeArm {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
@@ -415,6 +420,20 @@ impl DeviceInfoTrait for WootingTwoHeArm {
         } else {
             "<unknown>".to_string()
         }
+    }
+}
+
+impl DeviceZoneAllocationTrait for WootingTwoHeArm {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
     }
 }
 
@@ -726,14 +745,6 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         _ => KeyboardHidEvent::Unknown,
                     };
 
-                    match event {
-                        KeyboardHidEvent::KeyDown { code } => {
-                            warn!("HID down: {:#?}", code);
-                        }
-
-                        _ => {}
-                    }
-
                     /* match event {
                         KeyboardHidEvent::KeyDown { code } => {
                             // update our internal representation of the keyboard state
@@ -882,31 +893,19 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             Ok(())
                         }
 
+                        // this device uses a row major layout, so whe have to
+                        // transpose the color map to the right layout
+                        let tmp_map = Array2::from_shape_vec(
+                            (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
+                            led_map.to_vec(),
+                        )?;
+
+                        let shape = ((constants::CANVAS_SIZE,), Order::RowMajor);
+                        let led_map = tmp_map.to_shape(shape)?;
+
                         const BUFFER_SIZE: usize =
                             4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1)) + 2;
                         let mut buffer = [0x0_u8; BUFFER_SIZE];
-
-                        // let led_map = led_map
-                        //     .iter()
-                        //     .enumerate()
-                        //     .map(|(idx, _c)| led_map[index_of(idx).unwrap_or(0x0)])
-                        //     .collect::<Vec<_>>();
-
-                        // let mut tmp_map = vec![
-                        //     RGBA {
-                        //         r: 0,
-                        //         g: 0,
-                        //         b: 0,
-                        //         a: 0
-                        //     };
-                        //     led_map.len()
-                        // ];
-                        // transpose::transpose(
-                        //     &led_map,
-                        //     &mut tmp_map,
-                        //     constants::CANVAS_WIDTH,
-                        //     constants::CANVAS_HEIGHT,
-                        // );
 
                         // init sequence
                         buffer[0..4].copy_from_slice(&[
@@ -916,7 +915,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             Command::RAW_COLORS_REPORT as u8,
                         ]);
 
-                        // encoded color sequence and submit a packet on every 64th byte to the device
+                        // encode color sequence and submit a packet on every 64th byte to the device
                         let mut cntr = 0;
 
                         for i in (4..BUFFER_SIZE).step_by(2) {

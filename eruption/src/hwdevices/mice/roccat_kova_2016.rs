@@ -20,32 +20,27 @@
 */
 
 use bitvec::prelude::*;
+use bitvec::view::BitView;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::{Mutex, RwLock};
+use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
 use tracing::*;
-// use std::sync::atomic::Ordering;
 
-use std::any::Any;
-use std::collections::HashMap;
-use std::{mem::size_of, sync::Arc};
+use crate::{constants, hwdevices::DeviceStatus};
 
-use crate::constants;
-
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
-    MouseDevice, MouseDeviceTrait, MouseHidEvent, RGBA,
+use crate::hwdevices::{
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, MouseDevice, MouseDeviceTrait, MouseHidEvent, Result,
+    Zone, RGBA,
 };
 
-pub type Result<T> = super::Result<T>;
-
-pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
-
-// pub const NUM_BUTTONS: usize = 9;
+pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
 
 // canvas to LED index mapping
 pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-pub const LED_1: usize = constants::CANVAS_SIZE - 1;
+pub const LED_1: usize = constants::CANVAS_SIZE - 35;
+pub const NUM_LEDS: usize = 2;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -53,7 +48,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<MouseDevice> {
+) -> Result<MouseDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -64,13 +59,13 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatBurstPro::bind(
+        Ok(Arc::new(RwLock::new(Box::new(RoccatKova2016::bind(
             ctrl_dev.unwrap(),
         )))))
     }
 }
 
-/// ROCCAT Burst Pro info struct (sent as HID report)
+/// ROCCAT Kova 2016 info struct (sent as HID report)
 #[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct DeviceInfo {
@@ -83,8 +78,8 @@ pub struct DeviceInfo {
 }
 
 #[derive(Clone)]
-/// Device specific code for the ROCCAT Burst Pro mouse
-pub struct RoccatBurstPro {
+/// Device specific code for the ROCCAT Kova 2016 mouse
+pub struct RoccatKova2016 {
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -97,14 +92,16 @@ pub struct RoccatBurstPro {
 
     pub has_failed: bool,
 
+    pub allocated_zone: Zone,
+
     // device specific configuration options
     pub brightness: i32,
 }
 
-impl RoccatBurstPro {
+impl RoccatKova2016 {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Burst Pro");
+        info!("Bound driver: ROCCAT Kova 2016");
 
         Self {
             is_initialized: false,
@@ -118,6 +115,8 @@ impl RoccatBurstPro {
             button_states: Arc::new(Mutex::new(bitvec![0; constants::MAX_MOUSE_BUTTONS])),
 
             has_failed: false,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Mouse),
 
             brightness: 100,
         }
@@ -168,9 +167,9 @@ impl RoccatBurstPro {
 
             match id {
                 0x04 => {
-                    for j in 0..=1 {
+                    for j in &[0x80, 0x90] {
                         for i in 0..=4 {
-                            let buf: [u8; 4] = [0x04, i, j, 0x00];
+                            let buf: [u8; 3] = [0x04, i, *j];
 
                             match ctrl_dev.send_feature_report(&buf) {
                                 Ok(_result) => {
@@ -199,7 +198,7 @@ impl RoccatBurstPro {
                 }
 
                 0x0e => {
-                    let buf: [u8; 6] = [0x0e, 0x06, 0x01, 0x01, 0x00, 0xff];
+                    let buf: [u8; 3] = [0x0e, 0x03, 0x01];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -212,10 +211,8 @@ impl RoccatBurstPro {
                     }
                 }
 
-                0x0d => {
-                    let buf: [u8; 11] = [
-                        0x0d, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ];
+                0x09 => {
+                    let buf: [u8; 8] = [0x09, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
@@ -264,18 +261,20 @@ impl RoccatBurstPro {
     }
 }
 
-impl DeviceInfoTrait for RoccatBurstPro {
+impl DeviceInfoTrait for RoccatKova2016 {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
@@ -289,7 +288,7 @@ impl DeviceInfoTrait for RoccatBurstPro {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
@@ -311,7 +310,21 @@ impl DeviceInfoTrait for RoccatBurstPro {
     }
 }
 
-impl DeviceTrait for RoccatBurstPro {
+impl DeviceZoneAllocationTrait for RoccatKova2016 {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
+    }
+}
+
+impl DeviceTrait for RoccatKova2016 {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -335,7 +348,7 @@ impl DeviceTrait for RoccatBurstPro {
     }
 
     fn get_support_script_file(&self) -> String {
-        "mice/roccat_burst_pro".to_string()
+        "mice/roccat_kova_2016".to_string()
     }
 
     fn open(&mut self, api: &hidapi::HidApi) -> Result<()> {
@@ -383,36 +396,17 @@ impl DeviceTrait for RoccatBurstPro {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            match self.get_device_info() {
-                Ok(device_info) => {
-                    if device_info.firmware_version < 110 {
-                        warn!(
-                            "Outdated firmware version: {}, should be: >= 1.10",
-                            format!(
-                                "{}.{:02}",
-                                device_info.firmware_version / 100,
-                                device_info.firmware_version % 100
-                            )
-                        );
-                    }
-                }
-
-                Err(e) => {
-                    error!("Could not get firmware version: {}", e);
-                }
-            }
-
-            // self.send_ctrl_report(0x04)
-            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
-            // self.wait_for_ctrl_dev()
-            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+            self.send_ctrl_report(0x04)
+                .unwrap_or_else(|e| error!("Step 1: {}", e));
+            self.wait_for_ctrl_dev()
+                .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.send_ctrl_report(0x0e)
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
-            self.send_ctrl_report(0x0d)
+            self.send_ctrl_report(0x09)
                 .unwrap_or_else(|e| error!("Step 3: {}", e));
             self.wait_for_ctrl_dev()
                 .unwrap_or_else(|e| error!("Wait 3: {}", e));
@@ -518,73 +512,17 @@ impl DeviceTrait for RoccatBurstPro {
     }
 }
 
-impl MouseDeviceTrait for RoccatBurstPro {
+impl MouseDeviceTrait for RoccatKova2016 {
     fn get_profile(&self) -> Result<i32> {
         trace!("Querying device profile config");
 
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-            let mut buf: [u8; 64] = [0x00_u8; 64];
-            buf[0] = 0x06;
-
-            match ctrl_dev.get_feature_report(&mut buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                    Ok(())
-                }
-
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
-            }?;
-
-            Ok(buf[6] as i32)
-        }
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 
-    fn set_profile(&mut self, profile: i32) -> Result<()> {
+    fn set_profile(&mut self, _profile: i32) -> Result<()> {
         trace!("Setting device profile config");
 
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-            let mut buf: [u8; 64] = [0x00_u8; 64];
-            buf[0] = 0x06;
-
-            match ctrl_dev.get_feature_report(&mut buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                    Ok(())
-                }
-
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
-            }?;
-
-            buf[6] = profile as u8;
-
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-                    Ok(())
-                }
-
-                Err(_) => Err(HwDeviceError::InvalidResult {}),
-            }?;
-
-            Ok(())
-        }
+        Err(HwDeviceError::OpNotSupported {}.into())
     }
 
     fn get_dpi(&self) -> Result<i32> {
@@ -866,18 +804,35 @@ impl MouseDeviceTrait for RoccatBurstPro {
             let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 11] = [
-                0x0d,
-                0x0b,
+            let buf: [u8; 28] = [
+                0x06,
+                0x1c,
+                0x00,
+                0x00,
+                0x06,
+                0xff,
+                0x1f,
+                0x08,
+                0x10,
+                0x20,
+                0x46,
+                0x8c,
+                0x01,
+                0x03,
+                0x33,
+                0x00,
+                0x01,
+                0x02,
+                0x03,
                 (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                0x03,
                 (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                0x00,
-                0x00,
-                0x00,
+                0x8e,
+                0x04,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

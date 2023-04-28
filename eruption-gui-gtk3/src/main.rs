@@ -42,6 +42,7 @@ use std::{env, process};
 
 use util::RGBA;
 
+use crate::dbus_client::Zone;
 use crate::error_log::ErrorType;
 
 mod constants;
@@ -119,6 +120,9 @@ lazy_static! {
 
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
+
+    /// Per-device allocated zones on the unified canvas
+    pub static ref ZONES: Arc<Mutex<Vec<(u64, Zone)>>> = Arc::new(Mutex::new(vec![]));
 
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
@@ -198,12 +202,10 @@ Copyright (c) 2019-2023, The Eruption Development Team
 
 /// Update the global color map vector
 pub fn update_color_map() -> Result<()> {
-    let mut led_colors = dbus_client::get_led_colors()?;
+    let led_colors = dbus_client::get_led_colors()?;
 
     let mut color_map = crate::COLOR_MAP.lock();
-
-    color_map.clear();
-    color_map.append(&mut led_colors);
+    *color_map = led_colors;
 
     Ok(())
 }

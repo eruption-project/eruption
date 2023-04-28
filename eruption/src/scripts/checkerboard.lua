@@ -34,7 +34,7 @@ function on_tick(delta)
     -- calculate checkerboard effect
     if ticks % animation_delay == 0 then
         for i = 0, canvas_size - 1 do
-            local x = i / canvas_height
+            local x = i % canvas_height
             local y = i / canvas_width
 
             local val = checkerboard_noise(x / coord_scale, y / coord_scale,

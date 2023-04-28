@@ -30,12 +30,11 @@ use std::{mem::size_of, sync::Arc};
 
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
-use super::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait, HwDeviceError,
-    MiscDevice, MiscDeviceTrait, MouseDeviceTrait, RGBA,
+use crate::hwdevices::{
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
+    DeviceZoneAllocationTrait, HwDeviceError, MiscDevice, MiscDeviceTrait, MouseDeviceTrait,
+    Result, Zone, RGBA,
 };
-
-pub type Result<T> = super::Result<T>;
 
 // pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
 // pub const LED_INTERFACE: i32 = 5; // LED USB sub device
@@ -44,6 +43,7 @@ pub const LED_INTERFACE: i32 = 0; // LED USB sub device
 
 // canvas to LED index mapping
 pub const LED_0: usize = constants::CANVAS_SIZE - 1;
+pub const NUM_LEDS: usize = 1;
 
 /// Binds the driver to a device
 pub fn bind_hiddev(
@@ -51,7 +51,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> super::Result<MiscDevice> {
+) -> Result<MiscDevice> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -114,6 +114,8 @@ pub struct RoccatElo71Air {
 
     pub has_failed: bool,
 
+    pub allocated_zone: Zone,
+
     // device status
     pub device_status: DeviceStatus,
 }
@@ -135,6 +137,8 @@ impl RoccatElo71Air {
             brightness: 100,
 
             has_failed: false,
+
+            allocated_zone: Zone::defaults_for(DeviceClass::Misc),
 
             device_status: DeviceStatus(HashMap::new()),
         }
@@ -425,7 +429,7 @@ impl DeviceInfoTrait for RoccatElo71Air {
         ])
     }
 
-    fn get_device_info(&self) -> Result<super::DeviceInfo> {
+    fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
         trace!("Querying the device for information...");
 
         if !self.is_bound {
@@ -445,7 +449,7 @@ impl DeviceInfoTrait for RoccatElo71Air {
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = super::DeviceInfo::new(tmp.firmware_version as i32);
+                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
                     Ok(result)
                 }
 
@@ -464,6 +468,20 @@ impl DeviceInfoTrait for RoccatElo71Air {
         // } else {
         "<unknown>".to_string()
         // }
+    }
+}
+
+impl DeviceZoneAllocationTrait for RoccatElo71Air {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
     }
 }
 
