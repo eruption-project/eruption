@@ -838,7 +838,7 @@ version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6358dedf60f4d9b8db43ad187391afe959746101346fe51bb978126bec61dfb"
 dependencies = [
- "clap 3.2.24",
+ "clap 3.2.25",
  "heck",
  "indexmap",
  "log",
@@ -921,9 +921,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.2.24"
+version = "3.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eef2b3ded6a26dfaec672a742c93c8cf6b689220324da509ec5caa20de55dc83"
+checksum = "4ea181bf566f71cb9a5d17a59e1871af638180a18fb0035c92ae62b705207123"
 dependencies = [
  "atty",
  "bitflags",
@@ -936,9 +936,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.2.4"
+version = "4.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "956ac1f6381d8d82ab4684768f89c0ea3afe66925ceadb4eeb3fc452ffc55d62"
+checksum = "8a1f23fa97e1d1641371b51f35535cb26959b8e27ab50d167a8b996b5bada819"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -947,9 +947,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.2.4"
+version = "4.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84080e799e54cff944f4b4a4b0e71630b0e0443b25b985175c7dddc1a859b749"
+checksum = "0fdc5d93c358224b4d6867ef1356d740de2303e9892edc06c5340daeccd96bab"
 dependencies = [
  "anstream",
  "anstyle",
@@ -964,7 +964,7 @@ version = "4.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a19591b2ab0e3c04b588a0e04ddde7b9eaa423646d1b4a8092879216bf47473"
 dependencies = [
- "clap 4.2.4",
+ "clap 4.2.5",
 ]
 
 [[package]]
@@ -2031,7 +2031,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "color-eyre",
  "colorgrad",
  "config",
@@ -2106,7 +2106,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2146,7 +2146,7 @@ name = "eruption-cmd"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2180,7 +2180,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2220,7 +2220,7 @@ version = "0.0.4"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2322,7 +2322,7 @@ version = "0.1.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2354,7 +2354,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2397,7 +2397,7 @@ version = "0.0.8"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2444,7 +2444,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2493,7 +2493,7 @@ name = "eruption-netfx"
 version = "0.1.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2538,7 +2538,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "config",
@@ -2606,7 +2606,7 @@ version = "0.0.12"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2643,7 +2643,7 @@ version = "0.0.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2675,7 +2675,7 @@ name = "eruptionctl"
 version = "0.1.5"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -3590,7 +3590,7 @@ dependencies = [
 [[package]]
 name = "hidapi"
 version = "2.2.2"
-source = "git+https://github.com/ruabmbua/hidapi-rs.git?rev=a842fd6#a842fd6036859d1b3c038ee289ebbb12b80751b9"
+source = "git+https://github.com/ruabmbua/hidapi-rs.git?rev=923a371#923a3712c5ae39574d7384879cf3caf208195d70"
 dependencies = [
  "cc",
  "libc",
@@ -4305,9 +4305,9 @@ checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36eb31c1778188ae1e64398743890d0877fef36d11521ac60406b42016e8c2cf"
+checksum = "2e8776872cdc2f073ccaab02e336fa321328c1e02646ebcb9d2108d0baab480d"
 
 [[package]]
 name = "locale_config"
@@ -4561,18 +4561,28 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.9.0-beta.1"
+version = "0.9.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4637b5d52087ee1932c5d288e6dc4d348dd7463f716f188e814392a49c01b03c"
+checksum = "d834c2e0071ef61af008ad91587e1bec2df473df15e6ca3938216aa63d868a73"
 dependencies = [
  "bstr",
- "cc",
- "lua-src",
- "luajit-src",
+ "mlua-sys",
  "num-traits",
  "once_cell",
- "pkg-config",
  "rustc-hash",
+]
+
+[[package]]
+name = "mlua-sys"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8dacf59a60b5dc5290a955ab9ec46b7026327b5bfa9e94d9d824d0071137c80e"
+dependencies = [
+ "cc",
+ "cfg-if 1.0.0",
+ "lua-src",
+ "luajit-src",
+ "pkg-config",
 ]
 
 [[package]]
@@ -5517,7 +5527,7 @@ dependencies = [
  "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "clap_complete",
  "color-eyre",
  "config",
@@ -6370,7 +6380,7 @@ name = "simple-example-01"
 version = "0.0.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.2.4",
+ "clap 4.2.5",
  "color-eyre",
  "eruption-sdk",
  "eyre",

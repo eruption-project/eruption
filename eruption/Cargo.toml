@@ -68,13 +68,13 @@ systemd = "0.10.0"
 tokio = { version = "1.28.0", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.2", features = ["all"] }
 ctrlc = { version = "3.2.5", features = ["termination"] }
-clap = "4.2.4"
+clap = "4.2.5"
 hotwatch = "0.4.6"
 config = "0.13.3"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 thiserror = "1.0.40"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "923a371", default-features = false, features = ["linux-native"] }
 udev = "0.7"
 evdev-rs = "0.6.1"
 hexdump = "0.1.1"
@@ -93,7 +93,7 @@ simdnoise = "3.1.6"
 # lua-src = "544.0.1"
 # mlua = { version = "0.8.8", features = ["lua54", "vendored"] }
 luajit-src = "210.4.5"
-mlua = { version = "0.9.0-beta.1", features = ["luajit52", "vendored"] }
+mlua = { version = "0.9.0-beta.2", features = ["luajit52", "vendored"] }
 sysinfo = "0.28.4"
 bincode = "2.0.0-rc.3"
 rustfft = "6.1.0"
