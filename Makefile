@@ -90,7 +90,7 @@ install:
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	-@systemctl daemon-reload
-	
+
 	@/usr/bin/systemd-sysusers
 
 	@echo "Commencing installation of Eruption..."
@@ -362,4 +362,5 @@ clean:
 test:
 	@cargo test
 
+.SILENT: check clean all start stop install uninstall build test
 .PHONY: check clean all start stop install uninstall build test
