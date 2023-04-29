@@ -79,6 +79,7 @@ impl DbusApi {
                         .add_p(
                             f.property::<bool, _>("AmbientEffect", ())
                                 .emits_changed(EmitsChangedSignal::True)
+                                .auto_emit_on_set(true)
                                 .access(Access::ReadWrite)
                                 .on_get(|i, _m| {
                                     i.append(crate::ENABLE_AMBIENT_EFFECT.load(Ordering::SeqCst));

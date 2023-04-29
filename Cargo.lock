@@ -2217,7 +2217,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-fx-proxy"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",

@@ -28,6 +28,12 @@ use image::{imageops::FilterType, DynamicImage, GenericImageView, ImageBuffer, R
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
+#[derive(Debug, thiserror::Error)]
+pub enum UtilError {
+    // #[error("Invalid argument")]
+    // InvalidArgument {},
+}
+
 /// Converts an image buffer to fit a specific device topology
 pub fn process_image_buffer(
     buffer: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -49,7 +55,10 @@ pub fn process_image_buffer(
 
     for x in 0..num_cols {
         for y in 0..num_rows {
-            let key_index: usize = (rows_topology[x + (y * (num_cols + 1))]) as usize + 1;
+            let key_index: usize = *rows_topology
+                .get(x + (y * (num_cols + 1)) as usize)
+                .unwrap_or(&0) as usize
+                + 1;
 
             if !(1..=num_keys).contains(&key_index) {
                 continue;
