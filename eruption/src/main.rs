@@ -887,14 +887,14 @@ fn run_main_loop(
                     .send(DbusApiEvent::ActiveProfileChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
-
                 if let Err(e) = switch_profile(None, dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 }
 
                 FAILED_TXS.write().clear();
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
             }
         }
 
@@ -906,9 +906,6 @@ fn run_main_loop(
                     .send(DbusApiEvent::ActiveSlotChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
-
                 let profile_path = {
                     let slot_profiles = SLOT_PROFILES.lock();
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
@@ -918,6 +915,9 @@ fn run_main_loop(
 
                 saved_slot = active_slot;
                 FAILED_TXS.write().clear();
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
             }
         }
 
@@ -1000,9 +1000,6 @@ fn run_main_loop(
                     .send(DbusApiEvent::ActiveProfileChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
-
                 let profile_path = Path::new(active_profile);
 
                 if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
@@ -1010,6 +1007,9 @@ fn run_main_loop(
                 }
 
                 FAILED_TXS.write().clear();
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
             }
 
             *ACTIVE_PROFILE_NAME.lock() = None;
@@ -1024,9 +1024,6 @@ fn run_main_loop(
                 //     .send(DbusApiEvent::ActiveProfileChanged)
                 //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
-
                 let active_profile = ACTIVE_PROFILE.lock();
                 let profile_clone = active_profile.clone();
                 // ACTIVE_PROFILE.lock() needs to be released here, or otherwise we will deadlock
@@ -1040,6 +1037,9 @@ fn run_main_loop(
                 }
 
                 REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
+
+                // reset the audio backend, it will be enabled again if needed
+                plugins::audio::reset_audio_backend();
             }
         }
 

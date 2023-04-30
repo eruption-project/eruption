@@ -49,8 +49,8 @@ impl ConfigInterface {
 
         let enable_sfx_property = Arc::new(
             f.property::<bool, _>("EnableSfx", ())
-                .emits_changed(EmitsChangedSignal::True)
                 .access(Access::ReadWrite)
+                .emits_changed(EmitsChangedSignal::True)
                 .auto_emit_on_set(true)
                 .on_get_with_permission(Permission::Monitor, get_enable_sfx)
                 .on_set_with_permission(Permission::Settings, set_enable_sfx),
@@ -58,8 +58,8 @@ impl ConfigInterface {
 
         let brightness_property = Arc::new(
             f.property::<i64, _>("Brightness", ())
-                .emits_changed(EmitsChangedSignal::True)
                 .access(Access::ReadWrite)
+                .emits_changed(EmitsChangedSignal::True)
                 .auto_emit_on_set(true)
                 .on_get_with_permission(Permission::Monitor, get_brightness)
                 .on_set_with_permission(Permission::Settings, set_brightness),
