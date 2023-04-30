@@ -149,7 +149,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
@@ -174,7 +174,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
@@ -199,7 +199,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(&builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
 
         index += 1;
     }
@@ -440,7 +440,7 @@ fn populate_canvas_stack_widget_for_device(builder: &Builder, title: &str) -> Re
 
     scrolled_window.show_all();
 
-    stack_widget.add_titled(&scrolled_window, "Device", &title);
+    stack_widget.add_titled(&scrolled_window, "Device", title);
 
     scrolled_window.show_all();
 
@@ -471,7 +471,7 @@ fn render_canvas(
 
         // draw allocated zones
         for (device, zone) in crate::ZONES.lock().iter() {
-            paint_zone(&context, &layout, *device, &zone, scale_factor)?;
+            paint_zone(context, &layout, *device, zone, scale_factor)?;
         }
 
         Ok(())
@@ -558,7 +558,7 @@ fn paint_zone(
             let color2 = (0.8, 0.7, 0.55, 0.25);
 
             rounded_rectangle(
-                &cr,
+                cr,
                 cell_def.x,
                 cell_def.y,
                 cell_def.width,
@@ -650,7 +650,7 @@ fn paint_cell(
     );
 
     rounded_rectangle(
-        &cr,
+        cr,
         cell_def.x,
         cell_def.y,
         cell_def.width,

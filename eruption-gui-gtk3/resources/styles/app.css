@@ -44,6 +44,13 @@ window {
   text-shadow: gray 0px 0px 2px;
 }
 
+.heading.sub {
+  font-size: larger;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: gray 0px 0px 2px;
+}
+
 .heading_large {
   font-size: 3.55rem;
   font-weight: bold;

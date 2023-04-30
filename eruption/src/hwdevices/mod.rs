@@ -700,7 +700,7 @@ impl dbus::arg::Arg for Zone {
 
 impl dbus::arg::Append for Zone {
     fn append_by_ref(&self, i: &mut dbus::arg::IterAppend) {
-        i.append(&(self.x, self.y, self.width, self.height));
+        i.append((self.x, self.y, self.width, self.height));
     }
 }
 
@@ -755,7 +755,7 @@ impl Zone {
 
     #[inline]
     pub fn cell_count(&self) -> usize {
-        (self.width * self.height).abs() as usize
+        (self.width * self.height).unsigned_abs() as usize
     }
 
     #[inline]

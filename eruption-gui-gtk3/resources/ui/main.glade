@@ -235,8 +235,8 @@ The Eruption Development Team
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkStatusbar" id="status_bar">
-            <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
             <style>
               <class name="notification-bar"/>
             </style>

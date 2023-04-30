@@ -678,21 +678,17 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     );
 
     // special options
-    ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
-
     ambientfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |sw, enabled| {
-            util::set_ambient_effect(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); sw.set_state(false); });
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+            util::set_ambient_effect(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); });
 
             gtk::Inhibit(false)
         }),
     );
 
-    soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
-
     soundfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |sw, enabled| {
-            util::set_sound_fx(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); sw.set_state(false); });
+        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+            util::set_sound_fx(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); });
 
             gtk::Inhibit(false)
         }),
@@ -744,6 +740,18 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     initialize_sub_pages_and_spawn_dbus_threads(application, &builder);
 
     main_window.show_all();
+
+    // should we update the GUI, e.g. were new devices attached?
+    timers::register_timer(
+        timers::GLOBAL_CONFIG_TIMER_ID,
+        1500,
+        clone!(@weak application, @weak ambientfx_switch, @weak soundfx_switch => @default-return Ok(()), move || {
+            ambientfx_switch.set_active(util::get_ambient_fx().unwrap_or(false));
+            soundfx_switch.set_active(util::get_sound_fx().unwrap_or(false));
+
+            Ok(())
+        }),
+    )?;
 
     // should we update the GUI, e.g. were new devices attached?
     timers::register_timer(

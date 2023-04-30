@@ -515,10 +515,10 @@ pub fn get_allocated_zones() -> Result<Vec<(u64, Zone)>> {
             (
                 v.0,
                 Zone {
-                    x: v.1 .0 as i32,
-                    y: v.1 .1 as i32,
-                    width: v.1 .2 as i32,
-                    height: v.1 .3 as i32,
+                    x: v.1 .0,
+                    y: v.1 .1,
+                    width: v.1 .2,
+                    height: v.1 .3,
                 },
             )
         })
@@ -594,7 +594,7 @@ impl Zone {
 
     #[inline]
     pub fn cell_count(&self) -> usize {
-        (self.width * self.height).abs() as usize
+        (self.width * self.height).unsigned_abs() as usize
     }
 
     #[inline]

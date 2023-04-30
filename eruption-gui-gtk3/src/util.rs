@@ -525,10 +525,10 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
 
 /// Returns true when AmbientFX is enabled
 pub fn get_ambient_fx() -> Result<bool> {
-    let conn = Connection::new_system()?;
+    let conn = Connection::new_session()?;
     let proxy = conn.with_proxy(
         "org.eruption.fx_proxy",
-        "/org/eruption/config",
+        "/org/eruption/fx_proxy/effects",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 

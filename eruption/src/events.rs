@@ -19,6 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use crate::util::ratelimited;
 use crate::{
     constants, dbus_interface, events, macros, script, switch_profile, DbusApiEvent,
     FileSystemEvent, KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, ACTIVE_SLOT,
@@ -32,7 +33,7 @@ use crate::{
 use flume::Sender;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
-use tracing::{error, info, trace, warn};
+use tracing::{error, info, trace};
 
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -209,7 +210,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                                 error!("Could not send a pending HID event to a Lua VM: {}", e)
                             });
                     } else {
-                        warn!("Not sending a message to a failed tx");
+                        ratelimited::warn!("Not sending a message to a failed tx");
                     }
                 }
 
@@ -255,7 +256,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                                         });
                                 } else {
-                                    warn!("Not sending a message to a failed tx");
+                                    ratelimited::warn!("Not sending a message to a failed tx");
                                 }
                             }
 
@@ -309,7 +310,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                                         },
                                     );
                                 } else {
-                                    warn!("Not sending a message to a failed tx");
+                                    ratelimited::warn!("Not sending a message to a failed tx");
                                 }
                             }
 
@@ -396,7 +397,7 @@ pub fn process_mouse_hid_events(mouse_device: &MouseDevice) -> Result<()> {
                                 error!("Could not send a pending HID event to a Lua VM: {}", e)
                             });
                     } else {
-                        warn!("Not sending a message to a failed tx");
+                        ratelimited::warn!("Not sending a message to a failed tx");
                     }
                 }
 
@@ -511,7 +512,7 @@ pub fn process_mouse_event(
                             // reset relative motion buffer, since it has been submitted
                             *MOUSE_MOTION_BUF.write() = (0, 0, 0);
                         } else {
-                            warn!("Not sending a message to a failed tx");
+                            ratelimited::warn!("Not sending a message to a failed tx");
                         }
                     }
 
@@ -585,7 +586,7 @@ pub fn process_mouse_event(
                                 error!("Could not send a pending mouse event to a Lua VM: {}", e)
                             });
                     } else {
-                        warn!("Not sending a message to a failed tx");
+                        ratelimited::warn!("Not sending a message to a failed tx");
                     }
                 }
 
@@ -638,7 +639,7 @@ pub fn process_mouse_event(
                             error!("Could not send a pending mouse event to a Lua VM: {}", e)
                         });
                 } else {
-                    warn!("Not sending a message to a failed tx");
+                    ratelimited::warn!("Not sending a message to a failed tx");
                 }
             }
 
@@ -679,7 +680,7 @@ pub fn process_mouse_event(
                             error!("Could not send a pending mouse event to a Lua VM: {}", e)
                         });
                 } else {
-                    warn!("Not sending a message to a failed tx");
+                    ratelimited::warn!("Not sending a message to a failed tx");
                 }
             }
 
@@ -876,7 +877,7 @@ pub fn process_keyboard_event(
                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                         });
                 } else {
-                    warn!("Not sending a message to a failed tx");
+                    ratelimited::warn!("Not sending a message to a failed tx");
                 }
             }
 
@@ -918,7 +919,7 @@ pub fn process_keyboard_event(
                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
                         });
                 } else {
-                    warn!("Not sending a message to a failed tx");
+                    ratelimited::warn!("Not sending a message to a failed tx");
                 }
             }
 

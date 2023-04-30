@@ -33,7 +33,7 @@ pub enum NotificationType {
     Info,
 }
 
-pub fn show_notification(message: &str, notification_type: NotificationType) {
+pub fn show_notification(_message: &str, _notification_type: NotificationType) {
     // let notification = match notification_type {
     //     NotificationType::Error => todo!(),
     //     NotificationType::Warning => todo!(),

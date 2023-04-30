@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.2.2"
+version = "0.2.3"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",

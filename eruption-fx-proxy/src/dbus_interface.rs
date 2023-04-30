@@ -65,7 +65,7 @@ impl DbusApi {
 
         let status_changed_signal =
             Arc::new(f.signal("StatusChanged", ()).sarg::<&str, _>("event"));
-        let status_changed_signal_0 = status_changed_signal.clone();
+        // let status_changed_signal_0 = status_changed_signal.clone();
         let status_changed_signal_1 = status_changed_signal.clone();
         let status_changed_signal_2 = status_changed_signal.clone();
         let status_changed_signal_clone = status_changed_signal;
@@ -88,11 +88,11 @@ impl DbusApi {
                                 .on_set(move |i, _m| {
                                     crate::ENABLE_AMBIENT_EFFECT.store(i.read()?, Ordering::SeqCst);
 
-                                    status_changed_signal_0.emit(
-                                        &"/org/eruption/fx_proxy/effects".into(),
-                                        &"org.eruption.fx_proxy.Effects".into(),
-                                        &["EnableAmbient"],
-                                    );
+                                    // status_changed_signal_0.emit(
+                                    //     &"/org/eruption/fx_proxy/effects".into(),
+                                    //     &"org.eruption.fx_proxy.Effects".into(),
+                                    //     &["EnableAmbient"],
+                                    // );
 
                                     Ok(())
                                 }),
