@@ -223,7 +223,7 @@ The Eruption Development Team
   </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can-focus">False</property>
-    <property name="window-position">center</property>
+    <property name="window-position">center-always</property>
     <property name="default-width">1440</property>
     <property name="default-height">768</property>
     <property name="icon-name">/org/eruption/eruption-gui-gtk3/img/eruption-gui.png</property>
@@ -283,10 +283,7 @@ The Eruption Development Team
           <object class="GtkStack" id="main_stack">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="hhomogeneous">False</property>
-            <property name="vhomogeneous">False</property>
-            <property name="transition-duration">100</property>
-            <property name="transition-type">crossfade</property>
+            <property name="transition-type">slide-left-right</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -298,6 +295,7 @@ The Eruption Development Team
                     <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
+                    <property name="transition-type">slide-left-right</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <object class="GtkBox">
@@ -567,6 +565,8 @@ The Eruption Development Team
                   <object class="GtkStackSwitcher" id="canvas_switcher">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
                     <property name="stack">canvas_stack</property>
                   </object>
                   <packing>
@@ -1064,7 +1064,7 @@ The Eruption Development Team
                       <object class="GtkScrolledWindow" id="config_window">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="overlay-scrolling">False</property>
+                        <property name="propagate-natural-height">True</property>
                       </object>
                     </child>
                     <child type="tab">
@@ -1086,7 +1086,7 @@ The Eruption Development Team
                           <object class="GtkStack" id="profile_stack">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="transition-type">under-down</property>
+                            <property name="transition-type">crossfade</property>
                             <child>
                               <placeholder/>
                             </child>
@@ -1114,7 +1114,6 @@ The Eruption Development Team
                                     <property name="margin-start">8</property>
                                     <property name="margin-end">8</property>
                                     <property name="margin-top">8</property>
-                                    <property name="margin-bottom">8</property>
                                     <property name="stack">profile_stack</property>
                                   </object>
                                 </child>
@@ -2245,7 +2244,6 @@ The Eruption Development Team
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Eruption GUI</property>
-        <property name="spacing">8</property>
         <property name="show-close-button">True</property>
         <child>
           <object class="GtkSeparator">
