@@ -20,11 +20,11 @@
 */
 
 window {
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.65);
 }
 
 .client {
-  padding: 16px;
+  padding: 8px;
   background-image: -gtk-gradient(linear, 0 0, 0 1,
       color-stop(0, rgba(80, 80, 80, 0.85)),
       color-stop(1, rgba(59, 59, 59, 0.85)));
@@ -64,6 +64,58 @@ window {
   text-shadow: gray 0px 0px 2px;
 }
 
+box .notification-box {
+  margin: 0px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+box.notification-box.error {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #ff5722),
+      color-stop(1, #f44336));
+}
+
+box.notification-box.warning {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #d8be28),
+      color-stop(1, #a5901a));
+}
+
+
+statusbar.notification-bar.error {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #ff5722),
+      color-stop(1, #f44336));
+}
+
+statusbar.notification-bar.warning {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #d8be28),
+      color-stop(1, #a5901a));
+}
+
+statusbar.notification-bar.info {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #3cff22),
+      color-stop(1, #00a008));
+}
+
+statusbar.notification-bar {
+  margin: 0px;
+  padding: 0px;
+  border-radius: 8px;
+}
+
+.header-bar {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, rgba(128, 128, 128, 0.85)),
+      color-stop(1, rgba(94, 94, 94, 0.85)));
+
+  padding: 12px;
+  border-radius: 8px;
+}
+
 .small-font {
   font-size: small;
 }
@@ -82,7 +134,7 @@ window {
   background: rgba(141, 141, 141, 0.24);
 }
 
-.slot_indicator combobox {
+.slot_indicator ComboBox {
   font-size: small;
 }
 
@@ -90,7 +142,7 @@ window {
   font-size: large;
 }
 
-.slot_indicator.active radiobutton {
+.slot_indicator.active RadioButton {
   border-style: none !important;
 }
 

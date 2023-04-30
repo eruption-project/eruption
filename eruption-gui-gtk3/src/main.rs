@@ -49,6 +49,7 @@ mod constants;
 mod dbus_client;
 mod device;
 mod error_log;
+mod notifications;
 mod preferences;
 mod profiles;
 mod scripting;

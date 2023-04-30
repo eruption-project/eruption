@@ -234,6 +234,20 @@ The Eruption Development Team
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
+          <object class="GtkStatusbar" id="status_bar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <style>
+              <class name="notification-bar"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkBox" id="notification_box_global">
             <property name="can-focus">False</property>
             <property name="no-show-all">True</property>
@@ -269,14 +283,15 @@ The Eruption Development Team
               </packing>
             </child>
             <style>
-              <class name="notification-bar"/>
+              <class name="notification-box"/>
+              <class name="error"/>
             </style>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="padding">8</property>
-            <property name="position">0</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -332,7 +347,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Unified Canvas</property>
+                                    <property name="label" translatable="yes">Canvas Setup</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
                                       <attribute name="scale" value="2"/>
@@ -436,11 +451,15 @@ The Eruption Development Team
                                     <property name="can-focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="valign">end</property>
-                                    <property name="label" translatable="yes">Post Processing Filter</property>
+                                    <property name="label" translatable="yes">Image post-processing</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
                                       <attribute name="scale" value="1"/>
                                     </attributes>
+                                    <style>
+                                      <class name="heading"/>
+                                      <class name="sub"/>
+                                    </style>
                                   </object>
                                   <packing>
                                     <property name="left-attach">1</property>
@@ -500,10 +519,10 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">end</property>
-                                    <property name="label" translatable="yes">Device Zone Allocation</property>
+                                    <property name="label" translatable="yes">Device zone allocation</property>
                                     <style>
                                       <class name="heading"/>
-                                      <class name="small"/>
+                                      <class name="sub"/>
                                     </style>
                                   </object>
                                   <packing>
@@ -551,7 +570,7 @@ The Eruption Development Team
                       </object>
                       <packing>
                         <property name="name">page0</property>
-                        <property name="title" translatable="yes">Unified Canvas</property>
+                        <property name="title" translatable="yes">Overview</property>
                       </packing>
                     </child>
                   </object>
@@ -592,6 +611,7 @@ The Eruption Development Team
                   <object class="GtkStack" id="keyboard_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="transition-type">slide-left-right</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>
@@ -633,6 +653,7 @@ The Eruption Development Team
                   <object class="GtkStack" id="mouse_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="transition-type">slide-left</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>
@@ -674,6 +695,7 @@ The Eruption Development Team
                   <object class="GtkStack" id="misc_devices_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="transition-type">slide-left-right</property>
                     <property name="interpolate-size">True</property>
                     <child>
                       <placeholder/>
@@ -747,7 +769,8 @@ The Eruption Development Team
                       </packing>
                     </child>
                     <style>
-                      <class name="notification-bar"/>
+                      <class name="notification-box"/>
+                      <class name="warning"/>
                     </style>
                   </object>
                   <packing>
@@ -916,6 +939,9 @@ The Eruption Development Team
                             <property name="position">1</property>
                           </packing>
                         </child>
+                        <style>
+                          <class name="header-bar"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1244,6 +1270,9 @@ The Eruption Development Team
                         <property name="position">2</property>
                       </packing>
                     </child>
+                    <style>
+                      <class name="header-bar"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1647,7 +1676,7 @@ The Eruption Development Team
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -1755,7 +1784,7 @@ The Eruption Development Team
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -2231,7 +2260,7 @@ The Eruption Development Team
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <style>

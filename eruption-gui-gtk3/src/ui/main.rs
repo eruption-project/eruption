@@ -670,9 +670,12 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }
     });
 
-    restart_eruption_daemon_button.connect_clicked(clone!(@weak builder => move |_| {
-        util::restart_eruption_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
-    }));
+    restart_eruption_daemon_button.connect_clicked(
+        clone!(@weak application, @weak builder => move |_| {
+            util::restart_eruption_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
+            initialize_main_window(&application).unwrap_or_else(|e| tracing::error!("{}", e));
+        }),
+    );
 
     // special options
     ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
