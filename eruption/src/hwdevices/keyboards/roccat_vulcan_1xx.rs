@@ -21,7 +21,6 @@
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{Array2, Order};
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;

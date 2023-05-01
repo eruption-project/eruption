@@ -55,10 +55,8 @@ pub fn process_image_buffer(
 
     for x in 0..num_cols {
         for y in 0..num_rows {
-            let key_index: usize = *rows_topology
-                .get(x + (y * (num_cols + 1)))
-                .unwrap_or(&0) as usize
-                + 1;
+            let key_index: usize =
+                *rows_topology.get(x + (y * (num_cols + 1))).unwrap_or(&0) as usize + 1;
 
             if !(1..=num_keys).contains(&key_index) {
                 continue;

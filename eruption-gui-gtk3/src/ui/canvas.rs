@@ -547,10 +547,10 @@ fn paint_zone(
     for y in zone.y..zone.y2() {
         for x in zone.x..zone.x2() {
             let cell_def = Rectangle {
-                x: BORDER.0 + (x as f64 * PIXEL_SIZE) as f64 * scale_factor,
-                y: BORDER.1 + (y as f64 * PIXEL_SIZE) as f64 * scale_factor,
-                width: PIXEL_SIZE as f64 * scale_factor,
-                height: PIXEL_SIZE as f64 * scale_factor,
+                x: BORDER.0 + (x as f64 * PIXEL_SIZE) * scale_factor,
+                y: BORDER.1 + (y as f64 * PIXEL_SIZE) * scale_factor,
+                width: PIXEL_SIZE * scale_factor,
+                height: PIXEL_SIZE * scale_factor,
             };
 
             // use a translucent color to paint the zone
@@ -573,8 +573,8 @@ fn paint_zone(
     // draw caption
     cr.set_source_rgba(0.21, 0.21, 0.21, 0.65);
     cr.move_to(
-        BORDER.0 + (zone.x as f64 * (PIXEL_SIZE as f64) * scale_factor) + 15.0,
-        BORDER.1 + (zone.y as f64 * (PIXEL_SIZE as f64) * scale_factor),
+        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor) + 15.0,
+        BORDER.1 + (zone.y as f64 * PIXEL_SIZE * scale_factor),
     );
 
     layout.set_text(&format!("{}", device));
@@ -593,8 +593,8 @@ fn paint_cell(
     _height: f64,
     scale_factor: f64,
 ) -> Result<()> {
-    let xval = ((cell_index % constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE) as f64;
-    let yval = ((cell_index / constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE) as f64;
+    let xval = (cell_index % constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE;
+    let yval = (cell_index / constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE;
 
     let cell_def = Rectangle {
         x: BORDER.0 + xval * scale_factor,
