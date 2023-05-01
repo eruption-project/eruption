@@ -36,7 +36,7 @@ use super::mice;
 use super::misc;
 
 const BORDER: (f64, f64) = (8.0, 8.0);
-const PIXEL_SIZE: usize = 4;
+const PIXEL_SIZE: f64 = 3.5;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -547,8 +547,8 @@ fn paint_zone(
     for y in zone.y..zone.y2() {
         for x in zone.x..zone.x2() {
             let cell_def = Rectangle {
-                x: BORDER.0 + (x * PIXEL_SIZE as i32) as f64 * scale_factor,
-                y: BORDER.1 + (y * PIXEL_SIZE as i32) as f64 * scale_factor,
+                x: BORDER.0 + (x as f64 * PIXEL_SIZE) as f64 * scale_factor,
+                y: BORDER.1 + (y as f64 * PIXEL_SIZE) as f64 * scale_factor,
                 width: PIXEL_SIZE as f64 * scale_factor,
                 height: PIXEL_SIZE as f64 * scale_factor,
             };
@@ -561,9 +561,9 @@ fn paint_zone(
                 cr,
                 cell_def.x,
                 cell_def.y,
-                cell_def.width,
-                cell_def.height,
-                4.0,
+                cell_def.width - 4.0,
+                cell_def.height - 4.0,
+                12.0,
                 &color,
                 &color2,
             )?;
@@ -573,7 +573,7 @@ fn paint_zone(
     // draw caption
     cr.set_source_rgba(0.21, 0.21, 0.21, 0.65);
     cr.move_to(
-        BORDER.0 + (zone.x as f64 * (PIXEL_SIZE as f64) * scale_factor) + 20.0,
+        BORDER.0 + (zone.x as f64 * (PIXEL_SIZE as f64) * scale_factor) + 15.0,
         BORDER.1 + (zone.y as f64 * (PIXEL_SIZE as f64) * scale_factor),
     );
 
@@ -593,14 +593,14 @@ fn paint_cell(
     _height: f64,
     scale_factor: f64,
 ) -> Result<()> {
-    let xval = (cell_index % constants::CANVAS_WIDTH * PIXEL_SIZE) as f64;
-    let yval = (cell_index / constants::CANVAS_WIDTH * PIXEL_SIZE) as f64;
+    let xval = ((cell_index % constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE) as f64;
+    let yval = ((cell_index / constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE) as f64;
 
     let cell_def = Rectangle {
         x: BORDER.0 + xval * scale_factor,
         y: BORDER.1 + yval * scale_factor,
-        width: PIXEL_SIZE as f64 * scale_factor,
-        height: PIXEL_SIZE as f64 * scale_factor,
+        width: PIXEL_SIZE * scale_factor,
+        height: PIXEL_SIZE * scale_factor,
     };
 
     // post-process color
@@ -653,9 +653,9 @@ fn paint_cell(
         cr,
         cell_def.x,
         cell_def.y,
-        cell_def.width,
-        cell_def.height,
-        4.0,
+        cell_def.width - 3.0,
+        cell_def.height - 3.0,
+        12.0,
         &color1,
         &color2,
     )?;

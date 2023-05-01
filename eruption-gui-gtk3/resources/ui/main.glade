@@ -215,12 +215,6 @@ The Eruption Development Team
     <property name="icon-name">reload</property>
     <property name="use-fallback">True</property>
   </object>
-  <object class="GtkImage" id="save_all_image">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">document-save</property>
-    <property name="use-fallback">True</property>
-  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can-focus">False</property>
     <property name="window-position">center-always</property>
@@ -256,6 +250,9 @@ The Eruption Development Team
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Connection to the Eruption daemon failed</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
                 <style>
                   <class name="notification"/>
                 </style>
@@ -298,7 +295,7 @@ The Eruption Development Team
           <object class="GtkStack" id="main_stack">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="transition-type">slide-left-right</property>
+            <property name="transition-type">crossfade</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -347,7 +344,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Canvas Setup</property>
+                                    <property name="label" translatable="yes">Unified Canvas Setup</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
                                       <attribute name="scale" value="2"/>
@@ -450,7 +447,7 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">end</property>
-                                    <property name="valign">end</property>
+                                    <property name="valign">center</property>
                                     <property name="label" translatable="yes">Image post-processing</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
@@ -519,7 +516,12 @@ The Eruption Development Team
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="halign">end</property>
+                                    <property name="valign">end</property>
                                     <property name="label" translatable="yes">Device zone allocation</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="scale" value="1"/>
+                                    </attributes>
                                     <style>
                                       <class name="heading"/>
                                       <class name="sub"/>
@@ -570,7 +572,7 @@ The Eruption Development Team
                       </object>
                       <packing>
                         <property name="name">page0</property>
-                        <property name="title" translatable="yes">Overview</property>
+                        <property name="title" translatable="yes">Canvas Setup</property>
                       </packing>
                     </child>
                   </object>
@@ -591,14 +593,13 @@ The Eruption Development Team
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="padding">8</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="name">page0</property>
-                <property name="title" translatable="yes">Unified Canvas</property>
+                <property name="title" translatable="yes">Unified Canvas Setup</property>
                 <property name="icon-name">document-page-setup-symbolic</property>
               </packing>
             </child>
@@ -742,6 +743,9 @@ The Eruption Development Team
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Connection to eruption-process-monitor daemon failed</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
                         <style>
                           <class name="notification"/>
                         </style>
@@ -770,7 +774,7 @@ The Eruption Development Team
                     </child>
                     <style>
                       <class name="notification-box"/>
-                      <class name="warning"/>
+                      <class name="error"/>
                     </style>
                   </object>
                   <packing>
@@ -1084,14 +1088,18 @@ The Eruption Development Team
                   <object class="GtkNotebook">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="show-border">False</property>
                     <property name="scrollable">True</property>
+                    <property name="enable-popup">True</property>
                     <child>
                       <object class="GtkScrolledWindow" id="config_window">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
                         <property name="propagate-natural-height">True</property>
                       </object>
+                      <packing>
+                        <property name="tab-fill">False</property>
+                      </packing>
                     </child>
                     <child type="tab">
                       <object class="GtkLabel">
@@ -1127,19 +1135,26 @@ The Eruption Development Team
                           <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
                             <property name="vscrollbar-policy">never</property>
                             <property name="propagate-natural-width">True</property>
                             <child>
                               <object class="GtkViewport">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">baseline</property>
                                 <child>
                                   <object class="GtkStackSwitcher" id="profile_stack_switcher">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">end</property>
                                     <property name="margin-start">8</property>
                                     <property name="margin-end">8</property>
                                     <property name="margin-top">8</property>
+                                    <property name="margin-bottom">8</property>
                                     <property name="stack">profile_stack</property>
                                   </object>
                                 </child>
@@ -1148,7 +1163,8 @@ The Eruption Development Team
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">True</property>
+                            <property name="fill">False</property>
+                            <property name="pack-type">end</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -1169,36 +1185,7 @@ The Eruption Development Team
                       </packing>
                     </child>
                     <child type="action-end">
-                      <object class="GtkButtonBox" id="buffer_button_box">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="layout-style">end</property>
-                        <child>
-                          <object class="GtkButton" id="save_all_button">
-                            <property name="label" translatable="yes">Save all</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="focus-on-click">False</property>
-                            <property name="receives-default">True</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-end">4</property>
-                            <property name="margin-top">4</property>
-                            <property name="margin-bottom">4</property>
-                            <property name="action-name">app.save-all-buffers</property>
-                            <property name="image">save_all_image</property>
-                            <property name="always-show-image">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                            <property name="secondary">True</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="tab-fill">False</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -1232,7 +1219,7 @@ The Eruption Development Team
                         <property name="can-focus">False</property>
                         <property name="halign">end</property>
                         <property name="margin-end">8</property>
-                        <property name="label" translatable="yes">Eruption Settings</property>
+                        <property name="label" translatable="yes">Global Settings</property>
                         <property name="single-line-mode">True</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
@@ -1667,7 +1654,7 @@ The Eruption Development Team
               </object>
               <packing>
                 <property name="name">page6</property>
-                <property name="title" translatable="yes">Settings</property>
+                <property name="title" translatable="yes">Global Settings</property>
                 <property name="icon-name">system-run-symbolic</property>
                 <property name="position">6</property>
               </packing>
@@ -1791,15 +1778,11 @@ The Eruption Development Team
           <object class="GtkBox" id="slot_bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">8</property>
-            <property name="spacing">16</property>
-            <property name="homogeneous">True</property>
             <property name="baseline-position">bottom</property>
             <child>
               <object class="GtkFrame" id="slot1_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -1913,7 +1896,6 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot2_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -2028,7 +2010,6 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot3_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -2143,7 +2124,6 @@ The Eruption Development Team
               <object class="GtkFrame" id="slot4_frame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">16</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
@@ -2260,6 +2240,7 @@ The Eruption Development Team
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="pack-type">end</property>
             <property name="position">4</property>
           </packing>
         </child>

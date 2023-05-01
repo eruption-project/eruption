@@ -20,55 +20,67 @@
 */
 
 window {
+  color: whitesmoke;
   background-color: rgba(0, 0, 0, 0.65);
 }
 
 .client {
   padding: 8px;
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, rgba(80, 80, 80, 0.85)),
-      color-stop(1, rgba(59, 59, 59, 0.85)));
+
+  /* background:
+    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+    linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+  background-color: #333131;
+  background-size: 20px 20px; */
+
+  background-image: -gtk-gradient(linear, 0 0, 1 1,
+      color-stop(0, rgb(49, 49, 49)),
+      color-stop(1, rgb(29, 29, 29)));
 }
 
 .icon {
   font-size: xx-large;
   margin-left: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: whitesmoke;
 }
 
 .heading {
   font-size: x-large;
   font-weight: bold;
   margin-left: 8px;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 0px 0px 2px;
+  color: whitesmoke;
+  text-shadow: gray 0px 0px 3px;
 }
 
 .heading.sub {
   font-size: larger;
   font-weight: normal;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 0px 0px 2px;
+  color: whitesmoke;
+  text-shadow: gray 0px 0px 3px;
 }
 
 .heading_large {
   font-size: 3.55rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 0px 0px 2px;
+  color: whitesmoke;
+  text-shadow: gray 0px 0px 3px;
 }
 
 .notification {
   font-size: larger;
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: gray 0px 0px 2px;
+  color: whitesmoke;
+  text-shadow: gray 0px 0px 3px;
 }
 
 .notification_dim {
   font-size: larger;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: gray 0px 0px 2px;
+  color: whitesmoke;
+  text-shadow: gray 0px 0px 3px;
 }
 
 box .notification-box {
@@ -85,7 +97,7 @@ box.notification-box.error {
 
 box.notification-box.warning {
   background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #d8be28),
+      color-stop(0, #ecd02c),
       color-stop(1, #a5901a));
 }
 
@@ -98,7 +110,7 @@ statusbar.notification-bar.error {
 
 statusbar.notification-bar.warning {
   background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #d8be28),
+      color-stop(0, #ecd02c),
       color-stop(1, #a5901a));
 }
 
@@ -115,11 +127,11 @@ statusbar.notification-bar {
 }
 
 .header-bar {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, rgba(128, 128, 128, 0.85)),
+  background-image: -gtk-gradient(linear, 0 0, 1 0,
+      color-stop(0, rgba(128, 128, 128, 0.0)),
       color-stop(1, rgba(94, 94, 94, 0.85)));
 
-  padding: 12px;
+  padding: 14px;
   border-radius: 8px;
 }
 
@@ -128,17 +140,22 @@ statusbar.notification-bar {
 }
 
 .slot_indicator {
+  margin: 10px;
   padding: 4px;
-  border: 4px dotted rgba(128, 128, 128, 0.25);
-  border-radius: 12px;
+  border: 10px solid rgba(128, 128, 128, 0.25);
+  border-radius: 16px;
 }
 
 .slot_indicator.active {
-  border: 4px solid rgba(141, 141, 141, 0.85);
-  box-shadow: rgba(255, 255, 255, 0.85) 0px 0px 4px,
-    rgba(255, 255, 255, 0.5) 0px 0px 8px;
+  border: 10px solid rgba(141, 141, 141, 0.85);
+  box-shadow: rgba(255, 255, 255, 0.85) 0px 0px 6px,
+    rgba(255, 255, 255, 0.5) 0px 0px 14px;
 
   background: rgba(141, 141, 141, 0.24);
+}
+
+radiobutton text selection {
+  background-color: transparent;
 }
 
 .slot_indicator ComboBox {
@@ -149,7 +166,7 @@ statusbar.notification-bar {
   font-size: large;
 }
 
-.slot_indicator.active RadioButton {
+.slot_indicator.active radiobutton {
   border-style: none !important;
 }
 
