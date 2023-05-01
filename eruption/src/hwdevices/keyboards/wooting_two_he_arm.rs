@@ -841,24 +841,24 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         }
 
                         #[inline]
-                        #[allow(dead_code)]
-                        fn index_of(cntr: usize) -> Option<usize> {
-                            let offset = ((cntr / 24) * 6) + (cntr % 6);
+                        fn index_to_canvas(index: usize) -> usize {
+                            let index = ROWS_TOPOLOGY
+                                .iter()
+                                .position(|e| *e as usize == index)
+                                .unwrap_or(0);
 
-                            Some(offset)
+                            let x = index % NUM_COLS;
+                            let y = index / NUM_COLS;
 
-                            // let x = cntr / NUM_COLS;
-                            // let y = cntr % NUM_COLS;
+                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
+                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
 
-                            // let r = y * NUM_ROWS + x;
+                            // let x = index % NUM_COLS + (NUM_COLS / 2);
+                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
 
-                            // TOPOLOGY.get(cntr).cloned().and_then(|v| {
-                            //     if v == 0xff {
-                            //         None
-                            //     } else {
-                            //         Some(v as usize)
-                            //     }
-                            // })
+                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
+
+                            result.clamp(0, constants::CANVAS_SIZE - 1)
                         }
 
                         fn submit_packet(led_dev: &hidapi::HidDevice, buffer: &[u8]) -> Result<()> {
@@ -893,8 +893,8 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             Ok(())
                         }
 
-                        // this device uses a row major layout, so whe have to
-                        // transpose the color map to the right layout
+                        // this device uses a row major layout, from the top row to the bottom row,
+                        // so whe have to transpose the color map to the right layout
                         let tmp_map = Array2::from_shape_vec(
                             (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                             led_map.to_vec(),
@@ -925,7 +925,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             } else {
                                 // let index = index_of(cntr).unwrap_or(0x0);
                                 let encoded_color = encode_color(
-                                    led_map.get(cntr).unwrap_or(&RGBA {
+                                    led_map.get(index_to_canvas(cntr)).unwrap_or(&RGBA {
                                         r: 0,
                                         g: 0,
                                         b: 0,

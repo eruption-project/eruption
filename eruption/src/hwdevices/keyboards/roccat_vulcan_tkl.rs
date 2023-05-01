@@ -965,6 +965,27 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
+                        #[inline]
+                        fn index_to_canvas(index: usize) -> usize {
+                            let index = ROWS_TOPOLOGY
+                                .iter()
+                                .position(|e| *e as usize == index)
+                                .unwrap_or(0);
+
+                            let x = index % NUM_COLS;
+                            let y = index / NUM_COLS;
+
+                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
+                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
+
+                            // let x = index % NUM_COLS + (NUM_COLS / 2);
+                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
+
+                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
+
+                            result.clamp(0, constants::CANVAS_SIZE - 1)
+                        }
+
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
 
@@ -972,7 +993,7 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                         buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
                         for i in 0..LED_INDICES {
-                            let color = led_map[i];
+                            let color = led_map[index_to_canvas(i)];
                             let offset = ((i / 12) * 36) + (i % 12);
 
                             buffer[offset + 4] =
