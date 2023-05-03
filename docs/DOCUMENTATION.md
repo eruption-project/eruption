@@ -298,4 +298,4 @@ robust implementation of the `Ambient Effect`.
 ## Contributing
 
 Contributions are welcome!
-Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.
+Please see `support/scripts/examples/*.lua` directory for Lua scripting examples.

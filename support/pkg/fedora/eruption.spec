@@ -231,7 +231,7 @@ cp -a %{_builddir}/%{name}-releases-%{gittag}/support/sfx/phaser2.wav %{buildroo
 ln -s phaser1.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/key-down.wav
 ln -s phaser2.wav %{buildroot}/%{_datarootdir}/%{ShortName}/sfx/key-up.wav
 
-cp -ra %{_builddir}/%{name}-releases-%{gittag}/eruption/src/scripts %{buildroot}/%{_datarootdir}/%{ShortName}/
+cp -ra %{_builddir}/%{name}-releases-%{gittag}/support/scripts %{buildroot}/%{_datarootdir}/%{ShortName}/
 
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 

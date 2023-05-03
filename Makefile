@@ -213,7 +213,7 @@ install:
 	@ln -fs "phaser1.wav" "$(TARGET_DIR)/share/eruption/sfx/key-down.wav"
 	@ln -fs "phaser2.wav" "$(TARGET_DIR)/share/eruption/sfx/key-up.wav"
 
-	@cp -r eruption/src/scripts/* $(TARGET_DIR)/share/eruption/scripts/
+	@cp -r support/scripts/* $(TARGET_DIR)/share/eruption/scripts/
 	@cp -r support/profiles/* /var/lib/eruption/profiles/
 
 	@cp target/release/eruption $(TARGET_DIR)/bin/
