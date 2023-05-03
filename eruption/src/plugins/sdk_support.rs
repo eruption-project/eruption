@@ -19,6 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
@@ -78,6 +79,10 @@ lazy_static! {
 }
 
 use bincode::{Decode, Encode};
+
+unsafe fn any_as_u8_slice<T: Sized>(p: &T) -> &[u8] {
+    ::core::slice::from_raw_parts((p as *const T) as *const u8, ::core::mem::size_of::<T>())
+}
 
 #[derive(Debug, Default, Clone, Encode, Decode)]
 pub struct HotplugInfo {
@@ -455,7 +460,7 @@ impl SdkSupportPlugin {
                         socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
                         thread::Builder::new()
-                            .name(format!("conn/{peer_addr}"))
+                            .name(format!("client"))
                             .spawn(move || -> Result<()> {
                                 // connection successful, enter event loop now
                                 'EVENT_LOOP: loop {
@@ -742,6 +747,37 @@ impl SdkSupportPlugin {
                                                             response_message: Some(
                                                                 protocol::response::ResponseMessage::SetCanvas(
                                                                     protocol::SetCanvasResponse {},
+                                                                ),
+                                                            ),
+                                                        };
+
+                                                        let mut buf = Vec::new();
+                                                        response.encode_length_delimited(&mut buf)?;
+
+                                                        // send data
+                                                        match socket.send(&buf) {
+                                                            Ok(_n) => {}
+
+                                                            Err(_e) => {
+                                                                return Err(SdkPluginError::PluginError {
+                                                                    description: "Lost connection to Eruption SDK client".to_owned(),
+                                                                }
+                                                                    .into());
+                                                            }
+                                                        }
+                                                    }
+
+                                                    Some(protocol::request::RequestMessage::GetCanvas(
+                                                        _message,
+                                                    )) => {
+                                                        trace!("Get canvas");
+
+                                                        let canvas: Vec<u8> = (*LAST_RENDERED_LED_MAP.read()).iter().flat_map(|val| unsafe { any_as_u8_slice(val).to_owned() }).collect();
+
+                                                        let response = protocol::Response {
+                                                            response_message: Some(
+                                                                protocol::response::ResponseMessage::GetCanvas(
+                                                                    protocol::GetCanvasResponse { canvas },
                                                                 ),
                                                             ),
                                                         };

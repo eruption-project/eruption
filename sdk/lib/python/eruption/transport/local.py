@@ -22,6 +22,7 @@ import google.protobuf
 import google.protobuf.internal.encoder as GoogleProtobufEncoder
 
 from eruption.transport.sdk_support_pb2 import Request, Response
+from sdk.lib.python.eruption.canvas import Canvas
 
 SOCKET_ADDRESS = "/run/eruption/control.sock"
 MAX_BUF = 4096
@@ -130,6 +131,25 @@ class LocalTransport:
         response.ParseFromString(recv_buf[1:])
 
         return response
+
+    def get_canvas(self):
+        """Get the last successfully rendered canvas from Eruption"""
+
+        request = Request()
+        request.canvas.SetInParent()
+
+        buf = GoogleProtobufEncoder._VarintBytes(request.ByteSize())
+        buf += request.SerializeToString()
+        cnt = self.socket.send(bytes(buf))
+
+        recv_buf = self.socket.recv(MAX_BUF)
+        response = Response()
+        response.ParseFromString(recv_buf[1:])
+
+        canvas = Canvas()
+        canvas.data = response.canvas
+
+        return canvas
 
     def notify_device_hotplug(self, hotplug_info):
         """Notify Eruption about a device hotplug event"""

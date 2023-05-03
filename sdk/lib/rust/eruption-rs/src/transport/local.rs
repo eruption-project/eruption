@@ -20,11 +20,12 @@
 */
 
 use crate::canvas::Canvas;
+use crate::color::Color;
 use crate::hardware::HotplugInfo;
 use crate::transport::{ServerStatus, Transport};
 use crate::{util, Result};
 use eyre::eyre;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use prost::Message;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::collections::HashMap;
@@ -42,13 +43,13 @@ const MAX_BUF: usize = 4096 * 16;
 
 #[derive(Debug, Clone)]
 pub struct LocalTransport {
-    pub(crate) socket: Arc<Mutex<Socket>>,
+    pub(crate) socket: Arc<RwLock<Socket>>,
 }
 
 impl LocalTransport {
     pub fn new() -> Result<Self> {
         Ok(Self {
-            socket: Arc::new(Mutex::new(Socket::new(
+            socket: Arc::new(RwLock::new(Socket::new(
                 Domain::UNIX,
                 Type::SEQPACKET,
                 None,
@@ -60,13 +61,13 @@ impl LocalTransport {
 impl Transport for LocalTransport {
     fn connect(&mut self) -> Result<()> {
         let addr = SockAddr::unix(SOCKET_ADDRESS)?;
-        self.socket.lock().connect(&addr)?;
+        self.socket.read().connect(&addr)?;
 
         Ok(())
     }
 
     fn disconnect(&mut self) -> Result<()> {
-        self.socket.lock().flush()?;
+        self.socket.write().flush()?;
         // self.socket.lock().shutdown(Shutdown::Both)?;
 
         Ok(())
@@ -83,7 +84,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -126,7 +127,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -170,7 +171,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -221,7 +222,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -269,7 +270,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -300,6 +301,56 @@ impl Transport for LocalTransport {
         }
     }
 
+    fn get_canvas(&self) -> Result<Canvas> {
+        let request = protocol::Request {
+            request_message: Some(protocol::request::RequestMessage::GetCanvas(
+                protocol::GetCanvasRequest {},
+            )),
+        };
+
+        let mut buf = Vec::new();
+        request.encode_length_delimited(&mut buf)?;
+
+        // send data
+        let socket = self.socket.read();
+        match socket.send(&buf) {
+            Ok(_n) => {
+                // read response
+                let mut tmp = [MaybeUninit::zeroed(); MAX_BUF];
+
+                match socket.recv(&mut tmp) {
+                    Ok(0) => Err(eyre!("Lost connection to Eruption")),
+
+                    Ok(_n) => {
+                        let tmp = unsafe { util::assume_init(&tmp[..tmp.len()]) };
+                        let result =
+                            protocol::Response::decode_length_delimited(&mut Cursor::new(&tmp))?;
+                        if let Some(protocol::response::ResponseMessage::GetCanvas(canvas)) =
+                            result.response_message
+                        {
+                            let bytes = canvas.canvas;
+
+                            let canvas = Canvas {
+                                data: bytes
+                                    .chunks(4)
+                                    .map(|c| Color::new(c[0], c[1], c[2], c[3]))
+                                    .collect(),
+                            };
+
+                            Ok(canvas)
+                        } else {
+                            Err(eyre!("Unexpected response"))
+                        }
+                    }
+
+                    Err(_e) => Err(eyre!("Lost connection to Eruption")),
+                }
+            }
+
+            Err(_e) => Err(eyre!("Lost connection to Eruption")),
+        }
+    }
+
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
         let config = bincode::config::standard();
         let bytes: Vec<u8> = bincode::encode_to_vec(hotplug_info, config).unwrap();
@@ -314,7 +365,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -350,7 +401,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.lock();
+        let socket = self.socket.read();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response

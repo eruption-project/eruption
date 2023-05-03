@@ -28,8 +28,9 @@ message Request {
     SwitchProfileRequest switch_profile = 4;
     SetParametersRequest set_parameters = 5;
     SetCanvasRequest set_canvas = 6;
-    NotifyHotplugRequest notify_hotplug = 7;
-    NotifyResumeRequest notify_resume = 8;
+    GetCanvasRequest get_canvas = 7;
+    NotifyHotplugRequest notify_hotplug = 8;
+    NotifyResumeRequest notify_resume = 9;
   }
 }
 
@@ -44,6 +45,7 @@ message SetParametersRequest {
 }
 
 message SetCanvasRequest { bytes canvas = 1; }
+message GetCanvasRequest {}
 message NotifyHotplugRequest { bytes payload = 1; }
 message NotifyResumeRequest {}
 message Response {
@@ -53,8 +55,9 @@ message Response {
     SwitchProfileResponse switch_profile = 3;
     SetParametersResponse set_parameters = 4;
     SetCanvasResponse set_canvas = 5;
-    NotifyHotplugResponse notify_hotplug = 6;
-    NotifyResumeResponse notify_resume = 7;
+    GetCanvasResponse get_canvas = 6;
+    NotifyHotplugResponse notify_hotplug = 7;
+    NotifyResumeResponse notify_resume = 8;
   }
 }
 
@@ -64,6 +67,7 @@ message ActiveProfileResponse { string profile_file = 1; }
 message SwitchProfileResponse { bool switched = 1; }
 message SetParametersResponse {}
 message SetCanvasResponse {}
+message GetCanvasResponse { bytes canvas = 1; }
 message NotifyHotplugResponse {}
 message NotifyResumeResponse {}
 

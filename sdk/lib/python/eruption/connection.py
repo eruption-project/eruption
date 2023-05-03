@@ -94,6 +94,15 @@ class Connection:
         result = self._con.submit_canvas(canvas)
         return result
 
+    def get_canvas(self, *args, **kwargs):
+        """Get the last successfully rendered canvas from Eruption"""
+
+        if not self.is_connected():
+            raise NotConnectedError("Not connected")
+
+        result = self._con.get_canvas()
+        return result
+
     def notify_device_hotplug(self, hotplug_info, *args, **kwargs):
         """Notify Eruption about a device hotplug event"""
         if not self.is_connected():

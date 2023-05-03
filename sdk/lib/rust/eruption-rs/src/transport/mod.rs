@@ -42,7 +42,9 @@ pub trait Transport {
         script_file: &Path,
         parameter_values: HashMap<String, String>,
     ) -> Result<()>;
+
     fn submit_canvas(&self, canvas: &Canvas) -> Result<()>;
+    fn get_canvas(&self) -> Result<Canvas>;
 
     fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()>;
     fn notify_resume_from_suspend(&self) -> Result<()>;
