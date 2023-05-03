@@ -685,6 +685,9 @@ pub trait DeviceTrait: DeviceInfoTrait {
     /// Returns `true` if the device has failed or has been disconnected
     fn has_failed(&self) -> Result<bool>;
 
+    /// Set the device as `failed`
+    fn fail(&mut self) -> Result<()>;
+
     /// Send raw data to the control device
     fn write_data_raw(&self, buf: &[u8]) -> Result<()>;
 

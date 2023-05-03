@@ -45,6 +45,8 @@ pub struct CustomSerialLeds {
 
     // device specific configuration options
     pub brightness: i32,
+
+    pub has_failed: bool,
 }
 
 impl CustomSerialLeds {
@@ -57,6 +59,7 @@ impl CustomSerialLeds {
             port: Arc::new(Mutex::new(None)),
 
             brightness: 100,
+            has_failed: false,
         }
     }
 }
@@ -126,6 +129,11 @@ impl DeviceTrait for CustomSerialLeds {
 
     fn has_failed(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
     }
 
     fn send_init_sequence(&mut self) -> Result<()> {

@@ -22,18 +22,18 @@ set edit:completion:arg-completer[eruption-process-monitor] = {|@words|
             cand --config 'Sets the configuration file to use'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
             cand rules 'Rules related sub-commands (supports offline manipulation of rules)'
             cand daemon 'Run in background and monitor running processes'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-process-monitor;rules'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
             cand list 'List all available rules'
             cand add 'Add a new rule'
             cand remove 'Remove a rule by its index'
@@ -42,24 +42,24 @@ set edit:completion:arg-completer[eruption-process-monitor] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-process-monitor;rules;list'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;rules;add'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;rules;remove'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;rules;enable'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;rules;disable'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;rules;help'= {
             cand list 'List all available rules'
@@ -82,12 +82,12 @@ set edit:completion:arg-completer[eruption-process-monitor] = {|@words|
         &'eruption-process-monitor;rules;help;help'= {
         }
         &'eruption-process-monitor;daemon'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;completions'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-process-monitor;help'= {
             cand rules 'Rules related sub-commands (supports offline manipulation of rules)'

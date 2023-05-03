@@ -4,6 +4,12 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.3 | __New Release__ |
+| 0.3.3 | Backported multiple bugfixes from the `develop` branch: |
+| 0.3.3 | Ratelimit log-messages |
+| 0.3.3 | Improved removal of failed or disconnected devices |
+| 0.3.3 | Improved general stability |
+| 0.3.3 | Update all dependencies to their latest releases |
 | 0.3.2 | __New Release__ |
 | 0.3.2 | Fix special hotkeys and volume control dial knob on `ROCCAT Vulcan 100/12x` |
 | 0.3.1 | __New Release__ |

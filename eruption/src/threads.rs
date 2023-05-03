@@ -30,6 +30,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use crate::util::ratelimited;
 use crate::{
     constants, dbus_interface, hwdevices, macros, plugins, script,
     scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
@@ -193,13 +194,28 @@ pub fn spawn_keyboard_input_thread(
                         }
 
                         kbd_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a keyboard event to the main thread: {}", e);
+                            ratelimited::error!(
+                                "Could not send a keyboard event to the main thread: {}",
+                                e
+                            );
 
                             // try to recover from an invalid state
-                            keyboard_device.write().close_all().unwrap_or_else(|e| {
-                                warn!("Could not close the device: {}", e);
-                            });
+                            // keyboard_device.write().close_all().unwrap_or_else(|e| {
+                            //     warn!("Could not close the device: {}", e);
+                            // });
 
+                            // mark the device as failed
+                            keyboard_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
@@ -214,7 +230,11 @@ pub fn spawn_keyboard_input_thread(
                             keyboard_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
@@ -325,7 +345,10 @@ pub fn spawn_mouse_input_thread(
                                             k.1.clone(),
                                         ))
                                         .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse event: {}", e)
+                                            ratelimited::error!(
+                                                "Could not send a pending mouse event: {}",
+                                                e
+                                            )
                                         });
                                 }
                             }
@@ -362,20 +385,38 @@ pub fn spawn_mouse_input_thread(
                                             k.1.clone(),
                                         ))
                                         .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse event: {}", e)
+                                            ratelimited::error!(
+                                                "Could not send a pending mouse event: {}",
+                                                e
+                                            )
                                         });
                                 }
                             }
                         }
 
                         mouse_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a mouse event to the main thread: {}", e);
+                            ratelimited::error!(
+                                "Could not send a mouse event to the main thread: {}",
+                                e
+                            );
 
                             // try to recover from an invalid state
-                            mouse_device.write().close_all().unwrap_or_else(|e| {
-                                warn!("Could not close the device: {}", e);
-                            });
+                            // mouse_device.write().close_all().unwrap_or_else(|e| {
+                            //     warn!("Could not close the device: {}", e);
+                            // });
 
+                            // mark the device as failed
+                            mouse_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
@@ -390,7 +431,11 @@ pub fn spawn_mouse_input_thread(
                             mouse_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
@@ -646,14 +691,31 @@ pub fn spawn_misc_input_thread(
                             .unwrap()
                             .send(macros::Message::MirrorKey(k.1.clone()))
                             .unwrap_or_else(|e| {
-                                error!("Could not send a pending misc device input event: {}", e)
+                                ratelimited::error!(
+                                    "Could not send a pending misc device input event: {}",
+                                    e
+                                )
                             });
 
                         misc_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!(
+                            ratelimited::error!(
                                 "Could not send a misc device input event to the main thread: {}",
                                 e
-                            )
+                            );
+
+                            // mark the device as failed
+                            misc_device
+                                .write()
+                                .fail()
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                    "An error occurred while trying to mark the device as failed"
+                                )
+                                })
+                                .ok();
+
+                            // we need to terminate and then re-enter the main loop to update all global state
+                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         });
 
                         // update AFK timer
@@ -667,7 +729,11 @@ pub fn spawn_misc_input_thread(
                             misc_device
                                 .write()
                                 .close_all()
-                                .map_err(|_e| error!("An error occurred while closing the device"))
+                                .map_err(|_e| {
+                                    ratelimited::error!(
+                                        "An error occurred while closing the device"
+                                    )
+                                })
                                 .ok();
 
                             // we need to terminate and then re-enter the main loop to update all global state
@@ -891,30 +957,30 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    error!("Error sending LED map to a device: {}", e);
+                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
 
                                                     if device.has_failed().unwrap_or(true) {
-                                                        warn!("Trying to unplug the failed device");
+                                                        ratelimited::warn!("Trying to unplug the failed device");
 
                                                         // we need to terminate and then re-enter the main loop to update all global state
                                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
 
                                                 let hidapi = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
 
                                                 device.open(hidapi).unwrap_or_else(|e| {
-                                                    error!("Error opening the keyboard device: {}", e);
+                                                    ratelimited::error!("Error opening the keyboard device: {}", e);
                                                 });
 
                                                 // send initialization handshake
-                                                info!("Initializing keyboard device...");
+                                                ratelimited::info!("Initializing keyboard device...");
                                                 device
                                                     .send_init_sequence()
-                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");
@@ -929,30 +995,30 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    error!("Error sending LED map to a device: {}", e);
+                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
 
                                                     if device.has_failed().unwrap_or(true) {
-                                                        warn!("Trying to unplug the failed device");
+                                                        ratelimited::warn!("Trying to unplug the failed device");
 
                                                         // we need to terminate and then re-enter the main loop to update all global state
                                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
 
                                                 let hidapi = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
 
                                                 device.open(hidapi).unwrap_or_else(|e| {
-                                                    error!("Error opening the mouse device: {}", e);
+                                                    ratelimited::error!("Error opening the mouse device: {}", e);
                                                 });
 
                                                 // send initialization handshake
-                                                info!("Initializing mouse device...");
+                                                ratelimited::info!("Initializing mouse device...");
                                                 device
                                                     .send_init_sequence()
-                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");
@@ -967,30 +1033,30 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    error!("Error sending LED map to a device: {}", e);
+                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
 
                                                     if device.has_failed().unwrap_or(true) {
-                                                        warn!("Trying to unplug the failed device");
+                                                        ratelimited::warn!("Trying to unplug the failed device");
 
                                                         // we need to terminate and then re-enter the main loop to update all global state
                                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                     }
                                                 }
                                             } else {
-                                                warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
 
                                                 let hidapi = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
 
                                                 device.open(hidapi).unwrap_or_else(|e| {
-                                                    error!("Error opening the misc device: {}", e);
+                                                    ratelimited::error!("Error opening the misc device: {}", e);
                                                 });
 
                                                 // send initialization handshake
-                                                info!("Initializing misc device...");
+                                                ratelimited::info!("Initializing misc device...");
                                                 device
                                                     .send_init_sequence()
-                                                    .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
+                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                             }
                                         } else {
                                             warn!("Could not query device status");

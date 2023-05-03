@@ -79,7 +79,7 @@ impl Keyboard for RoccatVulcanProTKL {
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        let layout = pangocairo::create_layout(context).unwrap();
+        let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {
             let desc = f.borrow();
             layout.set_font_description(Some(&desc));

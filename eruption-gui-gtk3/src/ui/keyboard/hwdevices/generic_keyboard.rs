@@ -79,7 +79,7 @@ impl Keyboard for GenericKeyboard {
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        let layout = pangocairo::create_layout(context).unwrap();
+        let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {
             let desc = f.borrow();
             layout.set_font_description(Some(&desc));
@@ -571,7 +571,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     // column 13
     KeyDef::new(432.0, 76.0, 32.0, 32.0, Caption::simple("´"), 80), // ´
     KeyDef::new(448.0, 110.0, 32.0, 32.0, Caption::simple("+"), 81), // +
-    KeyDef::dummy(82),                                               // filler
+    KeyDef::dummy(82),                                              // filler
     KeyDef::new(466.0, 180.0, 48.0, 32.0, Caption::simple("SHIFT"), 83), // SHIFT
     KeyDef::new(412.0, 215.0, 50.0, 32.0, Caption::simple("MENU"), 84), // MENU
     KeyDef::new(413.0, 23.0, 32.0, 32.0, Caption::simple("F10"), 85), // F10
@@ -602,7 +602,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     KeyDef::new(525.0, 23.0, 32.0, 32.0, Caption::simple("PRT"), 100), // PRINT SCREEN
     KeyDef::new(525.0, 76.0, 32.0, 32.0, Caption::simple("INS"), 101), // INSERT
     KeyDef::new(525.0, 110.0, 32.0, 32.0, Caption::simple("DEL"), 102), // DELETE
-    KeyDef::new(525.0, 215.0, 32.0, 32.0, Caption::simple("←"), 103), // LEFT
+    KeyDef::new(525.0, 215.0, 32.0, 32.0, Caption::simple("←"), 103),  // LEFT
     // column 15
     KeyDef::new(559.0, 23.0, 32.0, 32.0, Caption::simple("SCRL"), 104), // SCROLL LOCK
     KeyDef::new(
@@ -614,8 +614,8 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
         105,
     ), // HOME
     KeyDef::new(559.0, 110.0, 32.0, 32.0, Caption::simple("END"), 106), // END
-    KeyDef::new(559.0, 180.0, 32.0, 32.0, Caption::simple("↑"), 107), // UP
-    KeyDef::new(559.0, 215.0, 32.0, 32.0, Caption::simple("↓"), 108), // DOWN
+    KeyDef::new(559.0, 180.0, 32.0, 32.0, Caption::simple("↑"), 107),   // UP
+    KeyDef::new(559.0, 215.0, 32.0, 32.0, Caption::simple("↓"), 108),   // DOWN
     // column 16
     KeyDef::new(
         593.0,
@@ -634,7 +634,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
         Caption::new("PGDN", 0.0, 0.0),
         111,
     ), // PAGE DOWN
-    KeyDef::new(593.0, 215.0, 32.0, 32.0, Caption::simple("→"), 112), // RIGHT
+    KeyDef::new(593.0, 215.0, 32.0, 32.0, Caption::simple("→"), 112),   // RIGHT
     KeyDef::dummy(113),                                                 // filler
     // column 17
     KeyDef::new(635.0, 76.0, 32.0, 32.0, Caption::simple("NUM"), 114), // NUM LOCK

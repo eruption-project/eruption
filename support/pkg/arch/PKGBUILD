@@ -3,11 +3,11 @@
 pkgname='eruption'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
-pkgver='0.3.2'
+pkgver='0.3.3'
 pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
-license=('GPL3+')
+license=('GPL3')
 depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'gtksourceview4')
 makedepends=('git' 'rust' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'gtk3')
 provides=('eruption')

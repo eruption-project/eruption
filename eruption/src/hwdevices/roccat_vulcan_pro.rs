@@ -500,6 +500,11 @@ impl DeviceTrait for RoccatVulcanPro {
         Ok(self.has_failed)
     }
 
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
+    }
+
     fn write_data_raw(&self, buf: &[u8]) -> Result<()> {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
@@ -747,7 +752,7 @@ impl KeyboardDeviceTrait for RoccatVulcanPro {
     }
 
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
-        EV_TO_INDEX_ISO[((key as u8) as usize)].saturating_add(1)
+        EV_TO_INDEX_ISO[(key as u8) as usize].saturating_add(1)
     }
 
     fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {

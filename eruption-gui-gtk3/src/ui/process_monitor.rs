@@ -19,10 +19,20 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use gdk::prelude::Continue;
+use gdk::prelude::*;
+use glib::Cast;
 use glib::{clone, StaticType};
-use gtk::builders::{MessageDialogBuilder, TreeViewColumnBuilder};
 use gtk::glib;
-use gtk::prelude::*;
+use gtk::prelude::BuilderExtManual;
+use gtk::prelude::ButtonExt;
+use gtk::prelude::TreeStoreExtManual;
+use gtk::prelude::TreeViewColumnExt;
+use gtk::prelude::WidgetExt;
+use gtk::traits::{TreeViewExt, DialogExt, CellRendererToggleExt};
+use gtk::traits::{GtkApplicationExt, TreeModelExt, TreeSelectionExt, TreeStoreExt};
+use gtk::MessageDialog;
+use gtk::TreeViewColumn;
 use std::time::Duration;
 
 use crate::{dbus_client, ui::rule, util};
@@ -208,13 +218,13 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 let secondary =
                     format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
 
-                let message_dialog = MessageDialogBuilder::new()
+                let message_dialog = MessageDialog::builder()
                     .parent(&main_window)
                     .destroy_with_parent(true)
                     .decorated(true)
                     .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
+                    .text(message)
+                    .secondary_text(secondary)
                     .title("Error")
                     .buttons(gtk::ButtonsType::Ok)
                     .build();
@@ -254,13 +264,13 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                 let secondary =
                     format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
 
-                let message_dialog = MessageDialogBuilder::new()
+                let message_dialog = MessageDialog::builder()
                     .parent(&main_window)
                     .destroy_with_parent(true)
                     .decorated(true)
                     .message_type(gtk::MessageType::Error)
-                    .text(&message)
-                    .secondary_text(&secondary)
+                    .text(message)
+                    .secondary_text(secondary)
                     .title("Error")
                     .buttons(gtk::ButtonsType::Ok)
                     .build();
@@ -349,13 +359,13 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
                     let secondary =
                         format!("Could not transmit the ruleset to the eruption-process-monitor daemon {}", e);
 
-                    let message_dialog = MessageDialogBuilder::new()
+                    let message_dialog = MessageDialog::builder()
                         .parent(&main_window)
                         .destroy_with_parent(true)
                         .decorated(true)
                         .message_type(gtk::MessageType::Error)
-                        .text(&message)
-                        .secondary_text(&secondary)
+                        .text(message)
+                        .secondary_text(secondary)
                         .title("Error")
                         .buttons(gtk::ButtonsType::Ok)
                         .build();
@@ -411,32 +421,32 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
         }),
     );
 
-    let enabled_column = TreeViewColumnBuilder::new()
+    let enabled_column = TreeViewColumn::builder()
         .title("Enabled")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
-    let index_column = TreeViewColumnBuilder::new()
+    let index_column = TreeViewColumn::builder()
         .title("#")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(false)
         .build();
 
-    let sensor_column = TreeViewColumnBuilder::new()
+    let sensor_column = TreeViewColumn::builder()
         .title("Sensor")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .build();
 
-    let selector_column = TreeViewColumnBuilder::new()
+    let selector_column = TreeViewColumn::builder()
         .title("Selector")
         .sizing(gtk::TreeViewColumnSizing::Autosize)
         .resizable(true)
         .build();
 
-    let action_column = TreeViewColumnBuilder::new().title("Action").build();
+    let action_column = TreeViewColumn::builder().title("Action").build();
 
-    let metadata_column = TreeViewColumnBuilder::new().title("Metadata").build();
+    let metadata_column = TreeViewColumn::builder().title("Metadata").build();
 
     let cell_renderer_toggle = gtk::CellRendererToggle::new();
     let cell_renderer_text = gtk::CellRendererText::new();

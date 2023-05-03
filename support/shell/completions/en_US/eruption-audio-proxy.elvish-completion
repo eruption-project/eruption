@@ -22,21 +22,21 @@ set edit:completion:arg-completer[eruption-audio-proxy] = {|@words|
             cand --config 'Sets the configuration file to use'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
-            cand -h 'Print help information'
-            cand --help 'Print help information'
-            cand -V 'Print version information'
-            cand --version 'Print version information'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
             cand daemon 'Run in background'
             cand completions 'Generate shell completions'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'eruption-audio-proxy;daemon'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-audio-proxy;completions'= {
-            cand -h 'Print help information'
-            cand --help 'Print help information'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'eruption-audio-proxy;help'= {
             cand daemon 'Run in background'

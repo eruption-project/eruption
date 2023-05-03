@@ -21,10 +21,10 @@ _eruptionctl() {
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '-r[Repeat output until ctrl+c is pressed]' \
 '--repeat[Repeat output until ctrl+c is pressed]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
-'-V[Print version information]' \
-'--version[Print version information]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 ":: :_eruptionctl_commands" \
 "*::: :->eruptionctl" \
 && ret=0
@@ -36,8 +36,8 @@ _eruptionctl() {
         case $line[1] in
             (status)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__status_commands" \
 "*::: :->status" \
 && ret=0
@@ -50,14 +50,14 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (help)
@@ -94,8 +94,8 @@ esac
 ;;
 (switch)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__switch_commands" \
 "*::: :->switch" \
 && ret=0
@@ -108,15 +108,15 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (profile)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':profile_name:' \
 && ret=0
 ;;
 (slot)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':index:' \
 && ret=0
 ;;
@@ -154,8 +154,8 @@ esac
 ;;
 (config)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__config_commands" \
 "*::: :->config" \
 && ret=0
@@ -168,15 +168,15 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (brightness)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::brightness:' \
 && ret=0
 ;;
 (soundfx)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::enable:(true false)' \
 && ret=0
 ;;
@@ -214,8 +214,8 @@ esac
 ;;
 (devices)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__devices_commands" \
 "*::: :->devices" \
 && ret=0
@@ -228,76 +228,76 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (info)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 && ret=0
 ;;
 (brightness)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::brightness:' \
 && ret=0
 ;;
 (profile)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::profile:' \
 && ret=0
 ;;
 (dpi)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::dpi:' \
 && ret=0
 ;;
 (rate)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::rate:' \
 && ret=0
 ;;
 (debounce)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::enable:(true false)' \
 && ret=0
 ;;
 (distance)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::param:' \
 && ret=0
 ;;
 (angle-snapping)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':device:' \
 '::enable:(true false)' \
 && ret=0
@@ -368,8 +368,8 @@ esac
 ;;
 (profiles)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__profiles_commands" \
 "*::: :->profiles" \
 && ret=0
@@ -382,21 +382,21 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (info)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':profile_name:' \
 && ret=0
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':profile_name:' \
 && ret=0
 ;;
@@ -438,8 +438,8 @@ esac
 ;;
 (scripts)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__scripts_commands" \
 "*::: :->scripts" \
 && ret=0
@@ -452,21 +452,21 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (info)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':script_name:' \
 && ret=0
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':script_name:' \
 && ret=0
 ;;
@@ -508,8 +508,8 @@ esac
 ;;
 (color-schemes)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__color-schemes_commands" \
 "*::: :->color-schemes" \
 && ret=0
@@ -522,29 +522,29 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (add)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':name:' \
 '*::colors:' \
 && ret=0
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':name:' \
 && ret=0
 ;;
 (import)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__color-schemes__import_commands" \
 "*::: :->import" \
 && ret=0
@@ -559,8 +559,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-o[Optimize palette]' \
 '--optimize[Optimize palette]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::file_name -- Optionally specify the file name to the pywal color scheme:_files' \
 && ret=0
 ;;
@@ -650,8 +650,8 @@ esac
 ;;
 (param)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::script:' \
 '::parameter:' \
 '::value:' \
@@ -659,8 +659,8 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (names)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__names_commands" \
 "*::: :->names" \
 && ret=0
@@ -673,22 +673,22 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (set)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':slot_index:' \
 ':name:' \
 && ret=0
 ;;
 (set-all)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '*::names:' \
 && ret=0
 ;;
@@ -730,8 +730,8 @@ esac
 ;;
 (effects)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__effects_commands" \
 "*::: :->effects" \
 && ret=0
@@ -744,8 +744,8 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (enable)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__effects__enable_commands" \
 "*::: :->enable" \
 && ret=0
@@ -758,23 +758,23 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (image)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':filename:_files' \
 && ret=0
 ;;
 (animation)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':directory_name:_files' \
 '::frame_delay:' \
 && ret=0
 ;;
 (ambient)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::frame_delay:' \
 && ret=0
 ;;
@@ -816,8 +816,8 @@ esac
 ;;
 (disable)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__effects__disable_commands" \
 "*::: :->disable" \
 && ret=0
@@ -830,20 +830,20 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (image)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (animation)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (ambient)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (help)
@@ -884,14 +884,14 @@ esac
 ;;
 (status)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (config)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__effects__config_commands" \
 "*::: :->config" \
 && ret=0
@@ -904,23 +904,23 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (image)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':filename:_files' \
 && ret=0
 ;;
 (animation)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':directory_name:_files' \
 '::frame_delay:' \
 && ret=0
 ;;
 (ambient)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '::frame_delay:' \
 && ret=0
 ;;
@@ -1074,8 +1074,8 @@ esac
 ;;
 (rules)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ":: :_eruptionctl__rules_commands" \
 "*::: :->rules" \
 && ret=0
@@ -1088,35 +1088,35 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 && ret=0
 ;;
 (add)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '*::rule:' \
 && ret=0
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':rule_index:' \
 && ret=0
 ;;
 (enable)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':rule_index:' \
 && ret=0
 ;;
 (disable)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':rule_index:' \
 && ret=0
 ;;
@@ -1166,8 +1166,8 @@ esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
@@ -1824,7 +1824,7 @@ _eruptionctl__color-schemes_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl color-schemes commands' commands "$@"
@@ -1835,7 +1835,7 @@ _eruptionctl__help__color-schemes_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
     )
     _describe -t commands 'eruptionctl help color-schemes commands' commands "$@"
 }
@@ -2115,7 +2115,7 @@ _eruptionctl__color-schemes__help_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl color-schemes help commands' commands "$@"
@@ -2906,4 +2906,8 @@ _eruptionctl__switch_commands() {
     _describe -t commands 'eruptionctl switch commands' commands "$@"
 }
 
-_eruptionctl "$@"
+if [ "$funcstack[1]" = "_eruptionctl" ]; then
+    _eruptionctl "$@"
+else
+    compdef _eruptionctl eruptionctl
+fi

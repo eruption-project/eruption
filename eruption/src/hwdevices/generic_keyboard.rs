@@ -52,6 +52,8 @@ pub fn bind_hiddev(
 pub struct GenericKeyboard {
     usb_vid: u16,
     usb_pid: u16,
+
+    pub has_failed: bool,
 }
 
 impl GenericKeyboard {
@@ -59,7 +61,11 @@ impl GenericKeyboard {
     pub fn bind(usb_vid: u16, usb_pid: u16) -> Self {
         info!("Bound driver: Generic Keyboard Device");
 
-        Self { usb_vid, usb_pid }
+        Self {
+            usb_vid,
+            usb_pid,
+            has_failed: false,
+        }
     }
 
     // pub(self) fn query_ctrl_report(&mut self, id: u8) -> Result<()> {
@@ -143,6 +149,11 @@ impl DeviceTrait for GenericKeyboard {
 
     fn has_failed(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn fail(&mut self) -> Result<()> {
+        self.has_failed = true;
+        Ok(())
     }
 
     fn write_data_raw(&self, _buf: &[u8]) -> Result<()> {
