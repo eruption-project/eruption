@@ -3,7 +3,7 @@
 %global gittag v0.3
 
 Name:    eruption
-Version: 0.3.2
+Version: 0.3.3
 Release: 0%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
