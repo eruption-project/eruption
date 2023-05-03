@@ -45,13 +45,19 @@ pub const MOUSE_RENDER_TIMER_ID: usize = 1100;
 pub const MISC_TIMER_ID: usize = 1200;
 // pub const MISC_SLOW_TIMER_ID: usize = 1300;
 pub const MISC_RENDER_TIMER_ID: usize = 1400;
-pub const GLOBAL_CONFIG_TIMER_ID: usize = 1500;
+// pub const GLOBAL_CONFIG_TIMER_ID: usize = 1500;
 
 type Callback = dyn Fn() -> Result<()> + 'static;
 
+#[derive(Debug, Clone)]
+pub enum TimerMode {
+    Periodic,
+    ActiveStackPage(usize),
+}
+
 thread_local! {
-    /// Global timers (ID, interval millis, last fired, callback Fn())
-    pub static TIMERS: RefCell<Vec<(usize, u64, Instant, Box<Callback>)>> = RefCell::new(Vec::new());
+    /// Global timers (ID, mode, interval millis, last fired, callback Fn())
+    pub static TIMERS: RefCell<Vec<(usize, TimerMode, u64, Instant, Box<Callback>)>> = RefCell::new(Vec::new());
 
     /// Global timers (ID bookkeeping)
     pub static REGISTERED_TIMERS: RefCell<Vec<usize>> = RefCell::new(Vec::new());
@@ -71,7 +77,7 @@ pub fn clear_timers() -> Result<()> {
 }
 
 /// Register a timer callback
-pub fn register_timer<T>(id: usize, timeout: u64, callback: T) -> Result<()>
+pub fn register_timer<T>(id: usize, mode: TimerMode, timeout: u64, callback: T) -> Result<()>
 where
     T: Fn() -> Result<()> + 'static,
 {
@@ -92,7 +98,7 @@ where
     if !already_registered {
         TIMERS.with(|f| {
             if let Ok(mut timers) = f.try_borrow_mut() {
-                timers.push((id, timeout, Instant::now(), Box::new(callback)));
+                timers.push((id, mode, timeout, Instant::now(), Box::new(callback)));
             } else {
                 tracing::error!("Could not register a timer, the data structure is locked");
             }
@@ -149,9 +155,27 @@ pub fn handle_timers() -> Result<()> {
     TIMERS.with(|f| -> Result<()> {
         let mut timers = f.borrow_mut();
 
-        for (ref _id, ref timeout_millis, ref mut last_fired, callback) in timers.iter_mut() {
+        for (ref _id, ref mode, ref timeout_millis, ref mut last_fired, callback) in
+            timers.iter_mut()
+        {
             if Instant::now() - *last_fired > Duration::from_millis(*timeout_millis) {
-                let _result = callback();
+                match mode {
+                    TimerMode::Periodic => {
+                        let _result = callback().map_err(|e| {
+                            tracing::error!("Timer callback failed: {}", e);
+                            e
+                        });
+                    }
+
+                    TimerMode::ActiveStackPage(index) => {
+                        if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == *index {
+                            let _result = callback().map_err(|e| {
+                                tracing::error!("Timer callback failed: {}", e);
+                                e
+                            });
+                        }
+                    }
+                }
 
                 *last_fired = Instant::now();
             }

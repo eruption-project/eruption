@@ -20,6 +20,8 @@
 */
 
 use config::Config;
+use constants::CANVAS_SIZE;
+use eruption_sdk::connection::{Connection, ConnectionType};
 use gio::{prelude::*, ApplicationFlags};
 use glib::clone;
 use glib::{OptionArg, OptionFlags};
@@ -38,7 +40,9 @@ use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use std::{env, process};
+use std::sync::atomic::AtomicUsize;
+use std::time::Duration;
+use std::{env, process, thread};
 
 use util::RGBA;
 
@@ -87,6 +91,9 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MainError {
+    #[error("Connection error: {description}")]
+    ConnectionError { description: String },
+
     #[error("Unknown error: {description}")]
     UnknownError { description: String },
 }
@@ -119,6 +126,9 @@ lazy_static! {
     /// Global application state
     pub static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
 
+    /// Current connection to the Eruption daemon
+    pub static ref CONNECTION: Arc<Mutex<Option<Connection>>> = Arc::new(Mutex::new(None));
+
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
 
@@ -127,6 +137,9 @@ lazy_static! {
 
     /// Global configuration
     pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+
+    /// The index of the currently active page in the main navigation stack
+    pub static ref ACTIVE_PAGE: AtomicUsize = AtomicUsize::new(0);
 }
 
 /// Event handling utilities
@@ -203,12 +216,31 @@ Copyright (c) 2019-2023, The Eruption Development Team
 
 /// Update the global color map vector
 pub fn update_color_map() -> Result<()> {
-    let led_colors = dbus_client::get_led_colors()?;
+    if let Some(connection) = crate::CONNECTION.lock().as_ref() {
+        let canvas = connection.get_canvas()?;
 
-    let mut color_map = crate::COLOR_MAP.lock();
-    *color_map = led_colors;
+        let mut colors = Vec::with_capacity(constants::CANVAS_SIZE);
+        for i in 0..CANVAS_SIZE {
+            let color = RGBA {
+                r: canvas[i].r(),
+                g: canvas[i].g(),
+                b: canvas[i].b(),
+                a: canvas[i].a(),
+            };
 
-    Ok(())
+            colors.push(color);
+        }
+
+        let mut color_map = crate::COLOR_MAP.lock();
+        *color_map = colors;
+
+        Ok(())
+    } else {
+        Err(MainError::ConnectionError {
+            description: "Could not connect to Eruption".to_string(),
+        }
+        .into())
+    }
 }
 
 /// Switch to slot `index`
@@ -536,6 +568,18 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
                 events::reenable_dbus_events();
             }
 
+            dbus_client::Message::AmbientEffectChanged(enabled) => {
+                let switch_button: gtk::Switch = builder.object("ambientfx_switch").unwrap();
+
+                events::ignore_next_dbus_events(1);
+                events::ignore_next_ui_events(1);
+
+                switch_button.set_state(enabled);
+
+                events::reenable_ui_events();
+                events::reenable_dbus_events();
+            }
+
             dbus_client::Message::RulesChanged => {
                 tracing::info!("Process monitor ruleset has changed");
                 ui::process_monitor::update_rules_view(builder)?;
@@ -605,9 +649,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
-        print_header();
+    if atty::is(atty::Stream::Stdout) {
+        // print a license header, except if we are generating shell completions
+        if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
+            print_header();
+        }
     }
 
     let application = Application::new(
@@ -692,6 +738,27 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             state.active_profile = util::get_active_profile().ok();
         }
 
+        // connect to Eruption daemon
+        match Connection::new(ConnectionType::Local) {
+            Ok(connection) => {
+                let _ = connection
+                    .connect()
+                    .map_err(|e| tracing::error!("Connection failed: {e}"));
+
+                *crate::CONNECTION.lock() = Some(connection.clone());
+
+                if connection.connect().is_ok() {
+                    let _ = connection
+                        .get_server_status()
+                        .map_err(|e| tracing::error!("{e}"));
+                }
+            }
+
+            Err(e) => {
+                tracing::error!("Could not connect to Eruption daemon: {}", e);
+            }
+        }
+
         if let Err(e) = ui::main::initialize_main_window(app) {
             tracing::error!("Could not start the Eruption GUI: {}", e);
 
@@ -721,6 +788,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             if let Err(e) = timers::handle_timers() {
                 tracing::error!("An error occurred in a timer callback: {}", e);
             }
+
+            // this massively reduces the CPU load of the application
+            thread::sleep(Duration::from_millis(1));
 
             Continue(true)
         }),

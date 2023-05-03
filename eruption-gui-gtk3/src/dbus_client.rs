@@ -57,6 +57,9 @@ pub enum Message {
     /// Lightness has been changed
     LightnessChanged(f64),
 
+    /// Ambient effect has been toggled
+    AmbientEffectChanged(bool),
+
     /// SoundFX has been toggled
     SoundFxChanged(bool),
 
@@ -276,6 +279,7 @@ pub fn spawn_dbus_event_loop_session(
 
     thread::spawn(move || -> Result<()> {
         let conn = Connection::new_session()?;
+
         let rules_proxy = conn.with_proxy(
             "org.eruption.process_monitor",
             "/org/eruption/process_monitor/rules",
@@ -301,6 +305,28 @@ pub fn spawn_dbus_event_loop_session(
         //         true
         //     },
         // )?;
+
+        let fx_proxy_proxy = conn.with_proxy(
+            "org.eruption.fx_proxy",
+            "/org/eruption/fx_proxy/effects",
+            Duration::from_millis(4000),
+        );
+
+        let _id2_1 = fx_proxy_proxy.match_signal(
+            clone!(@strong tx => move |h: PropertiesPropertiesChanged,
+                  _: &Connection,
+                  _message: &dbus::Message| {
+
+                if let Some(ambient_effect) = h.changed_properties.get("AmbientEffect") {
+                    let enabled = ambient_effect.0.as_i64().unwrap() != 0;
+
+                    tx.send(Message::AmbientEffectChanged(enabled))
+                        .unwrap();
+                }
+
+                true
+            }),
+        )?;
 
         loop {
             conn.process(Duration::from_millis(4000))?;

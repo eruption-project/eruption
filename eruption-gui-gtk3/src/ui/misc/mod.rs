@@ -19,8 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use crate::timers;
-use crate::{constants, util};
+use crate::timers::{self, TimerMode};
+use crate::{util};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -109,6 +109,7 @@ pub fn initialize_misc_page(
     // near realtime update path
     timers::register_timer(
         timers::MISC_TIMER_ID,
+        TimerMode::ActiveStackPage(3),
         250,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak misc_signal_label, @weak misc_battery_level_label =>
@@ -171,7 +172,8 @@ pub fn initialize_misc_page(
 
     timers::register_timer(
         timers::MISC_RENDER_TIMER_ID,
-        1000 / constants::TARGET_FPS,
+        TimerMode::ActiveStackPage(3),
+        1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
             Ok(())

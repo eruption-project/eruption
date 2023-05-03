@@ -47,10 +47,8 @@ impl WootingTwoHeArm {
     pub fn new(device: u64) -> Self {
         WootingTwoHeArm {
             device,
-            pixbuf: Pixbuf::from_resource(
-                "/org/eruption/eruption-gui-gtk3/img/generic-keyboard.png",
-            )
-            .unwrap(),
+            pixbuf: Pixbuf::from_resource("/org/eruption/eruption-gui-gtk3/img/wooting-two-he.png")
+                .unwrap(),
         }
     }
 }

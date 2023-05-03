@@ -139,6 +139,12 @@ statusbar.notification-bar {
   font-size: small;
 }
 
+/* .slot_bar {
+  background-image: -gtk-gradient(linear, 0 0, 1 1,
+      color-stop(0, rgba(40, 40, 40, 1.0)),
+      color-stop(1, rgba(14, 14, 14, 1.0)));
+} */
+
 .slot_indicator {
   margin: 10px;
   padding: 4px;
@@ -154,7 +160,7 @@ statusbar.notification-bar {
   background: rgba(141, 141, 141, 0.24);
 }
 
-radiobutton text selection {
+.slot_indicator selection {
   background-color: transparent;
 }
 
@@ -167,7 +173,7 @@ radiobutton text selection {
 }
 
 .slot_indicator.active radiobutton {
-  border-style: none !important;
+  border-style: none;
 }
 
 .slot_entry {

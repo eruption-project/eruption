@@ -19,8 +19,9 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use crate::constants;
+
 use crate::timers;
+use crate::timers::TimerMode;
 use crate::util;
 use glib_macros::clone;
 use gtk::glib;
@@ -110,6 +111,7 @@ pub fn initialize_keyboard_page(
     // near realtime update path
     timers::register_timer(
         timers::KEYBOARD_TIMER_ID,
+        TimerMode::ActiveStackPage(1),
         139,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
@@ -148,7 +150,8 @@ pub fn initialize_keyboard_page(
 
     timers::register_timer(
         timers::KEYBOARD_RENDER_TIMER_ID,
-        1000 / (constants::TARGET_FPS * 2),
+        TimerMode::ActiveStackPage(1),
+        1000 / (crate::constants::TARGET_FPS * 2),
         move || {
             drawing_area.queue_draw();
 

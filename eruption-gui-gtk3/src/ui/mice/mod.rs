@@ -23,8 +23,9 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 
-use crate::constants;
+
 use crate::timers;
+use crate::timers::TimerMode;
 use crate::util;
 
 pub mod hwdevices;
@@ -134,6 +135,7 @@ pub fn initialize_mouse_page(
     // near realtime update path
     timers::register_timer(
         timers::MOUSE_TIMER_ID,
+        TimerMode::ActiveStackPage(2),
         151,
         clone!(@weak signal_strength_progress, @weak battery_level_progress,
                     @weak mouse_signal_label, @weak mouse_battery_level_label =>
@@ -173,6 +175,7 @@ pub fn initialize_mouse_page(
     // fast update path
     timers::register_timer(
         timers::MOUSE_FAST_TIMER_ID,
+        TimerMode::ActiveStackPage(2),
         1051,
         clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
                     @weak mouse_profile_label, @weak debounce_switch,
@@ -205,6 +208,7 @@ pub fn initialize_mouse_page(
     // slow update path
     timers::register_timer(
         timers::MOUSE_SLOW_TIMER_ID,
+        TimerMode::ActiveStackPage(2),
         3023,
         clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Ok(()), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
@@ -221,7 +225,8 @@ pub fn initialize_mouse_page(
 
     timers::register_timer(
         timers::MOUSE_RENDER_TIMER_ID,
-        1000 / constants::TARGET_FPS,
+        TimerMode::ActiveStackPage(2),
+        1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
 

@@ -494,18 +494,18 @@ pub fn get_angle_snapping(device: u64) -> Result<bool> {
 }
 
 /// Returns true when SoundFX is enabled
-pub fn get_sound_fx() -> Result<bool> {
-    let conn = Connection::new_system()?;
-    let proxy = conn.with_proxy(
-        "org.eruption",
-        "/org/eruption/config",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
-    );
+// pub fn get_sound_fx() -> Result<bool> {
+//     let conn = Connection::new_system()?;
+//     let proxy = conn.with_proxy(
+//         "org.eruption",
+//         "/org/eruption/config",
+//         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+//     );
 
-    let result = proxy.get("org.eruption.Config", "EnableSfx")?;
+//     let result = proxy.get("org.eruption.Config", "EnableSfx")?;
 
-    Ok(result)
-}
+//     Ok(result)
+// }
 
 /// Set SoundFX state to `enabled`
 pub fn set_sound_fx(enabled: bool) -> Result<()> {
@@ -524,18 +524,18 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
 }
 
 /// Returns true when AmbientFX is enabled
-pub fn get_ambient_fx() -> Result<bool> {
-    let conn = Connection::new_session()?;
-    let proxy = conn.with_proxy(
-        "org.eruption.fx_proxy",
-        "/org/eruption/fx_proxy/effects",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
-    );
+// pub fn get_ambient_fx() -> Result<bool> {
+//     let conn = Connection::new_session()?;
+//     let proxy = conn.with_proxy(
+//         "org.eruption.fx_proxy",
+//         "/org/eruption/fx_proxy/effects",
+//         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+//     );
 
-    let result = proxy.get("org.eruption.fx_proxy.Effects", "AmbientEffect")?;
+//     let result = proxy.get("org.eruption.fx_proxy.Effects", "AmbientEffect")?;
 
-    Ok(result)
-}
+//     Ok(result)
+// }
 
 /// Set ambient effect to the state of `enabled`
 pub fn set_ambient_effect(enabled: bool) -> Result<()> {

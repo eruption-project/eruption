@@ -31,6 +31,7 @@ use crate::dbus_client;
 use crate::device;
 use crate::events;
 use crate::timers;
+use crate::timers::TimerMode;
 use crate::ui;
 use crate::update_ui_state;
 use crate::util;
@@ -604,6 +605,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+
     let restart_eruption_daemon_button: gtk::Button =
         builder.object("restart_eruption_button_global").unwrap();
 
@@ -642,6 +645,27 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         "Version: {}",
         std::env!("CARGO_PKG_VERSION")
     )));
+
+    main_stack.connect_visible_child_notify(|stack| {
+        let name = stack.visible_child_name().unwrap();
+        let name = name.as_str();
+
+        tracing::debug!("Switched to stack page {}", name);
+
+        match name {
+            "page0" => crate::ACTIVE_PAGE.store(0, Ordering::SeqCst),
+            "page1" => crate::ACTIVE_PAGE.store(1, Ordering::SeqCst),
+            "page2" => crate::ACTIVE_PAGE.store(2, Ordering::SeqCst),
+            "page3" => crate::ACTIVE_PAGE.store(3, Ordering::SeqCst),
+            "page4" => crate::ACTIVE_PAGE.store(4, Ordering::SeqCst),
+            "page5" => crate::ACTIVE_PAGE.store(5, Ordering::SeqCst),
+            "page6" => crate::ACTIVE_PAGE.store(6, Ordering::SeqCst),
+
+            _ => {
+                tracing::error!("Could not get the name of the active stack page");
+            }
+        }
+    });
 
     // TODO: implement this
     // lock_button.set_permission();
@@ -741,22 +765,23 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     main_window.show_all();
 
-    // should we update the GUI, e.g. were new devices attached?
-    timers::register_timer(
-        timers::GLOBAL_CONFIG_TIMER_ID,
-        1500,
-        clone!(@weak application, @weak ambientfx_switch, @weak soundfx_switch => @default-return Ok(()), move || {
-            ambientfx_switch.set_active(util::get_ambient_fx().unwrap_or(false));
-            soundfx_switch.set_active(util::get_sound_fx().unwrap_or(false));
+    // timers::register_timer(
+    //     timers::GLOBAL_CONFIG_TIMER_ID,
+    //     TimerMode::Periodic,
+    //     1500,
+    //     clone!(@weak application, @weak ambientfx_switch, @weak soundfx_switch => @default-return Ok(()), move || {
+    //         ambientfx_switch.set_active(util::get_ambient_fx().unwrap_or(false));
+    //         soundfx_switch.set_active(util::get_sound_fx().unwrap_or(false));
 
-            Ok(())
-        }),
-    )?;
+    //         Ok(())
+    //     }),
+    // )?;
 
     // should we update the GUI, e.g. were new devices attached?
     timers::register_timer(
         timers::HOTPLUG_TIMER_ID,
-        250,
+        TimerMode::Periodic,
+        1500,
         clone!(@weak application => @default-return Ok(()), move || {
             if crate::dbus_client::ping().is_err() {
                 notification_box_global.show();
@@ -787,8 +812,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
 
-            ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
-            soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
+            // ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
+            // soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
 
             Ok(())
         }),
@@ -797,9 +822,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // update the global LED color map vector
     timers::register_timer(
         timers::COLOR_MAP_TIMER_ID,
+        TimerMode::Periodic,
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak application => @default-return Ok(()), move || {
-            let _result = crate::update_color_map();
+            crate::update_color_map().map_err(|e| { tracing::error!("{e}"); e })?;
 
             Ok(())
         }),

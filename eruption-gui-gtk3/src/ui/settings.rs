@@ -20,7 +20,8 @@
 */
 
 use crate::{
-    preferences, timers,
+    preferences,
+    timers::{self, TimerMode},
     util::{self, get_daemon_status, set_daemon_status, Daemon, ServiceStatus},
 };
 use glib::clone;
@@ -136,6 +137,7 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
 
     timers::register_timer(
         timers::SETTINGS_TIMER_ID,
+        TimerMode::ActiveStackPage(6),
         500,
         clone!(@weak eruption_daemon_status_label, @weak eruption_daemon_switch, @weak process_monitor_daemon_status_label,
                     @weak process_monitor_daemon_switch, @weak audio_proxy_daemon_switch, @weak audio_proxy_daemon_status_label

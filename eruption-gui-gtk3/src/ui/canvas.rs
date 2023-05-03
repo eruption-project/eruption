@@ -28,6 +28,7 @@ use gtk::{
 // use palette::{FromColor, Hsva, Srgba};
 
 use crate::dbus_client::Zone;
+use crate::timers::TimerMode;
 use crate::{constants, dbus_client, timers};
 use crate::{events, util};
 
@@ -149,7 +150,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -174,7 +175,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -199,7 +200,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("{make} {model}"))?;
+        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -295,9 +296,11 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         gtk::Inhibit(false)
     });
 
+    // update the global LED color map vector
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
-        1000 / (constants::TARGET_FPS * 2),
+        TimerMode::ActiveStackPage(0),
+        1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
 
@@ -305,10 +308,11 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         }),
     )?;
 
-    // update the global LED color map vector
+    // update device zone allocation information
     timers::register_timer(
         timers::CANVAS_ZONES_TIMER_ID,
-        750,
+        TimerMode::ActiveStackPage(0),
+        500,
         clone!(@weak builder => @default-return Ok(()), move || {
             let _result = update_allocated_zones(&builder).map_err(|e| tracing::error!("{e}"));
 

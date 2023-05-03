@@ -20,5 +20,7 @@ _This is a non-exhaustive listing of planned features:_
 
 - Ratelimit all: WARN eruption::events: Not sending a message to a failed tx
 - High CPU load while using the GTK3+ based GUI: Maybe use the Eruption SDK for communicating with the daemon instead of DBus?
-- "Ambient effect disabled" error message
+- Move all Lua scripts to support dir
+- Allocated Zones: Don't poll DBus, use a signal?
+- Update Python SDK (get_canvas)
 - Wayland support is still lacking: AmbientFx support is currently not available
