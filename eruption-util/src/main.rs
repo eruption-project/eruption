@@ -905,18 +905,22 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                                                     info!("Recorded key with index {}", idx);
 
-                                                                    topology[(i * keys_per_row) + key_index] = idx;
-                                                                    key_index += 1;
+                                                                    if idx as usize >= (i * keys_per_row) + key_index {
+                                                                        warn!("Index out of bounds {idx}, skipping...");
+                                                                    } else {
+                                                                        topology[(i * keys_per_row) + key_index] = idx;
+                                                                        key_index += 1;
 
-                                                                    // set highlighted LEDs
-                                                                    led_map[idx as usize] = RGBA {
-                                                                        r: 255,
-                                                                        g: 0,
-                                                                        b: 0,
-                                                                        a: 0,
-                                                                    };
+                                                                        // set highlighted LEDs
+                                                                        led_map[idx as usize] = RGBA {
+                                                                            r: 255,
+                                                                            g: 0,
+                                                                            b: 0,
+                                                                            a: 0,
+                                                                        };
 
-                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                        hwdev.lock().send_led_map(&led_map)?;
+                                                                    }
                                                                 }
                                                             } else {
                                                                 // warn!("Event ignored");
