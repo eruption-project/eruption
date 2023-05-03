@@ -262,7 +262,7 @@ uninstall:
 
 	# -@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
 	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
-	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui.png
 	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
 	-@rm $(TARGET_DIR)/lib/systemd/system-sleep/eruption
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption.service
