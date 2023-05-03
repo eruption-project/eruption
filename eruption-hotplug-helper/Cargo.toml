@@ -34,7 +34,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.2.4", features = ["derive"] }
+clap =  { version = "4.2.7", features = ["derive"] }
 clap_complete = "4.2.1"
 log = "0.4.17"
 syslog = "6.1.0"
