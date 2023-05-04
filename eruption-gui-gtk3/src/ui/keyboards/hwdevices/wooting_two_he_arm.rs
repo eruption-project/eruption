@@ -562,7 +562,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     KeyDef::new(414.0, 110.0, 32.0, 32.0, Caption::simple("Ü"), 74), // Ü
     KeyDef::new(422.0, 145.0, 32.0, 32.0, Caption::simple("Ä"), 75), // Ä
     KeyDef::new(432.0, 180.0, 32.0, 32.0, Caption::simple("-"), 76), // -
-    KeyDef::new(360.0, 215.0, 50.0, 32.0, Caption::simple("FN"), 77), // FN
+    KeyDef::new(360.0, 215.0, 50.0, 32.0, Caption::simple("MENU"), 77), // MENU
     //
     KeyDef::dummy(78),                                               // filler
     KeyDef::new(379.0, 23.0, 32.0, 32.0, Caption::simple("F9"), 79), // F9
@@ -571,7 +571,7 @@ const KEY_DEFS_GENERIC_QWERTY: &[KeyDef] = &[
     KeyDef::new(448.0, 110.0, 32.0, 32.0, Caption::simple("+"), 81), // +
     KeyDef::dummy(82),                                              // filler
     KeyDef::new(466.0, 180.0, 48.0, 32.0, Caption::simple("SHIFT"), 83), // SHIFT
-    KeyDef::new(412.0, 215.0, 50.0, 32.0, Caption::simple("MENU"), 84), // MENU
+    KeyDef::new(412.0, 215.0, 50.0, 32.0, Caption::simple("FN"), 84), // FN
     KeyDef::new(413.0, 23.0, 32.0, 32.0, Caption::simple("F10"), 85), // F10
     KeyDef::new(447.0, 23.0, 32.0, 32.0, Caption::simple("F11"), 86), // F11
     // column 14

@@ -90,6 +90,12 @@ The Eruption Development Team
     <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
+  <object class="GtkImage" id="image_info">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">dialog-information</property>
+    <property name="icon_size">2</property>
+  </object>
   <object class="GtkImage" id="image_new_profile">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -219,7 +225,7 @@ The Eruption Development Team
     <property name="can-focus">False</property>
     <property name="window-position">center-always</property>
     <property name="default-width">1440</property>
-    <property name="default-height">768</property>
+    <property name="default-height">900</property>
     <property name="icon-name">/org/eruption/eruption-gui-gtk3/img/eruption-gui.png</property>
     <property name="show-menubar">False</property>
     <child>
@@ -227,6 +233,7 @@ The Eruption Development Team
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">8</property>
         <child>
           <object class="GtkStatusbar" id="status_bar">
             <property name="can-focus">False</property>
@@ -296,262 +303,223 @@ The Eruption Development Team
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="transition-type">crossfade</property>
+            <property name="interpolate-size">True</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkStack" id="canvas_stack">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="transition-type">slide-left-right</property>
-                    <property name="interpolate-size">True</property>
+                    <property name="spacing">16</property>
                     <child>
-                      <object class="GtkBox">
+                      <!-- n-columns=2 n-rows=7 -->
+                      <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="margin-end">8</property>
                         <child>
-                          <object class="GtkDrawingArea" id="drawing_area_canvas">
+                          <object class="GtkLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="label" translatable="yes">Hue</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="label" translatable="yes">Saturation</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScale" id="canvas_saturation_scale">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="adjustment">adjustment_saturation</property>
+                            <property name="restrict-to-fill-level">False</property>
+                            <property name="fill-level">0</property>
+                            <property name="round-digits">0</property>
+                            <property name="digits">0</property>
+                            <property name="value-pos">left</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="label" translatable="yes">Lightness</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScale" id="canvas_lightness_scale">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="adjustment">adjustment_lightness</property>
+                            <property name="restrict-to-fill-level">False</property>
+                            <property name="fill-level">0</property>
+                            <property name="round-digits">0</property>
+                            <property name="digits">0</property>
+                            <property name="value-pos">left</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="postproc_caption_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="margin-end">16</property>
+                            <property name="label" translatable="yes">Image post-processing</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                              <attribute name="scale" value="1"/>
+                            </attributes>
+                            <style>
+                              <class name="heading"/>
+                              <class name="sub"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScale" id="canvas_hue_scale">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="adjustment">adjustment_hue</property>
+                            <property name="restrict-to-fill-level">False</property>
+                            <property name="fill-level">0</property>
+                            <property name="round-digits">0</property>
+                            <property name="digits">0</property>
+                            <property name="value-pos">left</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="reset_postproc_button">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="tooltip-text" translatable="yes">Reset image post processing parameters to their default values</property>
+                            <property name="halign">end</property>
+                            <property name="valign">start</property>
+                            <property name="margin-top">8</property>
+                            <property name="image">image_reload</property>
+                            <property name="relief">none</property>
+                            <property name="always-show-image">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="devices_caption_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="margin-end">16</property>
+                            <property name="margin-top">16</property>
+                            <property name="label" translatable="yes">Device zone allocation</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                              <attribute name="scale" value="1"/>
+                            </attributes>
+                            <style>
+                              <class name="heading"/>
+                              <class name="sub"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkTreeView" id="devices_tree_view">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="margin-top">16</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">6</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="orientation">vertical</property>
+                            <property name="halign">end</property>
                             <child>
-                              <!-- n-columns=2 n-rows=5 -->
-                              <object class="GtkGrid">
+                              <object class="GtkImage">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="margin-start">8</property>
-                                <property name="margin-end">8</property>
                                 <property name="margin-top">8</property>
-                                <property name="margin-bottom">8</property>
-                                <property name="column-spacing">8</property>
-                                <child>
-                                  <object class="GtkLabel" id="canvas_caption_label">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Unified Canvas Setup</property>
-                                    <attributes>
-                                      <attribute name="weight" value="bold"/>
-                                      <attribute name="scale" value="2"/>
-                                    </attributes>
-                                    <style>
-                                      <class name="heading"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkImage">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="valign">center</property>
-                                    <property name="pixel-size">64</property>
-                                    <property name="icon-name">document-page-setup-symbolic</property>
-                                    <property name="icon_size">0</property>
-                                    <style>
-                                      <class name="icon"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">0</property>
-                                    <property name="top-attach">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="label" translatable="yes">Hue</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">0</property>
-                                    <property name="top-attach">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="label" translatable="yes">Saturation</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">0</property>
-                                    <property name="top-attach">3</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkScale" id="canvas_saturation_scale">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="adjustment">adjustment_saturation</property>
-                                    <property name="restrict-to-fill-level">False</property>
-                                    <property name="fill-level">0</property>
-                                    <property name="digits">0</property>
-                                    <property name="value-pos">left</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">3</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="label" translatable="yes">Lightness</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">0</property>
-                                    <property name="top-attach">4</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkScale" id="canvas_lightness_scale">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="adjustment">adjustment_lightness</property>
-                                    <property name="restrict-to-fill-level">False</property>
-                                    <property name="fill-level">0</property>
-                                    <property name="digits">0</property>
-                                    <property name="value-pos">left</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">4</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="postproc_caption_label">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="valign">center</property>
-                                    <property name="label" translatable="yes">Image post-processing</property>
-                                    <attributes>
-                                      <attribute name="weight" value="bold"/>
-                                      <attribute name="scale" value="1"/>
-                                    </attributes>
-                                    <style>
-                                      <class name="heading"/>
-                                      <class name="sub"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkScale" id="canvas_hue_scale">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="adjustment">adjustment_hue</property>
-                                    <property name="restrict-to-fill-level">False</property>
-                                    <property name="fill-level">0</property>
-                                    <property name="round-digits">0</property>
-                                    <property name="digits">0</property>
-                                    <property name="value-pos">left</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="reset_postproc_button">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="receives-default">False</property>
-                                    <property name="tooltip-text" translatable="yes">Reset image post processing parameters to their default values</property>
-                                    <property name="halign">end</property>
-                                    <property name="valign">start</property>
-                                    <property name="margin-top">8</property>
-                                    <property name="image">image_reload</property>
-                                    <property name="relief">none</property>
-                                    <property name="always-show-image">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">0</property>
-                                    <property name="top-attach">1</property>
-                                  </packing>
-                                </child>
+                                <property name="pixel-size">64</property>
+                                <property name="icon-name">document-page-setup-symbolic</property>
+                                <property name="icon_size">0</property>
+                                <style>
+                                  <class name="icon"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">True</property>
+                                <property name="padding">8</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkLabel" id="canvas_caption_label">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">8</property>
-                                <child>
-                                  <object class="GtkLabel" id="devices_caption_label">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="valign">end</property>
-                                    <property name="label" translatable="yes">Device zone allocation</property>
-                                    <attributes>
-                                      <attribute name="weight" value="bold"/>
-                                      <attribute name="scale" value="1"/>
-                                    </attributes>
-                                    <style>
-                                      <class name="heading"/>
-                                      <class name="sub"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkTreeView" id="devices_tree_view">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="search-column">3</property>
-                                    <property name="enable-grid-lines">horizontal</property>
-                                    <property name="enable-tree-lines">True</property>
-                                    <property name="tooltip-column">3</property>
-                                    <property name="activate-on-single-click">True</property>
-                                    <child internal-child="selection">
-                                      <object class="GtkTreeSelection"/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="pack-type">end</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
+                                <property name="margin-top">16</property>
+                                <property name="label" translatable="yes">Unified Canvas Setup</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                  <attribute name="scale" value="2"/>
+                                </attributes>
+                                <style>
+                                  <class name="heading"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -561,22 +529,67 @@ The Eruption Development Team
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="padding">8</property>
-                            <property name="pack-type">end</property>
-                            <property name="position">2</property>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                            <property name="width">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack-type">end</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkStack" id="canvas_stack">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hhomogeneous">False</property>
+                        <property name="vhomogeneous">False</property>
+                        <property name="transition-type">crossfade</property>
+                        <child>
+                          <object class="GtkDrawingArea" id="drawing_area_canvas_preview">
+                            <property name="width-request">1024</property>
+                            <property name="height-request">480</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="name">page0</property>
+                            <property name="title" translatable="yes">Preview</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkDrawingArea" id="drawing_area_canvas_zones">
+                            <property name="width-request">1024</property>
+                            <property name="height-request">480</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="name">page1</property>
+                            <property name="title" translatable="yes">Zone allocation</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">Canvas Setup</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
@@ -584,15 +597,17 @@ The Eruption Development Team
                 <child>
                   <object class="GtkStackSwitcher" id="canvas_switcher">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
+                    <property name="can-focus">True</property>
+                    <property name="halign">start</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="border-width">8</property>
                     <property name="stack">canvas_stack</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
@@ -626,7 +641,8 @@ The Eruption Development Team
                 <child>
                   <object class="GtkStackSwitcher" id="keyboard_devices_switcher">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="border-width">8</property>
                     <property name="stack">keyboard_devices_stack</property>
                   </object>
                   <packing>
@@ -668,7 +684,8 @@ The Eruption Development Team
                 <child>
                   <object class="GtkStackSwitcher" id="mouse_devices_switcher">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="border-width">8</property>
                     <property name="stack">mouse_devices_stack</property>
                   </object>
                   <packing>
@@ -710,7 +727,8 @@ The Eruption Development Team
                 <child>
                   <object class="GtkStackSwitcher" id="misc_devices_switcher">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="border-width">8</property>
                     <property name="stack">misc_devices_stack</property>
                   </object>
                   <packing>
@@ -960,13 +978,12 @@ The Eruption Development Team
                         <property name="search-column">3</property>
                         <property name="enable-grid-lines">both</property>
                         <property name="enable-tree-lines">True</property>
-                        <property name="tooltip-column">4</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
@@ -1087,14 +1104,12 @@ The Eruption Development Team
                   <object class="GtkNotebook">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="scrollable">True</property>
-                    <property name="enable-popup">True</property>
+                    <property name="show-border">False</property>
                     <child>
                       <object class="GtkScrolledWindow" id="config_window">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="shadow-type">in</property>
-                        <property name="propagate-natural-height">True</property>
                       </object>
                       <packing>
                         <property name="tab-fill">False</property>
@@ -1182,9 +1197,6 @@ The Eruption Development Team
                         <property name="position">1</property>
                         <property name="tab-fill">False</property>
                       </packing>
-                    </child>
-                    <child type="action-end">
-                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -1666,117 +1678,10 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkFrame">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-top">16</property>
-            <property name="label-xalign">0</property>
-            <property name="shadow-type">none</property>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <child>
-                  <object class="GtkFrame">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">end</property>
-                    <property name="border-width">8</property>
-                    <property name="label-xalign">0</property>
-                    <property name="shadow-type">none</property>
-                    <child>
-                      <!-- n-columns=2 n-rows=2 -->
-                      <object class="GtkGrid">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="border-width">8</property>
-                        <property name="row-spacing">8</property>
-                        <property name="column-spacing">16</property>
-                        <property name="row-homogeneous">True</property>
-                        <child>
-                          <object class="GtkAccelLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="label" translatable="yes">_Audio Effects</property>
-                            <property name="use-underline">True</property>
-                            <property name="mnemonic-widget">soundfx_switch</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkSwitch" id="ambientfx_switch">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkAccelLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="label" translatable="yes">_Ambient Effect</property>
-                            <property name="use-underline">True</property>
-                            <property name="mnemonic-widget">ambientfx_switch</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkSwitch" id="soundfx_switch">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Effects</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-            </child>
-            <child type="label_item">
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkBox" id="slot_bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
             <property name="baseline-position">bottom</property>
             <child>
               <object class="GtkFrame" id="slot1_frame">
@@ -2243,6 +2148,112 @@ The Eruption Development Team
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="pack-type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFrame">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="border-width">8</property>
+            <property name="label-xalign">0</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="valign">end</property>
+                    <property name="border-width">8</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">none</property>
+                    <child>
+                      <!-- n-columns=2 n-rows=2 -->
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="border-width">8</property>
+                        <property name="row-spacing">8</property>
+                        <property name="column-spacing">16</property>
+                        <property name="row-homogeneous">True</property>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_Audio Effects</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">soundfx_switch</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="ambientfx_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkAccelLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">_Ambient Effect</property>
+                            <property name="use-underline">True</property>
+                            <property name="mnemonic-widget">ambientfx_switch</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="soundfx_switch">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Effects</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="label_item">
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack-type">end</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -2256,26 +2267,16 @@ The Eruption Development Team
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Eruption GUI</property>
+        <property name="spacing">8</property>
         <property name="show-close-button">True</property>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="pack-type">end</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkStackSwitcher" id="stack_switcher">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
             <property name="homogeneous">True</property>
+            <property name="icon-size">3</property>
             <property name="stack">main_stack</property>
           </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child>
           <object class="GtkMenuButton" id="menu_button">
@@ -2295,7 +2296,7 @@ The Eruption Development Team
           </object>
           <packing>
             <property name="pack-type">end</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -2310,7 +2311,32 @@ The Eruption Development Team
           </object>
           <packing>
             <property name="pack-type">end</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="info_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_info</property>
+            <property name="relief">none</property>
+            <property name="always-show-image">True</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <child>
@@ -2327,7 +2353,7 @@ The Eruption Development Team
             <property name="value-pos">right</property>
           </object>
           <packing>
-            <property name="position">4</property>
+            <property name="position">5</property>
           </packing>
         </child>
       </object>

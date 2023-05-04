@@ -615,6 +615,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     let about_item: gtk::MenuItem = builder.object("about_item").unwrap();
     let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
+
+    let info_button: gtk::Button = builder.object("info_button").unwrap();
     let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
 
     let ambientfx_switch: gtk::Switch = builder.object("ambientfx_switch").unwrap();
@@ -673,6 +675,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     lock_button.connect_clicked(|_btn| {
         let _result = dbus_client::ping_privileged();
     });
+
+    info_button.connect_clicked(clone!(@weak main_window => move |_|   {
+        ui::about::show_about_dialog(&main_window);
+    }));
 
     // main menu items
     about_item.connect_activate(clone!(@weak main_window => move |_| {
@@ -841,8 +847,8 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     let misc_devices_stack: gtk::Stack = builder.object("misc_devices_stack").unwrap();
 
     // clean up all previously instantiated sub-pages
-    while canvas_stack.children().len() > 1 {
-        let child = &canvas_stack.children()[1];
+    while canvas_stack.children().len() > 2 {
+        let child = &canvas_stack.children()[2];
         canvas_stack.remove(child);
 
         unsafe {
@@ -925,18 +931,21 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         let mut any_misc_device = false;
 
         // clean up all previously instantiated sub-pages on the canvas stack
-        while canvas_stack.children().len() > 1 {
-            let child = &canvas_stack.children()[1];
-            canvas_stack.remove(child);
+        // while canvas_stack.children().len() > 3 {
+        //     let child = &canvas_stack.children()[3];
+        //     canvas_stack.remove(child);
 
-            unsafe {
-                child.destroy();
-            }
-        }
+        //     unsafe {
+        //         child.destroy();
+        //     }
+        // }
 
-        // show unified canvas page
-        let child = &canvas_stack.children()[0];
-        child.show_all();
+        // show pages
+        // let child = &canvas_stack.children()[0];
+        // child.show_all();
+
+        // let child = &canvas_stack.children()[1];
+        // child.show_all();
 
         // instantiate stack pages for all keyboard devices
         for (_device, (vid, pid)) in devices.0.iter().enumerate() {

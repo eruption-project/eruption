@@ -20,10 +20,12 @@
 */
 
 use std::cell::RefCell;
+use std::sync::atomic::Ordering;
 
 use glib::clone;
 use gtk::{
-    prelude::*, Builder, ScrolledWindow, ShadowType, Stack, StackSwitcher, TreeViewColumnSizing,
+    prelude::*, Builder, ButtonsType, MessageDialog, MessageType, ResponseType, ScrolledWindow,
+    ShadowType, Stack, StackSwitcher, TreeViewColumnSizing,
 };
 // use palette::{FromColor, Hsva, Srgba};
 
@@ -37,7 +39,7 @@ use super::mice;
 use super::misc;
 
 const BORDER: (f64, f64) = (8.0, 8.0);
-const PIXEL_SIZE: f64 = 3.5;
+const PIXEL_SIZE: f64 = 14.5;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -47,6 +49,13 @@ pub enum CanvasError {
     // UnknownError,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum RenderMode {
+    Preview,
+    Zones,
+}
+
+#[derive(Debug, Clone)]
 struct Rectangle {
     x: f64,
     y: f64,
@@ -56,7 +65,7 @@ struct Rectangle {
 
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
-    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("Roboto demibold 32"));
+    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("Roboto demibold 22"));
 }
 
 /// Initialize page "Canvas"
@@ -67,7 +76,9 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let drawing_area: gtk::DrawingArea = builder.object("drawing_area_canvas").unwrap();
+    let drawing_area_preview: gtk::DrawingArea =
+        builder.object("drawing_area_canvas_preview").unwrap();
+    let drawing_area_zones: gtk::DrawingArea = builder.object("drawing_area_canvas_zones").unwrap();
 
     let reset_postproc_button: gtk::Button = builder.object("reset_postproc_button").unwrap();
 
@@ -84,10 +95,29 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     reset_postproc_button.connect_clicked(
-        clone!(@weak canvas_hue_scale, @weak canvas_saturation_scale, @weak canvas_lightness_scale  => move |_btn| {
-            canvas_hue_scale.adjustment().set_value(0.0);
-            canvas_saturation_scale.adjustment().set_value(0.0);
-            canvas_lightness_scale.adjustment().set_value(0.0);
+        clone!(@weak canvas_hue_scale, @weak canvas_saturation_scale, @weak canvas_lightness_scale => move |_btn| {
+            let message =
+            "Reset all image post-processing filters to their respective default values?".to_string();
+
+            let message_dialog = MessageDialog::builder()
+            .destroy_with_parent(true)
+            .modal(true)
+            .message_type(MessageType::Question)
+            .icon_name("dialog-question")
+            // .title("Reset image post-processing filters")
+            .text(message)
+            .secondary_text("Hue, saturation and lightness will be reset to their respective default values")
+            .buttons(ButtonsType::YesNo)
+            .build();
+
+            let result = message_dialog.run();
+            message_dialog.hide();
+
+            if result  == ResponseType::Yes.into() {
+                canvas_hue_scale.adjustment().set_value(0.0);
+                canvas_saturation_scale.adjustment().set_value(0.0);
+                canvas_lightness_scale.adjustment().set_value(0.0);
+            }
         }),
     );
 
@@ -270,39 +300,67 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     devices_tree_view.set_model(Some(&devices_treestore));
     devices_tree_view.show_all();
 
-    // drawing area
-    drawing_area.connect_draw(move |da: &gtk::DrawingArea, context: &cairo::Context| {
-        let hue = canvas_hue_scale.value();
-        let saturation = canvas_saturation_scale.value();
-        let lightness = canvas_lightness_scale.value();
+    let hue = canvas_hue_scale.value();
+    let saturation = canvas_saturation_scale.value();
+    let lightness = canvas_lightness_scale.value();
 
-        if let Err(_e) = render_canvas(da, (hue, saturation, lightness), context) {
+    // drawing areas
+    drawing_area_preview.connect_draw(clone!(@weak notification_box_global => @default-return gtk::Inhibit(true), move |da: &gtk::DrawingArea, context: &cairo::Context| {
+        if let Err(_e) = render_canvas(
+            RenderMode::Preview,
+            da,
+            (hue, saturation, lightness),
+            context,
+        ) {
             notification_box_global.show();
 
             // apparently we have lost the connection to the Eruption daemon
-            // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
         } else {
             notification_box_global.hide();
 
-            // if events::LOST_CONNECTION.load(Ordering::SeqCst) {
-            //     // we re-established the connection to the Eruption daemon,
-            //     // update the GUI to show e.g. newly attached devices
-            //     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+            if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+                // we re-established the connection to the Eruption daemon,
+                // update the GUI to show e.g. newly attached devices
+                events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
-            //     events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
-            // }
+                events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
+            }
         }
 
         gtk::Inhibit(false)
-    });
+    }));
+
+    drawing_area_zones.connect_draw(clone!(@weak notification_box_global => @default-return gtk::Inhibit(true), move |da: &gtk::DrawingArea, context: &cairo::Context| {
+        if let Err(_e) = render_canvas(RenderMode::Zones, da, (hue, saturation, lightness), context)
+        {
+            notification_box_global.show();
+
+            // apparently we have lost the connection to the Eruption daemon
+            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+        } else {
+            notification_box_global.hide();
+
+            if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+                // we re-established the connection to the Eruption daemon,
+                // update the GUI to show e.g. newly attached devices
+                events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+                events::UPDATE_MAIN_WINDOW.store(true, Ordering::SeqCst);
+            }
+        }
+
+        gtk::Inhibit(false)
+    }));
 
     // update the global LED color map vector
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
         TimerMode::ActiveStackPage(0),
         1000 / (crate::constants::TARGET_FPS * 2),
-        clone!(@weak drawing_area => @default-return Ok(()), move || {
-            drawing_area.queue_draw();
+        clone!(@weak drawing_area_preview, @weak drawing_area_zones => @default-return Ok(()), move || {
+            drawing_area_preview.queue_draw();
+            drawing_area_zones.queue_draw();
 
             Ok(())
         }),
@@ -444,7 +502,7 @@ fn populate_canvas_stack_widget_for_device(builder: &Builder, title: &str) -> Re
 
     scrolled_window.show_all();
 
-    stack_widget.add_titled(&scrolled_window, "Device", title);
+    stack_widget.add_titled(&scrolled_window, "Zone", title);
 
     scrolled_window.show_all();
 
@@ -452,6 +510,7 @@ fn populate_canvas_stack_widget_for_device(builder: &Builder, title: &str) -> Re
 }
 
 fn render_canvas(
+    mode: RenderMode,
     da: &gtk::DrawingArea,
     hsl: (f64, f64, f64),
     context: &cairo::Context,
@@ -459,7 +518,7 @@ fn render_canvas(
     let width = da.allocated_width() as f64;
     let height = da.allocated_height() as f64;
 
-    let scale_factor = height / (constants::CANVAS_HEIGHT as f64 * 4.15);
+    let scale_factor = width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
     let led_colors = crate::COLOR_MAP.lock();
 
@@ -468,22 +527,25 @@ fn render_canvas(
         paint_cell(i, color, hsl, context, width, height, scale_factor)?;
     }
 
-    let layout = pangocairo::create_layout(context);
-    FONT_DESC.with(|f| -> Result<()> {
-        let desc = f.borrow();
-        layout.set_font_description(Some(&desc));
+    if mode == RenderMode::Zones {
+        let layout = pangocairo::create_layout(context);
+        FONT_DESC.with(|f| -> Result<()> {
+            let desc = f.borrow();
+            layout.set_font_description(Some(&desc));
 
-        // draw allocated zones
-        for (device, zone) in crate::ZONES.lock().iter() {
-            paint_zone(context, &layout, *device, zone, scale_factor)?;
-        }
+            // draw allocated zones
+            for (device, zone) in crate::ZONES.lock().iter() {
+                paint_zone(context, &layout, *device, zone, scale_factor)?;
+            }
 
-        Ok(())
-    })?;
+            Ok(())
+        })?;
+    }
 
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn rounded_rectangle(
     cr: &cairo::Context,
     x: f64,
@@ -558,31 +620,31 @@ fn paint_zone(
             };
 
             // use a translucent color to paint the zone
-            let color = (1.0, 0.9, 0.75, 0.15);
-            let color2 = (0.8, 0.7, 0.55, 0.25);
+            let color = (1.0, 1.0, 1.0, 0.7);
 
-            rounded_rectangle(
-                cr,
-                cell_def.x,
-                cell_def.y,
-                cell_def.width - 4.0,
-                cell_def.height - 4.0,
-                12.0,
-                &color,
-                &color2,
-            )?;
+            cr.set_source_rgba(color.0, color.1, color.2, color.3);
+            cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+            cr.fill()?;
         }
     }
 
-    // draw caption
-    cr.set_source_rgba(0.21, 0.21, 0.21, 0.65);
-    cr.move_to(
-        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor) + 15.0,
+    // draw caption background
+    cr.set_source_rgba(0.21, 0.21, 0.21, 0.85);
+    cr.rectangle(
+        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor),
         BORDER.1 + (zone.y as f64 * PIXEL_SIZE * scale_factor),
+        PIXEL_SIZE * scale_factor * 2.0,
+        PIXEL_SIZE * scale_factor * 2.0,
     );
+    cr.fill()?;
 
+    // draw caption
+    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+    cr.move_to(
+        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor) + 6.5,
+        BORDER.1 + (zone.y as f64 * PIXEL_SIZE * scale_factor) - 5.0,
+    );
     layout.set_text(&format!("{}", device));
-
     pangocairo::show_layout(cr, layout);
 
     Ok(())
@@ -630,39 +692,14 @@ fn paint_cell(
 
     // cr.set_source_rgba(color.0, color.1, color.2, 1.0 - color.3);
 
-    // cr.set_source_rgba(
-    //     color.r as f64 / 255.0,
-    //     color.g as f64 / 255.0,
-    //     color.b as f64 / 255.0,
-    //     1.0 - color.a as f64 / 255.0,
-    // );
-    // cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
-    // cr.fill()?;
-
-    // use a translucent color to paint the zone
-    let color1 = (
+    cr.set_source_rgba(
         color.r as f64 / 255.0,
         color.g as f64 / 255.0,
         color.b as f64 / 255.0,
-        color.a as f64 / 255.0,
+        1.0 - color.a as f64 / 255.0,
     );
-    let color2 = (
-        color.r as f64 / 255.0,
-        color.g as f64 / 255.0,
-        color.b as f64 / 255.0,
-        color.a as f64 / 255.0,
-    );
-
-    rounded_rectangle(
-        cr,
-        cell_def.x,
-        cell_def.y,
-        cell_def.width - 3.0,
-        cell_def.height - 3.0,
-        12.0,
-        &color1,
-        &color2,
-    )?;
+    cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+    cr.fill()?;
 
     Ok(())
 }
