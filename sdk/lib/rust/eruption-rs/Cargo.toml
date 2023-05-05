@@ -43,7 +43,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 libc = "0.2.142"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-serde = "1.0.160"
+serde = "1.0.162"
 bincode = "2.0.0-rc.3"
 bytes = "1.4.0"
 prost = "0.11.9"
