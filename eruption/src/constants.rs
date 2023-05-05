@@ -89,11 +89,11 @@ pub const TICK_FPS: u64 = 19;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_WIDTH: usize = 64;
+pub const CANVAS_WIDTH: usize = 48;
 
 /// The height of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_HEIGHT: usize = 32;
+pub const CANVAS_HEIGHT: usize = 24;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;

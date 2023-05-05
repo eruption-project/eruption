@@ -21,11 +21,11 @@
 
 window {
   color: rgb(132, 132, 132);
-  background-color: rgba(0, 0, 0, 0.65);
+  /* background-color: rgba(0, 0, 0, 0.65); */
 }
 
 .client {
-  padding: 12px;
+  padding: 8px;
 
   /* background:
     linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
@@ -91,34 +91,58 @@ box.notification-box.error {
 }
 
 box.notification-box.warning {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
+  background: -gtk-gradient(linear, 0 0, 0 1,
       color-stop(0, #ecd02c),
       color-stop(1, #a5901a));
 }
 
+infobar {
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 8px;
+  margin-left: 4px;
+  margin-right: 4px;
+}
 
-statusbar.notification-bar.error {
+infobar.other *,
+infobar.question *,
+infobar.info *,
+infobar.warning *,
+infobar.error * {
+  background: transparent;
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: white;
+}
+
+infobar.error {
   background-image: -gtk-gradient(linear, 0 0, 0 1,
       color-stop(0, #ff5722),
       color-stop(1, #f44336));
 }
 
-statusbar.notification-bar.warning {
+infobar.warning {
   background-image: -gtk-gradient(linear, 0 0, 0 1,
       color-stop(0, #ecd02c),
       color-stop(1, #a5901a));
 }
 
-statusbar.notification-bar.info {
+infobar.info {
   background-image: -gtk-gradient(linear, 0 0, 0 1,
       color-stop(0, #3cff22),
       color-stop(1, #00a008));
 }
 
-statusbar.notification-bar {
-  margin: 0px;
-  padding: 0px;
-  border-radius: 8px;
+infobar.question {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #3cff22),
+      color-stop(1, #00a008));
+}
+
+infobar.other {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #3cff22),
+      color-stop(1, #00a008));
 }
 
 .header-bar {

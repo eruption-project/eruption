@@ -23,7 +23,6 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 
-
 use crate::timers;
 use crate::timers::TimerMode;
 use crate::util;
@@ -62,22 +61,12 @@ pub fn initialize_mouse_page(
     let mouse_dpi_label: gtk::Label = template.object("mouse_dpi_label").unwrap();
     let mouse_profile_label: gtk::Label = template.object("mouse_profile_label").unwrap();
 
-    let mouse_signal_label: gtk::Label = template.object("mouse_signal_label").unwrap();
-    let signal_strength_progress: gtk::ProgressBar =
+    let signal_strength_indicator: gtk::LevelBar =
         template.object("mouse_signal_strength").unwrap();
-
-    let mouse_battery_level_label: gtk::Label =
-        template.object("mouse_battery_level_label").unwrap();
-    let battery_level_progress: gtk::ProgressBar = template.object("mouse_battery_level").unwrap();
+    let battery_level_indicator: gtk::LevelBar = template.object("mouse_battery_level").unwrap();
 
     let debounce_switch: gtk::Switch = template.object("debounce_switch").unwrap();
     let angle_snapping_switch: gtk::Switch = template.object("angle_snapping_switch").unwrap();
-
-    crate::dbus_client::ping().unwrap_or_else(|_e| {
-        notification_box_global.show_now();
-
-        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-    });
 
     // device name and status
     let make_and_model = mouse_device.get_make_and_model();
@@ -137,8 +126,7 @@ pub fn initialize_mouse_page(
         timers::MOUSE_TIMER_ID,
         TimerMode::ActiveStackPage(2),
         151,
-        clone!(@weak signal_strength_progress, @weak battery_level_progress,
-                    @weak mouse_signal_label, @weak mouse_battery_level_label =>
+        clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
                     @default-return Ok(()), move || {
 
             // device status
@@ -146,26 +134,23 @@ pub fn initialize_mouse_page(
                 if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
                     let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
-                    signal_strength_progress.set_fraction(value as f64 / 100.0);
-
-                    mouse_signal_label.show();
-                    signal_strength_progress.show();
+                    signal_strength_indicator.set_value(value as f64 / 100.0);
+                    signal_strength_indicator.show();
                 } else {
-                    mouse_signal_label.hide();
-                    signal_strength_progress.hide();
+                    signal_strength_indicator.hide();
                 }
 
                 if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
                     let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
-                    battery_level_progress.set_fraction(value as f64 / 100.0);
-
-                    mouse_battery_level_label.show();
-                    battery_level_progress.show();
+                    battery_level_indicator.set_value(value as f64 / 100.0);
+                    battery_level_indicator.show();
                 } else {
-                    mouse_battery_level_label.hide();
-                    battery_level_progress.hide();
+                    battery_level_indicator.hide();
                 }
+            } else {
+                signal_strength_indicator.hide();
+                battery_level_indicator.hide();
             }
 
             Ok(())
@@ -210,7 +195,7 @@ pub fn initialize_mouse_page(
         timers::MOUSE_SLOW_TIMER_ID,
         TimerMode::ActiveStackPage(2),
         3023,
-        clone!(@weak mouse_firmware_label, @weak mouse_rate_label, @weak signal_strength_progress, @weak battery_level_progress => @default-return Ok(()), move || {
+        clone!(@weak mouse_firmware_label, @weak mouse_rate_label => @default-return Ok(()), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
                 mouse_firmware_label.set_label(&firmware);
             }
@@ -230,7 +215,7 @@ pub fn initialize_mouse_page(
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
 
-            Ok(())
+                  Ok(())
         }),
     )?;
 

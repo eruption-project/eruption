@@ -24,17 +24,21 @@ use glib::clone;
 use glib::IsA;
 use gtk::glib;
 use gtk::prelude::*;
+use gtk::Justification;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 
 use crate::dbus_client;
 use crate::device;
 use crate::events;
+use crate::notifications;
 use crate::timers;
 use crate::timers::TimerMode;
 use crate::ui;
 use crate::update_ui_state;
 use crate::util;
+use crate::util::ratelimited;
+use crate::ApplicationState;
 use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
@@ -79,6 +83,58 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
         }
         .into())
     }
+}
+
+/// Set the global state of the Eruption GUI application
+/// e.g.: "Connected" or "Disconnected"
+pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) -> Result<()> {
+    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
+
+    // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+
+    // let restart_eruption_daemon_button: gtk::Button =
+    //     builder.object("restart_eruption_button_global").unwrap();
+
+    // let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
+
+    let switch_bar: gtk::Frame = builder.object("switch_bar").unwrap();
+    let slot_bar: gtk::Box = builder.object("slot_bar").unwrap();
+
+    match state {
+        ApplicationState::Starting => { /* Do nothing */ }
+
+        ApplicationState::Disconnected => {
+            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+
+            update_main_window(&builder)?;
+            notification_box_global.show_now();
+
+            switch_bar.hide();
+            slot_bar.hide();
+
+            for child in main_stack.children()[0..main_stack.children().len() - 2].iter() {
+                child.hide();
+            }
+        }
+
+        ApplicationState::Connected => {
+            events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+            update_main_window(&builder)?;
+            notification_box_global.hide();
+
+            switch_bar.show();
+            slot_bar.show();
+
+            for child in main_stack.children()[0..main_stack.children().len() - 2].iter() {
+                child.show();
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// Initialize the slot bar on the bottom of the main window
@@ -461,6 +517,8 @@ fn register_actions<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
+    let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+
     // let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
     let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
 
@@ -520,6 +578,22 @@ fn register_actions<A: IsA<gtk::Application>>(
 
     application.add_action(&switch_to_page7);
     application.set_accels_for_action("app.switch-to-page-7", &["<alt>7"]);
+
+    let switch_to_page8 = gio::SimpleAction::new("switch-to-page-8", None);
+    switch_to_page8.connect_activate(clone!(@weak main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page7");
+    }));
+
+    application.add_action(&switch_to_page8);
+    application.set_accels_for_action("app.switch-to-page-8", &["<alt>8"]);
+
+    let switch_to_page9 = gio::SimpleAction::new("switch-to-page-9", None);
+    switch_to_page9.connect_activate(clone!(@weak main_stack => move |_, _| {
+        main_stack.set_visible_child_name("page8");
+    }));
+
+    application.add_action(&switch_to_page9);
+    application.set_accels_for_action("app.switch-to-page-9", &["<alt>9"]);
 
     // switching between slots
     let switch_to_slot1 = gio::SimpleAction::new("switch-to-slot-1", None);
@@ -582,6 +656,25 @@ fn register_actions<A: IsA<gtk::Application>>(
     application.add_action(&quit);
     application.set_accels_for_action("app.quit", &["<Primary>Q"]);
 
+    // let action_group = gio::SimpleActionGroup::new();
+
+    // action_group.add_action(&switch_to_page1);
+    // action_group.add_action(&switch_to_page2);
+    // action_group.add_action(&switch_to_page3);
+    // action_group.add_action(&switch_to_page4);
+    // action_group.add_action(&switch_to_page5);
+    // action_group.add_action(&switch_to_page6);
+    // action_group.add_action(&switch_to_page7);
+    // action_group.add_action(&switch_to_page8);
+    // action_group.add_action(&switch_to_page9);
+
+    // action_group.add_action(&switch_to_slot1);
+    // action_group.add_action(&switch_to_slot2);
+    // action_group.add_action(&switch_to_slot3);
+    // action_group.add_action(&switch_to_slot4);
+
+    // application.set_action_group(Some(&action_group));
+
     Ok(())
 }
 
@@ -601,6 +694,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // build UI
     let builder = gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/main.glade");
 
+    let info_bar_box: gtk::Box = builder.object("info_bar_box").unwrap();
+
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
@@ -616,6 +711,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let about_item: gtk::MenuItem = builder.object("about_item").unwrap();
     let quit_item: gtk::MenuItem = builder.object("quit_item").unwrap();
 
+    let about_button: gtk::Button = builder.object("about_button").unwrap();
     let info_button: gtk::Button = builder.object("info_button").unwrap();
     let lock_button: gtk::LockButton = builder.object("lock_button").unwrap();
 
@@ -662,27 +758,63 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             "page4" => crate::ACTIVE_PAGE.store(4, Ordering::SeqCst),
             "page5" => crate::ACTIVE_PAGE.store(5, Ordering::SeqCst),
             "page6" => crate::ACTIVE_PAGE.store(6, Ordering::SeqCst),
+            "page7" => crate::ACTIVE_PAGE.store(7, Ordering::SeqCst),
+            "page8" => crate::ACTIVE_PAGE.store(8, Ordering::SeqCst),
+            "page9" => crate::ACTIVE_PAGE.store(9, Ordering::SeqCst),
+            "page10" => crate::ACTIVE_PAGE.store(10, Ordering::SeqCst),
 
+            // "No Connection" | "NoConnection" => crate::ACTIVE_PAGE.store(11, Ordering::SeqCst),
             _ => {
                 tracing::error!("Could not get the name of the active stack page");
             }
         }
     });
 
+    let message_label = gtk::Label::builder()
+        .hexpand(true)
+        .justify(Justification::Center)
+        .build();
+    let info_bar = gtk::InfoBar::builder()
+        .parent(&info_bar_box)
+        .show_close_button(true)
+        .has_focus(false)
+        .build();
+
+    // info_bar.style_context().add_class("infobar");
+
+    info_bar.set_message_type(gtk::MessageType::Other);
+    info_bar.content_area().add(&message_label);
+
+    info_bar.set_visible(false);
+
+    // wire-up the gtk::InfoBar support
+    notifications::set_notification_area(&info_bar);
+
+    notifications::error("Welcome to the Eruption GUI");
+
     // TODO: implement this
     // lock_button.set_permission();
+
+    about_button.connect_clicked(clone!(@weak main_window => move |_|   {
+        ui::about_dialog::show_about_dialog(&main_window);
+
+    }));
+
+    info_button.connect_clicked(clone!(@weak application => move |_|   {
+        // let section1 = gtk::ShortcutsSection::builder().title("Eruption GUI").build();
+        // let section2 = gtk::ShortcutsSection::builder().title("Automation Rules").build();
+
+        let shortcuts_window =  gtk::ShortcutsWindow::builder().application(&application).build();
+        shortcuts_window.show();
+    }));
 
     lock_button.connect_clicked(|_btn| {
         let _result = dbus_client::ping_privileged();
     });
 
-    info_button.connect_clicked(clone!(@weak main_window => move |_|   {
-        ui::about::show_about_dialog(&main_window);
-    }));
-
     // main menu items
     about_item.connect_activate(clone!(@weak main_window => move |_| {
-        ui::about::show_about_dialog(&main_window);
+        ui::about_dialog::show_about_dialog(&main_window);
     }));
 
     quit_item.connect_activate(clone!(@weak application => move |_| {
@@ -703,7 +835,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     restart_eruption_daemon_button.connect_clicked(
         clone!(@weak application, @weak builder => move |_| {
             util::restart_eruption_daemon().unwrap_or_else(|e| tracing::error!("{}", e));
-            initialize_main_window(&application).unwrap_or_else(|e| tracing::error!("{}", e));
+            update_main_window(&builder).unwrap_or_else(|e| tracing::error!("{}", e));
         }),
     );
 
@@ -743,12 +875,11 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             e
         });
 
-        let _ = ui::process_monitor::initialize_process_monitor_page(application, builder).map_err(
-            |e| {
+        let _ = ui::automation_rules::initialize_automation_rules_page(application, builder)
+            .map_err(|e| {
                 eprintln!("Error updating the main window: {e:?}");
                 e
-            },
-        );
+            });
 
         let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
@@ -792,6 +923,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             if crate::dbus_client::ping().is_err() {
                 notification_box_global.show();
 
+                tracing::error!("Lost connection to the Eruption daemon");
                 events::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
                 timers::clear_timers()?;
@@ -802,6 +934,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 notification_box_global.hide();
 
                 if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+                    tracing::info!("Re-establishing connection to the Eruption daemon...");
+
                     // we re-established the connection to the Eruption daemon,
                     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
@@ -830,17 +964,21 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         timers::COLOR_MAP_TIMER_ID,
         TimerMode::Periodic,
         1000 / (crate::constants::TARGET_FPS * 2),
-        clone!(@weak application => @default-return Ok(()), move || {
-            crate::update_color_map().map_err(|e| { tracing::error!("{e}"); e })?;
+        move || {
+            crate::update_color_map().map_err(|e| {
+                ratelimited::error!("Could not update the color map: {e}");
+                e
+            })?;
 
             Ok(())
-        }),
+        },
     )?;
 
     Ok(())
 }
 
 pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
     let canvas_stack: gtk::Stack = builder.object("canvas_stack").unwrap();
     let keyboard_devices_stack: gtk::Stack = builder.object("keyboard_devices_stack").unwrap();
     let mouse_devices_stack: gtk::Stack = builder.object("mouse_devices_stack").unwrap();
@@ -857,8 +995,8 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     }
 
     // hide unified canvas page
-    let child = &canvas_stack.children()[0];
-    child.hide();
+    // let child = &canvas_stack.children()[0];
+    // child.hide();
 
     while !keyboard_devices_stack.children().is_empty() {
         let child = &keyboard_devices_stack.children()[0];
@@ -899,7 +1037,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
             .object("no_connection_template")
             .unwrap();
 
-        canvas_stack.add_titled(&page, "NoConnection", "No Connection");
+        main_stack.add_named(&page, "No Connection");
 
         let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
@@ -931,14 +1069,14 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         let mut any_misc_device = false;
 
         // clean up all previously instantiated sub-pages on the canvas stack
-        // while canvas_stack.children().len() > 3 {
-        //     let child = &canvas_stack.children()[3];
-        //     canvas_stack.remove(child);
+        while canvas_stack.children().len() > 2 {
+            let child = &canvas_stack.children()[2];
+            canvas_stack.remove(child);
 
-        //     unsafe {
-        //         child.destroy();
-        //     }
-        // }
+            unsafe {
+                child.destroy();
+            }
+        }
 
         // show pages
         // let child = &canvas_stack.children()[0];

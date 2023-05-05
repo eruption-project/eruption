@@ -20,6 +20,7 @@
 */
 
 use gdk::prelude::ActionMapExt;
+use gio::traits::ApplicationExt;
 use glib::{clone, Cast, StaticType, ToValue};
 use glib::{Continue, IsA};
 use gtk::glib;
@@ -33,6 +34,7 @@ use gtk::MessageDialog;
 use gtk::TreeViewColumn;
 use std::time::Duration;
 
+use crate::timers::{self, TimerMode};
 use crate::{dbus_client, ui::rule, util};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -51,19 +53,26 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
+    let notification_box: gtk::Box = builder.object("notification_box").unwrap();
+
     let rules_box: gtk::Box = builder.object("rules_box").unwrap();
     let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     if let Ok(rules) = dbus_client::enumerate_process_monitor_rules() {
-        // rules list
-        let rules_treestore = gtk::TreeStore::new(&[
-            glib::Type::BOOL,
-            glib::Type::U64,
-            String::static_type(),
-            String::static_type(),
-            String::static_type(),
-            String::static_type(),
-        ]);
+        notification_box.hide();
+        rules_box.show();
+
+        // save selection state
+        let sel = rules_treeview.selection().selected_rows();
+
+        let rules_treestore = rules_treeview
+            .model()
+            .unwrap()
+            .downcast::<gtk::TreeStore>()
+            .unwrap();
+
+        // clear the tree store
+        rules_treestore.clear();
 
         for (index, rule) in rules.iter().enumerate() {
             let enabled = rule.3.contains("enabled");
@@ -87,24 +96,18 @@ pub fn update_rules_view(builder: &gtk::Builder) -> Result<()> {
             );
         }
 
-        rules_treeview.set_model(Some(&rules_treestore));
-
-        // rules_treeview.connect_row_activated(
-        //     clone!(@weak builder => move |_tv, _path, _column| {
-        //         // let index = tv.model().unwrap().value(&tv.model().unwrap().iter(&path).unwrap(), 0).get::<u64>().unwrap();
-        //     }),
-        // );
-
-        // rules_treeview.connect_button_press_event(clone!(@weak main_window => @default-return Inhibit(false), move |_, _e| {
-        //         ui::rule::show_rule_dialog(&main_window);
-
-        //         Inhibit(false)
-        // }));
-
         rules_box.show();
+
+        // restore selection state
+        if !sel.0.is_empty() {
+            rules_treeview.selection().select_path(&sel.0[0]);
+        }
 
         Ok(())
     } else {
+        notification_box.show_now();
+        rules_box.hide();
+
         Err(ProcessMonitorError::ConnectionFailed {}.into())
     }
 }
@@ -159,7 +162,7 @@ pub fn transmit_rules_to_process_monitor(builder: &gtk::Builder) -> Result<()> {
 }
 
 /// Initialize page "Process Monitor"
-pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
+pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
     application: &A,
     builder: &gtk::Builder,
 ) -> Result<()> {
@@ -176,6 +179,17 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
         .unwrap();
 
     let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
+
+    let rules_treestore = gtk::TreeStore::new(&[
+        glib::Type::BOOL,
+        glib::Type::U64,
+        String::static_type(),
+        String::static_type(),
+        String::static_type(),
+        String::static_type(),
+    ]);
+
+    rules_treeview.set_model(Some(&rules_treestore));
 
     // register actions
     let add_rule = gio::SimpleAction::new("add-rule", None);
@@ -240,7 +254,7 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     add_rule.set_enabled(true);
 
-    application.add_action(&add_rule);
+    // application.add_action(&add_rule);
     application.set_accels_for_action("app.add-rule", &["<primary><shift>n"]);
 
     let remove_rule = gio::SimpleAction::new("remove-rule", None);
@@ -291,11 +305,17 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
     let update_view = gio::SimpleAction::new("update-rules-view", None);
     update_view.connect_activate(
-        clone!(@weak builder, @weak notification_box => move |_, _| {
+        clone!(@weak builder, @weak rules_box, @weak notification_box => move |_, _| {
             // update the rules view or show an error notification
-            update_rules_view(&builder).unwrap_or_else(move|_e| {
+            if let Err(e) = update_rules_view(&builder) {
+                tracing::error!("Could not update the rules view: {}", e);
+
                 notification_box.show_now();
-            });
+                rules_box.hide();
+            } else {
+                notification_box.hide();
+                rules_box.show();
+            }
         }),
     );
 
@@ -398,6 +418,21 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
         }),
     );
 
+    // let action_group = gio::SimpleActionGroup::new();
+
+    // action_group.add_action(&add_rule);
+    // action_group.add_action(&remove_rule);
+    // action_group.add_action(&edit_rule);
+    // action_group.add_action(&update_view);
+
+    // application.set_action_group(Some(&action_group));
+
+    rules_treeview.selection().connect_mode_notify(
+        clone!(@weak edit_rule, @weak remove_rule  => move |_sel| {
+
+        }),
+    );
+
     // hide all notifications
     notification_box.hide();
 
@@ -407,8 +442,8 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
 
             glib::timeout_add_local(
                 Duration::from_millis(1000),
-                clone!(@weak builder, @weak application => @default-return Continue(true), move || {
-                    if let Err(e) = initialize_process_monitor_page(&application, &builder) {
+                clone!(@weak builder => @default-return Continue(true), move || {
+                    if let Err(e) = update_automation_rules_page(&builder) {
                         tracing::error!("{}", e);
                         Continue(true)
                     } else {
@@ -504,6 +539,42 @@ pub fn initialize_process_monitor_page<A: IsA<gtk::Application>>(
     // update the rules view or show an error notification
     update_rules_view(builder).unwrap_or_else(
         clone!(@weak notification_box,@weak rules_box => move |_e| {
+            notification_box.show_now();
+            rules_box.hide();
+        }),
+    );
+
+    timers::register_timer(
+        timers::PROCESS_MONITOR_TIMER_ID,
+        TimerMode::ActiveStackPage(4),
+        1000,
+        clone!(@weak builder => @default-return Ok(()), move || {
+            let _result = update_rules_view(&builder).map_err(|e| tracing::error!("Could not poll eruption-process-monitor ruleset: {e}"));
+
+            Ok(())
+        }),
+    )?;
+
+    Ok(())
+}
+
+/// Initialize page "Process Monitor"
+pub fn update_automation_rules_page(builder: &gtk::Builder) -> Result<()> {
+    // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+
+    let notification_box: gtk::Box = builder.object("notification_box").unwrap();
+
+    let rules_box: gtk::Box = builder.object("rules_box").unwrap();
+
+    // let restart_process_monitor_button: gtk::Button = builder
+    //     .object("restart_process_monitor_button_global")
+    //     .unwrap();
+
+    // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
+
+    // update the rules view or show an error notification
+    update_rules_view(builder).unwrap_or_else(
+        clone!(@weak notification_box, @strong rules_box => move |_e| {
             notification_box.show_now();
             rules_box.hide();
         }),

@@ -31,10 +31,11 @@ use gtk::{
 
 use crate::dbus_client::Zone;
 use crate::timers::TimerMode;
-use crate::{constants, dbus_client, timers};
+use crate::{constants, dbus_client, timers, ApplicationState};
 use crate::{events, util};
 
 use super::keyboards;
+use super::main_window::set_application_state;
 use super::mice;
 use super::misc;
 
@@ -88,11 +89,13 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
 
-    crate::dbus_client::ping().unwrap_or_else(|_e| {
-        notification_box_global.show_now();
-
-        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-    });
+    if let Err(e) = crate::dbus_client::ping() {
+        tracing::error!("Lost connection to the Eruption daemon: {e}");
+        set_application_state(ApplicationState::Disconnected, &builder)?;
+    } else {
+        tracing::info!("Connected to the Eruption daemon");
+        set_application_state(ApplicationState::Connected, &builder)?;
+    };
 
     reset_postproc_button.connect_clicked(
         clone!(@weak canvas_hue_scale, @weak canvas_saturation_scale, @weak canvas_lightness_scale => move |_btn| {
@@ -394,15 +397,9 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
+    // let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let _devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
-
-    crate::dbus_client::ping().unwrap_or_else(|_e| {
-        notification_box_global.show_now();
-
-        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-    });
 
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[

@@ -26,9 +26,12 @@ use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::time::Instant;
 
+use crate::util::ratelimited;
+
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 // Global timers
+pub const NOTIFICATION_TIMER_ID: usize = 1;
 pub const HOTPLUG_TIMER_ID: usize = 100;
 pub const SETTINGS_TIMER_ID: usize = 150;
 pub const COLOR_MAP_TIMER_ID: usize = 200;
@@ -45,7 +48,8 @@ pub const MOUSE_RENDER_TIMER_ID: usize = 1100;
 pub const MISC_TIMER_ID: usize = 1200;
 // pub const MISC_SLOW_TIMER_ID: usize = 1300;
 pub const MISC_RENDER_TIMER_ID: usize = 1400;
-// pub const GLOBAL_CONFIG_TIMER_ID: usize = 1500;
+pub const PROCESS_MONITOR_TIMER_ID: usize = 1500;
+// pub const GLOBAL_CONFIG_TIMER_ID: usize = 1600;
 
 type Callback = dyn Fn() -> Result<()> + 'static;
 
@@ -87,7 +91,7 @@ where
         let mut registered_timers = f.borrow_mut();
 
         if registered_timers.iter().any(|e| *e == id) {
-            tracing::info!("Timer with id {id} has already been registered");
+            tracing::warn!("Timer with id {id} has already been registered");
 
             already_registered = true;
         } else {
@@ -162,7 +166,7 @@ pub fn handle_timers() -> Result<()> {
                 match mode {
                     TimerMode::Periodic => {
                         let _result = callback().map_err(|e| {
-                            tracing::error!("Timer callback failed: {}", e);
+                            ratelimited::error!("Timer callback failed: {}", e);
                             e
                         });
                     }
@@ -170,7 +174,7 @@ pub fn handle_timers() -> Result<()> {
                     TimerMode::ActiveStackPage(index) => {
                         if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == *index {
                             let _result = callback().map_err(|e| {
-                                tracing::error!("Timer callback failed: {}", e);
+                                ratelimited::error!("Timer callback failed: {}", e);
                                 e
                             });
                         }

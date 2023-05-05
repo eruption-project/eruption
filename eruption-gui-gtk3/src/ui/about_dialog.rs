@@ -20,7 +20,7 @@
 */
 
 // use eyre;
-use gdk_pixbuf::Pixbuf;
+// use gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
 
 // type Result<T> = std::result::Result<T, eyre::Error>;
@@ -38,15 +38,15 @@ pub fn show_about_dialog<W: IsA<gtk::Window>>(parent: &W) {
 
     about_dialog.set_version(Some(env!("CARGO_PKG_VERSION")));
 
-    // place logo
-    let logo_pixbuf = Pixbuf::from_resource_at_scale(
-        "/org/eruption/eruption-gui-gtk3/img/eruption-gui.png",
-        100,
-        100,
-        true,
-    )
-    .unwrap();
-    about_dialog.set_logo(Some(&logo_pixbuf));
+    // // place logo
+    // let logo_pixbuf = Pixbuf::from_resource_at_scale(
+    //     "/org/eruption/eruption-gui-gtk3/img/eruption-gui.png",
+    //     100,
+    //     100,
+    //     true,
+    // )
+    // .unwrap();
+    // about_dialog.set_logo(Some(&logo_pixbuf));
 
     about_dialog.set_transient_for(Some(parent));
     about_dialog.set_modal(true);

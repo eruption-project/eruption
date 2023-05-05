@@ -19,13 +19,12 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-
 use crate::timers;
 use crate::timers::TimerMode;
 use crate::util;
 use glib_macros::clone;
 use gtk::glib;
-use gtk::prelude::{BuilderExtManual, LabelExt, ProgressBarExt, RangeExt, WidgetExt};
+use gtk::prelude::{BuilderExtManual, LabelExt, LevelBarExt, RangeExt, WidgetExt};
 
 pub mod hwdevices;
 
@@ -56,24 +55,13 @@ pub fn initialize_keyboard_page(
 
     let device_brightness_scale: gtk::Scale = template.object("keyboard_brightness_scale").unwrap();
 
-    crate::dbus_client::ping().unwrap_or_else(|_e| {
-        notification_box_global.show_now();
-
-        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-    });
-
     // device name and status
     let make_and_model = keyboard_device.get_make_and_model();
     keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
-    let keyboard_signal_label: gtk::Label = template.object("keyboard_signal_label").unwrap();
-    let signal_strength_progress: gtk::ProgressBar =
+    let signal_strength_indicator: gtk::LevelBar =
         template.object("keyboard_signal_strength").unwrap();
-
-    let keyboard_battery_level_label: gtk::Label =
-        template.object("keyboard_battery_level_label").unwrap();
-    let battery_level_progress: gtk::ProgressBar =
-        template.object("keyboard_battery_level").unwrap();
+    let battery_level_indicator: gtk::LevelBar = template.object("keyboard_battery_level").unwrap();
 
     let keyboard_device_handle = keyboard_device.get_device();
 
@@ -113,8 +101,7 @@ pub fn initialize_keyboard_page(
         timers::KEYBOARD_TIMER_ID,
         TimerMode::ActiveStackPage(1),
         139,
-        clone!(@weak signal_strength_progress, @weak battery_level_progress,
-                    @weak keyboard_signal_label, @weak keyboard_battery_level_label =>
+        clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
                     @default-return Ok(()), move || {
 
             // device status
@@ -122,26 +109,23 @@ pub fn initialize_keyboard_page(
                 if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
                     let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
-                    signal_strength_progress.set_fraction(value as f64 / 100.0);
-
-                    keyboard_signal_label.show();
-                    signal_strength_progress.show();
+                    signal_strength_indicator.set_value(value as f64 / 100.0);
+                    signal_strength_indicator.show();
                 } else {
-                    keyboard_signal_label.hide();
-                    signal_strength_progress.hide();
+                    signal_strength_indicator.hide();
                 }
 
                 if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
                     let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
-                    battery_level_progress.set_fraction(value as f64 / 100.0);
-
-                    keyboard_battery_level_label.show();
-                    battery_level_progress.show();
+                    battery_level_indicator.set_value(value as f64 / 100.0);
+                    battery_level_indicator.show();
                 } else {
-                    keyboard_battery_level_label.hide();
-                    battery_level_progress.hide();
+                    battery_level_indicator.hide();
                 }
+            } else {
+                signal_strength_indicator.hide();
+                battery_level_indicator.hide();
             }
 
             Ok(())
@@ -152,11 +136,12 @@ pub fn initialize_keyboard_page(
         timers::KEYBOARD_RENDER_TIMER_ID,
         TimerMode::ActiveStackPage(1),
         1000 / (crate::constants::TARGET_FPS * 2),
-        move || {
-            drawing_area.queue_draw();
+        clone!(@weak drawing_area => @default-return Ok(()), move || {
+                        drawing_area.queue_draw();
 
-            Ok(())
-        },
+                        Ok(())
+            }
+        ),
     )?;
 
     Ok(keyboard_device_page)

@@ -38,10 +38,6 @@ The Eruption Development Team
   <object class="GtkGrid" id="mouse_device_template">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="margin-start">8</property>
-    <property name="margin-end">8</property>
-    <property name="margin-top">8</property>
-    <property name="margin-bottom">8</property>
     <child>
       <object class="GtkDrawingArea" id="drawing_area_mouse">
         <property name="visible">True</property>
@@ -276,8 +272,8 @@ The Eruption Development Team
         </child>
         <child>
           <object class="GtkLabel" id="mouse_signal_label">
-            <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
             <property name="halign">end</property>
             <property name="margin-top">16</property>
             <property name="label" translatable="yes">Signal</property>
@@ -289,8 +285,8 @@ The Eruption Development Team
         </child>
         <child>
           <object class="GtkLabel" id="mouse_battery_level_label">
-            <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
             <property name="halign">end</property>
             <property name="label" translatable="yes">Battery</property>
           </object>
@@ -300,11 +296,10 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkProgressBar" id="mouse_signal_strength">
-            <property name="visible">True</property>
+          <object class="GtkLevelBar" id="mouse_signal_strength">
             <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
             <property name="margin-top">16</property>
-            <property name="show-text">True</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -312,10 +307,9 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkProgressBar" id="mouse_battery_level">
-            <property name="visible">True</property>
+          <object class="GtkLevelBar" id="mouse_battery_level">
             <property name="can-focus">False</property>
-            <property name="show-text">True</property>
+            <property name="no-show-all">True</property>
           </object>
           <packing>
             <property name="left-attach">1</property>

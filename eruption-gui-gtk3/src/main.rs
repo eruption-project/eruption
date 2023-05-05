@@ -22,6 +22,7 @@
 use config::Config;
 use constants::CANVAS_SIZE;
 use eruption_sdk::connection::{Connection, ConnectionType};
+use events::LOST_CONNECTION;
 use gio::{prelude::*, ApplicationFlags};
 use glib::clone;
 use glib::{OptionArg, OptionFlags};
@@ -39,8 +40,9 @@ use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use ui::main_window::set_application_state;
 
-use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::{env, process, thread};
 
@@ -48,6 +50,7 @@ use util::RGBA;
 
 use crate::dbus_client::Zone;
 use crate::error_log::ErrorType;
+use crate::util::ratelimited;
 
 mod constants;
 mod dbus_client;
@@ -122,9 +125,19 @@ impl State {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ApplicationState {
+    Starting,
+    Connected,
+    Disconnected,
+}
+
 lazy_static! {
-    /// Global application state
+    /// Global application state data
     pub static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
+
+    /// Are we connected to the Eruption daemon?
+    pub static ref APP_STATE: Arc<RwLock<ApplicationState>> = Arc::new(RwLock::new(ApplicationState::Starting));
 
     /// Current connection to the Eruption daemon
     pub static ref CONNECTION: Arc<Mutex<Option<Connection>>> = Arc::new(Mutex::new(None));
@@ -236,6 +249,8 @@ pub fn update_color_map() -> Result<()> {
 
         Ok(())
     } else {
+        crate::LOST_CONNECTION.store(true, Ordering::SeqCst);
+
         Err(MainError::ConnectionError {
             description: "Could not connect to Eruption".to_string(),
         }
@@ -294,6 +309,12 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
 /// Update the state of the GUI to reflect the current system state
 /// This function is called from the D-Bus event loop
 pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> Result<()> {
+    if crate::LOST_CONNECTION.load(Ordering::SeqCst) {
+        crate::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+        set_application_state(ApplicationState::Disconnected, &builder)?;
+    }
+
     if !events::shall_ignore_pending_dbus_event() {
         match *event {
             dbus_client::Message::SlotChanged(slot_index) => {
@@ -582,12 +603,12 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
             dbus_client::Message::RulesChanged => {
                 tracing::info!("Process monitor ruleset has changed");
-                ui::process_monitor::update_rules_view(builder)?;
+                ui::automation_rules::update_rules_view(builder)?;
             }
 
             dbus_client::Message::DeviceHotplug(_device_info) => {
                 tracing::info!("A device has been hotplugged/removed");
-                ui::main::update_main_window(builder).unwrap();
+                ui::main_window::update_main_window(builder).unwrap();
             }
         }
     }
@@ -759,7 +780,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        if let Err(e) = ui::main::initialize_main_window(app) {
+        if let Err(e) = ui::main_window::initialize_main_window(app) {
             tracing::error!("Could not start the Eruption GUI: {}", e);
 
             let message =
@@ -786,7 +807,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     glib::idle_add_local(
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = timers::handle_timers() {
-                tracing::error!("An error occurred in a timer callback: {}", e);
+                ratelimited::error!("An error occurred in a timer callback: {}", e);
             }
 
             // this massively reduces the CPU load of the application

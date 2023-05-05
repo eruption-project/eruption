@@ -16,20 +16,5 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2023, The Eruption Development Team
+    Copyright (c) 2019-2022, The Eruption Development Team
 */
-
-pub mod about_dialog;
-pub mod assistants;
-pub mod automation_rules;
-pub mod canvas;
-pub mod color_schemes;
-pub mod keyboards;
-pub mod keymaps;
-pub mod macros;
-pub mod main_window;
-pub mod mice;
-pub mod misc;
-pub mod profiles;
-pub mod rule;
-pub mod settings;

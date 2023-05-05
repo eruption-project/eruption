@@ -23,9 +23,15 @@
 
 use std::cell::RefCell;
 
+use glib::Cast;
+use gtk::traits::{ContainerExt, InfoBarExt, LabelExt, WidgetExt};
+use lazy_static::__Deref;
+
+use crate::timers::{self, TimerMode};
+
 thread_local! {
     /// The notification area to display notifications in
-    pub static NOTIFICATION_AREA: RefCell<Option<gtk::Statusbar>> = RefCell::new(None);
+    pub static NOTIFICATION_AREA: RefCell<Option<gtk::InfoBar>> = RefCell::new(None);
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -33,20 +39,68 @@ pub enum NotificationType {
     Error,
     Warning,
     Info,
+    Question,
+    Other,
 }
 
-pub fn show_notification(_message: &str, _notification_type: NotificationType) {
-    // let notification = match notification_type {
-    //     NotificationType::Error => todo!(),
-    //     NotificationType::Warning => todo!(),
-    //     NotificationType::Info => todo!(),
-    // }
-
-    // notification.set_body(message);
-    // notification.show();
+impl From<NotificationType> for gtk::MessageType {
+    fn from(nt: NotificationType) -> Self {
+        match nt {
+            NotificationType::Error => gtk::MessageType::Error,
+            NotificationType::Warning => gtk::MessageType::Warning,
+            NotificationType::Info => gtk::MessageType::Info,
+            NotificationType::Question => gtk::MessageType::Question,
+            NotificationType::Other => gtk::MessageType::Other,
+        }
+    }
 }
 
-pub fn set_notification_area(area: &gtk::Statusbar) {
+pub fn info(message: &str) {
+    show(message, NotificationType::Info);
+}
+
+pub fn warn(message: &str) {
+    show(message, NotificationType::Warning);
+}
+
+pub fn error(message: &str) {
+    show(message, NotificationType::Error);
+}
+
+pub fn show(message: &str, notification_type: NotificationType) {
+    NOTIFICATION_AREA.with(|na| {
+        let na = na.borrow();
+        let na = na.deref();
+
+        if let Some(na) = na {
+            na.content_area().children()[0]
+                .downcast_ref::<gtk::Label>()
+                .unwrap()
+                .set_text(message);
+
+            na.set_message_type(notification_type.into());
+            na.set_visible(true);
+        }
+    });
+
+    let _ = timers::register_timer(
+        timers::NOTIFICATION_TIMER_ID,
+        TimerMode::Periodic,
+        5000,
+        move || {
+            NOTIFICATION_AREA.with(|na| {
+                let na = na.borrow();
+                let na = na.as_ref().unwrap();
+
+                na.set_visible(false);
+            });
+
+            Ok(())
+        },
+    );
+}
+
+pub(crate) fn set_notification_area(area: &gtk::InfoBar) {
     NOTIFICATION_AREA.with(|na| {
         *na.borrow_mut() = Some(area.clone());
     });

@@ -20,7 +20,7 @@
 */
 
 use crate::timers::{self, TimerMode};
-use crate::{util};
+use crate::util;
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -52,22 +52,15 @@ pub fn initialize_misc_page(
     let device_brightness_scale: gtk::Scale = template.object("misc_brightness_scale").unwrap();
 
     let misc_signal_label: gtk::Label = template.object("misc_signal_label").unwrap();
-    let signal_strength_progress: gtk::ProgressBar =
-        template.object("misc_signal_strength").unwrap();
+    let signal_strength_indicator: gtk::LevelBar = template.object("misc_signal_strength").unwrap();
 
     let misc_battery_level_label: gtk::Label = template.object("misc_battery_level_label").unwrap();
-    let battery_level_progress: gtk::ProgressBar = template.object("misc_battery_level").unwrap();
+    let battery_level_indicator: gtk::LevelBar = template.object("misc_battery_level").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let misc_name_label: gtk::Label = template.object("misc_device_name_label").unwrap();
     let drawing_area: gtk::DrawingArea = template.object("drawing_area_misc").unwrap();
-
-    crate::dbus_client::ping().unwrap_or_else(|_e| {
-        notification_box_global.show_now();
-
-        // events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-    });
 
     // device name and status
     let make_and_model = misc_device.get_make_and_model();
@@ -111,7 +104,7 @@ pub fn initialize_misc_page(
         timers::MISC_TIMER_ID,
         TimerMode::ActiveStackPage(3),
         250,
-        clone!(@weak signal_strength_progress, @weak battery_level_progress,
+        clone!(@weak signal_strength_indicator, @weak battery_level_indicator,
                     @weak misc_signal_label, @weak misc_battery_level_label =>
                     @default-return Ok(()), move || {
 
@@ -120,26 +113,23 @@ pub fn initialize_misc_page(
                 if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
                     let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
-                    signal_strength_progress.set_fraction(value as f64 / 100.0);
-
-                    misc_signal_label.show();
-                    signal_strength_progress.show();
+                    signal_strength_indicator.set_value(value as f64 / 100.0);
+                    signal_strength_indicator.show();
                 } else {
-                    misc_signal_label.hide();
-                    signal_strength_progress.hide();
+                    signal_strength_indicator.hide();
                 }
 
                 if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
                     let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
-                    battery_level_progress.set_fraction(value as f64 / 100.0);
-
-                    misc_battery_level_label.show();
-                    battery_level_progress.show();
+                    battery_level_indicator.set_value(value as f64 / 100.0);
+                    battery_level_indicator.show();
                 } else {
-                    misc_battery_level_label.hide();
-                    battery_level_progress.hide();
+                    battery_level_indicator.hide();
                 }
+            } else {
+                signal_strength_indicator.hide();
+                battery_level_indicator.hide();
             }
 
             Ok(())
@@ -176,6 +166,7 @@ pub fn initialize_misc_page(
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();
+
             Ok(())
         }),
     )?;
