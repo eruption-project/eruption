@@ -77,8 +77,8 @@ stop:
 	-@systemctl --user disable --now eruption-audio-proxy.service
 	-@systemctl --user disable --now eruption-process-monitor.service
 
-	-@$(SUDO) systemctl mask eruption.service
-	-@$(SUDO) systemctl disable --now eruption.service
+	-@$(SUDO) systemctl mask eruption.service > /dev/null 2>&1
+	-@$(SUDO) systemctl disable --now eruption.service > /dev/null 2>&1
 
 install:
 	@echo "Please ensure that all Eruption daemons have been shut down completely!"
@@ -233,7 +233,14 @@ install:
 	# @cp target/release/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
+
 	@chown -R eruption:eruption /var/lib/eruption
+	@chown -R eruption:eruption $(TARGET_DIR)/share/eruption/
+
+	@chmod -R g+w /var/lib/eruption/profiles
+	@chmod -R g+w $(TARGET_DIR)/share/eruption/scripts
+	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/macros
+	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/keymaps
 
 	@echo ""
 	@echo "Successfully installed Eruption!"
