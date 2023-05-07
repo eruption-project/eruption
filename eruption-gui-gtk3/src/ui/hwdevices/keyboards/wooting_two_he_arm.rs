@@ -21,14 +21,21 @@
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
+use crate::constants;
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
+use ndarray::{s, Array2, Order};
 use palette::{FromColor, Hsva, Lighten, Srgba};
 use std::cell::RefCell;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
+
+pub const NUM_ROWS: usize = 6;
+pub const NUM_COLS: usize = 21;
+#[allow(dead_code)]
+const NUM_LEDS: usize = 127;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -77,18 +84,62 @@ impl Keyboard for WootingTwoHeArm {
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        let layout = pangocairo::create_layout(context);
-        FONT_DESC.with(|f| -> Result<()> {
-            let desc = f.borrow();
-            layout.set_font_description(Some(&desc));
+        if let Some(allocated_zone) = crate::ZONES
+            .lock()
+            .iter()
+            .find(|&z| z.0 == self.device)
+            .map(|z| z.1)
+        {
+            // this devices uses a row major addressing scheme
+            let shape = (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH);
+            let led_colors = Array2::from_shape_vec(shape, led_colors.clone()).map_err(|e| {
+                tracing::error!("Error creating LED colors array: {}", e);
+                e
+            })?;
 
-            // paint all keys
-            for i in 0..144 {
-                self.paint_key(i + 1, &led_colors[i], context, &layout)?;
-            }
+            let shape = (
+                (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                Order::RowMajor,
+            );
+            let led_colors = led_colors.to_shape(shape).map_err(|e| {
+                tracing::error!("Error re-shaping LED colors array: {}", e);
+                e
+            })?;
 
-            Ok(())
-        })?;
+            let led_colors = led_colors.slice(s![
+                allocated_zone.x..(allocated_zone.x + NUM_COLS as i32),
+                allocated_zone.y..(allocated_zone.y + NUM_ROWS as i32),
+            ]);
+
+            let shape = (led_colors.len(),);
+            let led_colors = led_colors.to_shape(shape).map_err(|e| {
+                tracing::error!("Error re-shaping LED colors array: {}", e);
+                e
+            })?;
+
+            let layout = pangocairo::create_layout(context);
+            FONT_DESC.with(|f| -> Result<()> {
+                let desc = f.borrow();
+                layout.set_font_description(Some(&desc));
+
+                // paint all keys
+                for i in 0..144 {
+                    self.paint_key(
+                        i + 1,
+                        led_colors.get(i).unwrap_or(&RGBA {
+                            r: 0,
+                            g: 0,
+                            b: 0,
+                            a: 0,
+                        }),
+                        context,
+                        &layout,
+                    )?;
+                }
+
+                Ok(())
+            })?;
+        }
 
         Ok(())
     }

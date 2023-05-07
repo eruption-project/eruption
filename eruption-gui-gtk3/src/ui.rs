@@ -24,6 +24,7 @@ pub mod assistants;
 pub mod automation_rules;
 pub mod canvas;
 pub mod color_schemes;
+pub mod hwdevices;
 pub mod keyboards;
 pub mod keymaps;
 pub mod macros;
@@ -33,3 +34,36 @@ pub mod misc;
 pub mod profiles;
 pub mod rule;
 pub mod settings;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Pages {
+    Canvas = 0,
+    Keyboards = 1,
+    Mice = 2,
+    Misc = 3,
+    ColorSchemes = 4,
+    AutomationRules = 5,
+    Profiles = 6,
+    Macros = 7,
+    Keymaps = 8,
+    Settings = 9,
+}
+
+impl From<u8> for Pages {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Pages::Canvas,
+            1 => Pages::Keyboards,
+            2 => Pages::Mice,
+            3 => Pages::Misc,
+            4 => Pages::ColorSchemes,
+            5 => Pages::AutomationRules,
+            6 => Pages::Profiles,
+            7 => Pages::Macros,
+            8 => Pages::Keymaps,
+            9 => Pages::Settings,
+            _ => panic!("Invalid page"),
+        }
+    }
+}

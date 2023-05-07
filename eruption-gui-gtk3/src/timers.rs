@@ -56,7 +56,7 @@ type Callback = dyn Fn() -> Result<()> + 'static;
 #[derive(Debug, Clone)]
 pub enum TimerMode {
     Periodic,
-    ActiveStackPage(usize),
+    ActiveStackPage(u8),
 }
 
 thread_local! {
@@ -172,7 +172,7 @@ pub fn handle_timers() -> Result<()> {
                     }
 
                     TimerMode::ActiveStackPage(index) => {
-                        if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == *index {
+                        if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == *index as usize {
                             let _result = callback().map_err(|e| {
                                 ratelimited::error!("Timer callback failed: {}", e);
                                 e

@@ -21,20 +21,20 @@
 
 use crate::{dbus_client, util::RGBA};
 
-mod generic_mouse;
-mod null_mouse;
-mod roccat_burst_pro;
-mod roccat_kain_100;
-mod roccat_kain_2xx;
-mod roccat_kone_aimo;
-mod roccat_kone_aimo_remastered;
-mod roccat_kone_pro_air;
-mod roccat_kone_pure_ultra;
-mod roccat_kone_xp;
-mod roccat_kone_xtd;
-mod roccat_kova_2016;
-mod roccat_kova_aimo;
-mod roccat_nyth;
+pub mod generic_mouse;
+pub mod null_mouse;
+pub mod roccat_burst_pro;
+pub mod roccat_kain_100;
+pub mod roccat_kain_2xx;
+pub mod roccat_kone_aimo;
+pub mod roccat_kone_aimo_remastered;
+pub mod roccat_kone_pro_air;
+pub mod roccat_kone_pure_ultra;
+pub mod roccat_kone_xp;
+pub mod roccat_kone_xtd;
+pub mod roccat_kova_2016;
+pub mod roccat_kova_aimo;
+pub mod roccat_nyth;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 

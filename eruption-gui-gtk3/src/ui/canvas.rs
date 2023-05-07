@@ -34,10 +34,11 @@ use crate::timers::TimerMode;
 use crate::{constants, dbus_client, timers, ApplicationState};
 use crate::{events, util};
 
-use super::keyboards;
+use super::hwdevices::keyboards::get_keyboard_device;
+use super::hwdevices::mice::get_mouse_device;
+use super::hwdevices::misc::get_misc_device;
 use super::main_window::set_application_state;
-use super::mice;
-use super::misc;
+use super::Pages;
 
 const BORDER: (f64, f64) = (8.0, 8.0);
 const PIXEL_SIZE: f64 = 14.5;
@@ -165,7 +166,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add keyboard devices
     for _device_ids in devices.0 {
-        let device = keyboards::hwdevices::get_keyboard_device(index as u64)?;
+        let device = get_keyboard_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -190,7 +191,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add mouse devices
     for _device_ids in devices.1 {
-        let device = mice::hwdevices::get_mouse_device(index as u64)?;
+        let device = get_mouse_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -215,7 +216,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add misc devices
     for _device_ids in devices.2 {
-        let device = misc::hwdevices::get_misc_device(index as u64)?;
+        let device = get_misc_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -359,7 +360,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     // update the global LED color map vector
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
-        TimerMode::ActiveStackPage(0),
+        TimerMode::ActiveStackPage(Pages::Canvas as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area_preview, @weak drawing_area_zones => @default-return Ok(()), move || {
             drawing_area_preview.queue_draw();
@@ -372,7 +373,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     // update device zone allocation information
     timers::register_timer(
         timers::CANVAS_ZONES_TIMER_ID,
-        TimerMode::ActiveStackPage(0),
+        TimerMode::ActiveStackPage(Pages::Canvas as u8),
         500,
         clone!(@weak builder => @default-return Ok(()), move || {
             let _result = update_allocated_zones(&builder).map_err(|e| tracing::error!("{e}"));
@@ -415,7 +416,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add keyboard devices
     for _device_ids in devices.0 {
-        let device = keyboards::hwdevices::get_keyboard_device(index as u64)?;
+        let device = get_keyboard_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -438,7 +439,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add mouse devices
     for _device_ids in devices.1 {
-        let device = mice::hwdevices::get_mouse_device(index as u64)?;
+        let device = get_mouse_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -461,7 +462,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // add misc devices
     for _device_ids in devices.2 {
-        let device = misc::hwdevices::get_misc_device(index as u64)?;
+        let device = get_misc_device(index as u64)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;

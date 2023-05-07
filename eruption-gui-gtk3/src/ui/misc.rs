@@ -25,7 +25,8 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 
-pub mod hwdevices;
+use super::hwdevices::misc::get_misc_device;
+use super::Pages;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -43,7 +44,7 @@ pub fn initialize_misc_page(
     template: &gtk::Builder,
     device: u64,
 ) -> Result<gtk::Widget> {
-    let misc_device = hwdevices::get_misc_device(device)?;
+    let misc_device = get_misc_device(device)?;
 
     let misc_device_page = template.object("misc_device_template").unwrap();
 
@@ -101,8 +102,8 @@ pub fn initialize_misc_page(
 
     // near realtime update path
     timers::register_timer(
-        timers::MISC_TIMER_ID,
-        TimerMode::ActiveStackPage(3),
+        timers::MISC_TIMER_ID + device as usize,
+        TimerMode::ActiveStackPage(Pages::Misc as u8),
         250,
         clone!(@weak signal_strength_indicator, @weak battery_level_indicator,
                     @weak misc_signal_label, @weak misc_battery_level_label =>
@@ -114,7 +115,7 @@ pub fn initialize_misc_page(
                     let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
                     signal_strength_indicator.set_value(value as f64 / 100.0);
-                    signal_strength_indicator.show();
+                    signal_strength_indicator.show_all();
                 } else {
                     signal_strength_indicator.hide();
                 }
@@ -123,7 +124,7 @@ pub fn initialize_misc_page(
                     let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
                     battery_level_indicator.set_value(value as f64 / 100.0);
-                    battery_level_indicator.show();
+                    battery_level_indicator.show_all();
                 } else {
                     battery_level_indicator.hide();
                 }
@@ -161,8 +162,8 @@ pub fn initialize_misc_page(
     // );
 
     timers::register_timer(
-        timers::MISC_RENDER_TIMER_ID,
-        TimerMode::ActiveStackPage(3),
+        timers::MISC_RENDER_TIMER_ID+ device as usize,
+        TimerMode::ActiveStackPage(Pages::Misc as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();

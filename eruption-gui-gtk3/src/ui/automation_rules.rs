@@ -20,7 +20,6 @@
 */
 
 use gdk::prelude::ActionMapExt;
-use gio::traits::ApplicationExt;
 use glib::{clone, Cast, StaticType, ToValue};
 use glib::{Continue, IsA};
 use gtk::glib;
@@ -34,8 +33,11 @@ use gtk::MessageDialog;
 use gtk::TreeViewColumn;
 use std::time::Duration;
 
+use crate::dbus_client;
 use crate::timers::{self, TimerMode};
-use crate::{dbus_client, ui::rule, util};
+use crate::{ui::rule, util};
+
+use super::Pages;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -546,7 +548,7 @@ pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
 
     timers::register_timer(
         timers::PROCESS_MONITOR_TIMER_ID,
-        TimerMode::ActiveStackPage(4),
+        TimerMode::ActiveStackPage(Pages::AutomationRules as u8),
         1000,
         clone!(@weak builder => @default-return Ok(()), move || {
             let _result = update_rules_view(&builder).map_err(|e| tracing::error!("Could not poll eruption-process-monitor ruleset: {e}"));

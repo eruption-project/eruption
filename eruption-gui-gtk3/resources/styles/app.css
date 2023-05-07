@@ -21,25 +21,13 @@
 
 window {
   color: rgb(132, 132, 132);
-  /* background-color: rgba(0, 0, 0, 0.65); */
 }
 
 .client {
-  padding: 8px;
-
-  /* background:
-    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
-    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
-    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
-    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
-    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
-    linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
-  background-color: #333131;
-  background-size: 20px 20px; */
-
+  padding: 12px;
   background-image: -gtk-gradient(linear, 0 0, 1 1,
       color-stop(0, rgb(49, 49, 49)),
-      color-stop(1, rgb(29, 29, 29)));
+      color-stop(1, rgb(23, 23, 23)));
 }
 
 .icon {
@@ -51,13 +39,22 @@ window {
   font-size: x-large;
   font-weight: bold;
   color: rgb(200, 200, 200);
-  margin-left: 16px;
+
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 .heading.sub {
   font-size: larger;
   font-weight: normal;
   color: rgb(132, 132, 132);
+
+  margin-left: 4px;
+  margin-right: 0px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .heading_large {
@@ -76,7 +73,6 @@ window {
   font-size: larger;
   color: rgb(200, 200, 200);
 }
-
 
 box .notification-box {
   margin: 0px;
@@ -97,11 +93,7 @@ box.notification-box.warning {
 }
 
 infobar {
-  min-height: 40px;
-  border-radius: 8px;
-  padding: 8px;
-  margin-left: 4px;
-  margin-right: 4px;
+  margin: 24px 16px 24px 16px;
 }
 
 infobar.other *,
@@ -110,47 +102,34 @@ infobar.info *,
 infobar.warning *,
 infobar.error * {
   background: transparent;
-  font-size: 1.125rem;
-  font-weight: bold;
   color: white;
 }
 
 infobar.error {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #ff5722),
-      color-stop(1, #f44336));
+  background-color: rgb(85, 20, 20);
 }
 
 infobar.warning {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #ecd02c),
-      color-stop(1, #a5901a));
+  background-color: rgb(87, 85, 0);
 }
 
 infobar.info {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #3cff22),
-      color-stop(1, #00a008));
+  background-color: rgb(32, 50, 20);
 }
 
 infobar.question {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #3cff22),
-      color-stop(1, #00a008));
+  background-color: rgb(32, 50, 20);
 }
 
 infobar.other {
-  background-image: -gtk-gradient(linear, 0 0, 0 1,
-      color-stop(0, #3cff22),
-      color-stop(1, #00a008));
+  background-color: rgb(32, 50, 20);
 }
 
 .header-bar {
   background-image: -gtk-gradient(linear, 0 0, 1 0,
-      color-stop(0, rgba(128, 128, 128, 0.0)),
+      color-stop(0, rgba(128, 128, 128, 0.25)),
       color-stop(1, rgba(94, 94, 94, 0.85)));
 
-  padding: 14px;
   border-radius: 8px;
 }
 
@@ -175,7 +154,6 @@ infobar.other {
   border: 8px solid rgba(141, 141, 141, 0.85);
   box-shadow: rgba(255, 255, 255, 0.85) 0px 0px 8px,
     rgba(255, 255, 255, 0.5) 0px 0px 14px;
-
   background: rgba(142, 142, 142, 0.5);
 }
 

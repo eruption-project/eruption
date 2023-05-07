@@ -88,6 +88,13 @@ The Eruption Development Team
     <property name="margin-end">4</property>
     <property name="icon-name">tab-new</property>
   </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="margin-right">4</property>
+    <property name="margin-end">4</property>
+    <property name="icon-name">tab-new</property>
+  </object>
   <object class="GtkImage" id="image_about">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -300,20 +307,6 @@ The Eruption Development Team
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">8</property>
-        <child>
-          <object class="GtkBox" id="info_bar_box">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkBox" id="notification_box_global">
             <property name="can-focus">False</property>
@@ -894,18 +887,19 @@ The Eruption Development Team
           <object class="GtkFrame" id="switch_bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
             <property name="label-xalign">0</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkFrame">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
-                    <property name="valign">end</property>
+                    <property name="margin-end">59</property>
                     <property name="border-width">8</property>
                     <property name="label-xalign">0</property>
                     <property name="shadow-type">none</property>
@@ -980,6 +974,20 @@ The Eruption Development Team
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="info_bar_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -1152,6 +1160,7 @@ The Eruption Development Team
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
+                            <property name="valign">end</property>
                             <property name="margin-end">16</property>
                             <property name="margin-top">16</property>
                             <property name="label" translatable="yes">Device zone allocation</property>
@@ -1475,6 +1484,7 @@ The Eruption Development Team
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="spacing">4</property>
+                            <property name="homogeneous">True</property>
                             <property name="layout-style">start</property>
                             <child>
                               <object class="GtkButton" id="new_rule_button1">
@@ -1833,6 +1843,23 @@ The Eruption Development Team
                                 <property name="expand">False</property>
                                 <property name="fill">True</property>
                                 <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="label" translatable="yes">Assistants</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="margin-start">8</property>
+                                <property name="image">image2</property>
+                                <property name="relief">none</property>
+                                <property name="always-show-image">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                           </object>
@@ -3040,8 +3067,9 @@ The Eruption Development Team
           <object class="GtkStackSwitcher" id="stack_switcher">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="homogeneous">True</property>
-            <property name="icon-size">3</property>
+            <property name="opacity">0.5</property>
+            <property name="margin-start">8</property>
+            <property name="icon-size">4</property>
             <property name="stack">main_stack</property>
           </object>
         </child>
@@ -3067,6 +3095,24 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
+          <object class="GtkScale" id="brightness_scale">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">64</property>
+            <property name="margin-end">64</property>
+            <property name="hexpand">True</property>
+            <property name="adjustment">adjustment_percent</property>
+            <property name="show-fill-level">True</property>
+            <property name="fill-level">100</property>
+            <property name="round-digits">0</property>
+            <property name="digits">0</property>
+            <property name="value-pos">right</property>
+          </object>
+          <packing>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLockButton" id="lock_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -3078,7 +3124,7 @@ The Eruption Development Team
           </object>
           <packing>
             <property name="pack-type">end</property>
-            <property name="position">2</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <child>
@@ -3088,21 +3134,6 @@ The Eruption Development Team
             <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
             <property name="image">image_info</property>
-            <property name="relief">none</property>
-            <property name="always-show-image">True</property>
-          </object>
-          <packing>
-            <property name="pack-type">end</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="about_button">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="focus-on-click">False</property>
-            <property name="receives-default">True</property>
-            <property name="image">image_about</property>
             <property name="relief">none</property>
             <property name="always-show-image">True</property>
           </object>
@@ -3122,19 +3153,17 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkScale" id="brightness_scale">
+          <object class="GtkButton" id="about_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="margin-end">92</property>
-            <property name="hexpand">True</property>
-            <property name="adjustment">adjustment_percent</property>
-            <property name="fill-level">100</property>
-            <property name="round-digits">0</property>
-            <property name="digits">0</property>
-            <property name="draw-value">False</property>
-            <property name="value-pos">right</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_about</property>
+            <property name="relief">none</property>
+            <property name="always-show-image">True</property>
           </object>
           <packing>
+            <property name="pack-type">end</property>
             <property name="position">6</property>
           </packing>
         </child>

@@ -43,6 +43,9 @@ use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
 
+use super::Pages;
+use super::mice::initialize_mouse_page;
+
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, thiserror::Error)]
@@ -510,6 +513,40 @@ fn update_slot_indicator_state(builder: &gtk::Builder, active_slot: usize) {
     // events::reenable_ui_events();
 }
 
+pub fn switch_main_stack_page(to: Pages, builder: &gtk::Builder) {
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+
+    match to {
+        Pages::Canvas => main_stack.set_visible_child_name("page0"),
+        Pages::Keyboards => main_stack.set_visible_child_name("page1"),
+        Pages::Mice => main_stack.set_visible_child_name("page2"),
+        Pages::Misc => main_stack.set_visible_child_name("page3"),
+        Pages::ColorSchemes => main_stack.set_visible_child_name("page4"),
+        Pages::AutomationRules => main_stack.set_visible_child_name("page5"),
+        Pages::Profiles => main_stack.set_visible_child_name("page6"),
+        Pages::Macros => main_stack.set_visible_child_name("page7"),
+        Pages::Keymaps => main_stack.set_visible_child_name("page8"),
+        Pages::Settings => main_stack.set_visible_child_name("page9"),
+    }
+}
+
+pub fn switch_sub_page_stack(to: Pages, builder: &gtk::Builder) {
+    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+
+    match to {
+        Pages::Canvas => main_stack.set_visible_child_name("page0"),
+        Pages::Keyboards => main_stack.set_visible_child_name("page1"),
+        Pages::Mice => main_stack.set_visible_child_name("page2"),
+        Pages::Misc => main_stack.set_visible_child_name("page3"),
+        Pages::ColorSchemes => main_stack.set_visible_child_name("page4"),
+        Pages::AutomationRules => main_stack.set_visible_child_name("page5"),
+        Pages::Profiles => main_stack.set_visible_child_name("page6"),
+        Pages::Macros => main_stack.set_visible_child_name("page7"),
+        Pages::Keymaps => main_stack.set_visible_child_name("page8"),
+        Pages::Settings => main_stack.set_visible_child_name("page9"),
+    }
+}
+
 /// Register global actions and keyboard accelerators
 fn register_actions<A: IsA<gtk::Application>>(
     application: &A,
@@ -520,80 +557,97 @@ fn register_actions<A: IsA<gtk::Application>>(
     let _main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     // let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
-    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+    let _main_stack: gtk::Stack = builder.object("main_stack").unwrap();
 
     // switching between stack pages
     let switch_to_page1 = gio::SimpleAction::new("switch-to-page-1", None);
-    switch_to_page1.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page0");
+    switch_to_page1.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Canvas, &builder);
     }));
 
     application.add_action(&switch_to_page1);
     application.set_accels_for_action("app.switch-to-page-1", &["<alt>1"]);
 
     let switch_to_page2 = gio::SimpleAction::new("switch-to-page-2", None);
-    switch_to_page2.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page1");
+    switch_to_page2.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Keyboards, &builder);
     }));
 
     application.add_action(&switch_to_page2);
     application.set_accels_for_action("app.switch-to-page-2", &["<alt>2"]);
 
     let switch_to_page3 = gio::SimpleAction::new("switch-to-page-3", None);
-    switch_to_page3.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page2");
+    switch_to_page3.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Mice, &builder);
+
     }));
 
     application.add_action(&switch_to_page3);
     application.set_accels_for_action("app.switch-to-page-3", &["<alt>3"]);
 
     let switch_to_page4 = gio::SimpleAction::new("switch-to-page-4", None);
-    switch_to_page4.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page3");
+    switch_to_page4.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Misc, &builder);
+
     }));
 
     application.add_action(&switch_to_page4);
     application.set_accels_for_action("app.switch-to-page-4", &["<alt>4"]);
 
     let switch_to_page5 = gio::SimpleAction::new("switch-to-page-5", None);
-    switch_to_page5.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page4");
+    switch_to_page5.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::ColorSchemes, &builder);
+
     }));
 
     application.add_action(&switch_to_page5);
     application.set_accels_for_action("app.switch-to-page-5", &["<alt>5"]);
 
     let switch_to_page6 = gio::SimpleAction::new("switch-to-page-6", None);
-    switch_to_page6.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page5");
+    switch_to_page6.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::AutomationRules, &builder);
+
     }));
 
     application.add_action(&switch_to_page6);
     application.set_accels_for_action("app.switch-to-page-6", &["<alt>6"]);
 
     let switch_to_page7 = gio::SimpleAction::new("switch-to-page-7", None);
-    switch_to_page7.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page6");
+    switch_to_page7.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Profiles, &builder);
+
     }));
 
     application.add_action(&switch_to_page7);
     application.set_accels_for_action("app.switch-to-page-7", &["<alt>7"]);
 
     let switch_to_page8 = gio::SimpleAction::new("switch-to-page-8", None);
-    switch_to_page8.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page7");
+    switch_to_page8.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Macros, &builder);
+
+
     }));
 
     application.add_action(&switch_to_page8);
     application.set_accels_for_action("app.switch-to-page-8", &["<alt>8"]);
 
     let switch_to_page9 = gio::SimpleAction::new("switch-to-page-9", None);
-    switch_to_page9.connect_activate(clone!(@weak main_stack => move |_, _| {
-        main_stack.set_visible_child_name("page8");
+    switch_to_page9.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Keymaps, &builder);
+
     }));
 
     application.add_action(&switch_to_page9);
     application.set_accels_for_action("app.switch-to-page-9", &["<alt>9"]);
+
+    let switch_to_page10 = gio::SimpleAction::new("switch-to-page-10", None);
+    switch_to_page10.connect_activate(clone!(@weak builder => move |_, _| {
+        switch_main_stack_page(Pages::Settings, &builder);
+
+    }));
+
+    application.add_action(&switch_to_page10);
+    application.set_accels_for_action("app.switch-to-page-10", &["<alt>0"]);
 
     // switching between slots
     let switch_to_slot1 = gio::SimpleAction::new("switch-to-slot-1", None);
@@ -790,7 +844,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // wire-up the gtk::InfoBar support
     notifications::set_notification_area(&info_bar);
 
-    notifications::error("Welcome to the Eruption GUI");
+    notifications::info("Welcome to the Eruption GUI");
 
     // TODO: implement this
     // lock_button.set_permission();
@@ -860,39 +914,72 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         application: &gtk::Application,
         builder: &gtk::Builder,
     ) {
-        let _ = update_main_window(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {e:?}");
-            e
-        });
+        // let _ = update_main_window(builder).map_err(|e| {
+        //     eprintln!("Error updating the main window: {e:?}");
+        //     e
+        // });
 
-        let _ = ui::canvas::initialize_canvas_page(builder).map_err(|e| {
+        let _ = ui::canvas::initialize_canvas_page(&builder).map_err(|e| {
             eprintln!("Error updating the canvas page: {e:?}");
             e
         });
 
-        let _ = ui::profiles::initialize_profiles_page(application, builder).map_err(|e| {
-            eprintln!("Error updating the main window: {e:?}");
-            e
-        });
+        // let _ = ui::keyboards::initialize_keyboard_page(builder).map_err(|e| {
+        //     eprintln!("Error updating the keyboard devices page: {e:?}");
+        //     e
+        // });
 
-        let _ = ui::automation_rules::initialize_automation_rules_page(application, builder)
+        // let _ = ui::mice::initialize_mouse_page(builder).map_err(|e| {
+        //     eprintln!("Error updating the mouse devices page: {e:?}");
+        //     e
+        // });
+
+        // let _ = ui::misc::initialize_misc_page(builder).map_err(|e| {
+        //     eprintln!("Error updating the misc devices page: {e:?}");
+        //     e
+        // });
+
+        let _ = ui::color_schemes::initialize_color_schemes_page(&application.clone(), &builder)
             .map_err(|e| {
+                eprintln!("Error updating the color schemes page: {e:?}");
+                e
+            });
+
+        let _ =
+            ui::automation_rules::initialize_automation_rules_page(&application.clone(), &builder)
+                .map_err(|e| {
+                    eprintln!("Error updating the color schemes page: {e:?}");
+                    e
+                });
+
+        let _ =
+            ui::profiles::initialize_profiles_page(&application.clone(), &builder).map_err(|e| {
                 eprintln!("Error updating the main window: {e:?}");
                 e
             });
 
-        let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
+        let _ = ui::macros::initialize_macros_page(&application.clone(), &builder).map_err(|e| {
+            eprintln!("Error updating the canvas page: {e:?}");
+            e
+        });
+
+        let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), &builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
             e
         });
 
-        let _ = initialize_slot_bar(builder).map_err(|e| {
+        let _ = ui::settings::initialize_settings_page(&builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
             e
         });
 
-        let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
-        let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
+        let _ = initialize_slot_bar(&builder).map_err(|e| {
+            eprintln!("Error updating the main window: {e:?}");
+            e
+        });
+
+        let _ = dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state);
+        let _ = dbus_client::spawn_dbus_event_loop_session(&builder, &|_b, m| {
             eprintln!("{m:?}");
             Ok(())
         });
@@ -918,7 +1005,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     timers::register_timer(
         timers::HOTPLUG_TIMER_ID,
         TimerMode::Periodic,
-        1500,
+        1000,
         clone!(@weak application => @default-return Ok(()), move || {
             if crate::dbus_client::ping().is_err() {
                 notification_box_global.show();
@@ -939,7 +1026,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                     // we re-established the connection to the Eruption daemon,
                     events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
-                    initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
+                    // initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
 
                     // update the GUI to show e.g. newly attached devices
                     update_main_window(&builder).unwrap();
@@ -1123,7 +1210,11 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
                 "/org/eruption/eruption-gui-gtk3/ui/mouse-device-template.ui",
             );
 
-            let page = ui::mice::initialize_mouse_page(builder, &template, device_index as u64)?;
+            let page = initialize_mouse_page(
+                builder,
+                &template,
+                device_index as u64,
+            )?;
 
             let device_name = format!(
                 "{} {}",

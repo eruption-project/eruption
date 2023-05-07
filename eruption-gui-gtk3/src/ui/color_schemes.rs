@@ -19,22 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-
-
-use glib::{IsA};
+use glib::IsA;
 use gtk::glib;
-
-
-
-
-
-
-
-
-
-
-
-
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -530,7 +516,7 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
 
     // timers::register_timer(
     //     timers::PROCESS_MONITOR_TIMER_ID,
-    //     TimerMode::ActiveStackPage(4),
+    //     TimerMode::ActiveStackPage(Pages::ColorSchemes as u8),
     //     1000,
     //     clone!(@weak builder => @default-return Ok(()), move || {
     //         let _result = update_rules_view(&builder).map_err(|e| tracing::error!("Could not poll eruption-process-monitor ruleset: {e}"));

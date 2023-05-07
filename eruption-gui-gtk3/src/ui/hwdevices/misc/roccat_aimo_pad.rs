@@ -19,9 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use super::MiscDevice;
+use super::{MiscDevice, Rectangle};
 use crate::constants;
-use crate::ui::misc::hwdevices::Rectangle;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Lighten, Srgba};

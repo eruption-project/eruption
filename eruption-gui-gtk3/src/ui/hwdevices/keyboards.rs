@@ -21,15 +21,15 @@
 
 use crate::{dbus_client, util::RGBA};
 
-mod corsair_strafe;
-mod generic_keyboard;
-mod null_keyboard;
-mod roccat_magma;
-mod roccat_vulcan_1xx;
-mod roccat_vulcan_pro;
-mod roccat_vulcan_pro_tkl;
-mod roccat_vulcan_tkl;
-mod wooting_two_he_arm;
+pub mod corsair_strafe;
+pub mod generic_keyboard;
+pub mod null_keyboard;
+pub mod roccat_magma;
+pub mod roccat_vulcan_1xx;
+pub mod roccat_vulcan_pro;
+pub mod roccat_vulcan_pro_tkl;
+pub mod roccat_vulcan_tkl;
+pub mod wooting_two_he_arm;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 

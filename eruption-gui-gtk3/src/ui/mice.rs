@@ -23,11 +23,13 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 
+use crate::notifications;
 use crate::timers;
 use crate::timers::TimerMode;
 use crate::util;
 
-pub mod hwdevices;
+use super::hwdevices::mice::get_mouse_device;
+use super::Pages;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -45,7 +47,7 @@ pub fn initialize_mouse_page(
     template: &gtk::Builder,
     device: u64,
 ) -> Result<gtk::Widget> {
-    let mouse_device = hwdevices::get_mouse_device(device)?;
+    let mouse_device = get_mouse_device(device)?;
 
     let mouse_device_page = template.object("mouse_device_template").unwrap();
 
@@ -124,7 +126,7 @@ pub fn initialize_mouse_page(
     // near realtime update path
     timers::register_timer(
         timers::MOUSE_TIMER_ID,
-        TimerMode::ActiveStackPage(2),
+        TimerMode::ActiveStackPage(Pages::Mice as u8),
         151,
         clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
                     @default-return Ok(()), move || {
@@ -135,22 +137,29 @@ pub fn initialize_mouse_page(
                     let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
                     signal_strength_indicator.set_value(value as f64 / 100.0);
-                    signal_strength_indicator.show();
+                    signal_strength_indicator.show_all();
                 } else {
                     signal_strength_indicator.hide();
+
+                    notifications::warn("Signal strength not currently available");
+
                 }
 
                 if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
                     let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
                     battery_level_indicator.set_value(value as f64 / 100.0);
-                    battery_level_indicator.show();
+                    battery_level_indicator.show_all();
                 } else {
                     battery_level_indicator.hide();
+
+                    notifications::warn("Battery level not currently available");
                 }
             } else {
                 signal_strength_indicator.hide();
                 battery_level_indicator.hide();
+
+                notifications::error("Could not query the device status");
             }
 
             Ok(())
@@ -160,7 +169,7 @@ pub fn initialize_mouse_page(
     // fast update path
     timers::register_timer(
         timers::MOUSE_FAST_TIMER_ID,
-        TimerMode::ActiveStackPage(2),
+        TimerMode::ActiveStackPage(Pages::Mice as u8),
         1051,
         clone!(@weak device_brightness_scale, @weak mouse_dpi_label,
                     @weak mouse_profile_label, @weak debounce_switch,
@@ -192,8 +201,8 @@ pub fn initialize_mouse_page(
 
     // slow update path
     timers::register_timer(
-        timers::MOUSE_SLOW_TIMER_ID,
-        TimerMode::ActiveStackPage(2),
+        timers::MOUSE_SLOW_TIMER_ID + device as usize,
+        TimerMode::ActiveStackPage(Pages::Mice as u8),
         3023,
         clone!(@weak mouse_firmware_label, @weak mouse_rate_label => @default-return Ok(()), move || {
             if let Ok(firmware) = util::get_firmware_revision(mouse_device_handle) {
@@ -209,8 +218,8 @@ pub fn initialize_mouse_page(
     )?;
 
     timers::register_timer(
-        timers::MOUSE_RENDER_TIMER_ID,
-        TimerMode::ActiveStackPage(2),
+        timers::MOUSE_RENDER_TIMER_ID + device as usize,
+        TimerMode::ActiveStackPage(Pages::Mice as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             drawing_area.queue_draw();

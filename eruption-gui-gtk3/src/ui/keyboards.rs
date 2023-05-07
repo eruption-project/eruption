@@ -26,7 +26,8 @@ use glib_macros::clone;
 use gtk::glib;
 use gtk::prelude::{BuilderExtManual, LabelExt, LevelBarExt, RangeExt, WidgetExt};
 
-pub mod hwdevices;
+use super::hwdevices::keyboards::get_keyboard_device;
+use super::Pages;
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -44,7 +45,7 @@ pub fn initialize_keyboard_page(
     template: &gtk::Builder,
     device: u64,
 ) -> Result<gtk::Widget> {
-    let keyboard_device = hwdevices::get_keyboard_device(device)?;
+    let keyboard_device = get_keyboard_device(device)?;
 
     let keyboard_device_page = template.object("keyboard_device_template").unwrap();
 
@@ -98,8 +99,8 @@ pub fn initialize_keyboard_page(
 
     // near realtime update path
     timers::register_timer(
-        timers::KEYBOARD_TIMER_ID,
-        TimerMode::ActiveStackPage(1),
+        timers::KEYBOARD_TIMER_ID + device as usize,
+        TimerMode::ActiveStackPage(Pages::Keyboards as u8),
         139,
         clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
                     @default-return Ok(()), move || {
@@ -133,8 +134,8 @@ pub fn initialize_keyboard_page(
     )?;
 
     timers::register_timer(
-        timers::KEYBOARD_RENDER_TIMER_ID,
-        TimerMode::ActiveStackPage(1),
+        timers::KEYBOARD_RENDER_TIMER_ID + device as usize,
+        TimerMode::ActiveStackPage(Pages::Keyboards as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
                         drawing_area.queue_draw();

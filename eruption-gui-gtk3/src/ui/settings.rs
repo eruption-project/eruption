@@ -27,11 +27,13 @@ use crate::{
 use glib::clone;
 use gtk::prelude::*;
 
+use super::Pages;
+
 // use crate::constants;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-/// Initialize page "Profiles"
+/// Initialize page "Settings"
 pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
     let host_name: gtk::Entry = builder.object("host_name").unwrap();
     let port_number: gtk::SpinButton = builder.object("port_number").unwrap();
@@ -137,7 +139,7 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
 
     timers::register_timer(
         timers::SETTINGS_TIMER_ID,
-        TimerMode::ActiveStackPage(6),
+        TimerMode::ActiveStackPage(Pages::Settings as u8),
         500,
         clone!(@weak eruption_daemon_status_label, @weak eruption_daemon_switch, @weak process_monitor_daemon_status_label,
                     @weak process_monitor_daemon_switch, @weak audio_proxy_daemon_switch, @weak audio_proxy_daemon_status_label

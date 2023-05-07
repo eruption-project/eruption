@@ -44,7 +44,7 @@ use ui::main_window::set_application_state;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use std::{env, process, thread};
+use std::{env, process};
 
 use util::RGBA;
 
@@ -804,14 +804,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     });
 
     // global timer support
-    glib::idle_add_local(
+    glib::timeout_add_local(
+        Duration::from_millis(10),
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = timers::handle_timers() {
                 ratelimited::error!("An error occurred in a timer callback: {}", e);
             }
-
-            // this massively reduces the CPU load of the application
-            thread::sleep(Duration::from_millis(1));
 
             Continue(true)
         }),
