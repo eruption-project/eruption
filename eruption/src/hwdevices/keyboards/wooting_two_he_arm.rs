@@ -887,15 +887,9 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             led_map,
                         )?;
 
-                        let shape = (
-                            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
-                            Order::ColumnMajor,
-                        );
-                        let led_map = led_map.to_shape(shape)?;
-
                         let led_map = led_map.slice(s![
-                            self.allocated_zone.x..(self.allocated_zone.x + 21),
-                            self.allocated_zone.y..(self.allocated_zone.y + 6),
+                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
+                            self.allocated_zone.y..(self.allocated_zone.y + NUM_ROWS as i32),
                         ]);
 
                         let shape = ((NUM_LEDS,), Order::RowMajor);

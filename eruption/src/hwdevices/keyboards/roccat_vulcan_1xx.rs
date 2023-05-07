@@ -21,6 +21,7 @@
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use ndarray::{s, Array2, Order};
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -1013,26 +1014,26 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        #[inline]
-                        fn index_to_canvas(index: usize) -> usize {
-                            let index = ROWS_TOPOLOGY
-                                .iter()
-                                .position(|e| *e as usize == index)
-                                .unwrap_or(0);
+                        let led_map = led_map.to_vec();
 
-                            let x = index % NUM_COLS;
-                            let y = index / NUM_COLS;
+                        let led_map = Array2::from_shape_vec(
+                            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                            led_map,
+                        )?;
 
-                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
-                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
+                        // let shape = (
+                        //     (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                        //     Order::ColumnMajor,
+                        // );
+                        // let led_map = led_map.to_shape(shape)?;
 
-                            // let x = index % NUM_COLS + (NUM_COLS / 2);
-                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
+                        let led_map = led_map.slice(s![
+                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
+                            self.allocated_zone.y..(self.allocated_zone.y + NUM_ROWS as i32),
+                        ]);
 
-                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
-
-                            result.clamp(0, constants::CANVAS_SIZE - 1)
-                        }
+                        let shape = ((NUM_LEDS,), Order::RowMajor);
+                        let led_map = led_map.to_shape(shape)?;
 
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.
@@ -1046,7 +1047,12 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
                         for i in 0..NUM_KEYS {
-                            let color = led_map[index_to_canvas(i)];
+                            let color = led_map.get(i).unwrap_or(&RGBA {
+                                r: 0,
+                                g: 0,
+                                b: 0,
+                                a: 0,
+                            });
                             let offset = ((i / 12) * 36) + (i % 12);
 
                             buffer[offset + 4] =
