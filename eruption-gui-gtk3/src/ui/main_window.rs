@@ -108,7 +108,7 @@ pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) ->
         ApplicationState::Disconnected => {
             events::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
-            update_main_window(&builder)?;
+            update_main_window(builder)?;
             notification_box_global.show_now();
 
             switch_bar.hide();
@@ -122,7 +122,7 @@ pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) ->
         ApplicationState::Connected => {
             events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
-            update_main_window(&builder)?;
+            update_main_window(builder)?;
             notification_box_global.hide();
 
             switch_bar.show();
@@ -517,7 +517,7 @@ fn register_actions<A: IsA<gtk::Application>>(
 ) -> Result<()> {
     let application = application.as_ref();
 
-    let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+    let _main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     // let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
     let main_stack: gtk::Stack = builder.object("main_stack").unwrap();

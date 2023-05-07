@@ -91,10 +91,10 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     if let Err(e) = crate::dbus_client::ping() {
         tracing::error!("Lost connection to the Eruption daemon: {e}");
-        set_application_state(ApplicationState::Disconnected, &builder)?;
+        set_application_state(ApplicationState::Disconnected, builder)?;
     } else {
         tracing::info!("Connected to the Eruption daemon");
-        set_application_state(ApplicationState::Connected, &builder)?;
+        set_application_state(ApplicationState::Connected, builder)?;
     };
 
     reset_postproc_button.connect_clicked(
@@ -116,7 +116,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             let result = message_dialog.run();
             message_dialog.hide();
 
-            if result  == ResponseType::Yes.into() {
+            if result  == ResponseType::Yes {
                 canvas_hue_scale.adjustment().set_value(0.0);
                 canvas_saturation_scale.adjustment().set_value(0.0);
                 canvas_lightness_scale.adjustment().set_value(0.0);

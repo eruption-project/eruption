@@ -312,7 +312,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
     if crate::LOST_CONNECTION.load(Ordering::SeqCst) {
         crate::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
-        set_application_state(ApplicationState::Disconnected, &builder)?;
+        set_application_state(ApplicationState::Disconnected, builder)?;
     }
 
     if !events::shall_ignore_pending_dbus_event() {

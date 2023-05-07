@@ -22,11 +22,11 @@
 use bitfield_struct::bitfield;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{Array2, Order};
+use ndarray::{s, Array2, Order};
 use parking_lot::{Mutex, RwLock};
+use std::any::Any;
 use std::collections::HashMap;
 use std::time::Duration;
-use std::{any::Any, mem::size_of};
 use std::{sync::Arc, thread};
 use tracing::*;
 
@@ -389,24 +389,26 @@ impl DeviceInfoTrait for WootingTwoHeArm {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let mut buf = [0; size_of::<DeviceInfo>()];
-            buf[0] = 0x0f; // Query device info (HID report 0x0f)
+            // let mut buf = [0; size_of::<DeviceInfo>()];
+            // buf[0] = 0x0f; // Query device info (HID report 0x0f)
 
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            match ctrl_dev.get_feature_report(&mut buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    let tmp: DeviceInfo =
-                        unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
+            // match ctrl_dev.get_feature_report(&mut buf) {
+            //     Ok(_result) => {
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //         let tmp: DeviceInfo =
+            //             unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
 
-                    let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
-                    Ok(result)
-                }
+            //         let result = hwdevices::DeviceInfo::new(tmp.firmware_version as i32);
+            //         Ok(result)
+            //     }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            // }
+
+            Ok(hwdevices::DeviceInfo::new(0))
         }
     }
 
@@ -636,29 +638,29 @@ impl DeviceTrait for WootingTwoHeArm {
 }
 
 impl KeyboardDeviceTrait for WootingTwoHeArm {
-    fn set_status_led(&self, led_kind: LedKind, _on: bool) -> Result<()> {
+    fn set_status_led(&self, _led_kind: LedKind, _on: bool) -> Result<()> {
         trace!("Setting status LED state");
 
-        match led_kind {
-            LedKind::Unknown => warn!("No LEDs have been set, request was a no-op"),
-            LedKind::AudioMute => {
-                // self.write_data_raw(&[0x00, 0x09, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-            }
-            LedKind::Fx => {}
-            LedKind::Volume => {}
-            LedKind::NumLock => {
-                self.write_data_raw(&[0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-            }
-            LedKind::CapsLock => {
-                self.write_data_raw(&[0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-            }
-            LedKind::ScrollLock => {
-                self.write_data_raw(&[0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-            }
-            LedKind::GameMode => {
-                self.write_data_raw(&[0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-            }
-        }
+        // match led_kind {
+        //     LedKind::Unknown => warn!("No LEDs have been set, request was a no-op"),
+        //     LedKind::AudioMute => {
+        //         // self.write_data_raw(&[0x00, 0x09, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::Fx => {}
+        //     LedKind::Volume => {}
+        //     LedKind::NumLock => {
+        //         self.write_data_raw(&[0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::CapsLock => {
+        //         self.write_data_raw(&[0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::ScrollLock => {
+        //         self.write_data_raw(&[0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::GameMode => {
+        //         self.write_data_raw(&[0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        // }
 
         Ok(())
     }
@@ -692,80 +694,83 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let mut buf = [0; 8];
+            // let mut buf = [0; 8];
 
-            match ctrl_dev.read_timeout(&mut buf, millis) {
-                Ok(_size) => {
-                    if buf.iter().any(|e| *e != 0) {
-                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
-                    }
+            // match ctrl_dev.read_timeout(&mut buf, millis) {
+            //     Ok(_size) => {
+            //         if buf.iter().any(|e| *e != 0) {
+            //             hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+            //         }
 
-                    let fn_down = false;
+            //         // let fn_down = false;
 
-                    let event = match buf[0..5] {
-                        // Key reports, incl. KEY_FN, ..
-                        [0x03, 0x00, 0xfb, code, status] => match code {
-                            0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
+            //         // let event = match buf[0..5] {
+            //         //     // Key reports, incl. KEY_FN, ..
+            //         //     [0x03, 0x00, 0xfb, code, status] => match code {
+            //         //         0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
 
-                            0x7d if fn_down => KeyboardHidEvent::NextSlot,
+            //         //         0x7d if fn_down => KeyboardHidEvent::NextSlot,
 
-                            _ => match status {
-                                0x00 => KeyboardHidEvent::KeyUp {
-                                    code: keyboard_hid_event_code_from_report(0xfb, code),
-                                },
+            //         //         _ => match status {
+            //         //             0x00 => KeyboardHidEvent::KeyUp {
+            //         //                 code: keyboard_hid_event_code_from_report(0xfb, code),
+            //         //             },
 
-                                0x01 => KeyboardHidEvent::KeyDown {
-                                    code: keyboard_hid_event_code_from_report(0xfb, code),
-                                },
+            //         //             0x01 => KeyboardHidEvent::KeyDown {
+            //         //                 code: keyboard_hid_event_code_from_report(0xfb, code),
+            //         //             },
 
-                                _ => KeyboardHidEvent::Unknown,
-                            },
-                        },
+            //         //             _ => KeyboardHidEvent::Unknown,
+            //         //         },
+            //         //     },
 
-                        // CAPS LOCK, Easy Shift+, ..
-                        [0x03, 0x00, 0x0a, code, status] => match code {
-                            0x39 | 0xff => match status {
-                                0x00 => KeyboardHidEvent::KeyDown {
-                                    code: keyboard_hid_event_code_from_report(0x0a, code),
-                                },
+            //         //     // CAPS LOCK, Easy Shift+, ..
+            //         //     [0x03, 0x00, 0x0a, code, status] => match code {
+            //         //         0x39 | 0xff => match status {
+            //         //             0x00 => KeyboardHidEvent::KeyDown {
+            //         //                 code: keyboard_hid_event_code_from_report(0x0a, code),
+            //         //             },
 
-                                0x01 => KeyboardHidEvent::KeyUp {
-                                    code: keyboard_hid_event_code_from_report(0x0a, code),
-                                },
+            //         //             0x01 => KeyboardHidEvent::KeyUp {
+            //         //                 code: keyboard_hid_event_code_from_report(0x0a, code),
+            //         //             },
 
-                                _ => KeyboardHidEvent::Unknown,
-                            },
+            //         //             _ => KeyboardHidEvent::Unknown,
+            //         //         },
 
-                            _ => KeyboardHidEvent::Unknown,
-                        },
+            //         //         _ => KeyboardHidEvent::Unknown,
+            //         //     },
 
-                        _ => KeyboardHidEvent::Unknown,
-                    };
+            //         //     _ => KeyboardHidEvent::Unknown,
+            //         // };
 
-                    /* match event {
-                        KeyboardHidEvent::KeyDown { code } => {
-                            // update our internal representation of the keyboard state
-                            let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = true;
-                        }
+            //         /* match event {
+            //             KeyboardHidEvent::KeyDown { code } => {
+            //                 // update our internal representation of the keyboard state
+            //                 let index = self.hid_event_code_to_key_index(&code) as usize;
+            //                 crate::KEY_STATES.write()[index] = true;
+            //             }
 
-                        KeyboardHidEvent::KeyUp { code } => {
-                            // update our internal representation of the keyboard state
-                            let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = false;
-                        }
+            //             KeyboardHidEvent::KeyUp { code } => {
+            //                 // update our internal representation of the keyboard state
+            //                 let index = self.hid_event_code_to_key_index(&code) as usize;
+            //                 crate::KEY_STATES.write()[index] = false;
+            //             }
 
-                        _ => { /* ignore other events */ }
-                    } */
+            //             _ => { /* ignore other events */ }
+            //         } */
+            //         Ok(event)
+            //     }
 
-                    Ok(event)
-                }
+            //     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            // }
 
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            thread::sleep(Duration::from_millis(millis as u64));
+
+            Ok(KeyboardHidEvent::Unknown)
         }
     }
 
@@ -840,27 +845,6 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             encoded_color
                         }
 
-                        #[inline]
-                        fn index_to_canvas(index: usize) -> usize {
-                            let index = TOPOLOGY
-                                .iter()
-                                .position(|e| *e as usize == index)
-                                .unwrap_or(0);
-
-                            let x = index % NUM_COLS;
-                            let y = index / NUM_COLS;
-
-                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
-                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
-
-                            // let x = index % NUM_COLS + (NUM_COLS / 2);
-                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
-
-                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
-
-                            result.clamp(0, constants::CANVAS_SIZE - 1)
-                        }
-
                         fn submit_packet(led_dev: &hidapi::HidDevice, buffer: &[u8]) -> Result<()> {
                             hexdump::hexdump_iter(buffer).for_each(|s| trace!("  {}", s));
 
@@ -893,15 +877,29 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             Ok(())
                         }
 
-                        // this device uses a row major layout, from the top row to the bottom row,
-                        // so whe have to transpose the color map to the right layout
-                        let tmp_map = Array2::from_shape_vec(
-                            (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
-                            led_map.to_vec(),
+                        // this device uses a row major layout, starting at the top row, going down
+                        // to the bottom row; so whe have to transpose the color map to the right layout
+
+                        let led_map = led_map.to_vec();
+
+                        let led_map = Array2::from_shape_vec(
+                            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                            led_map,
                         )?;
 
-                        let shape = ((constants::CANVAS_SIZE,), Order::RowMajor);
-                        let led_map = tmp_map.to_shape(shape)?;
+                        let shape = (
+                            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                            Order::ColumnMajor,
+                        );
+                        let led_map = led_map.to_shape(shape)?;
+
+                        let led_map = led_map.slice(s![
+                            self.allocated_zone.x..(self.allocated_zone.x + 21),
+                            self.allocated_zone.y..(self.allocated_zone.y + 6),
+                        ]);
+
+                        let shape = ((NUM_LEDS,), Order::RowMajor);
+                        let led_map = led_map.to_shape(shape)?;
 
                         const BUFFER_SIZE: usize =
                             4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1)) + 2;
@@ -924,7 +922,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                 submit_packet(led_dev, &buffer[(i - 64)..=i])?;
                             } else {
                                 let encoded_color = encode_color(
-                                    led_map.get(index_to_canvas(cntr)).unwrap_or(&RGBA {
+                                    led_map.get(cntr).unwrap_or(&RGBA {
                                         r: 0,
                                         g: 0,
                                         b: 0,
@@ -1022,35 +1020,35 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
     }
 }
 
-fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
-    match report {
-        0xfb => match code {
-            16 => KeyboardHidEventCode::KEY_F1,
-            24 => KeyboardHidEventCode::KEY_F2,
-            33 => KeyboardHidEventCode::KEY_F3,
-            32 => KeyboardHidEventCode::KEY_F4,
+// fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
+//     match report {
+//         0xfb => match code {
+//             16 => KeyboardHidEventCode::KEY_F1,
+//             24 => KeyboardHidEventCode::KEY_F2,
+//             33 => KeyboardHidEventCode::KEY_F3,
+//             32 => KeyboardHidEventCode::KEY_F4,
 
-            40 => KeyboardHidEventCode::KEY_F5,
-            48 => KeyboardHidEventCode::KEY_F6,
-            56 => KeyboardHidEventCode::KEY_F7,
-            57 => KeyboardHidEventCode::KEY_F8,
+//             40 => KeyboardHidEventCode::KEY_F5,
+//             48 => KeyboardHidEventCode::KEY_F6,
+//             56 => KeyboardHidEventCode::KEY_F7,
+//             57 => KeyboardHidEventCode::KEY_F8,
 
-            17 => KeyboardHidEventCode::KEY_ESC,
-            119 => KeyboardHidEventCode::KEY_FN,
+//             17 => KeyboardHidEventCode::KEY_ESC,
+//             119 => KeyboardHidEventCode::KEY_FN,
 
-            _ => KeyboardHidEventCode::Unknown(code),
-        },
+//             _ => KeyboardHidEventCode::Unknown(code),
+//         },
 
-        0x0a => match code {
-            57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
-            255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
+//         0x0a => match code {
+//             57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
+//             255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
 
-            _ => KeyboardHidEventCode::Unknown(code),
-        },
+//             _ => KeyboardHidEventCode::Unknown(code),
+//         },
 
-        _ => KeyboardHidEventCode::Unknown(code),
-    }
-}
+//         _ => KeyboardHidEventCode::Unknown(code),
+//     }
+// }
 
 /// Map evdev event codes to key indices, for ISO variant
 #[rustfmt::skip]

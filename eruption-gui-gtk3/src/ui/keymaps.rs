@@ -19,31 +19,20 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use crate::{
-    dbus_client,
-    profiles::Profile,
-    scripting::manifest::Manifest,
-    scripting::parameters::{self, ManifestValue, TypedValue},
-    util,
-};
 
-use glib::clone;
+
+
 use glib::IsA;
 use gtk::glib;
 use gtk::{
-    prelude::*, Adjustment, Align, Box, Builder, Button, ButtonsType, CellRendererText,
-    ColorButton, Entry, Expander, Frame, IconSize, Image, Justification, Label, MessageDialog,
-    MessageType, Orientation, PositionType, Scale, ScrolledWindow, ShadowType, Stack,
-    StackSwitcher, Switch, TextBuffer, TreeStore, TreeView, TreeViewColumn, TreeViewColumnSizing,
+    prelude::*, Builder, TreeView,
 };
-use paste::paste;
 
-#[cfg(feature = "sourceview")]
-use gtk::TextView;
 
-#[cfg(feature = "sourceview")]
-use sourceview4::prelude::*;
-use sourceview4::Buffer;
+
+
+
+
 
 #[cfg(not(feature = "sourceview"))]
 use gtk::ApplicationWindow;
@@ -51,7 +40,7 @@ use gtk::ApplicationWindow;
 use gtk::{TextBuffer, TextView};
 
 use std::path::{Path, PathBuf};
-use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -577,16 +566,16 @@ macro_rules! declare_config_widget_switch {
 }
 
 /// Populate the configuration tab with settings/GUI controls
-fn populate_visual_config_editor<P: AsRef<Path>>(builder: &Builder, profile: P) -> Result<()> {
+fn populate_visual_config_editor<P: AsRef<Path>>(_builder: &Builder, _profile: P) -> Result<()> {
     Ok(())
 }
 
 /// Initialize page "Keymaps"
 pub fn initialize_keymaps_page<A: IsA<gtk::Application>>(
-    application: &A,
+    _application: &A,
     builder: &Builder,
 ) -> Result<()> {
-    let profiles_treeview: TreeView = builder.object("profiles_treeview").unwrap();
+    let _profiles_treeview: TreeView = builder.object("profiles_treeview").unwrap();
     // let sourceview: sourceview4::View = builder.object("source_view").unwrap();
 
     // profiles list
@@ -692,7 +681,7 @@ pub fn initialize_keymaps_page<A: IsA<gtk::Application>>(
 }
 
 /// Register global actions and keyboard accelerators
-fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder) -> Result<()> {
+fn register_actions<A: IsA<gtk::Application>>(_application: &A, _builder: &Builder) -> Result<()> {
     // let application = application.as_ref();
 
     // let stack_widget: Stack = builder.object("profile_stack").unwrap();
@@ -741,7 +730,7 @@ fn register_actions<A: IsA<gtk::Application>>(application: &A, builder: &Builder
     Ok(())
 }
 
-pub fn update_keymaps_state(builder: &Builder) -> Result<()> {
+pub fn update_keymaps_state(_builder: &Builder) -> Result<()> {
     // let profiles_treeview: TreeView = builder.object("profiles_treeview").unwrap();
 
     // let model = profiles_treeview.model().unwrap();

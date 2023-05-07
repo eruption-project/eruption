@@ -460,7 +460,7 @@ impl SdkSupportPlugin {
                         socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
 
                         thread::Builder::new()
-                            .name(format!("client"))
+                            .name("client".to_string())
                             .spawn(move || -> Result<()> {
                                 // connection successful, enter event loop now
                                 'EVENT_LOOP: loop {

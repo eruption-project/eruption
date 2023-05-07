@@ -19,27 +19,27 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use gdk::prelude::ActionMapExt;
-use glib::{clone, Cast, StaticType, ToValue};
-use glib::{Continue, IsA};
-use gtk::glib;
-use gtk::prelude::BuilderExtManual;
-use gtk::prelude::ButtonExt;
-use gtk::prelude::TreeStoreExtManual;
-use gtk::prelude::WidgetExt;
-use gtk::traits::{CellRendererToggleExt, DialogExt, TreeViewExt};
-use gtk::traits::{GtkApplicationExt, TreeModelExt, TreeSelectionExt, TreeStoreExt};
-use gtk::MessageDialog;
-use gtk::TreeViewColumn;
-use std::time::Duration;
 
-use crate::timers::{self, TimerMode};
-use crate::{dbus_client, ui::rule, util};
+
+use glib::{IsA};
+use gtk::glib;
+
+
+
+
+
+
+
+
+
+
+
+
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Initialize page "Process Monitor"
-pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
+pub fn update_color_schemes_view(_builder: &gtk::Builder) -> Result<()> {
     // let application = application.as_ref();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
@@ -106,7 +106,7 @@ pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
 }
 
 /// Updates the ruleset of the eruption-process-monitor daemon to match the current state of the GUI
-pub fn transmit_color_schemes_to_eruption(builder: &gtk::Builder) -> Result<()> {
+pub fn transmit_color_schemes_to_eruption(_builder: &gtk::Builder) -> Result<()> {
     // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
     // let mut rules: Vec<(String, String, String, String)> = Vec::new();
@@ -156,8 +156,8 @@ pub fn transmit_color_schemes_to_eruption(builder: &gtk::Builder) -> Result<()> 
 
 /// Initialize page "Process Monitor"
 pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
-    application: &A,
-    builder: &gtk::Builder,
+    _application: &A,
+    _builder: &gtk::Builder,
 ) -> Result<()> {
     // let application = application.as_ref();
 
@@ -543,7 +543,7 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
 }
 
 /// Initialize page "Process Monitor"
-pub fn update_color_schemes_page(builder: &gtk::Builder) -> Result<()> {
+pub fn update_color_schemes_page(_builder: &gtk::Builder) -> Result<()> {
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
