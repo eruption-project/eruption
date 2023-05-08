@@ -44,7 +44,7 @@ debug-async = []
 cfg-if = "1.0.0"
 clap = { version = "4.2.7", features = ["derive"] }
 clap_complete = "4.2.1"
-libc = "0.2.142"
+libc = "0.2.143"
 nix = "0.26.2"
 atty = "0.2.14"
 walkdir = "2.3.3"
@@ -99,7 +99,7 @@ egui-bind = { version = "0.6.0", features = ["serde"] }
 egui-notify = "0.6.0"
 egui-modal = "0.2.3"
 egui_inspect = "0.1.3"
-egui_file = "0.8.1"
+egui_file = "0.8.2"
 egui_dock = "0.5.0"
 egui_commonmark = { version = "0.7.2", features = [
   "syntax_highlighting",
