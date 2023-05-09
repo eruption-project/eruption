@@ -901,18 +901,36 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     }
                                 } else {
                                     drop_frame = true;
+                                    break;
                                 }
                             }
 
-                            if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
-                                // blend the LED map of the Userspace LEDs support plugin
-                                let uleds_led_map = uleds::LED_MAP.read();
+                            fn ease_in_out_quad(x: f32) -> f32 {
+                                if x < 0.5 {
+                                    2.0 * x * x
+                                } else {
+                                    1.0 - f32::powf(-2.0 * x + 2.0, 2.0) / 2.0
+                                }
+                            }
+
+                            // alpha blend the color maps of the last active profile with the current canvas
+                            let fader = crate::FADER.load(Ordering::SeqCst);
+                            if fader > 0 {
+                                let fader_base = crate::FADER_BASE.load(Ordering::SeqCst);
+
+                                let alpha = if fader_base > 0 && fader > 0 {
+                                    1.0 - ease_in_out_quad((1.0 - (fader as f32 / fader_base as f32)) as f32)
+                                } else {
+                                    0.0
+                                } * 255.0;
+
+                                let saved_led_map = script::SAVED_LED_MAP.read();
                                 let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
                                 for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
                                     for (idx, background) in chunks.iter_mut().enumerate() {
                                         let bg = &background;
-                                        let fg = uleds_led_map[idx];
+                                        let fg = saved_led_map[idx];
 
                                         #[rustfmt::skip]
                                         let color = RGBA {
@@ -936,6 +954,29 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     for (idx, background) in chunks.iter_mut().enumerate() {
                                         let bg = &background;
                                         let fg = sdk_led_map[idx];
+
+                                        #[rustfmt::skip]
+                                        let color = RGBA {
+                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            a: fg.a,
+                                        };
+
+                                        *background = color;
+                                    }
+                                }
+                            }
+
+                            if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
+                                // blend the LED map of the Userspace LEDs support plugin
+                                let uleds_led_map = uleds::LED_MAP.read();
+                                let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
+                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                    for (idx, background) in chunks.iter_mut().enumerate() {
+                                        let bg = &background;
+                                        let fg = uleds_led_map[idx];
 
                                         #[rustfmt::skip]
                                         let color = RGBA {

@@ -530,6 +530,9 @@ pub fn switch_profile(
             Ok(profile) => {
                 let mut errors_present = false;
 
+                // take a snapshot of the last rendered LED map
+                *script::SAVED_LED_MAP.write() = script::LAST_RENDERED_LED_MAP.read().clone();
+
                 // request termination of all Lua VMs
                 for lua_tx in LUA_TXS.read().iter() {
                     if !lua_tx.is_failed {
