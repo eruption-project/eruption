@@ -22,7 +22,7 @@
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
-use palette::{FromColor, Hsva, Lighten, Srgba};
+use palette::{FromColor, Hsva, Lighten, LinSrgba};
 
 use super::{Mouse, Rectangle};
 
@@ -107,7 +107,7 @@ impl Mouse for RoccatKonePureUltra {
             ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
         // post-process color
-        let color = Srgba::new(
+        let color = LinSrgba::new(
             color.r as f64 / 255.0,
             color.g as f64 / 255.0,
             color.b as f64 / 255.0,
@@ -116,7 +116,7 @@ impl Mouse for RoccatKonePureUltra {
 
         // saturate and lighten color somewhat
         let color = Hsva::from_color(color);
-        let color = Srgba::from_color(
+        let color = LinSrgba::from_color(
             color
                 // .saturate(factor)
                 .lighten(factor),

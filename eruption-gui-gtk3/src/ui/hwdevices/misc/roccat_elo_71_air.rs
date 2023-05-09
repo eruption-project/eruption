@@ -24,7 +24,7 @@ use crate::constants;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
-use palette::{FromColor, Hsva, Lighten, Srgba};
+use palette::{FromColor, Hsva, Lighten, LinSrgba};
 
 const BORDER: (f64, f64) = (16.0, 16.0);
 
@@ -109,7 +109,7 @@ impl MiscDevice for RoccatElo71Air {
                 };
 
                 // post-process color
-                let color = Srgba::new(
+                let color = LinSrgba::new(
                     color.r as f64 / 255.0,
                     color.g as f64 / 255.0,
                     color.b as f64 / 255.0,
@@ -118,7 +118,7 @@ impl MiscDevice for RoccatElo71Air {
 
                 // saturate and lighten color somewhat
                 let color = Hsva::from_color(color);
-                let color = Srgba::from_color(
+                let color = LinSrgba::from_color(
                     color
                         // .saturate(factor)
                         .lighten(factor),
@@ -139,7 +139,7 @@ impl MiscDevice for RoccatElo71Air {
                 };
 
                 // post-process color
-                let color = Srgba::new(
+                let color = LinSrgba::new(
                     color.r as f64 / 255.0,
                     color.g as f64 / 255.0,
                     color.b as f64 / 255.0,
@@ -148,7 +148,7 @@ impl MiscDevice for RoccatElo71Air {
 
                 // saturate and lighten color somewhat
                 let color = Hsva::from_color(color);
-                let color = Srgba::from_color(
+                let color = LinSrgba::from_color(
                     color
                         // .saturate(factor)
                         .lighten(factor),

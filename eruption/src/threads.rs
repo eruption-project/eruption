@@ -22,7 +22,7 @@
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
-use palette::{FromColor, Hsva, Lighten, Saturate, ShiftHue, Srgba};
+use palette::{FromColor, Hsva, Lighten, LinSrgba, Saturate, ShiftHue};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
@@ -1020,7 +1020,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             let lighten_value = hsl.2 / 100.0;
 
                             for (_idx, color_val) in script::LED_MAP.write().iter_mut().enumerate() {
-                                let color = Srgba::new(
+                                let color = LinSrgba::new(
                                     color_val.r as f64 / 255.0,
                                     color_val.g as f64 / 255.0,
                                     color_val.b as f64 / 255.0,
@@ -1028,7 +1028,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 );
 
                                 let color = Hsva::from_color(color);
-                                let color = Srgba::from_color(
+                                let color = LinSrgba::from_color(
                                     color
                                         .shift_hue(hue_value)
                                         .saturate(saturation_value)

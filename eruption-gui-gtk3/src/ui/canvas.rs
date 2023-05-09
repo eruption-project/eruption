@@ -27,7 +27,7 @@ use gtk::{
     prelude::*, Builder, ButtonsType, MessageDialog, MessageType, ResponseType, ScrolledWindow,
     ShadowType, Stack, StackSwitcher, TreeViewColumnSizing,
 };
-// use palette::{FromColor, Hsva, Srgba};
+// use palette::{FromColor, Hsva, LinSrgba};
 
 use crate::dbus_client::Zone;
 use crate::timers::TimerMode;
@@ -668,7 +668,7 @@ fn paint_cell(
     };
 
     // post-process color
-    // let color = Srgba::new(
+    // let color = LinSrgba::new(
     //     color.r as f64 / 255.0,
     //     color.g as f64 / 255.0,
     //     color.b as f64 / 255.0,
@@ -681,7 +681,7 @@ fn paint_cell(
 
     // image post processing
     // let color = Hsva::from_color(color);
-    // let color = Srgba::from_color(
+    // let color = LinSrgba::from_color(
     //     color  .shift_hue(hue_value)
     //            .saturate(saturation_value)
     //            .lighten(lighten_value),

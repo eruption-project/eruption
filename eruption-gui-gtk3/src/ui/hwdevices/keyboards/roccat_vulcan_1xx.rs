@@ -25,7 +25,7 @@ use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
-use palette::{FromColor, Hsva, Lighten, Srgba};
+use palette::{FromColor, Hsva, Lighten, LinSrgba};
 use std::cell::RefCell;
 
 const BORDER: (f64, f64) = (16.0, 16.0);
@@ -168,7 +168,7 @@ impl Keyboard for RoccatVulcan1xx {
             //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
             // post-process color
-            let source_color = Srgba::new(
+            let source_color = LinSrgba::new(
                 color.r as f64 / 255.0,
                 color.g as f64 / 255.0,
                 color.b as f64 / 255.0,
@@ -177,7 +177,7 @@ impl Keyboard for RoccatVulcan1xx {
 
             // saturate and lighten color somewhat to use as the border color
             let border_color = Hsva::from_color(source_color);
-            let border_color = Srgba::from_color(
+            let border_color = LinSrgba::from_color(
                 border_color
                     // .saturate(0.75)
                     .lighten(0.4),
@@ -186,7 +186,7 @@ impl Keyboard for RoccatVulcan1xx {
 
             // saturate and darken color somewhat to use as the key color
             let key_color = Hsva::from_color(source_color);
-            let key_color = Srgba::from_color(
+            let key_color = LinSrgba::from_color(
                 key_color, // .saturate(0.75)
                           // .darken(0.15),
             )
