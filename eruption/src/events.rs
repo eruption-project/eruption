@@ -151,7 +151,7 @@ pub fn process_timer_event() -> Result<()> {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
-            .lock()
+            .write()
             .insert((index + offset) as u64, device_status);
     }
 
@@ -161,7 +161,7 @@ pub fn process_timer_event() -> Result<()> {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
-            .lock()
+            .write()
             .insert((index + offset) as u64, device_status);
     }
 
@@ -171,7 +171,7 @@ pub fn process_timer_event() -> Result<()> {
         let device_status = dev.read().device_status()?;
 
         DEVICE_STATUS
-            .lock()
+            .write()
             .insert((index + offset) as u64, device_status);
     }
 
@@ -282,7 +282,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                             }
 
                             // update AFK timer
-                            *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                            *crate::LAST_INPUT_TIME.write() = Instant::now();
 
                             events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(
                                 |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),
@@ -336,7 +336,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                             }
 
                             // update AFK timer
-                            *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                            *crate::LAST_INPUT_TIME.write() = Instant::now();
 
                             events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(
                                 |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),

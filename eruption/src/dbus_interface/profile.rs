@@ -102,7 +102,7 @@ impl InterfaceAddend for ProfileInterface {
 }
 
 fn get_active_profile(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    let result = crate::ACTIVE_PROFILE.lock();
+    let result = crate::ACTIVE_PROFILE.read();
 
     result
         .as_ref()

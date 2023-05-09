@@ -63,7 +63,7 @@ pub fn apply_parameters(
 
     // If the specified profile_file is for the active profile, update that directly.
     {
-        let active_profile = &mut *crate::ACTIVE_PROFILE.lock();
+        let active_profile = &mut *crate::ACTIVE_PROFILE.write();
         if let Some(active_profile) = active_profile.as_mut() {
             if is_same_file(&active_profile.profile_file, &profile_path) {
                 let new_parameters =

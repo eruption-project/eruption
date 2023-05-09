@@ -35,7 +35,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Update the tuple of managed devices
 pub fn update_managed_devices() -> Result<()> {
-    *MANAGED_DEVICES.lock() = dbus_client::get_managed_devices()?;
+    *MANAGED_DEVICES.write() = dbus_client::get_managed_devices()?;
 
     Ok(())
 }

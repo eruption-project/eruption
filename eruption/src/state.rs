@@ -73,7 +73,7 @@ struct State {
 
 pub fn init_global_runtime_state() -> Result<()> {
     // initialize runtime state to sane defaults
-    let mut profiles = crate::SLOT_PROFILES.lock();
+    let mut profiles = crate::SLOT_PROFILES.write();
     profiles.replace(vec![
         PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("blue-fx-swirl-perlin.profile"),
         PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("red-wave.profile"),
@@ -88,7 +88,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         "Profile Slot 4".to_string(),
     ];
 
-    let mut slot_names = crate::SLOT_NAMES.lock();
+    let mut slot_names = crate::SLOT_NAMES.write();
     *slot_names = default_slot_names.clone();
 
     // load state file
@@ -173,7 +173,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         .get::<f64>("canvas_lightness")
         .unwrap_or(0.0);
 
-    *crate::CANVAS_HSL.lock() = (hue, saturation, lightness);
+    *crate::CANVAS_HSL.write() = (hue, saturation, lightness);
 
     *slot_names = STATE
         .read()
@@ -302,12 +302,12 @@ pub fn save_runtime_state() -> Result<()> {
         device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
-    let canvas_hsl = crate::CANVAS_HSL.lock();
+    let canvas_hsl = crate::CANVAS_HSL.write();
 
     let config = State {
         active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
-        slot_names: crate::SLOT_NAMES.lock().clone(),
-        profiles: crate::SLOT_PROFILES.lock().as_ref().unwrap().clone(),
+        slot_names: crate::SLOT_NAMES.read().clone(),
+        profiles: crate::SLOT_PROFILES.read().as_ref().unwrap().clone(),
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
         canvas_hue: canvas_hsl.0,

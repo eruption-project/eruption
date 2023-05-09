@@ -151,7 +151,7 @@ fn get_device_status_property(
     i: &mut IterAppend,
     _m: &super::PropertyInfo,
 ) -> super::PropertyResult {
-    let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
+    let device_status = &*crate::DEVICE_STATUS.as_ref().read();
 
     let device_status = device_status
         .iter()
@@ -213,7 +213,7 @@ fn get_device_status(m: &MethodInfo) -> MethodResult {
 
 /// Query the device specific status from the global status store
 fn query_device_specific_status(device: u64) -> Result<String> {
-    let device_status = crate::DEVICE_STATUS.as_ref().lock();
+    let device_status = crate::DEVICE_STATUS.as_ref().read();
 
     match device_status.get(&device) {
         Some(status) => Ok(serde_json::to_string_pretty(&status.0)?),

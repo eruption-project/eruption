@@ -152,34 +152,34 @@ lazy_static! {
     pub static ref HIDAPI: Arc<RwLock<Option<hidapi::HidApi>>> = Arc::new(RwLock::new(None));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
-    pub static ref DEVICE_STATUS: Arc<Mutex<HashMap<u64, DeviceStatus>>> =
-        Arc::new(Mutex::new(HashMap::new()));
+    pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
 
     /// The custom names of each slot
-    pub static ref SLOT_NAMES: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+    pub static ref SLOT_NAMES: Arc<RwLock<Vec<String>>> = Arc::new(RwLock::new(Vec::new()));
 
     /// The slot to profile associations
-    pub static ref SLOT_PROFILES: Arc<Mutex<Option<Vec<PathBuf>>>> = Arc::new(Mutex::new(None));
+    pub static ref SLOT_PROFILES: Arc<RwLock<Option<Vec<PathBuf>>>> = Arc::new(RwLock::new(None));
 
     /// The currently active profile
-    pub static ref ACTIVE_PROFILE: Arc<Mutex<Option<Profile>>> = Arc::new(Mutex::new(None));
+    pub static ref ACTIVE_PROFILE: Arc<RwLock<Option<Profile>>> = Arc::new(RwLock::new(None));
 
     /// Contains the file name part of the active profile;
     /// may be used to switch profiles at runtime
-    pub static ref ACTIVE_PROFILE_NAME: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    pub static ref ACTIVE_PROFILE_NAME: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
 
     /// The profile that was active before we entered AFK mode
-    pub static ref ACTIVE_PROFILE_NAME_BEFORE_AFK: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    pub static ref ACTIVE_PROFILE_NAME_BEFORE_AFK: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
 
     /// Named color schemes, for use in e.g. gradients
     pub static ref NAMED_COLOR_SCHEMES: Arc<RwLock<HashMap<String, ColorScheme>>> =
         Arc::new(RwLock::new(HashMap::new()));
 
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 
     // Flags
 
@@ -202,11 +202,7 @@ lazy_static! {
     pub static ref EXPERIMENTAL_FEATURES: AtomicBool = AtomicBool::new(false);
 
     /// Global "driver maturity level" param
-    pub static ref DRIVER_MATURITY_LEVEL: Arc<Mutex<MaturityLevel>> = Arc::new(Mutex::new(MaturityLevel::Stable));
-
-    /// Global are we "launched by systemd" status flag
-    pub static ref LAUNCHED_BY_SYSTEMD: AtomicBool = AtomicBool::new(false);
-
+    pub static ref DRIVER_MATURITY_LEVEL: Arc<RwLock<MaturityLevel>> = Arc::new(RwLock::new(MaturityLevel::Stable));
 
     /// Global "enable SDK support" flag
     pub static ref SDK_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -214,29 +210,28 @@ lazy_static! {
     /// Global "enable Linux Userspace LEDs support" flag
     pub static ref ULEDS_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
 
-
     // Other state
 
     /// Global brightness modifier
     pub static ref BRIGHTNESS: AtomicIsize = AtomicIsize::new(100);
 
     /// Fade in on profile switch
-    pub static ref BRIGHTNESS_FADER: AtomicIsize = AtomicIsize::new(0);
+    pub static ref FADER: AtomicIsize = AtomicIsize::new(0);
 
     /// Global modifier to compare fading into a profile
-    pub static ref BRIGHTNESS_FADER_BASE: AtomicIsize = AtomicIsize::new(0);
+    pub static ref FADER_BASE: AtomicIsize = AtomicIsize::new(0);
 
     /// Canvas post-processing parameters
-    pub static ref CANVAS_HSL: Arc<Mutex<(f64, f64, f64)>> = Arc::new(Mutex::new((0.0, 0.0, 0.0)));
+    pub static ref CANVAS_HSL: Arc<RwLock<(f64, f64, f64)>> = Arc::new(RwLock::new((0.0, 0.0, 0.0)));
 
     /// AFK timer
-    pub static ref LAST_INPUT_TIME: Arc<Mutex<Instant>> = Arc::new(Mutex::new(Instant::now()));
+    pub static ref LAST_INPUT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now()));
 
     /// Channel to the D-Bus interface
-    pub static ref DBUS_API_TX: Arc<Mutex<Option<Sender<DbusApiEvent>>>> = Arc::new(Mutex::new(None));
+    pub static ref DBUS_API_TX: Arc<RwLock<Option<Sender<DbusApiEvent>>>> = Arc::new(RwLock::new(None));
 
     /// Channel to the device I/O thread
-    pub static ref DEV_IO_TX: Arc<Mutex<Option<Sender<DeviceAction >>>> = Arc::new(Mutex::new(None));
+    pub static ref DEV_IO_TX: Arc<RwLock<Option<Sender<DeviceAction >>>> = Arc::new(RwLock::new(None));
 
     /// Channels to the Lua VMs
     pub static ref LUA_TXS: Arc<RwLock<Vec<LuaTx>>> = Arc::new(RwLock::new(vec![]));
@@ -252,7 +247,7 @@ lazy_static! {
 
     // cached value
     static ref GRAB_MOUSE: AtomicBool = {
-        let config = &*crate::CONFIG.lock();
+        let config = &*crate::CONFIG.read();
         let grab_mouse = config
             .as_ref()
             .unwrap()
@@ -419,7 +414,7 @@ fn parse_commandline() -> clap::ArgMatches {
 }
 
 pub fn switch_profile_please(profile_file: Option<&Path>) -> Result<SwitchProfileResult> {
-    let dbus_api_tx = crate::DBUS_API_TX.lock();
+    let dbus_api_tx = crate::DBUS_API_TX.read();
     let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
     switch_profile(profile_file, dbus_api_tx, true)
@@ -468,7 +463,7 @@ pub fn switch_profile(
         }
 
         // finally assign the globally active profile
-        *ACTIVE_PROFILE.lock() = Some(profile);
+        *ACTIVE_PROFILE.write() = Some(profile);
 
         if notify {
             dbus_api_tx
@@ -478,7 +473,7 @@ pub fn switch_profile(
 
         // let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
-        // let mut slot_profiles = SLOT_PROFILES.lock();
+        // let mut slot_profiles = SLOT_PROFILES.write();
         // slot_profiles.as_mut().unwrap()[active_slot] = "failsafe.profile".into();
 
         if errors_present {
@@ -591,16 +586,16 @@ pub fn switch_profile(
                     debug!("Switch successful");
 
                     let fade_millis = crate::CONFIG
-                        .lock()
+                        .read()
                         .as_ref()
                         .unwrap()
                         .get_int("global.profile_fade_milliseconds")
                         .unwrap_or(constants::FADE_MILLIS as i64);
                     let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
-                    crate::BRIGHTNESS_FADER.store(fade_frames, Ordering::SeqCst);
-                    crate::BRIGHTNESS_FADER_BASE.store(fade_frames, Ordering::SeqCst);
+                    crate::FADER.store(fade_frames, Ordering::SeqCst);
+                    crate::FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
-                    *ACTIVE_PROFILE.lock() = Some(profile);
+                    *ACTIVE_PROFILE.write() = Some(profile);
 
                     if notify {
                         dbus_api_tx
@@ -611,7 +606,7 @@ pub fn switch_profile(
                     }
 
                     let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-                    let mut slot_profiles = SLOT_PROFILES.lock();
+                    let mut slot_profiles = SLOT_PROFILES.write();
                     slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
 
                     Ok(SwitchProfileResult::Switched)
@@ -621,7 +616,7 @@ pub fn switch_profile(
                 // the profile file to switch to is corrupted, so we need to refuse to switch profiles
                 // and simply keep the current one, or load a failsafe profile if we do not have a
                 // currently active profile, like e.g. during startup of the daemon
-                if crate::ACTIVE_PROFILE.lock().is_none() {
+                if crate::ACTIVE_PROFILE.read().is_none() {
                     error!(
                         "An error occurred during switching of profiles, loading failsafe profile now. {}",
                         e
@@ -654,7 +649,7 @@ fn run_main_loop(
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
     let afk_timeout_secs = crate::CONFIG
-        .lock()
+        .read()
         .as_ref()
         .unwrap()
         .get_int("global.afk_timeout_secs")
@@ -673,9 +668,9 @@ fn run_main_loop(
 
     let mut saved_brightness = BRIGHTNESS.load(Ordering::SeqCst);
 
-    let mut saved_hue = CANVAS_HSL.lock().0;
-    let mut saved_saturation = CANVAS_HSL.lock().1;
-    let mut saved_lightness = CANVAS_HSL.lock().2;
+    let mut saved_hue = CANVAS_HSL.read().0;
+    let mut saved_saturation = CANVAS_HSL.read().1;
+    let mut saved_lightness = CANVAS_HSL.read().2;
 
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
@@ -725,7 +720,7 @@ fn run_main_loop(
                 }
             });
 
-        let failed_kbd_rxs = Arc::new(Mutex::new(HashSet::new()));
+        let failed_kbd_rxs = Arc::new(RwLock::new(HashSet::new()));
 
         for (index, rx) in kbd_rxs_clone.iter().enumerate() {
             let failed_kbd_rxs = failed_kbd_rxs.clone();
@@ -790,14 +785,14 @@ fn run_main_loop(
                 }
 
                 if device_has_failed {
-                    failed_kbd_rxs.lock().insert(index);
+                    failed_kbd_rxs.write().insert(index);
                 }
             };
 
             sel = sel.recv(rx, mapper);
         }
 
-        let failed_mouse_rxs = Arc::new(Mutex::new(HashSet::new()));
+        let failed_mouse_rxs = Arc::new(RwLock::new(HashSet::new()));
 
         for (index, rx) in mouse_rxs_clone.iter().enumerate() {
             let failed_mouse_rxs = failed_mouse_rxs.clone();
@@ -858,7 +853,7 @@ fn run_main_loop(
                 }
 
                 if device_has_failed {
-                    failed_mouse_rxs.lock().insert(index);
+                    failed_mouse_rxs.write().insert(index);
                 }
             };
 
@@ -883,7 +878,7 @@ fn run_main_loop(
                 warn!("Entering failsafe mode now, due to previous irrecoverable errors");
 
                 // forbid changing of profile and/or slots now
-                *ACTIVE_PROFILE_NAME.lock() = None;
+                *ACTIVE_PROFILE_NAME.write() = None;
                 saved_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
                 dbus_api_tx
@@ -904,13 +899,13 @@ fn run_main_loop(
         {
             // slot changed?
             let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-            if active_slot != saved_slot || ACTIVE_PROFILE.lock().is_none() {
+            if active_slot != saved_slot || ACTIVE_PROFILE.read().is_none() {
                 dbus_api_tx
                     .send(DbusApiEvent::ActiveSlotChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
                 let profile_path = {
-                    let slot_profiles = SLOT_PROFILES.lock();
+                    let slot_profiles = SLOT_PROFILES.read();
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
                 };
 
@@ -935,7 +930,7 @@ fn run_main_loop(
         }
 
         // post-processing parameters changed?
-        let current_hsl = *CANVAS_HSL.lock();
+        let current_hsl = *CANVAS_HSL.read();
 
         if current_hsl.0 != saved_hue {
             dbus_api_tx
@@ -968,25 +963,25 @@ fn run_main_loop(
                 info!("Entering AFK mode now...");
 
                 let afk_profile = crate::CONFIG
-                    .lock()
+                    .read()
                     .as_ref()
                     .unwrap()
                     .get::<String>("global.afk_profile")
                     .unwrap_or_else(|_| constants::DEFAULT_AFK_PROFILE.to_owned());
 
-                let active_profile = &*ACTIVE_PROFILE.lock();
+                let active_profile = &*ACTIVE_PROFILE.read();
                 let before_afk = &active_profile.as_ref().unwrap().profile_file;
 
-                *ACTIVE_PROFILE_NAME_BEFORE_AFK.lock() =
+                *ACTIVE_PROFILE_NAME_BEFORE_AFK.write() =
                     Some(before_afk.to_string_lossy().to_string());
 
-                ACTIVE_PROFILE_NAME.lock().replace(afk_profile);
+                ACTIVE_PROFILE_NAME.write().replace(afk_profile);
             } else {
                 info!("Leaving AFK mode now...");
 
-                ACTIVE_PROFILE_NAME.lock().replace(
+                ACTIVE_PROFILE_NAME.write().replace(
                     ACTIVE_PROFILE_NAME_BEFORE_AFK
-                        .lock()
+                        .read()
                         .as_ref()
                         .unwrap()
                         .clone(),
@@ -998,7 +993,7 @@ fn run_main_loop(
 
         {
             // active profile name changed?
-            if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.lock() {
+            if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.read() {
                 dbus_api_tx
                     .send(DbusApiEvent::ActiveProfileChanged)
                     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
@@ -1015,7 +1010,7 @@ fn run_main_loop(
                 plugins::audio::reset_audio_backend();
             }
 
-            *ACTIVE_PROFILE_NAME.lock() = None;
+            *ACTIVE_PROFILE_NAME.write() = None;
         }
 
         {
@@ -1027,7 +1022,7 @@ fn run_main_loop(
                 //     .send(DbusApiEvent::ActiveProfileChanged)
                 //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                let active_profile = ACTIVE_PROFILE.lock();
+                let active_profile = ACTIVE_PROFILE.read();
                 let profile_clone = active_profile.clone();
                 // ACTIVE_PROFILE.lock() needs to be released here, or otherwise we will deadlock
                 drop(active_profile);
@@ -1075,7 +1070,7 @@ fn run_main_loop(
             #[cfg(feature = "profiling")]
             coz::scope!("device status polling");
 
-            let saved_status = crate::DEVICE_STATUS.as_ref().lock().clone();
+            let saved_status = crate::DEVICE_STATUS.as_ref().read().clone();
 
             if let Err(_e) = events::process_timer_event() {
                 /* do nothing  */
@@ -1089,7 +1084,7 @@ fn run_main_loop(
 
             last_status_poll = Instant::now();
 
-            let current_status = crate::DEVICE_STATUS.lock().clone();
+            let current_status = crate::DEVICE_STATUS.read().clone();
 
             if current_status != saved_status {
                 dbus_api_tx
@@ -1115,7 +1110,7 @@ fn run_main_loop(
         };
 
         // remove all failed devices
-        for idx in failed_kbd_rxs.lock().iter() {
+        for idx in failed_kbd_rxs.read().iter() {
             // warn!("Removing keyboard rx with index {idx}");
             // kbd_rxs.remove(*idx);
 
@@ -1128,7 +1123,7 @@ fn run_main_loop(
             }
         }
 
-        for idx in failed_mouse_rxs.lock().iter() {
+        for idx in failed_mouse_rxs.read().iter() {
             // warn!("Removing mouse rx with index {idx}");
             // mouse_rxs.remove(*idx);
 
@@ -1141,7 +1136,7 @@ fn run_main_loop(
             }
         }
 
-        // for idx in failed_misc_rxs.lock().iter() {
+        // for idx in failed_misc_rxs.read().iter() {
         //     // warn!("Removing misc rx with index {idx}");
         //     // misc_rxs.remove(*idx);
         //
@@ -1158,8 +1153,8 @@ fn run_main_loop(
         // in most cases eruption should better be restarted
         if device_has_failed
             || (result.is_err() && !timedout)
-            || !failed_kbd_rxs.lock().is_empty()
-            || !failed_mouse_rxs.lock().is_empty()
+            || !failed_kbd_rxs.read().is_empty()
+            || !failed_mouse_rxs.read().is_empty()
         {
             return Err(MainError::DeviceFailed {}.into());
         }
@@ -1230,7 +1225,7 @@ fn run_main_loop(
 
             // finally, update the LEDs if necessary
             DEV_IO_TX
-                .lock()
+                .read()
                 .as_ref()
                 .unwrap()
                 .send(DeviceAction::RenderNow)
@@ -1239,14 +1234,14 @@ fn run_main_loop(
                 });
         }
 
-        let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
+        let fader = crate::FADER.load(Ordering::SeqCst);
         if fader > 0 {
-            crate::BRIGHTNESS_FADER.store(fader - 1, Ordering::SeqCst);
+            crate::FADER.store(fader - 1, Ordering::SeqCst);
         }
 
         // compute AFK time
         if afk_timeout_secs > 0 {
-            let afk = LAST_INPUT_TIME.lock().elapsed() >= Duration::from_secs(afk_timeout_secs);
+            let afk = LAST_INPUT_TIME.read().elapsed() >= Duration::from_secs(afk_timeout_secs);
             AFK.store(afk, Ordering::SeqCst);
         }
 
@@ -1315,7 +1310,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         debug!("Sending device hot remove notification...");
 
-        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = crate::DBUS_API_TX.read();
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
@@ -1346,7 +1341,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         debug!("Sending device hot remove notification...");
 
-        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = crate::DBUS_API_TX.read();
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
@@ -1376,7 +1371,7 @@ fn remove_failed_devices() -> Result<bool> {
 
         debug!("Sending device hot remove notification...");
 
-        let dbus_api_tx = crate::DBUS_API_TX.lock();
+        let dbus_api_tx = crate::DBUS_API_TX.read();
         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
         dbus_api_tx
@@ -1704,12 +1699,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    // are we being launched by Systemd?
-    LAUNCHED_BY_SYSTEMD.store(
-        env::vars().any(|a| a == ("LAUNCHED_BY_SYSTEMD".to_string(), "1".to_string())),
-        Ordering::SeqCst,
-    );
-
     // start the thread deadlock detector
     // #[cfg(debug_assertions)]
     // thread_util::deadlock_detector()
@@ -1737,10 +1726,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
         )
     );
-
-    if !LAUNCHED_BY_SYSTEMD.load(Ordering::SeqCst) {
-        tracing::warn!("We are not being launched by Systemd, the software watchdog will not be enabled unless you run it manually using `eruption-watchdog`");
-    }
 
     // register ctrl-c handler
     let (ctrl_c_tx, ctrl_c_rx) = unbounded();
@@ -1773,7 +1758,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             process::exit(1);
         });
 
-    *CONFIG.lock() = Some(config.clone());
+    *CONFIG.write() = Some(config.clone());
 
     // enable support for experimental features?
     let enable_experimental_features = config
@@ -1791,9 +1776,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .get::<MaturityLevel>("global.driver_maturity_level")
         .unwrap_or(MaturityLevel::Stable);
 
-    *DRIVER_MATURITY_LEVEL.lock() = driver_maturity_level;
+    *DRIVER_MATURITY_LEVEL.write() = driver_maturity_level;
 
-    match *DRIVER_MATURITY_LEVEL.lock() {
+    match *DRIVER_MATURITY_LEVEL.read() {
         MaturityLevel::Stable => {
             info!("Using only drivers that are marked as stable (default)")
         }
@@ -1983,7 +1968,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     panic!()
                 });
 
-                *DBUS_API_TX.lock() = Some(dbus_api_tx.clone());
+                *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
 
                 let (fsevents_tx, fsevents_rx) = unbounded();
                 register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
@@ -1997,7 +1982,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     panic!()
                 });
 
-                *DEV_IO_TX.lock() = Some(dev_io_tx.clone());
+                *DEV_IO_TX.write() = Some(dev_io_tx.clone());
 
                 info!("Late initializations completed");
 

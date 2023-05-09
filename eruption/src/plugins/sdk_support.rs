@@ -30,7 +30,7 @@ use lazy_static::lazy_static;
 use mlua::prelude::*;
 use nix::poll::{poll, PollFd, PollFlags};
 use nix::unistd::unlink;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::RwLock;
 use prost::Message;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
@@ -75,7 +75,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref LISTENER: Arc<Mutex<Option<Socket>>> = Arc::new(Mutex::new(None));
+    pub static ref LISTENER: Arc<RwLock<Option<Socket>>> = Arc::new(RwLock::new(None));
 }
 
 use bincode::{Decode, Encode};
@@ -136,7 +136,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     debug!("Sending device hotplug notification...");
 
-                    let dbus_api_tx = crate::DBUS_API_TX.lock();
+                    let dbus_api_tx = crate::DBUS_API_TX.read();
                     let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                     dbus_api_tx
@@ -149,7 +149,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
             // initialize mouse devices
             for (index, device) in devices.1.iter().enumerate() {
-                let enable_mouse = (*crate::CONFIG.lock())
+                let enable_mouse = (*crate::CONFIG.read())
                     .as_ref()
                     .unwrap()
                     .get::<bool>("global.enable_mouse")
@@ -213,7 +213,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         debug!("Sending device hotplug notification...");
 
-                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = crate::DBUS_API_TX.read();
                         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                         dbus_api_tx
@@ -265,7 +265,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         debug!("Sending device hotplug notification...");
 
-                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = crate::DBUS_API_TX.read();
                         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                         dbus_api_tx
@@ -283,7 +283,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         debug!("Sending device hotplug notification...");
 
-                        let dbus_api_tx = crate::DBUS_API_TX.lock();
+                        let dbus_api_tx = crate::DBUS_API_TX.read();
                         let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                         dbus_api_tx
@@ -407,7 +407,7 @@ impl SdkSupportPlugin {
         perms.set_mode(0o666);
         fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
 
-        LISTENER.lock().replace(listener);
+        LISTENER.write().replace(listener);
 
         Ok(())
     }
@@ -443,7 +443,7 @@ impl SdkSupportPlugin {
                 break 'IO_LOOP;
             }
 
-            if let Some(listener) = LISTENER.lock().as_ref() {
+            if let Some(listener) = LISTENER.read().as_ref() {
                 listener.listen(1)?;
 
                 match listener.accept() {
@@ -580,7 +580,7 @@ impl SdkSupportPlugin {
 
                                                         let profile_file = {
                                                             let active_profile =
-                                                                &*crate::ACTIVE_PROFILE.lock();
+                                                                &*crate::ACTIVE_PROFILE.read();
                                                             match active_profile {
                                                                 Some(active_profile) => active_profile
                                                                     .profile_file

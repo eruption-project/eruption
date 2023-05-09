@@ -139,7 +139,7 @@ fn switch_slot(
 
 fn get_slot_profiles(m: &MethodInfo) -> MethodResult {
     let s: Vec<String> = crate::SLOT_PROFILES
-        .lock()
+        .read()
         .as_ref()
         .unwrap()
         .iter()
@@ -150,7 +150,7 @@ fn get_slot_profiles(m: &MethodInfo) -> MethodResult {
 }
 
 fn get_slot_names(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    let s = crate::SLOT_NAMES.lock();
+    let s = crate::SLOT_NAMES.read();
     i.append(&*s);
 
     Ok(())
@@ -160,7 +160,7 @@ fn set_slot_names(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResu
     let n: Vec<String> = i.read()?;
 
     if n.len() >= constants::NUM_SLOTS {
-        *crate::SLOT_NAMES.lock() = n;
+        *crate::SLOT_NAMES.write() = n;
 
         Ok(())
     } else {

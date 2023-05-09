@@ -75,7 +75,7 @@ lazy_static! {
     pub static ref AUDIO_MUTED: AtomicBool = AtomicBool::new(false);
 
     /// A queue of packets that will be send to the Eruption daemon
-    pub static ref PACKET_TX_QUEUE: Arc<Mutex<Vec<Vec<u8>>>> = Arc::new(Mutex::new(Vec::new()));
+    pub static ref PACKET_TX_QUEUE: Arc<RwLock<Vec<Vec<u8>>>> = Arc::new(RwLock::new(Vec::new()));
 }
 
 #[allow(unused)]
@@ -107,11 +107,11 @@ lazy_static! {
     // /// Global command line options
     // pub static ref OPTIONS: Arc<Mutex<Option<Options>>> = Arc::new(Mutex::new(None));
 
-    pub static ref AUDIO_BACKEND: Arc<Mutex<audio::PulseAudioBackend>> =  Arc::new(Mutex::new(audio::PulseAudioBackend::new()));
+    pub static ref AUDIO_BACKEND: Arc<RwLock<audio::PulseAudioBackend>> =  Arc::new(RwLock::new(audio::PulseAudioBackend::new()));
 
     pub static ref SOUND_FX: Arc<RwLock<SoundFxMap>> = Arc::new(RwLock::new(SoundFxMap::new()));
 
-    pub static ref PENDING_SFX_ID: Arc<Mutex<Option<u32>>> = Arc::new(Mutex::new(None));
+    pub static ref PENDING_SFX_ID: Arc<RwLock<Option<u32>>> = Arc::new(RwLock::new(None));
 
     /// Global "quit" status flag
     pub static ref QUIT: AtomicBool = AtomicBool::new(false);
@@ -213,7 +213,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     if last_device_update.elapsed()
                         >= Duration::from_millis(constants::DEVICE_POLL_INTERVAL)
                     {
-                        let audio_backend = AUDIO_BACKEND.lock();
+                        let audio_backend = AUDIO_BACKEND.read();
 
                         let volume = audio_backend.get_audio_volume()?;
                         let muted = audio_backend.is_audio_muted()?;
@@ -226,7 +226,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
                     // record samples to the global sample buffer
                     if RECORDING.load(Ordering::SeqCst) {
-                        let mut audio_backend = AUDIO_BACKEND.lock();
+                        let mut audio_backend = AUDIO_BACKEND.write();
                         if let Err(e) = audio_backend.record_samples() {
                             error!("An error occurred while recording audio: {}", e);
 
@@ -241,8 +241,8 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     // play back pending sound effects
                     let mut sfx_played = false;
 
-                    if let Some(sfx_id) = *PENDING_SFX_ID.lock() {
-                        let mut audio_backend = AUDIO_BACKEND.lock();
+                    if let Some(sfx_id) = *PENDING_SFX_ID.read() {
+                        let mut audio_backend = AUDIO_BACKEND.write();
 
                         audio_backend.open_playback()?;
                         audio_backend.play_sfx(sfx_id)?;
@@ -251,7 +251,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     }
 
                     if sfx_played {
-                        *PENDING_SFX_ID.lock() = None;
+                        *PENDING_SFX_ID.write() = None;
                     }
 
                     // wait for socket to be ready
@@ -296,7 +296,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::StartRecording => {
                                                     info!("Opening audio device");
 
-                                                    let mut audio_backend = AUDIO_BACKEND.lock();
+                                                    let mut audio_backend = AUDIO_BACKEND.write();
                                                     audio_backend.open_recorder()?;
 
                                                     RECORDING.store(true, Ordering::SeqCst);
@@ -307,7 +307,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::StopRecording => {
                                                     info!("Closing audio device");
 
-                                                    let mut audio_backend = AUDIO_BACKEND.lock();
+                                                    let mut audio_backend = AUDIO_BACKEND.write();
                                                     audio_backend.close_recorder()?;
 
                                                     RECORDING.store(false, Ordering::SeqCst);
@@ -318,7 +318,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::AudioVolume => {
                                                     trace!("Request for audio volume");
 
-                                                    let audio_backend = AUDIO_BACKEND.lock();
+                                                    let audio_backend = AUDIO_BACKEND.read();
                                                     let volume =
                                                         audio_backend.get_audio_volume()?;
 
@@ -333,7 +333,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::AudioMutedState => {
                                                     trace!("Request for audio muted state");
 
-                                                    let audio_backend = AUDIO_BACKEND.lock();
+                                                    let audio_backend = AUDIO_BACKEND.read();
                                                     let muted = audio_backend.is_audio_muted()?;
 
                                                     response.set_response_type(
@@ -354,7 +354,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                                 id
                                                             );
 
-                                                            *PENDING_SFX_ID.lock() = Some(id);
+                                                            *PENDING_SFX_ID.write() = Some(id);
                                                         }
 
                                                         _ => {
@@ -376,7 +376,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                             response.encode_length_delimited(&mut buf)?;
 
                                             // enqueue the response packet
-                                            PACKET_TX_QUEUE.lock().push(buf);
+                                            PACKET_TX_QUEUE.write().push(buf);
                                         }
 
                                         Err(e) => {
@@ -406,7 +406,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.lock().push(buf);
+                                PACKET_TX_QUEUE.write().push(buf);
                             }
 
                             // send unsolicited audio state updates every n milliseconds
@@ -422,7 +422,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.lock().push(buf);
+                                PACKET_TX_QUEUE.write().push(buf);
 
                                 // audio muted state
                                 let muted = AUDIO_MUTED.load(Ordering::SeqCst);
@@ -435,13 +435,13 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.lock().push(buf);
+                                PACKET_TX_QUEUE.write().push(buf);
 
                                 last_status_update = Instant::now();
                             }
 
                             // transmit the queue of packets to the Eruption daemon
-                            while let Some(buf) = PACKET_TX_QUEUE.lock().pop() {
+                            while let Some(buf) = PACKET_TX_QUEUE.write().pop() {
                                 trace!("Sending a protocol packet...");
 
                                 // send data

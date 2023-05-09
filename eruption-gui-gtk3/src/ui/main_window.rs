@@ -43,8 +43,8 @@ use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
 
-use super::Pages;
 use super::mice::initialize_mouse_page;
+use super::Pages;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -919,7 +919,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         //     e
         // });
 
-        let _ = ui::canvas::initialize_canvas_page(&builder).map_err(|e| {
+        let _ = ui::canvas::initialize_canvas_page(builder).map_err(|e| {
             eprintln!("Error updating the canvas page: {e:?}");
             e
         });
@@ -939,47 +939,47 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         //     e
         // });
 
-        let _ = ui::color_schemes::initialize_color_schemes_page(&application.clone(), &builder)
+        let _ = ui::color_schemes::initialize_color_schemes_page(&application.clone(), builder)
             .map_err(|e| {
                 eprintln!("Error updating the color schemes page: {e:?}");
                 e
             });
 
         let _ =
-            ui::automation_rules::initialize_automation_rules_page(&application.clone(), &builder)
+            ui::automation_rules::initialize_automation_rules_page(&application.clone(), builder)
                 .map_err(|e| {
                     eprintln!("Error updating the color schemes page: {e:?}");
                     e
                 });
 
         let _ =
-            ui::profiles::initialize_profiles_page(&application.clone(), &builder).map_err(|e| {
+            ui::profiles::initialize_profiles_page(&application.clone(), builder).map_err(|e| {
                 eprintln!("Error updating the main window: {e:?}");
                 e
             });
 
-        let _ = ui::macros::initialize_macros_page(&application.clone(), &builder).map_err(|e| {
+        let _ = ui::macros::initialize_macros_page(&application.clone(), builder).map_err(|e| {
             eprintln!("Error updating the canvas page: {e:?}");
             e
         });
 
-        let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), &builder).map_err(|e| {
+        let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
             e
         });
 
-        let _ = ui::settings::initialize_settings_page(&builder).map_err(|e| {
+        let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
             e
         });
 
-        let _ = initialize_slot_bar(&builder).map_err(|e| {
+        let _ = initialize_slot_bar(builder).map_err(|e| {
             eprintln!("Error updating the main window: {e:?}");
             e
         });
 
-        let _ = dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state);
-        let _ = dbus_client::spawn_dbus_event_loop_session(&builder, &|_b, m| {
+        let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
+        let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
             eprintln!("{m:?}");
             Ok(())
         });
@@ -1210,11 +1210,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
                 "/org/eruption/eruption-gui-gtk3/ui/mouse-device-template.ui",
             );
 
-            let page = initialize_mouse_page(
-                builder,
-                &template,
-                device_index as u64,
-            )?;
+            let page = initialize_mouse_page(builder, &template, device_index as u64)?;
 
             let device_name = format!(
                 "{} {}",

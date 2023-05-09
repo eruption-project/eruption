@@ -23,7 +23,7 @@ use clap::Parser;
 use config::Config;
 use flume::unbounded;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::env;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::{process, sync::Arc};
@@ -43,7 +43,7 @@ use translations::tr;
 
 lazy_static! {
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 
     /// Global verbosity amount
     pub static ref VERBOSE: AtomicU8 = AtomicU8::new(0);
@@ -214,5 +214,5 @@ fn apply_opts(opts: &Options) {
             process::exit(4);
         });
 
-    *CONFIG.lock() = Some(config);
+    *CONFIG.write() = Some(config);
 }

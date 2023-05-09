@@ -162,7 +162,7 @@ pub fn initialize_misc_page(
     // );
 
     timers::register_timer(
-        timers::MISC_RENDER_TIMER_ID+ device as usize,
+        timers::MISC_RENDER_TIMER_ID + device as usize,
         TimerMode::ActiveStackPage(Pages::Misc as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {

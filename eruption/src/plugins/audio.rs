@@ -21,7 +21,7 @@
 
 use lazy_static::lazy_static;
 use mlua::prelude::*;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::RwLock;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Arc;
 use std::{
@@ -58,8 +58,8 @@ static ERROR_RATE_LIMIT_MILLIS: u64 = 10000;
 
 lazy_static! {
     /// Pluggable audio backends. Currently supported backends are "Null" and "ProxyBackend"
-    pub static ref AUDIO_BACKEND: Arc<Mutex<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
-        Arc::new(Mutex::new(None));
+    pub static ref AUDIO_BACKEND: Arc<RwLock<Option<Box<dyn backends::AudioBackend + 'static + Sync + Send>>>> =
+        Arc::new(RwLock::new(None));
 
     /// Do not spam the logs on error, limit the amount of error messages per time unit
     static ref RATE_LIMIT_TIME: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now().checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS)).unwrap_or_else(Instant::now)));
@@ -95,7 +95,7 @@ pub fn reset_audio_backend() {
 
 fn try_start_audio_backend() -> Result<()> {
     AUDIO_BACKEND
-        .lock()
+        .write()
         .replace(Box::new(backends::ProxyBackend::new().map_err(|e| {
             *RATE_LIMIT_TIME.write() = Instant::now();
 
@@ -107,13 +107,13 @@ fn try_start_audio_backend() -> Result<()> {
 }
 
 fn start_audio_proxy_thread() -> Result<()> {
-    let start_backend = AUDIO_BACKEND.lock().is_none();
+    let start_backend = AUDIO_BACKEND.read().is_none();
     if start_backend {
         try_start_audio_backend()?;
     }
 
     // start the audio grabber thread
-    if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+    if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
         backend.start_audio_grabber()?;
         Ok(())
     } else {
@@ -152,7 +152,7 @@ impl AudioPlugin {
     }
 
     pub fn get_audio_volume() -> isize {
-        if let Some(backend) = &*AUDIO_BACKEND.lock() {
+        if let Some(backend) = &*AUDIO_BACKEND.read() {
             backend.get_master_volume().unwrap_or(0) * 100 / u16::MAX as isize
         } else {
             0
@@ -160,7 +160,7 @@ impl AudioPlugin {
     }
 
     pub fn is_audio_muted() -> bool {
-        if let Some(backend) = &*AUDIO_BACKEND.lock() {
+        if let Some(backend) = &*AUDIO_BACKEND.read() {
             backend.is_audio_muted().unwrap_or(true)
         } else {
             false
@@ -185,7 +185,7 @@ impl Plugin for AudioPlugin {
             match event {
                 events::Event::KeyDown(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
                             backend.play_sfx(0)?;
                         }
                     }
@@ -193,7 +193,7 @@ impl Plugin for AudioPlugin {
 
                 events::Event::KeyUp(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(backend) = AUDIO_BACKEND.lock().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
                             backend.play_sfx(1)?;
                         }
                     }
@@ -262,7 +262,7 @@ mod backends {
     use flume::{self, unbounded, Receiver, Sender};
     use lazy_static::lazy_static;
     use nix::unistd::unlink;
-    use parking_lot::Mutex;
+    use parking_lot::RwLock;
     use prost::Message;
     use std::fs;
     use std::io::Cursor;
@@ -286,10 +286,10 @@ mod backends {
     use protocol::response::Payload;
 
     lazy_static! {
-        pub static ref LISTENER: Arc<Mutex<Option<Socket>>> = Arc::new(Mutex::new(None));
+        pub static ref LISTENER: Arc<RwLock<Option<Socket>>> = Arc::new(RwLock::new(None));
 
-        pub static ref SFX_TX: Arc<Mutex<Option<Sender<u32>>>> = Arc::new(Mutex::new(None));
-        pub static ref SFX_RX: Arc<Mutex<Option<Receiver<u32>>>> = Arc::new(Mutex::new(None));
+        pub static ref SFX_TX: Arc<RwLock<Option<Sender<u32>>>> = Arc::new(RwLock::new(None));
+        pub static ref SFX_RX: Arc<RwLock<Option<Receiver<u32>>>> = Arc::new(RwLock::new(None));
 
         /// Audio device master volume
         static ref MASTER_VOLUME: AtomicI32 = AtomicI32::new(0);
@@ -355,12 +355,12 @@ mod backends {
             perms.set_mode(0o666);
             fs::set_permissions(constants::AUDIO_SOCKET_NAME, perms)?;
 
-            LISTENER.lock().replace(listener);
+            LISTENER.write().replace(listener);
 
             let (tx, rx): (Sender<u32>, Receiver<u32>) = unbounded();
 
-            *SFX_TX.lock() = Some(tx);
-            *SFX_RX.lock() = Some(rx);
+            *SFX_TX.write() = Some(tx);
+            *SFX_RX.write() = Some(rx);
 
             Ok(Self {})
         }
@@ -375,7 +375,7 @@ mod backends {
                     break 'IO_LOOP;
                 }
 
-                if let Some(listener) = LISTENER.lock().as_ref() {
+                if let Some(listener) = LISTENER.read().as_ref() {
                     listener.listen(1)?;
 
                     match listener.accept() {
@@ -417,7 +417,7 @@ mod backends {
                                     break 'EVENT_LOOP;
                                 }
 
-                                let pending_sfx_id = if let Some(ref rx) = *SFX_RX.lock() {
+                                let pending_sfx_id = if let Some(ref rx) = *SFX_RX.read() {
                                     // do we have any requests to play a sound effect?
                                     match rx.recv_timeout(Duration::from_millis(1)) {
                                         Ok(idx) => {
@@ -760,7 +760,7 @@ mod backends {
 
     impl AudioBackend for ProxyBackend {
         fn play_sfx(&self, id: u32) -> Result<()> {
-            if let Some(ref tx) = *SFX_TX.lock() {
+            if let Some(ref tx) = *SFX_TX.read() {
                 tx.send_timeout(id, Duration::from_millis(1))?;
             }
 

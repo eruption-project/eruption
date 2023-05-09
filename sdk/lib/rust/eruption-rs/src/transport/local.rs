@@ -68,7 +68,7 @@ impl Transport for LocalTransport {
 
     fn disconnect(&mut self) -> Result<()> {
         self.socket.write().flush()?;
-        // self.socket.lock().shutdown(Shutdown::Both)?;
+        // self.socket.write().shutdown(Shutdown::Both)?;
 
         Ok(())
     }

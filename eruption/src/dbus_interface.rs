@@ -160,7 +160,7 @@ impl DbusApi {
     }
 
     pub fn notify_device_status_changed(&self) -> Result<()> {
-        let device_status = &*crate::DEVICE_STATUS.as_ref().lock();
+        let device_status = &*crate::DEVICE_STATUS.as_ref().read();
 
         let device_status = device_status
             .iter()
@@ -224,7 +224,7 @@ impl DbusApi {
     }
 
     pub fn notify_hue_changed(&self) -> Result<()> {
-        let hue = crate::CANVAS_HSL.lock().0;
+        let hue = crate::CANVAS_HSL.read().0;
 
         let _ = self
             .connection
@@ -241,7 +241,7 @@ impl DbusApi {
     }
 
     pub fn notify_saturation_changed(&self) -> Result<()> {
-        let saturation = crate::CANVAS_HSL.lock().1;
+        let saturation = crate::CANVAS_HSL.read().1;
 
         let _ = self
             .connection
@@ -258,7 +258,7 @@ impl DbusApi {
     }
 
     pub fn notify_lightness_changed(&self) -> Result<()> {
-        let lightness = crate::CANVAS_HSL.lock().2;
+        let lightness = crate::CANVAS_HSL.read().2;
 
         let _ = self
             .connection
@@ -291,7 +291,7 @@ impl DbusApi {
     }
 
     pub fn notify_active_profile_changed(&self) -> Result<()> {
-        let active_profile = crate::ACTIVE_PROFILE.lock();
+        let active_profile = crate::ACTIVE_PROFILE.read();
 
         let active_profile = active_profile
             .as_ref()

@@ -149,7 +149,7 @@ lazy_static! {
     pub static ref ZONES: Arc<Mutex<Vec<(u64, Zone)>>> = Arc::new(Mutex::new(vec![]));
 
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 
     /// The index of the currently active page in the main navigation stack
     pub static ref ACTIVE_PAGE: AtomicUsize = AtomicUsize::new(0);
@@ -712,7 +712,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 error_log::fatal_error(&format!("Could not parse configuration file: {e}"), 4);
             });
 
-        *CONFIG.lock() = config.ok();
+        *CONFIG.write() = config.ok();
 
         // request default processing of command line arguments
         -1

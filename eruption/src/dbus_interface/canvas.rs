@@ -123,32 +123,32 @@ impl InterfaceAddend for CanvasInterface {
 }
 
 fn get_hue(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.lock().0);
+    i.append(crate::CANVAS_HSL.write().0);
     Ok(())
 }
 
 fn set_hue(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.lock().0 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().0 = i.read::<f64>()?;
     Ok(())
 }
 
 fn get_saturation(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.lock().1);
+    i.append(crate::CANVAS_HSL.write().1);
     Ok(())
 }
 
 fn set_saturation(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.lock().1 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().1 = i.read::<f64>()?;
     Ok(())
 }
 
 fn get_lightness(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.lock().2);
+    i.append(crate::CANVAS_HSL.write().2);
     Ok(())
 }
 
 fn set_lightness(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.lock().2 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().2 = i.read::<f64>()?;
     Ok(())
 }
 

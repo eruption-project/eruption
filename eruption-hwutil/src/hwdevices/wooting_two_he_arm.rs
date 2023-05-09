@@ -19,7 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::mem::size_of;
 use std::time::Duration;
 use std::{sync::Arc, thread};
@@ -72,8 +72,8 @@ enum Command {
 /// Device specific code for the Wooting Two HE series keyboards
 pub struct WootingTwoHeArm {
     pub is_bound: bool,
-    pub ctrl_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
-    pub led_hiddev: Arc<Mutex<Option<hidapi::HidDevice>>>,
+    pub ctrl_hiddev: Arc<RwLock<Option<hidapi::HidDevice>>>,
+    pub led_hiddev: Arc<RwLock<Option<hidapi::HidDevice>>>,
 }
 
 impl WootingTwoHeArm {
@@ -83,8 +83,8 @@ impl WootingTwoHeArm {
 
         Self {
             is_bound: true,
-            ctrl_hiddev: Arc::new(Mutex::new(Some(ctrl_dev))),
-            led_hiddev: Arc::new(Mutex::new(Some(led_dev))),
+            ctrl_hiddev: Arc::new(RwLock::new(Some(ctrl_dev))),
+            led_hiddev: Arc::new(RwLock::new(Some(led_dev))),
         }
     }
 
@@ -99,7 +99,7 @@ impl WootingTwoHeArm {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().read();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -132,7 +132,7 @@ impl WootingTwoHeArm {
         report_buffer[6] = params[1];
         report_buffer[7] = params[0];
 
-        let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+        let ctrl_dev = self.ctrl_hiddev.as_ref().read();
         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
         let result = ctrl_dev.write(&report_buffer);
@@ -164,7 +164,7 @@ impl WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match id {
@@ -302,7 +302,7 @@ impl WootingTwoHeArm {
         } else {
             let mut buf: [u8; RESPONSE_SIZE] = [0x00; RESPONSE_SIZE];
 
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
@@ -369,7 +369,7 @@ impl DeviceTrait for WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -388,7 +388,7 @@ impl DeviceTrait for WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -410,7 +410,7 @@ impl DeviceTrait for WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.send_feature_report(buffer) {
@@ -429,7 +429,7 @@ impl DeviceTrait for WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().read();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -454,7 +454,7 @@ impl DeviceTrait for WootingTwoHeArm {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            match *self.led_hiddev.lock() {
+            match *self.led_hiddev.read() {
                 Some(ref led_dev) => {
                     if led_map.len() < LED_INDICES {
                         error!(

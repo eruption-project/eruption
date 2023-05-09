@@ -24,7 +24,7 @@ use crate::hwdevices::{keyboards::*, mice::*, misc::*};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::RwLock;
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
@@ -65,7 +65,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 29]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<RwLock<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 29]>> = Arc::new(RwLock::new([
         // Supported keyboards
 
         // Wooting
@@ -1024,7 +1024,7 @@ pub trait MiscSerialDeviceTrait: SerialDeviceTrait {
 
 /// Returns true if the USB device is blacklisted in the global configuration
 pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
@@ -1059,7 +1059,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
 pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
@@ -1129,7 +1129,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
-            if let Some(driver) = DRIVERS.lock().iter().find(|&d| {
+            if let Some(driver) = DRIVERS.read().iter().find(|&d| {
                 d.get_usb_vid() == device_info.vendor_id()
                     && d.get_usb_pid() == device_info.product_id()
             }) {
@@ -1173,7 +1173,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                             );
 
                             let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -1217,7 +1217,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                             let api = hidapi.as_ref().unwrap();
 
                             let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -1258,7 +1258,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
                             );
 
                             let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -1427,7 +1427,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
-            if let Some(driver) = DRIVERS.lock().iter().find(|&d| {
+            if let Some(driver) = DRIVERS.read().iter().find(|&d| {
                 d.get_usb_vid() == device_info.vendor_id()
                     && d.get_usb_pid() == device_info.product_id()
             }) {
@@ -1471,7 +1471,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                             );
 
                             let driver = driver.as_any().downcast_ref::<KeyboardDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -1512,7 +1512,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                             );
 
                             let driver = driver.as_any().downcast_ref::<MouseDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -1553,7 +1553,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
                             );
 
                             let driver = driver.as_any().downcast_ref::<MiscDriver>().unwrap();
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.lock();
+                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
 
                             if driver.status <= driver_maturity_level {
                                 if let Ok(device) = (*driver.bind_fn)(
@@ -2004,7 +2004,7 @@ pub fn get_device_model(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
 }
 
 pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'static str)> {
-    let drivers = DRIVERS.lock();
+    let drivers = DRIVERS.read();
     let metadata = drivers
         .iter()
         .find(|e| e.get_usb_vid() == usb_vid && e.get_usb_pid() == usb_pid);

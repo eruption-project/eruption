@@ -228,7 +228,7 @@ pub fn spawn_keyboard_input_thread(
                         });
 
                         // update AFK timer
-                        *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                        *crate::LAST_INPUT_TIME.write() = Instant::now();
                     }
 
                     Err(e) => {
@@ -429,7 +429,7 @@ pub fn spawn_mouse_input_thread(
                         });
 
                         // update AFK timer
-                        *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                        *crate::LAST_INPUT_TIME.write() = Instant::now();
                     }
 
                     Err(e) => {
@@ -590,7 +590,7 @@ pub fn spawn_mouse_input_thread(
                         });
 
                         // update AFK timer
-                        *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                        *crate::LAST_INPUT_TIME.write() = Instant::now();
                     }
 
                     Err(e) => {
@@ -727,7 +727,7 @@ pub fn spawn_misc_input_thread(
                         });
 
                         // update AFK timer
-                        *crate::LAST_INPUT_TIME.lock() = Instant::now();
+                        *crate::LAST_INPUT_TIME.write() = Instant::now();
                     }
 
                     Err(e) => {
@@ -882,12 +882,23 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     // complete its blending code, before continuing
                                     let mut pending = COLOR_MAPS_READY_CONDITION.0.lock();
 
+                                    let mut errors_present = false;
+
                                     lua_tx
                                         .send(script::Message::RealizeColorMap)
                                         .unwrap_or_else(|e| {
+                                            errors_present = true;
+
                                             error!("Send error during realization of color maps: {}", e);
                                             FAILED_TXS.write().insert(index);
                                         });
+
+
+                                    if errors_present {
+                                        drop_frame = true;
+                                        warn!("Frame dropped: Timeout while waiting for the color map!");
+                                        break;
+                                    }
 
                                     let result = COLOR_MAPS_READY_CONDITION.1.wait_for(
                                         &mut pending,
@@ -934,9 +945,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                         #[rustfmt::skip]
                                         let color = RGBA {
-                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.r as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.g as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.b as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
                                             a: fg.a,
                                         };
 
@@ -1002,7 +1013,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             }
 
                             // apply global post-processing
-                            let hsl = *crate::CANVAS_HSL.lock();
+                            let hsl = *crate::CANVAS_HSL.read();
 
                             let hue_value = hsl.0;
                             let saturation_value = hsl.1 / 100.0;

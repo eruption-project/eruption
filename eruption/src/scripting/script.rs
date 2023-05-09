@@ -320,7 +320,7 @@ pub fn run_script(
 fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
     let script_dirs = config
         .as_ref()
         .unwrap()
@@ -444,16 +444,7 @@ fn on_tick(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<Runn
 fn realize_color_map() -> Result<RunningScriptResult> {
     if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
         LOCAL_LED_MAP.with(|foreground| {
-            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
-
-            let fader = crate::BRIGHTNESS_FADER.load(Ordering::SeqCst);
-            let fader_base = crate::BRIGHTNESS_FADER_BASE.load(Ordering::SeqCst);
-
-            let brightness = if fader_base > 0 && fader > 0 {
-                (1.0 - (fader as f32 / fader_base as f32)) * brightness as f32
-            } else {
-                brightness as f32
-            };
+            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst) as f32;
 
             for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
                 for (idx, background) in chunks.iter_mut().enumerate() {

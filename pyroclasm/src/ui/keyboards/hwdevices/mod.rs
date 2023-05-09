@@ -47,7 +47,7 @@ pub fn get_keyboard_device(
 ) -> Result<Box<dyn Keyboard>> {
     // let devices = dbus_client::get_managed_devices()?;
 
-    match MANAGED_DEVICES.lock().0.get(device_handle as usize) {
+    match MANAGED_DEVICES.read().0.get(device_handle as usize) {
         Some(device) => match device {
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Ok(Box::new(
