@@ -930,7 +930,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let fader_base = crate::FADER_BASE.load(Ordering::SeqCst);
 
                                 let alpha = if fader_base > 0 && fader > 0 {
-                                    1.0 - ease_in_out_quad((1.0 - (fader as f32 / fader_base as f32)) as f32)
+                                    1.0 - ease_in_out_quad(1.0 - (fader as f32 / fader_base as f32))
                                 } else {
                                     0.0
                                 } * 255.0;
@@ -945,9 +945,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                         #[rustfmt::skip]
                                         let color = RGBA {
-                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.r as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.g as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) as f32 * bg.b as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
                                             a: fg.a,
                                         };
 
