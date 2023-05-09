@@ -47,7 +47,7 @@ clap_complete = "4.2.1"
 serde = { version = "1.0.162", features = ["derive"] }
 lazy_static = "1.4.0"
 flume = "0.10.14"
-libc = "0.2.143"
+libc = "0.2.144"
 nix = "0.26.2"
 atty = "0.2.14"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }

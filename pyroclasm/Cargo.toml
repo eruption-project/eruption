@@ -44,7 +44,7 @@ debug-async = []
 cfg-if = "1.0.0"
 clap = { version = "4.2.7", features = ["derive"] }
 clap_complete = "4.2.1"
-libc = "0.2.143"
+libc = "0.2.144"
 nix = "0.26.2"
 atty = "0.2.14"
 walkdir = "2.3.3"
