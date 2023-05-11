@@ -26,3 +26,5 @@ _This is a non-exhaustive listing of planned features:_
 - Ambient FX switch not activated correctly
 - Fix directory/file permissions in packages
 - Update Python SDK (get_canvas)
+- Add allocated zones support to scripts where applicable
+- Add Lua event: function on_hotplug(new_device)
