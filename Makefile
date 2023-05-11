@@ -216,21 +216,21 @@ install:
 	@cp -r support/scripts/* $(TARGET_DIR)/share/eruption/scripts/
 	@cp -r support/profiles/* /var/lib/eruption/profiles/
 
-	@cp target/release/eruption $(TARGET_DIR)/bin/
-	@cp target/release/eruptionctl $(TARGET_DIR)/bin/
-	@cp target/release/eruption-cmd $(TARGET_DIR)/bin/
-	@cp target/release/eruption-macro $(TARGET_DIR)/bin/
-	@cp target/release/eruption-keymap $(TARGET_DIR)/bin/
-	@cp target/release/eruption-hwutil $(TARGET_DIR)/bin/
-	@cp target/release/eruption-netfx $(TARGET_DIR)/bin/
-	@cp target/release/eruption-debug-tool $(TARGET_DIR)/bin/
-	@cp target/release/eruption-hotplug-helper $(TARGET_DIR)/bin/
-	@cp target/release/eruption-util $(TARGET_DIR)/bin/
-	@cp target/release/eruption-gui-gtk3 $(TARGET_DIR)/bin/
-	@cp target/release/eruption-fx-proxy $(TARGET_DIR)/bin/
-	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
-	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
-	# @cp target/release/pyroclasm $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruptionctl $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-cmd $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-macro $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-keymap $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-hwutil $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-netfx $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-debug-tool $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-hotplug-helper $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-util $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-gui-gtk3 $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-fx-proxy $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
+	# @cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 
