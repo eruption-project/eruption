@@ -67,7 +67,7 @@ cfg-if = "1.0.0"
 async-trait = "0.1.68"
 byteorder = "1.4.3"
 clap = { version = "4.2.7", features = ["derive"] }
-clap_complete = "4.2.1"
+clap_complete = "4.2.3"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
@@ -82,8 +82,8 @@ atty = "0.2.14"
 serde_json = "1.0.96"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 regex = "1.8.1"
-serde = { version = "1.0.162", features = ["derive"] }
-tokio = { version = "1.28.0", features = ["full", "tracing", "test-util"] }
+serde = { version = "1.0.163", features = ["derive"] }
+tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -93,7 +93,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.8", features = ["parking_lot"] }
+console-subscriber = { version = "0.1.9", features = ["parking_lot"] }
 flume = "0.10.14"
 toml = "0.7.3"
 thiserror = "1.0.40"
@@ -124,4 +124,4 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"
-tokio = { version = "1.28.0", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
