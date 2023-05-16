@@ -23,6 +23,7 @@ pub mod animal;
 pub mod audio;
 pub mod canvas;
 pub mod hwaccel;
+pub mod image_processing;
 pub mod introspection;
 pub mod keyboard;
 pub mod macros;
@@ -39,6 +40,7 @@ pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
 pub use canvas::CanvasPlugin;
 pub use hwaccel::HwAccelerationPlugin;
+pub use image_processing::ImageProcessingPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
 pub use macros::MacrosPlugin;
@@ -75,6 +77,10 @@ pub fn register_plugins() -> Result<()> {
     // Base plugins
     let _ = plugin_manager
         .register_plugin(Box::new(CanvasPlugin::new()))
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    let _ = plugin_manager
+        .register_plugin(Box::new(ImageProcessingPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     let _ = plugin_manager
