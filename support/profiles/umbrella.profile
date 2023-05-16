@@ -15,19 +15,14 @@
 #
 #    Copyright (c) 2019-2022, The Eruption Development Team
 
-id = '59c62fa6-d865-55cb-a0ef-e87d29713119'
-name = 'Shader Demo'
-description = 'Shader Demo (Hardware accelerated)'
+id = '59c62fc6-d865-55cb-a0cd-e87d29713119'
+name = 'Umbrella'
+description = 'Umbrella'
 active_scripts = [
-    'hwaccel.lua',
+    'umbrella.lua',
+	'shockwave.lua',
 #   'impact.lua',
 #   'raindrops.lua',
     'macros.lua',
 #   'stats.lua',
 ]
-
-[[config."Hardware Acceleration"]]
-type = 'string'
-name = 'shader_program'
-value = 'shaders/mandelbrot.comp.glsl'
-default = 'shaders/mandelbrot.comp.glsl'

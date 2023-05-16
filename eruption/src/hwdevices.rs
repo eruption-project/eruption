@@ -24,6 +24,7 @@ use crate::hwdevices::{keyboards::*, mice::*, misc::*};
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
+use mlua::prelude::*;
 use parking_lot::RwLock;
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
@@ -463,13 +464,15 @@ pub enum DeviceClass {
 }
 
 /// Represents an RGBA color value
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Eq)]
 pub struct RGBA {
     pub r: u8,
     pub g: u8,
     pub b: u8,
     pub a: u8,
 }
+
+impl LuaUserData for RGBA {}
 
 /// A Keyboard HID event
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -690,6 +693,18 @@ pub struct Zone {
     pub height: i32,
 }
 
+impl mlua::UserData for Zone {
+    fn add_fields<'lua, F: mlua::UserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("x", |_, this| Ok(this.x));
+        fields.add_field_method_get("y", |_, this| Ok(this.y));
+        fields.add_field_method_get("x2", |_, this| Ok(this.x2()));
+        fields.add_field_method_get("y2", |_, this| Ok(this.y2()));
+
+        fields.add_field_method_get("width", |_, this| Ok(this.width));
+        fields.add_field_method_get("height", |_, this| Ok(this.height));
+    }
+}
+
 impl dbus::arg::Arg for Zone {
     const ARG_TYPE: dbus::arg::ArgType = dbus::arg::ArgType::Struct;
 
@@ -720,7 +735,7 @@ impl Zone {
         match device_class {
             DeviceClass::Keyboard => Self {
                 x: constants::CANVAS_WIDTH as i32 / 2 - 12,
-                y: constants::CANVAS_HEIGHT as i32 / 2,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 5,
                 width: 21,
                 height: 6,
             },
@@ -734,7 +749,7 @@ impl Zone {
 
             DeviceClass::Misc => Self {
                 x: constants::CANVAS_WIDTH as i32 / 2 - 4,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 5,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 10,
                 width: 8,
                 height: 1,
             },

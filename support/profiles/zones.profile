@@ -17,25 +17,13 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-name = "Dim Zone"
-description = "Dim (darken) a zone on the canvas"
-version = "0.1.0"
-author = "The Eruption Development Team"
-min_supported_version = "0.5.0"
-tags = ['Background', 'Vendor', 'Filter']
-
-[[config]]
-type = 'int'
-name = 'zone_index'
-description = 'Index of the zone on the canvas to dim'
-min = 0
-max = 255
-default = 1
-
-[[config]]
-type = 'float'
-name = 'opacity'
-description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully dimmed'
-min = 0.0
-max = 1.0
-default = 0.8
+id = '5dc59fa8-e965-45cb-a1da-e89d28713395'
+name = 'Zones'
+description = 'Shows a different solid color on each zone'
+active_scripts = [
+	'zones.lua',
+#	'shockwave.lua',
+#	'impact.lua',
+ 	'macros.lua',
+#	'stats.lua',
+]

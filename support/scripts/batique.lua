@@ -31,24 +31,32 @@ function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     -- calculate batique effect
     if ticks % animation_delay == 0 then
-        for i = 1, zone_end do
-            local x = i % (zone_end - zone_start)
-            local y = i / (zone_end - zone_start)
+        local zone = {x = 0, y = 0, x2 = canvas_width, y2 = canvas_height}
+        if use_zone_index then zone = zones[zone_index] end
 
-            local val = super_simplex_noise((x / coord_scale),
-                                            (y / coord_scale),
-                                            ticks / time_scale)
+        for y = zone.y, zone.y2 - 1 do
+            for x = zone.x, zone.x2 - 1 do
+                local index = (y * canvas_width) + x + 1
 
-            color_map[i] = gradient_color_at(grad, val)
+                local val = super_simplex_noise((x / coord_scale),
+                                                (y / coord_scale),
+                                                ticks / time_scale)
+
+                if use_gradient then
+                    color_map[index] = gradient_color_at(grad, val)
+                else
+                    color_map[index] = hsla_to_color(
+                                           (val / color_divisor) + color_offset,
+                                           1.0, 0.5, lerp(0, 255, opacity))
+                end
+            end
         end
     end
 end

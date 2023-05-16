@@ -1037,3 +1037,18 @@ pub mod ratelimited {
         }
     }
 }
+
+// #[allow(dead_code)]
+// pub fn rotate_matrix_by_90_degrees<T>(matrix: Array2<T>) -> Array2<T>
+// where
+//     T: Default + Clone + Copy,
+// {
+//     let (m, n) = matrix.dim();
+//     let mut rotated_matrix = Array2::<T>::default((n, m));
+
+//     for ((x, y), j) in rotated_matrix.indexed_iter_mut() {
+//         *j = matrix[[m - x - 1, n - y - 1]];
+//     }
+
+//     rotated_matrix
+// }

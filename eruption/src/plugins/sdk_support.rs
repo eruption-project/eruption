@@ -23,7 +23,7 @@ use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
-    SwitchProfileResult, SDK_SUPPORT_ACTIVE,
+    SwitchProfileResult,
 };
 use flume::unbounded;
 use lazy_static::lazy_static;
@@ -214,13 +214,15 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         debug!("Sending device hotplug notification...");
 
                         let dbus_api_tx = crate::DBUS_API_TX.read();
-                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-                        dbus_api_tx
-                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending dbus API event: {}", e)
-                            });
+                        if let Some(dbus_api_tx) = dbus_api_tx.as_ref() {
+                            dbus_api_tx
+                                .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
+                                .unwrap_or_else(|e| {
+                                    error!("Could not send a pending dbus API event: {}", e)
+                                });
+                        } else {
+                            error!("Could not send a pending dbus API event: dbus API channel is not available");
+                        }
                     }
                 } else {
                     info!("Found mouse device, but mouse support is DISABLED by configuration");
@@ -456,8 +458,8 @@ impl SdkSupportPlugin {
                         debug!("Eruption SDK client connected from: {peer_addr}");
 
                         // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
-                        socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
-                        socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+                        socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY)?;
+                        socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY)?;
 
                         thread::Builder::new()
                             .name("client".to_string())
@@ -738,7 +740,6 @@ impl SdkSupportPlugin {
 
                                                         LED_MAP.write().copy_from_slice(&led_map);
 
-                                                        SDK_SUPPORT_ACTIVE.store(true, Ordering::SeqCst);
 
                                                         script::FRAME_GENERATION_COUNTER
                                                             .fetch_add(1, Ordering::SeqCst);
@@ -904,11 +905,7 @@ impl SdkSupportPlugin {
                                         }
                                     }
 
-                                if SDK_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
-                                    thread::sleep(Duration::from_millis(1));
-                                } else {
-                                    thread::sleep(Duration::from_millis(15));
-                                }
+                                thread::sleep(Duration::from_millis(5));
                             }
 
                             Ok(())

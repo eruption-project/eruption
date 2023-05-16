@@ -17,25 +17,17 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-name = "Dim Zone"
-description = "Dim (darken) a zone on the canvas"
-version = "0.1.0"
+name = "Colorize Zones"
+description = "Display a different solid color (HSL color space) on every allocated device zone"
+version = "0.0.1"
 author = "The Eruption Development Team"
 min_supported_version = "0.5.0"
-tags = ['Background', 'Vendor', 'Filter']
-
-[[config]]
-type = 'int'
-name = 'zone_index'
-description = 'Index of the zone on the canvas to dim'
-min = 0
-max = 255
-default = 1
+tags = ['Background', 'Vendor', 'Demo']
 
 [[config]]
 type = 'float'
 name = 'opacity'
-description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully dimmed'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
 min = 0.0
 max = 1.0
-default = 0.8
+default = 1.0

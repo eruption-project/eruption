@@ -28,15 +28,9 @@ active_scripts = [
 
 [[config.Batique]]
 type = 'int'
-name = 'zone_start'
-value = 144
-default = 144
-
-[[config.Batique]]
-type = 'int'
-name = 'zone_end'
-value = 180
-default = 180
+name = 'zone_index'
+value = 1
+default = 1
 
 [[config.Batique]]
 type = 'float'

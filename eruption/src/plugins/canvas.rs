@@ -22,15 +22,38 @@
 // use tracing::*;
 use mlua::prelude::*;
 use std::any::Any;
+use std::collections::HashMap;
 
 use crate::constants;
 
+use crate::hwdevices::Zone;
 use crate::plugins::{self, Plugin};
 
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-/// A plugin that listens for key events
-/// Registered events can be subsequently processed by Lua scripts
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+struct Rectangle {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+}
+
+impl Rectangle {
+    #[allow(dead_code)]
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+        Rectangle {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+}
+
+impl LuaUserData for Rectangle {}
+
+/// A plugin that provides Lua support-functions related to the canvas
 pub struct CanvasPlugin {}
 
 impl CanvasPlugin {
@@ -51,6 +74,38 @@ impl CanvasPlugin {
     /// Returns the width of the canvas
     pub(crate) fn get_canvas_width() -> usize {
         constants::CANVAS_WIDTH
+    }
+
+    /// Returns the allocated zones and their respective dimensions
+    pub(crate) fn get_devices_zone_allocations() -> HashMap<u64, Zone> {
+        let mut result = HashMap::new();
+        let mut cntr = 0;
+
+        let keyboards = crate::KEYBOARD_DEVICES.read();
+
+        for device in keyboards.iter() {
+            result.insert(cntr, device.read().get_allocated_zone());
+
+            cntr += 1;
+        }
+
+        let mice = crate::MOUSE_DEVICES.read();
+
+        for device in mice.iter() {
+            result.insert(cntr, device.read().get_allocated_zone());
+
+            cntr += 1;
+        }
+
+        let misc = crate::MISC_DEVICES.read();
+
+        for device in misc.iter() {
+            result.insert(cntr, device.read().get_allocated_zone());
+
+            cntr += 1;
+        }
+
+        result
     }
 }
 
@@ -83,6 +138,10 @@ impl Plugin for CanvasPlugin {
         let get_canvas_height =
             lua_ctx.create_function(|_, ()| Ok(CanvasPlugin::get_canvas_height()))?;
         globals.set("get_canvas_height", get_canvas_height)?;
+
+        let get_devices_zone_allocations =
+            lua_ctx.create_function(|_, ()| Ok(CanvasPlugin::get_devices_zone_allocations()))?;
+        globals.set("get_devices_zone_allocations", get_devices_zone_allocations)?;
 
         Ok(())
     }

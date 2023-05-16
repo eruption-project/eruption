@@ -36,7 +36,7 @@ use crate::{
     constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, macros, plugins,
     script, scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
     KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
-    LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, SDK_SUPPORT_ACTIVE, ULEDS_SUPPORT_ACTIVE,
+    LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, ULEDS_SUPPORT_ACTIVE,
 };
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -849,11 +849,23 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                 break Ok(());
             }
 
+            // do not render while we are reloading a profile
+            if crate::CURRENTLY_RELOADING_PROFILE.load(Ordering::SeqCst) {
+                thread::sleep(Duration::from_millis(5));
+                continue;
+            }
+
             match dev_io_rx.recv() {
                 Ok(message) => match message {
                     DeviceAction::RenderNow  => {
                         let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
                         if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+                            // do not render while we are reloading a profile
+                            if crate::CURRENTLY_RELOADING_PROFILE.load(Ordering::SeqCst) {
+                                thread::sleep(Duration::from_millis(5));
+                                continue;
+                            }
+
                             // instruct the Lua VMs to realize their color maps, but only if at least one VM
                             // submitted a new color map (performed a frame generation increment)
 
@@ -889,8 +901,11 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         .unwrap_or_else(|e| {
                                             errors_present = true;
 
-                                            error!("Send error during realization of color maps: {}", e);
+                                            warn!("Send error during realization of color maps: {}", e);
                                             FAILED_TXS.write().insert(index);
+
+                                            // break all locks by re-entering the main loop
+                                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                         });
 
 
@@ -943,11 +958,10 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         let bg = &background;
                                         let fg = saved_led_map[idx];
 
-                                        #[rustfmt::skip]
                                         let color = RGBA {
-                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
                                             a: fg.a,
                                         };
 
@@ -956,26 +970,23 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 }
                             }
 
-                            if SDK_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
-                                // finally, blend the LED map of the SDK support plugin
-                                let sdk_led_map = sdk_support::LED_MAP.read();
-                                let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+                            // finally, blend the LED map of the SDK support plugin
+                            let sdk_led_map = sdk_support::LED_MAP.read();
+                            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    for (idx, background) in chunks.iter_mut().enumerate() {
-                                        let bg = &background;
-                                        let fg = sdk_led_map[idx];
+                            for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                for (idx, background) in chunks.iter_mut().enumerate() {
+                                    let bg = &background;
+                                    let fg = sdk_led_map[idx];
 
-                                        #[rustfmt::skip]
-                                        let color = RGBA {
-                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            a: fg.a,
-                                        };
+                                    let color = RGBA {
+                                        r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                        g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                        b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
+                                        a: fg.a,
+                                    };
 
-                                        *background = color;
-                                    }
+                                    *background = color;
                                 }
                             }
 
@@ -989,7 +1000,6 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         let bg = &background;
                                         let fg = uleds_led_map[idx];
 
-                                        #[rustfmt::skip]
                                         let color = RGBA {
                                             r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
                                             g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,

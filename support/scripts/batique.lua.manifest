@@ -19,7 +19,7 @@
 
 name = "Batique"
 description = "Compute Super Simplex Noise, mapped to a color-scheme"
-version = "0.1.1"
+version = "0.2.1"
 author = "The Eruption Development Team"
 min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor', 'Noise']
@@ -49,20 +49,48 @@ max = 1000.0
 default = 2.5
 
 [[config]]
+type = 'float'
+name = 'color_divisor'
+description = 'Divide resulting hue angle by color_divisor. Final value will be mapped to the interval [0..360)'
+min = 0.0
+max = 360.0
+default = 1.0
+
+[[config]]
+type = 'float'
+name = 'color_offset'
+description = 'Offset resulting hue angle by color_offset. Final value will be mapped to the interval [0..360)'
+min = 0.0
+max = 360.0
+default = 0.0
+
+[[config]]
+type = 'float'
+name = 'opacity'
+description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
+min = 0.0
+max = 360.0
+default = 1.0
+
+[[config]]
+type = 'bool'
+name = 'use_zone_index'
+description = 'Only paint to the zone with the index specified by zone_index'
+default = false
+
+[[config]]
 type = 'int'
-name = 'zone_start'
-description = 'Zone on the canvas to paint to (start index)'
+name = 'zone_index'
+description = 'The index of the zone on the canvas to paint to'
 min = 0
 max = 8192
 default = 0
 
 [[config]]
-type = 'int'
-name = 'zone_end'
-description = 'Zone on the canvas to paint to (end index)'
-min = 0
-max = 8192
-default = 8192
+type = 'bool'
+name = 'use_gradient'
+description = 'Use a named color-scheme to color the noise'
+default = false
 
 [[config]]
 type = 'string'

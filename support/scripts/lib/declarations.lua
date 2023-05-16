@@ -27,11 +27,13 @@ canvas_size = get_canvas_size()
 canvas_height = get_canvas_height()
 canvas_width = get_canvas_width()
 
-keyboard_zone_start = 1
-keyboard_zone_end = get_num_keys()
+-- zone allocations
+zones = get_devices_zone_allocations()
 
-mouse_zone_start = get_canvas_size() - 36
-mouse_zone_end = get_canvas_size() + 36
+-- provide convenience variables for the first device in each device class
+keyboard_zone = get_devices_zone_allocations()[0]
+mouse_zone = get_devices_zone_allocations()[1]
+misc_zone = get_devices_zone_allocations()[2]
 
 -- Keyboard topology maps --
 -- use 'table_offset = 0' for the ISO model
@@ -84,5 +86,11 @@ local function load_support_scripts()
         end
     end
 end
+
+-- update the zone allocations
+function on_update_zones(new_device) zones = get_devices_zone_allocations() end
+
+-- update the zone allocations when a device is plugged in or unplugged
+function on_hotplug(new_device) zones = get_devices_zone_allocations() end
 
 load_support_scripts()
