@@ -32,7 +32,7 @@ use crate::{
 };
 use flume::Sender;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use tracing::{error, info, trace};
 
 use std::sync::atomic::Ordering;
@@ -66,19 +66,19 @@ pub enum Event {
 pub type Callback = dyn Fn(&Event) -> Result<bool> + Sync + Send + 'static;
 
 lazy_static! {
-    static ref INTERNAL_EVENT_OBSERVERS: Arc<Mutex<Vec<Box<Callback>>>> =
-        Arc::new(Mutex::new(vec![]));
+    static ref INTERNAL_EVENT_OBSERVERS: Arc<RwLock<Vec<Box<Callback>>>> =
+        Arc::new(RwLock::new(vec![]));
 }
 
 pub fn register_observer<C>(callback: C)
 where
     C: Fn(&Event) -> Result<bool> + Sync + Send + 'static,
 {
-    INTERNAL_EVENT_OBSERVERS.lock().push(Box::from(callback));
+    INTERNAL_EVENT_OBSERVERS.write().push(Box::from(callback));
 }
 
 pub fn notify_observers(event: Event) -> Result<()> {
-    for callback in INTERNAL_EVENT_OBSERVERS.lock().iter() {
+    for callback in INTERNAL_EVENT_OBSERVERS.read().iter() {
         callback(&event)?;
     }
 
