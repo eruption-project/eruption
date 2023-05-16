@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use std::sync::atomic::Ordering;
+
 use crate::timers;
 use crate::timers::TimerMode;
 use crate::util;
@@ -138,9 +140,11 @@ pub fn initialize_keyboard_page(
         TimerMode::ActiveStackPage(Pages::Keyboards as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
-                        drawing_area.queue_draw();
+                if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Keyboards as usize {
+                            drawing_area.queue_draw();
+                }
 
-                        Ok(())
+                Ok(())
             }
         ),
     )?;

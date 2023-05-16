@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use std::sync::atomic::Ordering;
+
 use crate::timers::{self, TimerMode};
 use crate::util;
 use glib::clone;
@@ -166,7 +168,9 @@ pub fn initialize_misc_page(
         TimerMode::ActiveStackPage(Pages::Misc as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
-            drawing_area.queue_draw();
+            if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Misc as usize {
+                drawing_area.queue_draw();
+            }
 
             Ok(())
         }),

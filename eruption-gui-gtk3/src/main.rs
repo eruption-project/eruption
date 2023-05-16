@@ -125,9 +125,9 @@ impl State {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum ApplicationState {
-    Starting,
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ConnectionState {
+    Initializing,
     Connected,
     Disconnected,
 }
@@ -137,9 +137,9 @@ lazy_static! {
     pub static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
 
     /// Are we connected to the Eruption daemon?
-    pub static ref APP_STATE: Arc<RwLock<ApplicationState>> = Arc::new(RwLock::new(ApplicationState::Starting));
+    pub static ref CONNECTION_STATE: Arc<RwLock<ConnectionState>> = Arc::new(RwLock::new(ConnectionState::Connected));
 
-    /// Current connection to the Eruption daemon
+    /// Current connection to the Eruption daemon (Eruption SDK)
     pub static ref CONNECTION: Arc<Mutex<Option<Connection>>> = Arc::new(Mutex::new(None));
 
     /// Current LED color map
@@ -170,8 +170,11 @@ pub mod events {
         /// signals whether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
         pub static ref UPDATE_MAIN_WINDOW: AtomicBool = AtomicBool::new(false);
 
-        /// signals whether we have lost the connection to the Eruption daemon
+        /// signals whether we have just lost the connection to the Eruption daemon
         pub static ref LOST_CONNECTION: AtomicBool = AtomicBool::new(false);
+
+        /// signals whether we have just re-connected to the Eruption daemon
+        pub static ref GAINED_CONNECTION: AtomicBool = AtomicBool::new(false);
     }
 
     /// ignore next n events (do not act on them)
@@ -312,7 +315,9 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
     if crate::LOST_CONNECTION.load(Ordering::SeqCst) {
         crate::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
-        set_application_state(ApplicationState::Disconnected, builder)?;
+        set_application_state(ConnectionState::Disconnected, builder)?;
+
+        ui::main_window::update_main_window(builder)?;
     }
 
     if !events::shall_ignore_pending_dbus_event() {
@@ -608,7 +613,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
             dbus_client::Message::DeviceHotplug(_device_info) => {
                 tracing::info!("A device has been hotplugged/removed");
-                ui::main_window::update_main_window(builder).unwrap();
+                ui::main_window::update_main_window(builder)?;
             }
         }
     }

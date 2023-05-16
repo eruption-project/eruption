@@ -19,6 +19,8 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use std::sync::atomic::Ordering;
+
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -222,9 +224,11 @@ pub fn initialize_mouse_page(
         TimerMode::ActiveStackPage(Pages::Mice as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
-            drawing_area.queue_draw();
+            if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Mice as usize {
+                drawing_area.queue_draw();
+            }
 
-                  Ok(())
+            Ok(())
         }),
     )?;
 

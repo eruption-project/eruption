@@ -31,7 +31,7 @@ use gtk::{
 
 use crate::dbus_client::Zone;
 use crate::timers::TimerMode;
-use crate::{constants, dbus_client, timers, ApplicationState};
+use crate::{constants, dbus_client, timers, ConnectionState};
 use crate::{events, util};
 
 use super::hwdevices::keyboards::get_keyboard_device;
@@ -41,7 +41,6 @@ use super::main_window::set_application_state;
 use super::Pages;
 
 const BORDER: (f64, f64) = (8.0, 8.0);
-const PIXEL_SIZE: f64 = 14.5;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -78,6 +77,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
+    let canvas_stack: Stack = builder.object("canvas_stack").unwrap();
+
     let drawing_area_preview: gtk::DrawingArea =
         builder.object("drawing_area_canvas_preview").unwrap();
     let drawing_area_zones: gtk::DrawingArea = builder.object("drawing_area_canvas_zones").unwrap();
@@ -92,10 +93,10 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     if let Err(e) = crate::dbus_client::ping() {
         tracing::error!("Lost connection to the Eruption daemon: {e}");
-        set_application_state(ApplicationState::Disconnected, builder)?;
+        set_application_state(ConnectionState::Disconnected, builder)?;
     } else {
         tracing::info!("Connected to the Eruption daemon");
-        set_application_state(ApplicationState::Connected, builder)?;
+        set_application_state(ConnectionState::Connected, builder)?;
     };
 
     reset_postproc_button.connect_clicked(
@@ -184,7 +185,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -209,7 +210,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -234,7 +235,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             ],
         );
 
-        populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -362,9 +363,15 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         timers::CANVAS_RENDER_TIMER_ID,
         TimerMode::ActiveStackPage(Pages::Canvas as u8),
         1000 / (crate::constants::TARGET_FPS * 2),
-        clone!(@weak drawing_area_preview, @weak drawing_area_zones => @default-return Ok(()), move || {
-            drawing_area_preview.queue_draw();
-            drawing_area_zones.queue_draw();
+        clone!(@weak drawing_area_preview, @weak drawing_area_zones, @weak canvas_stack => @default-return Ok(()), move || {
+            let page = crate::ACTIVE_PAGE.load(Ordering::SeqCst);
+            if page == Pages::Canvas as usize {
+                if canvas_stack.visible_child_name().unwrap() == "page0" {
+                    drawing_area_preview.queue_draw();
+                } else if canvas_stack.visible_child_name().unwrap() == "page1" {
+                    drawing_area_zones.queue_draw();
+                }
+            }
 
             Ok(())
         }),
@@ -376,7 +383,12 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         TimerMode::ActiveStackPage(Pages::Canvas as u8),
         500,
         clone!(@weak builder => @default-return Ok(()), move || {
-            let _result = update_allocated_zones(&builder).map_err(|e| tracing::error!("{e}"));
+            let page = crate::ACTIVE_PAGE.load(Ordering::SeqCst);
+            if page == Pages::Canvas as usize
+
+            {
+                let _result = update_allocated_zones(&builder).map_err(|e| tracing::error!("{e}"));
+            }
 
             Ok(())
         }),
@@ -400,7 +412,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
-    let _devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
+    let devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
 
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[
@@ -483,9 +495,13 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
         index += 1;
     }
 
+    devices_tree_view.set_model(Some(&devices_treestore));
+    devices_tree_view.show_all();
+
     Ok(())
 }
 
+#[allow(dead_code)]
 fn populate_canvas_stack_widget_for_device(builder: &Builder, title: &str) -> Result<()> {
     let stack_widget: Stack = builder.object("canvas_stack").unwrap();
     let stack_switcher: StackSwitcher = builder.object("canvas_switcher").unwrap();
@@ -513,10 +529,10 @@ fn render_canvas(
     hsl: (f64, f64, f64),
     context: &cairo::Context,
 ) -> Result<()> {
-    let width = da.allocated_width() as f64;
+    let width = da.allocated_width() as f64 - 400.0;
     let height = da.allocated_height() as f64;
 
-    let scale_factor = width / (constants::CANVAS_WIDTH as f64 * 15.0);
+    let scale_factor = 1.0; // width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
     let led_colors = crate::COLOR_MAP.lock();
 
@@ -533,7 +549,7 @@ fn render_canvas(
 
             // draw allocated zones
             for (device, zone) in crate::ZONES.lock().iter() {
-                paint_zone(context, &layout, *device, zone, scale_factor)?;
+                paint_zone(context, width, height, &layout, *device, zone, scale_factor)?;
             }
 
             Ok(())
@@ -603,44 +619,57 @@ pub fn rounded_rectangle(
 
 fn paint_zone(
     cr: &cairo::Context,
+    width: f64,
+    height: f64,
     layout: &pango::Layout,
     device: u64,
     zone: &Zone,
     scale_factor: f64,
 ) -> Result<()> {
+    let pixel_width: f64 = width / constants::CANVAS_WIDTH as f64;
+    let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
+
     for y in zone.y..zone.y2() {
         for x in zone.x..zone.x2() {
             let cell_def = Rectangle {
-                x: BORDER.0 + (x as f64 * PIXEL_SIZE) * scale_factor,
-                y: BORDER.1 + (y as f64 * PIXEL_SIZE) * scale_factor,
-                width: PIXEL_SIZE * scale_factor,
-                height: PIXEL_SIZE * scale_factor,
+                x: BORDER.0 + (x as f64 * pixel_width) * scale_factor,
+                y: BORDER.1 + (y as f64 * pixel_height) * scale_factor,
+                width: pixel_width * scale_factor,
+                height: pixel_height * scale_factor,
             };
 
             // use a translucent color to paint the zone
-            let color = (1.0, 1.0, 1.0, 0.7);
-
+            let color = (1.0, 1.0, 1.0, 0.55);
             cr.set_source_rgba(color.0, color.1, color.2, color.3);
-            cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+            cr.rectangle(
+                cell_def.x - 0.5,
+                cell_def.y - 0.5,
+                cell_def.width + 0.5,
+                cell_def.height + 0.5,
+            );
             cr.fill()?;
+
+            let color = (1.0, 1.0, 1.0, 0.65);
+            cr.set_source_rgba(color.0, color.1, color.2, color.3);
+            cr.stroke()?;
         }
     }
 
     // draw caption background
     cr.set_source_rgba(0.21, 0.21, 0.21, 0.85);
     cr.rectangle(
-        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor),
-        BORDER.1 + (zone.y as f64 * PIXEL_SIZE * scale_factor),
-        PIXEL_SIZE * scale_factor * 2.0,
-        PIXEL_SIZE * scale_factor * 2.0,
+        BORDER.0 + (zone.x as f64 * pixel_width * scale_factor),
+        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor),
+        pixel_width * scale_factor * 2.0,
+        pixel_height * scale_factor * 2.0,
     );
     cr.fill()?;
 
     // draw caption
     cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
     cr.move_to(
-        BORDER.0 + (zone.x as f64 * PIXEL_SIZE * scale_factor) + 6.5,
-        BORDER.1 + (zone.y as f64 * PIXEL_SIZE * scale_factor) - 5.0,
+        BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
+        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 2.0,
     );
     layout.set_text(&format!("{}", device));
     pangocairo::show_layout(cr, layout);
@@ -653,18 +682,21 @@ fn paint_cell(
     color: &crate::util::RGBA,
     _hsl: (f64, f64, f64),
     cr: &cairo::Context,
-    _width: f64,
-    _height: f64,
+    width: f64,
+    height: f64,
     scale_factor: f64,
 ) -> Result<()> {
-    let xval = (cell_index % constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE;
-    let yval = (cell_index / constants::CANVAS_WIDTH) as f64 * PIXEL_SIZE;
+    let pixel_width: f64 = width / constants::CANVAS_WIDTH as f64;
+    let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
+
+    let xval = (cell_index % constants::CANVAS_WIDTH) as f64 * pixel_width;
+    let yval = (cell_index / constants::CANVAS_WIDTH) as f64 * pixel_height;
 
     let cell_def = Rectangle {
         x: BORDER.0 + xval * scale_factor,
         y: BORDER.1 + yval * scale_factor,
-        width: PIXEL_SIZE * scale_factor,
-        height: PIXEL_SIZE * scale_factor,
+        width: pixel_width * scale_factor,
+        height: pixel_height * scale_factor,
     };
 
     // post-process color
@@ -696,8 +728,21 @@ fn paint_cell(
         color.b as f64 / 255.0,
         1.0 - color.a as f64 / 255.0,
     );
-    cr.rectangle(cell_def.x, cell_def.y, cell_def.width, cell_def.height);
+    cr.rectangle(
+        cell_def.x - 0.5,
+        cell_def.y - 0.5,
+        cell_def.width + 0.5,
+        cell_def.height + 0.5,
+    );
     cr.fill()?;
+
+    cr.set_source_rgba(
+        color.r as f64 / 255.0,
+        color.g as f64 / 255.0,
+        color.b as f64 / 255.0,
+        1.0 - color.a as f64 / 255.0,
+    );
+    cr.stroke()?;
 
     Ok(())
 }

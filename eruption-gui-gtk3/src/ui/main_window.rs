@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use eruption_sdk::connection::Connection;
+use eruption_sdk::connection::ConnectionType;
 use gio::prelude::*;
 use glib::clone;
 use glib::IsA;
@@ -26,6 +28,7 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::Justification;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 
 use crate::dbus_client;
@@ -38,10 +41,11 @@ use crate::ui;
 use crate::update_ui_state;
 use crate::util;
 use crate::util::ratelimited;
-use crate::ApplicationState;
+use crate::ConnectionState;
 use crate::CssProviderExt;
 use crate::STATE;
 use crate::{switch_to_slot, switch_to_slot_and_profile};
+use lazy_static::lazy_static;
 
 use super::mice::initialize_mouse_page;
 use super::Pages;
@@ -52,6 +56,10 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum MainError {
     #[error("Unknown profile: {description}")]
     UnknownProfileError { description: String },
+}
+
+lazy_static! {
+    pub static ref SUBPAGES_INITIALIZED: AtomicBool = AtomicBool::new(false);
 }
 
 /// Search the list of available profiles and return the
@@ -90,7 +98,7 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
 
 /// Set the global state of the Eruption GUI application
 /// e.g.: "Connected" or "Disconnected"
-pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) -> Result<()> {
+pub fn set_application_state(state: ConnectionState, builder: &gtk::Builder) -> Result<()> {
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
@@ -106,9 +114,9 @@ pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) ->
     let slot_bar: gtk::Box = builder.object("slot_bar").unwrap();
 
     match state {
-        ApplicationState::Starting => { /* Do nothing */ }
+        ConnectionState::Initializing => { /* Do nothing */ }
 
-        ApplicationState::Disconnected => {
+        ConnectionState::Disconnected => {
             events::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
             update_main_window(builder)?;
@@ -122,7 +130,7 @@ pub fn set_application_state(state: ApplicationState, builder: &gtk::Builder) ->
             }
         }
 
-        ApplicationState::Connected => {
+        ConnectionState::Connected => {
             events::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
             update_main_window(builder)?;
@@ -164,6 +172,11 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     let edit_slot3_button: gtk::Button = builder.object("edit_slot3_button").unwrap();
     let edit_slot4_button: gtk::Button = builder.object("edit_slot4_button").unwrap();
 
+    let slot1_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let slot2_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let slot3_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let slot4_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+
     let slot1_combo: gtk::ComboBox = builder.object("slot1_combo").unwrap();
     let slot2_combo: gtk::ComboBox = builder.object("slot2_combo").unwrap();
     let slot3_combo: gtk::ComboBox = builder.object("slot3_combo").unwrap();
@@ -197,6 +210,26 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     edit_slot4_button.connect_clicked(clone!(@weak window, @weak slot4_entry => move |_btn| {
         window.set_focus(Some(&slot4_entry));
     }));
+
+    // slot1_color_button.connect_color_set(clone!(@weak window => move |btn| {
+    //     let _color = btn.rgba();
+
+    // }));
+
+    // slot2_color_button.connect_color_set(clone!(@weak window => move |btn| {
+    //     let _color = btn.rgba();
+
+    // }));
+
+    // slot3_color_button.connect_color_set(clone!(@weak window => move |btn| {
+    //     let _color = btn.rgba();
+
+    // }));
+
+    // slot4_color_button.connect_color_set(clone!(@weak window => move |btn| {
+    //     let _color = btn.rgba();
+
+    // }));
 
     slot1_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
@@ -530,23 +563,6 @@ pub fn switch_main_stack_page(to: Pages, builder: &gtk::Builder) {
     }
 }
 
-pub fn switch_sub_page_stack(to: Pages, builder: &gtk::Builder) {
-    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
-
-    match to {
-        Pages::Canvas => main_stack.set_visible_child_name("page0"),
-        Pages::Keyboards => main_stack.set_visible_child_name("page1"),
-        Pages::Mice => main_stack.set_visible_child_name("page2"),
-        Pages::Misc => main_stack.set_visible_child_name("page3"),
-        Pages::ColorSchemes => main_stack.set_visible_child_name("page4"),
-        Pages::AutomationRules => main_stack.set_visible_child_name("page5"),
-        Pages::Profiles => main_stack.set_visible_child_name("page6"),
-        Pages::Macros => main_stack.set_visible_child_name("page7"),
-        Pages::Keymaps => main_stack.set_visible_child_name("page8"),
-        Pages::Settings => main_stack.set_visible_child_name("page9"),
-    }
-}
-
 /// Register global actions and keyboard accelerators
 fn register_actions<A: IsA<gtk::Application>>(
     application: &A,
@@ -732,6 +748,147 @@ fn register_actions<A: IsA<gtk::Application>>(
     Ok(())
 }
 
+fn initialize_sub_pages_and_spawn_dbus_threads(
+    application: &gtk::Application,
+    builder: &gtk::Builder,
+) {
+    // let _ = update_main_window(builder).map_err(|e| {
+    //     tracing::error!("Error updating the main window: {e:?}");
+    //     e
+    // });
+
+    let _ = ui::canvas::initialize_canvas_page(builder).map_err(|e| {
+        tracing::error!("Error updating the canvas page: {e:?}");
+        e
+    });
+
+    // let _ = ui::keyboards::initialize_keyboard_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the keyboard devices page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::mice::initialize_mouse_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the mouse devices page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::misc::initialize_misc_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the misc devices page: {e:?}");
+    //     e
+    // });
+
+    let _ = ui::color_schemes::initialize_color_schemes_page(&application.clone(), builder)
+        .map_err(|e| {
+            tracing::error!("Error updating the color schemes page: {e:?}");
+            e
+        });
+
+    let _ = ui::automation_rules::initialize_automation_rules_page(&application.clone(), builder)
+        .map_err(|e| {
+            tracing::error!("Error updating the color schemes page: {e:?}");
+            e
+        });
+
+    let _ = ui::profiles::initialize_profiles_page(&application.clone(), builder).map_err(|e| {
+        tracing::error!("Error updating the main window: {e:?}");
+        e
+    });
+
+    let _ = ui::macros::initialize_macros_page(&application.clone(), builder).map_err(|e| {
+        tracing::error!("Error updating the canvas page: {e:?}");
+        e
+    });
+
+    let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), builder).map_err(|e| {
+        tracing::error!("Error updating the main window: {e:?}");
+        e
+    });
+
+    let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
+        tracing::error!("Error updating the main window: {e:?}");
+        e
+    });
+
+    let _ = initialize_slot_bar(builder).map_err(|e| {
+        tracing::error!("Error updating the main window: {e:?}");
+        e
+    });
+
+    let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
+    let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
+        tracing::error!("{m:?}");
+        Ok(())
+    });
+}
+
+fn update_sub_pages_and_spawn_dbus_threads(builder: &gtk::Builder) {
+    // let _ = update_main_window(builder).map_err(|e| {
+    //     tracing::error!("Error updating the main window: {e:?}");
+    //     e
+    // });
+
+    let _ = ui::canvas::update_canvas_page(builder).map_err(|e| {
+        tracing::error!("Error updating the canvas page: {e:?}");
+        e
+    });
+
+    // let _ = ui::keyboards::update_keyboard_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the keyboard devices page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::mice::update_mouse_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the mouse devices page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::misc::update_misc_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the misc devices page: {e:?}");
+    //     e
+    // });
+
+    let _ = ui::color_schemes::update_color_schemes_page(builder).map_err(|e| {
+        tracing::error!("Error updating the color schemes page: {e:?}");
+        e
+    });
+
+    let _ = ui::automation_rules::update_automation_rules_page(builder).map_err(|e| {
+        tracing::error!("Error updating the color schemes page: {e:?}");
+        e
+    });
+
+    // let _ = ui::profiles::update_profiles_page(&application.clone(), builder).map_err(|e| {
+    //     tracing::error!("Error updating the profiles page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::macros::update_macros_page(&application.clone(), builder).map_err(|e| {
+    //     tracing::error!("Error updating the macros page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::keymaps::update_keymaps_page(&application.clone(), builder).map_err(|e| {
+    //     tracing::error!("Error updating the keymaps page: {e:?}");
+    //     e
+    // });
+
+    // let _ = ui::settings::update_settings_page(builder).map_err(|e| {
+    //     tracing::error!("Error updating the settings page: {e:?}");
+    //     e
+    // });
+
+    let _ = initialize_slot_bar(builder).map_err(|e| {
+        tracing::error!("Error updating the main window: {e:?}");
+        e
+    });
+
+    let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
+    let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
+        tracing::error!("{m:?}");
+        Ok(())
+    });
+}
+
 /// Build and show the UI of the main application window
 pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Result<()> {
     let application = application.as_ref();
@@ -750,7 +907,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     let info_bar_box: gtk::Box = builder.object("info_bar_box").unwrap();
 
-    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
+    let _notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
@@ -843,8 +1000,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     // wire-up the gtk::InfoBar support
     notifications::set_notification_area(&info_bar);
-
-    notifications::info("Welcome to the Eruption GUI");
+    // notifications::info("Welcome to the Eruption GUI");
 
     // TODO: implement this
     // lock_button.set_permission();
@@ -910,81 +1066,6 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         }),
     );
 
-    fn initialize_sub_pages_and_spawn_dbus_threads(
-        application: &gtk::Application,
-        builder: &gtk::Builder,
-    ) {
-        // let _ = update_main_window(builder).map_err(|e| {
-        //     eprintln!("Error updating the main window: {e:?}");
-        //     e
-        // });
-
-        let _ = ui::canvas::initialize_canvas_page(builder).map_err(|e| {
-            eprintln!("Error updating the canvas page: {e:?}");
-            e
-        });
-
-        // let _ = ui::keyboards::initialize_keyboard_page(builder).map_err(|e| {
-        //     eprintln!("Error updating the keyboard devices page: {e:?}");
-        //     e
-        // });
-
-        // let _ = ui::mice::initialize_mouse_page(builder).map_err(|e| {
-        //     eprintln!("Error updating the mouse devices page: {e:?}");
-        //     e
-        // });
-
-        // let _ = ui::misc::initialize_misc_page(builder).map_err(|e| {
-        //     eprintln!("Error updating the misc devices page: {e:?}");
-        //     e
-        // });
-
-        let _ = ui::color_schemes::initialize_color_schemes_page(&application.clone(), builder)
-            .map_err(|e| {
-                eprintln!("Error updating the color schemes page: {e:?}");
-                e
-            });
-
-        let _ =
-            ui::automation_rules::initialize_automation_rules_page(&application.clone(), builder)
-                .map_err(|e| {
-                    eprintln!("Error updating the color schemes page: {e:?}");
-                    e
-                });
-
-        let _ =
-            ui::profiles::initialize_profiles_page(&application.clone(), builder).map_err(|e| {
-                eprintln!("Error updating the main window: {e:?}");
-                e
-            });
-
-        let _ = ui::macros::initialize_macros_page(&application.clone(), builder).map_err(|e| {
-            eprintln!("Error updating the canvas page: {e:?}");
-            e
-        });
-
-        let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), builder).map_err(|e| {
-            eprintln!("Error updating the main window: {e:?}");
-            e
-        });
-
-        let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {e:?}");
-            e
-        });
-
-        let _ = initialize_slot_bar(builder).map_err(|e| {
-            eprintln!("Error updating the main window: {e:?}");
-            e
-        });
-
-        let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
-        let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
-            eprintln!("{m:?}");
-            Ok(())
-        });
-    }
-
     initialize_sub_pages_and_spawn_dbus_threads(application, &builder);
 
     main_window.show_all();
@@ -992,10 +1073,11 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // timers::register_timer(
     //     timers::GLOBAL_CONFIG_TIMER_ID,
     //     TimerMode::Periodic,
-    //     1500,
-    //     clone!(@weak application, @weak ambientfx_switch, @weak soundfx_switch => @default-return Ok(()), move || {
-    //         ambientfx_switch.set_active(util::get_ambient_fx().unwrap_or(false));
-    //         soundfx_switch.set_active(util::get_sound_fx().unwrap_or(false));
+    //     1000,
+    //     clone!(@weak application, @weak builder, @weak ambientfx_switch, @weak soundfx_switch => @default-return Ok(()), move || {
+
+    //         // ambientfx_switch.set_active(util::get_ambient_fx().unwrap_or(false));
+    //         // soundfx_switch.set_active(util::get_sound_fx().unwrap_or(false));
 
     //         Ok(())
     //     }),
@@ -1007,30 +1089,76 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         TimerMode::Periodic,
         1000,
         clone!(@weak application => @default-return Ok(()), move || {
-            if crate::dbus_client::ping().is_err() {
-                notification_box_global.show();
+            // if crate::dbus_client::ping().is_err() {
+            //     set_application_state(ConnectionState::Disconnected, &builder)?;
 
-                tracing::error!("Lost connection to the Eruption daemon");
-                events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+            //     notification_box_global.show();
 
-                timers::clear_timers()?;
+            //     tracing::error!("Lost connection to the Eruption daemon");
+            //     events::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
-                // remove all devices sub-pages for now, until we regain the connection
+            //     timers::clear_timers()?;
+
+            // } else {
+
+            //     notification_box_global.hide();
+
+            //     if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+            //         tracing::info!("Re-establishing connection to the Eruption daemon...");
+
+            //         // we re-established the connection to the Eruption daemon,
+            //         events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+            //         // initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
+            //     }
+            // }
+
+            if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+                set_application_state(ConnectionState::Disconnected, &builder)?;
+
+                *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                crate::LOST_CONNECTION.store(false, Ordering::SeqCst);
+
+                notifications::warn(
+                    "Please restart the Eruption daemon to re-establish the connection",
+                );
+
                 update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
-            } else {
-                notification_box_global.hide();
 
-                if events::LOST_CONNECTION.load(Ordering::SeqCst) {
-                    tracing::info!("Re-establishing connection to the Eruption daemon...");
+            } else if events::GAINED_CONNECTION.load(Ordering::SeqCst) {
+                set_application_state(ConnectionState::Connected, &builder)?;
 
-                    // we re-established the connection to the Eruption daemon,
-                    events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+                *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+                events::GAINED_CONNECTION.store(false, Ordering::SeqCst);
 
-                    // initialize_sub_pages_and_spawn_dbus_threads(&application, &builder);
+                // apparently the Eruption daemon came back online, so now we have to
+                // re-establish the SDK client connection
+                match Connection::new(ConnectionType::Local) {
+                    Ok(connection) => {
+                        let _ = connection
+                            .connect()
+                            .map_err(|e| tracing::error!("Connection failed: {e}"));
 
-                    // update the GUI to show e.g. newly attached devices
-                    update_main_window(&builder).unwrap();
+                        *crate::CONNECTION.lock() = Some(connection.clone());
+
+                        if connection.connect().is_ok() {
+                            let _ = connection
+                                .get_server_status()
+                                .map_err(|e| tracing::error!("{e}"));
+                        }
+                    }
+
+                    Err(e) => {
+                        events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+                        *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+
+                        tracing::error!("Could not connect to Eruption daemon: {}", e);
+                    }
                 }
+
+                notifications::info("Successfully re-established connection to the Eruption daemon");
+
+                update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
 
             if events::UPDATE_MAIN_WINDOW.load(Ordering::SeqCst) {
@@ -1052,14 +1180,25 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         TimerMode::Periodic,
         1000 / (crate::constants::TARGET_FPS * 2),
         move || {
-            crate::update_color_map().map_err(|e| {
-                ratelimited::error!("Could not update the color map: {e}");
-                e
-            })?;
+            let page = crate::ACTIVE_PAGE.load(Ordering::SeqCst);
+            if page == Pages::Canvas as usize
+                || page == Pages::Keyboards as usize
+                || page == Pages::Mice as usize
+                || page == Pages::Misc as usize
+            {
+                crate::update_color_map().map_err(|e| {
+                    crate::LOST_CONNECTION.store(true, Ordering::SeqCst);
+
+                    ratelimited::error!("Could not update the color map: {e}");
+                    e
+                })?;
+            }
 
             Ok(())
         },
     )?;
+
+    SUBPAGES_INITIALIZED.store(true, Ordering::SeqCst);
 
     Ok(())
 }
@@ -1112,7 +1251,9 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
     }
 
-    if events::LOST_CONNECTION.load(Ordering::SeqCst) {
+    if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing
+        || *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected
+    {
         let no_connection_template = gtk::Builder::from_resource(
             "/org/eruption/eruption-gui-gtk3/ui/no-connection-template.ui",
         );
@@ -1143,9 +1284,11 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
         misc_devices_stack.add_titled(&page, "None", "None");
+    } else if *crate::CONNECTION_STATE.read() == ConnectionState::Connected {
+        if let Some(w) = main_stack.child_by_name("No Connection") {
+            main_stack.remove(&w);
+        }
 
-        Ok(())
-    } else {
         // instantiate the devices sub-pages
         let devices = dbus_client::get_managed_devices()?;
 
@@ -1171,6 +1314,11 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
 
         // let child = &canvas_stack.children()[1];
         // child.show_all();
+
+        let _ = ui::canvas::update_canvas_page(builder).map_err(|e| {
+            tracing::error!("Error updating the canvas page: {e:?}");
+            e
+        });
 
         // instantiate stack pages for all keyboard devices
         for (_device, (vid, pid)) in devices.0.iter().enumerate() {
@@ -1265,9 +1413,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
 
             misc_devices_stack.add_titled(&page, "None", "None");
         }
-
-        ui::canvas::update_canvas_page(builder)?;
-
-        Ok(())
     }
+
+    Ok(())
 }

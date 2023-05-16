@@ -20,7 +20,7 @@
 */
 
 use crate::{
-    preferences,
+    events, notifications, preferences,
     timers::{self, TimerMode},
     util::{self, get_daemon_status, set_daemon_status, Daemon, ServiceStatus},
 };
@@ -81,59 +81,139 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
     audio_proxy_daemon_status_label.set_use_markup(true);
     fx_proxy_daemon_status_label.set_use_markup(true);
 
-    /* eruption_daemon_switch.connect_state_set(move |_sw, enabled| {
-        let _status = set_daemon_status(Daemon::Eruption, enabled);
+    eruption_daemon_switch.connect_state_set(move |_sw, enabled| {
+        if !(events::shall_ignore_pending_ui_event() && events::shall_ignore_pending_ui_event()) {
+            if let Err(e) = set_daemon_status(Daemon::Eruption, enabled) {
+                tracing::error!("Operation failed: {}", e);
+                notifications::error(&format!("Operation failed: {}", e));
+            } else {
+                match enabled {
+                    true => {
+                        notifications::info("Successfully started the Eruption daemon");
+                    }
+                    false => {
+                        notifications::warn("Stopped the Eruption daemon");
+                    }
+                }
+            }
 
-        gtk::Inhibit(false)
-    }); */
+            gtk::Inhibit(false)
+        } else {
+            gtk::Inhibit(true)
+        }
+    });
 
     process_monitor_daemon_switch.connect_state_set(move |_sw, enabled| {
-        let _status = set_daemon_status(Daemon::ProcessMonitor, enabled);
+        if !(events::shall_ignore_pending_ui_event() && events::shall_ignore_pending_ui_event()) {
+            if let Err(e) = set_daemon_status(Daemon::ProcessMonitor, enabled) {
+                tracing::error!("Operation failed: {}", e);
+                notifications::error(&format!("Operation failed: {}", e));
+            } else {
+                match enabled {
+                    true => {
+                        notifications::info(
+                            "Successfully started the Eruption process monitor daemon",
+                        );
+                    }
+                    false => {
+                        notifications::warn("Stopped the Eruption process monitor daemon");
+                    }
+                }
+            }
 
-        gtk::Inhibit(false)
+            gtk::Inhibit(false)
+        } else {
+            gtk::Inhibit(true)
+        }
     });
 
     audio_proxy_daemon_switch.connect_state_set(move |_sw, enabled| {
-        let _status = set_daemon_status(Daemon::AudioProxy, enabled);
+        if !(events::shall_ignore_pending_ui_event() && events::shall_ignore_pending_ui_event()) {
+            if let Err(e) = set_daemon_status(Daemon::AudioProxy, enabled) {
+                tracing::error!("Operation failed: {}", e);
+                notifications::error(&format!("Operation failed: {}", e));
+            } else {
+                match enabled {
+                    true => {
+                        notifications::info("Successfully started the Eruption audio proxy daemon");
+                    }
+                    false => {
+                        notifications::warn("Stopped the Eruption audio proxy daemon");
+                    }
+                }
+            }
 
-        gtk::Inhibit(false)
+            gtk::Inhibit(false)
+        } else {
+            gtk::Inhibit(true)
+        }
     });
 
     fx_proxy_daemon_switch.connect_state_set(move |_sw, enabled| {
-        let _status = set_daemon_status(Daemon::FxProxy, enabled);
+        if !(events::shall_ignore_pending_ui_event() && events::shall_ignore_pending_ui_event()) {
+            if let Err(e) = set_daemon_status(Daemon::FxProxy, enabled) {
+                tracing::error!("Operation failed: {}", e);
+                notifications::error(&format!("Operation failed: {}", e));
+            } else {
+                match enabled {
+                    true => {
+                        notifications::info("Successfully started the Eruption fx proxy daemon");
+                    }
+                    false => {
+                        notifications::warn("Stopped the Eruption fx proxy daemon");
+                    }
+                }
+            }
 
-        gtk::Inhibit(false)
+            gtk::Inhibit(false)
+        } else {
+            gtk::Inhibit(true)
+        }
     });
 
     restart_eruption_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_eruption_daemon() {
             tracing::error!("Could not restart the Eruption daemon: {e}");
+            notifications::error(&format!("Could not restart the Eruption daemon: {e}"));
         } else {
             tracing::info!("Successfully restarted the Eruption daemon");
+            notifications::info("Successfully restarted the Eruption daemon");
         }
     });
 
     restart_process_monitor_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_process_monitor_daemon() {
             tracing::error!("Could not restart the Eruption process monitor daemon: {e}");
+            notifications::error(&format!(
+                "Could not restart the Eruption process monitor daemon: {e}"
+            ));
         } else {
             tracing::info!("Successfully restarted the Eruption process monitor daemon");
+            notifications::info("Successfully restarted the Eruption process monitor daemon");
         }
     });
 
     restart_audio_proxy_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_audio_proxy_daemon() {
             tracing::error!("Could not restart the Eruption audio proxy daemon: {e}");
+            notifications::error(&format!(
+                "Could not restart the Eruption audio proxy daemon: {e}"
+            ));
         } else {
             tracing::info!("Successfully restarted the Eruption audio proxy daemon");
+            notifications::info("Successfully restarted the Eruption audio proxy daemon");
         }
     });
 
     restart_fx_proxy_button.connect_clicked(|_btn| {
         if let Err(e) = util::restart_fx_proxy_daemon() {
             tracing::error!("Could not restart the Eruption fx proxy daemon: {e}");
+            notifications::error(&format!(
+                "Could not restart the Eruption fx proxy daemon: {e}"
+            ));
         } else {
             tracing::info!("Successfully restarted the Eruption fx proxy daemon");
+            notifications::info("Successfully restarted the Eruption fx proxy daemon");
         }
     });
 
@@ -144,6 +224,8 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
         clone!(@weak eruption_daemon_status_label, @weak eruption_daemon_switch, @weak process_monitor_daemon_status_label,
                     @weak process_monitor_daemon_switch, @weak audio_proxy_daemon_switch, @weak audio_proxy_daemon_status_label
                     => @default-return Ok(()), move || {
+                        events::ignore_next_ui_events(1);
+                        events::ignore_next_dbus_events(1);
 
                         match get_daemon_status(Daemon::Eruption) {
                             Ok(status) => {
@@ -151,19 +233,19 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                                         ServiceStatus::Active => {
                                             eruption_daemon_status_label.set_label("<b><span background='#00ff00' foreground='white'>    OK    </span></b>");
                                             eruption_daemon_switch.set_state(true);
-                                            eruption_daemon_switch.set_sensitive(false);
+                                            eruption_daemon_switch.set_sensitive(true);
                                         }
 
                                         ServiceStatus::Inactive => {
                                             eruption_daemon_status_label.set_label("<b><span background='#ff0000' foreground='white'>offline</span></b>");
                                             eruption_daemon_switch.set_state(false);
-                                            eruption_daemon_switch.set_sensitive(false);
+                                            eruption_daemon_switch.set_sensitive(true);
                                         }
 
                                         ServiceStatus::Failed =>  {
                                             eruption_daemon_status_label.set_label("<b><span background='#ff0000' foreground='white'>failed</span></b>");
                                             eruption_daemon_switch.set_state(false);
-                                            eruption_daemon_switch.set_sensitive(false);
+                                            eruption_daemon_switch.set_sensitive(true);
                                         }
 
                                         ServiceStatus::Unknown =>  {
@@ -286,6 +368,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                                 fx_proxy_daemon_switch.set_sensitive(false);
                             }
                         }
+
+                        events::reenable_dbus_events();
+                        events::reenable_ui_events();
 
             Ok(())
         }),
