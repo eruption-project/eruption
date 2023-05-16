@@ -89,11 +89,11 @@ pub const TICK_FPS: u64 = 19;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_WIDTH: usize = 42;
+pub const CANVAS_WIDTH: usize = 92;
 
 /// The height of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_HEIGHT: usize = 28;
+pub const CANVAS_HEIGHT: usize = 64;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
@@ -102,7 +102,7 @@ pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 pub const FADE_MILLIS: u64 = 1333;
 
 /// The capacity of the buffer used for receiving audio samples as well as control messages
-pub const NET_BUFFER_CAPACITY: usize = 4096 * 16;
+pub const NET_BUFFER_CAPACITY: usize = 4096 * 4;
 
 /// Timeout for waiting on condition variables of Lua upcalls
 pub const TIMEOUT_CONDITION_MILLIS: u64 = 25;
