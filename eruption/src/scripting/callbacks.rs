@@ -21,10 +21,11 @@
 
 /// These functions are intended to be used from within Lua scripts
 use byteorder::{ByteOrder, LittleEndian};
+use colorgrad::BlendMode;
 use mlua::prelude::*;
 use noise::NoiseFn;
 use palette::convert::FromColor;
-use palette::{Hsl, Srgb};
+use palette::{Hsl, LinSrgb};
 use rand::Rng;
 use std::convert::TryFrom;
 use std::fmt::Write;
@@ -318,8 +319,9 @@ pub(crate) fn color_to_rgba(c: u32) -> (u8, u8, u8, u8) {
 #[allow(clippy::many_single_char_names)]
 pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
     let (r, g, b) = color_to_rgb(c);
-    let rgb = Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
-        .into_linear();
+    let rgb =
+        LinSrgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
+            .into_linear();
 
     let (h, s, l) = Hsl::from_color(rgb).into_components();
 
@@ -330,8 +332,9 @@ pub(crate) fn color_to_hsl(c: u32) -> (f64, f64, f64) {
 #[allow(clippy::many_single_char_names)]
 pub(crate) fn color_to_hsla(c: u32) -> (f64, f64, f64, u8) {
     let (r, g, b, a) = color_to_rgba(c);
-    let rgb = Srgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
-        .into_linear();
+    let rgb =
+        LinSrgb::from_components(((r as f64 / 255.0), (g as f64 / 255.0), (b as f64 / 255.0)))
+            .into_linear();
 
     let (h, s, l) = Hsl::from_color(rgb).into_components();
 
@@ -350,7 +353,7 @@ pub(crate) fn rgba_to_color(r: u8, g: u8, b: u8, a: u8) -> u32 {
 
 /// Convert HSL components to a 32 bits color value.
 pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
-    let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
+    let rgb = LinSrgb::from_color(Hsl::new(h, s, l)).into_linear();
     let rgb = rgb.into_components();
     rgba_to_color(
         (rgb.0 * 255.0) as u8,
@@ -362,7 +365,7 @@ pub(crate) fn hsl_to_color(h: f64, s: f64, l: f64) -> u32 {
 
 /// Convert HSLA components to a 32 bits color value.
 pub(crate) fn hsla_to_color(h: f64, s: f64, l: f64, a: u8) -> u32 {
-    let rgb = Srgb::from_color(Hsl::new(h, s, l)).into_linear();
+    let rgb = LinSrgb::from_color(Hsl::new(h, s, l)).into_linear();
     let rgb = rgb.into_components();
     rgba_to_color(
         (rgb.0 * 255.0) as u8,
@@ -462,6 +465,7 @@ pub(crate) fn gradient_from_name(val: &str) -> Result<usize> {
             let gradient = if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
                 colorgrad::CustomGradient::new()
                     // start at index 1, ignore the darkest/black part of the palette
+                    .mode(BlendMode::LinearRgb)
                     .colors(&color_scheme.colors)
                     .build()?
             } else {
