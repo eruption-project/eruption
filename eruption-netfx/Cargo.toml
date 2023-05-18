@@ -81,11 +81,11 @@ x11rb = { version = "0.11.1", features = [
   "allow-unsafe-code",
 ], optional = true }
 wayland-client = { version = "0.30.1", optional = true }
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
+i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"

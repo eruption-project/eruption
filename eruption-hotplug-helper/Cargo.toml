@@ -61,11 +61,11 @@ console-subscriber = { version = "0.1.9", features = ["parking_lot"] }
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
+i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 lockfile = "0.4.0"

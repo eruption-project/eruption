@@ -73,11 +73,11 @@ byteorder = "1.4.3"
 serialport = "4.2.0"
 crc8 = "0.1.1"
 crc16 = "0.4.0"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
+i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"

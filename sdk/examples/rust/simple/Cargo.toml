@@ -41,7 +41,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 clap = "4.2.7"
 lazy_static = "1.4.0"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }

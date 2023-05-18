@@ -57,6 +57,7 @@ default-members = [
   "eruption-macro",
   "sdk/lib/rust/eruption-rs",
   "sdk/lib/rust/liberuption",
+  # "sdk/examples/rust/simple",
 ]
 resolver = "2"
 

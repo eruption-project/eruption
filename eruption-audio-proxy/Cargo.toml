@@ -77,11 +77,11 @@ byteorder = "1.4.3"
 bytes = "1.4.0"
 prost = "0.11.9"
 prost-types = "0.11.9"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
+i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"

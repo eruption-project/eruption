@@ -77,11 +77,11 @@ color-eyre = "0.6.2"
 paste = "1.0.12"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
+i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 image = { version = "0.24", features = ["jpeg", "png", "webp"] }
@@ -105,7 +105,6 @@ egui_commonmark = { version = "0.7.2", features = [
   "syntax_highlighting",
   "svg",
 ] }
-tiny-skia = "0.9.0"
 syntect = "5.0.0"
 icecream = "0.1.0"
 

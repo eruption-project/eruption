@@ -64,7 +64,6 @@ nix = "0.26.2"
 atty = "0.2.14"
 serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
-systemd = "0.10.0"
 tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
 ctrlc = { version = "3.2.5", features = ["termination"] }
@@ -87,9 +86,9 @@ rand = "0.8.5"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 raqote = "0.8.2"
-rgb = { version = "0.8.36", features = ["argb", "serde"] }
-image = "0.24.6"
-imageproc = { version = "0.23.0", features = ["rayon"] }
+# rgb = { version = "0.8.36", features = ["argb", "serde"] }
+# image = "0.24.6"
+# imageproc = { version = "0.23.0", features = ["rayon"] }
 resize = "0.7.4"
 palette = "0.7.1"
 nalgebra = "0.32.2"
@@ -116,7 +115,7 @@ crc16 = "0.4.0"
 bytes = "1.4.0"
 prost = "0.11.9"
 prost-types = "0.11.9"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
@@ -129,7 +128,7 @@ vulkano-shaders = "0.33.0"
 vulkano-util = "0.33.0"
 shaderc = "0.8.2"
 bytemuck = "1.13.1"
-bitfield-struct = "0.4.1"
+bitfield-struct = "0.4.2"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"
