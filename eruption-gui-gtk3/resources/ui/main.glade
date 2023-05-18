@@ -91,7 +91,6 @@ The Eruption Development Team
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="margin-right">4</property>
     <property name="margin-end">4</property>
     <property name="icon-name">tab-new</property>
   </object>
@@ -1022,7 +1021,7 @@ The Eruption Development Team
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">end</property>
-                    <property name="margin-end">8</property>
+                    <property name="margin-end">16</property>
                     <property name="column-spacing">8</property>
                     <child>
                       <object class="GtkLabel">
@@ -1099,7 +1098,6 @@ The Eruption Development Team
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">end</property>
-                        <property name="margin-right">16</property>
                         <property name="margin-end">16</property>
                         <property name="label" translatable="yes">Image post-processing</property>
                         <attributes>
@@ -1157,8 +1155,6 @@ The Eruption Development Team
                         <property name="can-focus">False</property>
                         <property name="halign">end</property>
                         <property name="valign">end</property>
-                        <property name="margin-right">16</property>
-                        <property name="margin-end">16</property>
                         <property name="margin-top">16</property>
                         <property name="label" translatable="yes">Device zone allocation</property>
                         <attributes>
@@ -1239,6 +1235,9 @@ The Eruption Development Team
                             <property name="hexpand">True</property>
                             <property name="vexpand">True</property>
                             <property name="activate-on-single-click">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -1472,7 +1471,7 @@ The Eruption Development Team
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="rules_box1">
+                  <object class="GtkBox" id="color_schemes_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="no-show-all">True</property>
@@ -1664,9 +1663,14 @@ The Eruption Development Team
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkDrawingArea">
+                          <object class="GtkDrawingArea" id="drawing_area_color_scheme">
+                            <property name="height-request">64</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">4</property>
+                            <property name="margin-top">4</property>
+                            <property name="margin-bottom">4</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1678,9 +1682,10 @@ The Eruption Development Team
                           <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="margin-top">8</property>
                             <property name="shadow-type">in</property>
                             <child>
-                              <object class="GtkTreeView" id="rules_treeview1">
+                              <object class="GtkTreeView" id="color_schemes_treeview">
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="search-column">3</property>
@@ -1692,7 +1697,7 @@ The Eruption Development Team
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>

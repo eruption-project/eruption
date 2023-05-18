@@ -172,10 +172,10 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     let edit_slot3_button: gtk::Button = builder.object("edit_slot3_button").unwrap();
     let edit_slot4_button: gtk::Button = builder.object("edit_slot4_button").unwrap();
 
-    let slot1_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
-    let slot2_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
-    let slot3_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
-    let slot4_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let _slot1_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let _slot2_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let _slot3_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
+    let _slot4_color_button: gtk::ColorButton = builder.object("slot1_color_button").unwrap();
 
     let slot1_combo: gtk::ComboBox = builder.object("slot1_combo").unwrap();
     let slot2_combo: gtk::ComboBox = builder.object("slot2_combo").unwrap();

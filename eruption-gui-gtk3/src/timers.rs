@@ -48,8 +48,9 @@ pub const MOUSE_RENDER_TIMER_ID: usize = 1100;
 pub const MISC_TIMER_ID: usize = 1200;
 // pub const MISC_SLOW_TIMER_ID: usize = 1300;
 pub const MISC_RENDER_TIMER_ID: usize = 1400;
-pub const PROCESS_MONITOR_TIMER_ID: usize = 1500;
-pub const GLOBAL_CONFIG_TIMER_ID: usize = 1600;
+pub const COLOR_SCHEMES_TIMER_ID: usize = 1500;
+pub const PROCESS_MONITOR_TIMER_ID: usize = 1600;
+// pub const GLOBAL_CONFIG_TIMER_ID: usize = 1700;
 
 type Callback = dyn Fn() -> Result<()> + 'static;
 

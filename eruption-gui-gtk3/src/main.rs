@@ -52,6 +52,7 @@ use crate::dbus_client::Zone;
 use crate::error_log::ErrorType;
 use crate::util::ratelimited;
 
+mod color_scheme;
 mod constants;
 mod dbus_client;
 mod device;

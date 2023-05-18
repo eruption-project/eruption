@@ -474,6 +474,20 @@ pub struct RGBA {
 
 impl LuaUserData for RGBA {}
 
+impl dbus::arg::Arg for RGBA {
+    const ARG_TYPE: dbus::arg::ArgType = dbus::arg::ArgType::Struct;
+
+    fn signature() -> dbus::Signature<'static> {
+        dbus::Signature::from("(yyyy)")
+    }
+}
+
+impl dbus::arg::Append for RGBA {
+    fn append_by_ref(&self, i: &mut dbus::arg::IterAppend) {
+        i.append((self.r, self.g, self.b, self.a));
+    }
+}
+
 /// A Keyboard HID event
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum KeyboardHidEvent {

@@ -53,6 +53,14 @@ pub struct ColorScheme {
     pub colors: Vec<Color>,
 }
 
+impl Default for ColorScheme {
+    fn default() -> Self {
+        Self {
+            colors: vec![Color::from_linear_rgba8(0, 0, 0, 255)],
+        }
+    }
+}
+
 impl ColorSchemeExt for ColorScheme {
     fn num_colors(&self) -> usize {
         self.colors.len()
@@ -80,6 +88,26 @@ impl TryFrom<Vec<String>> for ColorScheme {
             let g = color[1].parse()?;
             let b = color[2].parse()?;
             let a = color[3].parse()?;
+
+            let color = Color::from_linear_rgba8(r, g, b, a);
+            colors.push(color);
+        }
+
+        Ok(Self { colors })
+    }
+}
+
+impl TryFrom<Vec<u8>> for ColorScheme {
+    type Error = eyre::Error;
+
+    fn try_from(value: Vec<u8>) -> std::result::Result<Self, Self::Error> {
+        let mut colors = Vec::new();
+
+        for color in value.chunks(4) {
+            let r = color[0];
+            let g = color[1];
+            let b = color[2];
+            let a = color[3];
 
             let color = Color::from_linear_rgba8(r, g, b, a);
             colors.push(color);

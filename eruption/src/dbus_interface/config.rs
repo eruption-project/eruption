@@ -98,7 +98,12 @@ impl InterfaceAddend for ConfigInterface {
                     .outarg::<Vec<String>, _>("color_schemes"),
             )
             .add_m(
-                f.method_with_permission("SetColorScheme", Permission::Settings, set_color_schemes)
+                f.method_with_permission("GetColorScheme", Permission::Settings, get_color_scheme)
+                    .inarg::<String, _>("name")
+                    .outarg::<Vec<u8>, _>("data"),
+            )
+            .add_m(
+                f.method_with_permission("SetColorScheme", Permission::Settings, set_color_scheme)
                     .inarg::<String, _>("name")
                     .inarg::<Vec<u8>, _>("data")
                     .outarg::<bool, _>("status"),
@@ -156,7 +161,31 @@ fn get_color_schemes(m: &MethodInfo) -> MethodResult {
     Ok(vec![m.msg.method_return().append1(color_schemes)])
 }
 
-fn set_color_schemes(m: &MethodInfo) -> MethodResult {
+fn get_color_scheme(m: &MethodInfo) -> MethodResult {
+    let name: String = m.msg.read1()?;
+
+    let color_schemes = crate::NAMED_COLOR_SCHEMES.read();
+    if let Some(color_scheme) = color_schemes.get(&name) {
+        let colors = color_scheme
+            .colors
+            .iter()
+            .flat_map(|e| {
+                vec![
+                    (255.0 * e.r).round() as u8,
+                    (255.0 * e.g).round() as u8,
+                    (255.0 * e.b).round() as u8,
+                    (255.0 * e.a).round() as u8,
+                ]
+            })
+            .collect::<Vec<u8>>();
+
+        Ok(vec![m.msg.method_return().append1(colors)])
+    } else {
+        Err(MethodErr::failed("Invalid identifier name"))
+    }
+}
+
+fn set_color_scheme(m: &MethodInfo) -> MethodResult {
     let (name, data): (String, Vec<u8>) = m.msg.read2()?;
 
     if name.chars().take(1).all(char::is_numeric)

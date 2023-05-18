@@ -19,156 +19,221 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use glib::IsA;
-use gtk::glib;
+use std::sync::Arc;
+
+use colorgrad::BlendMode;
+use glib::{clone, Cast, IsA, StaticType};
+use gtk::{
+    glib,
+    prelude::{BuilderExtManual, TreeStoreExtManual},
+    traits::{TreeModelExt, TreeSelectionExt, TreeStoreExt, TreeViewExt, WidgetExt},
+    Inhibit, TreeViewColumn,
+};
+use lazy_static::lazy_static;
+use parking_lot::RwLock;
+
+use crate::{
+    dbus_client, notifications,
+    timers::{self, TimerMode},
+};
+
+use super::Pages;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-/// Initialize page "Process Monitor"
-pub fn update_color_schemes_view(_builder: &gtk::Builder) -> Result<()> {
+lazy_static! {
+    /// Selected color-scheme for preview
+    pub static ref SELECTED_COLOR_SCHEME: Arc<RwLock<Option<colorgrad::Gradient>>> = Arc::new(RwLock::new(None));
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ColorSchemesError {
+    #[error("Connection to daemon failed")]
+    ConnectionFailed,
+    // #[error("Unknown error: {description}")]
+    // UnknownError { description: String },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ColorSchemeType {
+    UserScheme,
+    StockGradient,
+}
+
+impl From<&ColorSchemeType> for String {
+    fn from(ty: &ColorSchemeType) -> Self {
+        match ty {
+            ColorSchemeType::UserScheme => "User defined".to_string(),
+            ColorSchemeType::StockGradient => "Stock gradient".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColorSchemeEntry {
+    pub name: String,
+    pub ty: ColorSchemeType,
+}
+
+impl ColorSchemeEntry {
+    pub fn new(name: String, ty: ColorSchemeType) -> Self {
+        Self { name, ty }
+    }
+}
+
+/// Initialize page "Color Schemes"
+pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
     // let application = application.as_ref();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
+    let notification_box: gtk::Box = builder.object("notification_box").unwrap();
 
-    // let rules_box: gtk::Box = builder.object("rules_box").unwrap();
-    // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
+    let color_schemes_box: gtk::Box = builder.object("color_schemes_box").unwrap();
+    let color_schemes_treeview: gtk::TreeView = builder.object("color_schemes_treeview").unwrap();
 
-    // if let Ok(rules) = dbus_client::enumerate_process_monitor_rules() {
-    //     notification_box.hide();
-    //     rules_box.show();
+    if let Ok(user_color_schemes) = dbus_client::get_color_schemes() {
+        let mut color_schemes = Vec::new();
 
-    //     // save selection state
-    //     let sel = rules_treeview.selection().selected_rows();
+        color_schemes.extend(user_color_schemes.iter().map(|e| ColorSchemeEntry {
+            name: e.to_owned(),
+            ty: ColorSchemeType::UserScheme,
+        }));
 
-    //     let rules_treestore = rules_treeview
-    //         .model()
-    //         .unwrap()
-    //         .downcast::<gtk::TreeStore>()
-    //         .unwrap();
+        color_schemes.push(ColorSchemeEntry {
+            name: "system".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "rainbow-smooth".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "sinebow-smooth".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "spectral-smooth".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "rainbow-sharp".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "sinebow-sharp".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
+        color_schemes.push(ColorSchemeEntry {
+            name: "spectral-sharp".to_string(),
+            ty: ColorSchemeType::StockGradient,
+        });
 
-    //     // clear the tree store
-    //     rules_treestore.clear();
+        notification_box.hide();
+        color_schemes_box.show();
 
-    //     for (index, rule) in rules.iter().enumerate() {
-    //         let enabled = rule.3.contains("enabled");
+        // save selection state
+        let sel = color_schemes_treeview.selection().selected_rows();
 
-    //         let sensor = &rule.0;
-    //         let selector = &rule.1;
-    //         let action = &rule.2;
-    //         let metadata = &rule.3;
+        let color_schemes_treestore = color_schemes_treeview
+            .model()
+            .unwrap()
+            .downcast::<gtk::TreeStore>()
+            .unwrap();
 
-    //         rules_treestore.insert_with_values(
-    //             None,
-    //             None,
-    //             &[
-    //                 (0, &enabled),
-    //                 (1, &(index as u64)),
-    //                 (2, &sensor),
-    //                 (3, &selector),
-    //                 (4, &action),
-    //                 (5, &metadata),
-    //             ],
-    //         );
-    //     }
+        // clear the tree store
+        color_schemes_treestore.clear();
 
-    //     rules_box.show();
+        for (index, color_scheme) in color_schemes.iter().enumerate() {
+            let ty = &color_scheme.ty;
+            let name = &color_scheme.name;
 
-    //     // restore selection state
-    //     if !sel.0.is_empty() {
-    //         rules_treeview.selection().select_path(&sel.0[0]);
-    //     }
+            color_schemes_treestore.insert_with_values(
+                None,
+                None,
+                &[
+                    (0, &(index as u64)),
+                    (1, &Into::<String>::into(ty)),
+                    (2, &name),
+                ],
+            );
+        }
 
-    //     Ok(())
-    // } else {
-    //     notification_box.show_now();
-    //     rules_box.hide();
+        color_schemes_box.show();
 
-    //     Err(ProcessMonitorError::ConnectionFailed {}.into())
-    // }
+        // restore selection state
+        if !sel.0.is_empty() {
+            color_schemes_treeview.selection().select_path(&sel.0[0]);
+        }
 
-    Ok(())
+        Ok(())
+    } else {
+        notification_box.show_now();
+        color_schemes_box.hide();
+
+        Err(ColorSchemesError::ConnectionFailed {}.into())
+    }
 }
 
-/// Updates the ruleset of the eruption-process-monitor daemon to match the current state of the GUI
 pub fn transmit_color_schemes_to_eruption(_builder: &gtk::Builder) -> Result<()> {
-    // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
+    Ok(())
+}
 
-    // let mut rules: Vec<(String, String, String, String)> = Vec::new();
+fn paint_gradient(cr: &cairo::Context, width: f64, height: f64) -> Result<()> {
+    if let Some(gradient) = SELECTED_COLOR_SCHEME.read().as_ref() {
+        let segment_width = width / 100.0;
 
-    // // generate a Vec<_> from the ruleset
-    // rules_treeview
-    //     .model()
-    //     .unwrap()
-    //     .foreach(|model, _path, iter| {
-    //         let metadata = model.value(iter, 5).get::<String>().unwrap();
+        for x in 0..width.round() as u32 {
+            let color = gradient.at(x as f64 / width);
+            cr.set_source_rgba(color.r, color.g, color.b, color.a);
 
-    //         if !metadata.contains("internal") {
-    //             let enabled = model.value(iter, 0).get::<bool>().unwrap();
-
-    //             let sensor = model.value(iter, 2).get::<String>().unwrap();
-    //             let selector = model.value(iter, 3).get::<String>().unwrap();
-    //             let action = model.value(iter, 4).get::<String>().unwrap();
-
-    //             let metadata = format!(
-    //                 "{},user-defined",
-    //                 if enabled { "enabled" } else { "disabled" },
-    //             );
-
-    //             rules.push((sensor, selector, action, metadata));
-    //         } else {
-    //             let sensor = model.value(iter, 2).get::<String>().unwrap();
-    //             let selector = model.value(iter, 3).get::<String>().unwrap();
-    //             let action = model.value(iter, 4).get::<String>().unwrap();
-    //             let metadata = model.value(iter, 5).get::<String>().unwrap();
-
-    //             rules.push((sensor, selector, action, metadata));
-    //         }
-
-    //         false
-    //     });
-
-    // // send full ruleset to the eruption-process-monitor daemon
-    // dbus_client::transmit_process_monitor_rules(
-    //     &rules
-    //         .iter()
-    //         .map(|e| (e.0.as_str(), e.1.as_str(), e.2.as_str(), e.3.as_str()))
-    //         .collect::<Vec<(&str, &str, &str, &str)>>(),
-    // )?;
+            cr.rectangle(x as f64, 0.0, segment_width, height);
+            cr.fill()?;
+        }
+    } else {
+        // tracing::warn!("no color scheme selected");
+    }
 
     Ok(())
 }
 
-/// Initialize page "Process Monitor"
+/// Initialize page "Color Schemes"
 pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
     _application: &A,
-    _builder: &gtk::Builder,
+    builder: &gtk::Builder,
 ) -> Result<()> {
     // let application = application.as_ref();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
+    let notification_box: gtk::Box = builder.object("notification_box").unwrap();
 
-    // let rules_box: gtk::Box = builder.object("rules_box").unwrap();
+    let drawing_area_color_scheme: gtk::DrawingArea =
+        builder.object("drawing_area_color_scheme").unwrap();
 
-    // let restart_process_monitor_button: gtk::Button = builder
-    //     .object("restart_process_monitor_button_global")
-    //     .unwrap();
+    let color_schemes_box: gtk::Box = builder.object("color_schemes_box").unwrap();
 
-    // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
+    let color_schemes_treeview: gtk::TreeView = builder.object("color_schemes_treeview").unwrap();
 
-    // let rules_treestore = gtk::TreeStore::new(&[
-    //     glib::Type::BOOL,
-    //     glib::Type::U64,
-    //     String::static_type(),
-    //     String::static_type(),
-    //     String::static_type(),
-    //     String::static_type(),
-    // ]);
+    drawing_area_color_scheme.connect_draw(
+        move |da: &gtk::DrawingArea, context: &cairo::Context| {
+            let _ = paint_gradient(
+                context,
+                da.allocated_width() as f64,
+                da.allocated_height() as f64,
+            );
 
-    // rules_treeview.set_model(Some(&rules_treestore));
+            Inhibit(true)
+        },
+    );
+
+    let color_schemes_treestore = gtk::TreeStore::new(&[
+        glib::Type::U64,
+        String::static_type(),
+        String::static_type(),
+    ]);
+
+    color_schemes_treeview.set_model(Some(&color_schemes_treestore));
 
     // // register actions
     // let add_rule = gio::SimpleAction::new("add-rule", None);
@@ -430,125 +495,161 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
     //     .resizable(false)
     //     .build();
 
-    // let index_column = TreeViewColumn::builder()
-    //     .title("#")
-    //     .sizing(gtk::TreeViewColumnSizing::Autosize)
-    //     .resizable(false)
-    //     .build();
+    let index_column = TreeViewColumn::builder()
+        .title("#")
+        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .resizable(false)
+        .build();
 
-    // let sensor_column = TreeViewColumn::builder()
-    //     .title("Sensor")
-    //     .sizing(gtk::TreeViewColumnSizing::Autosize)
-    //     .build();
+    let type_column = TreeViewColumn::builder()
+        .title("Type")
+        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .build();
 
-    // let selector_column = TreeViewColumn::builder()
-    //     .title("Selector")
-    //     .sizing(gtk::TreeViewColumnSizing::Autosize)
-    //     .resizable(true)
-    //     .build();
+    let name_column = TreeViewColumn::builder()
+        .title("Name")
+        .sizing(gtk::TreeViewColumnSizing::Autosize)
+        .resizable(true)
+        .build();
 
-    // let action_column = TreeViewColumn::builder().title("Action").build();
-
-    // let metadata_column = TreeViewColumn::builder().title("Metadata").build();
-
-    // let cell_renderer_toggle = gtk::CellRendererToggle::new();
-    // let cell_renderer_text = gtk::CellRendererText::new();
-
-    // cell_renderer_toggle.connect_toggled(clone!(@weak builder, @weak rules_treeview => move |_cr, p| {
-    //         let rules_treestore: gtk::TreeStore = rules_treeview.model().unwrap().downcast::<gtk::TreeStore>().unwrap();
-
-    //         let value = rules_treestore.value(&rules_treestore.iter(&p).unwrap(), 0).get::<bool>().unwrap();
-    //         rules_treestore.set_value(&rules_treestore.iter(&p).unwrap(), 0, &(!value).to_value());
-
-    //         transmit_rules_to_process_monitor(&builder).unwrap_or_else(|e| tracing::error!("{}", e));
-    //     }));
+    let cell_renderer_text = gtk::CellRendererText::new();
 
     // gtk::prelude::CellLayoutExt::pack_start(&enabled_column, &cell_renderer_toggle, false);
-    // gtk::prelude::CellLayoutExt::pack_start(&index_column, &cell_renderer_text, false);
-    // gtk::prelude::CellLayoutExt::pack_start(&sensor_column, &cell_renderer_text, false);
-    // gtk::prelude::CellLayoutExt::pack_start(&selector_column, &cell_renderer_text, true);
-    // gtk::prelude::CellLayoutExt::pack_start(&action_column, &cell_renderer_text, true);
-    // gtk::prelude::CellLayoutExt::pack_start(&metadata_column, &cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&index_column, &cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&type_column, &cell_renderer_text, false);
+    gtk::prelude::CellLayoutExt::pack_start(&name_column, &cell_renderer_text, true);
 
-    // rules_treeview
+    // color_schemes_treeview
     //     .columns()
     //     .iter()
-    //     .for_each(clone!(@weak rules_treeview => move |c| {
-    //         rules_treeview.remove_column(c);
+    //     .for_each(clone!(@weak color_schemes_treeview => move |c| {
+    //         color_schemes_treeview.remove_column(c);
     //     }));
 
-    // rules_treeview.insert_column(&enabled_column, 0);
-    // rules_treeview.insert_column(&index_column, 1);
-    // rules_treeview.insert_column(&sensor_column, 2);
-    // rules_treeview.insert_column(&selector_column, 3);
-    // rules_treeview.insert_column(&action_column, 4);
-    // rules_treeview.insert_column(&metadata_column, 5);
+    color_schemes_treeview.insert_column(&index_column, 0);
+    color_schemes_treeview.insert_column(&type_column, 1);
+    color_schemes_treeview.insert_column(&name_column, 2);
 
-    // gtk::prelude::TreeViewColumnExt::add_attribute(
-    //     &enabled_column,
-    //     &cell_renderer_toggle,
-    //     "active",
-    //     0,
-    // );
-    // gtk::prelude::TreeViewColumnExt::add_attribute(&index_column, &cell_renderer_text, "text", 1);
-    // gtk::prelude::TreeViewColumnExt::add_attribute(&sensor_column, &cell_renderer_text, "text", 2);
-    // gtk::prelude::TreeViewColumnExt::add_attribute(
-    //     &selector_column,
-    //     &cell_renderer_text,
-    //     "text",
-    //     3,
-    // );
-    // gtk::prelude::TreeViewColumnExt::add_attribute(&action_column, &cell_renderer_text, "text", 4);
-    // gtk::prelude::TreeViewColumnExt::add_attribute(
-    //     &metadata_column,
-    //     &cell_renderer_text,
-    //     "text",
-    //     5,
-    // );
+    gtk::prelude::TreeViewColumnExt::add_attribute(&index_column, &cell_renderer_text, "text", 0);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&type_column, &cell_renderer_text, "text", 1);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&name_column, &cell_renderer_text, "text", 2);
 
-    // // update the rules view or show an error notification
-    // update_rules_view(builder).unwrap_or_else(
-    //     clone!(@weak notification_box,@weak rules_box => move |_e| {
-    //         notification_box.show_now();
-    //         rules_box.hide();
-    //     }),
-    // );
+    // selection changed handler
+    color_schemes_treeview
+        .selection()
+        .connect_changed(move |sel| {
+            if let Some((model, selection)) = sel.selected() {
+                if let Ok(name) = model.value(&selection, 2).get::<String>() {
+                    match name.as_str() {
+                        // stock-gradients
+                        "rainbow-smooth" => {
+                            let gradient = colorgrad::rainbow();
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
 
-    // timers::register_timer(
-    //     timers::PROCESS_MONITOR_TIMER_ID,
-    //     TimerMode::ActiveStackPage(Pages::ColorSchemes as u8),
-    //     1000,
-    //     clone!(@weak builder => @default-return Ok(()), move || {
-    //         let _result = update_rules_view(&builder).map_err(|e| tracing::error!("Could not poll eruption-process-monitor ruleset: {e}"));
+                            drawing_area_color_scheme.queue_draw();
+                        }
 
-    //         Ok(())
-    //     }),
-    // )?;
+                        "sinebow-smooth" => {
+                            let gradient = colorgrad::sinebow();
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                            drawing_area_color_scheme.queue_draw();
+                        }
+
+                        "spectral-smooth" => {
+                            let gradient = colorgrad::spectral();
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                            drawing_area_color_scheme.queue_draw();
+                        }
+
+                        "rainbow-sharp" => {
+                            let gradient = colorgrad::rainbow().sharp(5, 0.15);
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                            drawing_area_color_scheme.queue_draw();
+                        }
+
+                        "sinebow-sharp" => {
+                            let gradient = colorgrad::sinebow().sharp(5, 0.15);
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                            drawing_area_color_scheme.queue_draw();
+                        }
+
+                        "spectral-sharp" => {
+                            let gradient = colorgrad::spectral().sharp(5, 0.15);
+                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                            drawing_area_color_scheme.queue_draw();
+                        }
+
+                        // user-defined color-schemes
+                        _ => match dbus_client::get_color_scheme(&name) {
+                            Ok(color_scheme) => {
+                                match colorgrad::CustomGradient::new()
+                                    .mode(BlendMode::LinearRgb)
+                                    .colors(&color_scheme.colors)
+                                    .build()
+                                {
+                                    Ok(custom_gradient) => {
+                                        *SELECTED_COLOR_SCHEME.write() = Some(custom_gradient);
+                                        drawing_area_color_scheme.queue_draw();
+                                    }
+
+                                    Err(e) => {
+                                        tracing::error!(
+                                            "Could not instantiate a color scheme: {}",
+                                            e
+                                        );
+                                        notifications::error(&format!(
+                                            "Could not instantiate a color scheme: {}",
+                                            e
+                                        ));
+                                    }
+                                }
+                            }
+
+                            Err(e) => {
+                                tracing::error!("Could not load color scheme: {}", e);
+                                notifications::error(&format!(
+                                    "Could not load color scheme: {}",
+                                    e
+                                ));
+                            }
+                        },
+                    }
+                }
+            }
+        });
+
+    // update the color schemes view or show an error notification
+    update_color_schemes_view(builder).unwrap_or_else(
+        clone!(@weak notification_box,@weak color_schemes_box => move |_e| {
+            notification_box.show_now();
+            color_schemes_box.hide();
+        }),
+    );
+
+    timers::register_timer(
+        timers::COLOR_SCHEMES_TIMER_ID,
+        TimerMode::ActiveStackPage(Pages::ColorSchemes as u8),
+        1000,
+        clone!(@weak builder => @default-return Ok(()), move || {
+            let _result = update_color_schemes_view(&builder).map_err(|e| tracing::error!("Could not poll color schemes: {e}"));
+
+            Ok(())
+        }),
+    )?;
 
     Ok(())
 }
 
-/// Initialize page "Process Monitor"
+/// Initialize page "Color Schemes"
 pub fn update_color_schemes_page(_builder: &gtk::Builder) -> Result<()> {
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
     // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
-
-    // let rules_box: gtk::Box = builder.object("rules_box").unwrap();
-
-    // // let restart_process_monitor_button: gtk::Button = builder
-    // //     .object("restart_process_monitor_button_global")
-    // //     .unwrap();
-
-    // // let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
-
-    // // update the rules view or show an error notification
-    // update_rules_view(builder).unwrap_or_else(
-    //     clone!(@weak notification_box, @strong rules_box => move |_e| {
-    //         notification_box.show_now();
-    //         rules_box.hide();
-    //     }),
-    // );
 
     Ok(())
 }
