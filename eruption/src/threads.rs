@@ -849,23 +849,11 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                 break Ok(());
             }
 
-            // do not render while we are reloading a profile
-            if crate::CURRENTLY_RELOADING_PROFILE.load(Ordering::SeqCst) {
-                thread::sleep(Duration::from_millis(5));
-                continue;
-            }
-
             match dev_io_rx.recv() {
                 Ok(message) => match message {
                     DeviceAction::RenderNow  => {
                         let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
                         if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
-                            // do not render while we are reloading a profile
-                            if crate::CURRENTLY_RELOADING_PROFILE.load(Ordering::SeqCst) {
-                                thread::sleep(Duration::from_millis(5));
-                                continue;
-                            }
-
                             // instruct the Lua VMs to realize their color maps, but only if at least one VM
                             // submitted a new color map (performed a frame generation increment)
 

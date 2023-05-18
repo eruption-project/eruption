@@ -204,9 +204,6 @@ lazy_static! {
     /// Global "driver maturity level" param
     pub static ref DRIVER_MATURITY_LEVEL: Arc<RwLock<MaturityLevel>> = Arc::new(RwLock::new(MaturityLevel::Stable));
 
-    /// Global "enable SDK support" flag
-    pub static ref SDK_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
-
     /// Global "enable Linux Userspace LEDs support" flag
     pub static ref ULEDS_SUPPORT_ACTIVE: AtomicBool = AtomicBool::new(false);
 
@@ -1024,7 +1021,8 @@ fn run_main_loop(
 
                 let active_profile = ACTIVE_PROFILE.read();
                 let profile_clone = active_profile.clone();
-                // ACTIVE_PROFILE.lock() needs to be released here, or otherwise we will deadlock
+
+                // ACTIVE_PROFILE lock needs to be released here, or otherwise we may deadlock
                 drop(active_profile);
 
                 if let Some(profile) = &profile_clone {
