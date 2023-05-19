@@ -383,8 +383,8 @@ mod backends {
                             info!("Audio proxy connected");
 
                             // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
-                            socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
-                            socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+                            socket.set_send_buffer_size(constants::NET_AUDIO_BUFFER_CAPACITY)?;
+                            socket.set_recv_buffer_size(constants::NET_AUDIO_BUFFER_CAPACITY)?;
 
                             // if the newly connected proxy has been restarted while we were already
                             // processing audio samples, we have to notify it now to resume

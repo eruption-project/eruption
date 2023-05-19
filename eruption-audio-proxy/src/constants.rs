@@ -26,7 +26,7 @@ pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 pub const AUDIO_BUFFER_SIZE: usize = 4096 - 16;
 
 /// The capacity of the buffer used for sending audio samples/commands over a socket
-pub const NET_BUFFER_CAPACITY: usize = 4096;
+pub const NET_AUDIO_BUFFER_CAPACITY: usize = 4096;
 
 // /// Timeout of D-Bus operations
 // pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;

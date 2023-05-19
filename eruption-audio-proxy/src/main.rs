@@ -196,8 +196,8 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                 info!("Connected to Eruption daemon");
 
                 // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
-                socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
-                socket.set_recv_buffer_size(constants::NET_BUFFER_CAPACITY * 2)?;
+                socket.set_send_buffer_size(constants::NET_AUDIO_BUFFER_CAPACITY)?;
+                socket.set_recv_buffer_size(constants::NET_AUDIO_BUFFER_CAPACITY)?;
 
                 let mut last_status_update = Instant::now();
                 let mut last_device_update = Instant::now()
@@ -278,7 +278,8 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                             trace!("Receiving a protocol packet...");
 
                             // read data
-                            let mut tmp = [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
+                            let mut tmp =
+                                [MaybeUninit::zeroed(); constants::NET_AUDIO_BUFFER_CAPACITY];
                             match socket.recv(&mut tmp) {
                                 Ok(0) => {
                                     info!("Eruption daemon disconnected");
