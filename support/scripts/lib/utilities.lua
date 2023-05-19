@@ -73,19 +73,31 @@ end
 
 -- map the key index to an index into the unified canvas
 function key_index_to_canvas(key_index)
-    index = n2(position(rows_topology, key_index), 0)
+    -- index = n2(position(rows_topology, key_index), 0)
 
-    local x = n(trunc(index % max_keys_per_row)) - 1
-    local y = n(trunc(round(index / max_keys_per_row))) - 1
+    -- local x = n(trunc(index % max_keys_per_row)) - 1
+    -- local y = n(trunc(round(index / max_keys_per_row))) - 1
 
-    local scale_x = 1 -- canvas_width / max_keys_per_row
-    local scale_y = 1 -- canvas_height / max_keys_per_col
+    -- local scale_x = 1 -- canvas_width / max_keys_per_row
+    -- local scale_y = 1 -- canvas_height / max_keys_per_col
 
-    local result = n(trunc((canvas_width * y * scale_y) + (x * scale_x)))
+    -- local result = n(trunc((canvas_width * y * scale_y) + (x * scale_x)))
 
     -- debug("x: " .. x .. "  y: " .. y .. " result: " .. result)
 
-    return result
+    -- local start_index = keyboard_zone.y * canvas_width + keyboard_zone.x
+
+    local x = key_index % canvas_width
+    local y = key_index / canvas_width
+
+    if keyboard_zone ~= nil then
+        local index = n(canvas_width * (y + keyboard_zone.y) +
+                            (x + keyboard_zone.x))
+
+        return index
+    else
+        return 0
+    end
 end
 
 function position(table, val)

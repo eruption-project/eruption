@@ -26,6 +26,7 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 use parking_lot::RwLock;
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
@@ -1158,7 +1159,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
-            if let Some(driver) = DRIVERS.read().iter().find(|&d| {
+            if let Some(driver) = DRIVERS.read().par_iter().find_any(|&d| {
                 d.get_usb_vid() == device_info.vendor_id()
                     && d.get_usb_pid() == device_info.product_id()
             }) {
@@ -1456,7 +1457,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
-            if let Some(driver) = DRIVERS.read().iter().find(|&d| {
+            if let Some(driver) = DRIVERS.read().par_iter().find_any(|&d| {
                 d.get_usb_vid() == device_info.vendor_id()
                     && d.get_usb_pid() == device_info.product_id()
             }) {

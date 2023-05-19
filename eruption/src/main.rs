@@ -32,6 +32,7 @@ use i18n_embed::{
 };
 use lazy_static::lazy_static;
 use parking_lot::{Condvar, Mutex, RwLock};
+use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use rust_embed::RustEmbed;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -46,7 +47,6 @@ use std::{
     process,
     sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering},
 };
-use tokio::join;
 use tracing::*;
 use util::ratelimited;
 
@@ -1822,251 +1822,275 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             info!("Enumerating connected devices...");
 
             if let Ok(devices) = hwdevices::probe_devices() {
-                // initialize keyboard devices
-                for (index, device) in devices.0.iter().enumerate() {
-                    init_keyboard_device(device);
+                thread::scope(|s| -> Result<()> {
+                    thread::Builder::new()
+                        .name("init:kbd/all".to_string())
+                        .spawn_scoped(s, move || {
+                            // initialize keyboard devices
+                            devices.0.par_iter().enumerate().for_each_init(
+                                || {},
+                                |_, (index, device)| {
+                                    init_keyboard_device(device);
 
-                    let usb_vid = device.read().get_usb_vid();
-                    let usb_pid = device.read().get_usb_pid();
+                                    let usb_vid = device.read().get_usb_vid();
+                                    let usb_pid = device.read().get_usb_pid();
 
-                    // spawn a thread to handle keyboard input
-                    info!("Spawning keyboard input thread...");
+                                    // spawn a thread to handle keyboard input
+                                    info!("Spawning keyboard input thread...");
 
-                    let (kbd_tx, kbd_rx) = unbounded();
-                    threads::spawn_keyboard_input_thread(
-                        kbd_tx.clone(),
-                        device.clone(),
-                        index,
-                        usb_vid,
-                        usb_pid,
-                    )
-                    .unwrap_or_else(|e| {
+                                    let (kbd_tx, kbd_rx) = unbounded();
+                                    threads::spawn_keyboard_input_thread(
+                                        kbd_tx.clone(),
+                                        device.clone(),
+                                        index,
+                                        usb_vid,
+                                        usb_pid,
+                                    )
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not spawn a thread: {}", e);
+                                        panic!()
+                                    });
+
+                                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
+                                    crate::KEYBOARD_DEVICES.write().push(device.clone());
+                                },
+                            )
+                        })?;
+
+                    thread::Builder::new()
+                        .name("init:mice/all".to_string())
+                        .spawn_scoped(s, move  || {
+                            // initialize mouse devices
+                            devices.1.par_iter().enumerate().for_each_init(
+                                || {},
+                                |_, (index, device)| {
+                                    // enable mouse input
+                                    if enable_mouse {
+                                        init_mouse_device(device);
+
+                                        let usb_vid = device.read().get_usb_vid();
+                                        let usb_pid = device.read().get_usb_pid();
+
+                                        let (mouse_tx, mouse_rx) = unbounded();
+                                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+
+                                        // spawn a thread to handle mouse input
+                                        info!("Spawning mouse input thread...");
+
+                                        spawn_mouse_input_thread(
+                                            mouse_tx.clone(),
+                                            device.clone(),
+                                            index,
+                                            usb_vid,
+                                            usb_pid,
+                                        )
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not spawn a thread: {}", e);
+                                            panic!()
+                                        });
+
+                                        // spawn a thread to handle possible sub-devices
+                                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                                            && device.read().has_secondary_device()
+                                        {
+                                            info!("Spawning mouse input thread for secondary sub-device...");
+                                            spawn_mouse_input_thread_secondary(
+                                                mouse_secondary_tx,
+                                                device.clone(),
+                                                index,
+                                                usb_vid,
+                                                usb_pid,
+                                            )
+                                            .unwrap_or_else(|e| {
+                                                error!("Could not spawn a thread: {}", e);
+                                                panic!()
+                                            });
+                                        } */
+
+                                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
+                                        crate::MOUSE_DEVICES.write().push(device.clone());
+                                    } else {
+                                        info!("Found mouse device, but mouse support is DISABLED by configuration");
+                                    }
+                                },
+                            )
+                        })?;
+
+                    thread::Builder::new()
+                        .name("init:misc/all".to_string())
+                        .spawn_scoped(s, || {
+                            // initialize misc devices
+                            devices.2.par_iter().enumerate().for_each_init(
+                                || {},
+                                move |_, (index, device)| {
+                                    init_misc_device(device);
+
+                                    if device.read().has_input_device() {
+                                        let usb_vid = device.read().get_usb_vid();
+                                        let usb_pid = device.read().get_usb_pid();
+
+                                        // spawn a thread to handle keyboard input
+                                        info!("Spawning misc device input thread...");
+
+                                        let (misc_tx, misc_rx) = unbounded();
+                                        threads::spawn_misc_input_thread(
+                                            misc_tx.clone(),
+                                            device.clone(),
+                                            index,
+                                            usb_vid,
+                                            usb_pid,
+                                        )
+                                        .unwrap_or_else(
+                                            |e| {
+                                                error!("Could not spawn a thread: {}", e);
+                                                panic!()
+                                            },
+                                        );
+
+                                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                    } else {
+                                        // insert an unused rx
+                                        let (_misc_tx, misc_rx) = unbounded();
+                                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                    }
+
+                                    crate::MISC_DEVICES.write().push(device.clone());
+                                },
+                            );
+                        })?;
+
+                    info!("Device enumeration completed");
+
+                    if crate::KEYBOARD_DEVICES.read().is_empty()
+                        && crate::MOUSE_DEVICES.read().is_empty()
+                        && crate::MISC_DEVICES.read().is_empty()
+                    {
+                        warn!("No supported devices found!");
+                    }
+
+                    info!("Performing late initializations...");
+
+                    // load and initialize global runtime state (late init)
+                    info!("Loading saved device state...");
+                    state::init_global_runtime_state_late()
+                        .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
+                    // initialize the Linux uleds interface
+                    info!("Initializing Linux Userspace LEDs interface...");
+                    plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
+                        warn!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
+
+                    // initialize the D-Bus API
+                    info!("Initializing D-Bus API...");
+                    let (dbus_tx, dbus_rx) = unbounded();
+                    let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
                         error!("Could not spawn a thread: {}", e);
                         panic!()
                     });
 
-                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
-                    crate::KEYBOARD_DEVICES.write().push(device.clone());
-                }
+                    *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
 
-                // initialize mouse devices
-                for (index, device) in devices.1.iter().enumerate() {
-                    // enable mouse input
-                    if enable_mouse {
-                        init_mouse_device(device);
-
-                        let usb_vid = device.read().get_usb_vid();
-                        let usb_pid = device.read().get_usb_pid();
-
-                        let (mouse_tx, mouse_rx) = unbounded();
-                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
-
-                        // spawn a thread to handle mouse input
-                        info!("Spawning mouse input thread...");
-
-                        spawn_mouse_input_thread(
-                            mouse_tx.clone(),
-                            device.clone(),
-                            index,
-                            usb_vid,
-                            usb_pid,
-                        )
+                    let (fsevents_tx, fsevents_rx) = unbounded();
+                    register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
                         .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
+                            error!("Could not register file changes watcher: {}", e)
                         });
 
-                        // spawn a thread to handle possible sub-devices
-                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
-                            && device.read().has_secondary_device()
-                        {
-                            info!("Spawning mouse input thread for secondary sub-device...");
-                            spawn_mouse_input_thread_secondary(
-                                mouse_secondary_tx,
-                                device.clone(),
-                                index,
-                                usb_vid,
-                                usb_pid,
-                            )
+                    // initialize the device I/O thread
+                    info!("Initializing device I/O thread...");
+                    let (dev_io_tx, dev_io_rx) = unbounded();
+                    threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
+                        error!("Could not spawn the render thread: {}", e);
+                        panic!()
+                    });
+
+                    *DEV_IO_TX.write() = Some(dev_io_tx.clone());
+
+                    info!("Late initializations completed");
+
+                    info!("Startup completed");
+
+                    'OUTER_LOOP: loop {
+                        info!("Entering the main loop now...");
+
+                        let mut errors_present = false;
+
+                        // enter the main loop
+                        run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx)
                             .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
+                                warn!("Left the main loop due to an irrecoverable error: {}", e);
+                                errors_present = true;
                             });
-                        } */
 
-                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
-                        crate::MOUSE_DEVICES.write().push(device.clone());
-                    } else {
-                        info!("Found mouse device, but mouse support is DISABLED by configuration");
-                    }
-                }
+                        if !errors_present {
+                            info!("Main loop terminated gracefully");
+                        }
 
-                // initialize misc devices
-                for (index, device) in devices.2.iter().enumerate() {
-                    init_misc_device(device);
+                        if crate::QUIT.load(Ordering::SeqCst) {
+                            break 'OUTER_LOOP;
+                        }
 
-                    if device.read().has_input_device() {
-                        let usb_vid = device.read().get_usb_vid();
-                        let usb_pid = device.read().get_usb_pid();
+                        // wait a few miliseconds to give devices time to settle
+                        thread::sleep(Duration::from_millis(50));
 
-                        // spawn a thread to handle keyboard input
-                        info!("Spawning misc device input thread...");
-
-                        let (misc_tx, misc_rx) = unbounded();
-                        threads::spawn_misc_input_thread(
-                            misc_tx.clone(),
-                            device.clone(),
-                            index,
-                            usb_vid,
-                            usb_pid,
-                        )
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
-
-                        crate::MISC_DEVICES_RX.write().push(misc_rx);
-                    } else {
-                        // insert an unused rx
-                        let (_misc_tx, misc_rx) = unbounded();
-                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                        // remove disconnected or failed devices
+                        remove_failed_devices()?;
                     }
 
-                    crate::MISC_DEVICES.write().push(device.clone());
-                }
+                    events::notify_observers(events::Event::DaemonShutdown)?;
 
-                info!("Device enumeration completed");
+                    // we left the main loop, so send a final message to the running Lua VMs
+                    info!("Shutting down all Lua VMs now...");
 
-                if crate::KEYBOARD_DEVICES.read().is_empty()
-                    && crate::MOUSE_DEVICES.read().is_empty()
-                    && crate::MISC_DEVICES.read().is_empty()
-                {
-                    warn!("No supported devices found!");
-                }
+                    *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.read().len();
 
-                info!("Performing late initializations...");
-
-                // load and initialize global runtime state (late init)
-                info!("Loading saved device state...");
-                state::init_global_runtime_state_late()
-                    .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
-
-                // initialize the Linux uleds interface
-                info!("Initializing Linux Userspace LEDs interface...");
-                plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
-                    warn!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
-
-                // initialize the D-Bus API
-                info!("Initializing D-Bus API...");
-                let (dbus_tx, dbus_rx) = unbounded();
-                let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
-
-                *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
-
-                let (fsevents_tx, fsevents_rx) = unbounded();
-                register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
-                    .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
-
-                // initialize the device I/O thread
-                info!("Initializing device I/O thread...");
-                let (dev_io_tx, dev_io_rx) = unbounded();
-                threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
-                    error!("Could not spawn the render thread: {}", e);
-                    panic!()
-                });
-
-                *DEV_IO_TX.write() = Some(dev_io_tx.clone());
-
-                info!("Late initializations completed");
-
-                info!("Startup completed");
-
-                'OUTER_LOOP: loop {
-                    info!("Entering the main loop now...");
-
-                    let mut errors_present = false;
-
-                    // enter the main loop
-                    run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx).unwrap_or_else(
-                        |e| {
-                            warn!("Left the main loop due to an irrecoverable error: {}", e);
-                            errors_present = true;
-                        },
-                    );
-
-                    if !errors_present {
-                        info!("Main loop terminated gracefully");
+                    for lua_tx in LUA_TXS.read().iter() {
+                        lua_tx
+                            .send(script::Message::Quit(0))
+                            .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
                     }
 
-                    if crate::QUIT.load(Ordering::SeqCst) {
-                        break 'OUTER_LOOP;
+                    // wait until all Lua VMs completed the event handler
+                    loop {
+                        let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
+
+                        let result = UPCALL_COMPLETED_ON_QUIT
+                            .1
+                            .wait_for(&mut pending, Duration::from_millis(2500));
+
+                        if result.timed_out() {
+                            warn!("Timed out while waiting for a Lua VM to shut down");
+                            break;
+                        }
+
+                        if *pending == 0 {
+                            break;
+                        }
                     }
 
-                    // wait a few miliseconds to give devices time to settle
-                    thread::sleep(Duration::from_millis(50));
+                    // store plugin state to disk
+                    plugins::PersistencePlugin::store_persistent_data()
+                        .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
 
-                    // remove disconnected or failed devices
-                    remove_failed_devices()?;
-                }
+                    // save state
+                    info!("Saving global runtime state...");
+                    state::save_runtime_state()
+                        .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
 
-                events::notify_observers(events::Event::DaemonShutdown)?;
+                    // save color-schemes
+                    state::save_color_schemes()
+                        .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
 
-                // we left the main loop, so send a final message to the running Lua VMs
-                info!("Shutting down all Lua VMs now...");
+                    // close all managed devices
+                    info!("Closing all devices now...");
 
-                *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.read().len();
+                    thread::sleep(Duration::from_millis(
+                        constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
+                    ));
 
-                for lua_tx in LUA_TXS.read().iter() {
-                    lua_tx
-                        .send(script::Message::Quit(0))
-                        .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
-                }
-
-                // wait until all Lua VMs completed the event handler
-                loop {
-                    let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
-
-                    let result = UPCALL_COMPLETED_ON_QUIT
-                        .1
-                        .wait_for(&mut pending, Duration::from_millis(2500));
-
-                    if result.timed_out() {
-                        warn!("Timed out while waiting for a Lua VM to shut down");
-                        break;
-                    }
-
-                    if *pending == 0 {
-                        break;
-                    }
-                }
-
-                // store plugin state to disk
-                plugins::PersistencePlugin::store_persistent_data()
-                    .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
-
-                // save state
-                info!("Saving global runtime state...");
-                state::save_runtime_state()
-                    .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
-
-                // save color-schemes
-                state::save_color_schemes()
-                    .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
-
-                // close all managed devices
-                info!("Closing all devices now...");
-
-                thread::sleep(Duration::from_millis(
-                    constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
-                ));
-
-                // set LEDs of all keyboards to a known final state, then close all associated devices
-                let shutdown_keyboards = async {
+                    // set LEDs of all keyboards to a known final state, then close all associated devices
                     for device in crate::KEYBOARD_DEVICES.read().iter() {
                         device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
@@ -2076,10 +2100,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             warn!("Could not close the device: {}", e);
                         });
                     }
-                };
 
-                // set LEDs of all mice to a known final state, then close all associated devices
-                let shutdown_mice = async {
+                    // set LEDs of all mice to a known final state, then close all associated devices
                     for device in crate::MOUSE_DEVICES.read().iter() {
                         device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
@@ -2089,10 +2111,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             warn!("Could not close the device: {}", e);
                         });
                     }
-                };
 
-                // set LEDs of all misc devices to a known final state, then close all associated devices
-                let shutdown_misc = async {
+                    // set LEDs of all misc devices to a known final state, then close all associated devices
                     for device in crate::MISC_DEVICES.read().iter() {
                         device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
@@ -2102,9 +2122,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             warn!("Could not close the device: {}", e);
                         });
                     }
-                };
 
-                join!(shutdown_keyboards, shutdown_mice, shutdown_misc);
+                    Ok(())
+                })?;
             } else {
                 error!("Could not enumerate connected devices");
             }
