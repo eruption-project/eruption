@@ -95,7 +95,7 @@ tracing-subscriber = { version = "0.3.17", features = [
 ] }
 console-subscriber = { version = "0.1.9", features = ["parking_lot"] }
 flume = "0.10.14"
-toml = "0.7.3"
+toml = "0.7.4"
 thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"

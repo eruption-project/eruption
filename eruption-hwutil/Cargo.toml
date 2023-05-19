@@ -47,7 +47,7 @@ clap = { version = "4.2.7", features = ["derive"] }
 clap_complete = "4.2.3"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 colored = "2.0.0"
-console = "0.15.5"
+console = "0.15.6"
 libc = "0.2.144"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
