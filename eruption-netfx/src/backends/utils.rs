@@ -24,7 +24,6 @@ use crate::constants;
 #[cfg(feature = "backend-x11")]
 use crate::backends::x11::xwrap::Image;
 
-use crate::hwdevices::KeyboardDevice;
 use image::{imageops::FilterType, GenericImageView};
 
 #[allow(unused_imports)]
@@ -37,7 +36,7 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Converts an image buffer to a Network FX command stream
 #[allow(dead_code)]
-pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<String> {
+pub fn process_image_buffer(buffer: &[u8]) -> Result<String> {
     let mut result = String::new();
 
     let img = image::load_from_memory(buffer)?;
@@ -67,7 +66,7 @@ pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<S
 
 /// Loads and converts an image file to a Network FX command stream
 #[allow(dead_code)]
-pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice) -> Result<String> {
+pub fn process_image_file<P: AsRef<Path>>(filename: P) -> Result<String> {
     let mut result = String::new();
 
     let filename = filename.as_ref();
@@ -99,7 +98,7 @@ pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice)
 
 /// Converts an image buffer to a Network FX command stream
 #[cfg(feature = "backend-x11")]
-pub fn process_screenshot(image: &Image, _device: &KeyboardDevice) -> Result<String> {
+pub fn process_screenshot(image: &Image) -> Result<String> {
     let buffer = image.into_image_buffer().unwrap();
     let img = DynamicImage::ImageRgba8(buffer);
     let mut result = String::new();

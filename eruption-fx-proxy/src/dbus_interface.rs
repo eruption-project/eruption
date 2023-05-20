@@ -210,7 +210,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;
@@ -219,7 +219,7 @@ mod perms {
         let polkit_proxy = conn.with_proxy(
             "org.freedesktop.PolicyKit1",
             "/org/freedesktop/PolicyKit1/Authority",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE as u64),
         );
 
         let result = 'AUTH_LOOP: loop {
@@ -261,7 +261,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;
@@ -270,7 +270,7 @@ mod perms {
         let polkit_proxy = conn.with_proxy(
             "org.freedesktop.PolicyKit1",
             "/org/freedesktop/PolicyKit1/Authority",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE as u64),
         );
 
         let result = 'AUTH_LOOP: loop {
@@ -312,7 +312,7 @@ mod perms {
         let dbus_proxy = conn.with_proxy(
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus/Bus",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
         );
 
         let pid: u32 = dbus_proxy.get_connection_unix_process_id(sender)?;
@@ -321,7 +321,7 @@ mod perms {
         let polkit_proxy = conn.with_proxy(
             "org.freedesktop.PolicyKit1",
             "/org/freedesktop/PolicyKit1/Authority",
-            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE),
+            Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS_INTERACTIVE as u64),
         );
 
         let result = 'AUTH_LOOP: loop {

@@ -20,26 +20,28 @@
 */
 
 use crate::constants;
-use crate::hwdevices::KeyboardDevice;
 use image::{imageops::FilterType, GenericImageView};
 use std::path::Path;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-/// Converts an image buffer to a Network FX command stream
-pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<String> {
+/// Post-processing and conversion of an image buffer to be used with the Eruption SDK
+pub fn process_image_buffer(buffer: Vec<u8>) -> Result<String> {
     let mut result = String::new();
 
-    let img = image::load_from_memory(buffer)?;
+    // let dimensions = image::image_dimensions(filename)?;
+    let img = image::load_from_memory(&buffer)?;
+
+    // resize to match the Eruption virtual canvas; this may change the aspect-ratio of the image
     let img = img.resize_exact(
         constants::CANVAS_WIDTH as u32,
         constants::CANVAS_HEIGHT as u32,
-        FilterType::Lanczos3,
+        FilterType::Nearest,
     );
 
     for y in 0..constants::CANVAS_HEIGHT {
         for x in 0..constants::CANVAS_WIDTH {
-            let index: usize = x + (y * (constants::CANVAS_WIDTH));
+            let index: usize = x + (y * constants::CANVAS_WIDTH);
 
             let pixel = img.get_pixel(x as u32, y as u32);
 
@@ -56,7 +58,7 @@ pub fn process_image_buffer(buffer: &[u8], _device: &KeyboardDevice) -> Result<S
 }
 
 /// Loads and converts an image file to a Network FX command stream
-pub fn process_image_file<P: AsRef<Path>>(filename: P, _device: &KeyboardDevice) -> Result<String> {
+pub fn process_image_file<P: AsRef<Path>>(filename: P) -> Result<String> {
     let mut result = String::new();
 
     let filename = filename.as_ref();

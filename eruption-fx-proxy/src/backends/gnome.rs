@@ -80,7 +80,7 @@ impl Backend for GnomeBackend {
         let _screenshot_proxy = conn.with_proxy(
             "org.gnome.Shell.Screenshot",
             "/org/gnome/Shell/Screenshot",
-            Duration::from_millis(constants::DBUS_TIMEOUT_MILLIS),
+            Duration::from_millis(constants::DBUS_TIMEOUT_MILLIS as u64),
         );
 
         /*

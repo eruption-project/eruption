@@ -19,12 +19,10 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use crate::{
-    dbus_client,
-    hwdevices::{self, KeyboardDevice},
-};
-use eruption_sdk::{canvas::Canvas, color::Color};
-use image::{imageops::FilterType, DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use eruption_sdk::canvas::Canvas;
+use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba};
+
+use crate::constants;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -34,44 +32,23 @@ pub enum UtilError {
     // InvalidArgument {},
 }
 
-/// Converts an image buffer to fit a specific device topology
-pub fn process_image_buffer(
-    buffer: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    device: &KeyboardDevice,
-) -> Result<Canvas> {
-    let mut result = Canvas::new();
-
+/// Post-processing and conversion of an image buffer to be used with the Eruption SDK
+pub fn process_image_buffer(buffer: ImageBuffer<Rgba<u8>, Vec<u8>>) -> Result<Canvas> {
     let img = DynamicImage::ImageRgba8(buffer);
+
+    // resize to match the Eruption virtual canvas; this may change the aspect-ratio of the image
     let img = img.resize_exact(
-        device.get_num_cols() as u32,
-        device.get_num_rows() as u32,
-        FilterType::Gaussian,
+        constants::CANVAS_WIDTH as u32,
+        constants::CANVAS_HEIGHT as u32,
+        FilterType::Nearest,
     );
 
-    let num_cols = device.get_num_cols();
-    let num_rows = device.get_num_rows();
-    let num_keys = device.get_num_keys();
-    let rows_topology = device.get_rows_topology();
+    // apply post-processing filters
+    // let img = img.adjust_contrast(1.25);
+    // let img = img.blur(4.0);
 
-    for x in 0..num_cols {
-        for y in 0..num_rows {
-            let key_index: usize =
-                *rows_topology.get(x + (y * (num_cols + 1))).unwrap_or(&0) as usize + 1;
-
-            if !(1..=num_keys).contains(&key_index) {
-                continue;
-            }
-
-            let pixel = img.get_pixel(x as u32, y as u32);
-
-            let r = pixel[0];
-            let g = pixel[1];
-            let b = pixel[2];
-            let a = pixel[3];
-
-            result[key_index] = Color::new(r, g, b, a);
-        }
-    }
+    // convert to a Eruption SDK canvas
+    let result = Canvas::from(img.into_bytes());
 
     Ok(result)
 }
@@ -93,14 +70,3 @@ pub fn process_image_buffer(
 //         *bg = color;
 //     }
 // }
-
-pub fn get_primary_keyboard_device() -> Result<KeyboardDevice> {
-    let (keyboards, _mice, _misc) = dbus_client::get_managed_devices()?;
-
-    let usb_vid = keyboards[0].0;
-    let usb_pid = keyboards[0].1;
-
-    let device = hwdevices::get_keyboard_device(usb_vid, usb_pid)?;
-
-    Ok(device)
-}

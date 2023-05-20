@@ -102,7 +102,7 @@ pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 pub const FADE_MILLIS: u64 = 1333;
 
 /// The capacity of the buffer used for exchanging control messages
-pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 2 + 64;
+pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 4 + 32;
 
 /// The capacity of the buffer used for receiving audio samples as well as control messages
 pub const NET_AUDIO_BUFFER_CAPACITY: usize = 4096;
@@ -145,3 +145,15 @@ pub const MAX_KEYS: usize = 144;
 
 /// Max. supported number of mouse buttons
 pub const MAX_MOUSE_BUTTONS: usize = 32;
+
+/// Default delay between images, used for animation mode of the eruption-fx-proxy daemon
+pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
+
+/// Default delay between screenshots, used for ambient mode of the eruption-fx-proxy daemon
+pub const DEFAULT_FRAME_DELAY_MILLIS: u64 = 37;
+
+/// Main loop delay of the eruption-fx-proxy daemon
+pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 199;
+
+/// Default X11 display used by the X11 sensor plugin of the eruption-fx-proxy daemon
+pub const DEFAULT_X11_DISPLAY: &str = ":0";

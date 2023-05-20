@@ -71,7 +71,7 @@ pub fn get_managed_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u
     let status_proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/status",
-        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS),
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
     let result = status_proxy.get_managed_devices()?;

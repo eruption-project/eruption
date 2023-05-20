@@ -23,10 +23,7 @@ use std::time::Duration;
 
 use dbus::blocking::Connection;
 
-use crate::{
-    constants,
-    hwdevices::{self, Keyboard},
-};
+use crate::constants;
 
 use super::{Backend, BackendData};
 
@@ -34,27 +31,17 @@ type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Clone)]
 pub struct GnomeBackend {
-    pub device: Option<Box<dyn Keyboard + Sync + Send>>,
-
     pub failed: bool,
 }
 
 impl GnomeBackend {
     pub fn new() -> Result<Self> {
-        Ok(Self {
-            device: None,
-            failed: true,
-        })
+        Ok(Self { failed: true })
     }
 }
 
 impl Backend for GnomeBackend {
     fn initialize(&mut self) -> Result<()> {
-        self.failed = true;
-
-        let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
-        self.device = Some(hwdevices::get_keyboard_device(&opts.model)?);
-
         // if we made it up to here, the initialization succeeded
         self.failed = false;
 
@@ -82,8 +69,6 @@ impl Backend for GnomeBackend {
     }
 
     fn poll(&mut self) -> Result<BackendData> {
-        let _device = self.device.as_ref().expect("Device is not initialized");
-
         // use screenshot::OrgGnomeShellScreenshot;
 
         let conn = Connection::new_session()?;

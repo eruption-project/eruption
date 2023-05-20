@@ -52,7 +52,6 @@ mod backends;
 mod constants;
 mod dbus_client;
 mod dbus_interface;
-mod hwdevices;
 mod util;
 
 #[derive(RustEmbed)]
@@ -187,7 +186,7 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
                     Err(_e) => (),
                 }
 
-                dbus.get_next_event_timeout(constants::DBUS_TIMEOUT_MILLIS as u32)
+                dbus.get_next_event_timeout(constants::DBUS_TIMEOUT_MILLIS)
                     .unwrap_or_else(|e| error!("Could not get the next D-Bus event: {}", e));
             }
         })?;
@@ -217,9 +216,6 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
         // let _status = connection.get_server_status()?;
 
-        // get device; used for topology information
-        let device = util::get_primary_keyboard_device()?;
-
         let mut canvas_cleared = false;
 
         // create a new canvas
@@ -236,12 +232,10 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
             }
 
             if ENABLE_AMBIENT_EFFECT.load(Ordering::SeqCst) {
-                // request a screenshot from the backend and convert the image to the device's topology
+                // request a screenshot from the backend and post-process the image
                 let image_buffer = backend.poll()?;
-                let result = util::process_image_buffer(image_buffer, &device)?;
+                let result = util::process_image_buffer(image_buffer)?;
 
-                // TODO: Implement blend code
-                // utils::blend(&mut canvas, &result);
                 canvas = result;
 
                 any_updates = true;

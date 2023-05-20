@@ -41,6 +41,28 @@ impl Canvas {
     }
 }
 
+impl From<&[u8]> for Canvas {
+    fn from(value: &[u8]) -> Self {
+        let data: Vec<Color> = value
+            .chunks(4)
+            .map(|v| Color::new(v[0], v[1], v[2], v[3]))
+            .collect();
+
+        Self { data }
+    }
+}
+
+impl From<Vec<u8>> for Canvas {
+    fn from(value: Vec<u8>) -> Self {
+        let data: Vec<Color> = value
+            .chunks(4)
+            .map(|v| Color::new(v[0], v[1], v[2], v[3]))
+            .collect();
+
+        Self { data }
+    }
+}
+
 impl ops::Index<usize> for Canvas {
     type Output = Color;
 

@@ -40,7 +40,6 @@ use tokio::time::Duration;
 
 mod backends;
 mod constants;
-mod hwdevices;
 mod util;
 
 #[derive(RustEmbed)]
@@ -90,9 +89,6 @@ pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
-
-    /// The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"
-    model: Option<String>,
 
     hostname: Option<String>,
     port: Option<u16>,
@@ -263,8 +259,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::Image { filename } => {
-            let device = hwdevices::get_keyboard_device(&opts.model)?;
-
             let address = format!(
                 "{}:{}",
                 opts.hostname
@@ -285,7 +279,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     let mut buffer = Vec::new();
                     let _len = reader.read_to_end(&mut buffer).await?;
 
-                    let commands = util::process_image_buffer(&buffer, &device)?;
+                    let commands = util::process_image_buffer(buffer)?;
 
                     // print and send the specified command
                     if opts.verbose > 0 {
@@ -307,7 +301,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     }
                 }
             } else {
-                let commands = util::process_image_file(&filename, &device)?;
+                let commands = util::process_image_file(&filename)?;
 
                 // print and send the specified command
                 if opts.verbose > 0 {
@@ -371,14 +365,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         println!("{}", &filename.path().to_string_lossy());
                     }
 
-                    let model = opts.model.clone();
                     let processed_images = processed_images.clone();
 
                     rayon::spawn(move || {
-                        let device =
-                            hwdevices::get_keyboard_device(&model).expect(&tr!("invalid-model"));
-
-                        let _result = util::process_image_file(filename.path(), &device)
+                        let _result = util::process_image_file(filename.path())
                             .map_err(|e| {
                                 eprintln!("{}", tr!("image-error", message = e.to_string()))
                             })

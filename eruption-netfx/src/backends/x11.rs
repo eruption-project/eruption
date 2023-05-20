@@ -20,13 +20,11 @@
 */
 
 use super::{Backend, BackendData};
-use crate::hwdevices::{self, Keyboard};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Clone)]
 pub struct X11Backend {
-    pub device: Option<Box<dyn Keyboard + Sync + Send>>,
     pub display: Option<xwrap::Display>,
 
     pub failed: bool,
@@ -35,7 +33,6 @@ pub struct X11Backend {
 impl X11Backend {
     pub fn new() -> Result<Self> {
         Ok(Self {
-            device: None,
             display: None,
             failed: true,
         })
@@ -44,11 +41,6 @@ impl X11Backend {
 
 impl Backend for X11Backend {
     fn initialize(&mut self) -> Result<()> {
-        self.failed = true;
-
-        let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
-
-        self.device = Some(hwdevices::get_keyboard_device(&opts.model)?);
         self.display = Some(xwrap::Display::open(None).unwrap());
 
         // if we made it up to here, the initialization succeeded
@@ -79,8 +71,6 @@ impl Backend for X11Backend {
 
     fn poll(&mut self) -> Result<BackendData> {
         let display = self.display.as_ref().expect("Display is not initialized");
-        let device = self.device.as_ref().expect("Device is not initialized");
-
         let window = display.get_default_root();
 
         let window_rect = display.get_window_rect(window);
@@ -96,7 +86,7 @@ impl Backend for X11Backend {
             .get_image(window, sel, xwrap::ALL_PLANES, x11::xlib::ZPixmap)
             .unwrap();
 
-        let commands = super::utils::process_screenshot(&image, device)?;
+        let commands = super::utils::process_screenshot(&image)?;
 
         Ok(commands)
     }
