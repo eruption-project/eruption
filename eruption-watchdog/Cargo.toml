@@ -42,8 +42,8 @@ debug-async = []
 [dependencies]
 cfg-if = "1.0.0"
 flume = "0.10.14"
-clap = { version = "4.2.7", features = ["derive"] }
-clap_complete = "4.2.3"
+clap = { version = "4.3.0", features = ["derive"] }
+clap_complete = "4.3.0"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 lazy_static = "1.4.0"
 libc = "0.2.144"

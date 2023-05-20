@@ -48,8 +48,8 @@ backend-x11 = ["x11", "x11rb"]
 [dependencies]
 cfg-if = "1.0.0"
 nix = "0.26.2"
-clap = { version = "4.2.7", features = ["derive"] }
-clap_complete = "4.2.3"
+clap = { version = "4.3.0", features = ["derive"] }
+clap_complete = "4.3.0"
 colored = "2.0.0"
 ctrlc = "3.2.5"
 lazy_static = "1.4.0"

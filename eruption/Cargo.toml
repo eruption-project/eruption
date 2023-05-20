@@ -67,7 +67,7 @@ serde_json = "1.0.96"
 tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
 ctrlc = { version = "3.2.5", features = ["termination"] }
-clap = "4.2.7"
+clap = "4.3.0"
 hotwatch = "0.4.6"
 config = "0.13.3"
 eyre = "0.6.8"
