@@ -29,3 +29,4 @@ _This is a non-exhaustive listing of planned features:_
 - Update Python SDK (get_canvas)
 - Add allocated zones support to scripts where applicable
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
+- Update all DBus interfaces in rust code

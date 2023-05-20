@@ -4,6 +4,15 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.0 | __Unified-canvas Branch__ |
+| 0.5.0 | Parallel device probing and initialization: The startup of Eruption now only takes the amount of time that the slowest device requires to come up. This is noticeable if you have more than one device managed by Eruption |
+| 0.5.0 | Drag-click support: Tell libinput to not apply a software based button-debounce algorithm to the `Eruption Virtual Mouse` input device |
+| 0.5.0 | Introduce a 2D rasterization API that allows to draw hardware-accelerated 2D-graphics primitives on the virtual canvas |
+| 0.5.0 | Use linear RGB color space internally, instead of sRGB |
+| 0.5.0 | Add support for an alpha-blend transition effect when switching between profiles |
+| 0.5.0 | Update the GTK3+ based Eruption GUI |
+| 0.5.0 | Moved Lua scripts to the support directory |
+| 0.5.0 | Add experimental support for `Wooting Two HE (ARM)` series keyboards |
 | 0.4.0 | __Next Release__ |
 | 0.4.0 | INCOMPATIBLE CHANGES: Lua scripting callbacks: Split render and timer tick code into distinct callbacks. You need to update your `on_tick(...)` event handlers |
 | 0.4.0 | Add support for hardware accelerated rendering of effects using `GLSL` compute shaders |
