@@ -65,8 +65,8 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 chrono = { version = "0.4.24", features = ["serde"] }
-lua-src = "546.0.0"
-mlua = { version = "0.9.0-beta.2", features = ["lua54", "vendored"] }
+# lua-src = "546.0.0"
+mlua = { version = "0.9.0-beta.2", features = ["luajit52"] }
 regex = "1.8.1"
 dbus = "0.9.7"
 evdev-rs = "0.6.1"

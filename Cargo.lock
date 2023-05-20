@@ -1727,9 +1727,9 @@ dependencies = [
 
 [[package]]
 name = "egui_dock"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a682a90cd64cf1d25306bfd2d024f6893d57d8143c82adf7150778cbb872f8e"
+checksum = "60cd91995dcc23278346cc414a94a0e87d3140d9f3ee23227bfee19f04990170"
 dependencies = [
  "duplicate",
  "egui 0.21.0",
@@ -1970,7 +1970,6 @@ dependencies = [
  "itertools 0.10.5",
  "lazy_static",
  "libc",
- "lua-src",
  "mimalloc",
  "mlua",
  "nalgebra",
@@ -2335,7 +2334,6 @@ dependencies = [
  "icecream",
  "lazy_static",
  "libc",
- "lua-src",
  "maplit",
  "mlua",
  "nix 0.26.2",
@@ -2385,7 +2383,6 @@ dependencies = [
  "icecream",
  "lazy_static",
  "libc",
- "lua-src",
  "maplit",
  "mlua",
  "nix 0.26.2",
@@ -4299,24 +4296,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lua-src"
-version = "546.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cb00c1380f1b4b4928dd211c07301ffa34872a239e590bd3219d9e5b213face"
-dependencies = [
- "cc",
-]
-
-[[package]]
-name = "luajit-src"
-version = "210.4.5+resty2cf5186"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27b7992a40e602786272d84c6f2beca44a588ededcfd57b48ec6f82008a7cb97"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "lyon_geom"
 version = "0.17.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4543,8 +4522,6 @@ checksum = "8dacf59a60b5dc5290a955ab9ec46b7026327b5bfa9e94d9d824d0071137c80e"
 dependencies = [
  "cc",
  "cfg-if 1.0.0",
- "lua-src",
- "luajit-src",
  "pkg-config",
 ]
 
