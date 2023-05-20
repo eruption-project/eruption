@@ -31,7 +31,7 @@ use gtk::{
 
 use crate::dbus_client::Zone;
 use crate::timers::TimerMode;
-use crate::{constants, dbus_client, timers, ConnectionState};
+use crate::{constants, dbus_client, notifications, timers, ConnectionState};
 use crate::{events, util};
 
 use super::hwdevices::keyboards::get_keyboard_device;
@@ -78,6 +78,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     let canvas_stack: Stack = builder.object("canvas_stack").unwrap();
+    let canvas_switcher: StackSwitcher = builder.object("canvas_switcher").unwrap();
 
     let drawing_area_preview: gtk::DrawingArea =
         builder.object("drawing_area_canvas_preview").unwrap();
@@ -89,7 +90,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let canvas_saturation_scale: gtk::Scale = builder.object("canvas_saturation_scale").unwrap();
     let canvas_lightness_scale: gtk::Scale = builder.object("canvas_lightness_scale").unwrap();
 
-    let devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
+    let devices_treeview: gtk::TreeView = builder.object("devices_tree_view").unwrap();
 
     if let Err(e) = crate::dbus_client::ping() {
         tracing::error!("Lost connection to the Eruption daemon: {e}");
@@ -149,12 +150,15 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     });
 
     // device selection
-    devices_tree_view
-        .selection()
-        .connect_changed(move |_sel| {});
+    devices_treeview.selection().connect_changed(
+        clone!(@weak canvas_stack, @weak canvas_switcher  => move |_sel| {
+            canvas_stack.set_visible_child_name("page1");
+        }),
+    );
 
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[
+        glib::Type::BOOL,
         glib::Type::U64,
         String::static_type(),
         String::static_type(),
@@ -174,14 +178,17 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Keyboard");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
 
@@ -199,14 +206,17 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Mouse");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
 
@@ -224,14 +234,17 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Misc");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
 
@@ -246,12 +259,40 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         // .visible(false)
         .build();
 
-    let cell = gtk::CellRendererToggle::builder().active(true).build();
+    let cell = gtk::CellRendererToggle::builder().build();
+
+    cell.connect_toggled(clone!(@weak devices_treeview => move |_f, p| {
+        let devices_treestore: gtk::TreeStore = devices_treeview
+            .model()
+            .unwrap()
+            .downcast::<gtk::TreeStore>()
+            .unwrap();
+
+        let device_index = devices_treestore
+            .value(&devices_treestore.iter(&p).unwrap(), 1)
+            .get::<u64>()
+            .unwrap();
+
+        let value = devices_treestore
+            .value(&devices_treestore.iter(&p).unwrap(), 0)
+            .get::<bool>()
+            .unwrap();
+        devices_treestore.set_value(
+            &devices_treestore.iter(&p).unwrap(),
+            0,
+            &(!value).to_value(),
+        );
+
+        dbus_client::set_device_enabled(device_index, !value).unwrap_or_else(|e| {
+            tracing::error!("Could not set device status: {e}");
+            notifications::error(&format!("Could not set device status: {e}"));
+        });
+    }));
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
-    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 0);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "active", 0);
 
-    devices_tree_view.append_column(&column);
+    devices_treeview.append_column(&column);
 
     let column = gtk::TreeViewColumn::builder()
         .title("ID")
@@ -262,9 +303,9 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
-    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 0);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 1);
 
-    devices_tree_view.append_column(&column);
+    devices_treeview.append_column(&column);
 
     let column = gtk::TreeViewColumn::builder()
         .title("Type")
@@ -274,9 +315,9 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
-    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 1);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 2);
 
-    devices_tree_view.append_column(&column);
+    devices_treeview.append_column(&column);
 
     let column = gtk::TreeViewColumn::builder()
         .title("Make")
@@ -286,9 +327,9 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
-    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 2);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 3);
 
-    devices_tree_view.append_column(&column);
+    devices_treeview.append_column(&column);
 
     let column = gtk::TreeViewColumn::builder()
         .title("Model")
@@ -298,12 +339,12 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let cell = gtk::CellRendererText::new();
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, true);
-    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 3);
+    gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "text", 4);
 
-    devices_tree_view.append_column(&column);
+    devices_treeview.append_column(&column);
 
-    devices_tree_view.set_model(Some(&devices_treestore));
-    devices_tree_view.show_all();
+    devices_treeview.set_model(Some(&devices_treestore));
+    devices_treeview.show_all();
 
     let hue = canvas_hue_scale.value();
     let saturation = canvas_saturation_scale.value();
@@ -394,6 +435,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         }),
     )?;
 
+    canvas_stack.set_visible_child_name("page0");
+
     Ok(())
 }
 
@@ -416,6 +459,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     // devices tree
     let devices_treestore = gtk::TreeStore::new(&[
+        glib::Type::BOOL,
         glib::Type::U64,
         String::static_type(),
         String::static_type(),
@@ -435,16 +479,21 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Keyboard");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
+
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -458,16 +507,21 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Mouse");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
+
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }
@@ -481,16 +535,21 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Misc");
 
+        let enabled = dbus_client::is_device_enabled(index as u64)?;
+
         devices_treestore.insert_with_values(
             None,
             None,
             &[
-                (0, &(index as u64)),
-                (1, &(device_type)),
-                (2, &(make)),
-                (3, &(model)),
+                (0, &(enabled)),
+                (1, &(index as u64)),
+                (2, &(device_type)),
+                (3, &(make)),
+                (4, &(model)),
             ],
         );
+
+        // populate_canvas_stack_widget_for_device(builder, &format!("Zone {index}"))?;
 
         index += 1;
     }

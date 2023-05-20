@@ -811,7 +811,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     // global timer support
     glib::timeout_add_local(
-        Duration::from_millis(10),
+        Duration::from_millis(1),
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = timers::handle_timers() {
                 ratelimited::error!("An error occurred in a timer callback: {}", e);
