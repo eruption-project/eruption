@@ -101,14 +101,14 @@ pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 /// Fade in on profile switch for n milliseconds
 pub const FADE_MILLIS: u64 = 1333;
 
-/// The capacity of the buffer used for receiving audio samples as well as control messages
-pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 2 + 32;
+/// The capacity of the buffer used for exchanging control messages
+pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 2 + 64;
 
 /// The capacity of the buffer used for receiving audio samples as well as control messages
 pub const NET_AUDIO_BUFFER_CAPACITY: usize = 4096;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 25;
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 250;
 
 /// Max number of events that will be processed in each iteration of the main loop
 pub const MAX_EVENTS_PER_ITERATION: u64 = 128;

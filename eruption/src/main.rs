@@ -1823,8 +1823,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             if let Ok(devices) = hwdevices::probe_devices() {
                 thread::scope(|s| -> Result<()> {
-                    thread::Builder::new()
-                        .name("init:kbd/all".to_string())
+                    let keyboard_init_thread = thread::Builder::new()
+                        .name("init/kbd:all".to_string())
                         .spawn_scoped(s, move || {
                             // initialize keyboard devices
                             devices.0.par_iter().enumerate().for_each_init(
@@ -1857,8 +1857,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             )
                         })?;
 
-                    thread::Builder::new()
-                        .name("init:mice/all".to_string())
+                    let mice_init_thread = thread::Builder::new()
+                        .name("init/mice:all".to_string())
                         .spawn_scoped(s, move  || {
                             // initialize mouse devices
                             devices.1.par_iter().enumerate().for_each_init(
@@ -1916,50 +1916,62 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             )
                         })?;
 
-                    thread::Builder::new()
-                        .name("init:misc/all".to_string())
-                        .spawn_scoped(s, || {
-                            // initialize misc devices
-                            devices.2.par_iter().enumerate().for_each_init(
-                                || {},
-                                move |_, (index, device)| {
-                                    init_misc_device(device);
+                    let misc_init_thread =
+                        thread::Builder::new()
+                            .name("init/misc:all".to_string())
+                            .spawn_scoped(s, || {
+                                // initialize misc devices
+                                devices.2.par_iter().enumerate().for_each_init(
+                                    || {},
+                                    move |_, (index, device)| {
+                                        init_misc_device(device);
 
-                                    if device.read().has_input_device() {
-                                        let usb_vid = device.read().get_usb_vid();
-                                        let usb_pid = device.read().get_usb_pid();
+                                        if device.read().has_input_device() {
+                                            let usb_vid = device.read().get_usb_vid();
+                                            let usb_pid = device.read().get_usb_pid();
 
-                                        // spawn a thread to handle keyboard input
-                                        info!("Spawning misc device input thread...");
+                                            // spawn a thread to handle keyboard input
+                                            info!("Spawning misc device input thread...");
 
-                                        let (misc_tx, misc_rx) = unbounded();
-                                        threads::spawn_misc_input_thread(
-                                            misc_tx.clone(),
-                                            device.clone(),
-                                            index,
-                                            usb_vid,
-                                            usb_pid,
-                                        )
-                                        .unwrap_or_else(
-                                            |e| {
+                                            let (misc_tx, misc_rx) = unbounded();
+                                            threads::spawn_misc_input_thread(
+                                                misc_tx.clone(),
+                                                device.clone(),
+                                                index,
+                                                usb_vid,
+                                                usb_pid,
+                                            )
+                                            .unwrap_or_else(|e| {
                                                 error!("Could not spawn a thread: {}", e);
                                                 panic!()
-                                            },
-                                        );
+                                            });
 
-                                        crate::MISC_DEVICES_RX.write().push(misc_rx);
-                                    } else {
-                                        // insert an unused rx
-                                        let (_misc_tx, misc_rx) = unbounded();
-                                        crate::MISC_DEVICES_RX.write().push(misc_rx);
-                                    }
+                                            crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                        } else {
+                                            // insert an unused rx
+                                            let (_misc_tx, misc_rx) = unbounded();
+                                            crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                        }
 
-                                    crate::MISC_DEVICES.write().push(device.clone());
-                                },
-                            );
-                        })?;
+                                        crate::MISC_DEVICES.write().push(device.clone());
+                                    },
+                                );
+                            })?;
 
                     info!("Device enumeration completed");
+
+                    // optionally wait for devices to settle; this should not be required
+                    // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+
+                    let _ = keyboard_init_thread.join().map_err(|_| {
+                        error!("Error during initialization of at least one device occurred")
+                    });
+                    let _ = mice_init_thread.join().map_err(|_| {
+                        error!("Error during initialization of at least one device occurred")
+                    });
+                    let _ = misc_init_thread.join().map_err(|_| {
+                        error!("Error during initialization of at least one device occurred")
+                    });
 
                     if crate::KEYBOARD_DEVICES.read().is_empty()
                         && crate::MOUSE_DEVICES.read().is_empty()

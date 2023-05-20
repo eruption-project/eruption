@@ -96,7 +96,7 @@ lazy_static! {
     }; constants::CANVAS_SIZE]));
 
 
-    /// Last rendered canvas from the previous profile
+    /// Snapshot of last rendered canvas from the previously active profile; used for transition effects between profiles
     pub static ref SAVED_LED_MAP: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA {
         r: 0x00,
         g: 0x00,
@@ -475,7 +475,7 @@ fn realize_color_map() -> Result<RunningScriptResult> {
 
     *crate::COLOR_MAPS_READY_CONDITION.0.lock() = val;
 
-    crate::COLOR_MAPS_READY_CONDITION.1.notify_one();
+    crate::COLOR_MAPS_READY_CONDITION.1.notify_all();
 
     Ok(RunningScriptResult::Continue)
 }
