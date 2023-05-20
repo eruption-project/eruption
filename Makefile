@@ -115,6 +115,7 @@ install:
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-sleep"
 	@mkdir -p "$(TARGET_DIR)/lib/sysusers.d/"
 	@mkdir -p "$(TARGET_DIR)/lib/udev/rules.d/"
+	@mkdir -p "$(TARGET_DIR)/share/libinput/"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system.d"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system-services"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/session.d"
@@ -152,6 +153,7 @@ install:
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
 	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
+	@cp "support/libinput/eruption.quirks" "$(TARGET_DIR)/share/libinput/60-eruption.quirks"
 	@cp "support/dbus/org.eruption.service" "$(TARGET_DIR)/share/dbus-1/system-services/"
 	@cp "support/dbus/org.eruption.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
@@ -284,6 +286,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset
 	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
+	-@rm $(TARGET_DIR)/share/libinput/60-eruption.quirks
 	-@rm $(TARGET_DIR)/share/dbus-1/system-services/org.eruption.service
 	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
