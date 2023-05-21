@@ -1252,6 +1252,12 @@ _arguments "${_arguments_options[@]}" \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
+(manpages)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (about)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \
@@ -1762,6 +1768,10 @@ esac
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
+(manpages)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
 (about)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__about_commands" \
@@ -1815,6 +1825,7 @@ _eruptionctl_commands() {
 'effects:Special effects like Ambient, image overlays or animations' \
 'rules:Rules related sub-commands' \
 'completions:Generate shell completions' \
+'manpages:Generate manual pages' \
 'about:Show information about Eruption' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -2543,6 +2554,7 @@ _eruptionctl__help_commands() {
 'effects:Special effects like Ambient, image overlays or animations' \
 'rules:Rules related sub-commands' \
 'completions:Generate shell completions' \
+'manpages:Generate manual pages' \
 'about:Show information about Eruption' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -2905,6 +2917,16 @@ _eruptionctl__scripts__help__list_commands() {
 _eruptionctl__scripts__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts list commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__manpages_commands] )) ||
+_eruptionctl__help__manpages_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help manpages commands' commands "$@"
+}
+(( $+functions[_eruptionctl__manpages_commands] )) ||
+_eruptionctl__manpages_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl manpages commands' commands "$@"
 }
 (( $+functions[_eruptionctl__help__names_commands] )) ||
 _eruptionctl__help__names_commands() {

@@ -1,0 +1,72 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH eruptionctl 1  "eruptionctl 0.1.6" 
+.SH NAME
+eruptionctl \- A CLI control utility for the Eruption Linux user\-mode driver
+.SH SYNOPSIS
+\fBeruptionctl\fR [\fB\-v\fR|\fB\-\-verbose\fR]... [\fB\-r\fR|\fB\-\-repeat\fR] [\fB\-c\fR|\fB\-\-config\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+A CLI control utility for the Eruption Linux user\-mode driver
+.SH OPTIONS
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Verbose mode (\-v, \-vv, \-vvv, etc.)
+.TP
+\fB\-r\fR, \fB\-\-repeat\fR
+Repeat output until ctrl+c is pressed
+.TP
+\fB\-c\fR, \fB\-\-config\fR=\fICONFIG\fR
+Sets the configuration file to use
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.SH SUBCOMMANDS
+.TP
+eruptionctl\-status(1)
+Shows the status of Eruption as well as the currently active profile or slot
+.TP
+eruptionctl\-switch(1)
+Switch to a different profile or slot
+.TP
+eruptionctl\-config(1)
+Configuration related sub\-commands
+.TP
+eruptionctl\-devices(1)
+Get or set some device specific configuration parameters
+.TP
+eruptionctl\-profiles(1)
+Profile related sub\-commands
+.TP
+eruptionctl\-scripts(1)
+Script related sub\-commands
+.TP
+eruptionctl\-color\-schemes(1)
+Define, import or delete a named color scheme
+.TP
+eruptionctl\-param(1)
+Get or set script parameters on the currently active profile
+.TP
+eruptionctl\-names(1)
+Naming related commands such as renaming of profile slots
+.TP
+eruptionctl\-canvas(1)
+Configure post\-processing filters of the global canvas
+.TP
+eruptionctl\-effects(1)
+Special effects like Ambient, image overlays or animations
+.TP
+eruptionctl\-rules(1)
+Rules related sub\-commands
+.TP
+eruptionctl\-about(1)
+Show information about Eruption
+.TP
+eruptionctl\-help(1)
+Print this message or the help of the given subcommand(s)
+.SH VERSION
+v0.1.6
+.SH AUTHORS
+X3n0m0rph59 <x3n0m0rph59@gmail.com>

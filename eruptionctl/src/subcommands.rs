@@ -26,6 +26,7 @@ mod completions;
 mod config;
 mod devices;
 mod effects;
+mod manpages;
 mod names;
 mod param;
 mod profiles;
@@ -117,7 +118,10 @@ pub enum Subcommands {
     #[clap(display_order = 12, hide = true, about(tr!("completions-about")))]
     Completions { shell: clap_complete::Shell },
 
-    #[clap(display_order = 13, about(tr!("about-about")))]
+    #[clap(display_order = 13, hide = true, about(tr!("manpages-about")))]
+    Manpages {},
+
+    #[clap(display_order = 14, about(tr!("about-about")))]
     About {
         #[clap(subcommand)]
         command: about::AboutSubcommands,
@@ -143,6 +147,7 @@ pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
         Subcommands::Effects { command } => effects::handle_command(command).await,
         Subcommands::Rules { command } => rules::handle_command(command).await,
         Subcommands::Completions { shell } => completions::handle_command(shell).await,
+        Subcommands::Manpages {} => manpages::handle_command().await,
         Subcommands::About { command } => about::handle_command(command).await,
     }
 }

@@ -17,21 +17,30 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-[alias]
-xtask = "run --manifest-path ./xtask/Cargo.toml --"
-
-[future-incompat-report]
-frequency = "always"
-
-[build]
-rustflags = [
-  "--cfg",
-  "tokio_unstable",
-  # "-Clink-arg=-fuse-ld=mold",
-  "-Ctarget-cpu=native",
-  # "-Zshare-generics=y",
-  # "-Clink-arg=-Wl,--no-rosegment",
+[package]
+name = "xtask"
+version = "0.0.1"
+authors = [
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
 ]
+edition = "2021"
+rust-version = "1.69"
+description = "Cargo xtask support binary"
+repository = "https://github.com/X3n0m0rph59/eruption.git"
+homepage = "https://eruption-project.org"
+keywords = ["eruption", "linux", "led", "driver", "xtask"]
+categories = ["hardware-support"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+resolver = "2"
 
-# [target.x86_64-unknown-linux-gnu]
-# linker = "/usr/bin/clang"
+[dependencies]
+eyre = "0.6.8"
+color-eyre = "0.6.2"
+devx-cmd = "0.5.0"
+xshell = "0.2.3"
+duct = "0.13.6"
+
+[dev-dependencies]
+pretty_assertions = "1.3.0"

@@ -1,3 +1,4 @@
+#!/bin/bash
 #  SPDX-License-Identifier: GPL-3.0-or-later
 #
 #  This file is part of Eruption.
@@ -17,21 +18,31 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-[alias]
-xtask = "run --manifest-path ./xtask/Cargo.toml --"
+function gen_manpages {
+	./target/release/"$1" "manpages"
+}
 
-[future-incompat-report]
-frequency = "always"
+# supported locales
+languages=('en_US')
 
-[build]
-rustflags = [
-  "--cfg",
-  "tokio_unstable",
-  # "-Clink-arg=-fuse-ld=mold",
-  "-Ctarget-cpu=native",
-  # "-Zshare-generics=y",
-  # "-Clink-arg=-Wl,--no-rosegment",
-]
+for l in "${languages[@]}"; do
+	export LANG=$l
+	export MANPAGES_OUTPUT_DIR="support/shell/manpages/$LANG/"
+	mkdir -p "support/shell/manpages/$LANG/"
 
-# [target.x86_64-unknown-linux-gnu]
-# linker = "/usr/bin/clang"
+	# gen_manpages "eruption"
+	# gen_manpages "eruption-cmd"
+	# gen_manpages "eruption-hwutil"
+	# gen_manpages "eruption-debug-tool"
+	# gen_manpages "eruption-gui-gtk3"
+	# gen_manpages "eruption-macro"
+	# gen_manpages "eruption-keymap"
+	# gen_manpages "eruption-netfx"
+	# gen_manpages "eruption-fx-proxy"
+	# gen_manpages "eruption-audio-proxy"
+	# gen_manpages "eruption-process-monitor"
+	gen_manpages "eruptionctl"
+	# gen_manpages "pyroclasm"
+done
+
+exit 0

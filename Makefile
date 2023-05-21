@@ -28,6 +28,7 @@ all: build
 
 build:
 	@cargo build $(BUILDFLAGS)
+	@cargo xtask dist
 
 	@echo ""
 	@echo "Now please run 'sudo make install' to install Eruption"

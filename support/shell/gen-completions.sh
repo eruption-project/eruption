@@ -19,11 +19,11 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 function gen_completions {
-	./target/debug/"$1" "completions" "bash" >"support/shell/completions/$LANG/$1.bash-completion"
-	./target/debug/"$1" "completions" "elvish" >"support/shell/completions/$LANG/$1.elvish-completion"
-	./target/debug/"$1" "completions" "fish" >"support/shell/completions/$LANG/$1.fish-completion"
-	./target/debug/"$1" "completions" "powershell" >"support/shell/completions/$LANG/$1.powershell-completion"
-	./target/debug/"$1" "completions" "zsh" >"support/shell/completions/$LANG/$1.zsh-completion"
+	./target/release/"$1" "completions" "bash" >"support/shell/completions/$LANG/$1.bash-completion"
+	./target/release/"$1" "completions" "elvish" >"support/shell/completions/$LANG/$1.elvish-completion"
+	./target/release/"$1" "completions" "fish" >"support/shell/completions/$LANG/$1.fish-completion"
+	./target/release/"$1" "completions" "powershell" >"support/shell/completions/$LANG/$1.powershell-completion"
+	./target/release/"$1" "completions" "zsh" >"support/shell/completions/$LANG/$1.zsh-completion"
 }
 
 # supported locales
@@ -45,7 +45,7 @@ for l in "${languages[@]}"; do
 	gen_completions "eruption-audio-proxy"
 	gen_completions "eruption-process-monitor"
 	gen_completions "eruptionctl"
-	gen_completions "pyroclasm"
+	# gen_completions "pyroclasm"
 done
 
 exit 0

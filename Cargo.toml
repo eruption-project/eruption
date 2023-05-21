@@ -19,6 +19,7 @@
 
 [workspace]
 members = [
+  "xtask",
   "eruption",
   "eruptionctl",
   "eruption-hwutil",
@@ -40,6 +41,7 @@ members = [
   "sdk/examples/rust/simple",
 ]
 default-members = [
+  "xtask",
   "eruption",
   "eruptionctl",
   "eruption-hwutil",

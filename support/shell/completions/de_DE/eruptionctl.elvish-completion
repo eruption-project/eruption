@@ -41,6 +41,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
             cand rules 'Automatisierungsregeln anzeigen und verwalten'
             cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand manpages 'Manual pages erzeugen'
             cand about 'Informationen über Eruption anzeigen'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -634,6 +635,10 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'eruptionctl;manpages'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'eruptionctl;about'= {
             cand -h 'Print help'
             cand --help 'Print help'
@@ -674,6 +679,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
             cand rules 'Automatisierungsregeln anzeigen und verwalten'
             cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand manpages 'Manual pages erzeugen'
             cand about 'Informationen über Eruption anzeigen'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -858,6 +864,8 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         &'eruptionctl;help;rules;disable'= {
         }
         &'eruptionctl;help;completions'= {
+        }
+        &'eruptionctl;help;manpages'= {
         }
         &'eruptionctl;help;about'= {
             cand eruption 'Shows infos about Eruption'
