@@ -68,7 +68,7 @@ async-trait = "0.1.68"
 byteorder = "1.4.3"
 clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
-ctrlc = { version = "3.2.5", features = ["termination"] }
+ctrlc = { version = "3.3.0", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
 # dbus-tokio = "0.7.5"
