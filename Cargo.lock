@@ -2132,7 +2132,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-fx-proxy"
-version = "0.0.5"
+version = "0.1.0"
 dependencies = [
  "atty",
  "cfg-if 1.0.0",
@@ -2409,7 +2409,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-netfx"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.3.0",
@@ -2591,7 +2591,7 @@ dependencies = [
 
 [[package]]
 name = "eruptionctl"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.3.0",

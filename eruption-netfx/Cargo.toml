@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-netfx"
-version = "0.1.4"
+version = "0.2.0"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
