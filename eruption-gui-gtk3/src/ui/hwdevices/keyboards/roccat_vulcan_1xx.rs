@@ -21,10 +21,12 @@
 
 use super::Keyboard;
 use super::{Caption, KeyDef};
+use crate::constants;
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
+use ndarray::Array2;
 use palette::{FromColor, Hsva, Lighten, LinSrgba};
 use std::cell::RefCell;
 
@@ -78,6 +80,17 @@ impl Keyboard for RoccatVulcan1xx {
         context.paint()?;
 
         let led_colors = crate::COLOR_MAP.lock();
+
+        let len = led_colors.len();
+
+        let led_colors = Array2::from_shape_vec(
+            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+            led_colors.to_vec(),
+        )?;
+
+        let led_colors = led_colors.reversed_axes();
+        let led_colors = led_colors.t();
+        let led_colors = led_colors.into_shape((len,))?;
 
         let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {

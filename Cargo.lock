@@ -2180,7 +2180,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui-gtk3"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "atty",
  "byteorder",

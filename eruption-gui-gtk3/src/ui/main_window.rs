@@ -794,15 +794,15 @@ fn initialize_sub_pages_and_spawn_dbus_threads(
         e
     });
 
-    let _ = ui::macros::initialize_macros_page(&application.clone(), builder).map_err(|e| {
-        tracing::error!("Error updating the canvas page: {e:?}");
-        e
-    });
+    // let _ = ui::macros::initialize_macros_page(&application.clone(), builder).map_err(|e| {
+    //     tracing::error!("Error updating the canvas page: {e:?}");
+    //     e
+    // });
 
-    let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), builder).map_err(|e| {
-        tracing::error!("Error updating the main window: {e:?}");
-        e
-    });
+    // let _ = ui::keymaps::initialize_keymaps_page(&application.clone(), builder).map_err(|e| {
+    //     tracing::error!("Error updating the main window: {e:?}");
+    //     e
+    // });
 
     let _ = ui::settings::initialize_settings_page(builder).map_err(|e| {
         tracing::error!("Error updating the main window: {e:?}");
@@ -815,79 +815,76 @@ fn initialize_sub_pages_and_spawn_dbus_threads(
     });
 
     let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
-    let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
-        tracing::error!("{m:?}");
-        Ok(())
-    });
+    let _ = dbus_client::spawn_dbus_event_loop_session(builder, &update_ui_state);
 }
 
-fn update_sub_pages_and_spawn_dbus_threads(builder: &gtk::Builder) {
-    // let _ = update_main_window(builder).map_err(|e| {
-    //     tracing::error!("Error updating the main window: {e:?}");
-    //     e
-    // });
+// fn update_sub_pages_and_spawn_dbus_threads(builder: &gtk::Builder) {
+//     // let _ = update_main_window(builder).map_err(|e| {
+//     //     tracing::error!("Error updating the main window: {e:?}");
+//     //     e
+//     // });
 
-    let _ = ui::canvas::update_canvas_page(builder).map_err(|e| {
-        tracing::error!("Error updating the canvas page: {e:?}");
-        e
-    });
+//     let _ = ui::canvas::update_canvas_page(builder).map_err(|e| {
+//         tracing::error!("Error updating the canvas page: {e:?}");
+//         e
+//     });
 
-    // let _ = ui::keyboards::update_keyboard_page(builder).map_err(|e| {
-    //     tracing::error!("Error updating the keyboard devices page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::keyboards::update_keyboard_page(builder).map_err(|e| {
+//     //     tracing::error!("Error updating the keyboard devices page: {e:?}");
+//     //     e
+//     // });
 
-    // let _ = ui::mice::update_mouse_page(builder).map_err(|e| {
-    //     tracing::error!("Error updating the mouse devices page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::mice::update_mouse_page(builder).map_err(|e| {
+//     //     tracing::error!("Error updating the mouse devices page: {e:?}");
+//     //     e
+//     // });
 
-    // let _ = ui::misc::update_misc_page(builder).map_err(|e| {
-    //     tracing::error!("Error updating the misc devices page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::misc::update_misc_page(builder).map_err(|e| {
+//     //     tracing::error!("Error updating the misc devices page: {e:?}");
+//     //     e
+//     // });
 
-    let _ = ui::color_schemes::update_color_schemes_page(builder).map_err(|e| {
-        tracing::error!("Error updating the color schemes page: {e:?}");
-        e
-    });
+//     let _ = ui::color_schemes::update_color_schemes_page(builder).map_err(|e| {
+//         tracing::error!("Error updating the color schemes page: {e:?}");
+//         e
+//     });
 
-    let _ = ui::automation_rules::update_automation_rules_page(builder).map_err(|e| {
-        tracing::error!("Error updating the color schemes page: {e:?}");
-        e
-    });
+//     let _ = ui::automation_rules::update_automation_rules_page(builder).map_err(|e| {
+//         tracing::error!("Error updating the color schemes page: {e:?}");
+//         e
+//     });
 
-    // let _ = ui::profiles::update_profiles_page(&application.clone(), builder).map_err(|e| {
-    //     tracing::error!("Error updating the profiles page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::profiles::update_profiles_page(&application.clone(), builder).map_err(|e| {
+//     //     tracing::error!("Error updating the profiles page: {e:?}");
+//     //     e
+//     // });
 
-    // let _ = ui::macros::update_macros_page(&application.clone(), builder).map_err(|e| {
-    //     tracing::error!("Error updating the macros page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::macros::update_macros_page(&application.clone(), builder).map_err(|e| {
+//     //     tracing::error!("Error updating the macros page: {e:?}");
+//     //     e
+//     // });
 
-    // let _ = ui::keymaps::update_keymaps_page(&application.clone(), builder).map_err(|e| {
-    //     tracing::error!("Error updating the keymaps page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::keymaps::update_keymaps_page(&application.clone(), builder).map_err(|e| {
+//     //     tracing::error!("Error updating the keymaps page: {e:?}");
+//     //     e
+//     // });
 
-    // let _ = ui::settings::update_settings_page(builder).map_err(|e| {
-    //     tracing::error!("Error updating the settings page: {e:?}");
-    //     e
-    // });
+//     // let _ = ui::settings::update_settings_page(builder).map_err(|e| {
+//     //     tracing::error!("Error updating the settings page: {e:?}");
+//     //     e
+//     // });
 
-    let _ = initialize_slot_bar(builder).map_err(|e| {
-        tracing::error!("Error updating the main window: {e:?}");
-        e
-    });
+//     let _ = initialize_slot_bar(builder).map_err(|e| {
+//         tracing::error!("Error updating the main window: {e:?}");
+//         e
+//     });
 
-    let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
-    let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
-        tracing::error!("{m:?}");
-        Ok(())
-    });
-}
+//     let _ = dbus_client::spawn_dbus_event_loop_system(builder, &update_ui_state);
+//     let _ = dbus_client::spawn_dbus_event_loop_session(builder, &|_b, m| {
+//         tracing::error!("{m:?}");
+//         Ok(())
+//     });
+// }
 
 /// Build and show the UI of the main application window
 pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Result<()> {
@@ -1166,9 +1163,6 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
                 update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
-
-            // ambientfx_switch.set_state(util::get_ambient_fx().unwrap_or(false));
-            // soundfx_switch.set_state(util::get_sound_fx().unwrap_or(false));
 
             Ok(())
         }),

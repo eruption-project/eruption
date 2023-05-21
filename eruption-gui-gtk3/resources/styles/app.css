@@ -24,7 +24,7 @@ window {
 }
 
 .client {
-  padding: 12px;
+  padding: 8px;
   background-image: -gtk-gradient(linear, 0 0, 1 1,
       color-stop(0, rgb(49, 49, 49)),
       color-stop(1, rgb(23, 23, 23)));
@@ -127,9 +127,10 @@ infobar.other {
 
 .header-bar {
   background-image: -gtk-gradient(linear, 0 0, 1 0,
-      color-stop(0, rgba(128, 128, 128, 0.25)),
-      color-stop(1, rgba(94, 94, 94, 0.85)));
+      color-stop(0, rgba(94, 94, 94, 0.15)),
+      color-stop(1, rgba(94, 94, 94, 0.25)));
 
+  padding: 8px;
   border-radius: 8px;
 }
 
@@ -146,7 +147,7 @@ infobar.other {
 .slot_indicator {
   margin: 14px;
   padding: 4px;
-  border: 8px solid rgba(132, 132, 132, 0.25);
+  border: 8px dotted rgba(132, 132, 132, 0.25);
   border-radius: 14px;
 }
 

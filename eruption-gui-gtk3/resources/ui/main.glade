@@ -888,6 +888,8 @@ The Eruption Development Team
           <object class="GtkFrame" id="switch_bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
             <property name="label-xalign">0</property>
             <child>
               <object class="GtkBox">
@@ -1015,13 +1017,14 @@ The Eruption Development Team
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <child>
                   <!-- n-columns=2 n-rows=7 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">end</property>
-                    <property name="margin-end">16</property>
                     <property name="column-spacing">8</property>
                     <child>
                       <object class="GtkLabel">
@@ -1340,6 +1343,8 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkStack" id="keyboard_devices_stack">
@@ -1383,6 +1388,8 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkStack" id="mouse_devices_stack">
@@ -1426,6 +1433,8 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkStack" id="misc_devices_stack">
@@ -1469,6 +1478,8 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox" id="color_schemes_box">
@@ -1728,6 +1739,8 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox" id="notification_box">
@@ -2008,6 +2021,8 @@ The Eruption Development Team
               <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="position">256</property>
                 <property name="position-set">True</property>
                 <property name="wide-handle">True</property>
@@ -2216,6 +2231,8 @@ The Eruption Development Team
               <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="position">256</property>
                 <property name="position-set">True</property>
                 <property name="wide-handle">True</property>
@@ -2422,6 +2439,8 @@ The Eruption Development Team
               <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="position">256</property>
                 <property name="position-set">True</property>
                 <property name="wide-handle">True</property>
@@ -2628,11 +2647,14 @@ The Eruption Development Team
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-bottom">4</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>

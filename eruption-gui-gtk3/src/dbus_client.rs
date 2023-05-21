@@ -319,7 +319,7 @@ pub fn spawn_dbus_event_loop_session(
                   _message: &dbus::Message| {
 
                 if let Some(ambient_effect) = h.changed_properties.get("AmbientEffect") {
-                    let enabled = ambient_effect.0.as_i64().unwrap() != 0;
+                    let enabled = ambient_effect.0.as_u64().unwrap() != 0;
 
                     tx.send(Message::AmbientEffectChanged(enabled))
                         .unwrap();
@@ -641,8 +641,6 @@ pub fn set_device_enabled(device_index: u64, enabled: bool) -> Result<()> {
 
 /// Enable or disable rendering on a managed device
 pub fn is_device_enabled(_device_index: u64) -> Result<bool> {
-    
-
     let conn = Connection::new_system()?;
     let _devices_proxy = conn.with_proxy(
         "org.eruption",

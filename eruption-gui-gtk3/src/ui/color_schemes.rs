@@ -75,11 +75,11 @@ pub struct ColorSchemeEntry {
     pub ty: ColorSchemeType,
 }
 
-impl ColorSchemeEntry {
-    pub fn new(name: String, ty: ColorSchemeType) -> Self {
-        Self { name, ty }
-    }
-}
+// impl ColorSchemeEntry {
+//     pub fn new(name: String, ty: ColorSchemeType) -> Self {
+//         Self { name, ty }
+//     }
+// }
 
 /// Initialize page "Color Schemes"
 pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
@@ -175,9 +175,9 @@ pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
     }
 }
 
-pub fn transmit_color_schemes_to_eruption(_builder: &gtk::Builder) -> Result<()> {
-    Ok(())
-}
+// pub fn transmit_color_schemes_to_eruption(_builder: &gtk::Builder) -> Result<()> {
+//     Ok(())
+// }
 
 fn paint_gradient(cr: &cairo::Context, width: f64, height: f64) -> Result<()> {
     if let Some(gradient) = SELECTED_COLOR_SCHEME.read().as_ref() {
@@ -645,11 +645,11 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
     Ok(())
 }
 
-/// Initialize page "Color Schemes"
-pub fn update_color_schemes_page(_builder: &gtk::Builder) -> Result<()> {
-    // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
+// /// Initialize page "Color Schemes"
+// pub fn update_color_schemes_page(_builder: &gtk::Builder) -> Result<()> {
+//     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
+//     // let notification_box: gtk::Box = builder.object("notification_box").unwrap();
 
-    Ok(())
-}
+//     Ok(())
+// }
