@@ -21,7 +21,6 @@ _eruption-netfx() {
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
-'::model -- The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d\:311a":' \
 '::hostname:' \
 '::port:' \
 ":: :_eruption-netfx_commands" \
@@ -29,10 +28,10 @@ _eruption-netfx() {
 && ret=0
     case $state in
     (eruption-netfx)
-        words=($line[4] "${words[@]}")
+        words=($line[3] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:eruption-netfx-command-$line[4]:"
-        case $line[4] in
+        curcontext="${curcontext%:*:*}:eruption-netfx-command-$line[3]:"
+        case $line[3] in
             (ping)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \

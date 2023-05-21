@@ -61,7 +61,7 @@ _eruption-netfx() {
 
     case "${cmd}" in
         eruption__netfx)
-            opts="-v -h -V --verbose --help --version [MODEL] [HOSTNAME] [PORT] ping command image animation ambient completions help"
+            opts="-v -h -V --verbose --help --version [HOSTNAME] [PORT] ping command image animation ambient completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

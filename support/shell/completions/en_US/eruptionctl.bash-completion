@@ -12,6 +12,9 @@ _eruptionctl() {
             ",$1")
                 cmd="eruptionctl"
                 ;;
+            eruptionctl,about)
+                cmd="eruptionctl__about"
+                ;;
             eruptionctl,canvas)
                 cmd="eruptionctl__canvas"
                 ;;
@@ -53,6 +56,24 @@ _eruptionctl() {
                 ;;
             eruptionctl,switch)
                 cmd="eruptionctl__switch"
+                ;;
+            eruptionctl__about,eruption)
+                cmd="eruptionctl__about__eruption"
+                ;;
+            eruptionctl__about,help)
+                cmd="eruptionctl__about__help"
+                ;;
+            eruptionctl__about,license)
+                cmd="eruptionctl__about__license"
+                ;;
+            eruptionctl__about__help,eruption)
+                cmd="eruptionctl__about__help__eruption"
+                ;;
+            eruptionctl__about__help,help)
+                cmd="eruptionctl__about__help__help"
+                ;;
+            eruptionctl__about__help,license)
+                cmd="eruptionctl__about__help__license"
                 ;;
             eruptionctl__canvas,help)
                 cmd="eruptionctl__canvas__help"
@@ -336,6 +357,9 @@ _eruptionctl() {
             eruptionctl__effects__help__enable,image)
                 cmd="eruptionctl__effects__help__enable__image"
                 ;;
+            eruptionctl__help,about)
+                cmd="eruptionctl__help__about"
+                ;;
             eruptionctl__help,canvas)
                 cmd="eruptionctl__help__canvas"
                 ;;
@@ -377,6 +401,12 @@ _eruptionctl() {
                 ;;
             eruptionctl__help,switch)
                 cmd="eruptionctl__help__switch"
+                ;;
+            eruptionctl__help__about,eruption)
+                cmd="eruptionctl__help__about__eruption"
+                ;;
+            eruptionctl__help__about,license)
+                cmd="eruptionctl__help__about__license"
                 ;;
             eruptionctl__help__canvas,hue)
                 cmd="eruptionctl__help__canvas__hue"
@@ -691,7 +721,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts="-v -r -c -h -V --verbose --repeat --config --help --version status switch config devices profiles scripts color-schemes param names canvas effects rules completions help"
+            opts="-v -r -c -h -V --verbose --repeat --config --help --version status switch config devices profiles scripts color-schemes param names canvas effects rules completions about help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -705,6 +735,104 @@ _eruptionctl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about)
+            opts="-h --help eruption license help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__eruption)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__help)
+            opts="eruption license help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__help__eruption)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__help__license)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__about__license)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -2113,8 +2241,50 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__help)
-            opts="status switch config devices profiles scripts color-schemes param names canvas effects rules completions help"
+            opts="status switch config devices profiles scripts color-schemes param names canvas effects rules completions about help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__about)
+            opts="eruption license"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__about__eruption)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__about__license)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

@@ -1252,6 +1252,64 @@ _arguments "${_arguments_options[@]}" \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
+(about)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_eruptionctl__about_commands" \
+"*::: :->about" \
+&& ret=0
+
+    case $state in
+    (about)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-about-command-$line[1]:"
+        case $line[1] in
+            (eruption)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(license)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__about__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-about-help-command-$line[1]:"
+        case $line[1] in
+            (eruption)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(license)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help_commands" \
@@ -1704,6 +1762,30 @@ esac
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
+(about)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__about_commands" \
+"*::: :->about" \
+&& ret=0
+
+    case $state in
+    (about)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-about-command-$line[1]:"
+        case $line[1] in
+            (eruption)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(license)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 && ret=0
@@ -1733,9 +1815,27 @@ _eruptionctl_commands() {
 'effects:Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen' \
 'rules:Automatisierungsregeln anzeigen und verwalten' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \
+'about:Informationen über Eruption anzeigen' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about_commands] )) ||
+_eruptionctl__about_commands() {
+    local commands; commands=(
+'eruption:Shows infos about Eruption' \
+'license:Shows infos about the license' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl about commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__about_commands] )) ||
+_eruptionctl__help__about_commands() {
+    local commands; commands=(
+'eruption:Shows infos about Eruption' \
+'license:Shows infos about the license' \
+    )
+    _describe -t commands 'eruptionctl help about commands' commands "$@"
 }
 (( $+functions[_eruptionctl__color-schemes__add_commands] )) ||
 _eruptionctl__color-schemes__add_commands() {
@@ -2257,6 +2357,35 @@ _eruptionctl__rules__help__enable_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl rules help enable commands' commands "$@"
 }
+(( $+functions[_eruptionctl__about__eruption_commands] )) ||
+_eruptionctl__about__eruption_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl about eruption commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about__help__eruption_commands] )) ||
+_eruptionctl__about__help__eruption_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl about help eruption commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__about__eruption_commands] )) ||
+_eruptionctl__help__about__eruption_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help about eruption commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about__help_commands] )) ||
+_eruptionctl__about__help_commands() {
+    local commands; commands=(
+'eruption:Shows infos about Eruption' \
+'license:Shows infos about the license' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl about help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about__help__help_commands] )) ||
+_eruptionctl__about__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl about help help commands' commands "$@"
+}
 (( $+functions[_eruptionctl__canvas__help_commands] )) ||
 _eruptionctl__canvas__help_commands() {
     local commands; commands=(
@@ -2414,6 +2543,7 @@ _eruptionctl__help_commands() {
 'effects:Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen' \
 'rules:Automatisierungsregeln anzeigen und verwalten' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \
+'about:Informationen über Eruption anzeigen' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl help commands' commands "$@"
@@ -2655,6 +2785,21 @@ _eruptionctl__scripts__help__info_commands() {
 _eruptionctl__scripts__info_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts info commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about__help__license_commands] )) ||
+_eruptionctl__about__help__license_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl about help license commands' commands "$@"
+}
+(( $+functions[_eruptionctl__about__license_commands] )) ||
+_eruptionctl__about__license_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl about license commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__about__license_commands] )) ||
+_eruptionctl__help__about__license_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help about license commands' commands "$@"
 }
 (( $+functions[_eruptionctl__canvas__help__lightness_commands] )) ||
 _eruptionctl__canvas__help__lightness_commands() {

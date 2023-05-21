@@ -44,6 +44,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('about', 'about', [CompletionResultType]::ParameterValue, 'Show information about Eruption')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -794,6 +795,39 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'eruptionctl;about' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('eruption', 'eruption', [CompletionResultType]::ParameterValue, 'Shows infos about Eruption')
+            [CompletionResult]::new('license', 'license', [CompletionResultType]::ParameterValue, 'Shows infos about the license')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;about;eruption' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;about;license' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;about;help' {
+            [CompletionResult]::new('eruption', 'eruption', [CompletionResultType]::ParameterValue, 'Shows infos about Eruption')
+            [CompletionResult]::new('license', 'license', [CompletionResultType]::ParameterValue, 'Shows infos about the license')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;about;help;eruption' {
+            break
+        }
+        'eruptionctl;about;help;license' {
+            break
+        }
+        'eruptionctl;about;help;help' {
+            break
+        }
         'eruptionctl;help' {
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Shows the status of Eruption as well as the currently active profile or slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Switch to a different profile or slot')
@@ -808,6 +842,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
+            [CompletionResult]::new('about', 'about', [CompletionResultType]::ParameterValue, 'Show information about Eruption')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -1056,6 +1091,17 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;completions' {
+            break
+        }
+        'eruptionctl;help;about' {
+            [CompletionResult]::new('eruption', 'eruption', [CompletionResultType]::ParameterValue, 'Shows infos about Eruption')
+            [CompletionResult]::new('license', 'license', [CompletionResultType]::ParameterValue, 'Shows infos about the license')
+            break
+        }
+        'eruptionctl;help;about;eruption' {
+            break
+        }
+        'eruptionctl;help;about;license' {
             break
         }
         'eruptionctl;help;help' {
