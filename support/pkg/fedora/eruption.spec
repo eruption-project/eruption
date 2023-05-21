@@ -3,7 +3,7 @@
 %global gittag v0.3
 
 Name:    eruption
-Version: 0.4.0
+Version: 0.5.0
 Release: 0%{?dist}
 Summary: Eruption - Realtime RGB LED Driver for Linux
 URL:     https://eruption-project.org
@@ -23,7 +23,7 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: lua-devel
+BuildRequires: luajit-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
 BuildRequires: gtk3-devel
@@ -38,7 +38,7 @@ Requires: hidapi
 Requires: libevdev
 Requires: spirv-tools
 Requires: shaderc
-Requires: lua
+Requires: luajit
 Requires: gtksourceview4
 Requires: acl
 

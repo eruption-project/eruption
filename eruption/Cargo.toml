@@ -97,7 +97,7 @@ transpose = "0.2.2"
 noise = "0.8.2"
 simdnoise = "3.1.6"
 # lua-src = "546.0.0"
-mlua = { version = "0.9.0-beta.2", features = ["luajit52"] }
+mlua = { version = "0.9.0-beta.2", features = ["luajit"] }
 sysinfo = "0.29.0"
 bincode = "2.0.0-rc.3"
 rustfft = "6.1.0"

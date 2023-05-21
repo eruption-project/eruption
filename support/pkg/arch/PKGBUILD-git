@@ -3,12 +3,12 @@
 pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
-pkgver='0.4.0'
+pkgver='0.5.0'
 pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
-depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4' 'acl')
+depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4' 'acl')
 makedepends=('git' 'rust' 'python' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'vulkan-headers' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtk3')
 provides=('eruption')
 conflicts=('eruption' 'eruption-roccat-vulcan')
