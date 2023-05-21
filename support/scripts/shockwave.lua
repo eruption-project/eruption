@@ -53,8 +53,10 @@ ticks = 0
 local function set_neighbor_states(key_index, value)
     if key_index ~= nil and key_index ~= 0 then
         for i = 1, max_neigh do
-            local neigh_key = n(neighbor_topology[(key_index * max_neigh) + i +
-                                    table_offset])
+            local neigh_key = key_index_to_canvas(n(
+                                                      neighbor_topology[(key_index *
+                                                          max_neigh) + i +
+                                                          table_offset]))
 
             if neigh_key ~= nil and neigh_key ~= 0xff then
                 state_map[neigh_key + 1] = value
@@ -127,7 +129,8 @@ local function update_key_states()
         local pressed = get_key_state(key_index)
 
         if pressed then
-            color_map_afterglow[key_index] = color_afterglow
+            local index = key_index_to_canvas(key_index) + 1
+            color_map_afterglow[index] = color_afterglow
             set_neighbor_states(key_index, key_state.shockwave_origin)
         end
     end
@@ -163,8 +166,10 @@ function on_tick(delta)
 
         -- propagate wave effect
         if not visited_map[i] and state_map[i] >= key_state.shockwave_sentinel then
-            local neigh_key = n(neighbor_topology[(i * max_neigh) + 0 +
-                                    table_offset]) + 1
+            local neigh_key = key_index_to_canvas(n(
+                                                      neighbor_topology[(i *
+                                                          max_neigh) + 0 +
+                                                          table_offset]) + 1)
 
             if neigh_key ~= nil and neigh_key ~= 0xff then
                 state_map[neigh_key] = state_map[i] - shockwave_ttl_decrease
@@ -173,8 +178,10 @@ function on_tick(delta)
                 set_neighbor_states(i, state_map[neigh_key])
             end
         else
-            local neigh_key = n(neighbor_topology[(i * max_neigh) + 0 +
-                                    table_offset]) + 1
+            local neigh_key = key_index_to_canvas(n(
+                                                      neighbor_topology[(i *
+                                                          max_neigh) + 0 +
+                                                          table_offset]) + 1)
 
             if neigh_key ~= 0xff then
                 state_map[neigh_key] = key_state.idle

@@ -19,11 +19,15 @@
 --
 -- global config
 ENABLE_FUNCTION_KEYS = true
-ENABLE_MEDIA_KEYS = true
-ENABLE_MACRO_KEYS = true
+ENABLE_MEDIA_KEYS = false
+ENABLE_MACRO_KEYS = false
+
+MODIFIER_KEY = RIGHT_META
+MODIFIER_KEY_INDEX = 84 -- key_name_to_index("RIGHT_META")
+MODIFIER_KEY_EV_CODE = 255
 
 -- HID key codes
-FN_KEY = 119
+FN_KEY = 255
 GAME_MODE_KEY = 96
 EASY_SHIFT_KEY = 255
 
@@ -61,6 +65,7 @@ key_to_index['MOD_LEFT'] = 11
 key_to_index['LEFT_ALT'] = 17
 key_to_index['SPACE'] = 38
 key_to_index['RIGHT_ALT'] = 71
+key_to_index['RIGHT_META'] = 84
 key_to_index['FN'] = 77
 key_to_index['RIGHT_MENU'] = 84
 key_to_index['RIGHT_CTRL'] = 90

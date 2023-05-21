@@ -106,10 +106,11 @@ local function update_key_states()
 
             if key_index ~= 0 then
                 for i = 1, max_neigh do
-                    local neigh_key = n(
-                                          neighbor_topology[(key_index *
-                                              max_neigh) + i + table_offset]) +
-                                          1
+                    local neigh_key = key_index_to_canvas(n(
+                                                              neighbor_topology[(key_index *
+                                                                  max_neigh) + i +
+                                                                  table_offset]) +
+                                                              1)
 
                     if neigh_key ~= 0xff then
                         grid[index] = 1.5
@@ -120,11 +121,7 @@ local function update_key_states()
     end
 end
 
-function on_render()
-    if effect_ttl > 0 then
-        submit_color_map(color_map)
-    end
-end
+function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
 
 function on_tick(delta)
     ticks = ticks + delta

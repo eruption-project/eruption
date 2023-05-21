@@ -42,16 +42,13 @@ local function update_key_states()
         local pressed = get_key_state(key_index)
 
         if pressed then
-            color_map[key_index_to_canvas(key_index) + 1] = color_afterglow
+            local index = key_index_to_canvas(key_index) + 1
+            color_map[index] = color_afterglow
         end
     end
 end
 
-function on_render()
-    if effect_ttl > 0 then
-        submit_color_map(color_map)
-    end
-end
+function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
 
 function on_tick(delta)
     ticks = ticks + delta

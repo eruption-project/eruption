@@ -30,7 +30,8 @@ RIGHT_CTRL = 4
 LEFT_ALT = 5
 RIGHT_ALT = 6
 RIGHT_MENU = 7
-FN = 8
+RIGHT_META = 8
+FN = 9
 
 -- import user configuration
 require "macros/modifiers"
@@ -129,6 +130,7 @@ function on_startup(config)
     modifier_map[LEFT_ALT] = get_key_state(key_name_to_index("LEFT_ALT"))
     modifier_map[RIGHT_ALT] = get_key_state(key_name_to_index("RIGHT_ALT"))
     modifier_map[RIGHT_MENU] = get_key_state(key_name_to_index("RIGHT_MENU"))
+    modifier_map[RIGHT_META] = get_key_state(key_name_to_index("RIGHT_META"))
     modifier_map[FN] = get_key_state(key_name_to_index("FN"))
 
     for i = 1, canvas_size do
@@ -441,6 +443,13 @@ function on_key_down(key_index)
         modifier_map[LEFT_ALT] = true
     elseif key_index == key_name_to_index("RIGHT_ALT") then
         modifier_map[RIGHT_ALT] = true
+    elseif key_index == key_name_to_index("RIGHT_META") then
+        modifier_map[RIGHT_META] = false
+
+        if MODIFIER_KEY == RIGHT_META then
+            -- consume the menu key
+            consume_key()
+        end
     elseif key_index == key_name_to_index("RIGHT_MENU") then
         modifier_map[RIGHT_MENU] = true
 
@@ -551,6 +560,13 @@ function on_key_up(key_index)
         modifier_map[LEFT_ALT] = false
     elseif key_index == key_name_to_index("RIGHT_ALT") then
         modifier_map[RIGHT_ALT] = false
+    elseif key_index == key_name_to_index("RIGHT_META") then
+        modifier_map[RIGHT_META] = false
+
+        if MODIFIER_KEY == RIGHT_META then
+            -- consume the menu key
+            consume_key()
+        end
     elseif key_index == key_name_to_index("RIGHT_MENU") then
         modifier_map[RIGHT_MENU] = false
 
