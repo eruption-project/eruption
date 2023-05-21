@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Dependencies
-        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev luajit-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -25,7 +25,7 @@ jobs:
           - nightly
     steps:
       - name: Setup Dependencies
-        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev luajit-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
