@@ -19,6 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+mod about;
 mod canvas;
 mod color_schemes;
 mod completions;
@@ -115,6 +116,12 @@ pub enum Subcommands {
 
     #[clap(display_order = 12, hide = true, about(tr!("completions-about")))]
     Completions { shell: clap_complete::Shell },
+
+    #[clap(display_order = 13, about(tr!("about-about")))]
+    About {
+        #[clap(subcommand)]
+        command: about::AboutSubcommands,
+    },
 }
 
 pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
@@ -136,5 +143,6 @@ pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
         Subcommands::Effects { command } => effects::handle_command(command).await,
         Subcommands::Rules { command } => rules::handle_command(command).await,
         Subcommands::Completions { shell } => completions::handle_command(shell).await,
+        Subcommands::About { command } => about::handle_command(command).await,
     }
 }

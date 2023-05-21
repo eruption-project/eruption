@@ -23,6 +23,7 @@ about = A CLI control utility for the Eruption Linux user-mode driver
 verbose-about = Verbose mode (-v, -vv, -vvv, etc.)
 completions-about = Generate shell completions
 
+about-about = Show information about Eruption
 canvas-about = Configure post-processing filters of the global canvas
 config-about = Configuration related sub-commands
 color-scheme-about = Define, import or delete a named color scheme
