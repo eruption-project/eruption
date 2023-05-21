@@ -19,7 +19,7 @@
 
 [D-BUS Service]
 Name=org.eruption
-Exec=/usr/bin/eruption
+Exec=/usr/bin/eruption daemon
 User=eruption
 Group=eruption
 SystemdService=eruption.service

@@ -20,6 +20,7 @@
 */
 
 use clap::{Arg, Command};
+use color_eyre::owo_colors::OwoColorize;
 use config::Config;
 use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
 use hotwatch::{
@@ -394,6 +395,11 @@ fn parse_commandline() -> clap::ArgMatches {
         .version(VERSION.as_str())
         .author("X3n0m0rph59 <x3n0m0rph59@gmail.com>")
         .about("Realtime RGB LED Driver for Linux")
+        .subcommand(
+            Command::new("daemon")
+                .name("daemon")
+                .about("Run in background"),
+        )
         .arg(
             Arg::new("config")
                 .short('c')
@@ -878,18 +884,14 @@ fn run_main_loop(
                 *ACTIVE_PROFILE_NAME.write() = None;
                 saved_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
-                dbus_api_tx
-                    .send(DbusApiEvent::ActiveProfileChanged)
-                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-
                 if let Err(e) = switch_profile(None, dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
+                } else {
+                    FAILED_TXS.write().clear();
+
+                    // reset the audio backend, it will be enabled again if needed
+                    plugins::audio::reset_audio_backend();
                 }
-
-                FAILED_TXS.write().clear();
-
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
             }
         }
 
@@ -897,22 +899,32 @@ fn run_main_loop(
             // slot changed?
             let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
             if active_slot != saved_slot || ACTIVE_PROFILE.read().is_none() {
-                dbus_api_tx
-                    .send(DbusApiEvent::ActiveSlotChanged)
-                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-
                 let profile_path = {
                     let slot_profiles = SLOT_PROFILES.read();
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
                 };
 
-                switch_profile(Some(&profile_path), dbus_api_tx, true)?;
+                if let Err(e) = switch_profile(Some(&profile_path), dbus_api_tx, false) {
+                    error!("Could not switch profiles: {}", e);
+                } else {
+                    dbus_api_tx
+                        .send(DbusApiEvent::ActiveSlotChanged)
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
 
-                saved_slot = active_slot;
-                FAILED_TXS.write().clear();
+                    dbus_api_tx
+                        .send(DbusApiEvent::ActiveProfileChanged)
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending dbus API event: {}", e)
+                        });
 
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
+                    saved_slot = active_slot;
+                    FAILED_TXS.write().clear();
+
+                    // reset the audio backend, it will be enabled again if needed
+                    plugins::audio::reset_audio_backend();
+                }
             }
         }
 
@@ -991,20 +1003,16 @@ fn run_main_loop(
         {
             // active profile name changed?
             if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.read() {
-                dbus_api_tx
-                    .send(DbusApiEvent::ActiveProfileChanged)
-                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-
                 let profile_path = Path::new(active_profile);
 
                 if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
+                } else {
+                    FAILED_TXS.write().clear();
+
+                    // reset the audio backend, it will be enabled again if needed
+                    plugins::audio::reset_audio_backend();
                 }
-
-                FAILED_TXS.write().clear();
-
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
             }
 
             *ACTIVE_PROFILE_NAME.write() = None;
@@ -1013,11 +1021,7 @@ fn run_main_loop(
         {
             // reload of current profile requested?
             if REQUEST_PROFILE_RELOAD.load(Ordering::SeqCst) {
-                // don't notify "active profile changed", since it may deadlock
-
-                // dbus_api_tx
-                //     .send(DbusApiEvent::ActiveProfileChanged)
-                //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+                REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
 
                 let active_profile = ACTIVE_PROFILE.read();
                 let profile_clone = active_profile.clone();
@@ -1029,13 +1033,17 @@ fn run_main_loop(
                     if let Err(e) = switch_profile(Some(&profile.profile_file), dbus_api_tx, false)
                     {
                         error!("Could not reload profile: {}", e);
+                    } else {
+                        // don't notify "active profile changed", since it may deadlock
+
+                        // dbus_api_tx
+                        //     .send(DbusApiEvent::ActiveProfileChanged)
+                        //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+
+                        // reset the audio backend, it will be enabled again if needed
+                        plugins::audio::reset_audio_backend();
                     }
                 }
-
-                REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
-
-                // reset the audio backend, it will be enabled again if needed
-                plugins::audio::reset_audio_backend();
             }
         }
 
@@ -1691,9 +1699,36 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     if atty::is(atty::Stream::Stdout) {
-        // print a license header, except if we are generating shell completions
-        if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
-            print_header();
+        if !env::args().any(|a| a.eq_ignore_ascii_case("daemon"))
+            && !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
+        {
+            // we require the "daemon" subcommand to be specified, as a safety measure to
+            // prevent the accidental execution of another instance of the eruption daemon
+            eprintln!(
+                "Did you probably intend to run the `{}` command instead?",
+                "eruptionctl".bold()
+            );
+            eprintln!("");
+            eprintln!("");
+            eprintln!("If you meant to run the Eruption daemon, please use:");
+            eprintln!(
+                "{}",
+                "sudo systemctl unmask eruption.service && sudo systemctl restart eruption.service"
+                    .bold()
+            );
+            eprintln!("");
+            eprintln!("To run the Eruption daemon from the current shell, please use:");
+            eprintln!(
+                "{}",
+                "sudo -u eruption RUST_LOG=info eruption daemon".bold()
+            );
+
+            return Ok(());
+        } else {
+            // print a license header, except if we are generating shell completions
+            if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) {
+                print_header();
+            }
         }
     }
 
@@ -1840,7 +1875,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                     let (kbd_tx, kbd_rx) = unbounded();
                                     threads::spawn_keyboard_input_thread(
-                                        kbd_tx.clone(),
+                                        kbd_tx,
                                         device.clone(),
                                         index,
                                         usb_vid,
@@ -1878,7 +1913,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         info!("Spawning mouse input thread...");
 
                                         spawn_mouse_input_thread(
-                                            mouse_tx.clone(),
+                                            mouse_tx,
                                             device.clone(),
                                             index,
                                             usb_vid,
@@ -1935,7 +1970,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                                             let (misc_tx, misc_rx) = unbounded();
                                             threads::spawn_misc_input_thread(
-                                                misc_tx.clone(),
+                                                misc_tx,
                                                 device.clone(),
                                                 index,
                                                 usb_vid,
@@ -2018,7 +2053,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         panic!()
                     });
 
-                    *DEV_IO_TX.write() = Some(dev_io_tx.clone());
+                    *DEV_IO_TX.write() = Some(dev_io_tx);
 
                     info!("Late initializations completed");
 

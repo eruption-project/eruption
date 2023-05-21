@@ -45,9 +45,9 @@ pub const NUM_ROWS: usize = 6;
 pub const NUM_COLS: usize = 21;
 #[allow(unused)]
 pub const NUM_LEDS: usize = NUM_ROWS * NUM_COLS;
-pub const NUM_KEYS: usize = 127;
+pub const NUM_KEYS: usize = 135;
 // pub const NUM_RGB: usize = 196;
-pub const LED_INDICES: usize = 127;
+pub const LED_INDICES: usize = 135;
 
 // Wooting protocol v2 constants
 // pub const COMMAND_SIZE: usize = 8;
@@ -55,7 +55,7 @@ pub const LED_INDICES: usize = 127;
 pub const SMALL_PACKET_SIZE: usize = 64;
 pub const SMALL_PACKET_COUNT: usize = 4;
 pub const RESPONSE_SIZE: usize = 256;
-pub const READ_RESPONSE_TIMEOUT: i32 = 250; // Default: 1000;
+pub const READ_RESPONSE_TIMEOUT: i32 = 150; // Default: 1000;
 
 /// Wooting protocol v2 commands
 #[allow(non_camel_case_types)]
@@ -878,7 +878,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         }
 
                         // this device uses a row major layout, starting at the top row, going down
-                        // to the bottom row; so whe have to transpose the color map to the right layout
+                        // to the bottom row; so we have to transpose the color map to the right layout
 
                         let led_map = led_map.to_vec();
 

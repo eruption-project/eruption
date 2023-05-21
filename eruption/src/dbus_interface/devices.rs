@@ -107,6 +107,25 @@ impl InterfaceAddend for DevicesInterface {
                 )
                 .outarg::<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>), _>("values"),
             )
+            .add_m(
+                f.method_with_permission(
+                    "IsDeviceEnabled",
+                    Permission::Settings,
+                    is_device_enabled,
+                )
+                .inarg::<u64, _>("device")
+                .outarg::<bool, _>("status"),
+            )
+            .add_m(
+                f.method_with_permission(
+                    "SetDeviceEnabled",
+                    Permission::Settings,
+                    set_device_enabled,
+                )
+                .inarg::<u64, _>("device")
+                .inarg::<bool, _>("enabled")
+                .outarg::<bool, _>("status"),
+            )
             .add_p(self.device_status_property.clone())
     }
 }
@@ -260,6 +279,24 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
     };
 
     Ok(vec![m.msg.method_return().append1((keyboards, mice, misc))])
+}
+
+fn set_device_enabled(m: &MethodInfo) -> MethodResult {
+    let (device, enabled): (u64, bool) = m.msg.read2()?;
+
+    debug!("Setting device [{}] enabled: '{}'", device, enabled);
+
+    Ok(vec![m.msg.method_return().append1(true)])
+}
+
+fn is_device_enabled(m: &MethodInfo) -> MethodResult {
+    let device: u64 = m.msg.read1()?;
+
+    trace!("Querying device [{}] is enabled", device);
+
+    let result = true;
+
+    Ok(vec![m.msg.method_return().append1(result)])
 }
 
 fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {

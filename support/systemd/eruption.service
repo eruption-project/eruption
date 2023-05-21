@@ -28,7 +28,7 @@ StartLimitBurst=2
 Environment=RUST_LOG=info
 RuntimeDirectory=eruption
 PIDFile=/run/eruption/eruption.pid
-ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf
+ExecStart=/usr/bin/eruption -c /etc/eruption/eruption.conf daemon
 ExecStopPost=-/usr/bin/rm -f /run/eruption/eruption.pid
 TimeoutStopSec=8
 Type=exec

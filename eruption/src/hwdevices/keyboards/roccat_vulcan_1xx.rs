@@ -21,7 +21,7 @@
 
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{s, Array2, Order};
+use ndarray::Array2;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -1014,26 +1014,16 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        let led_map = led_map.to_vec();
+                        let len = led_map.len();
 
                         let led_map = Array2::from_shape_vec(
                             (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
-                            led_map,
+                            led_map.to_vec(),
                         )?;
 
-                        // let shape = (
-                        //     (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
-                        //     Order::ColumnMajor,
-                        // );
-                        // let led_map = led_map.to_shape(shape)?;
-
-                        let led_map = led_map.slice(s![
-                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
-                            self.allocated_zone.y..(self.allocated_zone.y + NUM_ROWS as i32),
-                        ]);
-
-                        let shape = ((NUM_LEDS,), Order::RowMajor);
-                        let led_map = led_map.to_shape(shape)?;
+                        let led_map = led_map.reversed_axes();
+                        let led_map = led_map.t();
+                        let led_map = led_map.into_shape((len,))?;
 
                         // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                         // values for all 12 keys are first then come the green values etc.

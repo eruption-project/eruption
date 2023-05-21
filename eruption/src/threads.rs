@@ -860,15 +860,15 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // execute render "pipeline" now...
                             let mut drop_frame = false;
 
-                            // first, start with a clear canvas
-                            script::LED_MAP.write().copy_from_slice(
-                                &[RGBA {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    a: 0,
-                                }; constants::CANVAS_SIZE],
-                            );
+                            // // first, start with a clear canvas
+                            // script::LED_MAP.write().copy_from_slice(
+                            //     &[RGBA {
+                            //         r: 0,
+                            //         g: 0,
+                            //         b: 0,
+                            //         a: 0,
+                            //     }; constants::CANVAS_SIZE],
+                            // );
 
                             // instruct Lua VMs to realize their color maps,
                             // e.g. to blend their local color maps with the canvas
@@ -942,18 +942,18 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
                                 for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    for (idx, background) in chunks.iter_mut().enumerate() {
-                                        let bg = &background;
+                                    for (idx, canvas) in chunks.iter_mut().enumerate() {
+                                        let bg = &canvas;
                                         let fg = saved_led_map[idx];
 
                                         let color = RGBA {
-                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32 - 127.0).round() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            a: fg.a,
+                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
+                                            a: 255,
                                         };
 
-                                        *background = color;
+                                        *canvas = color;
                                     }
                                 }
                             }
@@ -963,8 +963,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
                             for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                for (idx, background) in chunks.iter_mut().enumerate() {
-                                    let bg = &background;
+                                for (idx, canvas) in chunks.iter_mut().enumerate() {
+                                    let bg = &canvas;
                                     let fg = sdk_led_map[idx];
 
                                     let color = RGBA {
@@ -974,7 +974,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         a: fg.a,
                                     };
 
-                                    *background = color;
+                                    *canvas = color;
                                 }
                             }
 
@@ -984,8 +984,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
                                 for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    for (idx, background) in chunks.iter_mut().enumerate() {
-                                        let bg = &background;
+                                    for (idx, canvas) in chunks.iter_mut().enumerate() {
+                                        let bg = &canvas;
                                         let fg = uleds_led_map[idx];
 
                                         let color = RGBA {
@@ -995,7 +995,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             a: fg.a,
                                         };
 
-                                        *background = color;
+                                        *canvas = color;
                                     }
                                 }
                             }
@@ -1059,7 +1059,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             } else {
                                                 ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
 
-                                                let hidapi = crate::HIDAPI.read();
+                                                let hidapi: parking_lot::lock_api::RwLockReadGuard<parking_lot::RawRwLock, Option<hidapi::HidApi>> = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
 
                                                 device.open(hidapi).unwrap_or_else(|e| {

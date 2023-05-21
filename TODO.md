@@ -9,9 +9,9 @@
 
 _This is a non-exhaustive listing of planned features:_
 
+- GUI support: Improve the GTK3+ based GUI
 - Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 - Improve i18n and l10n: Add more translations
-- GUI support: Improve the GTK3+ based GUI
 - GUI support: Improve the Pyroclasm UI
 - Add a KDE Plasma widget
 - Add a MATE Desktop Applet
@@ -22,8 +22,6 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Slow switching between profiles??
-- Startup: "eruption daemon" instead of eruption without any param
 - eruptionctl effects CLI
 - Add 2D-primitives drawing/rasterization API
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?

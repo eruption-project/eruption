@@ -157,3 +157,9 @@ pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 199;
 
 /// Default X11 display used by the X11 sensor plugin of the eruption-fx-proxy daemon
 pub const DEFAULT_X11_DISPLAY: &str = ":0";
+
+/// Default host name for the eruption-netfx utility
+pub const DEFAULT_HOST: &str = "localhost";
+
+/// Default port number for the eruption-netfx utility
+pub const DEFAULT_PORT: u16 = 2359;
