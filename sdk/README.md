@@ -10,7 +10,7 @@ Here you will find an overview of the documentation available for the Eruption S
 
 ## Supported Programming Languages
 
-The Eruption SDK currently supports the following programming languages and environments: 
+The Eruption SDK currently supports the following programming languages and environments:
 
 * Rust SDK
 * Python 3 SDK

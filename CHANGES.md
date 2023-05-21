@@ -5,6 +5,8 @@ Table of new and noteworthy changes:
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.5.0 | __Unified-canvas Branch__ |
+| 0.5.0 | Implement a unified canvas used by all devices |
+| 0.5.0 | Add support for allocation of per-device zones on the unified canvas |
 | 0.5.0 | Parallel device probing and initialization: The startup of Eruption now only takes the amount of time that the slowest device requires to come up. This is noticeable if you have more than one device managed by Eruption |
 | 0.5.0 | Drag-click support: Tell libinput to not apply a software based button-debounce algorithm to the `Eruption Virtual Mouse` input device |
 | 0.5.0 | Introduce a 2D rasterization API that allows to draw hardware-accelerated 2D-graphics primitives on the virtual canvas |

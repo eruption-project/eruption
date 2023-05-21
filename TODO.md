@@ -22,11 +22,13 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
+- Slow switching between profiles??
+- Startup: "eruption daemon" instead of eruption without any param
+- eruptionctl effects CLI
 - Add 2D-primitives drawing/rasterization API
-- Allocated Zones: Don't poll DBus, use a signal instead?
-- Ambient FX switch not activated correctly
+- Allocated Zones: Don't poll zones via DBus, use a signal instead?
+- Allocated Zones: Add allocated zones support to scripts where applicable
 - Fix directory/file permissions in packaging
 - Update Python SDK (get_canvas)
-- Add allocated zones support to scripts where applicable
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Update all DBus interfaces in rust code

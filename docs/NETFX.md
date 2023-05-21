@@ -1,11 +1,11 @@
 # Network FX Protocol Specification
 
-The Network FX protocol aims to be a simple and efficient protocol, used to assign colors to zones on the unified canvas.
+The Network FX protocol aims to be a simple and efficient protocol, used to assign colors to areas on the unified canvas.
 The Network FX server listens for commands on a TCP socket. Commands simply consist of 5 fields, each separated by a
 colon character (`:`)
 
 The first part of a command specifies a comma separated list, either a single index into the led map (_"the canvas"_),
-or a zone of indices into the led map. Indices are numbered in column-major order, meaning that they are counted
+or an area of indices into the led map. Indices are numbered in column-major order, meaning that they are counted
 column-wise starting from top to bottom and from left to right.
 
 The following four parts of a command specify the components of the desired color, including an alpha channel.
@@ -15,9 +15,9 @@ The order of the components is: First red, then green, then blue and finally the
 
 ## Command Syntax
 
-**ZONE:RED:GREEN:BLUE:ALPHA**
+**AREA:RED:GREEN:BLUE:ALPHA**
 
-**ZONE** can be one of: ALL, N-M or N, where N and M are integers
+**AREA** can be one of: ALL, N-M or N, where N and M are integers
 
 **RED, GREEN, BLUE, ALPHA**: Integers in the range [0..255]
 
@@ -25,13 +25,11 @@ The order of the components is: First red, then green, then blue and finally the
 
 Paint the full canvas red: **ALL:255:0:0:255**
 
-Set ESC key on the keyboard to white: **1:255:255:255:255**
+Set pixel with index 1 to white: **1:255:255:255:255**
 
-Set F1-F3 keys on the keyboard to red: **12,18,24:255:0:0:255**
+Set pixels with indices 12, 18 and 24 to red: **12,18,24:255:0:0:255**
 
-Set center of the keyboard to blue: **23-59:0:0:255:255**
-
-Set "mouse zone" of the canvas to green: **144-180:0:255:00:255**
+Set pixels with indices ranging from 23 to 59 to blue: **23-59:0:0:255:255**
 
 ## Commands
 
