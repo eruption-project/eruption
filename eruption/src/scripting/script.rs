@@ -24,13 +24,17 @@ use lazy_static::lazy_static;
 use mlua::prelude::*;
 use mlua::Function;
 use parking_lot::RwLock;
+use rayon::prelude::IndexedParallelIterator;
+use rayon::prelude::IntoParallelRefIterator;
+use rayon::prelude::IntoParallelRefMutIterator;
+use rayon::prelude::ParallelIterator;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::fs;
 use std::path::Path;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use std::vec::Vec;
 use tracing::*;
@@ -442,26 +446,45 @@ fn on_tick(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<Runn
 }
 
 fn realize_color_map() -> Result<RunningScriptResult> {
-    if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
-        LOCAL_LED_MAP.with(|foreground| {
-            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst) as f32;
+    #[inline]
+    fn alpha_blend(src: &[RGBA], dst: &mut [RGBA], factor: f32) {
+        assert_eq!(src.len(), dst.len());
 
-            for chunks in LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                for (idx, background) in chunks.iter_mut().enumerate() {
-                    let bg = &background;
-                    let fg = foreground.borrow()[idx];
+        dst.par_iter_mut()
+            .zip(src.par_iter())
+            .for_each(|(dst_pixel, src_pixel)| {
+                let src_alpha = src_pixel.a as f32 / 255.0;
+                let dst_alpha = dst_pixel.a as f32 / 255.0;
 
-                    #[rustfmt::skip]
-                    let color = RGBA {
-                        r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness / 100.0) as u32 >> 8) as u8,
-                        g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness / 100.0) as u32 >> 8) as u8,
-                        b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness / 100.0) as u32 >> 8) as u8,
-                        a: fg.a,
+                let blend_alpha = (src_alpha * factor) + dst_alpha * (1.0 - factor);
+
+                if blend_alpha > 0.0 {
+                    let blend_factor = (src_alpha * factor) / blend_alpha;
+
+                    let blended_pixel = RGBA {
+                        r: ((src_pixel.r as f32 * blend_factor
+                            + dst_pixel.r as f32 * (1.0 - blend_factor))
+                            .round()) as u8,
+                        g: ((src_pixel.g as f32 * blend_factor
+                            + dst_pixel.g as f32 * (1.0 - blend_factor))
+                            .round()) as u8,
+                        b: ((src_pixel.b as f32 * blend_factor
+                            + dst_pixel.b as f32 * (1.0 - blend_factor))
+                            .round()) as u8,
+                        a: (blend_alpha * 255.0).round() as u8,
                     };
 
-                    *background = color;
+                    *dst_pixel = blended_pixel;
                 }
-            }
+            });
+    }
+
+    if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
+        LOCAL_LED_MAP.with(|foreground| {
+            LED_MAP
+                .write()
+                .chunks_exact_mut(constants::CANVAS_SIZE)
+                .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks, 0.5));
         });
     }
 

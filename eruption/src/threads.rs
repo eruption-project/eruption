@@ -23,6 +23,10 @@ use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
 use flume::{unbounded, Receiver, Sender};
 use palette::{FromColor, Hsva, Lighten, LinSrgba, Saturate, ShiftHue};
+use rayon::prelude::{
+    IndexedParallelIterator, IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator,
+};
+use rayon::slice::ParallelSliceMut;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
@@ -899,7 +903,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                     if errors_present {
                                         drop_frame = true;
-                                        warn!("Frame dropped: Timeout while waiting for the color map!");
+                                        warn!("Frame dropped: Error while waiting for the color map!");
                                         break;
                                     }
 
@@ -919,6 +923,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 }
                             }
 
+                            #[inline]
                             fn ease_in_out_quad(x: f32) -> f32 {
                                 if x < 0.5 {
                                     2.0 * x * x
@@ -928,76 +933,37 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             }
 
                             // alpha blend the color maps of the last active profile with the current canvas
+                            let fader_base = crate::FADER_BASE.load(Ordering::SeqCst);
                             let fader = crate::FADER.load(Ordering::SeqCst);
-                            if fader > 0 {
-                                let fader_base = crate::FADER_BASE.load(Ordering::SeqCst);
 
-                                let alpha = if fader_base > 0 && fader > 0 {
-                                    1.0 - ease_in_out_quad(1.0 - (fader as f32 / fader_base as f32))
-                                } else {
-                                    0.0
-                                } * 255.0;
+                            // let alpha = fader as f32 / fader_base as f32;
+                            let alpha = if fader_base > 0 && fader > 0 {
+                                ease_in_out_quad(fader as f32 / fader_base as f32)
+                            } else {
+                                0.0
+                            };
 
+                            if alpha > 0.0 {
                                 let saved_led_map = script::SAVED_LED_MAP.read();
-                                let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    for (idx, canvas) in chunks.iter_mut().enumerate() {
-                                        let bg = &canvas;
-                                        let fg = saved_led_map[idx];
-
-                                        let color = RGBA {
-                                            r: ((((alpha * fg.r as f32 + (255.0 - fg.a as f32 * alpha) * bg.r as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            g: ((((alpha * fg.g as f32 + (255.0 - fg.a as f32 * alpha) * bg.g as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            b: ((((alpha * fg.b as f32 + (255.0 - fg.a as f32 * alpha) * bg.b as f32 - 255.0).floor() * brightness as f32 / 100.0)) as u32 >> 8) as u8,
-                                            a: 255,
-                                        };
-
-                                        *canvas = color;
-                                    }
+                                for canvas in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                    alpha_blend(&saved_led_map, canvas,alpha);
                                 }
                             }
 
                             // finally, blend the LED map of the SDK support plugin
                             let sdk_led_map = sdk_support::LED_MAP.read();
-                            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
-
-                            for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                for (idx, canvas) in chunks.iter_mut().enumerate() {
-                                    let bg = &canvas;
-                                    let fg = sdk_led_map[idx];
-
-                                    let color = RGBA {
-                                        r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                        g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                        b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                        a: fg.a,
-                                    };
-
-                                    *canvas = color;
-                                }
-                            }
+                            script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
+                                alpha_blend(&sdk_led_map, chunks, 0.5);
+                            });
 
                             if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                                 // blend the LED map of the Userspace LEDs support plugin
                                 let uleds_led_map = uleds::LED_MAP.read();
-                                let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
 
-                                for chunks in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    for (idx, canvas) in chunks.iter_mut().enumerate() {
-                                        let bg = &canvas;
-                                        let fg = uleds_led_map[idx];
-
-                                        let color = RGBA {
-                                            r: ((((fg.a as f32) * fg.r as f32 + (255 - fg.a) as f32 * bg.r as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            g: ((((fg.a as f32) * fg.g as f32 + (255 - fg.a) as f32 * bg.g as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            b: ((((fg.a as f32) * fg.b as f32 + (255 - fg.a) as f32 * bg.b as f32).floor() * brightness as f32 / 100.0) as u32 >> 8) as u8,
-                                            a: fg.a,
-                                        };
-
-                                        *canvas = color;
-                                    }
-                                }
+                                script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
+                                    alpha_blend(&uleds_led_map, chunks, 0.5);
+                                });
                             }
 
                             // number of pending blend ops should have reached zero by now
@@ -1011,13 +977,17 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             }
 
                             // apply global post-processing
+                            let brightness = crate::BRIGHTNESS.load(Ordering::SeqCst);
+
                             let hsl = *crate::CANVAS_HSL.read();
 
                             let hue_value = hsl.0;
                             let saturation_value = hsl.1 / 100.0;
                             let lighten_value = hsl.2 / 100.0;
+                            let brightness = brightness as f64 / 100.0 * 255.0;
 
-                            for (_idx, color_val) in script::LED_MAP.write().iter_mut().enumerate() {
+
+                            script::LED_MAP.write().par_iter_mut().for_each(|color_val| {
                                 let color = LinSrgba::new(
                                     color_val.r as f64 / 255.0,
                                     color_val.g as f64 / 255.0,
@@ -1030,19 +1000,19 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     color
                                         .shift_hue(hue_value)
                                         .saturate(saturation_value)
-                                        .lighten(lighten_value),
-                                )
+                                        .lighten(lighten_value)
+                                    )
                                 .into_components();
 
-                                color_val.r = (color.0 * 255.0) as u8;
-                                color_val.g = (color.1 * 255.0) as u8;
-                                color_val.b = (color.2 * 255.0) as u8;
-                                color_val.a = (color.3 * 255.0) as u8;
-                            }
+                                color_val.r = (color.0 * brightness).round() as u8;
+                                color_val.g = (color.1 * brightness).round() as u8;
+                                color_val.b = (color.2 * brightness).round() as u8;
+                                color_val.a = 255 as u8;
+                            });
 
-                            // send the final (combined) color map to all of the devices
+                            // send the final (combined) color map to all of the devices, in parallel
                             if !drop_frame {
-                                for keyboard_device in crate::KEYBOARD_DEVICES.read().iter() {
+                                crate::KEYBOARD_DEVICES.read().par_iter().for_each(|keyboard_device| {
                                     if let Some(mut device) = keyboard_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
@@ -1078,9 +1048,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     } else {
                                         debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
-                                }
+                                });
 
-                                for mouse_device in crate::MOUSE_DEVICES.read().iter() {
+                                crate::MOUSE_DEVICES.read().par_iter().for_each(|mouse_device|  {
                                     if let Some(mut device) = mouse_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
@@ -1116,9 +1086,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     } else {
                                         debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
-                                }
+                                });
 
-                                for misc_device in crate::MISC_DEVICES.read().iter() {
+                                crate::MISC_DEVICES.read().par_iter().for_each(|misc_device| {
                                     if let Some(mut device) = misc_device.try_write() {
                                         if let Ok(is_initialized) = device.is_initialized() {
                                             if is_initialized {
@@ -1154,7 +1124,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     } else {
                                         debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
                                     }
-                                }
+                                });
 
                                 // update the current frame generation
                                 saved_frame_generation.store(current_frame_generation, Ordering::SeqCst);
@@ -1185,4 +1155,37 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
     })?;
 
     Ok(())
+}
+
+#[inline]
+fn alpha_blend(src: &[RGBA], dst: &mut [RGBA], factor: f32) {
+    assert_eq!(src.len(), dst.len());
+
+    dst.par_iter_mut()
+        .zip(src.par_iter())
+        .for_each(|(dst_pixel, src_pixel)| {
+            let src_alpha = src_pixel.a as f32 / 255.0;
+            let dst_alpha = dst_pixel.a as f32 / 255.0;
+
+            let blend_alpha = (src_alpha * factor) + dst_alpha * (1.0 - factor);
+
+            if blend_alpha > 0.0 {
+                let blend_factor = (src_alpha * factor) / blend_alpha;
+
+                let blended_pixel = RGBA {
+                    r: ((src_pixel.r as f32 * blend_factor
+                        + dst_pixel.r as f32 * (1.0 - blend_factor))
+                        .round()) as u8,
+                    g: ((src_pixel.g as f32 * blend_factor
+                        + dst_pixel.g as f32 * (1.0 - blend_factor))
+                        .round()) as u8,
+                    b: ((src_pixel.b as f32 * blend_factor
+                        + dst_pixel.b as f32 * (1.0 - blend_factor))
+                        .round()) as u8,
+                    a: (blend_alpha * 255.0).round() as u8,
+                };
+
+                *dst_pixel = blended_pixel;
+            }
+        });
 }
