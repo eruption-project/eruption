@@ -90,7 +90,7 @@ raqote = "0.8.2"
 # image = "0.24.6"
 # imageproc = { version = "0.23.0", features = ["rayon"] }
 resize = "0.7.4"
-palette = "0.7.1"
+palette = "0.7.2"
 nalgebra = "0.32.2"
 ndarray = "0.15.6"
 transpose = "0.2.2"
