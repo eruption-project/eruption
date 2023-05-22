@@ -631,6 +631,10 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
         }),
     );
 
+    if let Some(iter) = color_schemes_treestore.iter_first() {
+        color_schemes_treeview.selection().select_iter(&iter);
+    }
+
     timers::register_timer(
         timers::COLOR_SCHEMES_TIMER_ID,
         TimerMode::ActiveStackPage(Pages::ColorSchemes as u8),
