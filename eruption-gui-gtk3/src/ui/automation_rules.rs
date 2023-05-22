@@ -430,7 +430,7 @@ pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
     // application.set_action_group(Some(&action_group));
 
     rules_treeview.selection().connect_mode_notify(
-        clone!(@weak edit_rule, @weak remove_rule  => move |_sel| {
+        clone!(@weak edit_rule, @weak remove_rule => move |_sel| {
 
         }),
     );

@@ -747,26 +747,28 @@ impl Zone {
     }
 
     pub fn defaults_for(device_class: DeviceClass) -> Self {
+        const SCALE_FACTOR: i32 = 2;
+
         match device_class {
             DeviceClass::Keyboard => Self {
-                x: constants::CANVAS_WIDTH as i32 / 2 - 12,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 5,
-                width: 21,
-                height: 6,
+                x: constants::CANVAS_WIDTH as i32 / 2 - 12 * SCALE_FACTOR,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 5 * SCALE_FACTOR,
+                width: 21 * SCALE_FACTOR,
+                height: 6 * SCALE_FACTOR,
             },
 
             DeviceClass::Mouse => Self {
-                x: constants::CANVAS_WIDTH as i32 - 6,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 2,
-                width: 5,
-                height: 5,
+                x: constants::CANVAS_WIDTH as i32 - 6 * SCALE_FACTOR,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 2 * SCALE_FACTOR,
+                width: 5 * SCALE_FACTOR,
+                height: 5 * SCALE_FACTOR,
             },
 
             DeviceClass::Misc => Self {
-                x: constants::CANVAS_WIDTH as i32 / 2 - 4,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 10,
-                width: 8,
-                height: 1,
+                x: constants::CANVAS_WIDTH as i32 / 2 - 4 * SCALE_FACTOR,
+                y: constants::CANVAS_HEIGHT as i32 / 2 - 10 * SCALE_FACTOR,
+                width: 8 * SCALE_FACTOR,
+                height: 1 * SCALE_FACTOR,
             },
 
             DeviceClass::Unknown => Self::empty(),

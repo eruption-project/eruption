@@ -48,7 +48,6 @@ use std::{env, process};
 
 use util::RGBA;
 
-use crate::dbus_client::Zone;
 use crate::error_log::ErrorType;
 use crate::util::ratelimited;
 
@@ -64,6 +63,7 @@ mod scripting;
 mod timers;
 mod ui;
 mod util;
+mod zone;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
@@ -145,9 +145,6 @@ lazy_static! {
 
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
-
-    /// Per-device allocated zones on the unified canvas
-    pub static ref ZONES: Arc<Mutex<Vec<(u64, Zone)>>> = Arc::new(Mutex::new(vec![]));
 
     /// Global configuration
     pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));

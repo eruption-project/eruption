@@ -19,11 +19,14 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use dbus::arg::{Iter, IterAppend};
+use dbus::{
+    arg::{Iter, IterAppend},
+    MethodErr,
+};
 use dbus_tree::{Access, EmitsChangedSignal, MethodResult, Signal};
 use std::sync::Arc;
 
-use crate::hwdevices::Zone;
+use crate::{constants, hwdevices::Zone};
 
 use super::{
     convenience::PropertyWithPermission,
@@ -119,6 +122,15 @@ impl InterfaceAddend for CanvasInterface {
                 )
                 .inarg::<Vec<(u64, Zone)>, _>("zones"),
             )
+            .add_m(
+                f.method_with_permission(
+                    "SetDeviceZoneAllocation",
+                    Permission::Settings,
+                    set_device_zone_allocation,
+                )
+                .inarg::<u64, _>("device")
+                .inarg::<Zone, _>("zone"),
+            )
     }
 }
 
@@ -183,11 +195,55 @@ fn get_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
     Ok(vec![m.msg.method_return().append1(result)])
 }
 
-fn set_devices_zone_allocations(_m: &super::MethodInfo) -> MethodResult {
-    // let result = serde_json::to_string_pretty(&device_status)
-    //     .map_err(|e| MethodErr::failed(&format!("{e}")))?;
+fn set_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
+    Ok(vec![m.msg.method_return()])
+}
 
-    // Ok(vec![m.msg.method_return().append1(result)])
+fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
+    let (device, zone): (u64, (i32, i32, i32, i32)) = m.msg.read2()?;
 
-    Ok(vec![])
+    let zone = Zone::new(zone.0, zone.1, zone.2, zone.3);
+
+    if zone.x < 0
+        || zone.x > constants::CANVAS_WIDTH as i32
+        || zone.y < 0
+        || zone.y > constants::CANVAS_HEIGHT as i32
+        || zone.x2() < 0
+        || zone.x2() > constants::CANVAS_WIDTH as i32
+        || zone.y2() < 0
+        || zone.y2() > constants::CANVAS_HEIGHT as i32
+    {
+        return Err(MethodErr::failed("Invalid zone dimensions"));
+    }
+
+    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
+        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
+
+        device.write().set_zone_allocation(zone);
+
+        Ok(vec![m.msg.method_return()])
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
+    {
+        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
+        let device = &crate::MOUSE_DEVICES.read()[index];
+
+        device.write().set_zone_allocation(zone);
+
+        Ok(vec![m.msg.method_return()])
+    } else if (device as usize)
+        < (crate::KEYBOARD_DEVICES.read().len()
+            + crate::MOUSE_DEVICES.read().len()
+            + crate::MISC_DEVICES.read().len())
+    {
+        let index = device as usize
+            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
+        let device = &crate::MISC_DEVICES.read()[index];
+
+        device.write().set_zone_allocation(zone);
+
+        Ok(vec![m.msg.method_return()])
+    } else {
+        Err(MethodErr::failed("Invalid device index"))
+    }
 }

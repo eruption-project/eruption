@@ -21,15 +21,18 @@
 
 use eruption_sdk::connection::Connection;
 use eruption_sdk::connection::ConnectionType;
+use gdk::CursorType;
 use gio::prelude::*;
 use glib::clone;
 use glib::IsA;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::Justification;
+use parking_lot::RwLock;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 use crate::dbus_client;
 use crate::device;
@@ -60,6 +63,9 @@ pub enum MainError {
 
 lazy_static! {
     pub static ref SUBPAGES_INITIALIZED: AtomicBool = AtomicBool::new(false);
+
+    /// The cursor type that will be set during the next iteration of the main loop
+    pub static ref CURSOR_TYPE: Arc<RwLock<Option<CursorType>>> = Arc::new(RwLock::new(None));
 }
 
 /// Search the list of available profiles and return the
@@ -1174,6 +1180,17 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
         TimerMode::Periodic,
         1000 / (crate::constants::TARGET_FPS * 2),
         move || {
+            // HACK: hijack this timer routine to set the application-wide cursor shape
+            if let Some(window) = main_window.window() {
+                let display = window.display();
+
+                if let Some(cursor_type) = *CURSOR_TYPE.read() {
+                    window.set_cursor(gdk::Cursor::for_display(&display, cursor_type).as_ref());
+                } else {
+                    window.set_cursor(None);
+                }
+            }
+
             let page = crate::ACTIVE_PAGE.load(Ordering::SeqCst);
             if page == Pages::Canvas as usize
                 || page == Pages::Keyboards as usize
