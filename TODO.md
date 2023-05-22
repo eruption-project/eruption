@@ -22,11 +22,12 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- eruptionctl effects CLI
 - Add 2D-primitives drawing/rasterization API
+- eruptionctl effects CLI
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
 - Fix directory/file permissions in packaging
 - Update Python SDK (get_canvas)
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Update all DBus interfaces in rust code
+- Update docs/ directory
