@@ -893,7 +893,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         .unwrap_or_else(|e| {
                                             errors_present = true;
 
-                                            warn!("Send error during realization of color maps: {}", e);
+                                            // this will happen most likely during switching of profiles
+                                            ratelimited::debug!("Send error during realization of color maps: {}", e);
                                             FAILED_TXS.write().insert(index);
 
                                             // break all locks by re-entering the main loop
@@ -903,7 +904,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                     if errors_present {
                                         drop_frame = true;
-                                        warn!("Frame dropped: Error while waiting for the color map!");
+                                        ratelimited::debug!("Frame dropped: Error while waiting for the color map");
                                         break;
                                     }
 
@@ -914,7 +915,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                     if result.timed_out() {
                                         drop_frame = true;
-                                        warn!("Frame dropped: Timeout while waiting for a lock!");
+                                        ratelimited::warn!("Frame dropped: Timeout while waiting for a lock");
                                         break;
                                     }
                                 } else {
