@@ -55,9 +55,11 @@ pub fn initialize_misc_page(
     let device_brightness_scale: gtk::Scale = template.object("misc_brightness_scale").unwrap();
 
     let _misc_signal_label: gtk::Label = template.object("misc_signal_label").unwrap();
-    let _signal_strength_indicator: gtk::LevelBar = template.object("misc_signal_strength").unwrap();
+    let _signal_strength_indicator: gtk::LevelBar =
+        template.object("misc_signal_strength").unwrap();
 
-    let _misc_battery_level_label: gtk::Label = template.object("misc_battery_level_label").unwrap();
+    let _misc_battery_level_label: gtk::Label =
+        template.object("misc_battery_level_label").unwrap();
     let _battery_level_indicator: gtk::LevelBar = template.object("misc_battery_level").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
