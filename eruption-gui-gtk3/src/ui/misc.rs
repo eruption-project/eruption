@@ -54,11 +54,11 @@ pub fn initialize_misc_page(
 
     let device_brightness_scale: gtk::Scale = template.object("misc_brightness_scale").unwrap();
 
-    let misc_signal_label: gtk::Label = template.object("misc_signal_label").unwrap();
-    let signal_strength_indicator: gtk::LevelBar = template.object("misc_signal_strength").unwrap();
+    let _misc_signal_label: gtk::Label = template.object("misc_signal_label").unwrap();
+    let _signal_strength_indicator: gtk::LevelBar = template.object("misc_signal_strength").unwrap();
 
-    let misc_battery_level_label: gtk::Label = template.object("misc_battery_level_label").unwrap();
-    let battery_level_indicator: gtk::LevelBar = template.object("misc_battery_level").unwrap();
+    let _misc_battery_level_label: gtk::Label = template.object("misc_battery_level_label").unwrap();
+    let _battery_level_indicator: gtk::LevelBar = template.object("misc_battery_level").unwrap();
 
     let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
@@ -102,42 +102,42 @@ pub fn initialize_misc_page(
         gtk::Inhibit(false)
     });
 
-    // near realtime update path
-    timers::register_timer(
-        timers::MISC_TIMER_ID + device as usize,
-        TimerMode::ActiveStackPage(Pages::Misc as u8),
-        250,
-        clone!(@weak signal_strength_indicator, @weak battery_level_indicator,
-                    @weak misc_signal_label, @weak misc_battery_level_label =>
-                    @default-return Ok(()), move || {
+    // // near realtime update path
+    // timers::register_timer(
+    //     timers::MISC_TIMER_ID + device as usize,
+    //     TimerMode::ActiveStackPage(Pages::Misc as u8),
+    //     250,
+    //     clone!(@weak signal_strength_indicator, @weak battery_level_indicator,
+    //                 @weak misc_signal_label, @weak misc_battery_level_label =>
+    //                 @default-return Ok(()), move || {
 
-            // device status
-            if let Ok(device_status) = util::get_device_status(misc_device_handle) {
-                if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
-                    let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
+    //         // device status
+    //         if let Ok(device_status) = util::get_device_status(misc_device_handle) {
+    //             if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
+    //                 let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
-                    signal_strength_indicator.set_value(value as f64 / 100.0);
-                    signal_strength_indicator.show_all();
-                } else {
-                    signal_strength_indicator.hide();
-                }
+    //                 signal_strength_indicator.set_value(value as f64 / 100.0);
+    //                 signal_strength_indicator.show_all();
+    //             } else {
+    //                 signal_strength_indicator.hide();
+    //             }
 
-                if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
-                    let value = battery_level_percent.parse::<i32>().unwrap_or(0);
+    //             if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
+    //                 let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
-                    battery_level_indicator.set_value(value as f64 / 100.0);
-                    battery_level_indicator.show_all();
-                } else {
-                    battery_level_indicator.hide();
-                }
-            } else {
-                signal_strength_indicator.hide();
-                battery_level_indicator.hide();
-            }
+    //                 battery_level_indicator.set_value(value as f64 / 100.0);
+    //                 battery_level_indicator.show_all();
+    //             } else {
+    //                 battery_level_indicator.hide();
+    //             }
+    //         } else {
+    //             signal_strength_indicator.hide();
+    //             battery_level_indicator.hide();
+    //         }
 
-            Ok(())
-        }),
-    )?;
+    //         Ok(())
+    //     }),
+    // )?;
 
     // // fast update path
     // glib::timeout_add_local(

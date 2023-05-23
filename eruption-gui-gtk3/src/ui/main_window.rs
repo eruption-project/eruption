@@ -1303,7 +1303,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         // instantiate the devices sub-pages
         let devices = dbus_client::get_managed_devices()?;
 
-        ui::canvas::fetch_allocated_zones(&builder)?;
+        ui::canvas::fetch_allocated_zones(builder)?;
 
         let mut device_index = 0;
 

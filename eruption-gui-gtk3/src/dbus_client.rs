@@ -46,6 +46,9 @@ pub enum Message {
     /// A device has been hotplugged
     DeviceHotplug((u16, u16, bool)),
 
+    /// A device's status has been updated
+    DeviceStatusChanged(String),
+
     /// Brightness has been changed
     BrightnessChanged(i64),
 
@@ -207,6 +210,18 @@ pub fn spawn_dbus_event_loop_system(
         )?;
 
         let _id4_1 = devices_proxy.match_signal(
+            clone!(@strong tx => move |h: devices::OrgEruptionDeviceDeviceStatusChanged,
+                  _: &Connection,
+                  _message: &dbus::Message| {
+
+                tx.send(Message::DeviceStatusChanged(h.status))
+                    .unwrap();
+
+                true
+            }),
+        )?;
+
+        let _id4_2 = devices_proxy.match_signal(
             clone!(@strong tx => move |_h: PropertiesPropertiesChanged,
                   _: &Connection,
                   _message: &dbus::Message| {

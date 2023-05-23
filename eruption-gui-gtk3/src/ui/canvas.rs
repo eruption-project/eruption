@@ -428,9 +428,9 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     drawing_area_zones.connect_button_press_event(
         clone!(@weak builder => @default-return gtk::Inhibit(true), move |da, event| drawing_area_button_press(da, event, &builder)),
     );
-    drawing_area_zones.connect_button_release_event(&drawing_area_button_release);
+    drawing_area_zones.connect_button_release_event(drawing_area_button_release);
 
-    drawing_area_zones.connect_motion_notify_event(&drawing_area_motion_notify);
+    drawing_area_zones.connect_motion_notify_event(drawing_area_motion_notify);
 
     // update the global LED color map vector
     timers::register_timer(
@@ -468,7 +468,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     //     }),
     // )?;
 
-    fetch_allocated_zones(&builder)?;
+    fetch_allocated_zones(builder)?;
 
     canvas_stack.set_visible_child_name("page0");
 
@@ -812,18 +812,17 @@ fn drawing_area_motion_notify(da: &gtk::DrawingArea, event: &gdk::EventMotion) -
                             } else if zone.height < 1 {
                                 zone.height = 1;
                             } else if zone.x2() > constants::CANVAS_WIDTH as i32 {
-                                zone.x =
-                                    zone.x - (zone.x2() - (constants::CANVAS_WIDTH as i32 + 1));
+                                zone.x -= zone.x2() - (constants::CANVAS_WIDTH as i32 + 1);
                             } else if zone.y2() > constants::CANVAS_HEIGHT as i32 {
-                                zone.y =
-                                    zone.y - (zone.y2() - (constants::CANVAS_HEIGHT as i32 + 1));
+                                zone.y -= zone.y2() - (constants::CANVAS_HEIGHT as i32 + 1);
                             }
 
-                            let _ = dbus_client::set_device_zone_allocation(*device, &zone)
-                                .map_err(|e| {
+                            let _ = dbus_client::set_device_zone_allocation(*device, zone).map_err(
+                                |e| {
                                     notifications::error(&format!("Could not update zone: {e}"));
                                     tracing::error!("Could not update zone: {e}");
-                                });
+                                },
+                            );
                         }
                     }
 
@@ -896,12 +895,10 @@ fn render_canvas(
                     } else {
                         state = ZoneDrawState::Selected;
                     }
+                } else if hover_zone.is_some() && *zone == hover_zone.unwrap() {
+                    state = ZoneDrawState::Hover;
                 } else {
-                    if hover_zone.is_some() && *zone == hover_zone.unwrap() {
-                        state = ZoneDrawState::Hover;
-                    } else {
-                        state = ZoneDrawState::Normal;
-                    }
+                    state = ZoneDrawState::Normal;
                 }
 
                 paint_zone(
@@ -1101,7 +1098,7 @@ fn paint_cell(
 
     cr.set_source_rgba(color.0, color.1, color.2, 1.0);
 
-    cr.set_source_rgba(color.0 as f64, color.1 as f64, color.2 as f64, 1.0);
+    cr.set_source_rgba(color.0, color.1, color.2, 1.0);
     cr.rectangle(
         cell_def.x - 0.5,
         cell_def.y - 0.5,
@@ -1127,7 +1124,7 @@ fn select_row_by_device(tree_view: &gtk::TreeView, device: u64) {
             }
         }
 
-        if !model.iter_next(&row) {
+        if !model.iter_next(row) {
             break;
         }
     }

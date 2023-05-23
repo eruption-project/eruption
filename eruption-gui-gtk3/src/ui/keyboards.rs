@@ -26,7 +26,7 @@ use crate::timers::TimerMode;
 use crate::util;
 use glib_macros::clone;
 use gtk::glib;
-use gtk::prelude::{BuilderExtManual, LabelExt, LevelBarExt, RangeExt, WidgetExt};
+use gtk::prelude::{BuilderExtManual, LabelExt, RangeExt, WidgetExt};
 
 use super::hwdevices::keyboards::get_keyboard_device;
 use super::Pages;
@@ -62,9 +62,9 @@ pub fn initialize_keyboard_page(
     let make_and_model = keyboard_device.get_make_and_model();
     keyboard_name_label.set_label(&format!("{} {}", make_and_model.0, make_and_model.1));
 
-    let signal_strength_indicator: gtk::LevelBar =
-        template.object("keyboard_signal_strength").unwrap();
-    let battery_level_indicator: gtk::LevelBar = template.object("keyboard_battery_level").unwrap();
+    // let signal_strength_indicator: gtk::LevelBar =
+    //     template.object("keyboard_signal_strength").unwrap();
+    // let battery_level_indicator: gtk::LevelBar = template.object("keyboard_battery_level").unwrap();
 
     let keyboard_device_handle = keyboard_device.get_device();
 
@@ -99,41 +99,41 @@ pub fn initialize_keyboard_page(
         gtk::Inhibit(false)
     });
 
-    // near realtime update path
-    timers::register_timer(
-        timers::KEYBOARD_TIMER_ID + device as usize,
-        TimerMode::ActiveStackPage(Pages::Keyboards as u8),
-        139,
-        clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
-                    @default-return Ok(()), move || {
+    // // near realtime update path
+    // timers::register_timer(
+    //     timers::KEYBOARD_TIMER_ID + device as usize,
+    //     TimerMode::ActiveStackPage(Pages::Keyboards as u8),
+    //     139,
+    //     clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
+    //                 @default-return Ok(()), move || {
 
-            // device status
-            if let Ok(device_status) = util::get_device_status(keyboard_device_handle) {
-                if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
-                    let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
+    //         // device status
+    //         if let Ok(device_status) = util::get_device_status(keyboard_device_handle) {
+    //             if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
+    //                 let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
-                    signal_strength_indicator.set_value(value as f64 / 100.0);
-                    signal_strength_indicator.show();
-                } else {
-                    signal_strength_indicator.hide();
-                }
+    //                 signal_strength_indicator.set_value(value as f64 / 100.0);
+    //                 signal_strength_indicator.show();
+    //             } else {
+    //                 signal_strength_indicator.hide();
+    //             }
 
-                if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
-                    let value = battery_level_percent.parse::<i32>().unwrap_or(0);
+    //             if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
+    //                 let value = battery_level_percent.parse::<i32>().unwrap_or(0);
 
-                    battery_level_indicator.set_value(value as f64 / 100.0);
-                    battery_level_indicator.show();
-                } else {
-                    battery_level_indicator.hide();
-                }
-            } else {
-                signal_strength_indicator.hide();
-                battery_level_indicator.hide();
-            }
+    //                 battery_level_indicator.set_value(value as f64 / 100.0);
+    //                 battery_level_indicator.show();
+    //             } else {
+    //                 battery_level_indicator.hide();
+    //             }
+    //         } else {
+    //             signal_strength_indicator.hide();
+    //             battery_level_indicator.hide();
+    //         }
 
-            Ok(())
-        }),
-    )?;
+    //         Ok(())
+    //     }),
+    // )?;
 
     timers::register_timer(
         timers::KEYBOARD_RENDER_TIMER_ID + device as usize,

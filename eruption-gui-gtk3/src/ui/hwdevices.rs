@@ -19,6 +19,31 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use std::collections::HashMap;
+
 pub mod keyboards;
 pub mod mice;
 pub mod misc;
+
+/// Generic Device status information, like e.g.: 'signal strength' or 'battery level'
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct DeviceStatus(pub HashMap<String, String>);
+
+impl std::ops::Deref for DeviceStatus {
+    type Target = HashMap<String, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Default for DeviceStatus {
+    fn default() -> Self {
+        let map = HashMap::new();
+
+        // fill in default values
+        // map.insert("connected".to_owned(), format!("{}", true));
+
+        Self(map)
+    }
+}

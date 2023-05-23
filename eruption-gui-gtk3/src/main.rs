@@ -36,6 +36,8 @@ use i18n_embed::{
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
+
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::env::args;
 use std::path::{Path, PathBuf};
@@ -49,6 +51,7 @@ use std::{env, process};
 use util::RGBA;
 
 use crate::error_log::ErrorType;
+use crate::ui::hwdevices::{self, DeviceStatus};
 use crate::util::ratelimited;
 
 mod color_scheme;
@@ -145,6 +148,9 @@ lazy_static! {
 
     /// Current LED color map
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
+
+    /// Device status
+    pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> = Arc::new(RwLock::new(HashMap::new()));
 
     /// Global configuration
     pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
@@ -612,6 +618,27 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             dbus_client::Message::DeviceHotplug(_device_info) => {
                 tracing::info!("A device has been hotplugged/removed");
                 ui::main_window::update_main_window(builder)?;
+            }
+
+            dbus_client::Message::DeviceStatusChanged(ref status_json) => {
+                #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+                struct DeviceStatus {
+                    index: u64,
+                    usb_vid: u16,
+                    usb_pid: u16,
+                    status: hwdevices::DeviceStatus,
+                }
+
+                let status_vec = serde_json::from_str::<Vec<DeviceStatus>>(status_json)?;
+
+                let mut status_map = HashMap::new();
+                status_vec.iter().for_each(|s| {
+                    status_map.insert(s.index, s.status.clone());
+                });
+
+                // tracing::debug!("A device status update has been received: {status_map:#?}");
+
+                *crate::DEVICE_STATUS.write() = status_map;
             }
         }
     }

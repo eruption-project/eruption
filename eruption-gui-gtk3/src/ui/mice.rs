@@ -65,9 +65,9 @@ pub fn initialize_mouse_page(
     let mouse_dpi_label: gtk::Label = template.object("mouse_dpi_label").unwrap();
     let mouse_profile_label: gtk::Label = template.object("mouse_profile_label").unwrap();
 
-    let signal_strength_indicator: gtk::LevelBar =
-        template.object("mouse_signal_strength").unwrap();
-    let battery_level_indicator: gtk::LevelBar = template.object("mouse_battery_level").unwrap();
+    // let signal_strength_indicator: gtk::LevelBar =
+    //     template.object("mouse_signal_strength").unwrap();
+    // let battery_level_indicator: gtk::LevelBar = template.object("mouse_battery_level").unwrap();
 
     let debounce_switch: gtk::Switch = template.object("debounce_switch").unwrap();
     let angle_snapping_switch: gtk::Switch = template.object("angle_snapping_switch").unwrap();
@@ -127,42 +127,11 @@ pub fn initialize_mouse_page(
 
     // near realtime update path
     timers::register_timer(
-        timers::MOUSE_TIMER_ID,
+        timers::MOUSE_TIMER_ID + device as usize,
         TimerMode::ActiveStackPage(Pages::Mice as u8),
         151,
-        clone!(@weak signal_strength_indicator, @weak battery_level_indicator =>
-                    @default-return Ok(()), move || {
-
-            // device status
-            if let Ok(device_status) = util::get_device_status(mouse_device_handle) {
-                if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
-                    let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
-
-                    signal_strength_indicator.set_value(value as f64 / 100.0);
-                    signal_strength_indicator.show_all();
-                } else {
-                    signal_strength_indicator.hide();
-
-                    notifications::warn("Signal strength not currently available");
-
-                }
-
-                if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
-                    let value = battery_level_percent.parse::<i32>().unwrap_or(0);
-
-                    battery_level_indicator.set_value(value as f64 / 100.0);
-                    battery_level_indicator.show_all();
-                } else {
-                    battery_level_indicator.hide();
-
-                    notifications::warn("Battery level not currently available");
-                }
-            } else {
-                signal_strength_indicator.hide();
-                battery_level_indicator.hide();
-
-                notifications::error("Could not query the device status");
-            }
+        clone!(@strong template => move || {
+            let _ = update_levels(&template, device).map_err(|e| tracing::error!("{e}") );
 
             Ok(())
         }),
@@ -233,4 +202,56 @@ pub fn initialize_mouse_page(
     )?;
 
     Ok(mouse_device_page)
+}
+
+pub fn update_levels(template: &gtk::Builder, device: u64) -> Result<()> {
+    let signal_strength_indicator: gtk::LevelBar =
+        template.object("mouse_signal_strength").unwrap();
+    let battery_level_indicator: gtk::LevelBar = template.object("mouse_battery_level").unwrap();
+
+    let mouse_signal_label: gtk::Label = template.object("mouse_signal_label").unwrap();
+    let mouse_battery_level_label: gtk::Label =
+        template.object("mouse_battery_level_label").unwrap();
+
+    // device status
+    if let Some(device_status) = crate::DEVICE_STATUS.read().get(&device) {
+        if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
+            let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
+
+            tracing::debug!("{device}: signal: {}", value as f64 / 100.0);
+
+            mouse_signal_label.show();
+
+            signal_strength_indicator.set_value(value as f64 / 100.0);
+            signal_strength_indicator.show();
+        } else {
+            mouse_signal_label.hide();
+            signal_strength_indicator.hide();
+
+            // notifications::warn("Signal strength not currently available");
+        }
+
+        if let Some(battery_level_percent) = device_status.get("battery-level-percent") {
+            let value = battery_level_percent.parse::<i32>().unwrap_or(0);
+
+            tracing::debug!("{device}: battery: {}", value as f64 / 100.0);
+
+            mouse_battery_level_label.show();
+
+            battery_level_indicator.set_value(value as f64 / 100.0);
+            battery_level_indicator.show();
+        } else {
+            mouse_battery_level_label.hide();
+            battery_level_indicator.hide();
+
+            // notifications::warn("Battery level not currently available");
+        }
+    } else {
+        signal_strength_indicator.hide();
+        battery_level_indicator.hide();
+
+        notifications::error("Could not query the device status");
+    }
+
+    Ok(())
 }
