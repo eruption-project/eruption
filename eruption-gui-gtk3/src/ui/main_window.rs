@@ -1216,20 +1216,20 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
 pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
-    let canvas_stack: gtk::Stack = builder.object("canvas_stack").unwrap();
+    // let canvas_stack: gtk::Stack = builder.object("canvas_stack").unwrap();
     let keyboard_devices_stack: gtk::Stack = builder.object("keyboard_devices_stack").unwrap();
     let mouse_devices_stack: gtk::Stack = builder.object("mouse_devices_stack").unwrap();
     let misc_devices_stack: gtk::Stack = builder.object("misc_devices_stack").unwrap();
 
-    // clean up all previously instantiated sub-pages
-    while canvas_stack.children().len() > 2 {
-        let child = &canvas_stack.children()[2];
-        canvas_stack.remove(child);
+    // // clean up all previously instantiated sub-pages
+    // while canvas_stack.children().len() > 2 {
+    //     let child = &canvas_stack.children()[2];
+    //     canvas_stack.remove(child);
 
-        unsafe {
-            child.destroy();
-        }
-    }
+    //     unsafe {
+    //         child.destroy();
+    //     }
+    // }
 
     // hide unified canvas page
     // let child = &canvas_stack.children()[0];
@@ -1303,21 +1303,23 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         // instantiate the devices sub-pages
         let devices = dbus_client::get_managed_devices()?;
 
+        ui::canvas::fetch_allocated_zones(&builder)?;
+
         let mut device_index = 0;
 
         let mut any_keyboard_device = false;
         let mut any_mouse_device = false;
         let mut any_misc_device = false;
 
-        // clean up all previously instantiated sub-pages on the canvas stack
-        while canvas_stack.children().len() > 2 {
-            let child = &canvas_stack.children()[2];
-            canvas_stack.remove(child);
+        // // clean up all previously instantiated sub-pages on the canvas stack
+        // while canvas_stack.children().len() > 2 {
+        //     let child = &canvas_stack.children()[2];
+        //     canvas_stack.remove(child);
 
-            unsafe {
-                child.destroy();
-            }
-        }
+        //     unsafe {
+        //         child.destroy();
+        //     }
+        // }
 
         // show pages
         // let child = &canvas_stack.children()[0];
