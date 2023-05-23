@@ -68,7 +68,7 @@ async-trait = "0.1.68"
 byteorder = "1.4.3"
 clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
-ctrlc = { version = "3.3.0", features = ["termination"] }
+ctrlc = { version = "3.3.1", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
 # dbus-tokio = "0.7.5"
@@ -81,7 +81,7 @@ nix = "0.26.2"
 atty = "0.2.14"
 serde_json = "1.0.96"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-regex = "1.8.1"
+regex = "1.8.2"
 serde = { version = "1.0.163", features = ["derive"] }
 tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"

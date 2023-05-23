@@ -53,7 +53,7 @@ atty = "0.2.14"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
-ctrlc = { version = "3.3.0", features = ["termination"] }
+ctrlc = { version = "3.3.1", features = ["termination"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"

@@ -66,7 +66,7 @@ serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
 tokio = { version = "1.28.1", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
-ctrlc = { version = "3.3.0", features = ["termination"] }
+ctrlc = { version = "3.3.1", features = ["termination"] }
 clap = "4.3.0"
 hotwatch = "0.4.6"
 config = "0.13.3"
@@ -107,7 +107,7 @@ dbus = "0.9.7"
 dbus-tree = "0.9.2"
 paste = "1.0.12"
 bitvec = "1.0.1"
-serialport = "4.2.0"
+serialport = "4.2.1"
 crc8 = "0.1.1"
 crc16 = "0.4.0"
 bytes = "1.4.0"

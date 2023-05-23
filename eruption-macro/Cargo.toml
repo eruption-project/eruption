@@ -43,7 +43,7 @@ debug-async = []
 cfg-if = "1.0.0"
 clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
-ctrlc = { version = "3.3.0", features = ["termination"] }
+ctrlc = { version = "3.3.1", features = ["termination"] }
 colored = "2.0.0"
 comfy-table = "6.1.4"
 libc = "0.2.144"
@@ -69,7 +69,7 @@ chrono = { version = "0.4.24", features = ["serde"] }
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "923a371", default-features = false, features = ["linux-native"] }
 # lua-src = "546.0.0"
 mlua = { version = "0.9.0-beta.2", features = ["luajit"] }
-regex = "1.8.1"
+regex = "1.8.2"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
 udev = "0.7"
