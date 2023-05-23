@@ -8,7 +8,7 @@ Network FX protocol client for the Eruption Linux user-mode driver, supporting a
 $ eruptionctl switch profile netfx.profile
 Switching to profile: /var/lib/eruption/profiles/netfx.profile
 
-$ eruption-netfx "ROCCAT Vulcan Pro TKL" ambient 20
+$ eruption-netfx ambient 20
 ```
 
 ```shell

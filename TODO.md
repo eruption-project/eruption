@@ -22,6 +22,7 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
+- Battery level not working
 - Improve 2D-primitives drawing/rasterization API
 - eruptionctl effects CLI
 - Update README.md's of all binaries
