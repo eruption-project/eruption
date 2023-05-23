@@ -25,16 +25,14 @@ require "debug"
 color_map = {}
 
 ticks = 0
-power_envelope = 32.0
+power_envelope = 16.0
 
 -- event handler functions --
 function on_startup(config)
     for i = 1, canvas_size do color_map[i] = 0x00000000 end
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
