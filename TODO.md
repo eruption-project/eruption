@@ -23,9 +23,9 @@ _This is a non-exhaustive listing of planned features:_
 ## TODO
 
 - Battery level not working
+- *dim profiles not dimmed
 - Improve 2D-primitives drawing/rasterization API
 - eruptionctl effects CLI
-- Update README.md's of all binaries
 - Update manpages
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
@@ -33,4 +33,4 @@ _This is a non-exhaustive listing of planned features:_
 - Update Python SDK (get_canvas)
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Update all DBus interfaces in rust code
-- Update docs/ directory
+- Undo/redo in GUI?
