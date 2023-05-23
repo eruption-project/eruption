@@ -1049,16 +1049,6 @@ fn paint_zone(
         }
     }
 
-    // draw caption background
-    cr.set_source_rgba(0.21, 0.21, 0.21, 0.65);
-    cr.rectangle(
-        BORDER.0 + (zone.x as f64 * pixel_width * scale_factor),
-        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor),
-        pixel_width * scale_factor * 2.0,
-        pixel_height * scale_factor * 2.0,
-    );
-    cr.fill()?;
-
     // draw caption
     cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
     cr.move_to(
