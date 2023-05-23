@@ -37,7 +37,7 @@ pub async fn handle_command() -> Result<()> {
     man.render(&mut buffer)?;
 
     std::fs::write(
-        Path::new(&env::var("MANPAGES_OUTPUT_DIR")?.to_string()).join(&format!("{BIN_NAME}.1")),
+        Path::new(&env::var("MANPAGES_OUTPUT_DIR")?).join(format!("{BIN_NAME}.1")),
         buffer,
     )?;
 

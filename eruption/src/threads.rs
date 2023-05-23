@@ -1008,7 +1008,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 color_val.r = (color.0 * brightness).round() as u8;
                                 color_val.g = (color.1 * brightness).round() as u8;
                                 color_val.b = (color.2 * brightness).round() as u8;
-                                color_val.a = 255 as u8;
+                                color_val.a = 255_u8;
                             });
 
                             // send the final (combined) color map to all of the devices, in parallel

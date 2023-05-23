@@ -768,7 +768,7 @@ impl Zone {
                 x: constants::CANVAS_WIDTH as i32 / 2 - 4 * SCALE_FACTOR,
                 y: constants::CANVAS_HEIGHT as i32 / 2 - 10 * SCALE_FACTOR,
                 width: 8 * SCALE_FACTOR,
-                height: 1 * SCALE_FACTOR,
+                height: SCALE_FACTOR,
             },
 
             DeviceClass::Unknown => Self::empty(),
