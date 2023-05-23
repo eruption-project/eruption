@@ -22,6 +22,7 @@
 use super::Keyboard;
 use super::{Caption, KeyDef};
 
+use crate::ui::canvas::ZONES;
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
@@ -86,8 +87,8 @@ impl Keyboard for WootingTwoHeArm {
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        if let Some(_allocated_zone) = crate::ZONES
-            .lock()
+        if let Some(_allocated_zone) = ZONES
+            .read()
             .iter()
             .find(|&z| z.0 == self.device)
             .map(|z| z.1)
