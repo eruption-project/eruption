@@ -14,15 +14,18 @@ the respective file was loaded previously via a call to `require "..."`.
 - Keyboard: Keyboard related functions
 - Mouse: Mouse related functions
 - System: Basic system information and status, like e.g. running processes. Execute external commands, ...
+- Canvas: Canvas related functions and per-device zone allocation
+- Hwaccel: Hardware accelerated effects using the Vulkan API
+- Image Processing: Accelerated 2D-primitives rasterization API and image processing
 - Sensors: Query system sensor values, like e.g. CPU package temperature
 - Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 - Introspection: Provides internal status information of the Eruption daemon
 - Persistence: Provides a persistence layer for the Lua scripts to store data
 - Profiles: Switch slots, switch profiles based on system state, ...
-- Macros: Inject programmable key stroke sequences
+- Macros: Programmatically inject key stroke sequences
 - Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
+- Animal: Simulation of organic movements
 - SDK Support: Support for the Eruption SDK
-- Animal: Simulation of organic movements (support library)
 
 ## Available Support Library Functions
 
@@ -83,6 +86,8 @@ _For all easing functions:_
 - d = duration (total time)
 
 ## Core Functions
+
+TODO: Last updated 2023-05-23: Add documentation for Lua functions exported by the Canvas, Hwaccel and Image Processing plugins
 
 Core functions are written in Rust, and are exported to the Lua VMs.
 Eruption currently ships with the following core functions:

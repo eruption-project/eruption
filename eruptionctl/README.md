@@ -74,7 +74,7 @@ A CLI control utility for the Eruption Linux user-mode driver
 Usage: eruptionctl [OPTIONS] <COMMAND>
 
 Commands:
-  status         Shows the currently active profile or slot
+  status         Shows the status of Eruption as well as the currently active profile or slot
   switch         Switch to a different profile or slot
   config         Configuration related sub-commands
   devices        Get or set some device specific configuration parameters
@@ -83,8 +83,10 @@ Commands:
   color-schemes  Define, import or delete a named color scheme
   param          Get or set script parameters on the currently active profile
   names          Naming related commands such as renaming of profile slots
+  canvas         Configure post-processing filters of the global canvas
   effects        Special effects like Ambient, image overlays or animations
   rules          Rules related sub-commands
+  about          Show information about Eruption
   help           Print this message or the help of the given subcommand(s)
 
 Options:

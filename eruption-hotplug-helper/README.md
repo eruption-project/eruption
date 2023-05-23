@@ -40,11 +40,12 @@ Usage: eruption-hotplug-helper [OPTIONS] <COMMAND>
 
 Commands:
   hotplug  Trigger a hotplug event
+  resume   Trigger a resume from suspend or hibernate event
   help     Print this message or the help of the given subcommand(s)
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
-  -h, --help        Print help information
-  -V, --version     Print version information
-
+  -h, --help        Print help
+  -V, --version     Print version
+  
 ```

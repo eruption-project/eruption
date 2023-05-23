@@ -23,7 +23,7 @@ The order of the components is: First red, then green, then blue and finally the
 
 ## Examples
 
-Paint the full canvas red: **ALL:255:0:0:255**
+Paint the canvas red: **ALL:255:0:0:255**
 
 Set pixel with index 1 to white: **1:255:255:255:255**
 

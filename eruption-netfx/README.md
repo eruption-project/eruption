@@ -39,9 +39,9 @@ along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright (c) 2019-2023, The Eruption Development Team
 
-A Network FX protocol client for the Eruption Linux user-mode driver
+A Network FX protocol client for Eruption
 
-Usage: eruption-netfx [OPTIONS] [MODEL] [HOSTNAME] [PORT] <COMMAND>
+Usage: eruption-netfx [OPTIONS] [HOSTNAME] [PORT] <COMMAND>
 
 Commands:
   ping       Ping the server
@@ -52,13 +52,12 @@ Commands:
   help       Print this message or the help of the given subcommand(s)
 
 Arguments:
-  [MODEL]     The keyboard model, e.g. "ROCCAT Vulcan Pro TKL" or "1e7d:311a"
   [HOSTNAME]  
   [PORT]      
 
 Options:
   -v, --verbose...  Verbose mode (-v, -vv, -vvv, etc.)
-  -h, --help        Print help information
-  -V, --version     Print version information
+  -h, --help        Print help
+  -V, --version     Print version
 
 ```

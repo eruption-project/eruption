@@ -57,7 +57,7 @@ This handbook has been written in the hopes to make more of the features accessi
 
 ### What does Eruption need to run?
 
-- Some of the profiles require a CPU built later than 2015 with support for SIMD/AVX2
+- Eruption requires a CPU built later than 2015 with support for SIMD/AVX2
 
 ## Recovering from Errors
 

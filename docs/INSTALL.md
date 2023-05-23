@@ -22,14 +22,14 @@ You probably may want to use [https://rustup.rs/](https://rustup.rs/).
 #### On Arch-based distros
 
 ```shell
-sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse lua lua-socket gtksourceview4
+sudo pacman -Sy libevdev hidapi systemd-libs dbus libpulse luajit lua51-socket vulkan-tools spirv-tools shaderc gtksourceview4
 sudo pacman -Sy gcc pkgconf make cmake protobuf xorg-server-devel libxrandr gtk3 acl
 ```
 
 #### On Fedora-based distros
 
 ```shell
-sudo dnf install cmake systemd dbus hidapi libevdev lua gtksourceview4 lua-socket-compat acl
+sudo dnf install cmake systemd dbus hidapi libevdev luajit lua-socket-compat spirv-tools shaderc gtksourceview4 acl
 sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-devel libusbx-devel \
   pulseaudio-libs-devel lua-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel
 ```
@@ -37,8 +37,8 @@ sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-d
 #### On OpenSuse-based distros
 
 ```shell
-sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel acl \
-    libhidapi-devel lua54-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel
+sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel spirv-tools shaderc acl \
+    libhidapi-devel luajit-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel
 ```
 
 #### On Debian-based distros
@@ -46,7 +46,7 @@ sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-
 ```shell
 sudo apt install build-essential cmake acl protobuf-compiler libprotobuf-dev \
   libsystemd-dev libusb-1.0-0-dev libhidapi-dev \
-  libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.4-dev libx11-dev \
+  libevdev-dev libudev-dev libdbus-1-dev libpulse-dev libluajit-5.1-dev libx11-dev \
   libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev \
   libpango1.0-dev libcairo2-dev libgtksourceview-4-dev
 ```

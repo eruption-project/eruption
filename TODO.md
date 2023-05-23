@@ -22,8 +22,10 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Add 2D-primitives drawing/rasterization API
+- Improve 2D-primitives drawing/rasterization API
 - eruptionctl effects CLI
+- Update README.md's of all binaries
+- Update manpages
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
 - Fix directory/file permissions in packaging

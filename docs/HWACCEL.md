@@ -5,4 +5,4 @@
 
 ## Support for Hardware Accelerated Effects
 
-Eruption supports hardware accelerated effects since version `0.3.0`, using the Vulkan API.
+Eruption supports hardware accelerated effects since version `0.5.0`, using the Vulkan API.
