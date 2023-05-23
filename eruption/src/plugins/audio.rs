@@ -264,6 +264,7 @@ mod backends {
     use nix::unistd::unlink;
     use parking_lot::RwLock;
     use prost::Message;
+    use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
     use std::fs;
     use std::io::Cursor;
     use std::os::unix::prelude::PermissionsExt;
@@ -511,9 +512,10 @@ mod backends {
                                                                     .load(Ordering::Relaxed)
                                                                 {
                                                                     let sqr_sum = buffer
-                                                                        .iter()
+                                                                        .par_iter()
                                                                         .map(|s| *s as f32)
-                                                                        .fold(0.0, |sqr_sum, s| sqr_sum + s * s);
+                                                                        .fold(|| 0.0, |sqr_sum, s| sqr_sum + s * s)
+                                                                        .sum::<f32>();
 
                                                                     let sqr_sum =
                                                                         (sqr_sum / buffer.len() as f32).sqrt();
@@ -529,7 +531,7 @@ mod backends {
                                                                     .load(Ordering::Relaxed)
                                                                 {
                                                                     let mut data: Vec<Complex<f32>> = buffer
-                                                                        .iter()
+                                                                        .par_iter()
                                                                         .take(FFT_SIZE)
                                                                         .map(|e| Complex::from(*e as f32))
                                                                         .collect();
