@@ -22,7 +22,7 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Battery level not working
+- keyboard and misc gui pages: make battery/signal controls same as on mice page
 - *dim profiles not dimmed
 - Improve 2D-primitives drawing/rasterization API
 - eruptionctl effects CLI
