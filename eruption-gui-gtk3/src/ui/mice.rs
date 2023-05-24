@@ -19,6 +19,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
+use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 
 use glib::clone;
@@ -31,6 +32,7 @@ use crate::timers::TimerMode;
 use crate::util;
 
 use super::hwdevices::mice::get_mouse_device;
+use super::hwdevices::DeviceStatus;
 use super::Pages;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
@@ -213,6 +215,8 @@ pub fn update_levels(template: &gtk::Builder, device: u64) -> Result<()> {
     let mouse_battery_level_label: gtk::Label =
         template.object("mouse_battery_level_label").unwrap();
 
+    let mut errors_present = false;
+
     // device status
     if let Some(device_status) = crate::DEVICE_STATUS.read().get(&device) {
         if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
@@ -247,6 +251,16 @@ pub fn update_levels(template: &gtk::Builder, device: u64) -> Result<()> {
             // notifications::warn("Battery level not currently available");
         }
     } else {
+        errors_present = true;
+    }
+
+    if errors_present {
+        // try harder to get the devices' status
+        let status = util::get_device_status(device).unwrap_or_else(|_| HashMap::new());
+        crate::DEVICE_STATUS
+            .write()
+            .insert(device, DeviceStatus(status));
+
         signal_strength_indicator.hide();
         battery_level_indicator.hide();
 

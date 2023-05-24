@@ -34,7 +34,7 @@ use std::{
     process::{Child, Stdio},
     sync::Arc,
     time::Duration,
-    u8,
+    u8, collections::HashMap,
 };
 use tracing::warn;
 
@@ -373,22 +373,22 @@ pub fn set_canvas_lightness(value: f64) -> Result<()> {
     Ok(())
 }
 
-// /// Get the device specific status
-// pub fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
-//     let conn = Connection::new_system()?;
-//     let proxy = conn.with_proxy(
-//         "org.eruption",
-//         "/org/eruption/devices",
-//         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
-//     );
+/// Get the device specific status
+pub fn get_device_status(device: u64) -> Result<HashMap<String, String>> {
+    let conn = Connection::new_system()?;
+    let proxy = conn.with_proxy(
+        "org.eruption",
+        "/org/eruption/devices",
+        Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
+    );
 
-//     let (status,): (String,) =
-//         proxy.method_call("org.eruption.Device", "GetDeviceStatus", (device,))?;
+    let (status,): (String,) =
+        proxy.method_call("org.eruption.Device", "GetDeviceStatus", (device,))?;
 
-//     let result: HashMap<String, String> = serde_json::from_str(&status)?;
+    let result: HashMap<String, String> = serde_json::from_str(&status)?;
 
-//     Ok(result)
-// }
+    Ok(result)
+}
 
 /// Get a device specific config param
 pub fn get_device_config(device: u64, param: &str) -> Result<String> {

@@ -21,17 +21,28 @@
 
 #![allow(dead_code)]
 
-use std::cell::RefCell;
+use std::{
+    cell::RefCell,
+    sync::Arc,
+    time::{self, Duration, Instant},
+};
 
 use glib::Cast;
 use gtk::traits::{ContainerExt, InfoBarExt, LabelExt, WidgetExt};
-use lazy_static::__Deref;
+use lazy_static::{__Deref, lazy_static};
+use parking_lot::RwLock;
 
-use crate::timers::{self, TimerMode};
+use crate::{timers::{self, TimerMode}, constants};
 
 thread_local! {
     /// The notification area to display notifications in
     pub static NOTIFICATION_AREA: RefCell<Option<gtk::InfoBar>> = RefCell::new(None);
+
+}
+
+lazy_static! {
+    // The instant after that the notification wil be hidden
+    pub static ref VISIBLE_SINCE: Arc<RwLock<Option<time::Instant>>> = Arc::new(RwLock::new(None));
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -83,25 +94,39 @@ pub fn show(message: &str, notification_type: NotificationType) {
         }
     });
 
-    let _ = timers::register_timer(
-        timers::NOTIFICATION_TIMER_ID,
-        TimerMode::Periodic,
-        5000,
-        move || {
-            NOTIFICATION_AREA.with(|na| {
-                let na = na.borrow();
-                let na = na.as_ref().unwrap();
+    schedule_close();
+}
 
-                na.set_visible(false);
-            });
-
-            Ok(())
-        },
-    );
+pub fn schedule_close() {
+    *VISIBLE_SINCE.write() = Some(Instant::now());
 }
 
 pub(crate) fn set_notification_area(area: &gtk::InfoBar) {
     NOTIFICATION_AREA.with(|na| {
         *na.borrow_mut() = Some(area.clone());
     });
+
+    let _ = timers::register_timer(
+        timers::NOTIFICATION_TIMER_ID,
+        TimerMode::Periodic,
+        500,
+        move || {
+            let mut instant = VISIBLE_SINCE.write();
+
+            if let Some(i) = *instant {
+                if i.elapsed() >= Duration::from_millis(constants::NOTIFICATION_TIME_MILLIS) {
+                    NOTIFICATION_AREA.with(|na| {
+                        let na = na.borrow();
+                        let na = na.as_ref().unwrap();
+
+                        na.set_visible(false);
+
+                        *instant = None;
+                    });
+                }
+            }
+
+            Ok(())
+        },
+    );
 }

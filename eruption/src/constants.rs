@@ -155,6 +155,9 @@ pub const DEFAULT_FRAME_DELAY_MILLIS: u64 = 37;
 /// Main loop delay of the eruption-fx-proxy daemon
 pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 199;
 
+/// The time for which a notification shall be shown
+pub const NOTIFICATION_TIME_MILLIS: u64 = 4000;
+
 /// Default X11 display used by the X11 sensor plugin of the eruption-fx-proxy daemon
 pub const DEFAULT_X11_DISPLAY: &str = ":0";
 
