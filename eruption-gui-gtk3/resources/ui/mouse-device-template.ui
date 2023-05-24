@@ -296,10 +296,38 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkLevelBar" id="mouse_signal_strength">
+          <object class="GtkBox">
+            <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="no-show-all">True</property>
-            <property name="margin-top">16</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel" id="mouse_signal_indicator_label">
+                <property name="can-focus">False</property>
+                <property name="no-show-all">True</property>
+                <property name="halign">end</property>
+                <property name="margin-top">16</property>
+                <property name="label" translatable="yes">--</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLevelBar" id="mouse_signal_strength">
+                <property name="can-focus">False</property>
+                <property name="no-show-all">True</property>
+                <property name="valign">baseline</property>
+                <property name="margin-top">20</property>
+                <property name="margin-bottom">4</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -307,9 +335,37 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkLevelBar" id="mouse_battery_level">
+          <object class="GtkBox">
+            <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="no-show-all">True</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel" id="mouse_battery_indicator_label">
+                <property name="can-focus">False</property>
+                <property name="no-show-all">True</property>
+                <property name="halign">end</property>
+                <property name="label" translatable="yes">--</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLevelBar" id="mouse_battery_level">
+                <property name="can-focus">False</property>
+                <property name="no-show-all">True</property>
+                <property name="valign">baseline</property>
+                <property name="margin-top">4</property>
+                <property name="margin-bottom">4</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="left-attach">1</property>

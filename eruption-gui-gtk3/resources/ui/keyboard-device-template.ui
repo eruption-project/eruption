@@ -155,7 +155,9 @@ The Eruption Development Team
           <object class="GtkLevelBar" id="keyboard_signal_strength">
             <property name="can-focus">False</property>
             <property name="no-show-all">True</property>
-            <property name="margin-top">16</property>
+            <property name="valign">baseline</property>
+            <property name="margin-top">8</property>
+            <property name="margin-bottom">8</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -167,7 +169,6 @@ The Eruption Development Team
             <property name="can-focus">False</property>
             <property name="no-show-all">True</property>
             <property name="halign">end</property>
-            <property name="margin-top">16</property>
             <property name="label" translatable="yes">Signal</property>
           </object>
           <packing>
@@ -191,6 +192,9 @@ The Eruption Development Team
           <object class="GtkLevelBar" id="keyboard_battery_level">
             <property name="can-focus">False</property>
             <property name="no-show-all">True</property>
+            <property name="valign">baseline</property>
+            <property name="margin-top">8</property>
+            <property name="margin-bottom">8</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
