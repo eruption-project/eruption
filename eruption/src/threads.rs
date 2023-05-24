@@ -973,7 +973,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // may currently occur during switching of profiles
                             let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
                             if ops_pending > 0 {
-                                warn!(
+                                ratelimited::warn!(
                                     "Pending blend ops before writing LED map to device: {}",
                                     ops_pending
                                         );
