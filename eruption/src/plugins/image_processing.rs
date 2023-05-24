@@ -21,7 +21,8 @@
 
 use mlua::prelude::*;
 use raqote::{
-    Color, DrawOptions, DrawTarget, ExtendMode, FilterMode, Image, SolidSource, Source, Transform,
+    Color, DrawOptions, DrawTarget, ExtendMode, FilterMode, Image, IntPoint, IntRect, SolidSource,
+    Source, Transform,
 };
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::any::Any;
@@ -46,7 +47,7 @@ pub enum ImageProcessingPluginError {
 
 thread_local! {
     /// Allocated draw targets (canvases)
-    static DRAW_TARGETS: RefCell<HashMap<usize, DrawTarget>> = RefCell::new(HashMap::new());
+    static DRAW_TARGETS: RefCell<HashMap<usize, Box<RefCell<DrawTarget>>>> = RefCell::new(HashMap::new());
 
     /// Canvas' state tracking information
     static STATE: RefCell<HashMap<usize, CanvasState>> = RefCell::new(HashMap::new());
@@ -73,10 +74,10 @@ impl ImageProcessingPlugin {
             let mut dts = dts.borrow_mut();
 
             dts.entry(0).or_insert_with(|| {
-                DrawTarget::new(
+                Box::new(RefCell::new(DrawTarget::new(
                     constants::CANVAS_WIDTH as i32,
                     constants::CANVAS_HEIGHT as i32,
-                )
+                )))
             });
 
             STATE.with(|dts| {
@@ -109,10 +110,10 @@ impl ImageProcessingPlugin {
             let index = dts.len();
             dts.insert(
                 index,
-                DrawTarget::new(
+                Box::new(RefCell::new(DrawTarget::new(
                     constants::CANVAS_WIDTH as i32,
                     constants::CANVAS_HEIGHT as i32,
-                ),
+                ))),
             );
 
             STATE.with(|dts| {
@@ -163,10 +164,10 @@ impl ImageProcessingPlugin {
         let mut result = Ok(());
 
         DRAW_TARGETS.with(|dts| {
-            let dts = dts.borrow_mut();
+            let mut dts = dts.borrow_mut();
 
-            if let Some(canvas) = dts.get(&canvas) {
-                let canvas_data = canvas.get_data_u8();
+            if let Some(canvas) = dts.get_mut(&canvas) {
+                let canvas_data = canvas.get_mut().get_data_u8();
 
                 let mut led_map = [RGBA {
                     r: 0,
@@ -200,6 +201,56 @@ impl ImageProcessingPlugin {
                 script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
 
                 result = Ok(())
+            } else {
+                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                    description: "Could not find the specified canvas".to_string(),
+                }
+                .into())
+            }
+        });
+
+        result
+    }
+
+    pub(crate) fn alpha_blend(
+        foreground_canvas: usize,
+        background_canvas: usize,
+        alpha: f32,
+    ) -> Result<()> {
+        let mut result = Ok(());
+
+        DRAW_TARGETS.with(|dts| {
+            let dts = dts.borrow();
+
+            let foreground_canvas_optional = dts.get(&foreground_canvas);
+            let background_canvas_optional = dts.get(&background_canvas);
+
+            if let Some(foreground_canvas) = foreground_canvas_optional {
+                if let Some(background_canvas) = background_canvas_optional {
+                    let src_rect = IntRect::new(
+                        IntPoint::new(0, 0),
+                        IntPoint::new(
+                            foreground_canvas.borrow().width(),
+                            foreground_canvas.borrow().height(),
+                        ),
+                    );
+                    let point = IntPoint::new(0, 0);
+
+                    let canvas = &**background_canvas;
+                    canvas.borrow_mut().blend_surface_with_alpha(
+                        &foreground_canvas.borrow(),
+                        src_rect,
+                        point,
+                        alpha,
+                    );
+
+                    result = Ok(())
+                } else {
+                    result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                        description: "Could not find the specified canvas".to_string(),
+                    }
+                    .into())
+                }
             } else {
                 result = Err(ImageProcessingPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
@@ -256,9 +307,9 @@ impl ImageProcessingPlugin {
             });
 
             if let Some(canvas) = dts.get_mut(&canvas) {
-                let (r, g, b, a) = algo::color_to_rgba(color);
+                let (r, g, b, a) = support::color_to_rgba(color);
 
-                canvas.fill_rect(
+                canvas.get_mut().fill_rect(
                     x,
                     y,
                     width,
@@ -302,10 +353,10 @@ impl ImageProcessingPlugin {
             });
 
             if let Some(canvas) = dts.get_mut(&canvas) {
-                let (r, g, b, a) = algo::color_to_rgba(color);
+                let (r, g, b, a) = support::color_to_rgba(color);
 
                 // TODO: Implement this
-                canvas.fill_rect(
+                canvas.get_mut().fill_rect(
                     x,
                     y,
                     width,
@@ -356,7 +407,7 @@ impl ImageProcessingPlugin {
 
                 let noise = noise
                     .par_iter()
-                    .map(|&n| algo::hsl_to_color(n, 1.0, 0.5))
+                    .map(|&n| support::hsl_to_color(n, 1.0, 0.5))
                     .collect::<Vec<_>>();
 
                 let image = Image {
@@ -365,7 +416,7 @@ impl ImageProcessingPlugin {
                     height: height.floor() as i32,
                 };
 
-                canvas.fill_rect(
+                canvas.get_mut().fill_rect(
                     x,
                     y,
                     width,
@@ -424,7 +475,7 @@ impl ImageProcessingPlugin {
 
                 let noise = noise
                     .par_iter()
-                    .map(|&n| algo::hsl_to_color(n, 1.0, 0.5))
+                    .map(|&n| support::hsl_to_color(n, 1.0, 0.5))
                     .collect::<Vec<_>>();
 
                 let image = Image {
@@ -433,7 +484,7 @@ impl ImageProcessingPlugin {
                     height: height.floor() as i32,
                 };
 
-                canvas.fill_rect(
+                canvas.get_mut().fill_rect(
                     x,
                     y,
                     width,
@@ -489,10 +540,10 @@ impl Plugin for ImageProcessingPlugin {
         globals.set("get_canvas", get_canvas)?;
 
         let create_new_canvas = lua_ctx.create_function(move |_, ()| {
-            ImageProcessingPlugin::create_new_canvas()
+            let result = ImageProcessingPlugin::create_new_canvas()
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
-            Ok(())
+            Ok(result)
         })?;
         globals.set("create_new_canvas", create_new_canvas)?;
 
@@ -511,6 +562,16 @@ impl Plugin for ImageProcessingPlugin {
             Ok(())
         })?;
         globals.set("realize_canvas", realize_canvas)?;
+
+        let alpha_blend = lua_ctx.create_function(
+            move |_, (foreground_canvas, background_canvas, alpha): (usize, usize, f32)| {
+                ImageProcessingPlugin::alpha_blend(foreground_canvas, background_canvas, alpha)
+                    .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
+
+                Ok(())
+            },
+        )?;
+        globals.set("alpha_blend", alpha_blend)?;
 
         // state tracking related functions
         let set_source_color =
@@ -606,7 +667,7 @@ impl Plugin for ImageProcessingPlugin {
 }
 
 #[allow(dead_code)]
-mod algo {
+mod support {
     use byteorder::{ByteOrder, LittleEndian};
     use palette::{FromColor, Hsl, LinSrgb};
 
