@@ -22,15 +22,16 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
+- Update all DBus interfaces in rust code
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - *dim profiles not dimmed
 - Improve 2D-primitives drawing/rasterization API
-- eruptionctl effects CLI
+- eruptionctl: implement effects CLI
 - Update manpages
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
+- Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Fix directory/file permissions in packaging
 - Update Python SDK (get_canvas)
-- Add Lua event: function on_hotplug(new_device) on_update_zones(...)
-- Update all DBus interfaces in rust code
-- Undo/redo in GUI?
+- Undo/redo ops in the GUI?
+- Simplify handling of internal device data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
