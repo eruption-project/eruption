@@ -875,7 +875,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // );
 
                             // instruct Lua VMs to realize their color maps,
-                            // e.g. to blend their local color maps with the canvas
+                            // (to blend their local color maps with the canvas)
                             *COLOR_MAPS_READY_CONDITION.0.lock() = LUA_TXS.read().len().saturating_sub(FAILED_TXS.read().len());
 
                             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
@@ -904,6 +904,8 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                     if errors_present {
                                         drop_frame = true;
+                                        *pending = 0;
+
                                         ratelimited::debug!("Frame dropped: Error while waiting for the color map");
                                         break;
                                     }
@@ -971,7 +973,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // may currently occur during switching of profiles
                             let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
                             if ops_pending > 0 {
-                                debug!(
+                                warn!(
                                     "Pending blend ops before writing LED map to device: {}",
                                     ops_pending
                                         );
