@@ -108,9 +108,6 @@ pub struct RoccatAimoPad {
     pub brightness: i32,
 
     pub allocated_zone: Zone,
-
-    // device status
-    pub device_status: DeviceStatus,
 }
 
 impl RoccatAimoPad {
@@ -131,8 +128,6 @@ impl RoccatAimoPad {
             brightness: 100,
 
             allocated_zone: Zone::defaults_for(DeviceClass::Misc),
-
-            device_status: DeviceStatus(HashMap::new()),
         }
     }
 
@@ -538,7 +533,11 @@ impl DeviceTrait for RoccatAimoPad {
     }
 
     fn device_status(&self) -> Result<DeviceStatus> {
-        Ok(self.device_status.clone())
+        let mut table = HashMap::new();
+
+        table.insert("connected".to_owned(), format!("{}", true));
+
+        Ok(DeviceStatus(table))
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -617,11 +616,11 @@ impl MiscDeviceTrait for RoccatAimoPad {
                 (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                0xff - (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                 (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                0xff - (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
             ];
 
             match ctrl_dev.send_feature_report(&buf) {

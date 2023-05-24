@@ -99,6 +99,9 @@ pub struct RoccatKonePureUltra {
 
     // device specific configuration options
     pub brightness: i32,
+
+    // device status
+    pub device_status: DeviceStatus,
 }
 
 impl RoccatKonePureUltra {
@@ -120,6 +123,8 @@ impl RoccatKonePureUltra {
             has_failed: false,
 
             allocated_zone: Zone::defaults_for(DeviceClass::Mouse),
+
+            device_status: DeviceStatus(HashMap::new()),
 
             brightness: 100,
         }
