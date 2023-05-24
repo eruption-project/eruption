@@ -32,7 +32,10 @@ use gtk::traits::{ContainerExt, InfoBarExt, LabelExt, WidgetExt};
 use lazy_static::{__Deref, lazy_static};
 use parking_lot::RwLock;
 
-use crate::{timers::{self, TimerMode}, constants};
+use crate::{
+    constants,
+    timers::{self, TimerMode},
+};
 
 thread_local! {
     /// The notification area to display notifications in

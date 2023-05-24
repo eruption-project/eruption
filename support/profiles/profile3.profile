@@ -31,5 +31,5 @@ active_scripts = [
 [[config."Audio Visualizer #3 (Spectrum Analyzer)"]]
 type = 'float'
 name = 'opacity'
-value = 0.90
-default = 0.90
+value = 0.98
+default = 0.98

@@ -26,6 +26,7 @@ use dbus::blocking::Connection;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use std::{
+    collections::HashMap,
     convert::TryFrom,
     fs,
     io::Read,
@@ -34,7 +35,7 @@ use std::{
     process::{Child, Stdio},
     sync::Arc,
     time::Duration,
-    u8, collections::HashMap,
+    u8,
 };
 use tracing::warn;
 

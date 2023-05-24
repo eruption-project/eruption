@@ -989,7 +989,6 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             let lighten_value = hsl.2 / 100.0;
                             let brightness = brightness as f64 / 100.0 * 255.0;
 
-
                             script::LED_MAP.write().par_iter_mut().for_each(|color_val| {
                                 let color = LinSrgba::new(
                                     color_val.r as f64 / 255.0,
