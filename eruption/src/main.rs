@@ -678,6 +678,11 @@ fn run_main_loop(
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
 
+    // fade-in from an all black canvas to the saved profile on startup
+    let fade_frames = (constants::STARTUP_FADE_IN_MILLIS * constants::TARGET_FPS / 1000) as isize;
+    crate::FADER.store(fade_frames, Ordering::SeqCst);
+    crate::FADER_BASE.store(fade_frames, Ordering::SeqCst);
+
     'MAIN_LOOP: loop {
         #[cfg(feature = "profiling")]
         coz::scope!("main loop");

@@ -101,6 +101,9 @@ pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 /// Fade in on profile switch for n milliseconds
 pub const FADE_MILLIS: u64 = 1333;
 
+/// Fade-in effect duration on startup
+pub const STARTUP_FADE_IN_MILLIS: u64 = 2500;
+
 /// The capacity of the buffer used for exchanging control messages
 pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 4 + 32;
 

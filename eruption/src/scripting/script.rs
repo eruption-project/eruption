@@ -88,7 +88,7 @@ lazy_static! {
         r: 0x00,
         g: 0x00,
         b: 0x00,
-        a: 0x00,
+        a: 0xff,
     }; constants::CANVAS_SIZE]));
 
     /// The last successfully rendered canvas
@@ -96,7 +96,7 @@ lazy_static! {
         r: 0x00,
         g: 0x00,
         b: 0x00,
-        a: 0x00,
+        a: 0xff,
     }; constants::CANVAS_SIZE]));
 
 
@@ -105,7 +105,7 @@ lazy_static! {
         r: 0x00,
         g: 0x00,
         b: 0x00,
-        a: 0x00,
+        a: 0xff,
     }; constants::CANVAS_SIZE]));
 
     /// Frame generation counter, used to detect if we need to submit the LED_MAP to the hardware
@@ -118,7 +118,7 @@ thread_local! {
         r: 0x00,
         g: 0x00,
         b: 0x00,
-        a: 0x00,
+        a: 0xff,
     }; constants::CANVAS_SIZE]);
 
     /// True, if LED color map was modified at least once in this thread
