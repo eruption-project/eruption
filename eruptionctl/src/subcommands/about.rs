@@ -86,7 +86,7 @@ fn print_authors() {
 
      Special thanks to the following contributors:
 
-     - PhenRo
+     - Phen-Ro
      - Moritz Poldrack
      - Michael Kasch
      - erockce
