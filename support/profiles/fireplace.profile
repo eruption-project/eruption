@@ -21,7 +21,7 @@ id = '5dc59fa6-e969-45cb-a0da-e87d28713339'
 name = 'Fireplace'
 description = 'A fireplace effect'
 active_scripts = [
-#	'solid.lua',
+	'solid.lua',
 	'fire.lua',
 	'afterhue.lua',
  	'macros.lua',
@@ -31,11 +31,17 @@ active_scripts = [
 [[config."Solid Color"]]
 type = 'color'
 name = 'color_background'
-value = 0xffff2000
-default = 0xffff2000
+value = 0xff100500
+default = 0xff100500
 
 [[config."Solid Color"]]
 type = 'float'
 name = 'opacity'
-value = 0.45
-default = 0.45
+value = 1.0
+default = 1.0
+
+[[config."Fire"]]
+type = 'float'
+name = 'opacity'
+value = 1.0
+default = 1.0

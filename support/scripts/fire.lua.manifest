@@ -19,7 +19,7 @@
 
 name = "Fire"
 description = "Renders a bonfire effect"
-version = "0.1.1"
+version = "0.1.2"
 author = "The Eruption Development Team"
 min_supported_version = "0.4.0"
 tags = ['Background', 'Vendor']
